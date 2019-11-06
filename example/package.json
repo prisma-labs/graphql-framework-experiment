@@ -11,6 +11,7 @@
   },
   "scripts": {
     "start": "ts-node ./index.ts",
-    "build": "../bin/run build"
+    "build": "../bin/run build",
+    "generate": "../bin/run generate"
   }
 }

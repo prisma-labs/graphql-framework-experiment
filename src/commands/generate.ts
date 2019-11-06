@@ -1,7 +1,9 @@
 import { Command, flags } from '@oclif/command'
+import { findServerEntryPoint, spawnAsync } from '../utils'
+import { spawnSync } from 'child_process'
 
 export class Generate extends Command {
-  static description = 'describe the command here'
+  static description = 'Generate the artifacts'
 
   static examples = [`$ pumpkins generate`]
 
@@ -11,7 +13,15 @@ export class Generate extends Command {
 
   async run() {
     const { args, flags } = this.parse(Generate)
+    const entryPoint = findServerEntryPoint()
 
-    this.log('todo')
+    spawnSync('ts-node', [entryPoint], {
+      env: {
+        ...process.env,
+        PUMPKINS_SHOULD_EXIT_AFTER_GENERATE_ARTIFACTS: 'true',
+      },
+    })
+
+    this.log('🎃  Successfully generated the artifacts')
   }
 }

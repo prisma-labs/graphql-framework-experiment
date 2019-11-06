@@ -15,6 +15,11 @@ export function makeSchema(): nexus.core.NexusGraphQLSchema {
       : process.env.PUMPKINS_SHOULD_GENERATE_ARTIFACTS === 'false'
       ? false
       : Boolean(!process.env.NODE_ENV || process.env.NODE_ENV === 'development')
+  const shouldExitAfterGenerateArtifacts =
+    process.env.PUMPKINS_SHOULD_EXIT_AFTER_GENERATE_ARTIFACTS === 'true'
+      ? true
+      : false
+
   // TODO: Find better heuristic
   const projectDir = path.dirname(
     findConfigFile('package.json', { required: true }),
@@ -30,6 +35,7 @@ export function makeSchema(): nexus.core.NexusGraphQLSchema {
       schema: defaultSchemaPath,
     },
     shouldGenerateArtifacts,
+    shouldExitAfterGenerateArtifacts,
   }
   return nexus.makeSchema(config)
 }
