@@ -19,7 +19,7 @@ type ServerOptions = {
 
 const defaultServerOptions: Required<ServerOptions> = {
   port: 4000,
-  startMessage: port => `🚀 Server ready at http://localhost:${port}/`,
+  startMessage: port => `🎃  Server ready at http://localhost:${port}/`,
   introspection: true,
   playground: true,
 }

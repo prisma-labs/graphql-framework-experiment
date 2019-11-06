@@ -42,5 +42,7 @@ require("./__index.js")
       entryPointContent,
     )
     fs.writeFileSync(entryPointPath, wrapperContent)
+
+    this.log('🎃  Pumpkins server successfully compiled!')
   }
 }
