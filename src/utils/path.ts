@@ -16,14 +16,14 @@ export function findServerEntryPoint() {
   ]
 
   const entryPoint = defaultEntryPoints.find(entryPointPath =>
-    fs.existsSync(path.join(process.cwd(), entryPointPath)),
+    fs.existsSync(path.join(process.cwd(), entryPointPath))
   )
 
   if (!entryPoint) {
     throw new Error(
       `Could not find a valid entry point for your server. Possible entries: ${defaultEntryPoints
         .map(p => `"${p}"`)
-        .join(', ')}`,
+        .join(', ')}`
     )
   }
 

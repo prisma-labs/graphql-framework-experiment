@@ -5,13 +5,14 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^12.12.6",
+    "pumpkins": "../",
     "ts-node": "^8.4.1",
-    "typescript": "^3.7.2",
-    "pumpkins": "0.0.0"
+    "typescript": "^3.7.2"
   },
   "scripts": {
     "start": "ts-node ./index.ts",
     "build": "../bin/run build",
-    "generate": "../bin/run generate"
+    "generate": "../bin/run generate",
+    "dev": "pumpkins dev"
   }
 }

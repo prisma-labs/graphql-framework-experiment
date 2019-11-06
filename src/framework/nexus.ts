@@ -22,7 +22,7 @@ export function makeSchema(): nexus.core.NexusGraphQLSchema {
 
   // TODO: Find better heuristic
   const projectDir = path.dirname(
-    findConfigFile('package.json', { required: true }),
+    findConfigFile('package.json', { required: true })
   )
   const pumpkinsDir = path.join(projectDir, '.pumpkins')
   const defaultTypesPath = path.join(pumpkinsDir, 'nexus-typegen.ts')
@@ -41,7 +41,7 @@ export function makeSchema(): nexus.core.NexusGraphQLSchema {
 }
 
 export function objectType<TypeName extends string>(
-  config: nexus.core.NexusObjectTypeConfig<TypeName>,
+  config: nexus.core.NexusObjectTypeConfig<TypeName>
 ): nexus.core.NexusObjectTypeDef<TypeName> {
   const typeDef = nexus.objectType(config)
   __globalTypeDefs.push(typeDef)
@@ -49,7 +49,7 @@ export function objectType<TypeName extends string>(
 }
 
 export function inputObjectType<TypeName extends string>(
-  config: nexus.core.NexusInputObjectTypeConfig<TypeName>,
+  config: nexus.core.NexusInputObjectTypeConfig<TypeName>
 ): nexus.core.NexusInputObjectTypeDef<TypeName> {
   const typeDef = nexus.inputObjectType(config)
   __globalTypeDefs.push(typeDef)
@@ -57,7 +57,7 @@ export function inputObjectType<TypeName extends string>(
 }
 
 export function scalarType<TypeName extends string>(
-  options: nexus.core.NexusScalarTypeConfig<TypeName>,
+  options: nexus.core.NexusScalarTypeConfig<TypeName>
 ): nexus.core.NexusScalarTypeDef<TypeName> {
   const typeDef = nexus.scalarType(options)
   __globalTypeDefs.push(typeDef)
@@ -65,7 +65,7 @@ export function scalarType<TypeName extends string>(
 }
 
 export function enumType<TypeName extends string>(
-  config: nexus.core.EnumTypeConfig<TypeName>,
+  config: nexus.core.EnumTypeConfig<TypeName>
 ): nexus.core.NexusEnumTypeDef<TypeName> {
   const typeDef = nexus.enumType(config)
   __globalTypeDefs.push(typeDef)
@@ -73,7 +73,7 @@ export function enumType<TypeName extends string>(
 }
 
 export function unionType<TypeName extends string>(
-  config: nexus.core.NexusUnionTypeConfig<TypeName>,
+  config: nexus.core.NexusUnionTypeConfig<TypeName>
 ): nexus.core.NexusUnionTypeDef<TypeName> {
   const typeDef = nexus.unionType(config)
   __globalTypeDefs.push(typeDef)

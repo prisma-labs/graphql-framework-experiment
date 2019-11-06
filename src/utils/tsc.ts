@@ -9,11 +9,11 @@ const diagnosticHost: ts.FormatDiagnosticsHost = {
 
 export function findConfigFile(
   fileName: string,
-  opts: { required: true },
+  opts: { required: true }
 ): string
 export function findConfigFile(
   fileName: string,
-  opts: { required: false },
+  opts: { required: false }
 ): string | undefined
 /**
  * Find a config file
@@ -22,7 +22,7 @@ export function findConfigFile(fileName: string, opts: { required: boolean }) {
   const configPath = ts.findConfigFile(
     /*searchPath*/ process.cwd(),
     ts.sys.fileExists,
-    fileName,
+    fileName
   )
 
   if (!configPath) {
@@ -65,8 +65,8 @@ export function readTsConfig() {
     throw new Error(
       ts.formatDiagnosticsWithColorAndContext(
         [tsConfigContent.error],
-        diagnosticHost,
-      ),
+        diagnosticHost
+      )
     )
   }
 
@@ -75,7 +75,7 @@ export function readTsConfig() {
     ts.sys,
     projectDir,
     undefined,
-    tsConfigPath,
+    tsConfigPath
   )
   return fixConfig(inputConfig, projectDir)
 }
@@ -92,14 +92,14 @@ export function compile(rootNames: string[], options: ts.CompilerOptions) {
 
   if (allDiagnostics.length > 0) {
     throw new Error(
-      ts.formatDiagnosticsWithColorAndContext(allDiagnostics, diagnosticHost),
+      ts.formatDiagnosticsWithColorAndContext(allDiagnostics, diagnosticHost)
     )
   }
 }
 
 export function transpileModule(
   input: string,
-  compilerOptions: ts.CompilerOptions,
+  compilerOptions: ts.CompilerOptions
 ): string {
   return ts.transpileModule(input, { compilerOptions }).outputText
 }

@@ -25,9 +25,9 @@ export class Generate extends Command {
       this.error(
         `🎃  Entry point "${path.relative(
           process.cwd(),
-          entryPoint,
+          entryPoint
         )}" does not exist`,
-        { exit: 1 },
+        { exit: 1 }
       )
     }
 
