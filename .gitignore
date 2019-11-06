@@ -50,4 +50,7 @@ pids
 typings/
 yarn-debug.log*
 yarn-error.log*
+
 dist
+nexus-typegen.ts
+schema.graphql
