@@ -37,7 +37,7 @@ USAGE
 
 ## `pumpkins build`
 
-describe the command here
+Build a production-ready server
 
 ```
 USAGE
@@ -65,11 +65,14 @@ _See code: [lib/commands/dev.js](https://github.com/prisma-labs/pumpkins/blob/v0
 
 ## `pumpkins generate`
 
-describe the command here
+Generate the artifacts
 
 ```
 USAGE
   $ pumpkins generate
+
+OPTIONS
+  -e, --entrypoint=entrypoint
 
 EXAMPLE
   $ pumpkins generate
