@@ -33,6 +33,7 @@ USAGE
 * [`pumpkins dev`](#pumpkins-dev)
 * [`pumpkins generate`](#pumpkins-generate)
 * [`pumpkins help [COMMAND]`](#pumpkins-help-command)
+* [`pumpkins init`](#pumpkins-init)
 
 ## `pumpkins build`
 
@@ -92,4 +93,18 @@ OPTIONS
 ```
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v2.2.1/src/commands/help.ts)_
+
+## `pumpkins init`
+
+describe the command here
+
+```
+USAGE
+  $ pumpkins init
+
+EXAMPLE
+  $ pumpkins init
+```
+
+_See code: [lib/commands/init.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0/lib/commands/init.js)_
 <!-- commandsstop -->
