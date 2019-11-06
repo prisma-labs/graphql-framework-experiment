@@ -1,7 +1,6 @@
 import * as nexus from 'nexus'
 import * as path from 'path'
-import { findConfigFile, findProjectDir } from '../utils'
-import { makeSchemaInternal } from 'nexus/dist/core'
+import { findProjectDir } from '../utils'
 
 export function createNexusSingleton() {
   const __globalTypeDefs: any[] = []
@@ -13,7 +12,7 @@ export function createNexusSingleton() {
         : process.env.PUMPKINS_SHOULD_GENERATE_ARTIFACTS === 'false'
         ? false
         : Boolean(
-            !process.env.NODE_ENV || process.env.NODE_ENV === 'development',
+            !process.env.NODE_ENV || process.env.NODE_ENV === 'development'
           )
     const shouldExitAfterGenerateArtifacts =
       process.env.PUMPKINS_SHOULD_EXIT_AFTER_GENERATE_ARTIFACTS === 'true'
@@ -33,13 +32,13 @@ export function createNexusSingleton() {
         schema: defaultSchemaPath,
       },
       shouldGenerateArtifacts,
-      shouldExitAfterGenerateArtifacts
+      shouldExitAfterGenerateArtifacts,
     }
     return nexus.makeSchema(config)
   }
 
   function objectType<TypeName extends string>(
-    config: nexus.core.NexusObjectTypeConfig<TypeName>,
+    config: nexus.core.NexusObjectTypeConfig<TypeName>
   ): nexus.core.NexusObjectTypeDef<TypeName> {
     const typeDef = nexus.objectType(config)
     __globalTypeDefs.push(typeDef)
@@ -47,7 +46,7 @@ export function createNexusSingleton() {
   }
 
   function inputObjectType<TypeName extends string>(
-    config: nexus.core.NexusInputObjectTypeConfig<TypeName>,
+    config: nexus.core.NexusInputObjectTypeConfig<TypeName>
   ): nexus.core.NexusInputObjectTypeDef<TypeName> {
     const typeDef = nexus.inputObjectType(config)
     __globalTypeDefs.push(typeDef)
@@ -55,7 +54,7 @@ export function createNexusSingleton() {
   }
 
   function scalarType<TypeName extends string>(
-    options: nexus.core.NexusScalarTypeConfig<TypeName>,
+    options: nexus.core.NexusScalarTypeConfig<TypeName>
   ): nexus.core.NexusScalarTypeDef<TypeName> {
     const typeDef = nexus.scalarType(options)
     __globalTypeDefs.push(typeDef)
@@ -63,7 +62,7 @@ export function createNexusSingleton() {
   }
 
   function enumType<TypeName extends string>(
-    config: nexus.core.EnumTypeConfig<TypeName>,
+    config: nexus.core.EnumTypeConfig<TypeName>
   ): nexus.core.NexusEnumTypeDef<TypeName> {
     const typeDef = nexus.enumType(config)
     __globalTypeDefs.push(typeDef)
@@ -71,7 +70,7 @@ export function createNexusSingleton() {
   }
 
   function unionType<TypeName extends string>(
-    config: nexus.core.NexusUnionTypeConfig<TypeName>,
+    config: nexus.core.NexusUnionTypeConfig<TypeName>
   ): nexus.core.NexusUnionTypeDef<TypeName> {
     const typeDef = nexus.unionType(config)
     __globalTypeDefs.push(typeDef)
@@ -84,6 +83,6 @@ export function createNexusSingleton() {
     unionType,
     enumType,
     scalarType,
-    makeSchema
+    makeSchema,
   }
 }

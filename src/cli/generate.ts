@@ -1,8 +1,4 @@
 import { Command, flags } from '@oclif/command'
-import { findServerEntryPoint } from '../utils'
-import { spawnSync } from 'child_process'
-import * as path from 'path'
-import * as fs from 'fs'
 import { generateArtifacts } from '../utils/artifact-generation'
 
 export class Generate extends Command {
@@ -23,7 +19,7 @@ export class Generate extends Command {
     if (error) {
       this.error(error, { exit: 1 })
     }
-    
+
     this.log('🎃  Successfully generated the artifacts')
   }
 }

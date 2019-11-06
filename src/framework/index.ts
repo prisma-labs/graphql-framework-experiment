@@ -37,7 +37,7 @@ export function createApp() {
       const server = new ApolloServer({
         schema: makeSchema(),
         playground: mergedConfig.playground,
-        introspection: mergedConfig.introspection,    
+        introspection: mergedConfig.introspection,
       })
       const app = express()
 

@@ -39,7 +39,9 @@ export function findProjectDir() {
   }
 
   if (!filePath) {
-    throw new Error('Could not find the project directory. A "package.json" or "tsconfig.json" file is required.')
+    throw new Error(
+      'Could not find the project directory. A "package.json" or "tsconfig.json" file is required.'
+    )
   }
 
   return path.dirname(filePath)
@@ -48,7 +50,7 @@ export function findProjectDir() {
 export function getTranspiledPath(
   projectDir: string,
   filePath: string,
-  outDir: string,
+  outDir: string
 ) {
   const pathFromRootToFile = path.relative(projectDir, filePath)
   const jsFileName = path.basename(pathFromRootToFile, '.ts') + '.js'

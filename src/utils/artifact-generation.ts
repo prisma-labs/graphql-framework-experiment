@@ -4,7 +4,7 @@ import * as path from 'path'
 import { findServerEntryPoint } from './path'
 
 export function generateArtifacts(
-  entrypoint?: string,
+  entrypoint?: string
 ): { entrypoint: string; error?: Error } {
   const entryPoint = entrypoint
     ? path.join(process.cwd(), entrypoint)
@@ -14,8 +14,8 @@ export function generateArtifacts(
     throw new Error(
       `🎃  Entry point "${path.relative(
         process.cwd(),
-        entryPoint,
-      )}" does not exist`,
+        entryPoint
+      )}" does not exist`
     )
   }
 

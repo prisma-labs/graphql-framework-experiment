@@ -28,7 +28,7 @@ export class Build extends Command {
     const transpiledEntrypointPath = getTranspiledPath(
       projectDir,
       entrypoint,
-      tsConfig.options.outDir!,
+      tsConfig.options.outDir!
     )
 
     if (error) {
@@ -48,7 +48,7 @@ require("./__index.js")
 
     fs.writeFileSync(
       path.join(path.dirname(transpiledEntrypointPath), '__index.js'),
-      entryPointContent,
+      entryPointContent
     )
     fs.writeFileSync(transpiledEntrypointPath, wrapperContent)
 
