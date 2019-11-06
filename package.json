@@ -10,7 +10,11 @@
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/plugin-help": "^2",
-    "tslib": "^1"
+    "apollo-server-express": "^2.9.7",
+    "nexus": "^0.12.0-rc.4",
+    "nexus-prisma": "^0.5.0",
+    "tslib": "^1",
+    "typescript": "^3.7.2"
   },
   "devDependencies": {
     "@oclif/dev-cli": "^1",
@@ -23,8 +27,7 @@
     "jest": "^24.9.0",
     "nyc": "^14",
     "ts-jest": "^24.1.0",
-    "ts-node": "^8",
-    "typescript": "^3.3"
+    "ts-node": "^8"
   },
   "engines": {
     "node": ">=8.0.0"
@@ -57,7 +60,8 @@
     "postpack": "rm -f oclif.manifest.json",
     "prepack": "rm -rf lib && tsc -b && oclif-dev manifest && oclif-dev readme",
     "test": "jest",
-    "version": "oclif-dev readme && git add README.md"
+    "version": "oclif-dev readme && git add README.md",
+    "dev": "yarn ts-node ./example/index.ts"
   },
   "types": "lib/index.d.ts"
 }
