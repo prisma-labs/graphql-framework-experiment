@@ -1,17 +1,17 @@
-import { Command, flags } from "@oclif/command";
+import { Command, flags } from '@oclif/command'
 
 export class Init extends Command {
-  static description = "describe the command here";
+  static description = 'describe the command here'
 
-  static examples = [`$ pumpkins init`];
+  static examples = [`$ pumpkins init`]
 
-  static flags = {};
+  static flags = {}
 
-  static args = [];
+  static args = []
 
   async run() {
-    const { args, flags } = this.parse(Init);
+    const { args, flags } = this.parse(Init)
 
-    this.log("todo");
+    this.log('todo')
   }
 }

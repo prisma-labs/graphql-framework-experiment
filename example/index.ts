@@ -1,18 +1,18 @@
-import { createApp, objectType } from "pumpkins"
+import { createApp, objectType } from 'pumpkins'
 
 const User = objectType({
-  name: "User",
+  name: 'User',
   definition(t) {
-    t.id("id");
-    t.string("name");
-  }
-});
+    t.id('id')
+    t.string('name')
+  },
+})
 
 objectType({
-  name: "Query",
+  name: 'Query',
   definition(t) {
-    t.field("user", { type: User });
-  }
-});
+    t.field('user', { type: User })
+  },
+})
 
-createApp().startServer();
+createApp().startServer()

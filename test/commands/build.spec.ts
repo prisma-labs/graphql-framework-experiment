@@ -1,12 +1,12 @@
-import { Build } from "../../src/commands/build";
+import { Build } from '../../src/commands/build'
 
-describe("hello", () => {
-  it("prints todo", async () => {
-    const spy = jest.spyOn(process.stdout, "write");
+describe('hello', () => {
+  it('prints todo', async () => {
+    const spy = jest.spyOn(process.stdout, 'write')
 
-    await Build.run([]);
+    await Build.run([])
 
-    expect(spy).toHaveBeenCalledWith("todo" + "\n");
-    spy.mockRestore();
-  });
-});
+    expect(spy).toHaveBeenCalledWith('todo' + '\n')
+    spy.mockRestore()
+  })
+})

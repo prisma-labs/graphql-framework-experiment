@@ -26,6 +26,7 @@
     "globby": "^10",
     "jest": "^24.9.0",
     "nyc": "^14",
+    "prettier": "^1.18.2",
     "ts-jest": "^24.1.0",
     "ts-node": "^8"
   },
@@ -63,6 +64,11 @@
     "version": "oclif-dev readme && git add README.md",
     "dev": "tsc -b -w",
     "example": "yarn ts-node ./example/index.ts"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true,
+    "trailingComma": "all"
   },
   "types": "lib/index.d.ts"
 }

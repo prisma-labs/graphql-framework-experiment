@@ -1,12 +1,12 @@
-import { Generate } from "../../src/commands/generate";
+import { Generate } from '../../src/commands/generate'
 
-describe("hello", () => {
-  it("prints todo", async () => {
-    const spy = jest.spyOn(process.stdout, "write");
+describe('hello', () => {
+  it('prints todo', async () => {
+    const spy = jest.spyOn(process.stdout, 'write')
 
-    await Generate.run([]);
+    await Generate.run([])
 
-    expect(spy).toHaveBeenCalledWith("todo" + "\n");
-    spy.mockRestore();
-  });
-});
+    expect(spy).toHaveBeenCalledWith('todo' + '\n')
+    spy.mockRestore()
+  })
+})
