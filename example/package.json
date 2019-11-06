@@ -10,6 +10,7 @@
     "pumpkins": "0.0.0"
   },
   "scripts": {
+    "start": "ts-node ./index.ts",
     "build": "../bin/run build"
   }
 }

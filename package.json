@@ -61,6 +61,7 @@
     "prepack": "rm -rf lib && tsc -b && oclif-dev manifest && oclif-dev readme",
     "test": "jest",
     "version": "oclif-dev readme && git add README.md",
+    "dev": "tsc -b -w",
     "example": "yarn ts-node ./example/index.ts"
   },
   "types": "lib/index.d.ts"
