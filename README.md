@@ -29,28 +29,52 @@ USAGE
 <!-- usagestop -->
 # Commands
 <!-- commands -->
-* [`pumpkins hello [FILE]`](#pumpkins-hello-file)
+* [`pumpkins build`](#pumpkins-build)
+* [`pumpkins dev`](#pumpkins-dev)
+* [`pumpkins generate`](#pumpkins-generate)
 * [`pumpkins help [COMMAND]`](#pumpkins-help-command)
 
-## `pumpkins hello [FILE]`
+## `pumpkins build`
 
 describe the command here
 
 ```
 USAGE
-  $ pumpkins hello [FILE]
-
-OPTIONS
-  -f, --force
-  -h, --help       show CLI help
-  -n, --name=name  name to print
+  $ pumpkins build
 
 EXAMPLE
-  $ pumpkins hello
-  hello world from ./src/hello.ts!
+  $ pumpkins build
 ```
 
-_See code: [src/commands/hello.ts](https://github.com/prisma-labs/pumpkins/blob/v0.0.0/src/commands/hello.ts)_
+_See code: [lib/commands/build.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0/lib/commands/build.js)_
+
+## `pumpkins dev`
+
+describe the command here
+
+```
+USAGE
+  $ pumpkins dev
+
+EXAMPLE
+  $ pumpkins dev
+```
+
+_See code: [lib/commands/dev.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0/lib/commands/dev.js)_
+
+## `pumpkins generate`
+
+describe the command here
+
+```
+USAGE
+  $ pumpkins generate
+
+EXAMPLE
+  $ pumpkins generate
+```
+
+_See code: [lib/commands/generate.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0/lib/commands/generate.js)_
 
 ## `pumpkins help [COMMAND]`
 
