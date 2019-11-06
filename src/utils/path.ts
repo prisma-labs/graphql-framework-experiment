@@ -1,34 +1,59 @@
 import * as fs from 'fs'
 import * as path from 'path'
+import * as ts from 'typescript'
 import { findConfigFile } from './tsc'
 
-export function findServerEntryPoint() {
-  const defaultEntryPoints = [
-    'index.ts',
-    'main.ts',
-    'server.ts',
-    'schema.ts',
-    'src/index.ts',
-    'src/main.ts',
-    'src/server.ts',
-    'src/schema.ts',
-    'src/schema/index.ts',
-    'schema/index.ts',
-  ]
+const DEFAULT_ENTRY_POINTS = [
+  'index.ts',
+  'main.ts',
+  'server.ts',
+  'schema.ts',
+  'src/index.ts',
+  'src/main.ts',
+  'src/server.ts',
+  'src/schema.ts',
+  'src/schema/index.ts',
+  'schema/index.ts',
+]
 
-  const entryPoint = defaultEntryPoints.find(entryPointPath =>
+export function findServerEntryPoint(tsConfig: ts.ParsedCommandLine) {
+  let entrypoint: string | undefined = undefined
+  const packageJsonPath = findConfigFile('package.json', { required: false })
+
+  if (packageJsonPath) {
+    try {
+      const packageJson: { main?: string } = JSON.parse(
+        fs.readFileSync(packageJsonPath).toString()
+      )
+
+      if (packageJson.main) {
+        entrypoint = sourceFilePathFromTranspiledPath({
+          transpiledPath: packageJson.main,
+          outDir: tsConfig.options.outDir!,
+          rootDir: tsConfig.options.rootDir!,
+          packageJsonPath,
+        })
+      }
+    } catch (e) {
+      console.log(
+        `Warning: We were unable to infer the server entrypoint from your package.json file. ${e.message}`
+      )
+    } // TODO: Do we silently fail on purpose (in case it cannot parse the `package.json` file)
+  }
+
+  entrypoint = DEFAULT_ENTRY_POINTS.find(entryPointPath =>
     fs.existsSync(path.join(process.cwd(), entryPointPath))
   )
 
-  if (!entryPoint) {
+  if (!entrypoint) {
     throw new Error(
-      `Could not find a valid entry point for your server. Possible entries: ${defaultEntryPoints
-        .map(p => `"${p}"`)
-        .join(', ')}`
+      `Could not find a valid entry point for your server. Possible entries: ${DEFAULT_ENTRY_POINTS.map(
+        p => `"${p}"`
+      ).join(', ')}`
     )
   }
 
-  return entryPoint
+  return entrypoint
 }
 
 export function findProjectDir() {
@@ -46,7 +71,7 @@ export function findProjectDir() {
 
   return path.dirname(filePath)
 }
-
+// dist/index.js => index.ts
 export function getTranspiledPath(
   projectDir: string,
   filePath: string,
@@ -57,4 +82,28 @@ export function getTranspiledPath(
   const pathToJsFile = path.join(path.dirname(pathFromRootToFile), jsFileName)
 
   return path.join(outDir, pathToJsFile)
+}
+
+// dist/index.js => /Users/me/project/src/index.ts
+
+export function sourceFilePathFromTranspiledPath({
+  transpiledPath,
+  outDir,
+  rootDir,
+  packageJsonPath,
+}: {
+  transpiledPath: string
+  outDir: string
+  rootDir: string
+  packageJsonPath: string
+}) {
+  const normalizedTranspiledPath = transpiledPath.startsWith('/')
+    ? transpiledPath
+    : path.join(packageJsonPath, transpiledPath)
+
+  const pathFromOutDirToFile = path.relative(outDir, normalizedTranspiledPath)
+  const tsFileName = path.basename(pathFromOutDirToFile, '.js') + '.ts'
+  const maybeAppFolders = path.dirname(pathFromOutDirToFile)
+
+  return path.join(rootDir, maybeAppFolders, tsFileName)
 }
