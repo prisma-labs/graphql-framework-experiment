@@ -24,6 +24,7 @@
     "@types/jest": "^24.0.22",
     "@types/node": "^10",
     "chai": "^4",
+    "doctoc": "^1.4.0",
     "globby": "^10",
     "jest": "^24.9.0",
     "nyc": "^14",
@@ -57,10 +58,11 @@
   "repository": "prisma-labs/pumpkins",
   "scripts": {
     "format": "prettier --write '*/**/*.ts'",
+    "build:doc": "oclif-dev readme && doctoc --notitle README.md",
     "postpack": "rm -f oclif.manifest.json",
-    "prepack": "rm -rf lib && tsc -b && oclif-dev manifest && oclif-dev readme",
+    "prepack": "rm -rf lib && tsc -b && oclif-dev manifest && yarn -s build:doc",
     "test": "jest",
-    "version": "oclif-dev readme && git add README.md",
+    "version": "yarn -s build:doc && git add README.md",
     "dev": "tsc -b -w",
     "example": "yarn ts-node ./example/index.ts"
   },
