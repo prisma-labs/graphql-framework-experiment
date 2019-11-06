@@ -12,7 +12,7 @@
     "typescript": "^3.7.2"
   },
   "scripts": {
-    "start": "ts-node index",
+    "start": "node dist/index.js",
     "build": "pumpkins build",
     "generate": "pumpkins generate",
     "dev": "pumpkins dev"
