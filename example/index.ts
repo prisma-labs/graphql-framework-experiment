@@ -1,6 +1,6 @@
 import { createApp, objectType } from 'pumpkins'
 
-const User = objectType({
+objectType({
   name: 'User',
   definition(t) {
     t.id('id')
@@ -11,7 +11,7 @@ const User = objectType({
 objectType({
   name: 'Query',
   definition(t) {
-    t.field('user', { type: User })
+    t.field('user', { type: 'User' })
   },
 })
 

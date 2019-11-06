@@ -13,6 +13,11 @@ export class Dev extends Command {
     const tsConfig = readTsConfig()
     const entryPoint = findServerEntryPoint(tsConfig)
 
+    // The child process that ts-node-dev spawns will inherit
+    // the state of our process.env. We want to make sure that
+    // during dev the user's typegen is being run.
+    process.env.PUMPKINS_SHOULD_GENERATE_ARTIFACTS = 'true'
+
     // Difficultish API to use because no docs or typings
     // Refer to these source files, top-down by caller order:
     //
