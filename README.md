@@ -1,3 +1,8 @@
+```
+Please beware that this is a prototype. Do not under any circumstances
+use it for production or other serious endeavour. Thanks! 🎃
+```
+
 # pumpkins
 
 [![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
@@ -7,15 +12,17 @@
 [![License](https://img.shields.io/npm/l/pumpkins.svg)](https://github.com/prisma-labs/pumpkins/blob/master/package.json)
 
 <!-- toc -->
-* [pumpkins](#pumpkins)
-* [Usage](#usage)
-* [Commands](#commands)
-* [Development](#development)
-<!-- tocstop -->
+
+- [pumpkins](#pumpkins)
+- [Usage](#usage)
+- [Commands](#commands)
+- [Development](#development)
+  <!-- tocstop -->
 
 # Usage
 
 <!-- usage -->
+
 ```sh-session
 $ npm install -g pumpkins
 $ pumpkins COMMAND
@@ -27,16 +34,18 @@ USAGE
   $ pumpkins COMMAND
 ...
 ```
+
 <!-- usagestop -->
 
 # Commands
 
 <!-- commands -->
-* [`pumpkins build`](#pumpkins-build)
-* [`pumpkins dev`](#pumpkins-dev)
-* [`pumpkins generate`](#pumpkins-generate)
-* [`pumpkins help [COMMAND]`](#pumpkins-help-command)
-* [`pumpkins init`](#pumpkins-init)
+
+- [`pumpkins build`](#pumpkins-build)
+- [`pumpkins dev`](#pumpkins-dev)
+- [`pumpkins generate`](#pumpkins-generate)
+- [`pumpkins help [COMMAND]`](#pumpkins-help-command)
+- [`pumpkins init`](#pumpkins-init)
 
 ## `pumpkins build`
 
@@ -116,6 +125,7 @@ EXAMPLE
 ```
 
 _See code: [lib/cli/init.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0/lib/cli/init.js)_
+
 <!-- commandsstop -->
 
 # Development
