@@ -41,7 +41,7 @@ export function createApp() {
       server.applyMiddleware({ app })
 
       app.listen({ port: mergedConfig.port }, () =>
-        console.log(mergedConfig.startMessage(mergedConfig.port)),
+        console.log(mergedConfig.startMessage(mergedConfig.port))
       )
     },
   }

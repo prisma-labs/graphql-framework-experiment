@@ -20,7 +20,7 @@ export class Build extends Command {
 
     if (!packageJson.main) {
       throw new Error(
-        'The main property is required and needs to point to the entrypoint of your server',
+        'The main property is required and needs to point to the entrypoint of your server'
       )
     }
 
@@ -28,7 +28,7 @@ export class Build extends Command {
 
     const entryPointPath = path.resolve(
       path.dirname(packageJsonPath),
-      packageJson.main,
+      packageJson.main
     )
     const entryPointContent = fs.readFileSync(entryPointPath).toString()
     const wrapperContent = `
@@ -39,7 +39,7 @@ require("./__index.js")
 
     fs.writeFileSync(
       path.join(path.dirname(entryPointPath), '__index.js'),
-      entryPointContent,
+      entryPointContent
     )
     fs.writeFileSync(entryPointPath, wrapperContent)
 
