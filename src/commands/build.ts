@@ -4,7 +4,7 @@ import * as path from "path";
 import { readTsConfig, compile, findConfigFile } from "../utils";
 
 export class Build extends Command {
-  static description = "describe the command here";
+  static description = "Build a production-ready server";
 
   static examples = [`$ pumpkins build`];
 
@@ -32,7 +32,7 @@ export class Build extends Command {
     );
     const entryPointContent = fs.readFileSync(entryPointPath).toString();
     const wrapperContent = `
-process.env.NODE_ENV = "production"
+process.env.PUMPKINS_SHOULD_GENERATE_ARTIFACTS = "false"
 
 require("./__index.js")
     `;
