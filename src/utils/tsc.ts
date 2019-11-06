@@ -85,6 +85,7 @@ export function compile(rootNames: string[], options: ts.CompilerOptions) {
     rootNames,
     options,
   })
+
   const emitResult = program.emit()
   const allDiagnostics = ts
     .getPreEmitDiagnostics(program)

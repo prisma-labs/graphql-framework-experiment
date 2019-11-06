@@ -1,5 +1,6 @@
 import { Command, flags } from '@oclif/command'
 import { generateArtifacts } from '../utils/artifact-generation'
+import { readTsConfig } from '../utils'
 
 export class Generate extends Command {
   static description = 'Generate the artifacts'
@@ -14,7 +15,8 @@ export class Generate extends Command {
 
   async run() {
     const { args, flags } = this.parse(Generate)
-    const { error } = generateArtifacts(flags.entrypoint)
+    const tsConfig = readTsConfig()
+    const { error } = generateArtifacts(tsConfig, flags.entrypoint)
 
     if (error) {
       this.error(error, { exit: 1 })

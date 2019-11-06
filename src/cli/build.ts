@@ -23,7 +23,7 @@ export class Build extends Command {
   async run() {
     const { flags } = this.parse(Build)
     const tsConfig = readTsConfig()
-    const { error, entrypoint } = generateArtifacts(flags.entrypoint)
+    const { error, entrypoint } = generateArtifacts(tsConfig, flags.entrypoint)
     const projectDir = findProjectDir()
     const transpiledEntrypointPath = getTranspiledPath(
       projectDir,
