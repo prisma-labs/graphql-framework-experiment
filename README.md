@@ -8,35 +8,19 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
-- [Usage](#usage)
-- [Commands](#commands)
+- [CLI](#cli)
   - [`pumpkins build`](#pumpkins-build)
   - [`pumpkins dev`](#pumpkins-dev)
   - [`pumpkins generate`](#pumpkins-generate)
   - [`pumpkins help [COMMAND]`](#pumpkins-help-command)
   - [`pumpkins init`](#pumpkins-init)
 - [Development](#development)
-      - [Example app Workflow](#example-app-workflow)
+    - [Overview](#overview)
+    - [Example app Workflow](#example-app-workflow)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-# Usage
-
-<!-- usage -->
-```sh-session
-$ npm install -g pumpkins
-$ pumpkins COMMAND
-running command...
-$ pumpkins (-v|--version|version)
-pumpkins/0.0.0 darwin-x64 node-v12.12.0
-$ pumpkins --help [COMMAND]
-USAGE
-  $ pumpkins COMMAND
-...
-```
-<!-- usagestop -->
-
-# Commands
+# CLI
 
 <!-- commands -->
 * [`pumpkins build`](#pumpkins-build)
@@ -60,6 +44,8 @@ EXAMPLE
   $ pumpkins build
 ```
 
+_See code: [lib/cli/build.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0/lib/cli/build.js)_
+
 ## `pumpkins dev`
 
 describe the command here
@@ -71,6 +57,8 @@ USAGE
 EXAMPLE
   $ pumpkins dev
 ```
+
+_See code: [lib/cli/dev.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0/lib/cli/dev.js)_
 
 ## `pumpkins generate`
 
@@ -86,6 +74,8 @@ OPTIONS
 EXAMPLE
   $ pumpkins generate
 ```
+
+_See code: [lib/cli/generate.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0/lib/cli/generate.js)_
 
 ## `pumpkins help [COMMAND]`
 
@@ -115,11 +105,21 @@ USAGE
 EXAMPLE
   $ pumpkins init
 ```
+
+_See code: [lib/cli/init.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0/lib/cli/init.js)_
 <!-- commandsstop -->
 
 # Development
 
-#### Example app Workflow
+### Overview
+
+```
+yarn
+yarn test
+yarn dev
+```
+
+### Example app Workflow
 
 ```sh
 yarn link && \
