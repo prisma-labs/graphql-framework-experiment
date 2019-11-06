@@ -1,6 +1,5 @@
 ```
-Please beware that this is a prototype. Do not under any circumstances
-use it for production or other serious endeavour. Thanks! 🎃
+Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks! 🎃
 ```
 
 # pumpkins <!-- omit in toc -->
