@@ -1,5 +1,5 @@
 import { Command, flags } from '@oclif/command'
-import { findServerEntryPoint, spawnAsync } from '../utils'
+import { findServerEntryPoint } from '../utils'
 import { spawnSync } from 'child_process'
 
 export class Generate extends Command {
