@@ -1,0 +1,63 @@
+{
+  "name": "pumpkins",
+  "version": "0.0.0",
+  "author": "Prisma Labs",
+  "bin": {
+    "pumpkins": "./bin/run"
+  },
+  "bugs": "https://github.com/prisma-labs/pumpkins/issues",
+  "dependencies": {
+    "@oclif/command": "^1",
+    "@oclif/config": "^1",
+    "@oclif/plugin-help": "^2",
+    "tslib": "^1"
+  },
+  "devDependencies": {
+    "@oclif/dev-cli": "^1",
+    "@oclif/test": "^1",
+    "@types/chai": "^4",
+    "@types/jest": "^24.0.22",
+    "@types/node": "^10",
+    "chai": "^4",
+    "globby": "^10",
+    "jest": "^24.9.0",
+    "nyc": "^14",
+    "ts-jest": "^24.1.0",
+    "ts-node": "^8",
+    "typescript": "^3.3"
+  },
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "files": [
+    "/bin",
+    "/lib",
+    "/npm-shrinkwrap.json",
+    "/oclif.manifest.json"
+  ],
+  "homepage": "https://github.com/prisma-labs/pumpkins",
+  "keywords": [
+    "oclif"
+  ],
+  "license": "MIT",
+  "main": "lib/index.js",
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node"
+  },
+  "oclif": {
+    "commands": "./lib/commands",
+    "bin": "pumpkins",
+    "plugins": [
+      "@oclif/plugin-help"
+    ]
+  },
+  "repository": "prisma-labs/pumpkins",
+  "scripts": {
+    "postpack": "rm -f oclif.manifest.json",
+    "prepack": "rm -rf lib && tsc -b && oclif-dev manifest && oclif-dev readme",
+    "test": "jest",
+    "version": "oclif-dev readme && git add README.md"
+  },
+  "types": "lib/index.d.ts"
+}
