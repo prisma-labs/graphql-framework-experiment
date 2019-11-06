@@ -6,6 +6,14 @@ export function getTypeDefs() {
   return __globalTypeDefs;
 }
 
+export function makeSchema(): nexus.core.NexusGraphQLSchema {
+  const config: nexus.core.SchemaConfig = {
+    types: getTypeDefs(),
+    outputs: false
+  };
+  return nexus.makeSchema(config);
+}
+
 export function objectType<TypeName extends string>(
   config: nexus.core.NexusObjectTypeConfig<TypeName>
 ): nexus.core.NexusObjectTypeDef<TypeName> {

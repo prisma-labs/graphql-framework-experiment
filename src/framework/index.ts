@@ -1,7 +1,6 @@
 import { ApolloServer } from "apollo-server-express";
 import * as express from "express";
-import * as nexus from "nexus";
-import { getTypeDefs } from "./nexus";
+import { makeSchema } from "./nexus";
 
 export {
   objectType,
@@ -10,14 +9,6 @@ export {
   scalarType,
   unionType
 } from "./nexus";
-
-function makeSchema(): nexus.core.NexusGraphQLSchema {
-  const config: nexus.core.SchemaConfig = {
-    types: getTypeDefs(),
-    outputs: false
-  };
-  return nexus.makeSchema(config);
-}
 
 export function createApp() {
   return {
