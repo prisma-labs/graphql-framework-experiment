@@ -36,6 +36,7 @@ export function findConfigFile(fileName: string, opts: { required: boolean }) {
   return configPath;
 }
 
+
 function fixConfig(config: ts.ParsedCommandLine, projectDir: string) {
   // Target ES5 output by default (instead of ES3).
   if (config.options.target === undefined) {
@@ -78,4 +79,28 @@ export function readTsConfig() {
     tsConfigPath
   );
   return fixConfig(inputConfig, projectDir);
+}
+
+export function compile(rootNames: string[], options: ts.CompilerOptions) {
+  const program = ts.createProgram({
+    rootNames,
+    options
+  });
+  const emitResult = program.emit();
+  const allDiagnostics = ts
+    .getPreEmitDiagnostics(program)
+    .concat(emitResult.diagnostics);
+
+  if (allDiagnostics.length > 0) {
+    throw new Error(
+      ts.formatDiagnosticsWithColorAndContext(allDiagnostics, diagnosticHost)
+    );
+  }
+}
+
+export function transpileModule(
+  input: string,
+  compilerOptions: ts.CompilerOptions
+): string {
+  return ts.transpileModule(input, { compilerOptions }).outputText;
 }

@@ -1,1 +1,1 @@
-export * from './tsconfig'
+export * from './tsc'

@@ -1,4 +1,4 @@
-import { createApp, objectType } from "../lib";
+import { createApp, objectType } from "pumpkins"
 
 const User = objectType({
   name: "User",
