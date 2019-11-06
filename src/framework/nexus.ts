@@ -1,4 +1,6 @@
 import * as nexus from "nexus";
+import * as path from "path";
+import { findConfigFile } from "../utils";
 
 const __globalTypeDefs: any[] = [];
 
@@ -7,9 +9,29 @@ export function getTypeDefs() {
 }
 
 export function makeSchema(): nexus.core.NexusGraphQLSchema {
+  const shouldGenerateArtifacts =
+    process.env.PUMPKINS_SHOULD_GENERATE_ARTIFACTS === "true"
+      ? true
+      : process.env.PUMPKINS_SHOULD_GENERATE_ARTIFACTS === "false"
+      ? false
+      : Boolean(
+          !process.env.NODE_ENV || process.env.NODE_ENV === "development"
+        );
+  // TODO: Find better heuristic
+  const projectDir = path.dirname(
+    findConfigFile("package.json", { required: true })
+  );
+  const pumpkinsDir = path.join(projectDir, ".pumpkins");
+  const defaultTypesPath = path.join(pumpkinsDir, "nexus-typegen.ts");
+  const defaultSchemaPath = path.join(projectDir, "schema.graphql");
+
   const config: nexus.core.SchemaConfig = {
     types: getTypeDefs(),
-    outputs: false
+    outputs: {
+      typegen: defaultTypesPath,
+      schema: defaultSchemaPath
+    },
+    shouldGenerateArtifacts
   };
   return nexus.makeSchema(config);
 }
