@@ -1,14 +1,17 @@
-import { ApolloServer, ApolloServerExpressConfig } from 'apollo-server-express'
+import { ApolloServer } from 'apollo-server-express'
 import * as express from 'express'
-import { makeSchema } from './nexus'
+import { createNexusSingleton } from './nexus'
 
-export {
+const {
   objectType,
   inputObjectType,
   enumType,
   scalarType,
   unionType,
-} from './nexus'
+  makeSchema,
+} = createNexusSingleton()
+
+export { objectType, inputObjectType, enumType, scalarType, unionType }
 
 type ServerOptions = {
   port?: number

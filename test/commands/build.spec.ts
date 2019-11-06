@@ -1,4 +1,4 @@
-import { Build } from '../../src/commands/build'
+import { Build } from '../../src/cli/build'
 
 describe('hello', () => {
   it('prints todo', async () => {

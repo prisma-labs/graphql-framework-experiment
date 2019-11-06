@@ -1,4 +1,4 @@
-import { Init } from '../../src/commands/init'
+import { Init } from '../../src/cli/init'
 
 describe('hello', () => {
   it('prints todo', async () => {

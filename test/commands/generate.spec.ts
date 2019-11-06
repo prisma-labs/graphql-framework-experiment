@@ -1,4 +1,4 @@
-import { Generate } from '../../src/commands/generate'
+import { Generate } from '../../src/cli/generate'
 
 describe('hello', () => {
   it('prints todo', async () => {
