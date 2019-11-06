@@ -7,15 +7,15 @@
 [![License](https://img.shields.io/npm/l/pumpkins.svg)](https://github.com/prisma-labs/pumpkins/blob/master/package.json)
 
 <!-- toc -->
-
-- [Usage](#usage)
-- [Commands](#commands)
-  <!-- tocstop -->
+* [pumpkins](#pumpkins)
+* [Usage](#usage)
+* [Commands](#commands)
+* [Development](#development)
+<!-- tocstop -->
 
 # Usage
 
 <!-- usage -->
-
 ```sh-session
 $ npm install -g pumpkins
 $ pumpkins COMMAND
@@ -27,18 +27,16 @@ USAGE
   $ pumpkins COMMAND
 ...
 ```
-
 <!-- usagestop -->
 
 # Commands
 
 <!-- commands -->
-
-- [`pumpkins build`](#pumpkins-build)
-- [`pumpkins dev`](#pumpkins-dev)
-- [`pumpkins generate`](#pumpkins-generate)
-- [`pumpkins help [COMMAND]`](#pumpkins-help-command)
-- [`pumpkins init`](#pumpkins-init)
+* [`pumpkins build`](#pumpkins-build)
+* [`pumpkins dev`](#pumpkins-dev)
+* [`pumpkins generate`](#pumpkins-generate)
+* [`pumpkins help [COMMAND]`](#pumpkins-help-command)
+* [`pumpkins init`](#pumpkins-init)
 
 ## `pumpkins build`
 
