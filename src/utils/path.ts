@@ -1,5 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
+import { findConfigFile } from './tsc'
 
 export function findServerEntryPoint() {
   const defaultEntryPoints = [
@@ -28,4 +29,30 @@ export function findServerEntryPoint() {
   }
 
   return entryPoint
+}
+
+export function findProjectDir() {
+  let filePath = findConfigFile('tsconfig.json', { required: false })
+
+  if (!filePath) {
+    filePath = findConfigFile('package.json', { required: false })
+  }
+
+  if (!filePath) {
+    throw new Error('Could not find the project directory. A "package.json" or "tsconfig.json" file is required.')
+  }
+
+  return path.dirname(filePath)
+}
+
+export function getTranspiledPath(
+  projectDir: string,
+  filePath: string,
+  outDir: string,
+) {
+  const pathFromRootToFile = path.relative(projectDir, filePath)
+  const jsFileName = path.basename(pathFromRootToFile, '.ts') + '.js'
+  const pathToJsFile = path.join(path.dirname(pathFromRootToFile), jsFileName)
+
+  return path.join(outDir, pathToJsFile)
 }
