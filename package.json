@@ -48,7 +48,7 @@
     "testEnvironment": "node"
   },
   "oclif": {
-    "commands": "./lib/commands",
+    "commands": "./lib/cli",
     "bin": "pumpkins",
     "plugins": [
       "@oclif/plugin-help"

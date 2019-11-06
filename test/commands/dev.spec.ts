@@ -1,4 +1,4 @@
-import { Dev } from '../../src/commands/dev'
+import { Dev } from '../../src/cli/dev'
 
 describe('hello', () => {
   it('prints todo', async () => {
