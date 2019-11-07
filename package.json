@@ -46,7 +46,7 @@
   ],
   "homepage": "https://github.com/prisma-labs/pumpkins",
   "license": "MIT",
-  "main": "lib/index.js",
+  "main": "dist/index.js",
   "jest": {
     "preset": "ts-jest",
     "testEnvironment": "node"
