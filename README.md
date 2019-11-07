@@ -8,6 +8,9 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
+- [Example](#example)
+- [API](#api)
+    - [`createApp`](#createapp)
 - [CLI](#cli)
   - [`pumpkins build`](#pumpkins-build)
   - [`pumpkins dev`](#pumpkins-dev)
@@ -20,6 +23,45 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
     - [Example app Workflow](#example-app-workflow)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+<br>
+
+# Example
+
+```ts
+import { createApp, objectType } from 'pumpkins'
+
+objectType({
+  name: 'User',
+  definition(t) {
+    t.id('id')
+    t.string('name')
+  },
+})
+
+objectType({
+  name: 'Query',
+  definition(t) {
+    t.field('user', { type: 'User' })
+  },
+})
+
+createApp().startServer()
+```
+
+```
+$ pumpkin dev
+```
+
+<br>
+
+# API
+
+### `createApp`
+
+Create an app instance
+
+<br>
 
 # CLI
 
