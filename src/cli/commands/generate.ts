@@ -1,6 +1,6 @@
 import { Command, flags } from '@oclif/command'
-import { generateArtifacts } from '../utils/artifact-generation'
-import { readTsConfig } from '../utils'
+import { generateArtifacts } from '../../utils/artifact-generation'
+import { readTsConfig } from '../../utils'
 
 export class Generate extends Command {
   static description = 'Generate the artifacts'

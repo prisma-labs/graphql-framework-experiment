@@ -6,8 +6,8 @@ import {
   findProjectDir,
   getTranspiledPath,
   readTsConfig,
-} from '../utils'
-import { generateArtifacts } from '../utils/artifact-generation'
+} from '../../utils'
+import { generateArtifacts } from '../../utils/artifact-generation'
 
 export class Build extends Command {
   static description = 'Build a production-ready server'
