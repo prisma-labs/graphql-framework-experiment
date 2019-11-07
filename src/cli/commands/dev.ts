@@ -1,6 +1,6 @@
 import { Command } from '@oclif/command'
 import startTSNodeDev from 'ts-node-dev'
-import { findServerEntryPoint, findConfigFile, readTsConfig } from '../utils'
+import { findServerEntryPoint, findConfigFile, readTsConfig } from '../../utils'
 
 export class Dev extends Command {
   static description = 'describe the command here'
