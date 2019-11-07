@@ -11,6 +11,7 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
 - [CLI](#cli)
   - [`pumpkins build`](#pumpkins-build)
   - [`pumpkins dev`](#pumpkins-dev)
+  - [`pumpkins doctor`](#pumpkins-doctor)
   - [`pumpkins generate`](#pumpkins-generate)
   - [`pumpkins help [COMMAND]`](#pumpkins-help-command)
   - [`pumpkins init`](#pumpkins-init)
@@ -25,6 +26,7 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
 <!-- commands -->
 * [`pumpkins build`](#pumpkins-build)
 * [`pumpkins dev`](#pumpkins-dev)
+* [`pumpkins doctor`](#pumpkins-doctor)
 * [`pumpkins generate`](#pumpkins-generate)
 * [`pumpkins help [COMMAND]`](#pumpkins-help-command)
 * [`pumpkins init`](#pumpkins-init)
@@ -44,7 +46,7 @@ EXAMPLE
   $ pumpkins build
 ```
 
-_See code: [lib/cli/build.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0/lib/cli/build.js)_
+_See code: [dist/cli/commands/build.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0/dist/cli/commands/build.js)_
 
 ## `pumpkins dev`
 
@@ -58,7 +60,18 @@ EXAMPLE
   $ pumpkins dev
 ```
 
-_See code: [lib/cli/dev.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0/lib/cli/dev.js)_
+_See code: [dist/cli/commands/dev.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0/dist/cli/commands/dev.js)_
+
+## `pumpkins doctor`
+
+Check your project state for any problems
+
+```
+USAGE
+  $ pumpkins doctor
+```
+
+_See code: [dist/cli/commands/doctor.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0/dist/cli/commands/doctor.js)_
 
 ## `pumpkins generate`
 
@@ -75,7 +88,7 @@ EXAMPLE
   $ pumpkins generate
 ```
 
-_See code: [lib/cli/generate.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0/lib/cli/generate.js)_
+_See code: [dist/cli/commands/generate.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0/dist/cli/commands/generate.js)_
 
 ## `pumpkins help [COMMAND]`
 
@@ -106,7 +119,7 @@ EXAMPLE
   $ pumpkins init
 ```
 
-_See code: [lib/cli/init.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0/lib/cli/init.js)_
+_See code: [dist/cli/commands/init.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0/dist/cli/commands/init.js)_
 <!-- commandsstop -->
 
 # Development
