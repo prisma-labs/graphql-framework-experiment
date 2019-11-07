@@ -4,7 +4,7 @@
   "main": "dist/index.js",
   "license": "MIT",
   "dependencies": {
-    "pumpkins": "../"
+    "pumpkins": "../../"
   },
   "devDependencies": {
     "@types/node": "^12.12.6",
