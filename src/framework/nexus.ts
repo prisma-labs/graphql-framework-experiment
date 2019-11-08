@@ -6,9 +6,11 @@ export type QueryType = typeof nexus.core.queryType
 export type MutationType = typeof nexus.core.mutationType
 
 export function createNexusSingleton() {
-  const __globalTypeDefs: any[] = []
+  const __types: any[] = []
 
-  function makeSchema(): nexus.core.NexusGraphQLSchema {
+  function makeSchema(
+    overrides?: Partial<nexus.core.SchemaConfig>
+  ): nexus.core.NexusGraphQLSchema {
     const shouldGenerateArtifacts =
       process.env.PUMPKINS_SHOULD_GENERATE_ARTIFACTS === 'true'
         ? true
@@ -29,13 +31,17 @@ export function createNexusSingleton() {
     const defaultSchemaPath = path.join(projectDir, 'schema.graphql')
 
     const config: nexus.core.SchemaConfig = {
-      types: __globalTypeDefs,
+      types: __types,
       outputs: {
         typegen: defaultTypesPath,
         schema: defaultSchemaPath,
       },
       shouldGenerateArtifacts,
       shouldExitAfterGenerateArtifacts,
+      // TODO semantic merge of overrides
+      //      for example sources should be concatenated together
+      //      but right now overrides would just wipe out any previous
+      ...overrides,
     }
     return nexus.makeSchema(config)
   }
@@ -44,7 +50,7 @@ export function createNexusSingleton() {
     config: nexus.core.NexusObjectTypeConfig<TypeName>
   ): nexus.core.NexusObjectTypeDef<TypeName> {
     const typeDef = nexus.objectType(config)
-    __globalTypeDefs.push(typeDef)
+    __types.push(typeDef)
     return typeDef
   }
 
@@ -52,7 +58,7 @@ export function createNexusSingleton() {
     config: nexus.core.NexusInputObjectTypeConfig<TypeName>
   ): nexus.core.NexusInputObjectTypeDef<TypeName> {
     const typeDef = nexus.inputObjectType(config)
-    __globalTypeDefs.push(typeDef)
+    __types.push(typeDef)
     return typeDef
   }
 
@@ -60,7 +66,7 @@ export function createNexusSingleton() {
     options: nexus.core.NexusScalarTypeConfig<TypeName>
   ): nexus.core.NexusScalarTypeDef<TypeName> {
     const typeDef = nexus.scalarType(options)
-    __globalTypeDefs.push(typeDef)
+    __types.push(typeDef)
     return typeDef
   }
 
@@ -68,7 +74,7 @@ export function createNexusSingleton() {
     config: nexus.core.EnumTypeConfig<TypeName>
   ): nexus.core.NexusEnumTypeDef<TypeName> {
     const typeDef = nexus.enumType(config)
-    __globalTypeDefs.push(typeDef)
+    __types.push(typeDef)
     return typeDef
   }
 
@@ -76,19 +82,19 @@ export function createNexusSingleton() {
     config: nexus.core.NexusUnionTypeConfig<TypeName>
   ): nexus.core.NexusUnionTypeDef<TypeName> {
     const typeDef = nexus.unionType(config)
-    __globalTypeDefs.push(typeDef)
+    __types.push(typeDef)
     return typeDef
   }
 
   const queryType: QueryType = config => {
     const typeDef = nexus.queryType(config)
-    __globalTypeDefs.push(typeDef)
+    __types.push(typeDef)
     return typeDef
   }
 
   const mutationType: MutationType = config => {
     const typeDef = nexus.mutationType(config)
-    __globalTypeDefs.push(typeDef)
+    __types.push(typeDef)
     return typeDef
   }
 

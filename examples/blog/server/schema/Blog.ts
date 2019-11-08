@@ -1,7 +1,8 @@
 objectType({
   name: 'Blog',
   definition(t) {
-    t.string('a', () => 'foobar')
+    t.id('id')
+    t.string('name')
     // t.model.id()
     // t.model.name()
     // t.model.createdAt()

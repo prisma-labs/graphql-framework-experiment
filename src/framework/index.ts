@@ -84,6 +84,7 @@ export function createApp() {
   // TODO put behind dev-mode guard
   // TODO static imports codegen at build time
   // TODO do not assume root source folder called `server`
+  // TODO do not assume TS
   //
   debug('finding schema modules ...')
   fs.find(fs.path('server/schema'), {
@@ -96,17 +97,32 @@ export function createApp() {
     require(fs.path(schemaModulePath))
   })
 
+  // TODO the presence of context module should be optional
+  // TODO context module should have flexible contract
+  //      currently MUST return a createContext function
+  const contextModulePath = fs.path('server/context')
+  const context = require(contextModulePath)
+
   return {
     startServer(config: ServerOptions = {}) {
       const mergedConfig: Required<ServerOptions> = {
         ...defaultServerOptions,
         ...config,
       }
+
       const server = new ApolloServer({
-        schema: makeSchema(),
+        schema: makeSchema({
+          typegenAutoConfig: {
+            contextType: 'Context.Context',
+            // TODO add photon to backing types
+            sources: [{ source: contextModulePath, alias: 'Context' }],
+          },
+        }),
         playground: mergedConfig.playground,
         introspection: mergedConfig.introspection,
+        context: context.createContext,
       })
+
       const app = express()
 
       server.applyMiddleware({ app })
