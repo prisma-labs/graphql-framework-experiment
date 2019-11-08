@@ -28,6 +28,7 @@ export class Dev extends Command {
     startTSNodeDev(entryPoint, [], [], {
       'tree-kill': true,
       'transpile-only': true,
+      notify: false,
     })
   }
 }
