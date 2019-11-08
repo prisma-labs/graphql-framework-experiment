@@ -1,6 +1,6 @@
 {
   "name": "pumpkins",
-  "version": "0.0.0",
+  "version": "0.0.0-sha.edbc943",
   "author": "Prisma Labs",
   "bin": {
     "pumpkins": "dist/cli/index.js"
@@ -42,6 +42,7 @@
   },
   "files": [
     "/dist",
+    "/src",
     "/oclif.manifest.json"
   ],
   "homepage": "https://github.com/prisma-labs/pumpkins",
@@ -60,13 +61,14 @@
   },
   "repository": "prisma-labs/pumpkins",
   "scripts": {
+    "publish:sha": "yarn publish --tag sha --no-git-tag-version --new-version \"0.0.0-sha.$(git show -s head --format='%h')\"",
     "format": "prettier --write '*/**/*.ts'",
     "build:doc": "oclif-dev readme && doctoc --notitle README.md",
-    "postpack": "rm -f oclif.manifest.json",
-    "prepack": "rm -rf lib && tsc -b && oclif-dev manifest && yarn -s build:doc",
+    "clean": " rm -rf oclif.manifest.json dist",
+    "postpack": "yarn -s clean",
+    "prepack": "yarn -s clean && tsc -b && oclif-dev manifest && yarn -s build:doc",
     "test": "jest",
     "test:dev": "jest --watch",
-    "version": "yarn -s build:doc && git add README.md",
     "dev": "tsc -b -w",
     "example": "yarn ts-node ./example/index.ts"
   },
