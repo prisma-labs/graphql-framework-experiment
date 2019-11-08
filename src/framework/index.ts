@@ -83,6 +83,8 @@ const defaultServerOptions: Required<ServerOptions> = {
 export function createApp() {
   // During development we dynamically import all the schema modules
   //
+  // TODO IDEA we have concept of schema module and schema dir
+  //      add a "refactor" command to toggle between them
   // TODO put behind dev-mode guard
   // TODO static imports codegen at build time
   // TODO do not assume root source folder called `server`
