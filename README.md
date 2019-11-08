@@ -27,14 +27,33 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
 
 # Example
 
+```groovy
+// prisma/schema.prisma
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:dev.db"
+}
+
+generator photon {
+  provider = "photonjs"
+}
+
+model User {
+  id   Int    @id
+  name String
+}
+
+```
+
 ```ts
-import { createApp } from 'pumpkins'
+// server/schema.ts
 
 objectType({
   name: 'User',
   definition(t) {
-    t.id('id')
-    t.string('name')
+    t.model.id()
+    t.model.name()
   },
 })
 
@@ -44,13 +63,23 @@ objectType({
     t.list.field('users', {
       type: 'User',
       resolve() {
-        return [{ id: '1643', name: 'newton' }]
+        return [{ id: 1643, name: 'newton' }]
       },
     })
   },
 })
+```
+
+```ts
+// server/app.ts
+
+import { createApp } from 'pumpkins'
 
 createApp().startServer()
+```
+
+```
+$ prisma2 dev
 ```
 
 ```
