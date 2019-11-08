@@ -5,6 +5,7 @@ import { intArg, stringArg } from 'nexus'
 import * as fs from 'fs-jetpack'
 import Debug from 'debug'
 import { nexusPrismaPlugin } from 'nexus-prisma'
+import * as path from 'path'
 
 const debug = Debug('pumpkins:app')
 
@@ -124,19 +125,31 @@ export function createApp() {
           ? true
           : false
 
+      const generatedPhotonPackagePath = fs.path(
+        'node_modules/@generated/photon'
+      )
+
       const server = new ApolloServer({
+        playground: mergedConfig.playground,
+        introspection: mergedConfig.introspection,
+        context: context.createContext,
         schema: makeSchema({
           typegenAutoConfig: {
             contextType: 'Context.Context',
-            // TODO add photon to backing types
-            sources: [{ source: contextModulePath, alias: 'Context' }],
+            sources: [
+              { source: contextModulePath, alias: 'Context' },
+              {
+                source: path.join(generatedPhotonPackagePath, '/index.d.ts'),
+                alias: 'photon',
+              },
+            ],
           },
           shouldGenerateArtifacts,
           shouldExitAfterGenerateArtifacts,
           plugins: [
             nexusPrismaPlugin({
               inputs: {
-                photon: fs.path('node_modules/@generated/photon'),
+                photon: generatedPhotonPackagePath,
               },
               outputs: {
                 typegen: fs.path(
@@ -147,9 +160,6 @@ export function createApp() {
             }),
           ],
         }),
-        playground: mergedConfig.playground,
-        introspection: mergedConfig.introspection,
-        context: context.createContext,
       })
 
       const app = express()

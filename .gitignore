@@ -51,6 +51,7 @@ typings/
 yarn-debug.log*
 yarn-error.log*
 
+.vscode
 dist
 nexus-typegen.ts
 schema.graphql
