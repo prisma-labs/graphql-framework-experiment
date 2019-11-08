@@ -1,8 +1,15 @@
 import { ApolloServer } from 'apollo-server-express'
 import express from 'express'
-import { createNexusSingleton } from './nexus'
+import { createNexusSingleton, QueryType, MutationType } from './nexus'
+import { intArg, stringArg } from 'nexus'
+import * as fs from 'fs-jetpack'
+import Debug from 'debug'
+
+const debug = Debug('pumpkins:app')
 
 const {
+  queryType,
+  mutationType,
   objectType,
   inputObjectType,
   enumType,
@@ -18,32 +25,44 @@ type InputObjectType = typeof inputObjectType
 type EnumType = typeof enumType
 type ScalarType = typeof scalarType
 type UnionType = typeof unionType
+type IntArg = typeof intArg
+type StringArg = typeof stringArg
 
+global.queryType = queryType
+global.mutationType = mutationType
 global.objectType = objectType
 global.inputObjectType = inputObjectType
 global.enumType = enumType
 global.scalarType = scalarType
 global.unionType = unionType
+global.intArg = intArg
+global.stringArg = stringArg
 
 declare global {
+  var queryType: QueryType
+  var mutationType: MutationType
   var objectType: ObjectType
   var inputObjectType: InputObjectType
   var enumType: EnumType
   var scalarType: ScalarType
   var unionType: UnionType
+  var intArg: IntArg
+  var stringArg: StringArg
 
   namespace NodeJS {
     interface Global {
+      queryType: QueryType
+      mutationType: MutationType
       objectType: ObjectType
       inputObjectType: InputObjectType
       enumType: EnumType
       scalarType: ScalarType
       unionType: UnionType
+      intArg: IntArg
+      stringArg: StringArg
     }
   }
 }
-
-export { objectType, inputObjectType, enumType, scalarType, unionType }
 
 type ServerOptions = {
   port?: number
@@ -60,6 +79,23 @@ const defaultServerOptions: Required<ServerOptions> = {
 }
 
 export function createApp() {
+  //
+  // During development we dynamically import all the schema modules
+  // TODO put behind dev-mode guard
+  // TODO static imports codegen at build time
+  // TODO do not assume root source folder called `server`
+  //
+  debug('finding schema modules ...')
+  fs.find(fs.path('server/schema'), {
+    files: true,
+    directories: false,
+    recursive: true,
+    matching: '*.ts',
+  }).forEach(schemaModulePath => {
+    debug('importing %s', schemaModulePath)
+    require(fs.path(schemaModulePath))
+  })
+
   return {
     startServer(config: ServerOptions = {}) {
       const mergedConfig: Required<ServerOptions> = {
@@ -81,3 +117,5 @@ export function createApp() {
     },
   }
 }
+
+export { objectType, inputObjectType, enumType, scalarType, unionType }

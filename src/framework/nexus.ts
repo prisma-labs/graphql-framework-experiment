@@ -2,6 +2,9 @@ import * as nexus from 'nexus'
 import * as path from 'path'
 import { findProjectDir } from '../utils'
 
+export type QueryType = typeof nexus.core.queryType
+export type MutationType = typeof nexus.core.mutationType
+
 export function createNexusSingleton() {
   const __globalTypeDefs: any[] = []
 
@@ -77,7 +80,21 @@ export function createNexusSingleton() {
     return typeDef
   }
 
+  const queryType: QueryType = config => {
+    const typeDef = nexus.queryType(config)
+    __globalTypeDefs.push(typeDef)
+    return typeDef
+  }
+
+  const mutationType: MutationType = config => {
+    const typeDef = nexus.mutationType(config)
+    __globalTypeDefs.push(typeDef)
+    return typeDef
+  }
+
   return {
+    queryType,
+    mutationType,
     objectType,
     inputObjectType,
     unionType,
