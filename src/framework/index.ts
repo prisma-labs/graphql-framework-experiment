@@ -4,6 +4,7 @@ import { createNexusSingleton, QueryType, MutationType } from './nexus'
 import { intArg, stringArg } from 'nexus'
 import * as fs from 'fs-jetpack'
 import Debug from 'debug'
+import { nexusPrismaPlugin } from 'nexus-prisma'
 
 const debug = Debug('pumpkins:app')
 
@@ -100,7 +101,7 @@ export function createApp() {
   // TODO the presence of context module should be optional
   // TODO context module should have flexible contract
   //      currently MUST return a createContext function
-  const contextModulePath = fs.path('server/context')
+  const contextModulePath = fs.path('server/context.ts')
   const context = require(contextModulePath)
 
   return {
@@ -110,6 +111,19 @@ export function createApp() {
         ...config,
       }
 
+      const shouldGenerateArtifacts =
+        process.env.PUMPKINS_SHOULD_GENERATE_ARTIFACTS === 'true'
+          ? true
+          : process.env.PUMPKINS_SHOULD_GENERATE_ARTIFACTS === 'false'
+          ? false
+          : Boolean(
+              !process.env.NODE_ENV || process.env.NODE_ENV === 'development'
+            )
+      const shouldExitAfterGenerateArtifacts =
+        process.env.PUMPKINS_SHOULD_EXIT_AFTER_GENERATE_ARTIFACTS === 'true'
+          ? true
+          : false
+
       const server = new ApolloServer({
         schema: makeSchema({
           typegenAutoConfig: {
@@ -117,6 +131,21 @@ export function createApp() {
             // TODO add photon to backing types
             sources: [{ source: contextModulePath, alias: 'Context' }],
           },
+          shouldGenerateArtifacts,
+          shouldExitAfterGenerateArtifacts,
+          plugins: [
+            nexusPrismaPlugin({
+              inputs: {
+                photon: fs.path('node_modules/@generated/photon'),
+              },
+              outputs: {
+                typegen: fs.path(
+                  'node_modules/@types/nexus-typegen-prisma/index.d.ts'
+                ),
+              },
+              shouldGenerateArtifacts,
+            }),
+          ],
         }),
         playground: mergedConfig.playground,
         introspection: mergedConfig.introspection,

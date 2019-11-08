@@ -1,0 +1,245 @@
+{
+  "version": "0.3.14-fixed",
+  "steps": [
+    {
+      "stepType": "CreateEnum",
+      "enum": "UserRole",
+      "values": [
+        "ADMIN",
+        "AUTHOR"
+      ]
+    },
+    {
+      "stepType": "CreateEnum",
+      "enum": "PostStatus",
+      "values": [
+        "DRAFT",
+        "PUBLISHED"
+      ]
+    },
+    {
+      "stepType": "CreateModel",
+      "model": "Blog"
+    },
+    {
+      "stepType": "CreateField",
+      "model": "Blog",
+      "field": "id",
+      "type": "Int",
+      "arity": "required"
+    },
+    {
+      "stepType": "CreateDirective",
+      "model": "Blog",
+      "field": "id",
+      "directive": "id"
+    },
+    {
+      "stepType": "CreateField",
+      "model": "Blog",
+      "field": "createdAt",
+      "type": "DateTime",
+      "arity": "required"
+    },
+    {
+      "stepType": "CreateDirective",
+      "model": "Blog",
+      "field": "createdAt",
+      "directive": "default"
+    },
+    {
+      "stepType": "CreateDirectiveArgument",
+      "model": "Blog",
+      "field": "createdAt",
+      "directive": "default",
+      "argument": "",
+      "value": "now()"
+    },
+    {
+      "stepType": "CreateField",
+      "model": "Blog",
+      "field": "updatedAt",
+      "type": "DateTime",
+      "arity": "required"
+    },
+    {
+      "stepType": "CreateDirective",
+      "model": "Blog",
+      "field": "updatedAt",
+      "directive": "updatedAt"
+    },
+    {
+      "stepType": "CreateField",
+      "model": "Blog",
+      "field": "name",
+      "type": "String",
+      "arity": "required"
+    },
+    {
+      "stepType": "CreateField",
+      "model": "Blog",
+      "field": "viewCount",
+      "type": "Int",
+      "arity": "required"
+    },
+    {
+      "stepType": "CreateDirective",
+      "model": "Blog",
+      "field": "viewCount",
+      "directive": "default"
+    },
+    {
+      "stepType": "CreateDirectiveArgument",
+      "model": "Blog",
+      "field": "viewCount",
+      "directive": "default",
+      "argument": "",
+      "value": "0"
+    },
+    {
+      "stepType": "CreateField",
+      "model": "Blog",
+      "field": "posts",
+      "type": "Post",
+      "arity": "list"
+    },
+    {
+      "stepType": "CreateField",
+      "model": "Blog",
+      "field": "authors",
+      "type": "User",
+      "arity": "list"
+    },
+    {
+      "stepType": "CreateModel",
+      "model": "User"
+    },
+    {
+      "stepType": "CreateField",
+      "model": "User",
+      "field": "id",
+      "type": "Int",
+      "arity": "required"
+    },
+    {
+      "stepType": "CreateDirective",
+      "model": "User",
+      "field": "id",
+      "directive": "id"
+    },
+    {
+      "stepType": "CreateField",
+      "model": "User",
+      "field": "createdAt",
+      "type": "DateTime",
+      "arity": "required"
+    },
+    {
+      "stepType": "CreateDirective",
+      "model": "User",
+      "field": "createdAt",
+      "directive": "default"
+    },
+    {
+      "stepType": "CreateDirectiveArgument",
+      "model": "User",
+      "field": "createdAt",
+      "directive": "default",
+      "argument": "",
+      "value": "now()"
+    },
+    {
+      "stepType": "CreateField",
+      "model": "User",
+      "field": "updatedAt",
+      "type": "DateTime",
+      "arity": "required"
+    },
+    {
+      "stepType": "CreateDirective",
+      "model": "User",
+      "field": "updatedAt",
+      "directive": "updatedAt"
+    },
+    {
+      "stepType": "CreateField",
+      "model": "User",
+      "field": "name",
+      "type": "String",
+      "arity": "optional"
+    },
+    {
+      "stepType": "CreateField",
+      "model": "User",
+      "field": "posts",
+      "type": "Post",
+      "arity": "list"
+    },
+    {
+      "stepType": "CreateField",
+      "model": "User",
+      "field": "blog",
+      "type": "Blog",
+      "arity": "required"
+    },
+    {
+      "stepType": "CreateField",
+      "model": "User",
+      "field": "rating",
+      "type": "Float",
+      "arity": "required"
+    },
+    {
+      "stepType": "CreateField",
+      "model": "User",
+      "field": "role",
+      "type": "UserRole",
+      "arity": "required"
+    },
+    {
+      "stepType": "CreateModel",
+      "model": "Post"
+    },
+    {
+      "stepType": "CreateField",
+      "model": "Post",
+      "field": "id",
+      "type": "Int",
+      "arity": "required"
+    },
+    {
+      "stepType": "CreateDirective",
+      "model": "Post",
+      "field": "id",
+      "directive": "id"
+    },
+    {
+      "stepType": "CreateField",
+      "model": "Post",
+      "field": "title",
+      "type": "String",
+      "arity": "required"
+    },
+    {
+      "stepType": "CreateField",
+      "model": "Post",
+      "field": "tags",
+      "type": "String",
+      "arity": "list"
+    },
+    {
+      "stepType": "CreateField",
+      "model": "Post",
+      "field": "blog",
+      "type": "Blog",
+      "arity": "required"
+    },
+    {
+      "stepType": "CreateField",
+      "model": "Post",
+      "field": "status",
+      "type": "PostStatus",
+      "arity": "required"
+    }
+  ]
+}

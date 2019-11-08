@@ -2,17 +2,13 @@
   "name": "example",
   "private": true,
   "version": "0.0.0",
-  "main": "dist/main.ts",
+  "main": "dist/app.js",
   "scripts": {
     "clean": "rm -rf dist",
-    "build": "yarn -s clean && yarn -s generate && tsc",
     "style": "prettier --write 'src/**/*'",
+    "build": "yarn -s clean && pumpkins build",
     "dev": "pumpkins dev",
-    "generate": "yarn -s generate:prisma && yarn -s generate:nexus",
-    "generate:prisma": "prisma2 generate",
-    "generate:nexus": "NODE_ENV=development ts-node --transpile-only src/schema",
-    "data:inject": "ts-node prisma/fake-data.ts",
-    "postinstall": "yarn -s generate"
+    "data:seed": "ts-node prisma/fake-data.ts"
   },
   "dependencies": {
     "graphql": "^14.3.1",
@@ -34,6 +30,6 @@
   "prettier": {
     "semi": false,
     "singleQuote": true,
-    "trailingComma": "all"
+    "trailingComma": "es5"
   }
 }

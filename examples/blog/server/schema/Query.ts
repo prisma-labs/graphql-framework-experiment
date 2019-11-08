@@ -1,14 +1,15 @@
 queryType({
   definition(t) {
-    t.string('a', () => 'foobar')
-    // t.crud.blogs({
-    //   pagination: false,
-    // })
-    // t.crud.users({ filtering: true, alias: 'people' })
-    // t.crud.posts({ type: 'CustomPost', ordering: true, filtering: true })
+    t.crud.blogs({
+      pagination: false,
+    })
+    t.crud.users({ filtering: true, alias: 'people' })
+    t.crud.posts({ type: 'CustomPost', ordering: true, filtering: true })
+
     //
     // Examples showing custom resolvers
     //
+
     t.field('blog', {
       type: 'Blog',
       args: {
@@ -27,6 +28,7 @@ queryType({
         )
       },
     })
+
     t.field('blogsLike', {
       type: 'Blog',
       list: true,

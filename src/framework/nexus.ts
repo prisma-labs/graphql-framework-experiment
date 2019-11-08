@@ -1,6 +1,7 @@
 import * as nexus from 'nexus'
 import * as path from 'path'
 import { findProjectDir } from '../utils'
+import * as fs from 'fs-jetpack'
 
 export type QueryType = typeof nexus.core.queryType
 export type MutationType = typeof nexus.core.mutationType
@@ -11,24 +12,14 @@ export function createNexusSingleton() {
   function makeSchema(
     overrides?: Partial<nexus.core.SchemaConfig>
   ): nexus.core.NexusGraphQLSchema {
-    const shouldGenerateArtifacts =
-      process.env.PUMPKINS_SHOULD_GENERATE_ARTIFACTS === 'true'
-        ? true
-        : process.env.PUMPKINS_SHOULD_GENERATE_ARTIFACTS === 'false'
-        ? false
-        : Boolean(
-            !process.env.NODE_ENV || process.env.NODE_ENV === 'development'
-          )
-    const shouldExitAfterGenerateArtifacts =
-      process.env.PUMPKINS_SHOULD_EXIT_AFTER_GENERATE_ARTIFACTS === 'true'
-        ? true
-        : false
-
     // TODO: Find better heuristic
     const projectDir = findProjectDir()
     const pumpkinsDir = path.join(projectDir, '.pumpkins')
-    const defaultTypesPath = path.join(pumpkinsDir, 'nexus-typegen.ts')
     const defaultSchemaPath = path.join(projectDir, 'schema.graphql')
+    // const defaultTypesPath = path.join(pumpkinsDir, 'nexus-typegen.ts')
+    const defaultTypesPath = fs.path(
+      'node_modules/@types/nexus-typegen/index.d.ts'
+    )
 
     const config: nexus.core.SchemaConfig = {
       types: __types,
@@ -36,13 +27,12 @@ export function createNexusSingleton() {
         typegen: defaultTypesPath,
         schema: defaultSchemaPath,
       },
-      shouldGenerateArtifacts,
-      shouldExitAfterGenerateArtifacts,
       // TODO semantic merge of overrides
       //      for example sources should be concatenated together
       //      but right now overrides would just wipe out any previous
       ...overrides,
     }
+
     return nexus.makeSchema(config)
   }
 
