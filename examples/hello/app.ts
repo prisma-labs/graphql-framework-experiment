@@ -13,7 +13,7 @@ objectType({
   definition(t) {
     t.list.field('users', {
       type: 'User',
-      resolve() {
+      resolve(_root, _args, _ctx) {
         return [{ id: '1643', name: 'newton' }]
       },
     })

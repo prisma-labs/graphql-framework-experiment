@@ -87,22 +87,68 @@ export function createApp() {
   // TODO static imports codegen at build time
   // TODO do not assume root source folder called `server`
   // TODO do not assume TS
-  //
   debug('finding schema modules ...')
-  fs.find(fs.path('server/schema'), {
-    files: true,
-    directories: false,
-    recursive: true,
-    matching: '*.ts',
-  }).forEach(schemaModulePath => {
-    debug('importing %s', schemaModulePath)
-    require(fs.path(schemaModulePath))
-  })
+  if (fs.exists(fs.path('server/schema')) === 'dir') {
+    fs.find(fs.path('server/schema'), {
+      files: true,
+      directories: false,
+      recursive: true,
+      matching: '*.ts',
+    }).forEach(schemaModulePath => {
+      debug('importing %s', schemaModulePath)
+      require(fs.path(schemaModulePath))
+    })
+  }
 
-  // TODO the presence of context module should be optional
+  const shouldGenerateArtifacts =
+    process.env.PUMPKINS_SHOULD_GENERATE_ARTIFACTS === 'true'
+      ? true
+      : process.env.PUMPKINS_SHOULD_GENERATE_ARTIFACTS === 'false'
+      ? false
+      : Boolean(!process.env.NODE_ENV || process.env.NODE_ENV === 'development')
+  const shouldExitAfterGenerateArtifacts =
+    process.env.PUMPKINS_SHOULD_EXIT_AFTER_GENERATE_ARTIFACTS === 'true'
+      ? true
+      : false
+
+  const generatedPhotonPackagePath = fs.path('node_modules/@generated/photon')
+
+  // Get the context module for the app.
+  // User can provide a context module at a conventional path.
+  // Otherwise we will provide a default context module.
+  //
   // TODO context module should have flexible contract
   //      currently MUST return a createContext function
-  const contextModulePath = fs.path('server/context.ts')
+  const contextModulePathOptional = fs.path('server/context.ts')
+  const userHasContextModule = fs.exists(contextModulePathOptional)
+  let contextModulePath: string
+  if (userHasContextModule === 'file') {
+    contextModulePath = contextModulePathOptional
+  } else if (userHasContextModule === 'dir') {
+    throw new Error(`context.ts must be a file, but it was a folder!`)
+  } else {
+    const contextModulePathPumpkins = fs.path('.pumpkins/context.ts')
+    // TODO When user provides their own context, they should be able to leverage the default, e.g. extend it.
+    //      ... but ... and/or them providing one doesn't have to force us to stop including our own defaults
+    // TODO There should be feedback that a default context is being used and where the user can find it
+    // TODO There should be a workflow where the user can scaffold their own context module
+    // TODO Caching of the default module contents. Use a hash, if same, reuse
+    fs.write(
+      contextModulePathPumpkins,
+      `import { Photon } from '${generatedPhotonPackagePath}'
+
+      const photon = new Photon()
+      
+      export type Context = {
+        photon: Photon
+      }
+      
+      export const createContext = (): Context => ({
+        photon,
+      })`
+    )
+    contextModulePath = contextModulePathPumpkins
+  }
   const context = require(contextModulePath)
 
   return {
@@ -111,23 +157,6 @@ export function createApp() {
         ...defaultServerOptions,
         ...config,
       }
-
-      const shouldGenerateArtifacts =
-        process.env.PUMPKINS_SHOULD_GENERATE_ARTIFACTS === 'true'
-          ? true
-          : process.env.PUMPKINS_SHOULD_GENERATE_ARTIFACTS === 'false'
-          ? false
-          : Boolean(
-              !process.env.NODE_ENV || process.env.NODE_ENV === 'development'
-            )
-      const shouldExitAfterGenerateArtifacts =
-        process.env.PUMPKINS_SHOULD_EXIT_AFTER_GENERATE_ARTIFACTS === 'true'
-          ? true
-          : false
-
-      const generatedPhotonPackagePath = fs.path(
-        'node_modules/@generated/photon'
-      )
 
       const server = new ApolloServer({
         playground: mergedConfig.playground,

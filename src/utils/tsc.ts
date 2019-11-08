@@ -15,6 +15,7 @@ export function findConfigFile(
   fileName: string,
   opts: { required: false }
 ): string | undefined
+
 /**
  * Find a config file
  */
