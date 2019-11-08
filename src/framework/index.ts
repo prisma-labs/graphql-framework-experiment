@@ -81,12 +81,13 @@ const defaultServerOptions: Required<ServerOptions> = {
 }
 
 export function createApp() {
-  //
   // During development we dynamically import all the schema modules
+  //
   // TODO put behind dev-mode guard
   // TODO static imports codegen at build time
   // TODO do not assume root source folder called `server`
   // TODO do not assume TS
+  // TODO refactor and put a system behind this holy mother of...
   debug('finding schema modules ...')
   if (fs.exists(fs.path('server/schema')) === 'dir') {
     fs.find(fs.path('server/schema'), {
@@ -98,6 +99,13 @@ export function createApp() {
       debug('importing %s', schemaModulePath)
       require(fs.path(schemaModulePath))
     })
+    // TODO if exists as file should be error?
+  } else if (fs.exists(fs.path('schema.ts')) === 'file') {
+    debug('importing %s', 'schema.ts')
+    require(fs.path('schema.ts'))
+  } else if (fs.exists(fs.path('server/schema.ts')) === 'file') {
+    debug('importing %s', 'server/schema.ts')
+    require(fs.path('server/schema.ts'))
   }
 
   const shouldGenerateArtifacts =
