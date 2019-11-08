@@ -29,7 +29,7 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
 # Example
 
 ```ts
-import { createApp, objectType } from 'pumpkins'
+import { createApp } from 'pumpkins'
 
 objectType({
   name: 'User',
@@ -42,7 +42,12 @@ objectType({
 objectType({
   name: 'Query',
   definition(t) {
-    t.field('user', { type: 'User' })
+    t.list.field('users', {
+      type: 'User',
+      resolve() {
+        return [{ id: '1643', name: 'newton' }]
+      },
+    })
   },
 })
 
@@ -88,7 +93,7 @@ EXAMPLE
   $ pumpkins build
 ```
 
-_See code: [dist/cli/commands/build.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0-sha.edbc943/dist/cli/commands/build.js)_
+_See code: [dist/cli/commands/build.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0-sha.e03f7b2/dist/cli/commands/build.js)_
 
 ## `pumpkins dev`
 
@@ -102,7 +107,7 @@ EXAMPLE
   $ pumpkins dev
 ```
 
-_See code: [dist/cli/commands/dev.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0-sha.edbc943/dist/cli/commands/dev.js)_
+_See code: [dist/cli/commands/dev.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0-sha.e03f7b2/dist/cli/commands/dev.js)_
 
 ## `pumpkins doctor`
 
@@ -113,7 +118,7 @@ USAGE
   $ pumpkins doctor
 ```
 
-_See code: [dist/cli/commands/doctor.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0-sha.edbc943/dist/cli/commands/doctor.js)_
+_See code: [dist/cli/commands/doctor.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0-sha.e03f7b2/dist/cli/commands/doctor.js)_
 
 ## `pumpkins generate`
 
@@ -130,7 +135,7 @@ EXAMPLE
   $ pumpkins generate
 ```
 
-_See code: [dist/cli/commands/generate.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0-sha.edbc943/dist/cli/commands/generate.js)_
+_See code: [dist/cli/commands/generate.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0-sha.e03f7b2/dist/cli/commands/generate.js)_
 
 ## `pumpkins help [COMMAND]`
 
@@ -161,7 +166,7 @@ EXAMPLE
   $ pumpkins init
 ```
 
-_See code: [dist/cli/commands/init.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0-sha.edbc943/dist/cli/commands/init.js)_
+_See code: [dist/cli/commands/init.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0-sha.e03f7b2/dist/cli/commands/init.js)_
 <!-- commandsstop -->
 
 # Development

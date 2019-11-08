@@ -1,7 +1,7 @@
 {
   "name": "hello-pumpkins",
   "version": "1.0.0",
-  "main": "dist/index.js",
+  "main": "dist/app.js",
   "license": "MIT",
   "dependencies": {
     "pumpkins": "../../"
@@ -12,7 +12,7 @@
     "typescript": "^3.7.2"
   },
   "scripts": {
-    "start": "node dist/index.js",
+    "start": "node dist/app.js",
     "build": "pumpkins build",
     "generate": "pumpkins generate",
     "dev": "pumpkins dev",

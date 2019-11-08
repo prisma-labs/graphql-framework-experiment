@@ -1,4 +1,4 @@
-import { createApp, objectType } from 'pumpkins'
+import { createApp } from 'pumpkins'
 
 objectType({
   name: 'User',
@@ -11,7 +11,12 @@ objectType({
 objectType({
   name: 'Query',
   definition(t) {
-    t.field('user', { type: 'User' })
+    t.list.field('users', {
+      type: 'User',
+      resolve() {
+        return [{ id: '1643', name: 'newton' }]
+      },
+    })
   },
 })
 

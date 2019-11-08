@@ -11,6 +11,38 @@ const {
   makeSchema,
 } = createNexusSingleton()
 
+// agument global scope
+
+type ObjectType = typeof objectType
+type InputObjectType = typeof inputObjectType
+type EnumType = typeof enumType
+type ScalarType = typeof scalarType
+type UnionType = typeof unionType
+
+global.objectType = objectType
+global.inputObjectType = inputObjectType
+global.enumType = enumType
+global.scalarType = scalarType
+global.unionType = unionType
+
+declare global {
+  var objectType: ObjectType
+  var inputObjectType: InputObjectType
+  var enumType: EnumType
+  var scalarType: ScalarType
+  var unionType: UnionType
+
+  namespace NodeJS {
+    interface Global {
+      objectType: ObjectType
+      inputObjectType: InputObjectType
+      enumType: EnumType
+      scalarType: ScalarType
+      unionType: UnionType
+    }
+  }
+}
+
 export { objectType, inputObjectType, enumType, scalarType, unionType }
 
 type ServerOptions = {
