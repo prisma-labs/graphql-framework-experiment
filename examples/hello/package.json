@@ -12,6 +12,7 @@
     "typescript": "^3.7.2"
   },
   "scripts": {
+    "clean": "rm -rf dist",
     "start": "node dist/app.js",
     "build": "pumpkins build",
     "generate": "pumpkins generate",

@@ -30,13 +30,16 @@ export class Build extends Command {
       entrypoint,
       tsConfig.options.outDir!
     )
-
     if (error) {
       this.error(error, { exit: 1 })
     }
 
     compile(tsConfig.fileNames, tsConfig.options)
 
+    const entryPointFileNameSansExt = path.basename(
+      transpiledEntrypointPath,
+      '.js'
+    )
     const entryPointContent = fs
       .readFileSync(transpiledEntrypointPath)
       .toString()
@@ -47,7 +50,10 @@ require("./__index.js")
     `
 
     fs.writeFileSync(
-      path.join(path.dirname(transpiledEntrypointPath), '__index.js'),
+      path.join(
+        path.dirname(transpiledEntrypointPath),
+        `${entryPointFileNameSansExt}__original__.js`
+      ),
       entryPointContent
     )
     fs.writeFileSync(transpiledEntrypointPath, wrapperContent)
