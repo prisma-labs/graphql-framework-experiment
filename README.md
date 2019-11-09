@@ -7,9 +7,16 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
+
 - [Example](#example)
+- [Conventions](#conventions)
+    - [Special File Names](#special-file-names)
+    - [`schema`](#schema)
+    - [`context`](#context)
+    - [`app`](#app)
+    - [Example Layouts](#example-layouts)
 - [API](#api)
-  - [`createApp`](#createapp)
+    - [`createApp`](#createapp)
 - [CLI](#cli)
   - [`pumpkins build`](#pumpkins-build)
   - [`pumpkins dev`](#pumpkins-dev)
@@ -18,8 +25,8 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
   - [`pumpkins help [COMMAND]`](#pumpkins-help-command)
   - [`pumpkins init`](#pumpkins-init)
 - [Development](#development)
-  - [Overview](#overview)
-  - [Example app Workflow](#example-app-workflow)
+    - [Overview](#overview)
+    - [Example app Workflow](#example-app-workflow)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -88,6 +95,86 @@ $ pumpkin dev
 
 <br>
 
+# Conventions
+
+### Special File Names
+
+```
+                    Purpose                             Alt Names
+
+app.ts              Entrypoint                          main.ts | server.ts | service.ts
+context.ts          Define GraphQL resolver context
+schema.ts           Define GraphQL types                graphql.ts
+schema.prisma       Define Data Models
+```
+
+### `schema`
+
+Schema contains your GraphQL type definitions. It can be a single file or folder of files. There can also be multiple instances of file/folder throughout your source tree.
+
+During development all files will be found and dynamically synchronously imported at app construction time. At build time static imports will be generated.
+
+```
+schema.ts | graphql.ts
+```
+
+```
+schema/   | graphql/
+  a.ts
+  b.ts
+  c.ts
+```
+
+### `context`
+
+Context contains the definition of the context object that will be made available to all your GraphQL resolvers. There can only be at most a single `context.ts` file in your source tree. If you do not provide one, a defualt will be, findable in `.pumpkins`.
+
+```
+context.ts
+```
+
+### `app`
+
+App contains the entrypoint to your service, the place where it boots. There can only be at most a single `app.ts` in your source tree. If you not provide one, a default will be, findable in `.pumpkins`.
+
+```
+app.ts | main.ts | server.ts | service.ts
+```
+
+### Example Layouts
+
+Nano
+
+```
+schema.ts
+schema.prisma
+```
+
+Micro
+
+```
+app.ts
+context.ts
+schema.ts
+schema.prisma
+```
+
+Basic
+
+```
+app/
+  app.ts
+  context.ts
+  graphql/
+    a.ts
+    b.ts
+    c.ts
+prisma/
+  schema.prisma
+```
+
+<br>
+
 # API
 
 ### `createApp`
@@ -99,13 +186,12 @@ Create an app instance
 # CLI
 
 <!-- commands -->
-
-- [`pumpkins build`](#pumpkins-build)
-- [`pumpkins dev`](#pumpkins-dev)
-- [`pumpkins doctor`](#pumpkins-doctor)
-- [`pumpkins generate`](#pumpkins-generate)
-- [`pumpkins help [COMMAND]`](#pumpkins-help-command)
-- [`pumpkins init`](#pumpkins-init)
+* [`pumpkins build`](#pumpkins-build)
+* [`pumpkins dev`](#pumpkins-dev)
+* [`pumpkins doctor`](#pumpkins-doctor)
+* [`pumpkins generate`](#pumpkins-generate)
+* [`pumpkins help [COMMAND]`](#pumpkins-help-command)
+* [`pumpkins init`](#pumpkins-init)
 
 ## `pumpkins build`
 
@@ -196,7 +282,6 @@ EXAMPLE
 ```
 
 _See code: [dist/cli/commands/init.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0-sha.e03f7b2/dist/cli/commands/init.js)_
-
 <!-- commandsstop -->
 
 # Development
@@ -204,9 +289,11 @@ _See code: [dist/cli/commands/init.js](https://github.com/prisma-labs/pumpkins/b
 ### Overview
 
 ```
+
 yarn
 yarn test
 yarn dev
+
 ```
 
 ### Example app Workflow
