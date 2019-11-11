@@ -7,21 +7,31 @@ function findSchemaModules(): string[] {
   const files = fs.find({
     directories: true,
     files: true,
+    recursive: true,
     matching: ['schema', 'schema.ts', '!node_modules/**/*', '!.yalc/**/*'],
   })
 
   if (files.length === 0) {
-    throw new Error(
-      'Could not find a schema. You either need a "schema.ts" file or a "schema" folder.'
-    )
-  }
+    const schemaPath = fs.path('.pumpkins', 'schema.ts')
 
-  if (files.length > 1) {
-    throw new Error(
-      `You have more than one "schema" module: ${files
-        .map(f => `"${f}"`)
-        .join(', ')}`
+    fs.write(
+      schemaPath,
+      `
+// Move out of folder to edit, or create a new one in your app folder.
+
+queryType({
+  definition(t) {
+    t.string('welcomeToPumpkins', () => 'Welcome to Pumpkins!')
+  }
+})
+`
     )
+
+    console.warn(
+      'Could not find a schema. We created one for you in ".pumpkins/schema.ts"'
+    )
+
+    return [schemaPath]
   }
 
   const fileOrDir = files[0]
