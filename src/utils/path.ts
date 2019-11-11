@@ -16,10 +16,10 @@ export function findServerEntryPoint() {
 }
 
 export function findProjectDir() {
-  let filePath = findConfigFile('tsconfig.json', { required: false })
+  let filePath = findConfigFile('package.json', { required: false })
 
   if (!filePath) {
-    filePath = findConfigFile('package.json', { required: false })
+    filePath = findConfigFile('tsconfig.json', { required: false })
   }
 
   if (!filePath) {
@@ -68,8 +68,8 @@ export function sourceFilePathFromTranspiledPath({
 }
 
 export function findFile(fileNames: string[]) {
-  const foundFiles = fs.find('.', {
-    matching: [...fileNames, '!node_modules/**/*'],
+  const foundFiles = fs.find({
+    matching: [...fileNames, '!node_modules/**/*', '!.yalc/**/*'],
   })
 
   // TODO: What if several files were found?
