@@ -333,10 +333,20 @@ yarn dev
 
 Because `pumpkins` controls and explicitly sets the typegen output and photon input paths we do not need to use [`NEXUS_PRISMA_LINK`](https://github.com/prisma-labs/nexus-prisma/blob/abe6c9c6f15f832c7af638f6f133ebd6c530584c/src/builder.ts#L115-L122)which is designed to aid link workflows _when using defualts_.
 
+1. Setup project
+
 ```sh
-yarn link && \
-cd examples/blog && \
-yarn link pumpkins && \
-cd .. && \
+yarn bootstrap
+```
+
+2. Watch library
+
+```sh
 yarn dev
+```
+
+3. Run example
+
+```
+cd examples/hello && yarn dev
 ```

@@ -1319,6 +1319,11 @@ decompress-response@^3.3.0:
   dependencies:
     mimic-response "^1.0.0"
 
+dedent@^0.7.0:
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/dedent/-/dedent-0.7.0.tgz#2495ddbaf6eb874abb0e1be9df22d2e5a544326c"
+  integrity sha1-JJXduvbrh0q7Dhvp3yLS5aVEMmw=
+
 defer-to-connect@^1.0.1:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/defer-to-connect/-/defer-to-connect-1.1.0.tgz#b41bd7efa8508cef13f8456975f7a278c72833fd"
@@ -3139,6 +3144,8 @@ pumpkins@../../:
     "@oclif/config" "^1"
     "@oclif/plugin-help" "^2"
     apollo-server-express "^2.9.7"
+    debug "^4.1.1"
+    dedent "^0.7.0"
     graphql "^14.5.8"
     nexus "^0.12.0-rc.4"
     nexus-prisma "^0.5.0"

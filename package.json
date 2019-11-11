@@ -35,11 +35,13 @@
     "fs-jetpack": "^2.2.3",
     "globby": "^10",
     "jest": "^24.9.0",
+    "nodemon": "^1.19.4",
     "nyc": "^14",
     "prettier": "^1.18.2",
     "tmp": "^0.1.0",
     "ts-jest": "^24.1.0",
-    "ts-node": "^8"
+    "ts-node": "^8",
+    "yalc": "^1.0.0-pre.34"
   },
   "engines": {
     "node": ">=8.0.0"
@@ -65,6 +67,9 @@
   },
   "repository": "prisma-labs/pumpkins",
   "scripts": {
+    "bootstrap": "yarn install && yalc link && yarn bootstrap:hello && yarn bootstrap:blog",
+    "bootstrap:hello": "cd examples/hello && yarn install && yarn prisma2 generate && yalc link pumpkins",
+    "bootstrap:blog": "cd examples/blog && yarn install && yarn prisma2 generate && yalc link pumpkins",
     "publish:sha": "yarn publish --tag sha --no-git-tag-version --new-version \"0.0.0-sha.$(git show -s head --format='%h')\"",
     "format": "prettier --write '*/**/*.ts'",
     "build:doc": "oclif-dev readme && doctoc --notitle README.md",
@@ -73,7 +78,7 @@
     "prepack": "yarn -s clean && tsc -b && oclif-dev manifest && yarn -s build:doc",
     "test": "jest",
     "test:dev": "jest --watch",
-    "dev": "tsc -b -w",
+    "dev": "tsc -b -w & yarn nodemon -x 'yarn yalc push' > /dev/null",
     "example": "yarn ts-node ./example/index.ts"
   },
   "prettier": {
