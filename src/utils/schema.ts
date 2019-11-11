@@ -1,8 +1,8 @@
 import * as fs from 'fs-jetpack'
-import { debug } from '.'
+import { debug } from '../utils'
 
 function findSchemaModules(): string[] {
-  debug('finding schema modules ...')
+  debug.schema('finding schema modules ...')
 
   const files = fs.find({
     directories: true,
