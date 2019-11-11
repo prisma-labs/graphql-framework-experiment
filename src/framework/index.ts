@@ -1,15 +1,12 @@
 import { ApolloServer } from 'apollo-server-express'
-import Debug from 'debug'
 import express from 'express'
 import * as fs from 'fs-jetpack'
 import { intArg, stringArg } from 'nexus'
 import { nexusPrismaPlugin } from 'nexus-prisma'
 import * as path from 'path'
-import { trimNodeModulesIfInPath } from '../utils'
+import { requireSchemaModules, trimNodeModulesIfInPath } from '../utils'
 import { findOrScaffold } from '../utils/scaffold'
 import { createNexusSingleton, MutationType, QueryType } from './nexus'
-
-const debug = Debug('pumpkins:app')
 
 const {
   queryType,
@@ -92,25 +89,8 @@ export function createApp() {
   // TODO do not assume root source folder called `server`
   // TODO do not assume TS
   // TODO refactor and put a system behind this holy mother of...
-  debug('finding schema modules ...')
-  if (fs.exists(fs.path('server/schema')) === 'dir') {
-    fs.find(fs.path('server/schema'), {
-      files: true,
-      directories: false,
-      recursive: true,
-      matching: '*.ts',
-    }).forEach(schemaModulePath => {
-      debug('importing %s', schemaModulePath)
-      require(fs.path(schemaModulePath))
-    })
-    // TODO if exists as file should be error?
-  } else if (fs.exists(fs.path('schema.ts')) === 'file') {
-    debug('importing %s', 'schema.ts')
-    require(fs.path('schema.ts'))
-  } else if (fs.exists(fs.path('server/schema.ts')) === 'file') {
-    debug('importing %s', 'server/schema.ts')
-    require(fs.path('server/schema.ts'))
-  }
+
+  requireSchemaModules()
 
   const shouldGenerateArtifacts =
     process.env.PUMPKINS_SHOULD_GENERATE_ARTIFACTS === 'true'
