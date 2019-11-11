@@ -145,17 +145,19 @@ export function createApp() {
     // TODO Caching of the default module contents. Use a hash, if same, reuse
     fs.write(
       contextModulePathPumpkins,
-      `import { Photon } from '${generatedPhotonPackagePath}'
+      `\
+import { Photon } from '${generatedPhotonPackagePath}'
 
-      const photon = new Photon()
+const photon = new Photon()
       
-      export type Context = {
-        photon: Photon
-      }
+export type Context = {
+  photon: Photon
+}
       
-      export const createContext = (): Context => ({
-        photon,
-      })`
+export const createContext = (): Context => ({
+  photon,
+})
+`
     )
     contextModulePath = contextModulePathPumpkins
   }
