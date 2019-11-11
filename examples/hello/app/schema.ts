@@ -1,5 +1,3 @@
-import { objectType } from 'pumpkins'
-
 objectType({
   name: 'User',
   definition(t) {
