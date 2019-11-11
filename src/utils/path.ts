@@ -3,30 +3,6 @@ import * as path from 'path'
 import { findOrScaffold } from './scaffold'
 import { findConfigFile } from './tsc'
 
-const DEFAULT_ENTRY_POINTS = [
-  // no nesting
-  'index.ts',
-  'main.ts',
-  'app.ts',
-  'server.ts',
-  'schema.ts',
-  // nested in src
-  'src/index.ts',
-  'src/main.ts',
-  'src/app.ts',
-  'src/server.ts',
-  'src/schema.ts',
-  'src/schema/index.ts',
-  // nested in server
-  'server/index.ts',
-  'server/main.ts',
-  'server/app.ts',
-  // nested in schema
-  'schema/index.ts',
-  'schema/main.ts',
-  'schema/app.ts',
-]
-
 export function findServerEntryPoint() {
   return findOrScaffold({
     fileNames: ['app.ts', 'server.ts', 'service.ts'],
