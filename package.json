@@ -35,11 +35,13 @@
     "fs-jetpack": "^2.2.3",
     "globby": "^10",
     "jest": "^24.9.0",
+    "nodemon": "^1.19.4",
     "nyc": "^14",
     "prettier": "^1.18.2",
     "tmp": "^0.1.0",
     "ts-jest": "^24.1.0",
-    "ts-node": "^8"
+    "ts-node": "^8",
+    "yalc": "^1.0.0-pre.34"
   },
   "engines": {
     "node": ">=8.0.0"
@@ -73,8 +75,10 @@
     "prepack": "yarn -s clean && tsc -b && oclif-dev manifest && yarn -s build:doc",
     "test": "jest",
     "test:dev": "jest --watch",
-    "dev": "tsc -b -w",
-    "example": "yarn ts-node ./example/index.ts"
+    "dev:bootstrap:hello": "cd examples/hello && yarn install && yarn -s prisma2 generate && yalc link pumpkins",
+    "dev:bootstrap:blog": "cd examples/blog && yarn install && yarn -s prisma2 generate && yalc link pumpkins",
+    "dev:bootstrap": "yarn install && yalc link && yarn -s dev:bootstrap:hello && yarn -s dev:bootstrap:blog",
+    "dev": "tsc -b -w & yarn nodemon -x 'yarn -s yalc push' > /dev/null"
   },
   "prettier": {
     "semi": false,

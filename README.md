@@ -27,7 +27,8 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
   - [`pumpkins init`](#pumpkins-init)
 - [Development](#development)
     - [Overview](#overview)
-    - [Example app Workflow](#example-app-workflow)
+    - [Work With Local Example Apps](#work-with-local-example-apps)
+      - [(not working) Alternative Yarn Link Flow](#not-working-alternative-yarn-link-flow)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -329,14 +330,35 @@ yarn dev
 
 ```
 
-### Example app Workflow
+### Work With Local Example Apps
+
+1. Setup project and watch for changes
+
+```sh
+yarn bootstrap && yarn dev
+```
+
+2. In another terminal, work with your desired example app
+
+```
+cd examples/hello && yarn dev
+```
+
+#### (not working) Alternative Yarn Link Flow
+
+> NOTE A yarn link workflow would look like as follows but we currently get stuck on ELOOP issues while using the CLI within example apps. Need to debug.
 
 Because `pumpkins` controls and explicitly sets the typegen output and photon input paths we do not need to use [`NEXUS_PRISMA_LINK`](https://github.com/prisma-labs/nexus-prisma/blob/abe6c9c6f15f832c7af638f6f133ebd6c530584c/src/builder.ts#L115-L122)which is designed to aid link workflows _when using defualts_.
 
-```sh
+```
 yarn link && \
 cd examples/blog && \
 yarn link pumpkins && \
+chmod +x node_modules/.bin/pumpkins && \
 cd .. && \
+yarn dev
+```
+
+```
 yarn dev
 ```
