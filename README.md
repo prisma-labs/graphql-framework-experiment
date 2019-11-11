@@ -34,7 +34,7 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
 # Example
 
 ```groovy
-// prisma/schema.prisma
+// schema.prisma
 
 datasource db {
   provider = "sqlite"
@@ -53,7 +53,7 @@ model User {
 ```
 
 ```ts
-// server/schema.ts
+// schema.ts
 
 objectType({
   name: 'User',
@@ -74,14 +74,6 @@ objectType({
     })
   },
 })
-```
-
-```ts
-// server/app.ts
-
-import { createApp } from 'pumpkins'
-
-createApp().startServer()
 ```
 
 ```
