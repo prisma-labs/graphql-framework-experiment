@@ -1,6 +1,6 @@
-import * as fs from 'fs'
+import * as fs from 'fs-jetpack'
 import * as path from 'path'
-import * as ts from 'typescript'
+import { findOrScaffold } from './scaffold'
 import { findConfigFile } from './tsc'
 
 const DEFAULT_ENTRY_POINTS = [
@@ -27,44 +27,16 @@ const DEFAULT_ENTRY_POINTS = [
   'schema/app.ts',
 ]
 
-export function findServerEntryPoint(tsConfig: ts.ParsedCommandLine) {
-  let entrypoint: string | undefined = undefined
-  const packageJsonPath = findConfigFile('package.json', { required: false })
-
-  if (packageJsonPath) {
-    try {
-      const packageJson: { main?: string } = JSON.parse(
-        fs.readFileSync(packageJsonPath).toString()
-      )
-
-      if (packageJson.main) {
-        entrypoint = sourceFilePathFromTranspiledPath({
-          transpiledPath: packageJson.main,
-          outDir: tsConfig.options.outDir!,
-          rootDir: tsConfig.options.rootDir!,
-          packageJsonPath,
-        })
-      }
-    } catch (e) {
-      console.log(
-        `Warning: We were unable to infer the server entrypoint from your package.json file. ${e.message}`
-      )
-    } // TODO: Do we silently fail on purpose (in case it cannot parse the `package.json` file)
-  }
-
-  entrypoint = DEFAULT_ENTRY_POINTS.find(entryPointPath =>
-    fs.existsSync(path.join(process.cwd(), entryPointPath))
-  )
-
-  if (!entrypoint) {
-    throw new Error(
-      `Could not find a valid entry point for your server. Possible entries: ${DEFAULT_ENTRY_POINTS.map(
-        p => `"${p}"`
-      ).join(', ')}`
-    )
-  }
-
-  return entrypoint
+export function findServerEntryPoint() {
+  return findOrScaffold({
+    fileNames: ['app.ts', 'server.ts', 'service.ts'],
+    fallbackPath: fs.path('.pumpkins', 'app.ts'),
+    fallbackContent: `
+    import { createApp } from 'pumpkins'
+    
+    createApp().startServer()
+    `,
+  })
 }
 
 export function findProjectDir() {
@@ -117,4 +89,27 @@ export function sourceFilePathFromTranspiledPath({
   const maybeAppFolders = path.dirname(pathFromOutDirToFile)
 
   return path.join(rootDir, maybeAppFolders, tsFileName)
+}
+
+export function findFile(fileNames: string[]) {
+  const foundFiles = fs.find('.', {
+    matching: [...fileNames, '!node_modules/**/*'],
+  })
+
+  // TODO: What if several files were found?
+  if (foundFiles.length > 0) {
+    return path.join(process.cwd(), foundFiles[0])
+  }
+
+  return undefined
+}
+
+export function trimNodeModulesIfInPath(path: string) {
+  if (path.includes('node_modules')) {
+    return path.substring(
+      path.indexOf('node_modules') + 'node_modules'.length + 1
+    )
+  }
+
+  return path
 }

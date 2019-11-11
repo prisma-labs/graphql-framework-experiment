@@ -54,3 +54,5 @@ yarn-error.log*
 dist
 schema.graphql
 .pumpkins
+.yalc
+yalc.lock
