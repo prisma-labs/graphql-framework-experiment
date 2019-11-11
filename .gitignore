@@ -54,5 +54,5 @@ yarn-error.log*
 .vscode
 dist
 nexus-typegen.ts
-schema.graphql
 yalc.lock
+.yalc
