@@ -7,16 +7,15 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-
 - [Example](#example)
 - [Conventions](#conventions)
-    - [Special File Names](#special-file-names)
-    - [`schema`](#schema)
-    - [`context`](#context)
-    - [`app`](#app)
-    - [Example Layouts](#example-layouts)
+  - [Special File Names](#special-file-names)
+  - [`schema`](#schema)
+  - [`context`](#context)
+  - [`app`](#app)
+  - [Example Layouts](#example-layouts)
 - [API](#api)
-    - [`createApp`](#createapp)
+  - [`createApp`](#createapp)
 - [CLI](#cli)
   - [`pumpkins build`](#pumpkins-build)
   - [`pumpkins dev`](#pumpkins-dev)
@@ -25,8 +24,8 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
   - [`pumpkins help [COMMAND]`](#pumpkins-help-command)
   - [`pumpkins init`](#pumpkins-init)
 - [Development](#development)
-    - [Overview](#overview)
-    - [Example app Workflow](#example-app-workflow)
+  - [Overview](#overview)
+  - [Example app Workflow](#example-app-workflow)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -108,7 +107,7 @@ schema.ts           Define GraphQL types                graphql.ts
 schema.prisma       Define Data Models
 ```
 
-### `schema`
+### `schema.ts`
 
 Schema contains your GraphQL type definitions. It can be a single file or folder of files. There can also be multiple instances of file/folder throughout your source tree.
 
@@ -125,7 +124,7 @@ schema/   | graphql/
   c.ts
 ```
 
-### `context`
+### `context.ts`
 
 Context contains the definition of the context object that will be made available to all your GraphQL resolvers. There can only be at most a single `context.ts` file in your source tree. If you do not provide one, a defualt will be, findable in `.pumpkins`.
 
@@ -133,13 +132,30 @@ Context contains the definition of the context object that will be made availabl
 context.ts
 ```
 
-### `app`
+### `app.ts`
 
-App contains the entrypoint to your service, the place where it boots. There can only be at most a single `app.ts` in your source tree. If you not provide one, a default will be, findable in `.pumpkins`.
+App contains the entrypoint to your service, the place where it boots. There can only be at most a single `app.ts` in your source tree. If you do not provide one, a default will be, findable in `.pumpkins`.
 
 ```
 app.ts | main.ts | server.ts | service.ts
 ```
+
+### Prisma Support
+
+Prisma is seamlessly supported, yet optional. You automatically opt-in when you create the schema.prisma file somewhere in your project.
+
+```
+schema.prisma
+```
+
+The following things automatically happen once Prisma is enabled.
+
+1. Pumpkins CLI workflows are extended:
+   1. On build, Prisma generators are run
+   2. During dev, Prisma generators are run after prisma schema file changes
+2. The `nexus-prisma` Nexus plugin is automatically used. This you get access to `t.model` and `t.crud`.
+3. An instance of the generated Photon.JS client is a added to context under `photon` property
+4. The TypeScript types representing your Prisma models are registered as a Nexus data source. In short this enables proper typing of `parent` parameters in your resolves. They reflect the data of the correspondingly named Prisma model.
 
 ### Example Layouts
 
@@ -147,10 +163,17 @@ Nano
 
 ```
 schema.ts
-schema.prisma
 ```
 
 Micro
+
+```
+app.ts
+context.ts
+schema.ts
+```
+
+Minimal
 
 ```
 app.ts
@@ -173,6 +196,22 @@ prisma/
   schema.prisma
 ```
 
+Crazy (possible, but don't do it)
+
+```
+A/
+  app.ts
+  B/
+    C/
+      context.ts
+  X/
+    Y/
+      Z/
+        schema.ts
+prisma/
+  schema.prisma
+```
+
 <br>
 
 # API
@@ -186,12 +225,13 @@ Create an app instance
 # CLI
 
 <!-- commands -->
-* [`pumpkins build`](#pumpkins-build)
-* [`pumpkins dev`](#pumpkins-dev)
-* [`pumpkins doctor`](#pumpkins-doctor)
-* [`pumpkins generate`](#pumpkins-generate)
-* [`pumpkins help [COMMAND]`](#pumpkins-help-command)
-* [`pumpkins init`](#pumpkins-init)
+
+- [`pumpkins build`](#pumpkins-build)
+- [`pumpkins dev`](#pumpkins-dev)
+- [`pumpkins doctor`](#pumpkins-doctor)
+- [`pumpkins generate`](#pumpkins-generate)
+- [`pumpkins help [COMMAND]`](#pumpkins-help-command)
+- [`pumpkins init`](#pumpkins-init)
 
 ## `pumpkins build`
 
@@ -282,6 +322,7 @@ EXAMPLE
 ```
 
 _See code: [dist/cli/commands/init.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0-sha.e03f7b2/dist/cli/commands/init.js)_
+
 <!-- commandsstop -->
 
 # Development
