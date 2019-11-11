@@ -1,5 +1,5 @@
 import * as fs from 'fs-jetpack'
-import { debug } from '../utils'
+import { debug, flatMap } from '../utils'
 
 function findSchemaModules(): string[] {
   debug.schema('finding schema modules ...')
@@ -34,21 +34,22 @@ queryType({
     return [schemaPath]
   }
 
-  const fileOrDir = files[0]
-  const absolutePath = fs.path(fileOrDir)
+  return flatMap(files, fileOrDir => {
+    const absolutePath = fs.path(fileOrDir)
 
-  if (fs.exists(absolutePath) === 'dir') {
-    return fs
-      .find(absolutePath, {
-        files: true,
-        directories: false,
-        recursive: true,
-        matching: '*.ts',
-      })
-      .map(f => fs.path(f))
-  }
+    if (fs.exists(absolutePath) === 'dir') {
+      return fs
+        .find(absolutePath, {
+          files: true,
+          directories: false,
+          recursive: true,
+          matching: '*.ts',
+        })
+        .map(f => fs.path(f))
+    }
 
-  return [fs.path(fileOrDir)]
+    return [fs.path(fileOrDir)]
+  })
 }
 
 export function requireSchemaModules(): void {
