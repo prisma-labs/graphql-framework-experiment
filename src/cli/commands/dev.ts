@@ -10,8 +10,7 @@ export class Dev extends Command {
 
   async run() {
     // const { args, flags } = this.parse(Dev)
-    const tsConfig = readTsConfig()
-    const entryPoint = findServerEntryPoint(tsConfig)
+    const entryPoint = findServerEntryPoint()
 
     // The child process that ts-node-dev spawns will inherit
     // the state of our process.env. We want to make sure that

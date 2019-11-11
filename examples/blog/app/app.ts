@@ -1,1 +1,3 @@
-app.startServer()
+import { createApp } from 'pumpkins'
+
+createApp().startServer()

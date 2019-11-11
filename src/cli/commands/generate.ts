@@ -15,8 +15,7 @@ export class Generate extends Command {
 
   async run() {
     const { args, flags } = this.parse(Generate)
-    const tsConfig = readTsConfig()
-    const { error } = generateArtifacts(tsConfig, flags.entrypoint)
+    const { error } = generateArtifacts(flags.entrypoint)
 
     if (error) {
       this.error(error, { exit: 1 })

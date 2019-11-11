@@ -7,15 +7,17 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
+
 - [Example](#example)
 - [Conventions](#conventions)
-  - [Special File Names](#special-file-names)
-  - [`schema`](#schema)
-  - [`context`](#context)
-  - [`app`](#app)
-  - [Example Layouts](#example-layouts)
+    - [Special File Names](#special-file-names)
+    - [`schema.ts`](#schemats)
+    - [`context.ts`](#contextts)
+    - [`app.ts`](#appts)
+    - [Prisma Support](#prisma-support)
+    - [Example Layouts](#example-layouts)
 - [API](#api)
-  - [`createApp`](#createapp)
+    - [`createApp`](#createapp)
 - [CLI](#cli)
   - [`pumpkins build`](#pumpkins-build)
   - [`pumpkins dev`](#pumpkins-dev)
@@ -24,8 +26,8 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
   - [`pumpkins help [COMMAND]`](#pumpkins-help-command)
   - [`pumpkins init`](#pumpkins-init)
 - [Development](#development)
-  - [Overview](#overview)
-  - [Example app Workflow](#example-app-workflow)
+    - [Overview](#overview)
+    - [Example app Workflow](#example-app-workflow)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -217,13 +219,12 @@ Create an app instance
 # CLI
 
 <!-- commands -->
-
-- [`pumpkins build`](#pumpkins-build)
-- [`pumpkins dev`](#pumpkins-dev)
-- [`pumpkins doctor`](#pumpkins-doctor)
-- [`pumpkins generate`](#pumpkins-generate)
-- [`pumpkins help [COMMAND]`](#pumpkins-help-command)
-- [`pumpkins init`](#pumpkins-init)
+* [`pumpkins build`](#pumpkins-build)
+* [`pumpkins dev`](#pumpkins-dev)
+* [`pumpkins doctor`](#pumpkins-doctor)
+* [`pumpkins generate`](#pumpkins-generate)
+* [`pumpkins help [COMMAND]`](#pumpkins-help-command)
+* [`pumpkins init`](#pumpkins-init)
 
 ## `pumpkins build`
 
@@ -314,7 +315,6 @@ EXAMPLE
 ```
 
 _See code: [dist/cli/commands/init.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0-sha.e03f7b2/dist/cli/commands/init.js)_
-
 <!-- commandsstop -->
 
 # Development
