@@ -67,9 +67,6 @@
   },
   "repository": "prisma-labs/pumpkins",
   "scripts": {
-    "bootstrap": "yarn install && yalc link && yarn bootstrap:hello && yarn bootstrap:blog",
-    "bootstrap:hello": "cd examples/hello && yarn install && yarn prisma2 generate && yalc link pumpkins",
-    "bootstrap:blog": "cd examples/blog && yarn install && yarn prisma2 generate && yalc link pumpkins",
     "publish:sha": "yarn publish --tag sha --no-git-tag-version --new-version \"0.0.0-sha.$(git show -s head --format='%h')\"",
     "format": "prettier --write '*/**/*.ts'",
     "build:doc": "oclif-dev readme && doctoc --notitle README.md",
@@ -78,8 +75,10 @@
     "prepack": "yarn -s clean && tsc -b && oclif-dev manifest && yarn -s build:doc",
     "test": "jest",
     "test:dev": "jest --watch",
-    "dev": "tsc -b -w & yarn nodemon -x 'yarn yalc push' > /dev/null",
-    "example": "yarn ts-node ./example/index.ts"
+    "dev:bootstrap:hello": "cd examples/hello && yarn install && yarn -s prisma2 generate && yalc link pumpkins",
+    "dev:bootstrap:blog": "cd examples/blog && yarn install && yarn -s prisma2 generate && yalc link pumpkins",
+    "dev:bootstrap": "yarn install && yalc link && yarn -s dev:bootstrap:hello && yarn -s dev:bootstrap:blog",
+    "dev": "tsc -b -w & yarn nodemon -x 'yarn -s yalc push' > /dev/null"
   },
   "prettier": {
     "semi": false,
