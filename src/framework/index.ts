@@ -3,10 +3,12 @@ import express from 'express'
 import * as fs from 'fs-jetpack'
 import { intArg, stringArg } from 'nexus'
 import { nexusPrismaPlugin } from 'nexus-prisma'
-import * as path from 'path'
 import { register } from 'ts-node'
-import { requireSchemaModules, trimNodeModulesIfInPath } from '../utils'
-import { findOrScaffold } from '../utils/scaffold'
+import {
+  findOrScaffold,
+  requireSchemaModules,
+  trimNodeModulesIfInPath,
+} from '../utils'
 import { createNexusSingleton, MutationType, QueryType } from './nexus'
 
 /**
@@ -156,7 +158,7 @@ export function createApp() {
             sources: [
               { source: contextModulePath, alias: 'Context' },
               {
-                source: path.join(generatedPhotonPackagePath, '/index.d.ts'),
+                source: '@generated/photon',
                 alias: 'photon',
               },
             ],

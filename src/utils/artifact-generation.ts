@@ -1,16 +1,14 @@
 import { spawnSync } from 'child_process'
-import * as fs from 'fs'
+import * as fs from 'fs-jetpack'
 import * as path from 'path'
 import { findServerEntryPoint } from './path'
 
-export function generateArtifacts(
+export async function generateArtifacts(
   entrypoint?: string
-): { entrypoint: string; error?: Error } {
-  const entryPoint = entrypoint
-    ? path.join(process.cwd(), entrypoint)
-    : findServerEntryPoint()
+): Promise<{ entrypoint: string; error?: Error }> {
+  const entryPoint = entrypoint ? fs.path(entrypoint) : findServerEntryPoint()
 
-  if (!fs.existsSync(entryPoint)) {
+  if (!(await fs.existsAsync(entryPoint))) {
     throw new Error(
       `🎃  Entry point "${path.relative(
         process.cwd(),
@@ -20,10 +18,11 @@ export function generateArtifacts(
   }
 
   try {
-    spawnSync('ts-node', [entryPoint, '--transpile-only'], {
+    spawnSync('ts-node', [entryPoint], {
       env: {
         ...process.env,
         PUMPKINS_SHOULD_EXIT_AFTER_GENERATE_ARTIFACTS: 'true',
+        TS_NODE_TRANSPILE_ONLY: 'true',
       },
     })
     return { entrypoint: entryPoint }

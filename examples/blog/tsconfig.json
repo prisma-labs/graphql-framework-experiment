@@ -5,7 +5,8 @@
     "lib": ["esnext"],
     "rootDir": "app",
     "strict": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "skipLibCheck": true
   },
   "exclude": ["prisma/**/*"]
 }

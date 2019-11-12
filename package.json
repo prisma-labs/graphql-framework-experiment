@@ -10,6 +10,8 @@
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/plugin-help": "^2",
+    "@prisma/photon": "^0.2.167",
+    "@prisma/sdk": "^0.0.30",
     "apollo-server-express": "^2.9.7",
     "debug": "^4.1.1",
     "dedent": "^0.7.0",

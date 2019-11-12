@@ -1,13 +1,14 @@
 import { Command, flags } from '@oclif/command'
-import * as fs from 'fs'
+import * as fs from 'fs-jetpack'
 import * as path from 'path'
 import {
   compile,
   findProjectDir,
+  generateArtifacts,
   getTranspiledPath,
   readTsConfig,
+  runPrismaGenerators,
 } from '../../utils'
-import { generateArtifacts } from '../../utils/artifact-generation'
 
 export class Build extends Command {
   static description = 'Build a production-ready server'
@@ -22,31 +23,51 @@ export class Build extends Command {
 
   async run() {
     const { flags } = this.parse(Build)
+
+    await runPrismaGenerators()
+    const { entrypoint } = await this.generateArtifacts(flags.entrypoint)
+    const { transpiledEntrypointPath } = this.compileProject(entrypoint)
+    await this.swapEntryPoint(transpiledEntrypointPath)
+
+    this.log('🎃  Pumpkins server successfully compiled!')
+  }
+
+  async generateArtifacts(entry: string | undefined) {
+    this.log('🎃  Generating artifacts ...')
+    const { error, entrypoint } = await generateArtifacts(entry)
+    if (error) {
+      this.error(error, { exit: 1 })
+    }
+
+    return { entrypoint }
+  }
+
+  compileProject(entrypoint: string) {
+    this.log('🎃  Compiling ...')
     const tsConfig = readTsConfig()
-    const { error, entrypoint } = generateArtifacts(flags.entrypoint)
     const projectDir = findProjectDir()
     const transpiledEntrypointPath = getTranspiledPath(
       projectDir,
       entrypoint,
       tsConfig.options.outDir!
     )
-    if (error) {
-      this.error(error, { exit: 1 })
-    }
 
     compile(tsConfig.fileNames, tsConfig.options)
 
+    return { transpiledEntrypointPath }
+  }
+
+  async swapEntryPoint(transpiledEntrypointPath: string) {
     const entryPointFileNameSansExt = path.basename(
       transpiledEntrypointPath,
       '.js'
     )
     const renamedEntryPoint = `${entryPointFileNameSansExt}__original__.js`
-    const entryPointContent = fs
-      .readFileSync(transpiledEntrypointPath)
-      .toString()
-    fs.writeFileSync(
+    const entryPointContent = await fs.readAsync(transpiledEntrypointPath)
+
+    await fs.writeAsync(
       path.join(path.dirname(transpiledEntrypointPath), renamedEntryPoint),
-      entryPointContent
+      entryPointContent!
     )
 
     const wrapperContent = `
@@ -54,8 +75,6 @@ process.env.PUMPKINS_SHOULD_GENERATE_ARTIFACTS = "false"
 
 require("./${renamedEntryPoint}")
 `
-    fs.writeFileSync(transpiledEntrypointPath, wrapperContent)
-
-    this.log('🎃  Pumpkins server successfully compiled!')
+    await fs.writeAsync(transpiledEntrypointPath, wrapperContent)
   }
 }

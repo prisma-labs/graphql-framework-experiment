@@ -1,6 +1,6 @@
 import { Command } from '@oclif/command'
 import startTSNodeDev from 'ts-node-dev'
-import { findServerEntryPoint, findConfigFile, readTsConfig } from '../../utils'
+import { findServerEntryPoint, runPrismaGenerators } from '../../utils'
 
 export class Dev extends Command {
   static description = 'describe the command here'
@@ -10,6 +10,8 @@ export class Dev extends Command {
 
   async run() {
     // const { args, flags } = this.parse(Dev)
+
+    await runPrismaGenerators({ silent: true })
     const entryPoint = findServerEntryPoint()
 
     // The child process that ts-node-dev spawns will inherit
