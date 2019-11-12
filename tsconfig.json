@@ -1,17 +1,9 @@
 {
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "declaration": true,
-    "sourceMap": true,
-    "declarationMap": true,
-    "importHelpers": true,
-    "module": "commonjs",
-    "esModuleInterop": true,
+    "composite": true,
     "outDir": "dist",
-    "rootDir": "src",
-    "strict": true,
-    "target": "es2017",
-    "skipLibCheck": true,
-    "typeRoots": ["./node_modules/@types", "./types"]
+    "rootDir": "src"
   },
-  "include": ["src/**/*"]
+  "include": ["src"]
 }
