@@ -18,7 +18,7 @@ it('warns if .pumpkins is not git-ignored', () => {
 })
 
 it('validates if .pumpkins is git-ignored', () => {
-  fs.write(path.join(ctx.tmpDir.name, '.gitignore'), '.pumpkins')
+  ctx.fs.write('.gitignore', '.pumpkins')
   expect(ctx.cli('doctor')).toMatchInlineSnapshot(`
     Object {
       "status": 0,

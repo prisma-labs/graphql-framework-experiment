@@ -58,12 +58,13 @@ type GitFixture = {
   git: Git.SimpleGit
   tmpDir: DirResult
   cli: ReturnType<typeof createCLIRunner>
+  fs: typeof fs
   setupRepo: () => Promise<void>
 }
 
 export const gitFixture: CreateFixture<GitFixture> = ctx => {
   beforeEach(async () => {
-    await fs.dir(ctx.tmpDir.name, { empty: true })
+    await ctx.fs.dir(ctx.tmpDir.name, { empty: true })
     await ctx.setupRepo()
   })
 
@@ -71,18 +72,25 @@ export const gitFixture: CreateFixture<GitFixture> = ctx => {
     const tmpDir = dirSync({
       postfix: `_test_${path.basename(__filename, '.ts')}`,
     })
-    const git = Git(tmpDir.name)
-    const cli = createCLIRunner({ cwd: tmpDir.name })
+    const localGit = Git(tmpDir.name)
+    const localFS = fs.cwd(tmpDir.name)
+    const localCLI = createCLIRunner({ cwd: tmpDir.name })
     // console.log(tmpDir.name)
     const setupRepo = async () => {
-      await git.init()
-      await git.raw(['commit', '--allow-empty', '--message', 'initial commit'])
+      await localGit.init()
+      await localGit.raw([
+        'commit',
+        '--allow-empty',
+        '--message',
+        'initial commit',
+      ])
     }
 
     return {
       tmpDir,
-      git,
-      cli,
+      git: localGit,
+      cli: localCLI,
+      fs: localFS,
       setupRepo,
     }
   }
