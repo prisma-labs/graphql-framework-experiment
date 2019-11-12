@@ -3,7 +3,7 @@ import * as path from 'path'
 import * as fs from 'fs-jetpack'
 
 export async function isPrismaEnabled() {
-  const schemaPath = await fs.findAsync({
+  const schemaPaths = await fs.findAsync({
     directories: false,
     recursive: true,
     matching: [
@@ -13,11 +13,19 @@ export async function isPrismaEnabled() {
     ],
   })
 
-  if (!schemaPath) {
+  if (schemaPaths.length > 1) {
+    console.log(
+      `Warning: we found multiple "schema.prisma" files in your project.\n${schemaPaths
+        .map((p, i) => `- \"${p}\"${i === 0 ? ' (used by pumpkins)' : ''}`)
+        .join('\n')}`
+    )
+  }
+
+  if (!schemaPaths) {
     return { enabled: false }
   }
 
-  return { enabled: true, schemaPath: fs.path(schemaPath[0]) }
+  return { enabled: true, schemaPath: fs.path(schemaPaths[0]) }
 }
 export async function runPrismaGenerators(
   options: { silent: boolean } = { silent: false }
