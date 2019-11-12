@@ -10,30 +10,14 @@ export function createNexusSingleton() {
   const __types: any[] = []
 
   function makeSchema(
-    overrides?: Partial<nexus.core.SchemaConfig>
+    config: Omit<nexus.core.SchemaConfig, 'types'>
   ): nexus.core.NexusGraphQLSchema {
-    // TODO: Find better heuristic
-    const projectDir = findProjectDir()
-    const pumpkinsDir = path.join(projectDir, '.pumpkins')
-    const defaultSchemaPath = path.join(projectDir, 'schema.graphql')
-    // const defaultTypesPath = path.join(pumpkinsDir, 'nexus-typegen.ts')
-    const defaultTypesPath = fs.path(
-      'node_modules/@types/nexus-typegen/index.d.ts'
-    )
-
-    const config: nexus.core.SchemaConfig = {
+    const configWithTypes: nexus.core.SchemaConfig = {
       types: __types,
-      outputs: {
-        typegen: defaultTypesPath,
-        schema: defaultSchemaPath,
-      },
-      // TODO semantic merge of overrides
-      //      for example sources should be concatenated together
-      //      but right now overrides would just wipe out any previous
-      ...overrides,
+      ...config,
     }
 
-    return nexus.makeSchema(config)
+    return nexus.makeSchema(configWithTypes)
   }
 
   function objectType<TypeName extends string>(
