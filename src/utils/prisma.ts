@@ -28,7 +28,7 @@ export async function runPrismaGenerators(
     return
   }
 
-  if (!(await shouldRegeneratePhoton(schemaPath!))) {
+  if ((await shouldRegeneratePhoton(schemaPath!)) === false) {
     return
   }
 
