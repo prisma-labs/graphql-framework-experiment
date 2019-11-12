@@ -2,7 +2,16 @@ import { getGenerators } from '@prisma/sdk'
 import * as path from 'path'
 import * as fs from 'fs-jetpack'
 
-export async function isPrismaEnabled() {
+export async function isPrismaEnabled(): Promise<
+  | {
+      enabled: boolean
+      schemaPath?: undefined
+    }
+  | {
+      enabled: boolean
+      schemaPath: string
+    }
+> {
   const schemaPaths = await fs.findAsync({
     directories: false,
     recursive: true,
@@ -63,7 +72,9 @@ export async function runPrismaGenerators(
 /**
  * Regenerate photon only if schema was updated between last generation
  */
-async function shouldRegeneratePhoton(localSchemaPath: string) {
+async function shouldRegeneratePhoton(
+  localSchemaPath: string
+): Promise<boolean> {
   try {
     // TODO: Use path from generator because photon can be generated elsewhere than at @generated/photon
     const photonPath = require.resolve('@generated/photon')
