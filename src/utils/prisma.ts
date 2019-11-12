@@ -21,7 +21,7 @@ export function isPrismaEnabled() {
 }
 export async function runPrismaGenerators(
   options: { silent: boolean } = { silent: false }
-) {
+): void {
   const { enabled, schemaPath } = isPrismaEnabled()
 
   if (!enabled) {
