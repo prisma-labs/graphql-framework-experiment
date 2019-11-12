@@ -22,10 +22,6 @@ export function isPrismaEnabled() {
 export async function runPrismaGenerators(
   options: { silent: boolean } = { silent: false }
 ) {
-  if (!options.silent) {
-    console.log('🎃  Running Prisma generators ...')
-  }
-
   const { enabled, schemaPath } = isPrismaEnabled()
 
   if (!enabled) {
@@ -34,6 +30,10 @@ export async function runPrismaGenerators(
 
   if (!(await shouldRegeneratePhoton(schemaPath!))) {
     return
+  }
+
+  if (!options.silent) {
+    console.log('🎃  Running Prisma generators ...')
   }
 
   const aliases = {

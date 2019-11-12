@@ -11,7 +11,7 @@ export class Dev extends Command {
   async run() {
     // const { args, flags } = this.parse(Dev)
 
-    await runPrismaGenerators({ silent: true })
+    await runPrismaGenerators()
     const entryPoint = findServerEntryPoint()
 
     // The child process that ts-node-dev spawns will inherit
