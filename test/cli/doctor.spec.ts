@@ -1,8 +1,10 @@
-import { useGitFixture } from '../__helpers'
+import { withContext, gitFixture } from '../__helpers'
 import * as path from 'path'
 import * as fs from 'fs-jetpack'
 
-const ctx = useGitFixture()
+const ctx = withContext()
+  .use(gitFixture)
+  .build()
 
 it('warns if .pumpkins is not git-ignored', () => {
   expect(ctx.cli('doctor')).toMatchInlineSnapshot(`
