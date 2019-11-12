@@ -1,6 +1,6 @@
-import { findFile } from '.'
-import * as fs from 'fs-jetpack'
 import dedent from 'dedent'
+import * as fs from 'fs-jetpack'
+import { findFile } from './path'
 
 export function findOrScaffold({
   fileNames,

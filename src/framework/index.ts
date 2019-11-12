@@ -2,11 +2,13 @@ import { ApolloServer } from 'apollo-server-express'
 import express from 'express'
 import * as fs from 'fs-jetpack'
 import { intArg, stringArg } from 'nexus'
-import { nexusPrismaPlugin } from 'nexus-prisma'
-import * as path from 'path'
 import { register } from 'ts-node'
-import { requireSchemaModules, trimNodeModulesIfInPath } from '../utils'
-import { findOrScaffold } from '../utils/scaffold'
+import {
+  findOrScaffold,
+  requireSchemaModules,
+  trimNodeModulesIfInPath,
+  createNexusConfig,
+} from '../utils'
 import { createNexusSingleton, MutationType, QueryType } from './nexus'
 
 /**
@@ -100,17 +102,6 @@ export function createApp() {
 
   requireSchemaModules()
 
-  const shouldGenerateArtifacts =
-    process.env.PUMPKINS_SHOULD_GENERATE_ARTIFACTS === 'true'
-      ? true
-      : process.env.PUMPKINS_SHOULD_GENERATE_ARTIFACTS === 'false'
-      ? false
-      : Boolean(!process.env.NODE_ENV || process.env.NODE_ENV === 'development')
-  const shouldExitAfterGenerateArtifacts =
-    process.env.PUMPKINS_SHOULD_EXIT_AFTER_GENERATE_ARTIFACTS === 'true'
-      ? true
-      : false
-
   const generatedPhotonPackagePath = fs.path('node_modules/@generated/photon')
 
   // Get the context module for the app.
@@ -119,7 +110,7 @@ export function createApp() {
   //
   // TODO context module should have flexible contract
   //      currently MUST return a createContext function
-  const contextModulePath = findOrScaffold({
+  const contextPath = findOrScaffold({
     fileNames: ['context.ts'],
     fallbackPath: fs.path('.pumpkins/context.ts'),
     fallbackContent: `\
@@ -137,7 +128,7 @@ export function createApp() {
     photon,
   })`,
   })
-  const context = require(contextModulePath)
+  const context = require(contextPath)
 
   return {
     startServer(config: ServerOptions = {}) {
@@ -150,33 +141,12 @@ export function createApp() {
         playground: mergedConfig.playground,
         introspection: mergedConfig.introspection,
         context: context.createContext,
-        schema: makeSchema({
-          typegenAutoConfig: {
-            contextType: 'Context.Context',
-            sources: [
-              { source: contextModulePath, alias: 'Context' },
-              {
-                source: path.join(generatedPhotonPackagePath, '/index.d.ts'),
-                alias: 'photon',
-              },
-            ],
-          },
-          shouldGenerateArtifacts,
-          shouldExitAfterGenerateArtifacts,
-          plugins: [
-            nexusPrismaPlugin({
-              inputs: {
-                photon: generatedPhotonPackagePath,
-              },
-              outputs: {
-                typegen: fs.path(
-                  'node_modules/@types/nexus-typegen-prisma/index.d.ts'
-                ),
-              },
-              shouldGenerateArtifacts,
-            }),
-          ],
-        }),
+        schema: makeSchema(
+          createNexusConfig({
+            generatedPhotonPackagePath,
+            contextPath,
+          })
+        ),
       })
 
       const app = express()
