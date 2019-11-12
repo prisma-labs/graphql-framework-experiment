@@ -1,10 +1,11 @@
 import Debug from 'debug'
 
-type DebugType = 'app' | 'schema'
+type DebugType = 'app' | 'schema' | 'prisma'
 
 const DebugType: Record<DebugType, string> = {
   app: 'pumpkins:app',
   schema: 'pumpkins:schema',
+  prisma: "pumpkins:prisma"
 }
 
 export const debug: Record<DebugType, Debug.Debugger> = Object.keys(

@@ -1,6 +1,7 @@
 import { getGenerators } from '@prisma/sdk'
 import * as path from 'path'
 import * as fs from 'fs-jetpack'
+import { debug } from './debug'
 
 export async function isPrismaEnabled(): Promise<
   | {
@@ -46,6 +47,7 @@ export async function runPrismaGenerators(
   }
 
   if ((await shouldRegeneratePhoton(schemaPath!)) === false) {
+    debug.prisma('Prisma generators were not run because the prisma schema was not updated')
     return
   }
 
