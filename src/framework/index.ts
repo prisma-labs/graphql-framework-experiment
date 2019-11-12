@@ -4,9 +4,17 @@ import * as fs from 'fs-jetpack'
 import { intArg, stringArg } from 'nexus'
 import { nexusPrismaPlugin } from 'nexus-prisma'
 import * as path from 'path'
+import { register } from 'ts-node'
 import { requireSchemaModules, trimNodeModulesIfInPath } from '../utils'
 import { findOrScaffold } from '../utils/scaffold'
 import { createNexusSingleton, MutationType, QueryType } from './nexus'
+
+/**
+ * Use ts-node register to require .ts file and transpile them "on-the-fly"
+ */
+register({
+  transpileOnly: true,
+})
 
 const {
   queryType,

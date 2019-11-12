@@ -40,22 +40,20 @@ export class Build extends Command {
       transpiledEntrypointPath,
       '.js'
     )
+    const renamedEntryPoint = `${entryPointFileNameSansExt}__original__.js`
     const entryPointContent = fs
       .readFileSync(transpiledEntrypointPath)
       .toString()
+    fs.writeFileSync(
+      path.join(path.dirname(transpiledEntrypointPath), renamedEntryPoint),
+      entryPointContent
+    )
+
     const wrapperContent = `
 process.env.PUMPKINS_SHOULD_GENERATE_ARTIFACTS = "false"
 
-require("./__index.js")
-    `
-
-    fs.writeFileSync(
-      path.join(
-        path.dirname(transpiledEntrypointPath),
-        `${entryPointFileNameSansExt}__original__.js`
-      ),
-      entryPointContent
-    )
+require("./${renamedEntryPoint}")
+`
     fs.writeFileSync(transpiledEntrypointPath, wrapperContent)
 
     this.log('🎃  Pumpkins server successfully compiled!')
