@@ -42,7 +42,7 @@ function plugins({
   shouldGenerateArtifacts: boolean
 }): core.NexusPlugin[] | undefined {
   const nexusPrismaTypegenOutput = fs.path(
-    'node_modules/@types/nexus-typegen-prisma/index.d.ts'
+    'node_modules/@types/nexus-typegen-prisma/index'
   )
 
   return [
@@ -61,7 +61,6 @@ function plugins({
 function outputs(): { typegen: string; schema: string } {
   const projectDir = findProjectDir()
   const defaultSchemaPath = path.join(projectDir, 'schema.graphql')
-  // const defaultTypesPath = path.join(pumpkinsDir, 'nexus-typegen.ts')
   const defaultTypesPath = fs.path(
     'node_modules/@types/nexus-typegen/index.d.ts'
   )
