@@ -2,8 +2,8 @@ import { getGenerators } from '@prisma/sdk'
 import * as path from 'path'
 import * as fs from 'fs-jetpack'
 
-export function isPrismaEnabled() {
-  const schemaPath = fs.find({
+export async function isPrismaEnabled() {
+  const schemaPath = await fs.findAsync({
     directories: false,
     recursive: true,
     matching: [
@@ -21,8 +21,8 @@ export function isPrismaEnabled() {
 }
 export async function runPrismaGenerators(
   options: { silent: boolean } = { silent: false }
-): void {
-  const { enabled, schemaPath } = isPrismaEnabled()
+): Promise<void> {
+  const { enabled, schemaPath } = await isPrismaEnabled()
 
   if (!enabled) {
     return
