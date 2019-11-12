@@ -23,7 +23,7 @@ export const withContext = <C extends {}>(
   // type variable. So technically this is not safe but in practice this is how
   // it will be used. We can probably use conditional types to avoid this hack?...
   // context = context ?? ({} as any)
-  let context = maybeContext ?? ({} as C)
+  const context = maybeContext ?? ({} as C)
 
   const use = <C2 extends {}>(createFixture: CreateFixture<C2>) => {
     // We need the any-cast becuase context is the wrong type now, but used in
