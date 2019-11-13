@@ -17,7 +17,8 @@ export async function generateArtifacts(
     )
   }
 
-  const result = spawnSync('ts-node', [entryPoint], {
+  const result = spawnSync('npx', ['ts-node', entryPoint], {
+    encoding: 'utf8',
     env: {
       ...process.env,
       PUMPKINS_SHOULD_EXIT_AFTER_GENERATE_ARTIFACTS: 'true',
@@ -25,8 +26,27 @@ export async function generateArtifacts(
     },
   })
 
+  if (result.error) {
+    return {
+      error: result.error,
+      entrypoint: entryPoint,
+    }
+  }
+
+  if (result.status !== 0) {
+    const error = new Error(`
+      Nexus artifact generation failed with exit code "${result.status}". The following stderr was captured:
+
+          ${result.stderr}
+    `)
+
+    return {
+      error,
+      entrypoint: entryPoint,
+    }
+  }
+
   return {
-    error: result.error,
     entrypoint: entryPoint,
   }
 }
