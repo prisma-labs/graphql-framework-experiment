@@ -4,7 +4,7 @@ const ctx = withContext()
   .use(gitFixture)
   .build()
 
-it('can build just a schema.ts', async () => {
+it('can build with minimal app.ts + schema.ts', async () => {
   ctx.fs.write(
     'package.json',
     `
