@@ -29,7 +29,7 @@ export class Build extends Command {
   }
 
   async generateArtifacts(entry: string | undefined) {
-    this.log('🎃  Generating artifacts ...')
+    this.log('🎃  Generating Nexus artifacts ...')
     const { error, entrypoint } = await generateArtifacts(entry)
     if (error) {
       this.error(error, { exit: 1 })
