@@ -13,6 +13,12 @@ export const run = (command: string, options?: RunOptions): RunResult => {
   return { stderr, stdout, status }
 }
 
+export const createRunner = (cwd: string): typeof run => {
+  return (cmd, opts) => {
+    return run(cmd, { ...opts, cwd })
+  }
+}
+
 export const createCLIRunner = (optionsBase?: RunOptions) => (
   command: string,
   options?: RunOptions

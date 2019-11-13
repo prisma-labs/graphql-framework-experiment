@@ -1,6 +1,4 @@
 import { withContext, gitFixture } from '../__helpers'
-import * as path from 'path'
-import * as fs from 'fs-jetpack'
 
 const ctx = withContext()
   .use(gitFixture)

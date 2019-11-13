@@ -2,7 +2,7 @@ import * as fs from 'fs-jetpack'
 import Git from 'simple-git/promise'
 import { dirSync, DirResult } from 'tmp'
 import * as path from 'path'
-import { createCLIRunner } from './run'
+import { createCLIRunner, run, createRunner } from './run'
 
 type CreateFixture<C> = (ctx: C) => () => C
 
@@ -60,6 +60,7 @@ type GitFixture = {
   cli: ReturnType<typeof createCLIRunner>
   fs: typeof fs
   setupRepo: () => Promise<void>
+  run: typeof run
 }
 
 export const gitFixture: CreateFixture<GitFixture> = ctx => {
@@ -75,6 +76,7 @@ export const gitFixture: CreateFixture<GitFixture> = ctx => {
     const localGit = Git(tmpDir.name)
     const localFS = fs.cwd(tmpDir.name)
     const localCLI = createCLIRunner({ cwd: tmpDir.name })
+    const localRun = createRunner(tmpDir.name)
     // console.log(tmpDir.name)
     const setupRepo = async () => {
       await localGit.init()
@@ -91,6 +93,7 @@ export const gitFixture: CreateFixture<GitFixture> = ctx => {
       git: localGit,
       cli: localCLI,
       fs: localFS,
+      run: localRun,
       setupRepo,
     }
   }
