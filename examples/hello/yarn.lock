@@ -258,9 +258,9 @@
     wtfnode "0.8.0"
 
 "@prisma/photon@^0.2.168":
-  version "0.2.170"
-  resolved "https://registry.yarnpkg.com/@prisma/photon/-/photon-0.2.170.tgz#259d50543463861d95f342a41d8f50452a786daa"
-  integrity sha512-Gu830Y/t0iVbk4mqk3x+OiwO7qQPMvyFeuAcuG3lELZ8r+L443E8+btW80FCWgEQ4rRlnh9cTF+xin1xriwPfA==
+  version "0.2.171"
+  resolved "https://registry.yarnpkg.com/@prisma/photon/-/photon-0.2.171.tgz#83de4374c4e55890f5258e5c781e1033149526a8"
+  integrity sha512-3eIS6IEbiWjOLUhG8lFwvS2Czv+ISKDf73xeJ0TFcoWpAq47nCzpTWkpaz0hRDFSrISVqXj/9THFqlzGxA+5Sg==
   dependencies:
     "@apexearth/copy" "^1.4.2"
     "@prisma/engine-core" "2.0.5"

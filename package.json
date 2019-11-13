@@ -34,6 +34,7 @@
     "@types/node": "^12.12.7",
     "@types/tmp": "^0.1.0",
     "chai": "^4",
+    "concurrently": "^5.0.0",
     "doctoc": "^1.4.0",
     "fs-jetpack": "^2.2.3",
     "globby": "^10",
@@ -80,7 +81,7 @@
     "dev:bootstrap:hello": "cd examples/hello && yarn install && yarn -s prisma2 generate && yalc link pumpkins",
     "dev:bootstrap:blog": "cd examples/blog && yarn install && yarn -s prisma2 generate && yalc link pumpkins",
     "dev:bootstrap": "yarn install && yalc link && yarn -s dev:bootstrap:hello && yarn -s dev:bootstrap:blog",
-    "dev": "tsc -b -w"
+    "dev": "concurrently --kill-others \"yarn -s tsc -b -w\" \"yarn -s nodemon -x 'yarn -s yalc push' > /dev/null\""
   },
   "prettier": {
     "semi": false,
