@@ -56,3 +56,4 @@ dist
 nexus-typegen.ts
 yalc.lock
 .yalc
+tsconfig.tsbuildinfo
