@@ -1,3 +1,6 @@
 import { createApp } from 'pumpkins'
+import myplugin from './myplugin'
 
-createApp().startServer()
+createApp()
+  .use(myplugin)
+  .startServer()

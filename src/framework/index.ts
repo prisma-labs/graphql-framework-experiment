@@ -89,6 +89,19 @@ const defaultServerOptions: Required<ServerOptions> = {
   playground: true,
 }
 
+export type Plugin<C extends {}> = {
+  context: {
+    typeExportName: string
+    typeSourcePath: string
+    create: (req: Express.Request) => C
+  }
+}
+
+export type API = {
+  use: (plugin: Plugin<any>) => API
+  startServer: () => void
+}
+
 export function createApp() {
   // During development we dynamically import all the schema modules
   //
@@ -130,23 +143,47 @@ export function createApp() {
   })
   const context = require(contextPath)
 
-  return {
-    startServer(config: ServerOptions = {}) {
+  const plugins: Plugin<any>[] = []
+
+  const api: API = {
+    use(plugin) {
+      plugins.push(plugin)
+      return api
+    },
+
+    startServer(config: ServerOptions = {}): void {
       const mergedConfig: Required<ServerOptions> = {
         ...defaultServerOptions,
         ...config,
       }
 
+      const nexusConfig = createNexusConfig({
+        generatedPhotonPackagePath,
+        contextPath,
+      })
+
+      plugins.forEach(p => {
+        nexusConfig.typegenAutoConfig = nexusConfig.typegenAutoConfig ?? {
+          sources: [],
+        }
+        nexusConfig.typegenAutoConfig.sources.push({
+          source: p.context.typeSourcePath,
+          alias: p.context.typeExportName,
+        })
+      })
+
       const server = new ApolloServer({
         playground: mergedConfig.playground,
         introspection: mergedConfig.introspection,
-        context: context.createContext,
-        schema: makeSchema(
-          createNexusConfig({
-            generatedPhotonPackagePath,
-            contextPath,
-          })
-        ),
+        context: req => {
+          const ctx = {}
+          for (const plugin of plugins) {
+            Object.assign(plugin.context.create(req))
+          }
+          Object.assign(ctx, context.createContext(req))
+          return ctx
+        },
+        schema: makeSchema(nexusConfig),
       })
 
       const app = express()
@@ -158,6 +195,8 @@ export function createApp() {
       )
     },
   }
+
+  return api
 }
 
 export { objectType, inputObjectType, enumType, scalarType, unionType }
