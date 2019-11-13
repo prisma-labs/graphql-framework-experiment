@@ -28,8 +28,7 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
 - [Development](#development)
     - [Overview](#overview)
     - [Testing](#testing)
-    - [Work With Local Example Apps](#work-with-local-example-apps)
-      - [(not working) Alternative Yarn Link Flow](#not-working-alternative-yarn-link-flow)
+    - [Working With Example Apps via Linking](#working-with-example-apps-via-linking)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -324,11 +323,9 @@ _See code: [dist/cli/commands/init.js](https://github.com/prisma-labs/pumpkins/b
 ### Overview
 
 ```
-
 yarn
 yarn test
 yarn dev
-
 ```
 
 ### Testing
@@ -340,35 +337,6 @@ repo.
 The reason we do not use `yarn link` is that yarn [does not symlink the bin into
 local node_modules](https://github.com/yarnpkg/yarn/issues/5713).
 
-### Work With Local Example Apps
+### Working With Example Apps via Linking
 
-1. Setup project and watch for changes
-
-```sh
-yarn bootstrap && yarn dev
-```
-
-2. In another terminal, work with your desired example app
-
-```
-cd examples/hello && yarn dev
-```
-
-#### (not working) Alternative Yarn Link Flow
-
-> NOTE A yarn link workflow would look like as follows but we currently get stuck on ELOOP issues while using the CLI within example apps. Need to debug.
-
-Because `pumpkins` controls and explicitly sets the typegen output and photon input paths we do not need to use [`NEXUS_PRISMA_LINK`](https://github.com/prisma-labs/nexus-prisma/blob/abe6c9c6f15f832c7af638f6f133ebd6c530584c/src/builder.ts#L115-L122)which is designed to aid link workflows _when using defualts_.
-
-```
-yarn link && \
-cd examples/blog && \
-yarn link pumpkins && \
-chmod +x node_modules/.bin/pumpkins && \
-cd .. && \
-yarn dev
-```
-
-```
-yarn dev
-```
+Refer to https://github.com/prisma/pumpkins-examples
