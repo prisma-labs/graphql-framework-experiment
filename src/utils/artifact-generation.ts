@@ -18,13 +18,18 @@ export async function generateArtifacts(
   }
 
   try {
-    spawnSync('ts-node', [entryPoint], {
+    const result = spawnSync('ts-node', [entryPoint], {
       env: {
         ...process.env,
         PUMPKINS_SHOULD_EXIT_AFTER_GENERATE_ARTIFACTS: 'true',
         TS_NODE_TRANSPILE_ONLY: 'true',
       },
     })
+
+    if (result.error) {
+      throw result.error
+    }
+
     return { entrypoint: entryPoint }
   } catch (e) {
     return { error: e, entrypoint: entryPoint }
