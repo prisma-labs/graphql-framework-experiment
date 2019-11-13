@@ -5,11 +5,10 @@ import { debug } from './debug'
 
 export async function isPrismaEnabled(): Promise<
   | {
-      enabled: boolean
-      schemaPath?: undefined
+      enabled: false
     }
   | {
-      enabled: boolean
+      enabled: true
       schemaPath: string
     }
 > {
@@ -40,13 +39,13 @@ export async function isPrismaEnabled(): Promise<
 export async function runPrismaGenerators(
   options: { silent: boolean } = { silent: false }
 ): Promise<void> {
-  const { enabled, schemaPath } = await isPrismaEnabled()
+  const prisma = await isPrismaEnabled()
 
-  if (!enabled) {
+  if (!prisma.enabled) {
     return
   }
 
-  if ((await shouldRegeneratePhoton(schemaPath!)) === false) {
+  if ((await shouldRegeneratePhoton(prisma.schemaPath)) === false) {
     debug.prisma(
       'Prisma generators were not run because the prisma schema was not updated'
     )
@@ -62,7 +61,7 @@ export async function runPrismaGenerators(
   }
 
   const generators = await getGenerators({
-    schemaPath: schemaPath!,
+    schemaPath: prisma.schemaPath,
     printDownloadProgress: false,
     providerAliases: aliases,
   })
