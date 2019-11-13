@@ -47,7 +47,9 @@ export async function runPrismaGenerators(
   }
 
   if ((await shouldRegeneratePhoton(schemaPath!)) === false) {
-    debug.prisma('Prisma generators were not run because the prisma schema was not updated')
+    debug.prisma(
+      'Prisma generators were not run because the prisma schema was not updated'
+    )
     return
   }
 
