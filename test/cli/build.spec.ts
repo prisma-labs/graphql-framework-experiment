@@ -5,18 +5,43 @@ const ctx = withContext()
   .build()
 
 it('can build just a schema.ts', async () => {
-  ctx.run('yarn init -y')
-  ctx.fs.write('tsconfig.json', '{}')
+  ctx.fs.write(
+    'package.json',
+    `
+      {
+        "name": "test-app",
+        "dependencies": {
+          "pumpkins": "0.0.0"
+        },
+        "license": "MIT"
+      }
+    `
+  )
+
+  ctx.fs.write(
+    'tsconfig.json',
+    `
+    {
+      "compilerOptions": {
+        "target": "es2016",
+        "module": "commonjs",
+        "strict": true,
+        "outDir": "dist",
+      },
+    }
+  `
+  )
+
   ctx.fs.write(
     'schema.ts',
     `queryType({
         definition(t) {
-          t.field('foo', Foo)
+          t.field('foo', { type: 'Foo' })
         }
       })
 
       objectType({
-        name: 'Foo'
+        name: 'Foo',
         definition(t) {
           t.string('bar')
         }
@@ -24,20 +49,49 @@ it('can build just a schema.ts', async () => {
     `
   )
 
-  expect(ctx.cli('build')).toMatchInlineSnapshot(`
+  ctx.fs.write(
+    'app.ts',
+    `
+      import { createApp } from 'pumpkins'
+      createApp().startServer()
+    `
+  )
+
+  ctx.run('npm link pumpkins')
+
+  expect(ctx.run('npx pumpkins build')).toMatchInlineSnapshot(`
     Object {
-      "status": 1,
-      "stderr": "TypeError [ERR_INVALID_ARG_TYPE]: The \\"path\\" argument must be of type string. Received type undefined
-        at Object.getPath [as path] (~/projects/prisma-labs/pumpkins/node_modules/fs-jetpack/lib/jetpack.js:50:29)
-        at isPrismaEnabled (~/projects/prisma-labs/pumpkins/src/utils/prisma.ts:26:44)
-        at Object.runPrismaGenerators (~/projects/prisma-labs/pumpkins/src/utils/prisma.ts:30:37)
-        at Build.run (~/projects/prisma-labs/pumpkins/src/cli/commands/build.ts:11:9)
-        at Build._run (~/projects/prisma-labs/pumpkins/node_modules/@oclif/command/lib/command.js:44:20)
-        at Config.runCommand (~/projects/prisma-labs/pumpkins/node_modules/@oclif/config/lib/config.js:151:9)
-        at Main.run (~/projects/prisma-labs/pumpkins/node_modules/@oclif/command/lib/main.js:21:9)
+      "status": 0,
+      "stderr": "",
+      "stdout": "🎃  Generating artifacts ...
+    🎃  Compiling ...
+    🎃  Pumpkins server successfully compiled!
     ",
-      "stdout": "",
     }
   `)
-  expect(ctx.fs.exists('dist'))
+
+  expect(ctx.fs.inspectTree('dist')).toMatchInlineSnapshot(`
+    Object {
+      "children": Array [
+        Object {
+          "name": "app.js",
+          "size": 91,
+          "type": "file",
+        },
+        Object {
+          "name": "app__original__.js",
+          "size": 155,
+          "type": "file",
+        },
+        Object {
+          "name": "schema.js",
+          "size": 182,
+          "type": "file",
+        },
+      ],
+      "name": "dist",
+      "size": 428,
+      "type": "dir",
+    }
+  `)
 })

@@ -30,7 +30,7 @@ export async function isPrismaEnabled(): Promise<
     )
   }
 
-  if (!schemaPaths) {
+  if (schemaPaths.length === 0) {
     return { enabled: false }
   }
 
