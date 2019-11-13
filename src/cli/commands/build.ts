@@ -12,14 +12,10 @@ import {
 
 export class Build extends Command {
   static description = 'Build a production-ready server'
-
   static examples = [`$ pumpkins build`]
-
   static flags = {
     entrypoint: flags.string({ char: 'e' }),
   }
-
-  static args = []
 
   async run() {
     const { flags } = this.parse(Build)
