@@ -14,8 +14,16 @@ export const run = (command: string, options?: RunOptions): RunResult => {
     encoding: 'utf8',
   })
 
-  if (options?.require && stderr !== '') {
-    throw new Error(stderr)
+  if (options?.require !== false && stderr !== '') {
+    throw new Error(`
+      The following command failed to complete successfully:
+
+          ${command}
+
+      Becuase of this error output by it:
+
+          ${stderr}
+    `)
   }
 
   return { stderr, stdout, status }

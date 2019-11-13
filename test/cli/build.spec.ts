@@ -27,6 +27,7 @@ it('can build with minimal app.ts + schema.ts', async () => {
         "module": "commonjs",
         "strict": true,
         "outDir": "dist",
+        "lib": ["esnext"]
       },
     }
   `
