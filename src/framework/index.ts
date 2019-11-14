@@ -8,8 +8,11 @@ import {
   requireSchemaModules,
   trimNodeModulesIfInPath,
   createNexusConfig,
+  log,
+  trimExt,
 } from '../utils'
 import { createNexusSingleton, MutationType, QueryType } from './nexus'
+import { typegenAutoConfig } from 'nexus/dist/core'
 
 /**
  * Use ts-node register to require .ts file and transpile them "on-the-fly"
@@ -90,8 +93,10 @@ const defaultServerOptions: Required<ServerOptions> = {
 }
 
 export type Plugin<C extends {}> = {
+  name: string
   context: {
-    typeExportName: string
+    typeExportName?: string
+    // TODO we could make this optional by using some node v8 api trickery to get the __filename of the caller, by default
     typeSourcePath: string
     create: (req: Express.Request) => C
   }
@@ -162,15 +167,33 @@ export function createApp() {
         contextPath,
       })
 
-      plugins.forEach(p => {
-        nexusConfig.typegenAutoConfig = nexusConfig.typegenAutoConfig ?? {
-          sources: [],
-        }
-        nexusConfig.typegenAutoConfig.sources.push({
-          source: p.context.typeSourcePath,
-          alias: p.context.typeExportName,
+      const autoConfig = nexusConfig.typegenAutoConfig ?? {
+        sources: [],
+      }
+      nexusConfig.typegenAutoConfig = undefined
+
+      nexusConfig.typegenConfig = async (schema, outputPath) => {
+        const configurator = await typegenAutoConfig(autoConfig)
+        const config = await configurator(schema, outputPath)
+
+        plugins.forEach(p => {
+          // TODO validate that the plugin context source actually exports the type it pupports to
+          // TODO pascal case
+          const alias = `ContextFrom${p.name}`
+          const typeExportName = p.context.typeExportName ?? 'Context'
+          config.imports.push(
+            `import * as ${alias} from "${trimExt(
+              p.context.typeSourcePath,
+              '.ts'
+            )}"`
+          )
+          config.contextType = `${config.contextType} & ${alias}.${typeExportName}`
         })
-      })
+
+        log('built up Nexus typegenConfig: %O', config)
+
+        return config
+      }
 
       const server = new ApolloServer({
         playground: mergedConfig.playground,
