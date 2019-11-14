@@ -80,6 +80,10 @@ export function findFile(fileNames: string[]) {
   return undefined
 }
 
+export const trimExt = (filePath: string, ext: string): string => {
+  return path.join(path.dirname(filePath), path.basename(filePath, ext))
+}
+
 export function trimNodeModulesIfInPath(path: string) {
   if (path.includes('node_modules')) {
     return path.substring(

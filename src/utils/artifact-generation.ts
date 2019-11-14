@@ -2,6 +2,7 @@ import { spawnSync } from 'child_process'
 import * as fs from 'fs-jetpack'
 import * as path from 'path'
 import { findServerEntryPoint } from './path'
+import { log } from './log'
 
 export async function generateArtifacts(
   entrypoint?: string
@@ -26,6 +27,8 @@ export async function generateArtifacts(
       TS_NODE_TRANSPILE_ONLY: 'true',
     },
   })
+
+  log('artifact generation result: %O', result)
 
   if (result.error) {
     return {

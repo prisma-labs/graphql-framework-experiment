@@ -8,8 +8,12 @@ import {
   requireSchemaModules,
   trimNodeModulesIfInPath,
   createNexusConfig,
+  log,
+  trimExt,
 } from '../utils'
 import { createNexusSingleton, MutationType, QueryType } from './nexus'
+import { typegenAutoConfig } from 'nexus/dist/core'
+import { Plugin } from './plugin'
 
 /**
  * Use ts-node register to require .ts file and transpile them "on-the-fly"
@@ -89,6 +93,11 @@ const defaultServerOptions: Required<ServerOptions> = {
   playground: true,
 }
 
+export type API = {
+  use: (plugin: Plugin<any>) => API
+  startServer: () => void
+}
+
 export function createApp() {
   // During development we dynamically import all the schema modules
   //
@@ -130,23 +139,69 @@ export function createApp() {
   })
   const context = require(contextPath)
 
-  return {
-    startServer(config: ServerOptions = {}) {
+  const plugins: Plugin<any>[] = []
+
+  const api: API = {
+    use(plugin) {
+      plugins.push(plugin)
+      return api
+    },
+
+    startServer(config: ServerOptions = {}): void {
       const mergedConfig: Required<ServerOptions> = {
         ...defaultServerOptions,
         ...config,
       }
 
+      const nexusConfig = createNexusConfig({
+        generatedPhotonPackagePath,
+        contextPath,
+      })
+
+      const autoConfig = nexusConfig.typegenAutoConfig ?? {
+        sources: [],
+      }
+      nexusConfig.typegenAutoConfig = undefined
+
+      // Our use-case of multiple context sources seems to require a custom
+      // handling of typegenConfig. Opened an issue about maybe making our
+      // curreent use-case, fairly basic, integrated into the auto system, here:
+      // https://github.com/prisma-labs/nexus/issues/323
+      nexusConfig.typegenConfig = async (schema, outputPath) => {
+        const configurator = await typegenAutoConfig(autoConfig)
+        const config = await configurator(schema, outputPath)
+
+        plugins.forEach(p => {
+          // TODO validate that the plugin context source actually exports the type it pupports to
+          // TODO pascal case
+          const alias = `ContextFrom${p.name}`
+          const typeExportName = p.context.typeExportName ?? 'Context'
+          config.imports.push(
+            `import * as ${alias} from "${trimExt(
+              p.context.typeSourcePath,
+              '.ts'
+            )}"`
+          )
+          config.contextType = `${config.contextType} & ${alias}.${typeExportName}`
+        })
+
+        log('built up Nexus typegenConfig: %O', config)
+
+        return config
+      }
+
       const server = new ApolloServer({
         playground: mergedConfig.playground,
         introspection: mergedConfig.introspection,
-        context: context.createContext,
-        schema: makeSchema(
-          createNexusConfig({
-            generatedPhotonPackagePath,
-            contextPath,
-          })
-        ),
+        context: req => {
+          const ctx = {}
+          for (const plugin of plugins) {
+            Object.assign(plugin.context.create(req))
+          }
+          Object.assign(ctx, context.createContext(req))
+          return ctx
+        },
+        schema: makeSchema(nexusConfig),
       })
 
       const app = express()
@@ -158,6 +213,8 @@ export function createApp() {
       )
     },
   }
+
+  return api
 }
 
 export { objectType, inputObjectType, enumType, scalarType, unionType }
