@@ -10,10 +10,14 @@ import {
   createNexusConfig,
   log,
   trimExt,
+  pumpkinsPath,
 } from '../utils'
 import { createNexusSingleton, MutationType, QueryType } from './nexus'
 import { typegenAutoConfig } from 'nexus/dist/core'
 import { Plugin } from './plugin'
+import { createPrismaPlugin } from './plugins'
+
+export { Plugin } from './plugin'
 
 /**
  * Use ts-node register to require .ts file and transpile them "on-the-fly"
@@ -121,25 +125,19 @@ export function createApp() {
   //      currently MUST return a createContext function
   const contextPath = findOrScaffold({
     fileNames: ['context.ts'],
-    fallbackPath: fs.path('.pumpkins/context.ts'),
-    fallbackContent: `\
-  import { Photon } from '${trimNodeModulesIfInPath(
-    generatedPhotonPackagePath
-  )}'
-  
-  const photon = new Photon()
-        
-  export type Context = {
-    photon: Photon
-  }
-        
-  export const createContext = (): Context => ({
-    photon,
-  })`,
+    fallbackPath: pumpkinsPath('context.ts'),
+    fallbackContent: `
+      export type Context = {}
+            
+      export function createContext(): Context {
+        return {}
+      }
+    `,
   })
+
   const context = require(contextPath)
 
-  const plugins: Plugin<any>[] = []
+  const plugins: Plugin[] = []
 
   const api: API = {
     use(plugin) {
@@ -213,6 +211,8 @@ export function createApp() {
       )
     },
   }
+
+  api.use(createPrismaPlugin())
 
   return api
 }

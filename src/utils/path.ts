@@ -3,6 +3,14 @@ import * as path from 'path'
 import { findOrScaffold } from './scaffold'
 import { findConfigFile } from './tsc'
 
+export const pumpkinsDotFolderName = 'pumpkins'
+
+export const pumpkinsDotFolderPath = fs.path(`.${pumpkinsDotFolderName}`)
+
+export const pumpkinsPath = (subPath: string): string => {
+  return path.join(pumpkinsDotFolderPath, subPath)
+}
+
 export function findServerEntryPoint() {
   return findOrScaffold({
     fileNames: ['app.ts', 'server.ts', 'service.ts'],
@@ -69,7 +77,12 @@ export function sourceFilePathFromTranspiledPath({
 
 export function findFile(fileNames: string[]) {
   const foundFiles = fs.find({
-    matching: [...fileNames, '!node_modules/**/*', '!.yalc/**/*'],
+    matching: [
+      ...fileNames,
+      '!node_modules/**/*',
+      '!.yalc/**/*',
+      `!.${pumpkinsDotFolderName}/**/*`,
+    ],
   })
 
   // TODO: What if several files were found?
