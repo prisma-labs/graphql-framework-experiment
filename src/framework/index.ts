@@ -163,6 +163,10 @@ export function createApp() {
       }
       nexusConfig.typegenAutoConfig = undefined
 
+      // Our use-case of multiple context sources seems to require a custom
+      // handling of typegenConfig. Opened an issue about maybe making our
+      // curreent use-case, fairly basic, integrated into the auto system, here:
+      // https://github.com/prisma-labs/nexus/issues/323
       nexusConfig.typegenConfig = async (schema, outputPath) => {
         const configurator = await typegenAutoConfig(autoConfig)
         const config = await configurator(schema, outputPath)
