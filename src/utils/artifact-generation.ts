@@ -21,6 +21,7 @@ export async function generateArtifacts(
     encoding: 'utf8',
     env: {
       ...process.env,
+      PUMPKINS_SHOULD_GENERATE_ARTIFACTS: 'true',
       PUMPKINS_SHOULD_EXIT_AFTER_GENERATE_ARTIFACTS: 'true',
       TS_NODE_TRANSPILE_ONLY: 'true',
     },

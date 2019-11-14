@@ -48,7 +48,7 @@ function plugins({
   return [
     nexusPrismaPlugin({
       inputs: {
-        photon: trimNodeModulesIfInPath(photonPath), // TODO: Fix nexus-prisma to handle relative path in typegen (https://github.com/prisma-labs/nexus-prisma/blob/master/src/typegen.ts#L36)
+        photon: photonPath,
       },
       outputs: {
         typegen: nexusPrismaTypegenOutput,

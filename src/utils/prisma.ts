@@ -23,7 +23,7 @@ export async function isPrismaEnabled(): Promise<
   })
 
   if (schemaPaths.length > 1) {
-    console.log(
+    console.warn(
       `Warning: we found multiple "schema.prisma" files in your project.\n${schemaPaths
         .map((p, i) => `- \"${p}\"${i === 0 ? ' (used by pumpkins)' : ''}`)
         .join('\n')}`

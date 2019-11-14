@@ -4,16 +4,42 @@ const ctx = withContext()
   .use(gitFixture)
   .build()
 
-it('can build with minimal app.ts + schema.ts', async () => {
+it('can build with minimal server + schema + prisma', async () => {
   ctx.fs.write(
     'package.json',
     `
       {
         "name": "test-app",
         "dependencies": {
-          "pumpkins": "0.0.0"
+          "pumpkins": "${ctx.pathAbsoluteToProject}"
         },
         "license": "MIT"
+      }
+    `
+  )
+
+  ctx.run('yarn')
+
+  // HACK to work around oclif failing on import error
+  ctx.run('rm -rf node_modules/pumpkins/src')
+
+  ctx.run('touch dev.db')
+
+  ctx.fs.write(
+    'schema.prisma',
+    `
+      datasource db {
+        provider = "sqlite"
+        url      = "file:dev.db"
+      }
+
+      generator photon {
+        provider = "photonjs"
+      }
+
+      model User {
+        id   Int    @id
+        name String
       }
     `
   )
@@ -37,7 +63,14 @@ it('can build with minimal app.ts + schema.ts', async () => {
     'schema.ts',
     `queryType({
         definition(t) {
-          t.field('foo', { type: 'Foo' })
+          t.field('foo', {
+            type: 'Foo',
+            resolve() {
+              return {
+                bar: 'qux'
+              }
+            }
+          })
         }
       })
 
@@ -58,13 +91,13 @@ it('can build with minimal app.ts + schema.ts', async () => {
     `
   )
 
-  ctx.run('npm link pumpkins')
-
-  expect(ctx.run('npx pumpkins build')).toMatchInlineSnapshot(`
+  expect(ctx.run('yarn pumpkins build')).toMatchInlineSnapshot(`
     Object {
       "status": 0,
       "stderr": "",
-      "stdout": "🎃  Generating Nexus artifacts ...
+      "stdout": "[2K[1G[2m$ /private/var/folders/6g/4nk3wj214d3998979vzfm_r80000gn/T/tmp-61502kU4LEgojOptN_test_context/node_modules/.bin/pumpkins build[22m
+    🎃  Running Prisma generators ...
+    🎃  Generating Nexus artifacts ...
     🎃  Compiling ...
     🎃  Pumpkins server successfully compiled!
     ",
@@ -86,12 +119,12 @@ it('can build with minimal app.ts + schema.ts', async () => {
         },
         Object {
           "name": "schema.js",
-          "size": 182,
+          "size": 316,
           "type": "file",
         },
       ],
       "name": "dist",
-      "size": 428,
+      "size": 562,
       "type": "dir",
     }
   `)
