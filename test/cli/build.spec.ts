@@ -4,7 +4,9 @@ const ctx = withContext()
   .use(gitFixture)
   .build()
 
-it('can build with minimal server + schema + prisma', async () => {
+// TODO integration test showing built app can boot and accept queries
+
+it('can build with minimal server + schema + prisma + plugin', async () => {
   ctx.fs.write(
     'package.json',
     `
@@ -24,6 +26,29 @@ it('can build with minimal server + schema + prisma', async () => {
   ctx.run('rm -rf node_modules/pumpkins/src')
 
   ctx.run('touch dev.db')
+
+  ctx.fs.write(
+    'myplugin.ts',
+    `
+      import { Plugin } from 'pumpkins'
+
+      export type Context = {
+        a: 1
+      }
+      
+      export default {
+        name: 'myplugin',
+        context: {
+          typeSourcePath: __filename,
+          create() {
+            return {
+              a: 1,
+            }
+          },
+        },
+      } as Plugin<Context>
+    `
+  )
 
   ctx.fs.write(
     'schema.prisma',
@@ -47,22 +72,23 @@ it('can build with minimal server + schema + prisma', async () => {
   ctx.fs.write(
     'tsconfig.json',
     `
-    {
-      "compilerOptions": {
-        "target": "es2016",
-        "module": "commonjs",
-        "strict": true,
-        "outDir": "dist",
-        "lib": ["esnext"]
-      },
-    }
-  `
+      {
+        "compilerOptions": {
+          "target": "es2016",
+          "module": "commonjs",
+          "strict": true,
+          "outDir": "dist",
+          "lib": ["esnext"]
+        },
+      }
+    `
   )
 
   ctx.fs.write(
     'schema.ts',
     `queryType({
         definition(t) {
+          t.int('a', (_root, _args, ctx) => ctx.a)
           t.field('foo', {
             type: 'Foo',
             resolve() {
@@ -87,7 +113,9 @@ it('can build with minimal server + schema + prisma', async () => {
     'app.ts',
     `
       import { createApp } from 'pumpkins'
-      createApp().startServer()
+      import myplugin from './myplugin'
+
+      createApp().use(myplugin).startServer()
     `
   )
 
@@ -113,17 +141,22 @@ it('can build with minimal server + schema + prisma', async () => {
         },
         Object {
           "name": "app__original__.js",
-          "size": 155,
+          "size": 221,
+          "type": "file",
+        },
+        Object {
+          "name": "myplugin.js",
+          "size": 268,
           "type": "file",
         },
         Object {
           "name": "schema.js",
-          "size": 316,
+          "size": 366,
           "type": "file",
         },
       ],
       "name": "dist",
-      "size": 562,
+      "size": 946,
       "type": "dir",
     }
   `)

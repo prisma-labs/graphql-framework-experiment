@@ -13,6 +13,7 @@ import {
 } from '../utils'
 import { createNexusSingleton, MutationType, QueryType } from './nexus'
 import { typegenAutoConfig } from 'nexus/dist/core'
+import { Plugin } from './plugin'
 
 /**
  * Use ts-node register to require .ts file and transpile them "on-the-fly"
@@ -90,16 +91,6 @@ const defaultServerOptions: Required<ServerOptions> = {
   startMessage: port => `🎃  Server ready at http://localhost:${port}/`,
   introspection: true,
   playground: true,
-}
-
-export type Plugin<C extends {}> = {
-  name: string
-  context: {
-    typeExportName?: string
-    // TODO we could make this optional by using some node v8 api trickery to get the __filename of the caller, by default
-    typeSourcePath: string
-    create: (req: Express.Request) => C
-  }
 }
 
 export type API = {
