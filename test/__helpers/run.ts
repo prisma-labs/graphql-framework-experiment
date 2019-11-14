@@ -2,14 +2,30 @@ import { spawnSync, SpawnSyncOptions } from 'child_process'
 import * as path from 'path'
 
 type RunResult = { stderr: string; stdout: string; status: null | number }
-type RunOptions = Omit<SpawnSyncOptions, 'encoding'>
+type RunOptions = Omit<SpawnSyncOptions, 'encoding'> & {
+  require?: boolean
+}
 
+// TODO conditional type over require option
 export const run = (command: string, options?: RunOptions): RunResult => {
   const [name, ...args] = command.split(' ')
   const { stderr, stdout, status } = spawnSync(name, args, {
     ...options,
     encoding: 'utf8',
   })
+
+  if (options?.require !== false && stderr !== '') {
+    throw new Error(`
+      The following command failed to complete successfully:
+
+          ${command}
+
+      Becuase of this error output by it:
+
+          ${stderr}
+    `)
+  }
+
   return { stderr, stdout, status }
 }
 

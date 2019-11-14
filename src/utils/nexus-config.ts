@@ -42,13 +42,13 @@ function plugins({
   shouldGenerateArtifacts: boolean
 }): core.NexusPlugin[] | undefined {
   const nexusPrismaTypegenOutput = fs.path(
-    'node_modules/@types/nexus-typegen-prisma/index'
+    'node_modules/@types/nexus-typegen-prisma/index.d.ts'
   )
 
   return [
     nexusPrismaPlugin({
       inputs: {
-        photon: path.relative(nexusPrismaTypegenOutput, photonPath),
+        photon: photonPath,
       },
       outputs: {
         typegen: nexusPrismaTypegenOutput,

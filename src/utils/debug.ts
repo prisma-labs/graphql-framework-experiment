@@ -1,17 +1,13 @@
-import Debug from 'debug'
+import createLogger from 'debug'
 
-type DebugType = 'app' | 'schema' | 'prisma'
+type Debugger = ReturnType<typeof createLogger>
 
-const DebugType: Record<DebugType, string> = {
-  app: 'pumpkins:app',
-  schema: 'pumpkins:schema',
-  prisma: 'pumpkins:prisma',
+export function debug(component: string): Debugger {
+  return createLogger(`pumpkins:${component}`)
 }
 
-export const debug: Record<DebugType, Debug.Debugger> = Object.keys(
-  DebugType
-).reduce((acc, key) => {
-  acc[key] = Debug(DebugType[key as DebugType])
-
-  return acc
-}, {} as any)
+export namespace debug {
+  export const app: Debugger = createLogger('pumpkins:app')
+  export const schema: Debugger = createLogger('pumpkins:schema')
+  export const prisma: Debugger = createLogger('pumpkins:prisma')
+}

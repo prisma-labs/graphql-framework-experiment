@@ -12,14 +12,10 @@ import {
 
 export class Build extends Command {
   static description = 'Build a production-ready server'
-
   static examples = [`$ pumpkins build`]
-
   static flags = {
     entrypoint: flags.string({ char: 'e' }),
   }
-
-  static args = []
 
   async run() {
     const { flags } = this.parse(Build)
@@ -33,7 +29,7 @@ export class Build extends Command {
   }
 
   async generateArtifacts(entry: string | undefined) {
-    this.log('🎃  Generating artifacts ...')
+    this.log('🎃  Generating Nexus artifacts ...')
     const { error, entrypoint } = await generateArtifacts(entry)
     if (error) {
       this.error(error, { exit: 1 })

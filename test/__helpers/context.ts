@@ -59,6 +59,7 @@ type GitFixture = {
   tmpDir: DirResult
   cli: ReturnType<typeof createCLIRunner>
   fs: typeof fs
+  pathAbsoluteToProject: string
   setupRepo: () => Promise<void>
   run: typeof run
 }
@@ -77,6 +78,7 @@ export const gitFixture: CreateFixture<GitFixture> = ctx => {
     const localFS = fs.cwd(tmpDir.name)
     const localCLI = createCLIRunner({ cwd: tmpDir.name })
     const localRun = createRunner(tmpDir.name)
+    const pathAbsoluteToProject = path.join(__dirname, '../..')
     // console.log(tmpDir.name)
     const setupRepo = async () => {
       await localGit.init()
@@ -95,6 +97,7 @@ export const gitFixture: CreateFixture<GitFixture> = ctx => {
       fs: localFS,
       run: localRun,
       setupRepo,
+      pathAbsoluteToProject,
     }
   }
 }
