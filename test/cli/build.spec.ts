@@ -75,7 +75,6 @@ it('can build with minimal server + schema + prisma + plugin', async () => {
       {
         "compilerOptions": {
           "target": "es2016",
-          "module": "commonjs",
           "strict": true,
           "outDir": "dist",
           "lib": ["esnext"]
@@ -141,7 +140,7 @@ it('can build with minimal server + schema + prisma + plugin', async () => {
         },
         Object {
           "name": "app__original__.js",
-          "size": 221,
+          "size": 377,
           "type": "file",
         },
         Object {
@@ -156,7 +155,7 @@ it('can build with minimal server + schema + prisma + plugin', async () => {
         },
       ],
       "name": "dist",
-      "size": 946,
+      "size": 1102,
       "type": "dir",
     }
   `)

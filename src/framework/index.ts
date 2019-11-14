@@ -169,7 +169,9 @@ export function createApp() {
         const configurator = await typegenAutoConfig(autoConfig)
         const config = await configurator(schema, outputPath)
 
-        plugins.forEach(p => {
+        for (const p of plugins) {
+          if (!p.context) continue
+
           // TODO validate that the plugin context source actually exports the type it pupports to
           // TODO pascal case
           const alias = `ContextFrom${p.name}`
@@ -181,11 +183,17 @@ export function createApp() {
             )}"`
           )
           config.contextType = `${config.contextType} & ${alias}.${typeExportName}`
-        })
+        }
 
         log('built up Nexus typegenConfig: %O', config)
 
         return config
+      }
+
+      // Merge the plugin nexus plugins
+      nexusConfig.plugins = nexusConfig.plugins ?? []
+      for (const plugin of plugins) {
+        nexusConfig.plugins.push(...(plugin.nexus?.plugins ?? []))
       }
 
       const server = new ApolloServer({
@@ -194,6 +202,7 @@ export function createApp() {
         context: req => {
           const ctx = {}
           for (const plugin of plugins) {
+            if (!plugin.context) continue
             Object.assign(plugin.context.create(req))
           }
           Object.assign(ctx, context.createContext(req))

@@ -1,7 +1,7 @@
 import { Plugin } from '../plugin'
 import * as fs from 'fs-jetpack'
-import { pumpkinsDotFolderPath, trimExt, pumpkinsPath } from '../../utils'
-import * as path from 'path'
+import { trimExt, pumpkinsPath, shouldGenerateArtifacts } from '../../utils'
+import { nexusPrismaPlugin } from 'nexus-prisma'
 
 export const createPrismaPlugin: () => Plugin = () => {
   // TODO control generate step before trying to require
@@ -25,6 +25,10 @@ export const createPrismaPlugin: () => Plugin = () => {
     `
   )
 
+  const nexusPrismaTypegenOutput = fs.path(
+    'node_modules/@types/nexus-typegen-prisma/index.d.ts'
+  )
+
   return {
     name: 'prisma',
     context: {
@@ -33,6 +37,19 @@ export const createPrismaPlugin: () => Plugin = () => {
       },
       typeSourcePath: generatedContextTypePath,
       typeExportName: 'Context',
+    },
+    nexus: {
+      plugins: [
+        nexusPrismaPlugin({
+          inputs: {
+            photon: generatedPhotonPackagePath,
+          },
+          outputs: {
+            typegen: nexusPrismaTypegenOutput,
+          },
+          shouldGenerateArtifacts: shouldGenerateArtifacts(),
+        }),
+      ],
     },
   }
 }
