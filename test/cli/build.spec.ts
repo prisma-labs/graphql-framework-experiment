@@ -91,12 +91,11 @@ it('can build with minimal server + schema + prisma', async () => {
     `
   )
 
-  expect(ctx.run('yarn pumpkins build')).toMatchInlineSnapshot(`
+  expect(ctx.run('yarn -s pumpkins build')).toMatchInlineSnapshot(`
     Object {
       "status": 0,
       "stderr": "",
-      "stdout": "[2K[1G[2m$ /private/var/folders/6g/4nk3wj214d3998979vzfm_r80000gn/T/tmp-61502kU4LEgojOptN_test_context/node_modules/.bin/pumpkins build[22m
-    🎃  Running Prisma generators ...
+      "stdout": "🎃  Running Prisma generators ...
     🎃  Generating Nexus artifacts ...
     🎃  Compiling ...
     🎃  Pumpkins server successfully compiled!
