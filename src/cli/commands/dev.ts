@@ -1,5 +1,5 @@
 import { Command } from '@oclif/command'
-const startTSNodeDev = require('ts-node-dev')
+import * as path from 'path'
 import { runPrismaGenerators } from '../../framework/plugins'
 import { createBootModuleContent } from '../utils'
 import {
@@ -42,18 +42,24 @@ export class Dev extends Command {
       `
     )
 
-    // Difficultish API to use because no docs or typings
-    // Refer to these source files, top-down by caller order:
-    //
-    // - https://github.com/whitecolor/ts-node-dev/blob/master/bin/ts-node-dev
-    // - https://github.com/whitecolor/ts-node-dev/blob/master/lib/index.js
-    // - https://github.com/whitecolor/ts-node-dev/blob/master/lib/compiler.js
-    //
-    startTSNodeDev(bootPath.absolute, [], [], {
-      respawn: true,
-      'tree-kill': true,
-      'transpile-only': true,
-      notify: false,
-    })
+    startTSNodeDev(
+      bootPath.absolute,
+      [],
+      [],
+      {
+        'tree-kill': true,
+        'transpile-only': true,
+      },
+      {
+        onStart() {
+          console.log('🎃  Starting pumpkins server...')
+        },
+        onRestart(fileName: string) {
+          console.log(
+            `🎃  ${path.relative(projectDir, fileName)} changed. Restarting...`
+          )
+        },
+      }
+    )
   }
 }
