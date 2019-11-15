@@ -1,5 +1,5 @@
 import { Command } from '@oclif/command'
-import startTSNodeDev from 'ts-node-dev'
+const startTSNodeDev = require('ts-node-dev')
 import { findServerEntryPoint } from '../../utils'
 import { runPrismaGenerators } from '../../framework/plugins'
 
