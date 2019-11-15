@@ -7,8 +7,8 @@ import {
   generateArtifacts,
   getTranspiledPath,
   readTsConfig,
-  runPrismaGenerators,
 } from '../../utils'
+import { runPrismaGenerators } from '../../framework/plugins'
 
 export class Build extends Command {
   static description = 'Build a production-ready server'
@@ -19,7 +19,7 @@ export class Build extends Command {
 
   async run() {
     const { flags } = this.parse(Build)
-
+    // TODO pluggable CLI
     await runPrismaGenerators()
     const { entrypoint } = await this.generateArtifacts(flags.entrypoint)
     const { transpiledEntrypointPath } = this.compileProject(entrypoint)

@@ -15,4 +15,5 @@ export type Plugin<C extends {} = any> = {
   nexus?: {
     plugins: NexusConfig['plugins']
   }
+  onBuild?: () => void
 }
