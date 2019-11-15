@@ -1,6 +1,7 @@
 import { Command } from '@oclif/command'
 import startTSNodeDev from 'ts-node-dev'
-import { findServerEntryPoint, runPrismaGenerators } from '../../utils'
+import { findServerEntryPoint } from '../../utils'
+import { runPrismaGenerators } from '../../framework/plugins'
 
 export class Dev extends Command {
   static description = 'describe the command here'

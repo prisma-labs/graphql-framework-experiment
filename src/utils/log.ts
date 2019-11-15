@@ -15,5 +15,4 @@ export namespace log {
   }
   export const app = createLogger('pumpkins:app')
   export const schema = createLogger('pumpkins:schema')
-  export const prisma = createLogger('pumpkins:prisma')
 }

@@ -1,5 +1,6 @@
 import { Command, flags } from '@oclif/command'
-import { generateArtifacts, runPrismaGenerators } from '../../utils'
+import { generateArtifacts } from '../../utils'
+import { runPrismaGenerators } from '../../framework/plugins'
 
 export class Generate extends Command {
   static description = 'Generate the artifacts'
@@ -13,7 +14,7 @@ export class Generate extends Command {
   static args = []
 
   async run() {
-    const { args, flags } = this.parse(Generate)
+    const { flags } = this.parse(Generate)
     await runPrismaGenerators()
     const { error } = await generateArtifacts(flags.entrypoint)
 

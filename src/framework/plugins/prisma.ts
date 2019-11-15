@@ -4,7 +4,9 @@ import { trimExt, pumpkinsPath, shouldGenerateArtifacts } from '../../utils'
 import { nexusPrismaPlugin } from 'nexus-prisma'
 import { getGenerators } from '@prisma/sdk'
 import * as path from 'path'
-import { log } from '../../utils/log'
+import { log as pumpkinsLog } from '../../utils/log'
+
+const log = pumpkinsLog.create('prisma')
 
 export const createPrismaPlugin: () => Plugin = () => {
   // TODO control generate step before trying to require
@@ -129,7 +131,7 @@ export async function runPrismaGenerators(
   }
 
   if ((await shouldRegeneratePhoton(prisma.schemaPath)) === false) {
-    log.prisma(
+    log(
       'Prisma generators were not run because the prisma schema was not updated'
     )
     return
