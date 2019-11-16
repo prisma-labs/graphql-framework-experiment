@@ -1,7 +1,4 @@
 import * as nexus from 'nexus'
-import * as path from 'path'
-import { findProjectDir } from '../utils'
-import * as fs from 'fs-jetpack'
 import { generateSchema } from 'nexus/dist/core'
 
 export type QueryType = typeof nexus.core.queryType
