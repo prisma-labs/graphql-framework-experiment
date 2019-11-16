@@ -2,6 +2,7 @@ import * as nexus from 'nexus'
 import * as path from 'path'
 import { findProjectDir } from '../utils'
 import * as fs from 'fs-jetpack'
+import { generateSchema } from 'nexus/dist/core'
 
 export type QueryType = typeof nexus.core.queryType
 export type MutationType = typeof nexus.core.mutationType
@@ -9,15 +10,30 @@ export type MutationType = typeof nexus.core.mutationType
 export function createNexusSingleton() {
   const __types: any[] = []
 
-  function makeSchema(
+  /**
+   * Create the Nexus GraohQL Schema. If PUMPKINS_SHOULD_AWAIT_TYPEGEN=true then the typegen
+   * disk write is awaited upon.
+   */
+  async function makeSchema(
     config: Omit<nexus.core.SchemaConfig, 'types'>
-  ): nexus.core.NexusGraphQLSchema {
+  ): Promise<nexus.core.NexusGraphQLSchema> {
     const configWithTypes: nexus.core.SchemaConfig = {
       types: __types,
       ...config,
     }
 
-    return nexus.makeSchema(configWithTypes)
+    // https://github.com/prisma/pumpkins/issues/33
+    const schema = await (process.env.PUMPKINS_SHOULD_AWAIT_TYPEGEN === 'true'
+      ? generateSchema(configWithTypes)
+      : Promise.resolve(nexus.makeSchema(configWithTypes)))
+
+    // HACK `generateSchema` in Nexus does not support this logic yet
+    // TODO move this logic into Nexus
+    if (process.env.PUMPKINS_SHOULD_EXIT_AFTER_GENERATE_ARTIFACTS) {
+      process.exit(0)
+    }
+
+    return schema
   }
 
   function objectType<TypeName extends string>(

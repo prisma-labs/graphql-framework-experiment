@@ -13,7 +13,7 @@ import {
   pumpkinsPath,
 } from '../utils'
 import { createNexusSingleton, MutationType, QueryType } from './nexus'
-import { typegenAutoConfig } from 'nexus/dist/core'
+import { typegenAutoConfig, generateSchema } from 'nexus/dist/core'
 import { Plugin } from './plugin'
 import { createPrismaPlugin } from './plugins'
 import { stripIndent } from 'common-tags'
@@ -146,7 +146,7 @@ export function createApp() {
       return api
     },
 
-    startServer(config: ServerOptions = {}): void {
+    async startServer(config: ServerOptions = {}): Promise<void> {
       const mergedConfig: Required<ServerOptions> = {
         ...defaultServerOptions,
         ...config,
@@ -197,6 +197,7 @@ export function createApp() {
         nexusConfig.plugins.push(...(plugin.nexus?.plugins ?? []))
       }
 
+      const schema = await makeSchema(nexusConfig)
       const server = new ApolloServer({
         playground: mergedConfig.playground,
         introspection: mergedConfig.introspection,
@@ -209,7 +210,7 @@ export function createApp() {
           Object.assign(ctx, context.createContext(req))
           return ctx
         },
-        schema: makeSchema(nexusConfig),
+        schema,
       })
 
       const app = express()
