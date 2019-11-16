@@ -1,6 +1,6 @@
 {
   "name": "pumpkins",
-  "version": "0.0.0-sha.e03f7b2",
+  "version": "0.0.0-sha.f99389f",
   "author": "Prisma Labs",
   "bin": {
     "pumpkins": "dist/cli/index.js"
@@ -11,7 +11,7 @@
     "@oclif/config": "^1",
     "@oclif/plugin-help": "^2",
     "@prisma/photon": "^0.2.168",
-    "@prisma/sdk": "^0.0.30",
+    "@prisma/sdk": "^0.0.32",
     "apollo-server-express": "^2.9.7",
     "common-tags": "^1.8.0",
     "debug": "^4.1.1",
@@ -35,7 +35,6 @@
     "@types/jest": "^24.0.22",
     "@types/node": "^12.12.7",
     "@types/tmp": "^0.1.0",
-    "ava": "^2.4.0",
     "chai": "^4",
     "doctoc": "^1.4.0",
     "fs-jetpack": "^2.2.3",
