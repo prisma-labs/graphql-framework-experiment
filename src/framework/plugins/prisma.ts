@@ -115,9 +115,46 @@ export async function isPrismaEnabled(): Promise<
   }
 
   if (schemaPaths.length === 0) {
+    log('detected that this is not prisma framework project')
     return { enabled: false }
   }
 
+  log('detected that this is a prisma framework project')
+  return { enabled: true, schemaPath: fs.path(schemaPaths[0]) }
+}
+
+export function isPrismaEnabledSync():
+  | {
+      enabled: false
+    }
+  | {
+      enabled: true
+      schemaPath: string
+    } {
+  const schemaPaths = fs.find({
+    directories: false,
+    recursive: true,
+    matching: [
+      'schema.prisma',
+      '!node_modules/**/*',
+      '!prisma/migrations/**/*',
+    ],
+  })
+
+  if (schemaPaths.length > 1) {
+    console.warn(
+      `Warning: we found multiple "schema.prisma" files in your project.\n${schemaPaths
+        .map((p, i) => `- \"${p}\"${i === 0 ? ' (used by pumpkins)' : ''}`)
+        .join('\n')}`
+    )
+  }
+
+  if (schemaPaths.length === 0) {
+    log('detected that this is not prisma framework project')
+    return { enabled: false }
+  }
+
+  log('detected that this is a prisma framework project')
   return { enabled: true, schemaPath: fs.path(schemaPaths[0]) }
 }
 

@@ -15,7 +15,7 @@ import {
 import { createNexusSingleton, MutationType, QueryType } from './nexus'
 import { typegenAutoConfig, generateSchema } from 'nexus/dist/core'
 import { Plugin } from './plugin'
-import { createPrismaPlugin } from './plugins'
+import { createPrismaPlugin, isPrismaEnabledSync } from './plugins'
 import { stripIndent } from 'common-tags'
 
 export { Plugin } from './plugin'
@@ -223,7 +223,16 @@ export function createApp() {
     },
   }
 
-  api.use(createPrismaPlugin())
+  if (isPrismaEnabledSync().enabled) {
+    log.app(
+      'enabling prisma plugin because detected prisma framework is being used on this project'
+    )
+    api.use(createPrismaPlugin())
+  } else {
+    log.app(
+      'disabling prisma plugin because detected prisma framework not being used on this project'
+    )
+  }
 
   return api
 }
