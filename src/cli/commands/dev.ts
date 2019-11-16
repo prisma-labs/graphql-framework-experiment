@@ -28,6 +28,7 @@ export class Dev extends Command {
     // - https://github.com/whitecolor/ts-node-dev/blob/master/lib/compiler.js
     //
     startTSNodeDev(entryPoint, [], [], {
+      respawn: true,
       'tree-kill': true,
       'transpile-only': true,
       notify: false,

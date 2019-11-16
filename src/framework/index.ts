@@ -16,6 +16,7 @@ import { createNexusSingleton, MutationType, QueryType } from './nexus'
 import { typegenAutoConfig } from 'nexus/dist/core'
 import { Plugin } from './plugin'
 import { createPrismaPlugin } from './plugins'
+import { stripIndent } from 'common-tags'
 
 export { Plugin } from './plugin'
 
@@ -126,7 +127,7 @@ export function createApp() {
   const contextPath = findOrScaffold({
     fileNames: ['context.ts'],
     fallbackPath: pumpkinsPath('context.ts'),
-    fallbackContent: `
+    fallbackContent: stripIndent`
       export type Context = {}
             
       export function createContext(): Context {
