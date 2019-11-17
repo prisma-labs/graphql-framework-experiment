@@ -1,9 +1,6 @@
 import * as nexus from 'nexus'
 import { generateSchema } from 'nexus/dist/core'
 
-export type QueryType = typeof nexus.core.queryType
-export type MutationType = typeof nexus.core.mutationType
-
 export function createNexusSingleton() {
   const __types: any[] = []
 
@@ -73,17 +70,20 @@ export function createNexusSingleton() {
     return typeDef
   }
 
-  const queryType: QueryType = config => {
+  const queryType: typeof nexus.queryType = config => {
     const typeDef = nexus.queryType(config)
     __types.push(typeDef)
     return typeDef
   }
 
-  const mutationType: MutationType = config => {
+  const mutationType: typeof nexus.mutationType = config => {
     const typeDef = nexus.mutationType(config)
     __types.push(typeDef)
     return typeDef
   }
+
+  const intArg = nexus.intArg
+  const stringArg = nexus.stringArg
 
   return {
     queryType,
@@ -93,6 +93,8 @@ export function createNexusSingleton() {
     unionType,
     enumType,
     scalarType,
+    intArg,
+    stringArg,
     makeSchema,
   }
 }

@@ -15,7 +15,7 @@ export function createNexusConfig({
   const projectDir = findProjectDir()
   const defaultSchemaPath = path.join(projectDir, 'schema.graphql')
   const defaultTypesPath = fs.path(
-    'node_modules/@types/nexus-typegen/index.d.ts'
+    'node_modules/@types/typegen-nexus/index.d.ts'
   )
 
   return {

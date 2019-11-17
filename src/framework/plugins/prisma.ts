@@ -31,7 +31,7 @@ export const createPrismaPlugin: () => Plugin = () => {
   )
 
   const nexusPrismaTypegenOutput = fs.path(
-    'node_modules/@types/nexus-typegen-prisma/index.d.ts'
+    'node_modules/@types/typegen-nexus-prisma/index.d.ts'
   )
 
   return {

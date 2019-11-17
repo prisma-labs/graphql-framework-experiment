@@ -53,8 +53,5 @@ yarn-error.log*
 
 .vscode
 dist
-nexus-typegen.ts
-yalc.lock
-.yalc
 tsconfig.tsbuildinfo
 oclif.manifest.json

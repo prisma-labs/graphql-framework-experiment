@@ -11,14 +11,20 @@ export const pumpkinsPath = (subPath: string): string => {
   return path.join(pumpkinsDotFolderPath, subPath)
 }
 
+export const writePumpkinsFile = (
+  fileName: string,
+  fileContent: string
+): void => {
+  fs.write(pumpkinsPath(fileName), fileContent)
+}
+
 export function findServerEntryPoint() {
+  // TODO if user has disabled global singleton, then honour that here
   return findOrScaffold({
     fileNames: ['app.ts', 'server.ts', 'service.ts'],
     fallbackPath: fs.path('.pumpkins', 'app.ts'),
     fallbackContent: `
-    import { createApp } from 'pumpkins'
-    
-    createApp().startServer()
+    app.server.start()
     `,
   })
 }

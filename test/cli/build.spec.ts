@@ -111,10 +111,9 @@ it('can build with minimal server + schema + prisma + plugin', async () => {
   ctx.fs.write(
     'app.ts',
     `
-      import { createApp } from 'pumpkins'
       import myplugin from './myplugin'
 
-      createApp().use(myplugin).startServer()
+      app.use(myplugin).server.start()
     `
   )
 

@@ -1,5 +1,5 @@
 import * as fs from 'fs-jetpack'
-import { findFile } from './path'
+import { findFile, pumpkinsPath } from './path'
 import { log } from './log'
 
 export function findOrScaffold({
@@ -27,24 +27,31 @@ export function findOrScaffold({
   }
 
   log('did not find')
-  const alreadyExistingFallbackFileContents = fs.read(fallbackPath)
-
-  if (alreadyExistingFallbackFileContents === undefined) {
-    log('scaffolding fallback file %s', fallbackPath)
-    fs.write(fallbackPath, fallbackContent)
-  } else if (alreadyExistingFallbackFileContents !== fallbackContent) {
-    log(
-      'there is prior scaffolding (fallback file) already present on disk but its contents does not match incoming scaffold, replacing old scaffolded file %s',
-      fallbackPath
-    )
-    log(alreadyExistingFallbackFileContents)
-    log(fallbackContent)
-    fs.write(fallbackPath, fallbackContent)
-  } else {
-    log(
-      'there is prior scaffolding (fallback file) already present on disk and its contents matches the incoming scaffold, therefore doing nothing'
-    )
-  }
+  cachedWriteFile(fallbackPath, fallbackContent)
 
   return fallbackPath
+}
+
+export const cachedWriteFile = (
+  filePath: string,
+  fileContent: string
+): void => {
+  const alreadyExistingFallbackFileContents = fs.read(filePath)
+
+  if (alreadyExistingFallbackFileContents === undefined) {
+    log('writing file %s', filePath)
+    fs.write(filePath, fileContent)
+  } else if (alreadyExistingFallbackFileContents !== fileContent) {
+    log(
+      'there is a file already present on disk but its content does not match, replacing old with new %s',
+      filePath
+    )
+    log(alreadyExistingFallbackFileContents)
+    log(fileContent)
+    fs.write(filePath, fileContent)
+  } else {
+    log(
+      'there is a file already present on disk and its content matches, therefore doing nothing'
+    )
+  }
 }
