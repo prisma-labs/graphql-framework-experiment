@@ -115,7 +115,7 @@ export const setupBasePumpkinsProject = (
     ...config?.package,
   })
 
-  c.run('yarn')
+  c.run('yarn --production')
 
   // HACK to work around oclif failing on import error
   c.run('rm -rf node_modules/pumpkins/src')
