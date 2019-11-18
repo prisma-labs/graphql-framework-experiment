@@ -111,7 +111,7 @@ import { app } from 'pumpkins'
 app.server.start()
 ```
 
-You will some static type errors. These will go away once you boot your app. Give it a shot:
+You will see some static type errors. These will go away once you boot your app. Give it a shot:
 
 ```
 $ yarn pumpkins dev
@@ -130,7 +130,7 @@ query {
 
 You should get back:
 
-```
+```json
 {
   "data": {
     "users": [
@@ -155,76 +155,16 @@ Reflecting on what we've just seen;
 
 2. Flexible convention-over-configuration saves you from configuring `pumpkins` to find your entrypoint and schema modules.
 
-### Removing boilerplate
+## Adding Prisma Framework
 
-`pumpkins` ships a global app singleton that helps us remove boilerplate, code that
-is repetitive, predictable, and not of essential value to writing or reading the
-source code.
+Prisma Framework is a next-generation developer-centric tool chain focused on making the data layer easy. In turn, `pumpkins` makes it easy to integrate Prisma Framework into your app.
 
-```diff
-- import { objectType, queryType } from 'pumpkins'
-
-- export const ObjectType = objectType({
-+ objectType({
-    name: 'User',
-    definition(t) {
-      t.id('id)
-      t.string('name')
-    },
-  })
-
-- export const QueryType = queryType({
-+ queryType({
-    definition(t) {
-      t.list.field('users', {
-        type: 'User',
-        resolve() {
-          return [{ id: '1643', name: 'newton' }]
-        },
-      })
-    },
-  })
-```
+Add a schema.prisma file and fill it out with some content
 
 ```diff
-- import { createApp } from 'pumpkins'
-- import * as types from './schema'
-
-- createApp({ types }).server.start()
-+ app({ types }).server.start()
-```
-
-If the app global singleton is not meeting your requirements or tastes, not only
-can you ignore it but you can turn it off in your `package.json`:
-
-```json
-{
-  "pumpkins": {
-    "singleton": false
-  }
-}
-```
-
-Which literally affects the runtime and global static types of your project.
-
-### Removing even more boilerplate
-
-We just saw how the API helps us stay focused. But we can go further. `pumpkins` believes developers should adopt complexity gradually. In the above example, a simple app, `app.ts` isn't doing much for us. Well, we can just remove it. And when we go to dev or build our app, `pumpkins` provides us with a default.
-
-```diff
-  |- schema.ts
-- |- app.ts
-```
-
-This is just a teaser. There are more features like this. The point to take in now is the `pumpkins` philosophy of optional complexity.
-
-### Adding Prisma Framework
-
-Prisma Framework is a next-generation developer-centric tool chain focused on making the data layer easy. `pumpkins` makes it incredibly easy to get it integrated into your app.
-
-```diff
-  |- schema.ts
-+ |- schema.prisma
+mkdir -p prisma
+touch prisma/schema.prisma
+touch prisma/dev.db
 ```
 
 ```groovy
@@ -244,6 +184,15 @@ model User {
   name String
 }
 ```
+
+Now run prisma generate followed by dev mode:
+
+```
+$ yarn prisma2 generate
+$ yarn pumpkins dev
+```
+
+Now we can go back and and integrate our data layer into our GraphQL API:
 
 ```diff
   objectType({
@@ -257,106 +206,47 @@ model User {
   })
 ```
 
-We've also changed something about our schema. `User` `id` field has gone from a `ID` type to `Int`. `pumpkins` helps us here, as we'll see a static error in the `resolve` func of `users` query field now. So lets change that:
+After doing this you will see a static type error on our `users` field resolver. This is because the user `id` field has changed from an `ID` type to a `Int` type. We don't need to resolve this directly though because we'll rewrite our resolver to talk to a real database now. The behind-the-scenes prisma integration has already given us a photon client ready to use on the resolver context object.
 
 ```diff
   queryType({
     definition(t) {
       t.list.field('users', {
         type: 'User',
-        resolve() {
+-       resolve() {
 -         return [{ id: '1643', name: 'newton' }]
-+         return [{ id: 1643, name: 'newton' }]
++       resolve(_root, _args, ctx) {
++         return ctx.photon.users.findMany()
         },
       })
     },
   })
 ```
 
-So, as you can see, integrating Prisma is literally a matter of just using it. `pumpkins` will react to the presence of a `schema.prisma`, run Prisma generatings, setup photon, and setup `nexus-prisma`.
+Finally lets try our query again at http://localhost:4000/graphql:
 
-# Examples
-
-### A minimal GraphQL API
-
-```ts
-// schema.ts
-
-objectType({
-  name: 'User',
-  definition(t) {
-    t.model.id()
-    t.model.name()
-  },
-})
-
-queryType({
-  definition(t) {
-    t.list.field('users', {
-      type: 'User',
-      resolve() {
-        return [{ id: 1643, name: 'newton' }]
-      },
-    })
-  },
-})
-```
-
-```
-$ pumpkins dev
-```
-
-### A GraphQL API backed by a Prisma data layer
-
-```groovy
-// schema.prisma
-
-datasource db {
-  provider = "sqlite"
-  url      = "file:dev.db"
+```gql
+query {
+  users {
+    id
+    name
+  }
 }
+```
 
-generator photon {
-  provider = "photonjs"
+You should get back:
+
+```json
+{
+  "data": {
+    "users": []
+  }
 }
-
-model User {
-  id   Int    @id
-  name String
-}
-
 ```
 
-```ts
-// schema.ts
+Reflecting on what we've just seen;
 
-objectType({
-  name: 'User',
-  definition(t) {
-    t.model.id()
-    t.model.name()
-  },
-})
-
-queryType({
-  definition(t) {
-    t.list.field('users', {
-      type: 'User',
-      resolve() {
-        return [{ id: 1643, name: 'newton' }]
-      },
-    })
-  },
-})
-```
-
-```
-$ prisma2 dev
-```
-
-```
-$ pumpkin dev
-```
+1. Integrating Prisma is literally a matter of just using it. `pumpkins` will react to the presence of a `schema.prisma`, run Prisma generators, setup photon, and setup `nexus-prisma`.
 
 <br>
 
