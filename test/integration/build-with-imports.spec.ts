@@ -52,5 +52,14 @@ it('can have singleton turned off', async () => {
     `
   )
 
-  expect(ctx.run('yarn -s pumpkins build')).toMatchInlineSnapshot()
+  expect(ctx.run('yarn -s pumpkins build')).toMatchInlineSnapshot(`
+    Object {
+      "status": 0,
+      "stderr": "",
+      "stdout": "🎃  Generating Nexus artifacts ...
+    🎃  Compiling ...
+    🎃  Pumpkins server successfully compiled!
+    ",
+    }
+  `)
 })
