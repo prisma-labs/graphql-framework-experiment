@@ -101,3 +101,36 @@ export const gitFixture: CreateFixture<GitFixture> = ctx => {
     }
   }
 }
+
+export const setupBasePumpkinsProject = (
+  c: GitFixture,
+  config?: { package?: any }
+) => {
+  c.fs.write('package.json', {
+    name: 'test-app',
+    dependencies: {
+      pumpkins: c.pathAbsoluteToProject,
+    },
+    license: 'MIT',
+    ...config?.package,
+  })
+
+  c.run('yarn')
+
+  // HACK to work around oclif failing on import error
+  c.run('rm -rf node_modules/pumpkins/src')
+
+  c.fs.write(
+    'tsconfig.json',
+    `
+      {
+        "compilerOptions": {
+          "target": "es2016",
+          "strict": true,
+          "outDir": "dist",
+          "lib": ["esnext"]
+        },
+      }
+    `
+  )
+}

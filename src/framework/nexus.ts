@@ -1,9 +1,6 @@
 import * as nexus from 'nexus'
 import { generateSchema } from 'nexus/dist/core'
 
-export type QueryType = typeof nexus.core.queryType
-export type MutationType = typeof nexus.core.mutationType
-
 export function createNexusSingleton() {
   const __types: any[] = []
 
@@ -12,17 +9,14 @@ export function createNexusSingleton() {
    * disk write is awaited upon.
    */
   async function makeSchema(
-    config: Omit<nexus.core.SchemaConfig, 'types'>
+    config: nexus.core.SchemaConfig
   ): Promise<nexus.core.NexusGraphQLSchema> {
-    const configWithTypes: nexus.core.SchemaConfig = {
-      types: __types,
-      ...config,
-    }
+    config.types.push(...__types)
 
     // https://github.com/prisma/pumpkins/issues/33
     const schema = await (process.env.PUMPKINS_SHOULD_AWAIT_TYPEGEN === 'true'
-      ? generateSchema(configWithTypes)
-      : Promise.resolve(nexus.makeSchema(configWithTypes)))
+      ? generateSchema(config)
+      : Promise.resolve(nexus.makeSchema(config)))
 
     // HACK `generateSchema` in Nexus does not support this logic yet
     // TODO move this logic into Nexus
@@ -73,17 +67,20 @@ export function createNexusSingleton() {
     return typeDef
   }
 
-  const queryType: QueryType = config => {
+  const queryType: typeof nexus.queryType = config => {
     const typeDef = nexus.queryType(config)
     __types.push(typeDef)
     return typeDef
   }
 
-  const mutationType: MutationType = config => {
+  const mutationType: typeof nexus.mutationType = config => {
     const typeDef = nexus.mutationType(config)
     __types.push(typeDef)
     return typeDef
   }
+
+  const intArg = nexus.intArg
+  const stringArg = nexus.stringArg
 
   return {
     queryType,
@@ -93,6 +90,8 @@ export function createNexusSingleton() {
     unionType,
     enumType,
     scalarType,
+    intArg,
+    stringArg,
     makeSchema,
   }
 }

@@ -7,8 +7,11 @@ import {
   generateArtifacts,
   getTranspiledPath,
   readTsConfig,
+  findServerEntryPoint,
+  pumpkinsPath,
 } from '../../utils'
 import { runPrismaGenerators } from '../../framework/plugins'
+import { setupBootModule } from '../utils'
 
 export class Build extends Command {
   static description = 'Build a production-ready server'
@@ -18,10 +21,22 @@ export class Build extends Command {
   }
 
   async run() {
+    // Guarantee the side-effect features like singleton global have run.
+    require(path.join(process.cwd(), 'node_modules/pumpkins'))
+
     const { flags } = this.parse(Build)
     // TODO pluggable CLI
     await runPrismaGenerators()
-    const { entrypoint } = await this.generateArtifacts(flags.entrypoint)
+    const entrypoint = flags.entrypoint
+      ? fs.path(flags.entrypoint)
+      : findServerEntryPoint()
+    const bootPath = pumpkinsPath('boot.ts')
+    setupBootModule({
+      stage: 'dev',
+      appEntrypointPath: entrypoint,
+      path: bootPath,
+    })
+    await this.generateArtifacts(bootPath)
     const { transpiledEntrypointPath } = this.compileProject(entrypoint)
     await this.swapEntryPoint(transpiledEntrypointPath)
 
@@ -66,11 +81,10 @@ export class Build extends Command {
       entryPointContent!
     )
 
-    const wrapperContent = `
-process.env.PUMPKINS_SHOULD_GENERATE_ARTIFACTS = "false"
-
-require("./${renamedEntryPoint}")
-`
-    await fs.writeAsync(transpiledEntrypointPath, wrapperContent)
+    setupBootModule({
+      stage: 'build',
+      appEntrypointPath: `./${renamedEntryPoint}`,
+      path: transpiledEntrypointPath,
+    })
   }
 }

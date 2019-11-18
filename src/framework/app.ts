@@ -1,7 +1,7 @@
 import { ApolloServer } from 'apollo-server-express'
 import express from 'express'
 import * as fs from 'fs-jetpack'
-import { intArg, stringArg } from 'nexus'
+import * as nexus from 'nexus'
 import {
   findOrScaffold,
   requireSchemaModules,
@@ -10,68 +10,11 @@ import {
   trimExt,
   pumpkinsPath,
 } from '../utils'
-import { createNexusSingleton, MutationType, QueryType } from './nexus'
+import { createNexusSingleton } from './nexus'
 import { typegenAutoConfig } from 'nexus/dist/core'
 import { Plugin } from './plugin'
 import { createPrismaPlugin, isPrismaEnabledSync } from './plugins'
 import { stripIndent } from 'common-tags'
-
-const {
-  queryType,
-  mutationType,
-  objectType,
-  inputObjectType,
-  enumType,
-  scalarType,
-  unionType,
-  makeSchema,
-} = createNexusSingleton()
-
-// agument global scope
-
-type ObjectType = typeof objectType
-type InputObjectType = typeof inputObjectType
-type EnumType = typeof enumType
-type ScalarType = typeof scalarType
-type UnionType = typeof unionType
-type IntArg = typeof intArg
-type StringArg = typeof stringArg
-
-global.queryType = queryType
-global.mutationType = mutationType
-global.objectType = objectType
-global.inputObjectType = inputObjectType
-global.enumType = enumType
-global.scalarType = scalarType
-global.unionType = unionType
-global.intArg = intArg
-global.stringArg = stringArg
-
-declare global {
-  var queryType: QueryType
-  var mutationType: MutationType
-  var objectType: ObjectType
-  var inputObjectType: InputObjectType
-  var enumType: EnumType
-  var scalarType: ScalarType
-  var unionType: UnionType
-  var intArg: IntArg
-  var stringArg: StringArg
-
-  namespace NodeJS {
-    interface Global {
-      queryType: QueryType
-      mutationType: MutationType
-      objectType: ObjectType
-      inputObjectType: InputObjectType
-      enumType: EnumType
-      scalarType: ScalarType
-      unionType: UnionType
-      intArg: IntArg
-      stringArg: StringArg
-    }
-  }
-}
 
 type ServerOptions = {
   port?: number
@@ -87,128 +30,182 @@ const defaultServerOptions: Required<ServerOptions> = {
   playground: true,
 }
 
-export type API = {
-  use: (plugin: Plugin<any>) => API
-  startServer: () => void
+export type App = {
+  use: (plugin: Plugin<any>) => App
+  installGlobally: () => App
+  server: {
+    start: (config?: ServerOptions) => Promise<void>
+  }
+  schema: {
+    queryType: typeof nexus.queryType
+    mutationType: typeof nexus.mutationType
+    objectType: typeof nexus.objectType
+    inputObjectType: typeof nexus.inputObjectType
+    enumType: typeof nexus.enumType
+    scalarType: typeof nexus.scalarType
+    unionType: typeof nexus.unionType
+    intArg: typeof nexus.intArg
+    stringArg: typeof nexus.stringArg
+  }
 }
 
-export function createApp() {
-  // During development we dynamically import all the schema modules
-  //
-  // TODO IDEA we have concept of schema module and schema dir
-  //      add a "refactor" command to toggle between them
-  // TODO put behind dev-mode guard
-  // TODO static imports codegen at build time
-  // TODO do not assume root source folder called `server`
-  // TODO do not assume TS
-  // TODO refactor and put a system behind this holy mother of...
-
-  requireSchemaModules()
-
-  const generatedPhotonPackagePath = fs.path('node_modules/@generated/photon')
-
-  // Get the context module for the app.
-  // User can provide a context module at a conventional path.
-  // Otherwise we will provide a default context module.
-  //
-  // TODO context module should have flexible contract
-  //      currently MUST return a createContext function
-  const contextPath = findOrScaffold({
-    fileNames: ['context.ts'],
-    fallbackPath: pumpkinsPath('context.ts'),
-    fallbackContent: stripIndent`
-      export type Context = {}
-            
-      export function createContext(): Context {
-        return {}
-      }
-    `,
-  })
-
-  const context = require(contextPath)
+/**
+ * Crate an app instance
+ * TODO extract and improve config type
+ */
+export function createApp(appConfig?: { types?: any }): App {
+  const {
+    queryType,
+    mutationType,
+    objectType,
+    inputObjectType,
+    enumType,
+    scalarType,
+    unionType,
+    intArg,
+    stringArg,
+    makeSchema,
+  } = createNexusSingleton()
 
   const plugins: Plugin[] = []
 
-  const api: API = {
+  const api: App = {
+    installGlobally() {
+      installGlobally(api)
+      return api
+    },
     use(plugin) {
       plugins.push(plugin)
       return api
     },
+    schema: {
+      queryType,
+      mutationType,
+      objectType,
+      inputObjectType,
+      enumType,
+      scalarType,
+      unionType,
+      intArg,
+      stringArg,
+    },
+    server: {
+      async start(config: ServerOptions = {}): Promise<void> {
+        // During development we dynamically import all the schema modules
+        //
+        // TODO IDEA we have concept of schema module and schema dir
+        //      add a "refactor" command to toggle between them
+        // TODO put behind dev-mode guard
+        // TODO static imports codegen at build time
+        // TODO do not assume root source folder called `server`
+        // TODO do not assume TS
+        // TODO refactor and put a system behind this holy mother of...
 
-    async startServer(config: ServerOptions = {}): Promise<void> {
-      const mergedConfig: Required<ServerOptions> = {
-        ...defaultServerOptions,
-        ...config,
-      }
+        // This code MUST run after user/system has had chance to run global installation
+        requireSchemaModules()
 
-      const nexusConfig = createNexusConfig({
-        generatedPhotonPackagePath,
-        contextPath,
-      })
+        const generatedPhotonPackagePath = fs.path(
+          'node_modules/@generated/photon'
+        )
 
-      const autoConfig = nexusConfig.typegenAutoConfig ?? {
-        sources: [],
-      }
-      nexusConfig.typegenAutoConfig = undefined
+        // Get the context module for the app.
+        // User can provide a context module at a conventional path.
+        // Otherwise we will provide a default context module.
+        //
+        // TODO context module should have flexible contract
+        //      currently MUST return a createContext function
+        const contextPath = findOrScaffold({
+          fileNames: ['context.ts'],
+          fallbackPath: pumpkinsPath('context.ts'),
+          fallbackContent: stripIndent`
+          export type Context = {}
+                
+          export function createContext(): Context {
+            return {}
+          }
+        `,
+        })
 
-      // Our use-case of multiple context sources seems to require a custom
-      // handling of typegenConfig. Opened an issue about maybe making our
-      // curreent use-case, fairly basic, integrated into the auto system, here:
-      // https://github.com/prisma-labs/nexus/issues/323
-      nexusConfig.typegenConfig = async (schema, outputPath) => {
-        const configurator = await typegenAutoConfig(autoConfig)
-        const config = await configurator(schema, outputPath)
+        const context = require(contextPath)
 
-        for (const p of plugins) {
-          if (!p.context) continue
-
-          // TODO validate that the plugin context source actually exports the type it pupports to
-          // TODO pascal case
-          const alias = `ContextFrom${p.name}`
-          const typeExportName = p.context.typeExportName ?? 'Context'
-          config.imports.push(
-            `import * as ${alias} from "${trimExt(
-              p.context.typeSourcePath,
-              '.ts'
-            )}"`
-          )
-          config.contextType = `${config.contextType} & ${alias}.${typeExportName}`
+        const mergedConfig: Required<ServerOptions> = {
+          ...defaultServerOptions,
+          ...config,
         }
 
-        log('built up Nexus typegenConfig: %O', config)
+        const nexusConfig = createNexusConfig({
+          generatedPhotonPackagePath,
+          contextPath,
+        })
 
-        return config
-      }
+        const autoConfig = nexusConfig.typegenAutoConfig ?? {
+          sources: [],
+        }
+        nexusConfig.typegenAutoConfig = undefined
 
-      // Merge the plugin nexus plugins
-      nexusConfig.plugins = nexusConfig.plugins ?? []
-      for (const plugin of plugins) {
-        nexusConfig.plugins.push(...(plugin.nexus?.plugins ?? []))
-      }
+        // Our use-case of multiple context sources seems to require a custom
+        // handling of typegenConfig. Opened an issue about maybe making our
+        // curreent use-case, fairly basic, integrated into the auto system, here:
+        // https://github.com/prisma-labs/nexus/issues/323
+        nexusConfig.typegenConfig = async (schema, outputPath) => {
+          const configurator = await typegenAutoConfig(autoConfig)
+          const config = await configurator(schema, outputPath)
 
-      const schema = await makeSchema(nexusConfig)
-      const server = new ApolloServer({
-        playground: mergedConfig.playground,
-        introspection: mergedConfig.introspection,
-        context: req => {
-          const ctx = {}
-          for (const plugin of plugins) {
-            if (!plugin.context) continue
-            Object.assign(plugin.context.create(req))
+          for (const p of plugins) {
+            if (!p.context) continue
+
+            // TODO validate that the plugin context source actually exports the type it pupports to
+            // TODO pascal case
+            const alias = `ContextFrom${p.name}`
+            const typeExportName = p.context.typeExportName ?? 'Context'
+            config.imports.push(
+              `import * as ${alias} from "${trimExt(
+                p.context.typeSourcePath,
+                '.ts'
+              )}"`
+            )
+            config.contextType = `${config.contextType} & ${alias}.${typeExportName}`
           }
-          Object.assign(ctx, context.createContext(req))
-          return ctx
-        },
-        schema,
-      })
 
-      const app = express()
+          log('built up Nexus typegenConfig: %O', config)
 
-      server.applyMiddleware({ app })
+          return config
+        }
 
-      app.listen({ port: mergedConfig.port }, () =>
-        console.log(mergedConfig.startMessage(mergedConfig.port))
-      )
+        // Merge the plugin nexus plugins
+        nexusConfig.plugins = nexusConfig.plugins ?? []
+        for (const plugin of plugins) {
+          nexusConfig.plugins.push(...(plugin.nexus?.plugins ?? []))
+        }
+
+        if (appConfig?.types && appConfig.types.length !== 0) {
+          nexusConfig.types.push(...appConfig.types)
+        }
+
+        const schema = await makeSchema(nexusConfig)
+        const server = new ApolloServer({
+          playground: mergedConfig.playground,
+          introspection: mergedConfig.introspection,
+          context: req => {
+            const ctx = {}
+            for (const plugin of plugins) {
+              if (!plugin.context) continue
+              Object.assign(plugin.context.create(req))
+            }
+            Object.assign(ctx, context.createContext(req))
+            return ctx
+          },
+          schema,
+        })
+
+        const app = express()
+
+        server.applyMiddleware({ app })
+
+        app.listen({ port: mergedConfig.port }, () =>
+          console.log(mergedConfig.startMessage(mergedConfig.port))
+        )
+      },
     },
   }
 
@@ -226,4 +223,92 @@ export function createApp() {
   return api
 }
 
-export { objectType, inputObjectType, enumType, scalarType, unionType }
+/**
+ * Augment global scope with a given app singleton.
+ */
+const installGlobally = (app: App): App => {
+  log.app('exposing app global')
+
+  const {
+    queryType,
+    mutationType,
+    objectType,
+    inputObjectType,
+    enumType,
+    scalarType,
+    unionType,
+    intArg,
+    stringArg,
+  } = app.schema
+
+  Object.assign(global, {
+    app,
+    queryType,
+    mutationType,
+    objectType,
+    inputObjectType,
+    enumType,
+    scalarType,
+    unionType,
+    intArg,
+    stringArg,
+  })
+
+  const pumpkinsTypeGenPath = 'node_modules/@types/typegen-pumpkins/index.d.ts'
+  log.app('generating app global singleton typegen to %s', pumpkinsTypeGenPath)
+
+  fs.write(
+    pumpkinsTypeGenPath,
+    stripIndent`
+      import * as nexus from 'nexus'
+      import * as pumpkins from 'pumpkins'
+
+      type QueryType = typeof nexus.core.queryType
+      type MutationType = typeof nexus.core.mutationType
+      type ObjectType = typeof nexus.objectType
+      type InputObjectType = typeof nexus.inputObjectType
+      type EnumType = typeof nexus.enumType
+      type ScalarType = typeof nexus.scalarType
+      type UnionType = typeof nexus.unionType
+      type IntArg = typeof nexus.intArg
+      type StringArg = typeof nexus.stringArg
+      
+      declare global {
+        var app: pumpkins.App
+        var queryType: QueryType
+        var mutationType: MutationType
+        var objectType: ObjectType
+        var inputObjectType: InputObjectType
+        var enumType: EnumType
+        var scalarType: ScalarType
+        var unionType: UnionType
+        var intArg: IntArg
+        var stringArg: StringArg
+
+        interface PumpkinsSingletonApp extends pumpkins.App {}
+      
+        namespace NodeJS {
+          interface Global {
+            app: pumpkins.App
+            queryType: QueryType
+            mutationType: MutationType
+            objectType: ObjectType
+            inputObjectType: InputObjectType
+            enumType: EnumType
+            scalarType: ScalarType
+            unionType: UnionType
+            intArg: IntArg
+            stringArg: StringArg
+          }
+        }
+      }
+    `
+  )
+
+  return app
+}
+
+export const isGlobalSingletonEnabled = (): boolean => {
+  const packageJson = fs.read('package.json', 'json')
+  return packageJson?.pumpkins?.singleton !== false
+}
