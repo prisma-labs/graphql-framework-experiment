@@ -3,7 +3,7 @@ const path = require('path')
 
 const cwd = process.cwd()
 
-export default (code: string, fileName: string, compiledDir: string) => {
+exports.default = (code, fileName, compiledDir) => {
   const hash = crypto
     .createHash('sha256')
     .update(fileName + code, 'utf8')
