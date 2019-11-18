@@ -269,7 +269,7 @@ const installGlobally = (app: App): App => {
       type StringArg = typeof nexus.stringArg
       
       declare global {
-        var app: App
+        var app: pumpkins.App
         var queryType: QueryType
         var mutationType: MutationType
         var objectType: ObjectType
@@ -284,7 +284,7 @@ const installGlobally = (app: App): App => {
       
         namespace NodeJS {
           interface Global {
-            app: App
+            app: pumpkins.App
             queryType: QueryType
             mutationType: MutationType
             objectType: ObjectType

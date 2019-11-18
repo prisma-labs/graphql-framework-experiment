@@ -4,7 +4,7 @@ import {
   log,
   cachedWriteFile,
 } from '../utils'
-import { stripIndent, stripIndents } from 'common-tags'
+import { stripIndents } from 'common-tags'
 
 type BootModuleConfig = {
   path: string
@@ -21,7 +21,7 @@ export const setupBootModule = (config: BootModuleConfig): void => {
     stripIndents`
         ${
           config.stage === 'build'
-            ? stripIndent`
+            ? stripIndents`
                 // Guarantee that development mode features will not accidentally run
                 process.env.PUMPKINS_SHOULD_GENERATE_ARTIFACTS = "false"
               `
