@@ -1,9 +1,4 @@
-import {
-  pumpkinsPath,
-  findServerEntryPoint,
-  log,
-  cachedWriteFile,
-} from '../utils'
+import { log, cachedWriteFile } from '../utils'
 import { stripIndents } from 'common-tags'
 
 type BootModuleConfig = {

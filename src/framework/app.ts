@@ -190,7 +190,8 @@ export function createApp(appConfig?: { types?: any }): App {
             const ctx = {}
             for (const plugin of plugins) {
               if (!plugin.context) continue
-              Object.assign(plugin.context.create(req))
+              const contextContribution = plugin.context.create(req)
+              Object.assign(ctx, contextContribution)
             }
             Object.assign(ctx, context.createContext(req))
             return ctx
