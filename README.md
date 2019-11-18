@@ -7,23 +7,19 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
+
 - [Introduction](#introduction)
-  - [Getting Started](#getting-started)
-  - [Removing boilerplate](#removing-boilerplate)
-  - [Removing even more boilerplate](#removing-even-more-boilerplate)
+    - [Getting Started](#getting-started)
   - [Adding Prisma Framework](#adding-prisma-framework)
-- [Examples](#examples)
-  - [A minimal GraphQL API](#a-minimal-graphql-api)
-  - [A GraphQL API backed by a Prisma data layer](#a-graphql-api-backed-by-a-prisma-data-layer)
 - [Conventions](#conventions)
-  - [Special File Names](#special-file-names)
-  - [`schema.ts`](#schemats)
-  - [`context.ts`](#contextts)
-  - [`app.ts`](#appts)
-  - [Prisma Support](#prisma-support)
-  - [Example Layouts](#example-layouts)
+    - [Special File Names](#special-file-names)
+    - [`schema.ts`](#schemats)
+    - [`context.ts`](#contextts)
+    - [`app.ts`](#appts)
+    - [Prisma Support](#prisma-support)
+    - [Example Layouts](#example-layouts)
 - [API](#api)
-  - [`createApp`](#createapp)
+    - [`createApp`](#createapp)
 - [CLI](#cli)
   - [`pumpkins build`](#pumpkins-build)
   - [`pumpkins dev`](#pumpkins-dev)
@@ -32,9 +28,9 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
   - [`pumpkins help [COMMAND]`](#pumpkins-help-command)
   - [`pumpkins init`](#pumpkins-init)
 - [Development](#development)
-  - [Overview](#overview)
-  - [Testing](#testing)
-  - [Working With Example Apps via Linking](#working-with-example-apps-via-linking)
+    - [Overview](#overview)
+    - [Testing](#testing)
+    - [Working With Example Apps via Linking](#working-with-example-apps-via-linking)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -381,13 +377,12 @@ Create an app instance
 # CLI
 
 <!-- commands -->
-
-- [`pumpkins build`](#pumpkins-build)
-- [`pumpkins dev`](#pumpkins-dev)
-- [`pumpkins doctor`](#pumpkins-doctor)
-- [`pumpkins generate`](#pumpkins-generate)
-- [`pumpkins help [COMMAND]`](#pumpkins-help-command)
-- [`pumpkins init`](#pumpkins-init)
+* [`pumpkins build`](#pumpkins-build)
+* [`pumpkins dev`](#pumpkins-dev)
+* [`pumpkins doctor`](#pumpkins-doctor)
+* [`pumpkins generate`](#pumpkins-generate)
+* [`pumpkins help [COMMAND]`](#pumpkins-help-command)
+* [`pumpkins init`](#pumpkins-init)
 
 ## `pumpkins build`
 
@@ -404,7 +399,7 @@ EXAMPLE
   $ pumpkins build
 ```
 
-_See code: [dist/cli/commands/build.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0-sha.b533f4b/dist/cli/commands/build.js)_
+_See code: [dist/cli/commands/build.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0-sha.e681c71/dist/cli/commands/build.js)_
 
 ## `pumpkins dev`
 
@@ -418,7 +413,7 @@ EXAMPLE
   $ pumpkins dev
 ```
 
-_See code: [dist/cli/commands/dev.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0-sha.b533f4b/dist/cli/commands/dev.js)_
+_See code: [dist/cli/commands/dev.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0-sha.e681c71/dist/cli/commands/dev.js)_
 
 ## `pumpkins doctor`
 
@@ -429,7 +424,7 @@ USAGE
   $ pumpkins doctor
 ```
 
-_See code: [dist/cli/commands/doctor.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0-sha.b533f4b/dist/cli/commands/doctor.js)_
+_See code: [dist/cli/commands/doctor.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0-sha.e681c71/dist/cli/commands/doctor.js)_
 
 ## `pumpkins generate`
 
@@ -446,7 +441,7 @@ EXAMPLE
   $ pumpkins generate
 ```
 
-_See code: [dist/cli/commands/generate.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0-sha.b533f4b/dist/cli/commands/generate.js)_
+_See code: [dist/cli/commands/generate.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0-sha.e681c71/dist/cli/commands/generate.js)_
 
 ## `pumpkins help [COMMAND]`
 
@@ -477,8 +472,7 @@ EXAMPLE
   $ pumpkins init
 ```
 
-_See code: [dist/cli/commands/init.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0-sha.b533f4b/dist/cli/commands/init.js)_
-
+_See code: [dist/cli/commands/init.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0-sha.e681c71/dist/cli/commands/init.js)_
 <!-- commandsstop -->
 
 # Development

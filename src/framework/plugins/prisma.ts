@@ -24,7 +24,7 @@ export const createPrismaPlugin: () => Plugin = () => {
         photon: Photon
       }
       
-      export const createContext: Context = {
+      export const context: Context = {
         photon: new Photon(),
       }
     `
@@ -38,7 +38,7 @@ export const createPrismaPlugin: () => Plugin = () => {
     name: 'prisma',
     context: {
       create: _req => {
-        return require(trimExt(generatedContextTypePath, '.ts'))
+        return require(trimExt(generatedContextTypePath, '.ts')).context
       },
       typeSourcePath: generatedContextTypePath,
       typeExportName: 'Context',
