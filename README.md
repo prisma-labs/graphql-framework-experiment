@@ -7,19 +7,18 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-
 - [Introduction](#introduction)
-    - [Getting Started](#getting-started)
+  - [Getting Started](#getting-started)
   - [Adding Prisma Framework](#adding-prisma-framework)
 - [Conventions](#conventions)
-    - [Special File Names](#special-file-names)
-    - [`schema.ts`](#schemats)
-    - [`context.ts`](#contextts)
-    - [`app.ts`](#appts)
-    - [Prisma Support](#prisma-support)
-    - [Example Layouts](#example-layouts)
+  - [Special File Names](#special-file-names)
+  - [`schema.ts`](#schemats)
+  - [`context.ts`](#contextts)
+  - [`app.ts`](#appts)
+  - [Prisma Support](#prisma-support)
+  - [Example Layouts](#example-layouts)
 - [API](#api)
-    - [`createApp`](#createapp)
+  - [`createApp`](#createapp)
 - [CLI](#cli)
   - [`pumpkins build`](#pumpkins-build)
   - [`pumpkins dev`](#pumpkins-dev)
@@ -28,9 +27,9 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
   - [`pumpkins help [COMMAND]`](#pumpkins-help-command)
   - [`pumpkins init`](#pumpkins-init)
 - [Development](#development)
-    - [Overview](#overview)
-    - [Testing](#testing)
-    - [Working With Example Apps via Linking](#working-with-example-apps-via-linking)
+  - [Overview](#overview)
+  - [Testing](#testing)
+  - [Working With Example Apps via Linking](#working-with-example-apps-via-linking)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -181,11 +180,18 @@ model User {
 }
 ```
 
-Now run prisma generate followed by dev mode:
+Initialize your database:
 
 ```
-$ yarn prisma2 generate
-$ yarn pumpkins dev
+yarn prisma2 lift save
+yarn prisma2 lift up
+```
+
+Run prisma generate followed by dev mode:
+
+```
+yarn prisma2 generate
+yarn pumpkins dev
 ```
 
 Now we can go back and and integrate our data layer into our GraphQL API:
@@ -377,12 +383,13 @@ Create an app instance
 # CLI
 
 <!-- commands -->
-* [`pumpkins build`](#pumpkins-build)
-* [`pumpkins dev`](#pumpkins-dev)
-* [`pumpkins doctor`](#pumpkins-doctor)
-* [`pumpkins generate`](#pumpkins-generate)
-* [`pumpkins help [COMMAND]`](#pumpkins-help-command)
-* [`pumpkins init`](#pumpkins-init)
+
+- [`pumpkins build`](#pumpkins-build)
+- [`pumpkins dev`](#pumpkins-dev)
+- [`pumpkins doctor`](#pumpkins-doctor)
+- [`pumpkins generate`](#pumpkins-generate)
+- [`pumpkins help [COMMAND]`](#pumpkins-help-command)
+- [`pumpkins init`](#pumpkins-init)
 
 ## `pumpkins build`
 
@@ -473,6 +480,7 @@ EXAMPLE
 ```
 
 _See code: [dist/cli/commands/init.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0-sha.e4f6989/dist/cli/commands/init.js)_
+
 <!-- commandsstop -->
 
 # Development
