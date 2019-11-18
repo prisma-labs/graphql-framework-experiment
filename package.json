@@ -21,6 +21,7 @@
     "nexus-prisma": "^0.5.0",
     "prisma2": "^2.0.0-preview016.2",
     "simple-git": "^1.126.0",
+    "tar": "^5.0.5",
     "ts-node": "^8.5.0",
     "ts-node-dev": "^1.0.0-pre.44",
     "tslib": "^1",
