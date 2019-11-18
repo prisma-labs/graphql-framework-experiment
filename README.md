@@ -7,24 +7,23 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-
 - [Introduction](#introduction)
-    - [Getting Started](#getting-started)
-    - [Removing boilerplate](#removing-boilerplate)
-    - [Removing even more boilerplate](#removing-even-more-boilerplate)
-    - [Adding Prisma Framework](#adding-prisma-framework)
+  - [Getting Started](#getting-started)
+  - [Removing boilerplate](#removing-boilerplate)
+  - [Removing even more boilerplate](#removing-even-more-boilerplate)
+  - [Adding Prisma Framework](#adding-prisma-framework)
 - [Examples](#examples)
-    - [A minimal GraphQL API](#a-minimal-graphql-api)
-    - [A GraphQL API backed by a Prisma data layer](#a-graphql-api-backed-by-a-prisma-data-layer)
+  - [A minimal GraphQL API](#a-minimal-graphql-api)
+  - [A GraphQL API backed by a Prisma data layer](#a-graphql-api-backed-by-a-prisma-data-layer)
 - [Conventions](#conventions)
-    - [Special File Names](#special-file-names)
-    - [`schema.ts`](#schemats)
-    - [`context.ts`](#contextts)
-    - [`app.ts`](#appts)
-    - [Prisma Support](#prisma-support)
-    - [Example Layouts](#example-layouts)
+  - [Special File Names](#special-file-names)
+  - [`schema.ts`](#schemats)
+  - [`context.ts`](#contextts)
+  - [`app.ts`](#appts)
+  - [Prisma Support](#prisma-support)
+  - [Example Layouts](#example-layouts)
 - [API](#api)
-    - [`createApp`](#createapp)
+  - [`createApp`](#createapp)
 - [CLI](#cli)
   - [`pumpkins build`](#pumpkins-build)
   - [`pumpkins dev`](#pumpkins-dev)
@@ -33,9 +32,9 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
   - [`pumpkins help [COMMAND]`](#pumpkins-help-command)
   - [`pumpkins init`](#pumpkins-init)
 - [Development](#development)
-    - [Overview](#overview)
-    - [Testing](#testing)
-    - [Working With Example Apps via Linking](#working-with-example-apps-via-linking)
+  - [Overview](#overview)
+  - [Testing](#testing)
+  - [Working With Example Apps via Linking](#working-with-example-apps-via-linking)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -55,15 +54,36 @@ system (in fact Prisma features are implemented as a plugin).
 
 ```
 yarn init -y
-yarn add pumpkins
+yarn add pumpkins@sha
+```
+
+Add some files to get your app going:
+
+```
+mkdir -p app
+touch app/app.ts
+touch app/schema.ts
+```
+
+Fill out your modules with some initial code:
+
+```ts
+// tsconfig.json
+{
+  "compilerOptions": {
+    "rootDir": "app",
+    "skipLibCheck": true,
+    "strict": true
+  }
+}
 ```
 
 ```ts
-// schema.ts
+// app/schema.ts
 
-import { objectType, queryType } from 'pumpkins'
+import { app } from 'pumpkins'
 
-export const ObjectType = objectType({
+app.schema.objectType({
   name: 'User',
   definition(t) {
     t.id('id')
@@ -71,7 +91,7 @@ export const ObjectType = objectType({
   },
 })
 
-export const QueryType = queryType({
+app.schema.queryType({
   definition(t) {
     t.list.field('users', {
       type: 'User',
@@ -86,30 +106,54 @@ export const QueryType = queryType({
 ```ts
 // app.ts
 
-import { createApp } from 'pumpkins'
-import * as types from './schema'
+import { app } from 'pumpkins'
 
-createApp({ types }).server.start()
+app.server.start()
 ```
 
+You will some static type errors. These will go away once you boot your app. Give it a shot:
+
 ```
-$ pumpkins dev
+$ yarn pumpkins dev
 ```
 
-In the above, the `resolve` func of `users` field is strongly typed and
-guarantees that the shape of data returned conforms to the schema definition of
-`User`. There is literally zero effort for you to get this working. Just enter dev mode
-and start working on your app.
+Go to http://localhost:4000/graphql and try this query:
 
-`pumpkins dev` uses flexible conventions to find your app without config needed
-from you.
+```gql
+query {
+  users {
+    id
+    name
+  }
+}
+```
 
-Once you're ready to deploy to production, you just run a build step (and again,
-flexible conventions enable pumpkins to find your entrypoint):
+You should get back:
+
+```
+{
+  "data": {
+    "users": [
+      {
+        "id": "1643",
+        "name": "newton"
+      }
+    ]
+  }
+}
+```
+
+Once you're ready to go to production just build the app to get a ready-to-go node dist.
 
 ```
 $ pumpkins build
 ```
+
+Reflecting on what we've just seen;
+
+1. The `resolve` func of `users` field is strongly typed and guarantees that the shape of data returned conforms to the schema definition of `User`. There is literally zero effort for you to get this working. Just enter dev mode and start working on your app.
+
+2. Flexible convention-over-configuration saves you from configuring `pumpkins` to find your entrypoint and schema modules.
 
 ### Removing boilerplate
 
@@ -447,12 +491,13 @@ Create an app instance
 # CLI
 
 <!-- commands -->
-* [`pumpkins build`](#pumpkins-build)
-* [`pumpkins dev`](#pumpkins-dev)
-* [`pumpkins doctor`](#pumpkins-doctor)
-* [`pumpkins generate`](#pumpkins-generate)
-* [`pumpkins help [COMMAND]`](#pumpkins-help-command)
-* [`pumpkins init`](#pumpkins-init)
+
+- [`pumpkins build`](#pumpkins-build)
+- [`pumpkins dev`](#pumpkins-dev)
+- [`pumpkins doctor`](#pumpkins-doctor)
+- [`pumpkins generate`](#pumpkins-generate)
+- [`pumpkins help [COMMAND]`](#pumpkins-help-command)
+- [`pumpkins init`](#pumpkins-init)
 
 ## `pumpkins build`
 
@@ -543,6 +588,7 @@ EXAMPLE
 ```
 
 _See code: [dist/cli/commands/init.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0-sha.b533f4b/dist/cli/commands/init.js)_
+
 <!-- commandsstop -->
 
 # Development
