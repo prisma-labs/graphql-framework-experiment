@@ -8,7 +8,14 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
-- [Example](#example)
+- [Introduction](#introduction)
+    - [Getting Started](#getting-started)
+    - [Removing boilerplate](#removing-boilerplate)
+    - [Removing even more boilerplate](#removing-even-more-boilerplate)
+    - [Adding Prisma Framework](#adding-prisma-framework)
+- [Examples](#examples)
+    - [A minimal GraphQL API](#a-minimal-graphql-api)
+    - [A GraphQL API backed by a Prisma data layer](#a-graphql-api-backed-by-a-prisma-data-layer)
 - [Conventions](#conventions)
     - [Special File Names](#special-file-names)
     - [`schema.ts`](#schemats)
@@ -34,7 +41,228 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
 
 <br>
 
-# Example
+# Introduction
+
+Pumpkins is a GraphQL API framework. It takes a code-first approach (as opposed
+to schema-first) and brings together a set of tools that provide robust type
+safety so that if your app compiles, you have a much higher degree of confidence
+than with vanilla JavaScript or just TypeScript.
+
+Pumpkins brings Nexus, Prisma, Apollo Server and more together into a pluggable
+system (in fact Prisma features are implemented as a plugin).
+
+### Getting Started
+
+```
+yarn init -y
+yarn add pumpkins
+```
+
+```ts
+// schema.ts
+
+import { objectType, queryType } from 'pumpkins'
+
+export const ObjectType = objectType({
+  name: 'User',
+  definition(t) {
+    t.id('id')
+    t.string('name')
+  },
+})
+
+export const QueryType = queryType({
+  definition(t) {
+    t.list.field('users', {
+      type: 'User',
+      resolve() {
+        return [{ id: '1643', name: 'newton' }]
+      },
+    })
+  },
+})
+```
+
+```ts
+// app.ts
+
+import { createApp } from 'pumpkins'
+import * as types from './schema'
+
+createApp({ types }).server.start()
+```
+
+```
+$ pumpkins dev
+```
+
+In the above, the `resolve` func of `users` field is strongly typed and
+guarantees that the shape of data returned conforms to the schema definition of
+`User`. There is literally zero effort for you to get this working. Just enter dev mode
+and start working on your app.
+
+`pumpkins dev` uses flexible conventions to find your app without config needed
+from you.
+
+Once you're ready to deploy to production, you just run a build step (and again,
+flexible conventions enable pumpkins to find your entrypoint):
+
+```
+$ pumpkins build
+```
+
+### Removing boilerplate
+
+`pumpkins` ships a global app singleton that helps us remove boilerplate, code that
+is repetitive, predictable, and not of essential value to writing or reading the
+source code.
+
+```diff
+- import { objectType, queryType } from 'pumpkins'
+
+- export const ObjectType = objectType({
++ objectType({
+    name: 'User',
+    definition(t) {
+      t.id('id)
+      t.string('name')
+    },
+  })
+
+- export const QueryType = queryType({
++ queryType({
+    definition(t) {
+      t.list.field('users', {
+        type: 'User',
+        resolve() {
+          return [{ id: '1643', name: 'newton' }]
+        },
+      })
+    },
+  })
+```
+
+```diff
+- import { createApp } from 'pumpkins'
+- import * as types from './schema'
+
+- createApp({ types }).server.start()
++ app({ types }).server.start()
+```
+
+If the app global singleton is not meeting your requirements or tastes, not only
+can you ignore it but you can turn it off in your `package.json`:
+
+```json
+{
+  "pumpkins": {
+    "singleton": false
+  }
+}
+```
+
+Which literally affects the runtime and global static types of your project.
+
+### Removing even more boilerplate
+
+We just saw how the API helps us stay focused. But we can go further. `pumpkins` believes developers should adopt complexity gradually. In the above example, a simple app, `app.ts` isn't doing much for us. Well, we can just remove it. And when we go to dev or build our app, `pumpkins` provides us with a default.
+
+```diff
+  |- schema.ts
+- |- app.ts
+```
+
+This is just a teaser. There are more features like this. The point to take in now is the `pumpkins` philosophy of optional complexity.
+
+### Adding Prisma Framework
+
+Prisma Framework is a next-generation developer-centric tool chain focused on making the data layer easy. `pumpkins` makes it incredibly easy to get it integrated into your app.
+
+```diff
+  |- schema.ts
++ |- schema.prisma
+```
+
+```groovy
+// schema.prisma
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:dev.db"
+}
+
+generator photon {
+  provider = "photonjs"
+}
+
+model User {
+  id   Int    @id
+  name String
+}
+```
+
+```diff
+  objectType({
+    name: 'User',
+    definition(t) {
+-     t.id('id)
+-     t.string('name')
++     t.model.id()
++     t.model.name()
+    },
+  })
+```
+
+We've also changed something about our schema. `User` `id` field has gone from a `ID` type to `Int`. `pumpkins` helps us here, as we'll see a static error in the `resolve` func of `users` query field now. So lets change that:
+
+```diff
+  queryType({
+    definition(t) {
+      t.list.field('users', {
+        type: 'User',
+        resolve() {
+-         return [{ id: '1643', name: 'newton' }]
++         return [{ id: 1643, name: 'newton' }]
+        },
+      })
+    },
+  })
+```
+
+So, as you can see, integrating Prisma is literally a matter of just using it. `pumpkins` will react to the presence of a `schema.prisma`, run Prisma generatings, setup photon, and setup `nexus-prisma`.
+
+# Examples
+
+### A minimal GraphQL API
+
+```ts
+// schema.ts
+
+objectType({
+  name: 'User',
+  definition(t) {
+    t.model.id()
+    t.model.name()
+  },
+})
+
+queryType({
+  definition(t) {
+    t.list.field('users', {
+      type: 'User',
+      resolve() {
+        return [{ id: 1643, name: 'newton' }]
+      },
+    })
+  },
+})
+```
+
+```
+$ pumpkins dev
+```
+
+### A GraphQL API backed by a Prisma data layer
 
 ```groovy
 // schema.prisma
@@ -66,8 +294,7 @@ objectType({
   },
 })
 
-objectType({
-  name: 'Query',
+queryType({
   definition(t) {
     t.list.field('users', {
       type: 'User',
