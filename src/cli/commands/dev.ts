@@ -24,6 +24,7 @@ export class Dev extends Command {
     // imported for its side-effects.
     const appEntrypointPath = await findServerEntryPoint()
     const bootPath = pumpkinsPath('boot.ts')
+    const projectDir = findProjectDir()
 
     await writePumpkinsFile(
       bootPath.relative,
@@ -42,13 +43,14 @@ export class Dev extends Command {
       `
     )
 
-    startTSNodeDev(
+    watcher(
       bootPath.absolute,
       [],
       [],
       {
         'tree-kill': true,
         'transpile-only': true,
+        respawn: true,
       },
       {
         onStart() {

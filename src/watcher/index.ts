@@ -9,7 +9,7 @@ import logFactory from './log'
 const filewatcher = require('filewatcher')
 const kill = require('tree-kill')
 
-export default function(
+export function watcher(
   script: string,
   scriptArgs: string[],
   nodeArgs: string[],
@@ -30,7 +30,7 @@ export default function(
 
   // The child_process
   let child: Process | undefined = undefined
-  const wrapper = resolveMain(__dirname + '/wrap.js')
+  const wrapper = resolveMain(__dirname + '/wrap')
   const main = resolveMain(script)
   const cfg = cfgFactory(main, opts)
   const log = logFactory(cfg)
