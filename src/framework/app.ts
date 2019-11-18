@@ -51,8 +51,9 @@ export type App = {
 
 /**
  * Crate an app instance
+ * TODO extract and improve config type
  */
-export function createApp(): App {
+export function createApp(appConfig?: { types?: any }): App {
   const {
     queryType,
     mutationType,
@@ -175,6 +176,10 @@ export function createApp(): App {
         nexusConfig.plugins = nexusConfig.plugins ?? []
         for (const plugin of plugins) {
           nexusConfig.plugins.push(...(plugin.nexus?.plugins ?? []))
+        }
+
+        if (appConfig?.types && appConfig.types.length !== 0) {
+          nexusConfig.types.push(...appConfig.types)
         }
 
         const schema = await makeSchema(nexusConfig)
@@ -304,5 +309,6 @@ const installGlobally = (app: App): App => {
 }
 
 export const isGlobalSingletonEnabled = (): boolean => {
-  return true
+  const packageJson = fs.read('package.json', 'json')
+  return packageJson?.pumpkins?.singleton !== false
 }

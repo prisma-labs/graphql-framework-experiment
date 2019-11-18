@@ -9,17 +9,14 @@ export function createNexusSingleton() {
    * disk write is awaited upon.
    */
   async function makeSchema(
-    config: Omit<nexus.core.SchemaConfig, 'types'>
+    config: nexus.core.SchemaConfig
   ): Promise<nexus.core.NexusGraphQLSchema> {
-    const configWithTypes: nexus.core.SchemaConfig = {
-      types: __types,
-      ...config,
-    }
+    config.types.push(...__types)
 
     // https://github.com/prisma/pumpkins/issues/33
     const schema = await (process.env.PUMPKINS_SHOULD_AWAIT_TYPEGEN === 'true'
-      ? generateSchema(configWithTypes)
-      : Promise.resolve(nexus.makeSchema(configWithTypes)))
+      ? generateSchema(config)
+      : Promise.resolve(nexus.makeSchema(config)))
 
     // HACK `generateSchema` in Nexus does not support this logic yet
     // TODO move this logic into Nexus

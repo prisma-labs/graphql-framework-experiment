@@ -6,7 +6,7 @@ const ctx = withContext()
 
 // TODO integration test showing built app can boot and accept queries
 
-it('can build with minimal server + schema + prisma + plugin', async () => {
+it('can build with minimal server + schema + prisma', async () => {
   ctx.fs.write(
     'package.json',
     `
@@ -26,29 +26,6 @@ it('can build with minimal server + schema + prisma + plugin', async () => {
   ctx.run('rm -rf node_modules/pumpkins/src')
 
   ctx.run('touch dev.db')
-
-  ctx.fs.write(
-    'myplugin.ts',
-    `
-      import { Plugin } from 'pumpkins'
-
-      export type Context = {
-        a: 1
-      }
-      
-      export default {
-        name: 'myplugin',
-        context: {
-          typeSourcePath: __filename,
-          create() {
-            return {
-              a: 1,
-            }
-          },
-        },
-      } as Plugin<Context>
-    `
-  )
 
   ctx.fs.write(
     'schema.prisma',
@@ -87,7 +64,6 @@ it('can build with minimal server + schema + prisma + plugin', async () => {
     'schema.ts',
     `queryType({
         definition(t) {
-          t.int('a', (_root, _args, ctx) => ctx.a)
           t.field('foo', {
             type: 'Foo',
             resolve() {
@@ -111,9 +87,7 @@ it('can build with minimal server + schema + prisma + plugin', async () => {
   ctx.fs.write(
     'app.ts',
     `
-      import myplugin from './myplugin'
-
-      app.use(myplugin).server.start()
+      app.server.start()
     `
   )
 
@@ -139,22 +113,17 @@ it('can build with minimal server + schema + prisma + plugin', async () => {
         },
         Object {
           "name": "app__original__.js",
-          "size": 319,
-          "type": "file",
-        },
-        Object {
-          "name": "myplugin.js",
-          "size": 268,
+          "size": 34,
           "type": "file",
         },
         Object {
           "name": "schema.js",
-          "size": 366,
+          "size": 316,
           "type": "file",
         },
       ],
       "name": "dist",
-      "size": 1223,
+      "size": 620,
       "type": "dir",
     }
   `)

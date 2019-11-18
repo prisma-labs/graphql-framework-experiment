@@ -3,7 +3,7 @@ import * as Nexus from 'nexus'
 import * as path from 'path'
 import { findProjectDir } from './path'
 
-export type NexusConfig = Omit<Nexus.core.SchemaConfig, 'types'>
+export type NexusConfig = Nexus.core.SchemaConfig
 
 export function createNexusConfig({
   generatedPhotonPackagePath: photonPath,
@@ -29,6 +29,7 @@ export function createNexusConfig({
     },
     shouldGenerateArtifacts: shouldGenerateArtifacts(),
     shouldExitAfterGenerateArtifacts: shouldExitAfterGenerateArtifacts(),
+    types: [],
   }
 }
 

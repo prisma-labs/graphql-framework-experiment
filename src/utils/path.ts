@@ -44,7 +44,9 @@ export function findProjectDir() {
 
   return path.dirname(filePath)
 }
+
 // dist/index.js => index.ts
+
 export function getTranspiledPath(
   projectDir: string,
   filePath: string,

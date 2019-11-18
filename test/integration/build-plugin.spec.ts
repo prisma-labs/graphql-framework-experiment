@@ -6,13 +6,37 @@ const ctx = withContext()
 
 // TODO integration test showing built app can boot and accept queries
 
-it('can build without prisma', async () => {
+it('can build with plugins', async () => {
   setupBasePumpkinsProject(ctx)
+
+  ctx.fs.write(
+    'myplugin.ts',
+    `
+      import { Plugin } from 'pumpkins'
+
+      export type Context = {
+        a: 1
+      }
+      
+      export default {
+        name: 'myplugin',
+        context: {
+          typeSourcePath: __filename,
+          create() {
+            return {
+              a: 1,
+            }
+          },
+        },
+      } as Plugin<Context>
+    `
+  )
 
   ctx.fs.write(
     'schema.ts',
     `queryType({
         definition(t) {
+          t.int('a', (_root, _args, ctx) => ctx.a)
           t.field('foo', {
             type: 'Foo',
             resolve() {
@@ -36,7 +60,9 @@ it('can build without prisma', async () => {
   ctx.fs.write(
     'app.ts',
     `
-      app.server.start()
+      import myplugin from './myplugin'
+
+      app.use(myplugin).server.start()
     `
   )
 
@@ -61,17 +87,22 @@ it('can build without prisma', async () => {
         },
         Object {
           "name": "app__original__.js",
-          "size": 34,
+          "size": 319,
+          "type": "file",
+        },
+        Object {
+          "name": "myplugin.js",
+          "size": 268,
           "type": "file",
         },
         Object {
           "name": "schema.js",
-          "size": 316,
+          "size": 366,
           "type": "file",
         },
       ],
       "name": "dist",
-      "size": 620,
+      "size": 1223,
       "type": "dir",
     }
   `)
