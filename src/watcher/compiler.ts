@@ -1,12 +1,11 @@
 import * as fs from 'fs'
-import * as mkdirp from 'mkdirp'
+import * as fsJetPack from 'fs-jetpack'
 import * as os from 'os'
 import * as path from 'path'
-import * as rimraf from 'rimraf'
 import { register } from 'ts-node'
 import { resolveSync } from 'tsconfig'
-import getCompiledPath from './get-compiled-path'
 import { Compiler, Opts } from './types'
+const getCompiledPath = require('./get-compiled-path')
 
 let sourceMapSupportPath = require
   .resolve('source-map-support')
@@ -28,10 +27,7 @@ export const compiler: Compiler = {
     return compilationInstanceStamp
   },
   createCompiledDir: function() {
-    let compiledDir = compiler.getCompiledDir()
-    if (!fs.existsSync(compiledDir)) {
-      mkdirp.sync(compiler.getCompiledDir())
-    }
+    fsJetPack.dir(compiler.getCompiledDir())
   },
   getCompiledDir: function() {
     return path.join(tmpDir, 'compiled').replace(/\\/g, '/')
@@ -53,13 +49,12 @@ export const compiler: Compiler = {
       .replace(/\\/g, '/')
   },
   writeReadyFile: function() {
-    fs.writeFileSync(compiler.getCompilerReadyFilePath(), '')
+    fsJetPack.write(compiler.getCompilerReadyFilePath(), '')
   },
   writeChildHookFile: function(options: Opts) {
-    let fileData = fs.readFileSync(
-      path.join(__dirname, 'child-require-hook.js'),
-      'utf-8'
-    )
+    let fileDataPath = require.resolve('./child-require-hook')
+    let fileData = fsJetPack.read(fileDataPath)!
+
     const compileTimeout = parseInt(options['compile-timeout']!, 10)
     if (compileTimeout) {
       fileData = fileData.replace('10000', compileTimeout.toString())
@@ -112,7 +107,7 @@ export const compiler: Compiler = {
       /__dirname/,
       '"' + __dirname.replace(/\\/g, '/') + '"'
     )
-    fs.writeFileSync(compiler.getChildHookPath(), fileData)
+    fsJetPack.write(compiler.getChildHookPath(), fileData)
   },
   init: function(options) {
     const project = options['project']
@@ -177,7 +172,7 @@ export const compiler: Compiler = {
       return
     }
     /* clean up compiled on each new init*/
-    rimraf.sync(compiler.getCompiledDir())
+    fsJetPack.remove(compiler.getCompiledDir())
     compiler.createCompiledDir()
 
     /* check if `allowJs` compiler option enable */
@@ -197,7 +192,7 @@ export const compiler: Compiler = {
     const ext = path.extname(fileName)
     if (extensions.indexOf(ext) < 0) return
     try {
-      const code = fs.readFileSync(fileName, 'utf-8')
+      const code = fsJetPack.read(fileName)!
       compiler.compile({
         compile: fileName,
         compiledPath: getCompiledPath(
@@ -217,15 +212,15 @@ export const compiler: Compiler = {
     callbacks: any
   }) {
     const fileName = params.compile
-    let code = fs.readFileSync(fileName, 'utf-8')
+    let code = fsJetPack.read(fileName)!
     const compiledPath = params.compiledPath
 
     function writeCompiled(code: string, _filename?: string) {
-      fs.writeFileSync(compiledPath, code)
-      fs.writeFileSync(compiledPath + '.done', '')
+      fsJetPack.write(compiledPath, code)
+      fsJetPack.write(compiledPath + '.done', '')
     }
 
-    if (fs.existsSync(compiledPath)) {
+    if (fsJetPack.exists(compiledPath)) {
       return
     }
     const starTime = new Date().getTime()
