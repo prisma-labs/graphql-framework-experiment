@@ -22,7 +22,7 @@ export class Dev extends Command {
     // Setup a boot module
     // this takes care of certain guarantees we want like pumpkins having been
     // imported for its side-effects.
-    const appEntrypointPath = findServerEntryPoint()
+    const appEntrypointPath = await findServerEntryPoint()
     const bootPath = pumpkinsPath('boot.ts')
 
     await writePumpkinsFile(
@@ -36,7 +36,8 @@ export class Dev extends Command {
 
         ${createBootModuleContent({
           stage: 'dev',
-          appEntrypointPath: appEntrypointPath,
+          sourceEntrypoint: appEntrypointPath,
+          app: false,
         })}
       `
     )

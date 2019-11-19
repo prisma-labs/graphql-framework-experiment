@@ -12,6 +12,7 @@ import {
 import { runPrismaGenerators } from '../../framework/plugins'
 import { scan } from '../../framework/layout'
 import { createBootModuleContent } from '../utils'
+import { app } from '../../framework'
 
 export class Build extends Command {
   static description = 'Build a production-ready server'
@@ -33,59 +34,61 @@ export class Build extends Command {
     // important system-like guarantees such as pumpkins
     // import and defusing dev mode.
 
-    const entrypoint = flags.entrypoint
-      ? fs.path(flags.entrypoint)
-      : findServerEntryPoint()
-
     //
     // generate artifacts
     //
 
     this.log('🎃  Generating Nexus artifacts ...')
     await generateArtifacts2(
-      createBootModuleContent({ appEntrypointPath: entrypoint, stage: 'dev' })
-    )
-
-    const { transpiledEntrypointPath } = this.compileProject(entrypoint)
-    await this.swapEntryPoint(transpiledEntrypointPath)
-
-    this.log('🎃  Pumpkins server successfully compiled!')
-  }
-
-  compileProject(entrypoint: string) {
-    this.log('🎃  Compiling ...')
-    const tsConfig = readTsConfig()
-    const projectDir = findProjectDir()
-    const transpiledEntrypointPath = getTranspiledPath(
-      projectDir,
-      entrypoint,
-      tsConfig.options.outDir!
-    )
-
-    compile(tsConfig.fileNames, tsConfig.options)
-
-    return { transpiledEntrypointPath }
-  }
-
-  async swapEntryPoint(transpiledEntrypointPath: string) {
-    const entryPointFileNameSansExt = path.basename(
-      transpiledEntrypointPath,
-      '.js'
-    )
-    const renamedEntryPoint = `${entryPointFileNameSansExt}__original__.js`
-    const entryPointContent = await fs.readAsync(transpiledEntrypointPath)
-
-    await fs.writeAsync(
-      path.join(path.dirname(transpiledEntrypointPath), renamedEntryPoint),
-      entryPointContent!
-    )
-
-    await fs.writeAsync(
-      transpiledEntrypointPath,
       createBootModuleContent({
-        stage: 'build',
-        appEntrypointPath: `./${renamedEntryPoint}`,
+        sourceEntrypoint: layout.app.exists ? layout.app.path : undefined,
+        stage: 'dev',
+        app: !layout.app.exists,
       })
     )
+
+    // TODO
+    const entrypoint = layout.app.exists
+      ? layout.app.path
+      : fs.path('schema.ts')
+
+    this.log('🎃  Compiling ...')
+    const tsConfig = readTsConfig()
+    compile(tsConfig.fileNames, tsConfig.options)
+
+    // wrap app module
+    let sourceEntrypoint: string | undefined = undefined
+    if (layout.app.exists) {
+      const projectDir = findProjectDir()
+      const transpiledEntrypointPath = getTranspiledPath(
+        projectDir,
+        entrypoint,
+        tsConfig.options.outDir!
+      )
+
+      const entryPointFileNameSansExt = path.basename(
+        transpiledEntrypointPath,
+        '.js'
+      )
+      const renamedEntryPoint = `${entryPointFileNameSansExt}__original__.js`
+      const entryPointContent = await fs.readAsync(transpiledEntrypointPath)
+
+      await fs.writeAsync(
+        path.join(path.dirname(transpiledEntrypointPath), renamedEntryPoint),
+        entryPointContent!
+      )
+      sourceEntrypoint = `./${renamedEntryPoint}`
+    }
+
+    await fs.writeAsync(
+      fs.path('dist/app.js'),
+      createBootModuleContent({
+        stage: 'build',
+        sourceEntrypoint,
+        app: !layout.app.exists,
+      })
+    )
+
+    this.log('🎃  Pumpkins server successfully compiled!')
   }
 }

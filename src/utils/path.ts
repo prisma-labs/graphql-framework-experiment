@@ -113,7 +113,7 @@ export function sourceFilePathFromTranspiledPath({
   return path.join(rootDir, maybeAppFolders, tsFileName)
 }
 
-export function findFile(fileNames: string | string[]) {
+export function findFile(fileNames: string | string[]): null | string {
   const paths = Array.isArray(fileNames) ? fileNames : [fileNames]
   const foundFiles = fs.find({
     matching: [
@@ -129,7 +129,7 @@ export function findFile(fileNames: string | string[]) {
     return path.join(process.cwd(), foundFiles[0])
   }
 
-  return undefined
+  return null
 }
 
 export const trimExt = (filePath: string, ext: string): string => {

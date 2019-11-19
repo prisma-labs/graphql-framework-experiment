@@ -58,7 +58,7 @@ function fixConfig(config: ts.ParsedCommandLine, projectDir: string) {
     config.options.outDir = 'dist'
   }
 
-  config.options.rootDir = projectDir
+  // config.options.rootDir = projectDir
 
   return config
 }

@@ -3,12 +3,10 @@ import express from 'express'
 import * as fs from 'fs-jetpack'
 import * as nexus from 'nexus'
 import {
-  findOrScaffold,
   requireSchemaModules,
   createNexusConfig,
   log,
   trimExt,
-  pumpkinsPath,
   findFile,
 } from '../utils'
 import { createNexusSingleton } from './nexus'
