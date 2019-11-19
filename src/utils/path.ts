@@ -83,10 +83,11 @@ export function sourceFilePathFromTranspiledPath({
   return path.join(rootDir, maybeAppFolders, tsFileName)
 }
 
-export function findFile(fileNames: string[]) {
+export function findFile(fileNames: string | string[]) {
+  const paths = Array.isArray(fileNames) ? fileNames : [fileNames]
   const foundFiles = fs.find({
     matching: [
-      ...fileNames,
+      ...paths,
       '!node_modules/**/*',
       '!.yalc/**/*',
       `!.${pumpkinsDotFolderName}/**/*`,

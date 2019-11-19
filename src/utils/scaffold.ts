@@ -1,5 +1,5 @@
 import * as fs from 'fs-jetpack'
-import { findFile, pumpkinsPath } from './path'
+import { findFile } from './path'
 import { log } from './log'
 
 export function findOrScaffold({
