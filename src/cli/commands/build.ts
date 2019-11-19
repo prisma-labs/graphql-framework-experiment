@@ -12,6 +12,7 @@ import {
 import { runPrismaGenerators } from '../../framework/plugins'
 import { scan } from '../../framework/layout'
 import { createBootModuleContent } from '../utils'
+import { app } from '../../framework'
 
 export class Build extends Command {
   static description = 'Build a production-ready server'
