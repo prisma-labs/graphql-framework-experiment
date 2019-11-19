@@ -12,6 +12,7 @@ import {
 } from '../../utils'
 import { runPrismaGenerators } from '../../framework/plugins'
 import { setupBootModule } from '../utils'
+import { scan } from '../../framework/layout'
 
 export class Build extends Command {
   static description = 'Build a production-ready server'
@@ -21,36 +22,47 @@ export class Build extends Command {
   }
 
   async run() {
-    // Guarantee the side-effect features like singleton global have run.
-    require(path.join(process.cwd(), 'node_modules/pumpkins'))
-
     const { flags } = this.parse(Build)
+
+    // Handle Prisma integration
     // TODO pluggable CLI
     await runPrismaGenerators()
+
+    const layout = await scan()
+
+    // Create the pumpkins entrypoint. This handles
+    // important system-like guarantees such as pumpkins
+    // import and defusing dev mode.
+
     const entrypoint = flags.entrypoint
       ? fs.path(flags.entrypoint)
       : findServerEntryPoint()
+
     const bootPath = pumpkinsPath('boot.ts')
+
     setupBootModule({
       stage: 'dev',
       appEntrypointPath: entrypoint,
       path: bootPath,
     })
-    await this.generateArtifacts(bootPath)
-    const { transpiledEntrypointPath } = this.compileProject(entrypoint)
-    await this.swapEntryPoint(transpiledEntrypointPath)
 
-    this.log('🎃  Pumpkins server successfully compiled!')
-  }
+    // Generate typegen that will be needed for build.
 
-  async generateArtifacts(entry: string | undefined) {
     this.log('🎃  Generating Nexus artifacts ...')
-    const { error, entrypoint } = await generateArtifacts(entry)
+    const { error } = await generateArtifacts(bootPath)
     if (error) {
       this.error(error, { exit: 1 })
     }
 
-    return { entrypoint }
+    // The heart of the build, the actual TypeScript compilation
+
+    const { transpiledEntrypointPath } = this.compileProject(entrypoint)
+
+    // Create the pumpkins entrypoint again. This time for the built app.
+
+    await this.swapEntryPoint(transpiledEntrypointPath)
+
+    this.log('🎃  Pumpkins server successfully compiled!')
   }
 
   compileProject(entrypoint: string) {
