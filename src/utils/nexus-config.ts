@@ -7,10 +7,8 @@ export type NexusConfig = Nexus.core.SchemaConfig
 
 export function createNexusConfig({
   generatedPhotonPackagePath: photonPath,
-  contextPath,
 }: {
   generatedPhotonPackagePath: string
-  contextPath: string
 }): NexusConfig {
   const projectDir = findProjectDir()
   const defaultSchemaPath = path.join(projectDir, 'schema.graphql')
@@ -24,8 +22,7 @@ export function createNexusConfig({
       typegen: defaultTypesPath,
     },
     typegenAutoConfig: {
-      contextType: 'Context.Context',
-      sources: [{ source: contextPath, alias: 'Context' }],
+      sources: [],
     },
     shouldGenerateArtifacts: shouldGenerateArtifacts(),
     shouldExitAfterGenerateArtifacts: shouldExitAfterGenerateArtifacts(),
