@@ -1,10 +1,29 @@
-import { Plugin } from '../plugin'
-import * as fs from 'fs-jetpack'
-import { trimExt, pumpkinsPath, shouldGenerateArtifacts } from '../../utils'
-import { nexusPrismaPlugin } from 'nexus-prisma'
+import {
+  trimExt,
+  pumpkinsPath,
+  shouldGenerateArtifacts,
+  writePumpkinsFile,
+} from '../../utils'
 import { getGenerators } from '@prisma/sdk'
+import chalk from 'chalk'
+import * as fs from 'fs-jetpack'
+import { nexusPrismaPlugin, Options } from 'nexus-prisma'
 import * as path from 'path'
+import { suggestionList } from '../../utils/levenstein'
 import { log as pumpkinsLog } from '../../utils/log'
+import { printStack } from '../../utils/stack/printStack'
+import { Plugin } from '../plugin'
+
+type UnknownFieldName = {
+  error: Error
+  unknownFieldName: string
+  validFieldNames: string[]
+  typeName: string
+}
+
+type OptionsWithHook = Options & {
+  onUnknownFieldName: (params: UnknownFieldName) => void
+}
 
 const log = pumpkinsLog.create('prisma')
 
@@ -15,8 +34,8 @@ export const createPrismaPlugin: () => Plugin = () => {
   // TODO plugin api for .pumpkins sandboxed fs access
   const generatedContextTypePath = pumpkinsPath('prisma/context.ts')
 
-  fs.write(
-    generatedContextTypePath,
+  writePumpkinsFile(
+    generatedContextTypePath.relative,
     `
       import { Photon } from '${generatedPhotonPackagePath}'
       
@@ -38,9 +57,10 @@ export const createPrismaPlugin: () => Plugin = () => {
     name: 'prisma',
     context: {
       create: _req => {
-        return require(trimExt(generatedContextTypePath, '.ts')).context
+        return require(trimExt(generatedContextTypePath.absolute, '.ts'))
+          .context
       },
-      typeSourcePath: generatedContextTypePath,
+      typeSourcePath: generatedContextTypePath.absolute,
       typeExportName: 'Context',
     },
     nexus: {
@@ -53,11 +73,29 @@ export const createPrismaPlugin: () => Plugin = () => {
             typegen: nexusPrismaTypegenOutput,
           },
           shouldGenerateArtifacts: shouldGenerateArtifacts(),
-        }),
+          onUnknownFieldName: params => renderUnknownFieldNameError(params),
+        } as OptionsWithHook),
       ],
     },
     onBuild() {},
   }
+}
+
+function renderUnknownFieldNameError(params: UnknownFieldName) {
+  const { stack, fileLineNumber } = printStack({
+    callsite: params.error.stack,
+  })
+  const suggestions = suggestionList(
+    params.unknownFieldName,
+    params.validFieldNames
+  ).map(s => chalk.green(s))
+  const suggestionMessage =
+    suggestions.length === 0
+      ? ''
+      : `Did you mean ${suggestions.map(s => `"${s}"`).join(', ')} ?`
+  const intro = chalk`{yellow Warning:} ${params.error.message}\n{yellow Warning:} in ${fileLineNumber}\n{yellow Warning:} ${suggestionMessage}`
+
+  console.log(`${intro}${stack}`)
 }
 
 // plugin()

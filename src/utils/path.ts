@@ -2,20 +2,50 @@ import * as fs from 'fs-jetpack'
 import * as path from 'path'
 import { findOrScaffold } from './scaffold'
 import { findConfigFile } from './tsc'
+import log from './log'
 
 export const pumpkinsDotFolderName = 'pumpkins'
 
 export const pumpkinsDotFolderPath = fs.path(`.${pumpkinsDotFolderName}`)
 
-export const pumpkinsPath = (subPath: string): string => {
-  return path.join(pumpkinsDotFolderPath, subPath)
+export const writePumpkinsFile = async (
+  subPath: string,
+  content: string
+): Promise<void> => {
+  await writeCachedFile(pumpkinsPath(subPath).absolute, content)
 }
 
-export const writePumpkinsFile = (
-  fileName: string,
+export const pumpkinsPath = (
+  subPath: string
+): { relative: string; absolute: string } => {
+  return {
+    relative: subPath,
+    absolute: path.join(pumpkinsDotFolderPath, subPath),
+  }
+}
+
+export const writeCachedFile = async (
+  filePath: string,
   fileContent: string
-): void => {
-  fs.write(pumpkinsPath(fileName), fileContent)
+): Promise<void> => {
+  const alreadyExistingFallbackFileContents = fs.read(filePath)
+
+  if (alreadyExistingFallbackFileContents === undefined) {
+    log('writing file %s', filePath)
+    await fs.writeAsync(filePath, fileContent)
+  } else if (alreadyExistingFallbackFileContents !== fileContent) {
+    log(
+      'there is a file already present on disk but its content does not match, replacing old with new %s',
+      filePath
+    )
+    log(alreadyExistingFallbackFileContents)
+    log(fileContent)
+    await fs.writeAsync(filePath, fileContent)
+  } else {
+    log(
+      'there is a file already present on disk and its content matches, therefore doing nothing'
+    )
+  }
 }
 
 export function findServerEntryPoint() {

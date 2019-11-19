@@ -1,8 +1,13 @@
 import { Command } from '@oclif/command'
 const startTSNodeDev = require('ts-node-dev')
 import { runPrismaGenerators } from '../../framework/plugins'
-import { setupBootModule } from '../utils'
-import { findServerEntryPoint, pumpkinsPath } from '../../utils'
+import { createBootModuleContent } from '../utils'
+import {
+  findServerEntryPoint,
+  pumpkinsPath,
+  writePumpkinsFile,
+} from '../../utils'
+import { stripIndents } from 'common-tags'
 
 export class Dev extends Command {
   static description = 'describe the command here'
@@ -14,22 +19,27 @@ export class Dev extends Command {
     // const { args, flags } = this.parse(Dev)
     await runPrismaGenerators()
 
-    // The child process that ts-node-dev spawns will inherit
-    // the state of our process.env. We want to make sure that
-    // during dev the user's typegen is being run.
-    process.env.PUMPKINS_SHOULD_GENERATE_ARTIFACTS = 'true'
-
     // Setup a boot module
     // this takes care of certain guarantees we want like pumpkins having been
     // imported for its side-effects.
     const appEntrypointPath = findServerEntryPoint()
     const bootPath = pumpkinsPath('boot.ts')
 
-    setupBootModule({
-      stage: 'dev',
-      appEntrypointPath: appEntrypointPath,
-      path: bootPath,
-    })
+    await writePumpkinsFile(
+      bootPath.relative,
+      stripIndents`
+        // HACK This file exists because ts-node-dev does not support --eval
+        // flag from ts-node. Once we replace ts-node-dev with our own dev-mode this fail will go
+        // away.
+        //
+        // Ref: https://github.com/whitecolor/ts-node-dev/issues/43
+
+        ${createBootModuleContent({
+          stage: 'dev',
+          appEntrypointPath: appEntrypointPath,
+        })}
+      `
+    )
 
     // Difficultish API to use because no docs or typings
     // Refer to these source files, top-down by caller order:
@@ -38,7 +48,7 @@ export class Dev extends Command {
     // - https://github.com/whitecolor/ts-node-dev/blob/master/lib/index.js
     // - https://github.com/whitecolor/ts-node-dev/blob/master/lib/compiler.js
     //
-    startTSNodeDev(bootPath, [], [], {
+    startTSNodeDev(bootPath.absolute, [], [], {
       respawn: true,
       'tree-kill': true,
       'transpile-only': true,
