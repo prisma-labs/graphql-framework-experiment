@@ -1,10 +1,24 @@
-import { Plugin } from '../plugin'
-import * as fs from 'fs-jetpack'
-import { trimExt, pumpkinsPath, shouldGenerateArtifacts } from '../../utils'
-import { nexusPrismaPlugin } from 'nexus-prisma'
 import { getGenerators } from '@prisma/sdk'
+import chalk from 'chalk'
+import * as fs from 'fs-jetpack'
+import { nexusPrismaPlugin, Options } from 'nexus-prisma'
 import * as path from 'path'
+import { pumpkinsPath, shouldGenerateArtifacts, trimExt } from '../../utils'
+import { suggestionList } from '../../utils/levenstein'
 import { log as pumpkinsLog } from '../../utils/log'
+import { printStack } from '../../utils/stack/printStack'
+import { Plugin } from '../plugin'
+
+type UnknownFieldName = {
+  error: Error
+  unknownFieldName: string
+  validFieldNames: string[]
+  typeName: string
+}
+
+type OptionsWithHook = Options & {
+  onUnknownFieldName: (params: UnknownFieldName) => void
+}
 
 const log = pumpkinsLog.create('prisma')
 
@@ -53,11 +67,29 @@ export const createPrismaPlugin: () => Plugin = () => {
             typegen: nexusPrismaTypegenOutput,
           },
           shouldGenerateArtifacts: shouldGenerateArtifacts(),
-        }),
+          onUnknownFieldName: params => renderUnknownFieldNameError(params),
+        } as OptionsWithHook),
       ],
     },
     onBuild() {},
   }
+}
+
+function renderUnknownFieldNameError(params: UnknownFieldName) {
+  const { stack, fileLineNumber } = printStack({
+    callsite: params.error.stack,
+  })
+  const suggestions = suggestionList(
+    params.unknownFieldName,
+    params.validFieldNames
+  ).map(s => chalk.green(s))
+  const suggestionMessage =
+    suggestions.length === 0
+      ? ''
+      : `Did you mean ${suggestions.map(s => `"${s}"`).join(', ')} ?`
+  const intro = chalk`{yellow Warning:} ${params.error.message}\n{yellow Warning:} in ${fileLineNumber}\n{yellow Warning:} ${suggestionMessage}`
+
+  console.log(`${intro}${stack}`)
 }
 
 // plugin()
