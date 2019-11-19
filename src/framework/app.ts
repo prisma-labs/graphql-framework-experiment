@@ -9,6 +9,7 @@ import {
   log,
   trimExt,
   pumpkinsPath,
+  findFile,
 } from '../utils'
 import { createNexusSingleton } from './nexus'
 import { typegenAutoConfig } from 'nexus/dist/core'
@@ -108,39 +109,33 @@ export function createApp(appConfig?: { types?: any }): App {
           'node_modules/@generated/photon'
         )
 
+        const mergedConfig: Required<ServerOptions> = {
+          ...defaultServerOptions,
+          ...config,
+        }
+
+        // Create the Nexus config
+        const nexusConfig = createNexusConfig({
+          generatedPhotonPackagePath,
+        })
+
         // Get the context module for the app.
         // User can provide a context module at a conventional path.
         // Otherwise we will provide a default context module.
         //
         // TODO context module should have flexible contract
         //      currently MUST return a createContext function
-        const contextPath = findOrScaffold({
-          fileNames: ['context.ts'],
-          fallbackPath: pumpkinsPath('context.ts'),
-          fallbackContent: stripIndent`
-          export type Context = {}
-                
-          export function createContext(): Context {
-            return {}
-          }
-        `,
-        })
+        const contextPath = findFile('context.ts')
 
-        const context = require(contextPath)
-
-        const mergedConfig: Required<ServerOptions> = {
-          ...defaultServerOptions,
-          ...config,
+        if (contextPath) {
+          nexusConfig.typegenAutoConfig!.contextType = 'Context.Context'
+          nexusConfig.typegenAutoConfig!.sources.push({
+            source: contextPath,
+            alias: 'Context',
+          })
         }
 
-        const nexusConfig = createNexusConfig({
-          generatedPhotonPackagePath,
-          contextPath,
-        })
-
-        const autoConfig = nexusConfig.typegenAutoConfig ?? {
-          sources: [],
-        }
+        const typegenAutoConfigObject = nexusConfig.typegenAutoConfig!
         nexusConfig.typegenAutoConfig = undefined
 
         // Our use-case of multiple context sources seems to require a custom
@@ -148,7 +143,7 @@ export function createApp(appConfig?: { types?: any }): App {
         // curreent use-case, fairly basic, integrated into the auto system, here:
         // https://github.com/prisma-labs/nexus/issues/323
         nexusConfig.typegenConfig = async (schema, outputPath) => {
-          const configurator = await typegenAutoConfig(autoConfig)
+          const configurator = await typegenAutoConfig(typegenAutoConfigObject)
           const config = await configurator(schema, outputPath)
 
           for (const p of plugins) {
@@ -164,7 +159,10 @@ export function createApp(appConfig?: { types?: any }): App {
                 '.ts'
               )}"`
             )
-            config.contextType = `${config.contextType} & ${alias}.${typeExportName}`
+            config.contextType =
+              config.contextType === undefined
+                ? `${alias}.${typeExportName}`
+                : `${config.contextType} & ${alias}.${typeExportName}`
           }
 
           log('built up Nexus typegenConfig: %O', config)
@@ -186,14 +184,24 @@ export function createApp(appConfig?: { types?: any }): App {
         const server = new ApolloServer({
           playground: mergedConfig.playground,
           introspection: mergedConfig.introspection,
+          // TODO Idea: context that provides an eager object can be hoisted out
+          // of the func to improve performance.
           context: req => {
             const ctx = {}
+
+            // Integrate context from plugins
             for (const plugin of plugins) {
               if (!plugin.context) continue
               const contextContribution = plugin.context.create(req)
               Object.assign(ctx, contextContribution)
             }
-            Object.assign(ctx, context.createContext(req))
+
+            // Integrate context from app
+            if (contextPath) {
+              // TODO good feedback to user if something goes wrong
+              Object.assign(ctx, require(contextPath).createContext(req))
+            }
+
             return ctx
           },
           schema,
