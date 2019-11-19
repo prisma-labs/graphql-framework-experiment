@@ -1,4 +1,4 @@
-import chalk from 'chalk'
+const chalk = require('chalk')
 
 export interface Theme {
   comment: (str: string) => string
