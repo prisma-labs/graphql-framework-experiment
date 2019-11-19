@@ -4,14 +4,13 @@ import * as path from 'path'
 import {
   compile,
   findProjectDir,
-  generateArtifacts,
   getTranspiledPath,
   readTsConfig,
   findServerEntryPoint,
-  pumpkinsPath,
+  generateArtifacts2,
 } from '../../utils'
 import { runPrismaGenerators } from '../../framework/plugins'
-import { setupBootModule } from '../utils'
+import { createBootModuleContent } from '../utils'
 
 export class Build extends Command {
   static description = 'Build a production-ready server'
@@ -30,27 +29,20 @@ export class Build extends Command {
     const entrypoint = flags.entrypoint
       ? fs.path(flags.entrypoint)
       : findServerEntryPoint()
-    const bootPath = pumpkinsPath('boot.ts')
-    setupBootModule({
-      stage: 'dev',
-      appEntrypointPath: entrypoint,
-      path: bootPath,
-    })
-    await this.generateArtifacts(bootPath)
+
+    //
+    // generate artifacts
+    //
+
+    this.log('🎃  Generating Nexus artifacts ...')
+    await generateArtifacts2(
+      createBootModuleContent({ appEntrypointPath: entrypoint, stage: 'dev' })
+    )
+
     const { transpiledEntrypointPath } = this.compileProject(entrypoint)
     await this.swapEntryPoint(transpiledEntrypointPath)
 
     this.log('🎃  Pumpkins server successfully compiled!')
-  }
-
-  async generateArtifacts(entry: string | undefined) {
-    this.log('🎃  Generating Nexus artifacts ...')
-    const { error, entrypoint } = await generateArtifacts(entry)
-    if (error) {
-      this.error(error, { exit: 1 })
-    }
-
-    return { entrypoint }
   }
 
   compileProject(entrypoint: string) {
@@ -81,10 +73,12 @@ export class Build extends Command {
       entryPointContent!
     )
 
-    setupBootModule({
-      stage: 'build',
-      appEntrypointPath: `./${renamedEntryPoint}`,
-      path: transpiledEntrypointPath,
-    })
+    await fs.writeAsync(
+      transpiledEntrypointPath,
+      createBootModuleContent({
+        stage: 'build',
+        appEntrypointPath: `./${renamedEntryPoint}`,
+      })
+    )
   }
 }

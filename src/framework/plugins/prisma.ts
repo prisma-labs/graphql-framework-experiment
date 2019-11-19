@@ -1,9 +1,14 @@
+import {
+  trimExt,
+  pumpkinsPath,
+  shouldGenerateArtifacts,
+  writePumpkinsFile,
+} from '../../utils'
 import { getGenerators } from '@prisma/sdk'
 import chalk from 'chalk'
 import * as fs from 'fs-jetpack'
 import { nexusPrismaPlugin, Options } from 'nexus-prisma'
 import * as path from 'path'
-import { pumpkinsPath, shouldGenerateArtifacts, trimExt } from '../../utils'
 import { suggestionList } from '../../utils/levenstein'
 import { log as pumpkinsLog } from '../../utils/log'
 import { printStack } from '../../utils/stack/printStack'
@@ -29,8 +34,8 @@ export const createPrismaPlugin: () => Plugin = () => {
   // TODO plugin api for .pumpkins sandboxed fs access
   const generatedContextTypePath = pumpkinsPath('prisma/context.ts')
 
-  fs.write(
-    generatedContextTypePath,
+  writePumpkinsFile(
+    generatedContextTypePath.relative,
     `
       import { Photon } from '${generatedPhotonPackagePath}'
       
@@ -52,9 +57,10 @@ export const createPrismaPlugin: () => Plugin = () => {
     name: 'prisma',
     context: {
       create: _req => {
-        return require(trimExt(generatedContextTypePath, '.ts')).context
+        return require(trimExt(generatedContextTypePath.absolute, '.ts'))
+          .context
       },
-      typeSourcePath: generatedContextTypePath,
+      typeSourcePath: generatedContextTypePath.absolute,
       typeExportName: 'Context',
     },
     nexus: {
