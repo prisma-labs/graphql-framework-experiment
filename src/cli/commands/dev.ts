@@ -14,10 +14,6 @@ export class Dev extends Command {
   async run() {
     // const { args, flags } = this.parse(Dev)
     await runPrismaGenerators()
-
-    // Setup a boot module
-    // this takes care of certain guarantees we want like pumpkins having been
-    // imported for its side-effects.
     const appEntrypointPath = await findServerEntryPoint()
 
     watcher(
