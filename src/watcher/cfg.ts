@@ -5,8 +5,7 @@ function resolvePath(unresolvedPath: string) {
   return path.resolve(process.cwd(), unresolvedPath)
 }
 
-export default function(main: string, opts: Opts) {
-  const dir = main ? path.dirname(main) : '.'
+export default function(opts: Opts) {
   const c: any = {}
 
   // Truthy == --all-deps, false: one level of deps

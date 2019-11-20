@@ -10,16 +10,12 @@ const filewatcher = require('filewatcher')
 const kill = require('tree-kill')
 
 export function watcher(
-  script: string,
+  script: string | undefined,
   scriptArgs: string[],
   nodeArgs: string[],
   opts: Opts,
   callbacks: Callbacks
 ) {
-  if (typeof script !== 'string' || script.length === 0) {
-    throw new TypeError('`script` must be a string')
-  }
-
   if (!Array.isArray(scriptArgs)) {
     throw new TypeError('`scriptArgs` must be an array')
   }
@@ -31,8 +27,7 @@ export function watcher(
   // The child_process
   let child: Process | undefined = undefined
   const wrapper = resolveMain(__dirname + '/wrap')
-  const main = resolveMain(script)
-  const cfg = cfgFactory(main, opts)
+  const cfg = cfgFactory(opts)
   const log = logFactory(cfg)
   opts.log = log
   compiler.init(opts)
@@ -67,13 +62,17 @@ export function watcher(
     for (let watched of (opts.watch || '').split(',')) {
       if (watched) watcher.add(watched)
     }
-    let cmd = nodeArgs.concat(wrapper, script, scriptArgs)
+    let cmd = nodeArgs.concat(wrapper, script ?? '', scriptArgs)
     const childHookPath = compiler.getChildHookPath()
     cmd = ['-r', childHookPath].concat(cmd)
     log.debug('Starting child process %s', cmd.join(' '))
     child = fork(cmd[0], cmd.slice(1), {
       cwd: process.cwd(),
-      env: process.env,
+      env: {
+        ...process.env,
+        PUMPKINS_EVAL: opts.eval?.code ?? undefined,
+        PUMPKINS_EVAL_FILENAME: opts.eval?.fileName ?? undefined
+      },
     })
     starting = false
     const compileReqWatcher = filewatcher({ forcePolling: opts.poll })

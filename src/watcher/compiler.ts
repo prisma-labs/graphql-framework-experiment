@@ -5,7 +5,7 @@ import * as path from 'path'
 import { register } from 'ts-node'
 import { resolveSync } from 'tsconfig'
 import { Compiler, Opts } from './types'
-const getCompiledPath = require('./get-compiled-path')
+const getCompiledPath = require('./get-compiled-path').default
 
 let sourceMapSupportPath = require
   .resolve('source-map-support')

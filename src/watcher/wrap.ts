@@ -4,13 +4,14 @@ import * as ipc from './ipc'
 import resolveMain from './resolveMain'
 const childProcess = require('child_process')
 import cfgFactory from './cfg'
+import { Script } from 'vm'
+import Module = require('module')
 
 // Remove wrap.js from the argv array
 process.argv.splice(1, 1)
 
-// Resolve the location of the main script relative to cwd
-const main = resolveMain(process.argv[1])
-const cfg = cfgFactory(main, {})
+const cfg = cfgFactory({})
+const cwd = process.cwd()
 
 // Set NODE_ENV to 'development' unless already set
 if (!process.env.NODE_ENV) process.env.NODE_ENV = 'development'
@@ -59,5 +60,28 @@ hook(cfg, module, file => {
   ipc.send({ required: file })
 })
 
-// Execute the wrapped script
-require(main)
+function evalScript(script: string) {
+  const EVAL_FILENAME = process.env.PUMPKINS_EVAL_FILENAME!
+  const module = new Module(EVAL_FILENAME)
+  module.filename = EVAL_FILENAME
+  module.paths = (Module as any)._nodeModulePaths(cwd)
+  ;(global as any).__filename = EVAL_FILENAME
+  ;(global as any).__dirname = cwd
+  ;(global as any).exports = module.exports
+  ;(global as any).module = module
+  ;(global as any).require = module.require.bind(module)
+
+  new Script(script, {
+    filename: EVAL_FILENAME,
+  }).runInThisContext()
+}
+
+if (process.env.PUMPKINS_EVAL) {
+  console.log('EVAL SCRIPT')
+  evalScript(process.env.PUMPKINS_EVAL)
+} else {
+  // Resolve the location of the main script relative to cwd
+  const main = resolveMain(process.argv[1])
+  // Execute the wrapped script
+  require(main)
+}

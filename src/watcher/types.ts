@@ -64,6 +64,10 @@ interface StringOpts {
   'ignore-watch'?: string[]
   interval?: string
   debounce?: string
+  eval?: {
+    code: string,
+    fileName: string
+  }
 }
 
 export interface Opts extends BooleanOpts, StringOpts {
