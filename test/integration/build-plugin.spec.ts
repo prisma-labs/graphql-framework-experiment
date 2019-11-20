@@ -82,7 +82,7 @@ it('can build with plugins', async () => {
       "children": Array [
         Object {
           "name": "__start.js",
-          "size": 351,
+          "size": 349,
           "type": "file",
         },
         Object {
@@ -102,7 +102,7 @@ it('can build with plugins', async () => {
         },
       ],
       "name": "dist",
-      "size": 1304,
+      "size": 1302,
       "type": "dir",
     }
   `)
