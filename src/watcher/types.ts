@@ -1,9 +1,10 @@
 import { ChildProcess } from 'child_process'
 
 export interface Callbacks {
-  onRestart?: (fileName: string) => void
-  onCompiled?: (fileName: string) => void
-  onStart?: () => void
+  onEvent?: (
+    event: 'start' | 'restart' | 'compiled' | 'logging' | 'ready',
+    data?: string
+  ) => void
 }
 
 export interface Compiler {
@@ -19,7 +20,11 @@ export interface Compiler {
   writeChildHookFile: (opts: any) => void
   init: (opts: any) => void
   compileChanged: (fileName: string, callbacks: Callbacks) => void
-  compile: (params: any) => void
+  compile: (params: {
+    compile: string
+    compiledPath: string
+    callbacks: Callbacks
+  }) => void
   log?: any
   stop?: any
 }
@@ -65,7 +70,7 @@ interface StringOpts {
   interval?: string
   debounce?: string
   eval?: {
-    code: string,
+    code: string
     fileName: string
   }
 }

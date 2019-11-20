@@ -56,8 +56,9 @@ export function watcher(
    * Run the wrapped script.
    */
   function start() {
-    if (callbacks && callbacks.onStart) {
-      callbacks.onStart()
+    console.log('watcher starting')
+    if (callbacks && callbacks.onEvent) {
+      callbacks.onEvent('start')
     }
     for (let watched of (opts.watch || '').split(',')) {
       if (watched) watcher.add(watched)
@@ -66,14 +67,23 @@ export function watcher(
     const childHookPath = compiler.getChildHookPath()
     cmd = ['-r', childHookPath].concat(cmd)
     log.debug('Starting child process %s', cmd.join(' '))
+
     child = fork(cmd[0], cmd.slice(1), {
       cwd: process.cwd(),
       env: {
         ...process.env,
         PUMPKINS_EVAL: opts.eval?.code ?? undefined,
-        PUMPKINS_EVAL_FILENAME: opts.eval?.fileName ?? undefined
+        PUMPKINS_EVAL_FILENAME: opts.eval?.fileName ?? undefined,
       },
+      silent: true,
     })
+
+    child.stdout?.on('data', chunk => {
+      if (callbacks && callbacks.onEvent) {
+        callbacks.onEvent('logging', chunk.toString())
+      }
+    })
+
     starting = false
     const compileReqWatcher = filewatcher({ forcePolling: opts.poll })
     let currentCompilePath: string
@@ -128,8 +138,13 @@ export function watcher(
         return
       }
       currentCompilePath = message.compiledPath
-      ;(message as any).callbacks = callbacks
-      compiler.compile(message)
+      compiler.compile({ ...message, callbacks })
+    })
+
+    ipc.on(child, 'ready', message => {
+      if (callbacks.onEvent) {
+        callbacks.onEvent('ready')
+      }
     })
 
     // Listen for `required` messages and watch the required file.

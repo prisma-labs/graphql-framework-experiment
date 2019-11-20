@@ -186,8 +186,8 @@ export const compiler: Compiler = {
     compiler.writeChildHookFile(options)
   },
   compileChanged: function(fileName, callbacks) {
-    if (callbacks && callbacks.onRestart) {
-      callbacks.onRestart(fileName)
+    if (callbacks && callbacks.onEvent) {
+      callbacks.onEvent('restart', fileName)
     }
     const ext = path.extname(fileName)
     if (extensions.indexOf(ext) < 0) return
@@ -206,11 +206,7 @@ export const compiler: Compiler = {
       console.error(e)
     }
   },
-  compile: function(params: {
-    compile: string
-    compiledPath: string
-    callbacks: any
-  }) {
+  compile: function(params) {
     const fileName = params.compile
     let code = fsJetPack.read(fileName)!
     const compiledPath = params.compiledPath
@@ -236,8 +232,8 @@ export const compiler: Compiler = {
         new Date().getTime() - starTime,
         'ms'
       )
-      if (params.callbacks && params.callbacks.onCompiled) {
-        params.callbacks.onCompiled(fileName)
+      if (params.callbacks && params.callbacks.onEvent) {
+        params.callbacks.onEvent('compiled', fileName)
       }
     } catch (e) {
       code = 'throw ' + 'new Error(' + JSON.stringify(e.message) + ')' + ';'
