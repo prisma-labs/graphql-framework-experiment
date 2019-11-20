@@ -77,7 +77,6 @@ function evalScript(script: string) {
 }
 
 if (process.env.PUMPKINS_EVAL) {
-  console.log('EVAL SCRIPT')
   evalScript(process.env.PUMPKINS_EVAL)
 } else {
   // Resolve the location of the main script relative to cwd
