@@ -1,4 +1,4 @@
-import { stripIndents } from 'common-tags'
+import { stripIndents, stripIndent } from 'common-tags'
 
 type BootModuleConfig = {
   sourceEntrypoint?: string
@@ -22,16 +22,15 @@ export const createBootModuleContent = (config: BootModuleConfig): string => {
 
         ${
           config.sourceEntrypoint
-            ? `
+            ? stripIndents`
                 // import the user's code
                 require("${config.sourceEntrypoint}")
               `
             : ''
         }
-
         ${
           config.app
-            ? `
+            ? stripIndents`
                 // Boot the server
                 app.server.start()
               `
@@ -47,16 +46,15 @@ export const createBootModuleContent = (config: BootModuleConfig): string => {
 
         ${
           config.sourceEntrypoint
-            ? `
+            ? stripIndents`
                 // import the user's code
                 import "${config.sourceEntrypoint}"
               `
             : ''
         }
-
         ${
           config.app
-            ? `
+            ? stripIndents`
                 // Boot the server
                 app.server.start()
               `

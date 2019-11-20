@@ -30,14 +30,6 @@ export class Build extends Command {
 
     const layout = await scan()
 
-    // Create the pumpkins entrypoint. This handles
-    // important system-like guarantees such as pumpkins
-    // import and defusing dev mode.
-
-    //
-    // generate artifacts
-    //
-
     this.log('🎃  Generating Nexus artifacts ...')
     await generateArtifacts2(
       createBootModuleContent({
@@ -47,44 +39,15 @@ export class Build extends Command {
       })
     )
 
-    // TODO
-    const entrypoint = layout.app.exists
-      ? layout.app.path
-      : fs.path('schema.ts')
-
     this.log('🎃  Compiling ...')
     const tsConfig = readTsConfig()
     compile(tsConfig.fileNames, tsConfig.options)
 
-    // wrap app module
-    let sourceEntrypoint: string | undefined = undefined
-    if (layout.app.exists) {
-      const projectDir = findProjectDir()
-      const transpiledEntrypointPath = getTranspiledPath(
-        projectDir,
-        entrypoint,
-        tsConfig.options.outDir!
-      )
-
-      const entryPointFileNameSansExt = path.basename(
-        transpiledEntrypointPath,
-        '.js'
-      )
-      const renamedEntryPoint = `${entryPointFileNameSansExt}__original__.js`
-      const entryPointContent = await fs.readAsync(transpiledEntrypointPath)
-
-      await fs.writeAsync(
-        path.join(path.dirname(transpiledEntrypointPath), renamedEntryPoint),
-        entryPointContent!
-      )
-      sourceEntrypoint = `./${renamedEntryPoint}`
-    }
-
     await fs.writeAsync(
-      fs.path('dist/app.js'),
+      fs.path('dist/__start.js'),
       createBootModuleContent({
         stage: 'build',
-        sourceEntrypoint,
+        sourceEntrypoint: layout.app.exists ? layout.app.path : undefined,
         app: !layout.app.exists,
       })
     )
