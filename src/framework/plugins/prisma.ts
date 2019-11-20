@@ -34,7 +34,7 @@ const log = pog.sub(__filename)
 // HACK
 // 1. https://prisma-company.slack.com/archives/C8AKVD5HU/p1574267904197600
 // 2. https://prisma-company.slack.com/archives/CEYCG2MCN/p1574267824465700
-const GENERATED_PHOTON_OUTPUT_PATH = fs.path('node_modules/@generated/photon')
+const GENERATED_PHOTON_OUTPUT_PATH = fs.path('node_modules/@prisma/photon')
 
 export const createPrismaPlugin: () => Plugin = () => {
   // TODO plugin api for .pumpkins sandboxed fs access
