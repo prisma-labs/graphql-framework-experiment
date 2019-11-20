@@ -2,7 +2,7 @@ import * as fs from 'fs-jetpack'
 import { findFile, writeCachedFile } from './path'
 import { log } from './log'
 
-export function findOrScaffold({
+export async function findOrScaffold({
   fileNames,
   fallbackPath,
   fallbackContent,
@@ -27,7 +27,7 @@ export function findOrScaffold({
   }
 
   log('did not find')
-  writeCachedFile(fallbackPath, fallbackContent)
+  await writeCachedFile(fallbackPath, fallbackContent)
 
   return fallbackPath
 }

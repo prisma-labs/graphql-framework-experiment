@@ -7,7 +7,9 @@ import { log } from './log'
 export async function generateArtifacts(
   entrypoint?: string
 ): Promise<{ entrypoint: string; error?: Error }> {
-  const entryPoint = entrypoint ? fs.path(entrypoint) : findServerEntryPoint()
+  const entryPoint = entrypoint
+    ? fs.path(entrypoint)
+    : await findServerEntryPoint()
 
   if (!(await fs.existsAsync(entryPoint))) {
     throw new Error(
