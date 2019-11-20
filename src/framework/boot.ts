@@ -9,7 +9,6 @@ type BootModuleConfig = {
   appPath: null | string
 }
 
-// TODO if user has disabled global singleton, then honour that here
 export function createBootModuleContent(config: BootModuleConfig): string {
   let output = ''
 
@@ -32,7 +31,8 @@ export function createBootModuleContent(config: BootModuleConfig): string {
         // import the user's app module
         require("${config.appPath}")
       `
-    : stripIndents`
+    : // TODO if user has disabled global singleton, then honour that here
+      stripIndents`
         // Boot the server
         app.server.start()
       `

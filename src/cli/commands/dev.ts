@@ -11,6 +11,8 @@ export class Dev implements Command {
   }
 
   async parse(_argv: string[]) {
+    // Handle Prisma integration
+    // TODO pluggable CLI
     await runPrismaGenerators()
 
     const layout = await scan()
