@@ -10,7 +10,7 @@ type BootModuleConfig = {
 }
 
 // TODO if user has disabled global singleton, then honour that here
-export const createBootModuleContent = (config: BootModuleConfig): string => {
+export function createBootModuleContent(config: BootModuleConfig): string {
   let output = ''
 
   output +=
@@ -25,24 +25,17 @@ export const createBootModuleContent = (config: BootModuleConfig): string => {
   output += stripIndents`
     // Guarantee the side-effect features like singleton global do run
     require("pumpkins")
-
-    ${
-      config.appPath
-        ? stripIndents`
-            // import the user's app module
-            require("${config.appPath}")
-          `
-        : ''
-    }
-    ${
-      !config.appPath
-        ? stripIndents`
-            // Boot the server
-            app.server.start()
-          `
-        : ''
-    }
   `
+
+  output += config.appPath
+    ? stripIndents`
+        // import the user's app module
+        require("${config.appPath}")
+      `
+    : stripIndents`
+        // Boot the server
+        app.server.start()
+      `
 
   return output
 }

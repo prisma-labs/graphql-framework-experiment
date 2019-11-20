@@ -2,7 +2,7 @@ import * as path from 'path'
 import { runPrismaGenerators } from '../../framework/plugins'
 import { watcher } from '../../watcher'
 import { Command } from '../helpers'
-import { createBootModuleContent } from '../utils'
+import { createBootModuleContent } from '../../framework/boot'
 import { scan } from '../../framework/layout'
 
 export class Dev implements Command {

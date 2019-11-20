@@ -2,7 +2,7 @@ import * as fs from 'fs-jetpack'
 import { scan } from '../../framework/layout'
 import { runPrismaGenerators } from '../../framework/plugins'
 import { compile, generateArtifacts, readTsConfig } from '../../utils'
-import { createBootModuleContent } from '../utils'
+import { createBootModuleContent } from '../../framework/boot'
 import { Command } from '../helpers'
 
 export class Build implements Command {

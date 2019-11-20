@@ -1,6 +1,6 @@
 import { generateArtifacts } from '../../utils'
 import { runPrismaGenerators } from '../../framework/plugins'
-import { createBootModuleContent } from '../utils'
+import { createBootModuleContent } from '../../framework/boot'
 import { scan } from '../../framework/layout'
 import { Command } from '../helpers'
 
