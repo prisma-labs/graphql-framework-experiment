@@ -1,5 +1,5 @@
 import { spawnSync } from 'child_process'
-import { log } from './log'
+import { pog } from './pog'
 
 export async function generateArtifacts(bootScript: string): Promise<void> {
   const result = spawnSync('npx', ['ts-node', '--eval', bootScript], {
@@ -13,7 +13,7 @@ export async function generateArtifacts(bootScript: string): Promise<void> {
     },
   })
 
-  log('artifact generation run result: %O', result)
+  pog('artifact generation run result: %O', result)
 
   if (result.error) {
     throw result.error

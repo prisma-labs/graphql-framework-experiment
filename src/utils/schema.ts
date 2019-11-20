@@ -1,8 +1,10 @@
 import * as fs from 'fs-jetpack'
-import { log, flatMap } from '../utils'
+import { pog, flatMap } from '../utils'
+
+const log = pog.sub(__filename)
 
 function findSchemaModules(): string[] {
-  log.schema('finding schema modules ...')
+  log('finding schema modules ...')
 
   const files = fs.find({
     directories: true,

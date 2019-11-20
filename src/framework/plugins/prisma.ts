@@ -3,6 +3,7 @@ import {
   pumpkinsPath,
   shouldGenerateArtifacts,
   writePumpkinsFile,
+  pog,
 } from '../../utils'
 import { getGenerators } from '@prisma/sdk'
 import chalk from 'chalk'
@@ -10,7 +11,6 @@ import * as fs from 'fs-jetpack'
 import { nexusPrismaPlugin, Options } from 'nexus-prisma'
 import * as path from 'path'
 import { suggestionList } from '../../utils/levenstein'
-import { log as pumpkinsLog } from '../../utils/log'
 import { printStack } from '../../utils/stack/printStack'
 import { Plugin } from '../plugin'
 
@@ -25,7 +25,7 @@ type OptionsWithHook = Options & {
   onUnknownFieldName: (params: UnknownFieldName) => void
 }
 
-const log = pumpkinsLog.create('prisma')
+const log = pog.sub(__filename)
 
 export const createPrismaPlugin: () => Plugin = () => {
   // TODO control generate step before trying to require

@@ -1,6 +1,6 @@
 import { register } from 'ts-node'
 import { createApp, isGlobalSingletonEnabled } from './app'
-import { log } from '../utils'
+import { pog } from '../utils'
 
 /**
  * Use ts-node register to require .ts file and transpile them "on-the-fly"
@@ -16,7 +16,7 @@ declare global {
 let app: PumpkinsSingletonApp
 
 if (isGlobalSingletonEnabled()) {
-  log.app('creating app singleton')
+  pog('creating app singleton')
   app = createApp()
   ;(app as any).installGlobally()
 }

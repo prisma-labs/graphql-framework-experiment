@@ -5,7 +5,7 @@ import * as nexus from 'nexus'
 import {
   requireSchemaModules,
   createNexusConfig,
-  log,
+  pog,
   trimExt,
   findFile,
 } from '../utils'
@@ -14,6 +14,8 @@ import { typegenAutoConfig } from 'nexus/dist/core'
 import { Plugin } from './plugin'
 import { createPrismaPlugin, isPrismaEnabledSync } from './plugins'
 import { stripIndent } from 'common-tags'
+
+const log = pog.sub(__filename)
 
 type ServerOptions = {
   port?: number
@@ -163,7 +165,7 @@ export function createApp(appConfig?: { types?: any }): App {
                 : `${config.contextType} & ${alias}.${typeExportName}`
           }
 
-          log('built up Nexus typegenConfig: %O', config)
+          pog('built up Nexus typegenConfig: %O', config)
 
           return config
         }
@@ -217,12 +219,12 @@ export function createApp(appConfig?: { types?: any }): App {
   }
 
   if (isPrismaEnabledSync().enabled) {
-    log.app(
+    log(
       'enabling prisma plugin because detected prisma framework is being used on this project'
     )
     api.use(createPrismaPlugin())
   } else {
-    log.app(
+    log(
       'disabling prisma plugin because detected prisma framework not being used on this project'
     )
   }
@@ -234,7 +236,7 @@ export function createApp(appConfig?: { types?: any }): App {
  * Augment global scope with a given app singleton.
  */
 const installGlobally = (app: App): App => {
-  log.app('exposing app global')
+  log('exposing app global')
 
   const {
     queryType,
@@ -262,7 +264,7 @@ const installGlobally = (app: App): App => {
   })
 
   const pumpkinsTypeGenPath = 'node_modules/@types/typegen-pumpkins/index.d.ts'
-  log.app('generating app global singleton typegen to %s', pumpkinsTypeGenPath)
+  log('generating app global singleton typegen to %s', pumpkinsTypeGenPath)
 
   fs.write(
     pumpkinsTypeGenPath,

@@ -1,6 +1,6 @@
 export * from './tsc'
 export * from './path'
-export * from './log'
+export * from './pog'
 export * from './schema'
 export * from './array'
 export * from './scaffold'

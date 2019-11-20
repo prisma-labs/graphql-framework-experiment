@@ -1,6 +1,6 @@
 import * as fs from 'fs-jetpack'
 import { findFile, writeCachedFile } from './path'
-import { log } from './log'
+import { pog } from './pog'
 
 export async function findOrScaffold({
   fileNames,
@@ -11,13 +11,13 @@ export async function findOrScaffold({
   fallbackPath: string
   fallbackContent: string
 }) {
-  log('find or scaffold %s', fileNames)
+  pog('find or scaffold %s', fileNames)
   const optionalFile = findFile(fileNames)
 
   if (optionalFile) {
-    log('found %s', optionalFile)
+    pog('found %s', optionalFile)
     if (fs.exists(fallbackPath)) {
-      log(
+      pog(
         'there is prior scaffolding (fallback file) already present on disk somehow, removing it now: %s',
         fallbackPath
       )
@@ -26,7 +26,7 @@ export async function findOrScaffold({
     return optionalFile
   }
 
-  log('did not find')
+  pog('did not find')
   await writeCachedFile(fallbackPath, fallbackContent)
 
   return fallbackPath

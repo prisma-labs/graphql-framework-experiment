@@ -2,7 +2,7 @@ import * as fs from 'fs-jetpack'
 import * as path from 'path'
 import { findOrScaffold } from './scaffold'
 import { findConfigFile } from './tsc'
-import log from './log'
+import { pog } from './pog'
 
 export const pumpkinsDotFolderName = 'pumpkins'
 
@@ -31,18 +31,18 @@ export const writeCachedFile = async (
   const alreadyExistingFallbackFileContents = fs.read(filePath)
 
   if (alreadyExistingFallbackFileContents === undefined) {
-    log('writing file %s', filePath)
+    pog('writing file %s', filePath)
     await fs.writeAsync(filePath, fileContent)
   } else if (alreadyExistingFallbackFileContents !== fileContent) {
-    log(
+    pog(
       'there is a file already present on disk but its content does not match, replacing old with new %s',
       filePath
     )
-    log(alreadyExistingFallbackFileContents)
-    log(fileContent)
+    pog(alreadyExistingFallbackFileContents)
+    pog(fileContent)
     await fs.writeAsync(filePath, fileContent)
   } else {
-    log(
+    pog(
       'there is a file already present on disk and its content matches, therefore doing nothing'
     )
   }
