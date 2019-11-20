@@ -1,9 +1,9 @@
 import * as path from 'path'
 import { runPrismaGenerators } from '../../framework/plugins'
-import { findServerEntryPoint } from '../../utils'
 import { watcher } from '../../watcher'
 import { Command } from '../helpers'
 import { createBootModuleContent } from '../utils'
+import { scan } from '../../framework/layout'
 
 export class Dev implements Command {
   public static new(): Dev {
@@ -12,7 +12,8 @@ export class Dev implements Command {
 
   async parse(_argv: string[]) {
     await runPrismaGenerators()
-    const appEntrypointPath = await findServerEntryPoint()
+
+    const layout = await scan()
 
     watcher(
       undefined,
@@ -25,8 +26,7 @@ export class Dev implements Command {
         eval: {
           code: createBootModuleContent({
             stage: 'dev',
-            sourceEntrypoint: appEntrypointPath,
-            app: false,
+            appPath: layout.app.path,
           }),
           fileName: '__start.js',
         },

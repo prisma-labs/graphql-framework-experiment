@@ -56,7 +56,7 @@ it('can build without prisma', async () => {
       "children": Array [
         Object {
           "name": "__start.js",
-          "size": 349,
+          "size": 355,
           "type": "file",
         },
         Object {
@@ -71,7 +71,7 @@ it('can build without prisma', async () => {
         },
       ],
       "name": "dist",
-      "size": 699,
+      "size": 705,
       "type": "dir",
     }
   `)

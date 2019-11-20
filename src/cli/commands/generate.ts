@@ -21,12 +21,10 @@ export class Generate implements Command {
     console.log('🎃  Generating Nexus artifacts ...')
     await generateArtifacts(
       createBootModuleContent({
-        sourceEntrypoint: layout.app.exists ? layout.app.path : undefined,
         stage: 'dev',
-        app: !layout.app.exists,
+        appPath: layout.app.path,
       })
     )
-
     console.log('🎃  Successfully generated the artifacts')
   }
 }

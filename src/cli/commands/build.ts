@@ -20,9 +20,8 @@ export class Build implements Command {
     console.log('🎃  Generating Nexus artifacts ...')
     await generateArtifacts(
       createBootModuleContent({
-        sourceEntrypoint: layout.app.exists ? layout.app.path : undefined,
         stage: 'dev',
-        app: !layout.app.exists,
+        appPath: layout.app.path,
       })
     )
 
@@ -34,8 +33,7 @@ export class Build implements Command {
       fs.path('dist/__start.js'),
       createBootModuleContent({
         stage: 'build',
-        sourceEntrypoint: layout.app.exists ? layout.app.path : undefined,
-        app: !layout.app.exists,
+        appPath: layout.app.path,
       })
     )
 

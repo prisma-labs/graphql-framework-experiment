@@ -48,17 +48,6 @@ export const writeCachedFile = async (
   }
 }
 
-export function findServerEntryPoint() {
-  // TODO if user has disabled global singleton, then honour that here
-  return findOrScaffold({
-    fileNames: ['app.ts', 'server.ts', 'service.ts'],
-    fallbackPath: fs.path('.pumpkins', 'app.ts'),
-    fallbackContent: `
-    app.server.start()
-    `,
-  })
-}
-
 export function findProjectDir() {
   let filePath = findConfigFile('package.json', { required: false })
 
