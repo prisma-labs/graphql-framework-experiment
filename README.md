@@ -7,19 +7,18 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-
 - [Introduction](#introduction)
-    - [Getting Started](#getting-started)
+  - [Getting Started](#getting-started)
   - [Adding Prisma Framework](#adding-prisma-framework)
 - [Conventions](#conventions)
-    - [Special File Names](#special-file-names)
-    - [`schema.ts`](#schemats)
-    - [`context.ts`](#contextts)
-    - [`app.ts`](#appts)
-    - [Prisma Support](#prisma-support)
-    - [Example Layouts](#example-layouts)
+  - [Special File Names](#special-file-names)
+  - [`schema.ts`](#schemats)
+  - [`context.ts`](#contextts)
+  - [`app.ts`](#appts)
+  - [Prisma Support](#prisma-support)
+  - [Example Layouts](#example-layouts)
 - [API](#api)
-    - [`createApp`](#createapp)
+  - [`createApp`](#createapp)
 - [CLI](#cli)
   - [`pumpkins build`](#pumpkins-build)
   - [`pumpkins dev`](#pumpkins-dev)
@@ -28,9 +27,9 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
   - [`pumpkins help [COMMAND]`](#pumpkins-help-command)
   - [`pumpkins init`](#pumpkins-init)
 - [Development](#development)
-    - [Overview](#overview)
-    - [Testing](#testing)
-    - [Working With Example Apps via Linking](#working-with-example-apps-via-linking)
+  - [Overview](#overview)
+  - [Testing](#testing)
+  - [Working With Example Apps via Linking](#working-with-example-apps-via-linking)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -244,29 +243,28 @@ Reflecting on what we've just seen;
 
 # Conventions
 
-### Special File Names
+### Modules Overview
 
 ```
-                    Purpose                             Alt Names
+Name         Optional?    Purpose
 
-app.ts              Entrypoint                          main.ts | server.ts | service.ts
-context.ts          Define GraphQL resolver context
-schema.ts           Define GraphQL types                graphql.ts
-schema.prisma       Define Data Models
+app.ts       Y            Entrypoint
+context.ts   Y            Define GraphQL resolver context
+schema.ts    N            Define GraphQL types
 ```
 
-### `schema.ts`
+### `schema.ts` | `schema/`
 
 Schema contains your GraphQL type definitions. It can be a single file or folder of files. There can also be multiple instances of file/folder throughout your source tree.
 
 During development all files will be found and dynamically synchronously imported at app construction time. At build time static imports will be generated.
 
 ```
-schema.ts | graphql.ts
+schema.ts
 ```
 
 ```
-schema/   | graphql/
+schema/
   a.ts
   b.ts
   c.ts
@@ -288,23 +286,6 @@ App contains the entrypoint to your service, the place where it boots. There can
 app.ts | main.ts | server.ts | service.ts
 ```
 
-### Prisma Support
-
-Prisma is seamlessly supported, yet optional. You automatically opt-in when you create the schema.prisma file somewhere in your project.
-
-```
-schema.prisma
-```
-
-The following things automatically happen once Prisma is enabled.
-
-1. Pumpkins CLI workflows are extended:
-   1. On build, Prisma generators are run
-   2. During dev, Prisma generators are run after prisma schema file changes
-2. The `nexus-prisma` Nexus plugin is automatically used. This you get access to `t.model` and `t.crud`.
-3. An instance of the generated Photon.JS client is a added to context under `photon` property
-4. The TypeScript types representing your Prisma models are registered as a Nexus data source. In short this enables proper typing of `parent` parameters in your resolves. They reflect the data of the correspondingly named Prisma model.
-
 ### Example Layouts
 
 Nano
@@ -321,16 +302,7 @@ context.ts
 schema.ts
 ```
 
-Minimal
-
-```
-app.ts
-context.ts
-schema.ts
-schema.prisma
-```
-
-Basic
+Typical
 
 ```
 app/
@@ -344,7 +316,7 @@ prisma/
   schema.prisma
 ```
 
-Crazy (possible, but don't do it)
+Wacky
 
 ```
 A/
@@ -362,7 +334,20 @@ prisma/
 
 <br>
 
+# Prisma Support
+
+Prisma is optional yet seamlessly supported. You opt-in by creating a `schema.prisma` file somewhere in your project. Then, following things automatically happen:
+
+1. Pumpkins CLI workflows are extended:
+   1. On build, Prisma generators are run
+   2. During dev, Prisma generators are run after prisma schema file changes
+2. The `nexus-prisma` Nexus plugin is automatically used. This you get access to `t.model` and `t.crud`.
+3. An instance of the generated Photon.JS client is a added to context under `photon` property
+4. The TypeScript types representing your Prisma models are registered as a Nexus data source. In short this enables proper typing of `parent` parameters in your resolves. They reflect the data of the correspondingly named Prisma model.
+
 # API
+
+### `app`
 
 ### `createApp`
 
