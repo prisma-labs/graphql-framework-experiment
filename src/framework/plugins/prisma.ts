@@ -1,11 +1,16 @@
+// TODO raise errors/feedback if the user has not supplied a photon generator
+// block in their PSL
+
 import {
   trimExt,
   pumpkinsPath,
   shouldGenerateArtifacts,
   writePumpkinsFile,
   pog,
+  findFile,
+  findFiles,
 } from '../../utils'
-import { getGenerators } from '@prisma/sdk'
+import * as Prisma from '@prisma/sdk'
 import chalk from 'chalk'
 import * as fs from 'fs-jetpack'
 import { nexusPrismaPlugin, Options } from 'nexus-prisma'
@@ -13,6 +18,7 @@ import * as path from 'path'
 import { suggestionList } from '../../utils/levenstein'
 import { printStack } from '../../utils/stack/printStack'
 import { Plugin } from '../plugin'
+import { resolve } from 'dns'
 
 type UnknownFieldName = {
   error: Error
@@ -27,17 +33,19 @@ type OptionsWithHook = Options & {
 
 const log = pog.sub(__filename)
 
-export const createPrismaPlugin: () => Plugin = () => {
-  // TODO control generate step before trying to require
-  const generatedPhotonPackagePath = fs.path('node_modules/@generated/photon')
+// HACK
+// 1. https://prisma-company.slack.com/archives/C8AKVD5HU/p1574267904197600
+// 2. https://prisma-company.slack.com/archives/CEYCG2MCN/p1574267824465700
+const GENERATED_PHOTON_OUTPUT_PATH = fs.path('node_modules/@generated/photon')
 
+export const createPrismaPlugin: () => Plugin = () => {
   // TODO plugin api for .pumpkins sandboxed fs access
   const generatedContextTypePath = pumpkinsPath('prisma/context.ts')
 
   writePumpkinsFile(
     generatedContextTypePath.relative,
     `
-      import { Photon } from '${generatedPhotonPackagePath}'
+      import { Photon } from '${GENERATED_PHOTON_OUTPUT_PATH}'
       
       export type Context = {
         photon: Photon
@@ -53,6 +61,7 @@ export const createPrismaPlugin: () => Plugin = () => {
     'node_modules/@types/typegen-nexus-prisma/index.d.ts'
   )
 
+  console.log(GENERATED_PHOTON_OUTPUT_PATH)
   return {
     name: 'prisma',
     context: {
@@ -67,7 +76,7 @@ export const createPrismaPlugin: () => Plugin = () => {
       plugins: [
         nexusPrismaPlugin({
           inputs: {
-            photon: generatedPhotonPackagePath,
+            photon: GENERATED_PHOTON_OUTPUT_PATH,
           },
           outputs: {
             typegen: nexusPrismaTypegenOutput,
@@ -125,6 +134,10 @@ function renderUnknownFieldNameError(params: UnknownFieldName) {
 //   }
 // })
 
+/**
+ * Check the project to find out if the user intends prisma to be enabled or
+ * not.
+ */
 export async function isPrismaEnabled(): Promise<
   | {
       enabled: false
@@ -134,14 +147,23 @@ export async function isPrismaEnabled(): Promise<
       schemaPath: string
     }
 > {
-  const schemaPaths = await fs.findAsync({
-    directories: false,
-    recursive: true,
-    matching: [
-      'schema.prisma',
-      '!node_modules/**/*',
-      '!prisma/migrations/**/*',
-    ],
+  const schemaPath = await maybeFindPrismaSchema()
+
+  if (schemaPath === null) {
+    log('detected that this is not prisma framework project')
+    return { enabled: false }
+  }
+
+  log('detected that this is a prisma framework project')
+  return { enabled: true, schemaPath: fs.path(schemaPath) }
+}
+
+/**
+ * Find the PSL file in the project. If multiple are found a warning is logged.
+ */
+const maybeFindPrismaSchema = async (): Promise<null | string> => {
+  const schemaPaths = await findFiles('schema.prisma', {
+    ignore: ['prisma/migrations/**/*'],
   })
 
   if (schemaPaths.length > 1) {
@@ -152,13 +174,7 @@ export async function isPrismaEnabled(): Promise<
     )
   }
 
-  if (schemaPaths.length === 0) {
-    log('detected that this is not prisma framework project')
-    return { enabled: false }
-  }
-
-  log('detected that this is a prisma framework project')
-  return { enabled: true, schemaPath: fs.path(schemaPaths[0]) }
+  return schemaPaths[0] ?? null
 }
 
 export function isPrismaEnabledSync():
@@ -196,6 +212,9 @@ export function isPrismaEnabledSync():
   return { enabled: true, schemaPath: fs.path(schemaPaths[0]) }
 }
 
+/**
+ * Execute all the generators in the user's PSL file.
+ */
 export async function runPrismaGenerators(
   options: { silent: boolean } = { silent: false }
 ): Promise<void> {
@@ -216,21 +235,76 @@ export async function runPrismaGenerators(
     console.log('🎃  Running Prisma generators ...')
   }
 
+  const generators = await getGenerators(prisma.schemaPath)
+
+  for (const g of generators) {
+    // HACK (see var declaration LOC)
+    if (g.manifest?.prettyName === 'Photon.js') {
+      g.options!.generator.output = GENERATED_PHOTON_OUTPUT_PATH
+    }
+
+    const resolvedSettings = getGeneratorResolvedSettings(g)
+
+    log(
+      'generating %s instance %s to %s',
+      resolvedSettings.name,
+      resolvedSettings.instanceName,
+      resolvedSettings.output
+    )
+
+    await g.generate()
+    g.stop()
+  }
+}
+
+/**
+ * Get the declared generator blocks in the user's PSL file
+ */
+const getGenerators = async (schemaPath: string) => {
   const aliases = {
     photonjs: require.resolve('@prisma/photon/generator-build'),
   }
 
-  const generators = await getGenerators({
-    schemaPath: prisma.schemaPath,
+  return await Prisma.getGenerators({
+    schemaPath,
     printDownloadProgress: false,
     providerAliases: aliases,
   })
+}
 
-  for (const generator of generators) {
-    await generator.generate()
-    generator.stop()
+/**
+ * Compute the resolved settings of a generator which has its baked in manifest
+ * but also user-provided overrides. This computes the merger of the two.
+ */
+const getGeneratorResolvedSettings = (
+  g: Prisma.Generator
+): {
+  name: string
+  instanceName: string
+  output: string
+} => {
+  return {
+    name: g.manifest?.prettyName ?? '',
+    instanceName: g.options?.generator.name ?? '',
+    output: g.options?.generator.output ?? g.manifest?.defaultOutput ?? '',
   }
 }
+
+// const getPhotonGeneratorOutputPath = (
+//   generators: Prisma.Generator[]
+// ): string => {
+//   for (const g of generators) {
+//     const settings = getGeneratorResolvedSettings(g)
+//     if (settings.name === 'Photon.js') {
+//       return settings.output
+//     }
+//   }
+
+//   // TODO we can automate this for the user...
+//   throw new Error(
+//     'Could not find a Photon.js generator block in your PSL. Please define one.'
+//   )
+// }
 
 /**
  * Regenerate photon only if schema was updated between last generation
@@ -239,10 +313,8 @@ async function shouldRegeneratePhoton(
   localSchemaPath: string
 ): Promise<boolean> {
   try {
-    // TODO: Use path from generator because photon can be generated elsewhere than at @generated/photon
-    const photonPath = require.resolve('@generated/photon')
     const photonSchemaPath = path.join(
-      path.dirname(photonPath),
+      path.dirname(GENERATED_PHOTON_OUTPUT_PATH),
       'schema.prisma'
     )
     const [photonSchema, localSchema] = await Promise.all([
