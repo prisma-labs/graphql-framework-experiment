@@ -66,6 +66,7 @@
     "publish:sha": "yarn publish --tag sha --no-git-tag-version --new-version \"0.0.0-sha.$(git show -s head --format='%h')\"",
     "format": "prettier --write '*/**/*.ts'",
     "build": "yarn -s clean && tsc -b",
+    "build:doc": "doctoc README.md --notitle",
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
     "postpack": "yarn -s clean",
     "prepack": "yarn -s build",

@@ -57,8 +57,7 @@ Add some files to get your app going:
 
 ```
 mkdir -p app
-touch app/app.ts
-touch app/schema.ts
+touch schema.ts
 ```
 
 Fill out your modules with some initial code:
@@ -67,7 +66,6 @@ Fill out your modules with some initial code:
 // tsconfig.json
 {
   "compilerOptions": {
-    "rootDir": "app",
     "skipLibCheck": true,
     "strict": true
   }
@@ -75,11 +73,9 @@ Fill out your modules with some initial code:
 ```
 
 ```ts
-// app/schema.ts
+// schema.ts
 
-import { app } from 'pumpkins'
-
-app.schema.objectType({
+objectType({
   name: 'User',
   definition(t) {
     t.id('id')
@@ -87,7 +83,7 @@ app.schema.objectType({
   },
 })
 
-app.schema.queryType({
+queryType({
   definition(t) {
     t.list.field('users', {
       type: 'User',
@@ -97,14 +93,6 @@ app.schema.queryType({
     })
   },
 })
-```
-
-```ts
-// app.ts
-
-import { app } from 'pumpkins'
-
-app.server.start()
 ```
 
 You will see some static type errors. These will go away once you boot your app. Give it a shot:
@@ -151,9 +139,11 @@ Reflecting on what we've just seen;
 
 2. Flexible convention-over-configuration saves you from configuring `pumpkins` to find your entrypoint and schema modules.
 
+3. You don't have to provide a `app.ts` entrypoint up front. Grow into it as you wish.
+
 ## Adding Prisma Framework
 
-Prisma Framework is a next-generation developer-centric tool chain focused on making the data layer easy. In turn, `pumpkins` makes it easy to integrate Prisma Framework into your app.
+Prisma Framework is a next-generation developer-centric tool chain focused on making the data layer easy. In turn, `pumpkins` makes it easy to integrate Prisma Framework into your app. Let's see how.
 
 Add a schema.prisma file and fill it out with some content
 
@@ -191,7 +181,6 @@ yarn prisma2 lift up
 Run prisma generate followed by dev mode:
 
 ```
-yarn prisma2 generate
 yarn pumpkins dev
 ```
 
@@ -249,7 +238,7 @@ You should get back:
 
 Reflecting on what we've just seen;
 
-1. Integrating Prisma is literally a matter of just using it. `pumpkins` will react to the presence of a `schema.prisma`, run Prisma generators, setup photon, and setup `nexus-prisma`.
+1. Integrating Prisma is literally a matter of just using it. `pumpkins` will react to the presence of a `schema.prisma`, run Prisma generators, setup Photon.js, and setup `nexus-prisma` Nexus plugin.
 
 <br>
 
@@ -384,12 +373,13 @@ Create an app instance
 # CLI
 
 <!-- commands -->
-* [`pumpkins build`](#pumpkins-build)
-* [`pumpkins dev`](#pumpkins-dev)
-* [`pumpkins doctor`](#pumpkins-doctor)
-* [`pumpkins generate`](#pumpkins-generate)
-* [`pumpkins help [COMMAND]`](#pumpkins-help-command)
-* [`pumpkins init`](#pumpkins-init)
+
+- [`pumpkins build`](#pumpkins-build)
+- [`pumpkins dev`](#pumpkins-dev)
+- [`pumpkins doctor`](#pumpkins-doctor)
+- [`pumpkins generate`](#pumpkins-generate)
+- [`pumpkins help [COMMAND]`](#pumpkins-help-command)
+- [`pumpkins init`](#pumpkins-init)
 
 ## `pumpkins build`
 
@@ -480,6 +470,7 @@ EXAMPLE
 ```
 
 _See code: [dist/cli/commands/init.js](https://github.com/prisma-labs/pumpkins/blob/v0.0.0-sha.e4f6989/dist/cli/commands/init.js)_
+
 <!-- commandsstop -->
 
 # Development
