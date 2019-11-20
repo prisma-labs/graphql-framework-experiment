@@ -7,7 +7,7 @@ import {
   getTranspiledPath,
   readTsConfig,
   findServerEntryPoint,
-  generateArtifacts2,
+  generateArtifacts,
 } from '../../utils'
 import { runPrismaGenerators } from '../../framework/plugins'
 import { scan } from '../../framework/layout'
@@ -22,7 +22,7 @@ export class Build extends Command {
   }
 
   async run() {
-    const { flags } = this.parse(Build)
+    // const { flags } = this.parse(Build)
 
     // Handle Prisma integration
     // TODO pluggable CLI
@@ -31,7 +31,7 @@ export class Build extends Command {
     const layout = await scan()
 
     this.log('🎃  Generating Nexus artifacts ...')
-    await generateArtifacts2(
+    await generateArtifacts(
       createBootModuleContent({
         sourceEntrypoint: layout.app.exists ? layout.app.path : undefined,
         stage: 'dev',
