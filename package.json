@@ -7,12 +7,10 @@
   },
   "bugs": "https://github.com/prisma-labs/pumpkins/issues",
   "dependencies": {
-    "@oclif/command": "^1",
-    "@oclif/config": "^1",
-    "@oclif/plugin-help": "^2",
     "@prisma/photon": "0.2.168",
     "@prisma/sdk": "0.0.32",
     "apollo-server-express": "^2.9.7",
+    "arg": "^4.1.1",
     "chalk": "^3.0.0",
     "common-tags": "^1.8.0",
     "dateformat": "^3.0.3",
@@ -34,8 +32,6 @@
     "typescript": "^3.7.2"
   },
   "devDependencies": {
-    "@oclif/dev-cli": "^1",
-    "@oclif/test": "^1",
     "@types/chai": "^4",
     "@types/common-tags": "^1.8.0",
     "@types/dateformat": "^3.0.1",
@@ -56,8 +52,7 @@
     "node": ">=8.0.0"
   },
   "files": [
-    "/dist",
-    "/oclif.manifest.json"
+    "/dist"
   ],
   "homepage": "https://github.com/prisma-labs/pumpkins",
   "license": "MIT",
@@ -66,20 +61,12 @@
     "preset": "ts-jest",
     "testEnvironment": "node"
   },
-  "oclif": {
-    "commands": "dist/cli/commands",
-    "bin": "pumpkins",
-    "plugins": [
-      "@oclif/plugin-help"
-    ]
-  },
   "repository": "prisma-labs/pumpkins",
   "scripts": {
     "publish:sha": "yarn publish --tag sha --no-git-tag-version --new-version \"0.0.0-sha.$(git show -s head --format='%h')\"",
     "format": "prettier --write '*/**/*.ts'",
-    "build:doc": "oclif-dev readme && doctoc --notitle README.md",
-    "build": "yarn -s clean && tsc -b && oclif-dev manifest && yarn -s build:doc",
-    "clean": "rm -rf oclif.manifest.json dist tsconfig.tsbuildinfo",
+    "build": "yarn -s clean && tsc -b",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo",
     "postpack": "yarn -s clean",
     "prepack": "yarn -s build",
     "test": "jest --verbose",

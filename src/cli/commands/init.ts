@@ -1,17 +1,11 @@
-import { Command, flags } from '@oclif/command'
+import { Command } from '../helpers'
 
-export class Init extends Command {
-  static description = 'describe the command here'
+export class Init implements Command {
+  public static new(): Init {
+    return new Init()
+  }
 
-  static examples = [`$ pumpkins init`]
-
-  static flags = {}
-
-  static args = []
-
-  async run() {
-    const { args, flags } = this.parse(Init)
-
-    this.log('todo')
+  async parse() {
+    console.log('todo')
   }
 }

@@ -108,7 +108,7 @@ it('can build with minimal server + schema + prisma', async () => {
       "children": Array [
         Object {
           "name": "__start.js",
-          "size": 351,
+          "size": 349,
           "type": "file",
         },
         Object {
@@ -123,7 +123,7 @@ it('can build with minimal server + schema + prisma', async () => {
         },
       ],
       "name": "dist",
-      "size": 701,
+      "size": 699,
       "type": "dir",
     }
   `)

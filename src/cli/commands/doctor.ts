@@ -1,10 +1,12 @@
-import { Command } from '@oclif/command'
 import Git from 'simple-git/promise'
+import { Command } from '../helpers'
 
-export class Dev extends Command {
-  static description = 'Check your project state for any problems'
+export class Doctor implements Command {
+  public static new(): Doctor {
+    return new Doctor()
+  }
 
-  async run() {
+  async parse() {
     const frameworkDotFolder = '.pumpkins'
     const git = Git(process.cwd())
 
