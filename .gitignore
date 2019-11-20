@@ -54,4 +54,3 @@ yarn-error.log*
 .vscode
 dist
 tsconfig.tsbuildinfo
-oclif.manifest.json

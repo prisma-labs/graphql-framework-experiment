@@ -1,18 +1,15 @@
-import { Command, flags } from '@oclif/command'
 import { generateArtifacts } from '../../utils'
 import { runPrismaGenerators } from '../../framework/plugins'
 import { createBootModuleContent } from '../utils'
 import { scan } from '../../framework/layout'
+import { Command } from '../helpers'
 
-export class Generate extends Command {
-  static description = 'Generate the artifacts'
-  static examples = [`$ pumpkins generate`]
-  static flags = {
-    entrypoint: flags.string({ char: 'e' }),
+export class Generate implements Command {
+  public static new(): Generate {
+    return new Generate()
   }
-  static args = []
 
-  async run() {
+  async parse() {
     // const { flags } = this.parse(Generate)
 
     // Handle Prisma integration
@@ -21,7 +18,7 @@ export class Generate extends Command {
 
     const layout = await scan()
 
-    this.log('🎃  Generating Nexus artifacts ...')
+    console.log('🎃  Generating Nexus artifacts ...')
     await generateArtifacts(
       createBootModuleContent({
         sourceEntrypoint: layout.app.exists ? layout.app.path : undefined,
@@ -30,6 +27,6 @@ export class Generate extends Command {
       })
     )
 
-    this.log('🎃  Successfully generated the artifacts')
+    console.log('🎃  Successfully generated the artifacts')
   }
 }

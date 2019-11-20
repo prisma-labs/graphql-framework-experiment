@@ -1,18 +1,16 @@
-import { Command } from '@oclif/command'
 import * as path from 'path'
 import { runPrismaGenerators } from '../../framework/plugins'
 import { findServerEntryPoint } from '../../utils'
 import { watcher } from '../../watcher'
+import { Command } from '../helpers'
 import { createBootModuleContent } from '../utils'
 
-export class Dev extends Command {
-  static description = 'describe the command here'
-  static examples = [`$ pumpkins dev`]
-  static flags = {}
-  static args = []
+export class Dev implements Command {
+  public static new(): Dev {
+    return new Dev()
+  }
 
-  async run() {
-    // const { args, flags } = this.parse(Dev)
+  async parse(_argv: string[]) {
     await runPrismaGenerators()
     const appEntrypointPath = await findServerEntryPoint()
 
