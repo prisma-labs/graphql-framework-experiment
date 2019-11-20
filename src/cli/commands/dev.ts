@@ -1,13 +1,10 @@
 import { Command } from '@oclif/command'
+import { stripIndents } from 'common-tags'
 import * as path from 'path'
 import { runPrismaGenerators } from '../../framework/plugins'
+import { findServerEntryPoint, pumpkinsPath, writePumpkinsFile } from '../../utils'
+import { watcher } from '../../watcher'
 import { createBootModuleContent } from '../utils'
-import {
-  findServerEntryPoint,
-  pumpkinsPath,
-  writePumpkinsFile,
-} from '../../utils'
-import { stripIndents } from 'common-tags'
 
 export class Dev extends Command {
   static description = 'describe the command here'
@@ -24,7 +21,6 @@ export class Dev extends Command {
     // imported for its side-effects.
     const appEntrypointPath = await findServerEntryPoint()
     const bootPath = pumpkinsPath('boot.ts')
-    const projectDir = findProjectDir()
 
     await writePumpkinsFile(
       bootPath.relative,
@@ -58,7 +54,7 @@ export class Dev extends Command {
         },
         onRestart(fileName: string) {
           console.log(
-            `🎃  ${path.relative(projectDir, fileName)} changed. Restarting...`
+            `🎃  ${path.relative(process.cwd(), fileName)} changed. Restarting...`
           )
         },
       }
