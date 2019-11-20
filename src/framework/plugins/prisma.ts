@@ -222,6 +222,7 @@ export async function runPrismaGenerators(
     return
   }
 
+  // TODO Do not assume that just because photon does not need to be regenerated that no other generators do
   if ((await shouldRegeneratePhoton(prisma.schemaPath)) === false) {
     log(
       'Prisma generators were not run because the prisma schema was not updated'

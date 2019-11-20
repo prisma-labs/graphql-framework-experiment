@@ -105,19 +105,13 @@ export function createApp(appConfig?: { types?: any }): App {
         // This code MUST run after user/system has had chance to run global installation
         requireSchemaModules()
 
-        const generatedPhotonPackagePath = fs.path(
-          'node_modules/@generated/photon'
-        )
-
         const mergedConfig: Required<ServerOptions> = {
           ...defaultServerOptions,
           ...config,
         }
 
         // Create the Nexus config
-        const nexusConfig = createNexusConfig({
-          generatedPhotonPackagePath,
-        })
+        const nexusConfig = createNexusConfig()
 
         // Get the context module for the app.
         // User can provide a context module at a conventional path.
