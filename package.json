@@ -39,13 +39,11 @@
     "@types/jest": "^24.0.22",
     "@types/node": "^12.12.11",
     "@types/prismjs": "^1.16.0",
-    "@types/tmp": "^0.1.0",
     "chai": "^4",
     "doctoc": "^1.4.0",
     "globby": "^10",
     "jest": "^24.9.0",
     "prettier": "^1.18.2",
-    "tmp": "^0.1.0",
     "ts-jest": "^24.1.0"
   },
   "engines": {
@@ -70,8 +68,8 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
     "postpack": "yarn -s clean",
     "prepack": "yarn -s build",
-    "test": "jest --verbose",
-    "test:dev": "jest --watch --verbose",
+    "test": "jest --verbose --testTimeout 50000",
+    "test:dev": "jest --watch --verbose --testTimeout 50000",
     "dev": "tsc -b -w"
   },
   "prettier": {
