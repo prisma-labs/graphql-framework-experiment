@@ -2,7 +2,7 @@ import * as path from 'path'
 import { runPrismaGenerators } from '../../framework/plugins'
 import { watcher } from '../../watcher'
 import { Command } from '../helpers'
-import { createBootModuleContent } from '../../framework/boot'
+import { createStartModuleContent } from '../../framework/start'
 import { scan } from '../../framework/layout'
 
 export class Dev implements Command {
@@ -26,12 +26,12 @@ export class Dev implements Command {
         'transpile-only': true,
         respawn: true,
         eval: {
-          code: createBootModuleContent({
+          code: createStartModuleContent({
             stage: 'dev',
             appPath: layout.app.path,
             layout,
           }),
-          fileName: '__start.js',
+          fileName: 'start.js',
         },
       },
       {

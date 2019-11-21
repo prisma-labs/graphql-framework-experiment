@@ -3,9 +3,9 @@ import { pog } from './pog'
 
 const log = pog.sub('typegen')
 
-export async function generateArtifacts(bootScript: string): Promise<void> {
+export async function generateArtifacts(startScript: string): Promise<void> {
   log('starting typegen...')
-  const result = spawnSync('npx', ['ts-node', '--eval', bootScript], {
+  const result = spawnSync('npx', ['ts-node', '--eval', startScript], {
     encoding: 'utf8',
     env: {
       ...process.env,

@@ -1,6 +1,6 @@
 import { generateArtifacts } from '../../utils'
 import { runPrismaGenerators } from '../../framework/plugins'
-import { createBootModuleContent } from '../../framework/boot'
+import { createStartModuleContent } from '../../framework/start'
 import { scan } from '../../framework/layout'
 import { Command } from '../helpers'
 
@@ -20,7 +20,7 @@ export class Generate implements Command {
 
     console.log('🎃  Generating Nexus artifacts ...')
     await generateArtifacts(
-      createBootModuleContent({
+      createStartModuleContent({
         stage: 'dev',
         appPath: layout.app.path,
         layout,

@@ -4,7 +4,7 @@ const ctx = withContext()
   .use(gitFixture)
   .build()
 
-// TODO integration test showing built app can boot and accept queries
+// TODO integration test showing built app can start and accept queries
 
 it('can have singleton turned off', async () => {
   setupBasePumpkinsProject(ctx, {

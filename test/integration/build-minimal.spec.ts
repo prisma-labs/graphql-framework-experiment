@@ -4,7 +4,7 @@ const ctx = withContext()
   .use(gitFixture)
   .build()
 
-// TODO integration test showing built app can boot and accept queries
+// TODO integration test showing built app can start and accept queries
 
 it('can build with minimal server + schema + prisma', async () => {
   ctx.fs.write(
@@ -107,7 +107,7 @@ it('can build with minimal server + schema + prisma', async () => {
     Object {
       "children": Array [
         Object {
-          "name": "__start.js",
+          "name": "start.js",
           "size": 349,
           "type": "file",
         },

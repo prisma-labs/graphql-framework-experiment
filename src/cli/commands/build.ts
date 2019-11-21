@@ -7,7 +7,7 @@ import {
   readTsConfig,
   transpileModule,
 } from '../../utils'
-import { createBootModuleContent } from '../../framework/boot'
+import { createStartModuleContent } from '../../framework/start'
 import { Command } from '../helpers'
 
 export class Build implements Command {
@@ -24,7 +24,7 @@ export class Build implements Command {
 
     console.log('🎃  Generating Nexus artifacts ...')
     await generateArtifacts(
-      createBootModuleContent({
+      createStartModuleContent({
         stage: 'dev',
         appPath: layout.app.path,
         layout,
@@ -36,9 +36,9 @@ export class Build implements Command {
     compile(tsConfig.fileNames, tsConfig.options)
 
     await fs.writeAsync(
-      fs.path('dist/__start.js'),
+      fs.path('dist/start.js'),
       transpileModule(
-        createBootModuleContent({
+        createStartModuleContent({
           stage: 'build',
           appPath: layout.app.path,
           layout,

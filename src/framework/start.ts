@@ -2,7 +2,7 @@ import { stripIndent } from 'common-tags'
 import { printStaticSchemaImports } from './schema'
 import { Layout } from './layout'
 
-type BootModuleConfig = {
+type StartModuleConfig = {
   stage: 'build' | 'dev'
   /**
    * Whether or not app content needs to be scaffolded. This is needed when for
@@ -12,7 +12,7 @@ type BootModuleConfig = {
   layout: Layout
 }
 
-export function createBootModuleContent(config: BootModuleConfig): string {
+export function createStartModuleContent(config: StartModuleConfig): string {
   let output = ''
 
   if (config.stage === 'build') {
@@ -52,7 +52,7 @@ export function createBootModuleContent(config: BootModuleConfig): string {
       `
     : // TODO if user has disabled global singleton, then honour that here
       stripIndent`
-        // Boot the server
+        // Start the server
         app.server.start()
       `
 
