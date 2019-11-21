@@ -1,11 +1,13 @@
-import { withContext, gitFixture } from '../__helpers'
+import { createWorkspace } from '../__helpers'
 
-const ctx = withContext()
-  .use(gitFixture)
-  .build()
+const ws = createWorkspace({
+  name: 'doctor',
+})
+
+// TODO test where .pumpkins has been commited to repo and so is being tracked
 
 it('warns if .pumpkins is not git-ignored', () => {
-  expect(ctx.cli('doctor')).toMatchInlineSnapshot(`
+  expect(ws.run('yarn -s pumpkins doctor')).toMatchInlineSnapshot(`
     Object {
       "status": 0,
       "stderr": "",
@@ -16,8 +18,8 @@ it('warns if .pumpkins is not git-ignored', () => {
 })
 
 it('validates if .pumpkins is git-ignored', () => {
-  ctx.fs.write('.gitignore', '.pumpkins')
-  expect(ctx.cli('doctor')).toMatchInlineSnapshot(`
+  ws.fs.write('.gitignore', '.pumpkins')
+  expect(ws.run('yarn -s pumpkins doctor')).toMatchInlineSnapshot(`
     Object {
       "status": 0,
       "stderr": "",
@@ -26,5 +28,3 @@ it('validates if .pumpkins is git-ignored', () => {
     }
   `)
 })
-
-// TODO test where .pumpkins has been commited to repo and so is being tracked
