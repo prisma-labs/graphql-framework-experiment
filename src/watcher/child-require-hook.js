@@ -1,3 +1,5 @@
+// TODO: Cannot be a .ts file because oclif requires commands from .ts files if it can
+
 const fs = require('fs')
 const getCompiledPath = require('./get-compiled-path').default
 const { sep } = require('path')

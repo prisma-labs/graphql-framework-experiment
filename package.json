@@ -70,9 +70,8 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
     "postpack": "yarn -s clean",
     "prepack": "yarn -s build",
-    "test:setup": "yalc publish --no-sig",
     "test": "jest --verbose",
-    "test:dev": "jest --watch",
+    "test:dev": "jest --watch --verbose",
     "dev": "tsc -b -w"
   },
   "prettier": {
