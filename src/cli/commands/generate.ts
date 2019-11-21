@@ -23,6 +23,7 @@ export class Generate implements Command {
       createBootModuleContent({
         stage: 'dev',
         appPath: layout.app.path,
+        layout,
       })
     )
     console.log('🎃  Successfully generated the artifacts')

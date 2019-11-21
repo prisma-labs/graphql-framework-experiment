@@ -29,6 +29,7 @@ export class Dev implements Command {
           code: createBootModuleContent({
             stage: 'dev',
             appPath: layout.app.path,
+            layout,
           }),
           fileName: '__start.js',
         },

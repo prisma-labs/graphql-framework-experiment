@@ -133,13 +133,17 @@ export async function findFiles(
   return fs.findAsync({
     matching: [
       ...paths,
-      '!node_modules/**/*',
-      '!.yalc/**/*',
-      `!.${pumpkinsDotFolderName}/**/*`,
+      ...baseIgnores,
       ...(config?.ignore?.map(i => `!${i}`) ?? []),
     ],
   })
 }
+
+export const baseIgnores = [
+  '!node_modules/**/*',
+  '!.yalc/**/*',
+  `!.${pumpkinsDotFolderName}/**/*`,
+]
 
 export const trimExt = (filePath: string, ext: string): string => {
   return path.join(path.dirname(filePath), path.basename(filePath, ext))
@@ -153,4 +157,9 @@ export function trimNodeModulesIfInPath(path: string) {
   }
 
   return path
+}
+
+export function stripExt(filePath: string): string {
+  const { dir, name } = path.parse(filePath)
+  return path.join(dir, name)
 }

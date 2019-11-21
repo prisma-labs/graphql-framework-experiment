@@ -1,7 +1,12 @@
 import * as fs from 'fs-jetpack'
 import { scan } from '../../framework/layout'
 import { runPrismaGenerators } from '../../framework/plugins'
-import { compile, generateArtifacts, readTsConfig } from '../../utils'
+import {
+  compile,
+  generateArtifacts,
+  readTsConfig,
+  transpileModule,
+} from '../../utils'
 import { createBootModuleContent } from '../../framework/boot'
 import { Command } from '../helpers'
 
@@ -22,6 +27,7 @@ export class Build implements Command {
       createBootModuleContent({
         stage: 'dev',
         appPath: layout.app.path,
+        layout,
       })
     )
 
@@ -31,10 +37,14 @@ export class Build implements Command {
 
     await fs.writeAsync(
       fs.path('dist/__start.js'),
-      createBootModuleContent({
-        stage: 'build',
-        appPath: layout.app.path,
-      })
+      transpileModule(
+        createBootModuleContent({
+          stage: 'build',
+          appPath: layout.app.path,
+          layout,
+        }),
+        readTsConfig().options
+      )
     )
 
     console.log('🎃  Pumpkins server successfully compiled!')

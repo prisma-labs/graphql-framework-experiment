@@ -102,8 +102,12 @@ export function createApp(appConfig?: { types?: any }): App {
         // TODO do not assume TS
         // TODO refactor and put a system behind this holy mother of...
 
+        // During dev mode we will dynamically require the user's schema modules.
+        // At build time we inline static imports.
         // This code MUST run after user/system has had chance to run global installation
-        requireSchemaModules()
+        if (process.env.PUMPKINS_STAGE === 'dev') {
+          requireSchemaModules()
+        }
 
         const mergedConfig: Required<ServerOptions> = {
           ...defaultServerOptions,

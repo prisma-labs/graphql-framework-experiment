@@ -1,4 +1,6 @@
-import { stripIndents } from 'common-tags'
+import { stripIndent } from 'common-tags'
+import { printStaticSchemaImports } from './schema'
+import { Layout } from './layout'
 
 type BootModuleConfig = {
   stage: 'build' | 'dev'
@@ -7,32 +9,49 @@ type BootModuleConfig = {
    * example the user only supplies a schemta.ts module.
    */
   appPath: null | string
+  layout: Layout
 }
 
 export function createBootModuleContent(config: BootModuleConfig): string {
   let output = ''
 
-  output +=
-    config.stage === 'build'
-      ? stripIndents`
-    // Guarantee that development mode features will not accidentally run
-    process.env.PUMPKINS_SHOULD_GENERATE_ARTIFACTS = 'false'`
-      : stripIndents`
-    // Guarantee that development mode features are on
-    process.env.PUMPKINS_SHOULD_GENERATE_ARTIFACTS = 'true'`
+  if (config.stage === 'build') {
+    output += stripIndent`
+      // Guarantee that development mode features will not accidentally run
+      process.env.PUMPKINS_SHOULD_GENERATE_ARTIFACTS = 'false'
 
-  output += stripIndents`
+    `
+  } else if (config.stage === 'dev') {
+    output += stripIndent`
+      // Guarantee that development mode features are on
+      process.env.PUMPKINS_SHOULD_GENERATE_ARTIFACTS = 'true'
+      process.env.PUMPKINS_STAGE = 'dev'
+    `
+  }
+
+  output += '\n\n\n'
+  output += stripIndent`
     // Guarantee the side-effect features like singleton global do run
     require("pumpkins")
   `
 
+  if (config.stage === 'build') {
+    output += '\n\n\n'
+    output += stripIndent`
+      // Import the user's schema modules
+      // This MUST come after pumpkins package has been imported for its side-effects
+      ${printStaticSchemaImports(config.layout)}
+    `
+  }
+
+  output += '\n\n\n'
   output += config.appPath
-    ? stripIndents`
+    ? stripIndent`
         // import the user's app module
         require("${config.appPath}")
       `
     : // TODO if user has disabled global singleton, then honour that here
-      stripIndents`
+      stripIndent`
         // Boot the server
         app.server.start()
       `
