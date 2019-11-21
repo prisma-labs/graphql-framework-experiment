@@ -1,52 +1,41 @@
-import { withContext, gitFixture } from '../__helpers'
+import * as jetpack from 'fs-jetpack'
+import * as tmp from 'tmp'
+import * as path from 'path'
+import createGit, { SimpleGit } from 'simple-git/promise'
+import { createRunner, gitRepo } from '../__helpers'
 
-const ctx = withContext()
-  .use(gitFixture)
-  .build()
+type Workspace = {
+  run: ReturnType<typeof createRunner>
+  fs: ReturnType<typeof jetpack.dir>
+  projectPath: string
+  git: SimpleGit
+}
 
-// TODO integration test showing built app can start and accept queries
+async function createWorkspace(): Promise<Workspace> {
+  const dir = tmp.dirSync()
+  const fs = jetpack.dir(dir.name)
+  const run = createRunner(dir.name)
+  const projectPath = path.join(__dirname, '../..')
+  const git = createGit(dir.name)
 
-it('can build with minimal server + schema + prisma', async () => {
-  ctx.fs.write(
-    'package.json',
-    `
-      {
-        "name": "test-app",
-        "dependencies": {
-          "pumpkins": "${ctx.pathAbsoluteToProject}"
-        },
-        "license": "MIT"
-      }
-    `
-  )
+  return {
+    fs,
+    run,
+    projectPath,
+    git,
+  }
+}
 
-  ctx.run('yarn')
+async function createProject(c: Workspace) {
+  c.fs.write('package.json', {
+    name: 'test-app',
+    license: 'MIT',
+    // dependencies: {
+    //   pumpkins: c.projectPath,
+    // },
+  })
 
-  // HACK to work around oclif failing on import error
-  ctx.run('rm -rf node_modules/pumpkins/src')
-
-  ctx.run('touch dev.db')
-
-  ctx.fs.write(
-    'schema.prisma',
-    `
-      datasource db {
-        provider = "sqlite"
-        url      = "file:dev.db"
-      }
-
-      generator photon {
-        provider = "photonjs"
-      }
-
-      model User {
-        id   Int    @id
-        name String
-      }
-    `
-  )
-
-  ctx.fs.write(
+  c.fs.write(
     'tsconfig.json',
     `
       {
@@ -54,77 +43,46 @@ it('can build with minimal server + schema + prisma', async () => {
           "target": "es2016",
           "strict": true,
           "outDir": "dist",
+          "skipLibCheck": true,
           "lib": ["esnext"]
         },
       }
     `
   )
 
-  ctx.fs.write(
-    'schema.ts',
-    `queryType({
-        definition(t) {
-          t.field('foo', {
-            type: 'Foo',
-            resolve() {
-              return {
-                bar: 'qux'
-              }
-            }
-          })
-        }
-      })
+  c.run('yalc add pumpkins')
+  // c.run('yarn --production')
+  await gitRepo(c.git)
+}
 
+const ws = {} as Workspace
+
+beforeAll(async () => {
+  Object.assign(ws, await createWorkspace())
+  await createProject(ws)
+})
+
+afterEach(async () => {
+  await gitReset(ws.git)
+})
+
+describe('with just schema', () => {
+  it('builds', () => {
+    ws.fs.write(
+      'schema.ts',
+      `
       objectType({
-        name: 'Foo',
+        name: 'A',
         definition(t) {
-          t.string('bar')
+          t.string('a')
         }
       })
     `
-  )
+    )
 
-  ctx.fs.write(
-    'app.ts',
-    `
-      app.server.start()
-    `
-  )
+    const result = ws.run('yarn -s pumpkins build')
 
-  expect(ctx.run('yarn -s pumpkins build')).toMatchInlineSnapshot(`
-    Object {
-      "status": 0,
-      "stderr": "",
-      "stdout": "🎃  Running Prisma generators ...
-    🎃  Generating Nexus artifacts ...
-    🎃  Compiling ...
-    🎃  Pumpkins server successfully compiled!
-    ",
-    }
-  `)
-
-  expect(ctx.fs.inspectTree('dist')).toMatchInlineSnapshot(`
-    Object {
-      "children": Array [
-        Object {
-          "name": "start.js",
-          "size": 349,
-          "type": "file",
-        },
-        Object {
-          "name": "app.js",
-          "size": 34,
-          "type": "file",
-        },
-        Object {
-          "name": "schema.js",
-          "size": 316,
-          "type": "file",
-        },
-      ],
-      "name": "dist",
-      "size": 699,
-      "type": "dir",
-    }
-  `)
+    expect(result).toMatchSnapshot()
+    expect(ws.fs.inspectTree('dist')).toMatchSnapshot()
+  })
 })

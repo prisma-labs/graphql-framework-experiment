@@ -1,5 +1,5 @@
 import * as fs from 'fs-jetpack'
-import Git from 'simple-git/promise'
+import Git, { SimpleGit } from 'simple-git/promise'
 import { dirSync, DirResult } from 'tmp'
 import * as path from 'path'
 import { createCLIRunner, run, createRunner } from './run'
@@ -100,6 +100,19 @@ export const gitFixture: CreateFixture<GitFixture> = ctx => {
       pathAbsoluteToProject,
     }
   }
+}
+export async function gitReset(git: SimpleGit) {
+  await Promise.all([git.raw(['clean', '-d', '-x', '-f']), git.raw(['reset'])])
+}
+export async function gitRepo(git: SimpleGit) {
+  await git.init()
+  await git.raw([
+    'commit',
+    '-A',
+    '--allow-empty',
+    '--message',
+    'initial commit',
+  ])
 }
 
 export const setupBasePumpkinsProject = (
