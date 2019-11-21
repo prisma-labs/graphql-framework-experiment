@@ -428,6 +428,8 @@
   version "0.1.9"
   resolved "https://registry.yarnpkg.com/@prisma/get-platform/-/get-platform-0.1.9.tgz#96bbb629613677bfd44ed015b86578194c4869f2"
   integrity sha512-RKtrdPUs+pc7OrBLnzGgJ/sMk4EBPALrwIM5+552lKEvJMSHHGxNNHAZfZp28H26IT/hZkiFO2ATSNcOqYZw3A==
+  dependencies:
+    debug "^4.1.1"
 
 "@prisma/photon@0.2.152":
   version "0.2.152"

@@ -1,0 +1,32 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`can build with just a schema builds 1`] = `
+Object {
+  "status": 0,
+  "stderr": "",
+  "stdout": "🎃  Generating Nexus artifacts ...
+🎃  Compiling ...
+🎃  Pumpkins server successfully compiled!
+",
+}
+`;
+
+exports[`can build with just a schema builds 2`] = `
+Object {
+  "children": Array [
+    Object {
+      "name": "schema.js",
+      "size": 95,
+      "type": "file",
+    },
+    Object {
+      "name": "start.js",
+      "size": 470,
+      "type": "file",
+    },
+  ],
+  "name": "dist",
+  "size": 565,
+  "type": "dir",
+}
+`;

@@ -101,18 +101,18 @@ export const gitFixture: CreateFixture<GitFixture> = ctx => {
     }
   }
 }
+
 export async function gitReset(git: SimpleGit) {
-  await Promise.all([git.raw(['clean', '-d', '-x', '-f']), git.raw(['reset'])])
+  await Promise.all([
+    git.raw(['clean', '-d', '-x', '-f']),
+    git.raw(['reset', '--hard']),
+  ])
 }
+
 export async function gitRepo(git: SimpleGit) {
   await git.init()
-  await git.raw([
-    'commit',
-    '-A',
-    '--allow-empty',
-    '--message',
-    'initial commit',
-  ])
+  await git.raw(['add', '-A'])
+  await git.raw(['commit', '--allow-empty', '--message', 'initial commit'])
 }
 
 export const setupBasePumpkinsProject = (
@@ -129,9 +129,6 @@ export const setupBasePumpkinsProject = (
   })
 
   c.run('yarn --production')
-
-  // HACK to work around oclif failing on import error
-  c.run('rm -rf node_modules/pumpkins/src')
 
   c.fs.write(
     'tsconfig.json',
