@@ -33,13 +33,9 @@ export class Dev implements Command {
         onStart() {
           console.log('🎃  Starting pumpkins server...')
         },
-        onRestart(fileName: string) {
-          console.log(
-            `🎃  ${path.relative(
-              process.cwd(),
-              fileName
-            )} changed. Restarting...`
-          )
+        onRestart(filePath: string) {
+          const filePathRelative = path.relative(process.cwd(), filePath)
+          console.log(`🎃  ${filePathRelative} changed. Restarting...`)
         },
       },
     })

@@ -15,10 +15,8 @@ const log = pog.sub('watcher')
  * Entrypoint into the watcher system.
  */
 export function createWatcher(opts: Opts) {
-  let child: Process | undefined = undefined
-
-  const wrapper = resolveMain(__dirname + '/wrap')
-  log('resolved main %s', wrapper)
+  const entrypointWrapper = resolveMain(__dirname + '/wrap')
+  log('resolved main %s', entrypointWrapper)
 
   const cfg = cfgFactory(opts)
 
@@ -28,14 +26,21 @@ export function createWatcher(opts: Opts) {
   // Run ./dedupe.js as preload script
   if (cfg.dedupe) process.env.NODE_DEV_PRELOAD = __dirname + '/dedupe'
 
+  //
+  // Setup State
+  //
+
+  // Data
+  let starting = false
+  let child: Process | undefined = undefined
+
+  // Craete a file watcher
   const watcher = filewatcher({
     forcePolling: opts.poll,
     interval: parseInt(opts.interval!, 10),
     debounce: parseInt(opts.debounce!, 10),
     recursive: true,
   })
-
-  let starting = false
 
   watcher.on('change', restart)
 
@@ -54,15 +59,19 @@ export function createWatcher(opts: Opts) {
    * Run the wrapped script.
    */
   function start() {
+    log('starting')
+
+    // allow user to hook into start event
     opts.callbacks?.onStart?.()
-    for (let watched of (opts.watch || '').split(',')) {
-      if (watched) watcher.add(watched)
-    }
-    let cmd = [wrapper]
+
     const childHookPath = compiler.getChildHookPath()
-    cmd = ['-r', childHookPath].concat(cmd)
-    log('Starting child process %s', cmd.join(' '))
-    child = fork(cmd[0], cmd.slice(1), {
+
+    log('will fork with %O', {
+      childHookPath,
+      entrypointWrapper,
+    })
+
+    child = fork(entrypointWrapper, ['-r', childHookPath], {
       cwd: process.cwd(),
       env: {
         ...process.env,
@@ -70,7 +79,9 @@ export function createWatcher(opts: Opts) {
         PUMPKINS_EVAL_FILENAME: opts.eval?.fileName ?? undefined,
       },
     })
+
     starting = false
+
     const compileReqWatcher = filewatcher({ forcePolling: opts.poll })
     let currentCompilePath: string
     fs.writeFileSync(compiler.getCompileReqFilePath(), '')
