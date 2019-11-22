@@ -235,8 +235,9 @@ export async function runPrismaGenerators(
     console.log('🎃  Running Prisma generators ...')
   }
 
-  const generators = await getGenerators(prisma.schemaPath)
   console.log(1)
+  const generators = await getGenerators(prisma.schemaPath)
+  console.log(2)
 
   for (const g of generators) {
     // // HACK (see var declaration LOC)
