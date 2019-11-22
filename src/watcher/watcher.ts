@@ -6,7 +6,7 @@ import { Opts, Process } from './types'
 import cfgFactory from './cfg'
 import { pog } from '../utils'
 const filewatcher = require('filewatcher')
-const kill = require('tree-kill')
+const treeKill = require('tree-kill')
 
 const log = pog.sub('watcher')
 
@@ -17,7 +17,7 @@ export function createWatcher(opts: Opts) {
   const cfg = cfgFactory(opts)
 
   compiler.init(opts)
-  compiler.stop = stop
+  compiler.stop = stopRunner
 
   // Run ./dedupe.js as preload script
   if (cfg.dedupe) process.env.NODE_DEV_PRELOAD = __dirname + '/dedupe'
@@ -26,11 +26,7 @@ export function createWatcher(opts: Opts) {
   // Setup State
   //
 
-  // Data
-  let starting = false
-  let child: Process | undefined = undefined
-
-  // Craete a file watcher
+  // Create a file watcher
   const watcher = filewatcher({
     forcePolling: opts.poll,
     interval: parseInt(opts.interval!, 10),
@@ -40,7 +36,7 @@ export function createWatcher(opts: Opts) {
 
   watcher.on('change', (file: string, isManualRestart: boolean) => {
     log('file watcher change event')
-    restart(file, isManualRestart)
+    restartRunner(runner, file, isManualRestart)
   })
 
   watcher.on('fallback', function(limit: number) {
@@ -55,122 +51,31 @@ export function createWatcher(opts: Opts) {
       console.info('... or add `--no-deps` to use less file handles.')
   })
 
-  /**
-   * Start the App Runner. This occurs once on boot and then on every subsequent
-   * file change in the users's project.
-   */
-  function startRunner() {
-    log('will spawn runner')
+  // Create a mutable runner
+  let runner = startRunnerDo()
 
-    // allow user to hook into start event
-    opts.callbacks?.onStart?.()
+  // Create some state to dedupe restarts. For example a rapid succession of
+  // file changes will not trigger restart multiple times while the first
+  // invocation was still running to completion.
+  let runnerRestarting = false
 
-    const runnerModulePath = require.resolve('./runner')
-    const childHookPath = compiler.getChildHookPath()
+  // Relay SIGTERM
+  process.on('SIGTERM', () => {
+    log('Process got SIGTERM')
+    killChild(runner, { treeKill: opts['tree-kill'] ?? false })
+    process.exit(0)
+  })
 
-    log('using runner module at %s', runnerModulePath)
-    log('using child-hook-path module at %s', childHookPath)
-
-    child = fork(runnerModulePath, ['-r', childHookPath], {
-      cwd: process.cwd(),
-      env: {
-        ...process.env,
-        PUMPKINS_EVAL: opts.eval.code,
-        PUMPKINS_EVAL_FILENAME: opts.eval.fileName,
+  function startRunnerDo(): Process {
+    return startRunner(opts, cfg, watcher, {
+      onError: willTerminate => {
+        stopRunner(runner, willTerminate)
       },
     })
-
-    starting = false
-
-    const compileReqWatcher = filewatcher({ forcePolling: opts.poll })
-    let currentCompilePath: string
-    fs.writeFileSync(compiler.getCompileReqFilePath(), '')
-    compileReqWatcher.add(compiler.getCompileReqFilePath())
-    compileReqWatcher.on('change', function(file: string) {
-      fs.readFile(file, 'utf-8', function(err, data) {
-        if (err) {
-          console.error('Error reading compile request file', err)
-          return
-        }
-        const [compile, compiledPath] = data.split('\n')
-        if (currentCompilePath === compiledPath) {
-          return
-        }
-        currentCompilePath = compiledPath
-        if (compiledPath) {
-          compiler.compile({
-            compile: compile,
-            compiledPath: compiledPath,
-            callbacks: opts.callbacks,
-          })
-        }
-      })
-    })
-
-    child.on('exit', function(code) {
-      log('Child exited with code %s', code)
-      if (!child) return
-      if (!child.respawn) {
-        process.exit(code ?? 1)
-      }
-      child = undefined
-    })
-
-    if (cfg.respawn) {
-      child.respawn = true
-    }
-
-    if (compiler.tsConfigPath) {
-      watcher.add(compiler.tsConfigPath)
-    }
-
-    ipc.on(child, 'compile', function(message: {
-      compiledPath: string
-      compile: string
-    }) {
-      if (
-        !message.compiledPath ||
-        currentCompilePath === message.compiledPath
-      ) {
-        return
-      }
-      currentCompilePath = message.compiledPath
-      ;(message as any).callbacks = opts.callbacks
-      compiler.compile(message)
-    })
-
-    // Listen for `required` messages and watch the required file.
-    ipc.on(child, 'required', function(m) {
-      const isIgnored =
-        cfg.ignore.some(isPrefixOf(m.required)) ||
-        cfg.ignore.some(isRegExpMatch(m.required))
-
-      if (!isIgnored && (cfg.deps === -1 || getLevel(m.required) <= cfg.deps)) {
-        watcher.add(m.required)
-      }
-    })
-
-    // Upon errors, display a notification and tell the child to exit.
-    ipc.on(child, 'error', function(m) {
-      console.error(m.stack)
-      stop(m.willTerminate)
-    })
-    compiler.writeReadyFile()
   }
 
-  const killChild = () => {
-    if (!child) return
-    log('Sending SIGTERM kill to child pid', child.pid)
-    if (opts['tree-kill']) {
-      log('Using tree-kill')
-      kill(child.pid)
-    } else {
-      child.kill('SIGTERM')
-    }
-  }
-
-  function stop(willTerminate?: boolean) {
-    if (!child || child.stopping) {
+  function stopRunner(child: Process, willTerminate?: boolean) {
+    if (child.exited || child.stopping) {
       return
     }
     child.stopping = true
@@ -179,49 +84,48 @@ export function createWatcher(opts: Opts) {
       log('Disconnecting from child')
       child.disconnect()
       if (!willTerminate) {
-        killChild()
+        killChild(child, { treeKill: opts['tree-kill'] ?? false })
       }
     }
   }
 
-  function restart(file: string, isManualRestart: boolean) {
+  function restartRunner(
+    child: Process,
+    file: string,
+    isManualRestart: boolean
+  ) {
     if (file === compiler.tsConfigPath) {
-      log('Reinitializing TS compilation')
+      log('reinitializing TS compilation')
       compiler.init(opts)
     }
     /* eslint-disable no-octal-escape */
     if (cfg.clear) process.stdout.write('\\033[2J\\033[H')
     if (isManualRestart === true) {
-      log('Restarting', 'manual restart from user')
+      log('restarting manual restart from user')
     } else {
-      log('Restarting', file + ' has been modified')
+      log('Restarting %s has been modified')
     }
     compiler.compileChanged(file, opts.callbacks ?? {})
-    if (starting) {
-      log('Already starting')
+    if (runnerRestarting) {
+      log('already starting')
       return
     }
-    log('Removing all watchers from files')
+    log('removing all watchers from files')
     watcher.removeAll()
-    starting = true
-    if (child) {
-      log('Child is still running, restart upon exit')
-      child.on('exit', startRunner)
-      stop()
+    runnerRestarting = true
+    if (!runner.exited) {
+      log('runner is still executing, will restart upon its exit')
+      runner.on('exit', () => {
+        runner = startRunnerDo()
+        runnerRestarting = false
+      })
+      stopRunner(runner)
     } else {
-      log('Child is already stopped, probably due to a previous error')
-      startRunner()
+      log('runner already exited, probably due to a previous error')
+      runner = startRunnerDo()
+      runnerRestarting = false
     }
   }
-
-  // Relay SIGTERM
-  process.on('SIGTERM', function() {
-    log('Process got SIGTERM')
-    killChild()
-    process.exit(0)
-  })
-
-  startRunner()
 }
 
 /**
@@ -256,4 +160,139 @@ function isRegExpMatch(value: string) {
   return function(regExp: string) {
     return new RegExp(regExp).test(value)
   }
+}
+
+/**
+ * Kill the child using tree kill or vanilla sigterm.
+ */
+function killChild(child: Process, opts: { treeKill: boolean }) {
+  if (child.exited) return
+
+  log('sending SIGTERM kill to child pid %s', child.pid)
+
+  if (opts.treeKill) {
+    log('using tree-kill')
+    treeKill(child.pid)
+  } else {
+    child.kill('SIGTERM')
+  }
+}
+
+/**
+ * Start the App Runner. This occurs once on boot and then on every subsequent
+ * file change in the users's project.
+ */
+function startRunner(
+  opts: Opts,
+  cfg: ReturnType<typeof cfgFactory>,
+  watcher: any,
+  callbacks?: { onError?: (willTerminate: any) => void }
+): Process {
+  log('will spawn runner')
+
+  // allow user to hook into start event
+  opts.callbacks?.onStart?.()
+
+  const runnerModulePath = require.resolve('./runner')
+  const childHookPath = compiler.getChildHookPath()
+
+  log('using runner module at %s', runnerModulePath)
+  log('using child-hook-path module at %s', childHookPath)
+
+  const child = fork(runnerModulePath, ['-r', childHookPath], {
+    cwd: process.cwd(),
+    env: {
+      ...process.env,
+      PUMPKINS_EVAL: opts.eval.code,
+      PUMPKINS_EVAL_FILENAME: opts.eval.fileName,
+    },
+  }) as Process
+
+  const compileReqWatcher = filewatcher({ forcePolling: opts.poll })
+  let currentCompilePath: string
+  fs.writeFileSync(compiler.getCompileReqFilePath(), '')
+  compileReqWatcher.add(compiler.getCompileReqFilePath())
+  compileReqWatcher.on('change', function(file: string) {
+    fs.readFile(file, 'utf-8', function(err, data) {
+      if (err) {
+        console.error('Error reading compile request file', err)
+        return
+      }
+      const [compile, compiledPath] = data.split('\n')
+      if (currentCompilePath === compiledPath) {
+        return
+      }
+      currentCompilePath = compiledPath
+      if (compiledPath) {
+        compiler.compile({
+          compile: compile,
+          compiledPath: compiledPath,
+          callbacks: opts.callbacks,
+        })
+      }
+    })
+  })
+
+  child.on('exit', function(code, signal) {
+    log('runner exiting')
+    if (code === null) {
+      log('runner did not exit on its own accord')
+    } else {
+      log('runner exited on its own accord with exit code %s', code)
+    }
+
+    if (signal === null) {
+      log('runner did NOT receive a signal causing this exit')
+    } else {
+      log('runner received signal "%s" which caused this exit', signal)
+    }
+
+    // TODO is it possible for multiple exit event triggers?
+    if (child.exited) return
+    if (!child.respawn) {
+      process.exit(code ?? 1)
+    }
+    child.exited = true
+  })
+
+  if (cfg.respawn) {
+    child.respawn = true
+  }
+
+  if (compiler.tsConfigPath) {
+    watcher.add(compiler.tsConfigPath)
+  }
+
+  ipc.on(child, 'compile', function(message: {
+    compiledPath: string
+    compile: string
+  }) {
+    if (!message.compiledPath || currentCompilePath === message.compiledPath) {
+      return
+    }
+    currentCompilePath = message.compiledPath
+    ;(message as any).callbacks = opts.callbacks
+    compiler.compile(message)
+  })
+
+  // Listen for `required` messages and watch the required file.
+  ipc.on(child, 'required', function(m) {
+    const isIgnored =
+      cfg.ignore.some(isPrefixOf(m.required)) ||
+      cfg.ignore.some(isRegExpMatch(m.required))
+
+    if (!isIgnored && (cfg.deps === -1 || getLevel(m.required) <= cfg.deps)) {
+      watcher.add(m.required)
+    }
+  })
+
+  // Upon errors, display a notification and tell the child to exit.
+  ipc.on(child, 'error', function(m: any) {
+    console.error(m.stack)
+    callbacks?.onError?.(m.willTerminate)
+  })
+
+  compiler.writeReadyFile()
+
+  return child
 }

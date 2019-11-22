@@ -80,4 +80,5 @@ export interface Opts extends BooleanOpts, StringOpts {
 export interface Process extends ChildProcess {
   respawn?: boolean
   stopping?: boolean
+  exited: undefined | true
 }
