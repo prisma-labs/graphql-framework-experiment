@@ -20,6 +20,7 @@ export function watcher(
 ) {
   // The child_process
   let child: Process | undefined = undefined
+
   const wrapper = resolveMain(__dirname + '/wrap')
   const cfg = cfgFactory(opts)
   compiler.init(opts)
@@ -52,8 +53,8 @@ export function watcher(
    * Run the wrapped script.
    */
   function start() {
-    console.log('watcher starting')
-    if (callbacks && callbacks.onEvent) {
+    log('starting')
+    if (callbacks.onEvent) {
       callbacks.onEvent('start')
     }
     for (let watched of (opts.watch || '').split(',')) {

@@ -111,7 +111,6 @@ export const compiler: Compiler = {
   },
   init: function(options) {
     const project = options['project']
-    compiler.log = options.log
     compiler.tsConfigPath =
       resolveSync(cwd, typeof project === 'string' ? project : undefined) || ''
 
@@ -226,7 +225,7 @@ export const compiler: Compiler = {
     tsHandler(m, fileName)
     try {
       m._compile(code, fileName)
-      compiler.log.debug(
+      console.log(
         fileName,
         'compiled in',
         new Date().getTime() - starTime,
