@@ -1,8 +1,13 @@
 import * as fs from 'fs-jetpack'
 import { scan } from '../../framework/layout'
 import { runPrismaGenerators } from '../../framework/plugins'
-import { compile, generateArtifacts, readTsConfig } from '../../utils'
-import { createBootModuleContent } from '../utils'
+import {
+  compile,
+  generateArtifacts,
+  readTsConfig,
+  transpileModule,
+} from '../../utils'
+import { createStartModuleContent } from '../../framework/start'
 import { Command } from '../helpers'
 
 export class Build implements Command {
@@ -19,10 +24,10 @@ export class Build implements Command {
 
     console.log('🎃  Generating Nexus artifacts ...')
     await generateArtifacts(
-      createBootModuleContent({
-        sourceEntrypoint: layout.app.exists ? layout.app.path : undefined,
+      createStartModuleContent({
         stage: 'dev',
-        app: !layout.app.exists,
+        appPath: layout.app.path,
+        layout,
       })
     )
 
@@ -31,12 +36,15 @@ export class Build implements Command {
     compile(tsConfig.fileNames, tsConfig.options)
 
     await fs.writeAsync(
-      fs.path('dist/__start.js'),
-      createBootModuleContent({
-        stage: 'build',
-        sourceEntrypoint: layout.app.exists ? layout.app.path : undefined,
-        app: !layout.app.exists,
-      })
+      fs.path('dist/start.js'),
+      transpileModule(
+        createStartModuleContent({
+          stage: 'build',
+          appPath: layout.app.path,
+          layout,
+        }),
+        readTsConfig().options
+      )
     )
 
     console.log('🎃  Pumpkins server successfully compiled!')

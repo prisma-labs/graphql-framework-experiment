@@ -1,0 +1,109 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`can build a plugin 1`] = `
+Object {
+  "status": 0,
+  "stderr": "",
+  "stdout": "🎃  Generating Nexus artifacts ...
+🎃  Compiling ...
+🎃  Pumpkins server successfully compiled!
+",
+}
+`;
+
+exports[`can build a plugin 2`] = `
+Object {
+  "children": Array [
+    Object {
+      "name": "app.js",
+      "size": 319,
+      "type": "file",
+    },
+    Object {
+      "name": "myplugin.js",
+      "size": 268,
+      "type": "file",
+    },
+    Object {
+      "name": "schema.js",
+      "size": 366,
+      "type": "file",
+    },
+    Object {
+      "name": "start.js",
+      "size": 579,
+      "type": "file",
+    },
+  ],
+  "name": "dist",
+  "size": 1532,
+  "type": "dir",
+}
+`;
+
+exports[`can build with just a schema module 1`] = `
+Object {
+  "status": 0,
+  "stderr": "",
+  "stdout": "🎃  Generating Nexus artifacts ...
+🎃  Compiling ...
+🎃  Pumpkins server successfully compiled!
+",
+}
+`;
+
+exports[`can build with just a schema module 2`] = `
+Object {
+  "children": Array [
+    Object {
+      "name": "schema.js",
+      "size": 95,
+      "type": "file",
+    },
+    Object {
+      "name": "start.js",
+      "size": 470,
+      "type": "file",
+    },
+  ],
+  "name": "dist",
+  "size": 565,
+  "type": "dir",
+}
+`;
+
+exports[`can build with schema + app modules 1`] = `
+Object {
+  "status": 0,
+  "stderr": "",
+  "stdout": "🎃  Generating Nexus artifacts ...
+🎃  Compiling ...
+🎃  Pumpkins server successfully compiled!
+",
+}
+`;
+
+exports[`can build with schema + app modules 2`] = `
+Object {
+  "children": Array [
+    Object {
+      "name": "app.js",
+      "size": 34,
+      "type": "file",
+    },
+    Object {
+      "name": "schema.js",
+      "size": 95,
+      "type": "file",
+    },
+    Object {
+      "name": "start.js",
+      "size": 579,
+      "type": "file",
+    },
+  ],
+  "name": "dist",
+  "size": 708,
+  "type": "dir",
+}
+`;

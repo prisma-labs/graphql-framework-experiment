@@ -48,17 +48,6 @@ export const writeCachedFile = async (
   }
 }
 
-export function findServerEntryPoint() {
-  // TODO if user has disabled global singleton, then honour that here
-  return findOrScaffold({
-    fileNames: ['app.ts', 'server.ts', 'service.ts'],
-    fallbackPath: fs.path('.pumpkins', 'app.ts'),
-    fallbackContent: `
-    app.server.start()
-    `,
-  })
-}
-
 export function findProjectDir() {
   let filePath = findConfigFile('package.json', { required: false })
 
@@ -113,7 +102,10 @@ export function sourceFilePathFromTranspiledPath({
   return path.join(rootDir, maybeAppFolders, tsFileName)
 }
 
-export function findFile(fileNames: string | string[]): null | string {
+export function findFile(
+  fileNames: string | string[],
+  config?: { ignore?: string[] }
+): null | string {
   const paths = Array.isArray(fileNames) ? fileNames : [fileNames]
   const foundFiles = fs.find({
     matching: [
@@ -121,6 +113,7 @@ export function findFile(fileNames: string | string[]): null | string {
       '!node_modules/**/*',
       '!.yalc/**/*',
       `!.${pumpkinsDotFolderName}/**/*`,
+      ...(config?.ignore?.map(i => `!${i}`) ?? []),
     ],
   })
 
@@ -131,6 +124,26 @@ export function findFile(fileNames: string | string[]): null | string {
 
   return null
 }
+
+export async function findFiles(
+  fileNames: string | string[],
+  config?: { ignore?: string[] }
+): Promise<string[]> {
+  const paths = Array.isArray(fileNames) ? fileNames : [fileNames]
+  return fs.findAsync({
+    matching: [
+      ...paths,
+      ...baseIgnores,
+      ...(config?.ignore?.map(i => `!${i}`) ?? []),
+    ],
+  })
+}
+
+export const baseIgnores = [
+  '!node_modules/**/*',
+  '!.yalc/**/*',
+  `!.${pumpkinsDotFolderName}/**/*`,
+]
 
 export const trimExt = (filePath: string, ext: string): string => {
   return path.join(path.dirname(filePath), path.basename(filePath, ext))
@@ -144,4 +157,9 @@ export function trimNodeModulesIfInPath(path: string) {
   }
 
   return path
+}
+
+export function stripExt(filePath: string): string {
+  const { dir, name } = path.parse(filePath)
+  return path.join(dir, name)
 }

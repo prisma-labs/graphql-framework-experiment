@@ -5,11 +5,7 @@ import { findProjectDir } from './path'
 
 export type NexusConfig = Nexus.core.SchemaConfig
 
-export function createNexusConfig({
-  generatedPhotonPackagePath: photonPath,
-}: {
-  generatedPhotonPackagePath: string
-}): NexusConfig {
+export function createNexusConfig(): NexusConfig {
   const projectDir = findProjectDir()
   const defaultSchemaPath = path.join(projectDir, 'schema.graphql')
   const defaultTypesPath = fs.path(

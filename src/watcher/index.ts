@@ -5,9 +5,11 @@ import * as ipc from './ipc'
 import resolveMain from './resolveMain'
 import { Callbacks, Opts, Process } from './types'
 import cfgFactory from './cfg'
-import logFactory from './log'
+import { pog } from '../utils'
 const filewatcher = require('filewatcher')
 const kill = require('tree-kill')
+
+const log = pog.sub('watcher')
 
 export function watcher(
   script: string | undefined,
@@ -16,20 +18,10 @@ export function watcher(
   opts: Opts,
   callbacks: Callbacks
 ) {
-  if (!Array.isArray(scriptArgs)) {
-    throw new TypeError('`scriptArgs` must be an array')
-  }
-
-  if (!Array.isArray(nodeArgs)) {
-    throw new TypeError('`nodeArgs` must be an array')
-  }
-
   // The child_process
   let child: Process | undefined = undefined
   const wrapper = resolveMain(__dirname + '/wrap')
   const cfg = cfgFactory(opts)
-  const log = logFactory(cfg)
-  opts.log = log
   compiler.init(opts)
 
   compiler.stop = stop
@@ -46,10 +38,14 @@ export function watcher(
   watcher.on('change', restart)
 
   watcher.on('fallback', function(limit: number) {
-    log.warn('node-dev ran out of file handles after watching %s files.', limit)
-    log.warn('Falling back to polling which uses more CPU.')
-    log.info('Run ulimit -n 10000 to increase the file descriptor limit.')
-    if (cfg.deps) log.info('... or add `--no-deps` to use less file handles.')
+    console.warn(
+      'node-dev ran out of file handles after watching %s files.',
+      limit
+    )
+    console.warn('Falling back to polling which uses more CPU.')
+    console.info('Run ulimit -n 10000 to increase the file descriptor limit.')
+    if (cfg.deps)
+      console.info('... or add `--no-deps` to use less file handles.')
   })
 
   /**
@@ -66,8 +62,7 @@ export function watcher(
     let cmd = nodeArgs.concat(wrapper, script ?? '', scriptArgs)
     const childHookPath = compiler.getChildHookPath()
     cmd = ['-r', childHookPath].concat(cmd)
-    log.debug('Starting child process %s', cmd.join(' '))
-
+    log('Starting child process %s', cmd.join(' '))
     child = fork(cmd[0], cmd.slice(1), {
       cwd: process.cwd(),
       env: {
@@ -92,7 +87,7 @@ export function watcher(
     compileReqWatcher.on('change', function(file: string) {
       fs.readFile(file, 'utf-8', function(err, data) {
         if (err) {
-          log.error('Error reading compile request file', err)
+          console.error('Error reading compile request file', err)
           return
         }
         const [compile, compiledPath] = data.split('\n')
@@ -111,7 +106,7 @@ export function watcher(
     })
 
     child.on('exit', function(code) {
-      log.debug('Child exited with code %s', code)
+      log('Child exited with code %s', code)
       if (!child) return
       if (!child.respawn) {
         process.exit(code ?? 1)
@@ -168,9 +163,9 @@ export function watcher(
 
   const killChild = () => {
     if (!child) return
-    log.debug('Sending SIGTERM kill to child pid', child.pid)
+    log('Sending SIGTERM kill to child pid', child.pid)
     if (opts['tree-kill']) {
-      log.debug('Using tree-kill')
+      log('Using tree-kill')
       kill(child.pid)
     } else {
       child.kill('SIGTERM')
@@ -184,7 +179,7 @@ export function watcher(
     child.stopping = true
     child.respawn = true
     if (child.connected === undefined || child.connected === true) {
-      log.debug('Disconnecting from child')
+      log('Disconnecting from child')
       child.disconnect()
       if (!willTerminate) {
         killChild()
@@ -194,37 +189,37 @@ export function watcher(
 
   function restart(file: string, isManualRestart: boolean) {
     if (file === compiler.tsConfigPath) {
-      log.debug('Reinitializing TS compilation')
+      log('Reinitializing TS compilation')
       compiler.init(opts)
     }
     /* eslint-disable no-octal-escape */
     if (cfg.clear) process.stdout.write('\\033[2J\\033[H')
     if (isManualRestart === true) {
-      log.debug('Restarting', 'manual restart from user')
+      log('Restarting', 'manual restart from user')
     } else {
-      log.debug('Restarting', file + ' has been modified')
+      log('Restarting', file + ' has been modified')
     }
     compiler.compileChanged(file, callbacks)
     if (starting) {
-      log.debug('Already starting')
+      log('Already starting')
       return
     }
-    log.debug('Removing all watchers from files')
+    log('Removing all watchers from files')
     watcher.removeAll()
     starting = true
     if (child) {
-      log.debug('Child is still running, restart upon exit')
+      log('Child is still running, restart upon exit')
       child.on('exit', start)
       stop()
     } else {
-      log.debug('Child is already stopped, probably due to a previous error')
+      log('Child is already stopped, probably due to a previous error')
       start()
     }
   }
 
   // Relay SIGTERM
   process.on('SIGTERM', function() {
-    log.debug('Process got SIGTERM')
+    log('Process got SIGTERM')
     killChild()
     process.exit(0)
   })
