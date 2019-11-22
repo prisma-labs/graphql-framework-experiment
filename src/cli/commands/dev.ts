@@ -1,6 +1,6 @@
 import * as path from 'path'
 import { runPrismaGenerators } from '../../framework/plugins'
-import { watcher } from '../../watcher'
+import { createWatcher } from '../../watcher'
 import { Command } from '../helpers'
 import { createStartModuleContent } from '../../framework/start'
 import { scan } from '../../framework/layout'
@@ -17,8 +17,7 @@ export class Dev implements Command {
 
     const layout = await scan()
 
-    watcher(
-      undefined,
+    createWatcher(
       [],
       [],
       {

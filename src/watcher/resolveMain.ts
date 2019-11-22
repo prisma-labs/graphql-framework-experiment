@@ -1,4 +1,4 @@
-const resolve = require('resolve').sync
+import * as Resolve from 'resolve'
 
 export default function(main: string) {
   const opts = {
@@ -7,12 +7,12 @@ export default function(main: string) {
   }
 
   try {
-    return resolve(main + '.ts', opts)
+    return Resolve.sync(main + '.ts', opts)
   } catch (e) {
     try {
-      return resolve(main + '/index.ts', opts)
+      return Resolve.sync(main + '/index.ts', opts)
     } catch (e) {
-      return resolve(main, opts)
+      return Resolve.sync(main, opts)
     }
   }
 }

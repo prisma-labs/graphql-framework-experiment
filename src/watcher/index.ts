@@ -11,20 +11,30 @@ const kill = require('tree-kill')
 
 const log = pog.sub('watcher')
 
-export function watcher(
-  script: string | undefined,
+/**
+ * Entrypoint into the watcher system.
+ * @param script
+ * @param scriptArgs
+ * @param nodeArgs
+ * @param opts
+ * @param callbacks
+ */
+export function createWatcher(
   scriptArgs: string[],
   nodeArgs: string[],
   opts: Opts,
   callbacks: Callbacks
 ) {
-  // The child_process
   let child: Process | undefined = undefined
-  const wrapper = resolveMain(__dirname + '/wrap')
-  const cfg = cfgFactory(opts)
-  compiler.init(opts)
 
+  const wrapper = resolveMain(__dirname + '/wrap')
+  log('resolved main %s', wrapper)
+
+  const cfg = cfgFactory(opts)
+
+  compiler.init(opts)
   compiler.stop = stop
+
   // Run ./dedupe.js as preload script
   if (cfg.dedupe) process.env.NODE_DEV_PRELOAD = __dirname + '/dedupe'
 
@@ -34,7 +44,9 @@ export function watcher(
     debounce: parseInt(opts.debounce!, 10),
     recursive: true,
   })
+
   let starting = false
+
   watcher.on('change', restart)
 
   watcher.on('fallback', function(limit: number) {
@@ -58,7 +70,7 @@ export function watcher(
     for (let watched of (opts.watch || '').split(',')) {
       if (watched) watcher.add(watched)
     }
-    let cmd = nodeArgs.concat(wrapper, script ?? '', scriptArgs)
+    let cmd = nodeArgs.concat(wrapper, scriptArgs)
     const childHookPath = compiler.getChildHookPath()
     cmd = ['-r', childHookPath].concat(cmd)
     log('Starting child process %s', cmd.join(' '))
