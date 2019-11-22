@@ -56,21 +56,22 @@ export function createWatcher(opts: Opts) {
   })
 
   /**
-   * Start the App Runner
+   * Start the App Runner. This occurs once on boot and then on every subsequent
+   * file change in the users's project.
    */
-  function start() {
-    log('will spawn app runner')
+  function startRunner() {
+    log('will spawn runner')
 
     // allow user to hook into start event
     opts.callbacks?.onStart?.()
 
-    const appRunnerModulePath = require.resolve('./app-runner')
+    const runnerModulePath = require.resolve('./runner')
     const childHookPath = compiler.getChildHookPath()
 
-    log('using app-runner module at %s', appRunnerModulePath)
+    log('using runner module at %s', runnerModulePath)
     log('using child-hook-path module at %s', childHookPath)
 
-    child = fork(appRunnerModulePath, ['-r', childHookPath], {
+    child = fork(runnerModulePath, ['-r', childHookPath], {
       cwd: process.cwd(),
       env: {
         ...process.env,
@@ -205,11 +206,11 @@ export function createWatcher(opts: Opts) {
     starting = true
     if (child) {
       log('Child is still running, restart upon exit')
-      child.on('exit', start)
+      child.on('exit', startRunner)
       stop()
     } else {
       log('Child is already stopped, probably due to a previous error')
-      start()
+      startRunner()
     }
   }
 
@@ -220,7 +221,7 @@ export function createWatcher(opts: Opts) {
     process.exit(0)
   })
 
-  start()
+  startRunner()
 }
 
 /**
