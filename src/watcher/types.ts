@@ -44,7 +44,6 @@ interface BooleanOpts {
   'prefer-ts'?: boolean
   debug?: boolean
   'exit-child'?: boolean
-  'tree-kill'?: boolean
 }
 
 interface StringOpts {

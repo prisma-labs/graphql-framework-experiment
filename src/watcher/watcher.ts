@@ -6,7 +6,7 @@ import { Opts, Process } from './types'
 import cfgFactory from './cfg'
 import { pog } from '../utils'
 const filewatcher = require('filewatcher')
-const treeKill = require('tree-kill')
+import treeKill from 'tree-kill'
 
 const log = pog.sub('watcher')
 
@@ -62,7 +62,7 @@ export function createWatcher(opts: Opts) {
   // Relay SIGTERM
   process.on('SIGTERM', () => {
     log('Process got SIGTERM')
-    killChild(runner, { treeKill: opts['tree-kill'] ?? false })
+    killChild(runner)
     process.exit(0)
   })
 
@@ -84,7 +84,7 @@ export function createWatcher(opts: Opts) {
       log('Disconnecting from child')
       child.disconnect()
       if (!willTerminate) {
-        killChild(child, { treeKill: opts['tree-kill'] ?? false })
+        killChild(child)
       }
     }
   }
@@ -163,19 +163,19 @@ function isRegExpMatch(value: string) {
 }
 
 /**
- * Kill the child using tree kill or vanilla sigterm.
+ * Send SIGTERM to non-exited runner using a tree-kill strategy.
  */
-function killChild(child: Process, opts: { treeKill: boolean }) {
+function killChild(child: Process): void {
   if (child.exited) return
 
-  log('sending SIGTERM kill to child pid %s', child.pid)
+  log(
+    'sending SIGTERM to runner %s and any of its descendent processes',
+    child.pid
+  )
 
-  if (opts.treeKill) {
-    log('using tree-kill')
-    treeKill(child.pid)
-  } else {
-    child.kill('SIGTERM')
-  }
+  treeKill(child.pid, error => {
+    console.warn('tree-kill ended with following error: %O', error)
+  })
 }
 
 /**

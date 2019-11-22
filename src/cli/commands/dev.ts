@@ -18,7 +18,6 @@ export class Dev implements Command {
     const layout = await scan()
 
     createWatcher({
-      'tree-kill': true,
       'transpile-only': true,
       respawn: true,
       eval: {
