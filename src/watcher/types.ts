@@ -65,7 +65,7 @@ interface StringOpts {
   interval?: string
   debounce?: string
   eval?: {
-    code: string,
+    code: string
     fileName: string
   }
 }
@@ -74,6 +74,7 @@ export interface Opts extends BooleanOpts, StringOpts {
   log?: any
   watch?: string
   priorNodeArgs?: string[]
+  callbacks?: Callbacks
 }
 
 export interface Process extends ChildProcess {

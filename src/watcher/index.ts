@@ -13,18 +13,8 @@ const log = pog.sub('watcher')
 
 /**
  * Entrypoint into the watcher system.
- * @param script
- * @param scriptArgs
- * @param nodeArgs
- * @param opts
- * @param callbacks
  */
-export function createWatcher(
-  scriptArgs: string[],
-  nodeArgs: string[],
-  opts: Opts,
-  callbacks: Callbacks
-) {
+export function createWatcher(opts: Opts) {
   let child: Process | undefined = undefined
 
   const wrapper = resolveMain(__dirname + '/wrap')
@@ -64,13 +54,11 @@ export function createWatcher(
    * Run the wrapped script.
    */
   function start() {
-    if (callbacks && callbacks.onStart) {
-      callbacks.onStart()
-    }
+    opts.callbacks?.onStart?.()
     for (let watched of (opts.watch || '').split(',')) {
       if (watched) watcher.add(watched)
     }
-    let cmd = nodeArgs.concat(wrapper, scriptArgs)
+    let cmd = [wrapper]
     const childHookPath = compiler.getChildHookPath()
     cmd = ['-r', childHookPath].concat(cmd)
     log('Starting child process %s', cmd.join(' '))
@@ -102,7 +90,7 @@ export function createWatcher(
           compiler.compile({
             compile: compile,
             compiledPath: compiledPath,
-            callbacks: callbacks,
+            callbacks: opts.callbacks,
           })
         }
       })
@@ -136,7 +124,7 @@ export function createWatcher(
         return
       }
       currentCompilePath = message.compiledPath
-      ;(message as any).callbacks = callbacks
+      ;(message as any).callbacks = opts.callbacks
       compiler.compile(message)
     })
 
@@ -197,7 +185,7 @@ export function createWatcher(
     } else {
       log('Restarting', file + ' has been modified')
     }
-    compiler.compileChanged(file, callbacks)
+    compiler.compileChanged(file, opts.callbacks ?? {})
     if (starting) {
       log('Already starting')
       return

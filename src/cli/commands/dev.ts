@@ -17,23 +17,19 @@ export class Dev implements Command {
 
     const layout = await scan()
 
-    createWatcher(
-      [],
-      [],
-      {
-        'tree-kill': true,
-        'transpile-only': true,
-        respawn: true,
-        eval: {
-          code: createStartModuleContent({
-            stage: 'dev',
-            appPath: layout.app.path,
-            layout,
-          }),
-          fileName: 'start.js',
-        },
+    createWatcher({
+      'tree-kill': true,
+      'transpile-only': true,
+      respawn: true,
+      eval: {
+        code: createStartModuleContent({
+          stage: 'dev',
+          appPath: layout.app.path,
+          layout,
+        }),
+        fileName: 'start.js',
       },
-      {
+      callbacks: {
         onStart() {
           console.log('🎃  Starting pumpkins server...')
         },
@@ -45,7 +41,7 @@ export class Dev implements Command {
             )} changed. Restarting...`
           )
         },
-      }
-    )
+      },
+    })
   }
 }
