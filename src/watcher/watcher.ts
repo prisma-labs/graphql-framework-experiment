@@ -5,8 +5,8 @@ import * as ipc from './ipc'
 import { Opts, Process } from './types'
 import cfgFactory from './cfg'
 import { pog } from '../utils'
+import { sendSigterm } from './utils'
 const filewatcher = require('filewatcher')
-import treeKill from 'tree-kill'
 
 const log = pog.sub('watcher')
 
@@ -59,12 +59,37 @@ export function createWatcher(opts: Opts) {
   // invocation was still running to completion.
   let runnerRestarting = false
 
-  // Relay SIGTERM
+  // Relay SIGTERM & SIGINT to the runner process tree
+  //
+  // TODO Currently this clean up code does not effectively run because of process.exit code
+  // inside cli index.ts
+  //
   process.on('SIGTERM', () => {
-    log('Process got SIGTERM')
-    killChild(runner)
-    process.exit(0)
+    log('process got SIGTERM')
+    stopRunnerOnBeforeExit()
   })
+
+  process.on('SIGINT', () => {
+    log('process got SIGINT')
+    stopRunnerOnBeforeExit()
+  })
+
+  function stopRunnerOnBeforeExit() {
+    if (!runner.exited) {
+      // TODO maybe we should be a timeout here so that child process hanging
+      // will never prevent pumpkins dev from exiting nicely.
+      sendSigterm(runner)
+        .then(() => {
+          log('sigterm to runner process tree completed')
+        })
+        .catch(error => {
+          console.warn(
+            'attempt to sigterm the runner process tree ended with error: %O',
+            error
+          )
+        })
+    }
+  }
 
   function startRunnerDo(): Process {
     return startRunner(opts, cfg, watcher, {
@@ -84,7 +109,16 @@ export function createWatcher(opts: Opts) {
       log('Disconnecting from child')
       child.disconnect()
       if (!willTerminate) {
-        killChild(child)
+        sendSigterm(child)
+          .then(() => {
+            log('sigterm to runner process tree completed')
+          })
+          .catch(error => {
+            console.warn(
+              'attempt to sigterm the runner process tree ended with error: %O',
+              error
+            )
+          })
       }
     }
   }
@@ -160,22 +194,6 @@ function isRegExpMatch(value: string) {
   return function(regExp: string) {
     return new RegExp(regExp).test(value)
   }
-}
-
-/**
- * Send SIGTERM to non-exited runner using a tree-kill strategy.
- */
-function killChild(child: Process): void {
-  if (child.exited) return
-
-  log(
-    'sending SIGTERM to runner %s and any of its descendent processes',
-    child.pid
-  )
-
-  treeKill(child.pid, error => {
-    console.warn('tree-kill ended with following error: %O', error)
-  })
 }
 
 /**
