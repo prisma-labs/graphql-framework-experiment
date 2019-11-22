@@ -2,8 +2,7 @@ import { fork } from 'child_process'
 import * as fs from 'fs'
 import { compiler } from './compiler'
 import * as ipc from './ipc'
-import resolveMain from './resolveMain'
-import { Callbacks, Opts, Process } from './types'
+import { Opts, Process } from './types'
 import cfgFactory from './cfg'
 import { pog } from '../utils'
 const filewatcher = require('filewatcher')
@@ -15,9 +14,6 @@ const log = pog.sub('watcher')
  * Entrypoint into the watcher system.
  */
 export function createWatcher(opts: Opts) {
-  const entrypointWrapper = resolveMain(__dirname + '/wrap')
-  log('resolved main %s', entrypointWrapper)
-
   const cfg = cfgFactory(opts)
 
   compiler.init(opts)
@@ -42,9 +38,13 @@ export function createWatcher(opts: Opts) {
     recursive: true,
   })
 
-  watcher.on('change', restart)
+  watcher.on('change', (file: string, isManualRestart: boolean) => {
+    log('file watcher change event')
+    restart(file, isManualRestart)
+  })
 
   watcher.on('fallback', function(limit: number) {
+    log('file watcher fallback event')
     console.warn(
       'node-dev ran out of file handles after watching %s files.',
       limit
@@ -56,27 +56,26 @@ export function createWatcher(opts: Opts) {
   })
 
   /**
-   * Run the wrapped script.
+   * Start the App Runner
    */
   function start() {
-    log('starting')
+    log('will spawn app runner')
 
     // allow user to hook into start event
     opts.callbacks?.onStart?.()
 
+    const appRunnerModulePath = require.resolve('./app-runner')
     const childHookPath = compiler.getChildHookPath()
 
-    log('will fork with %O', {
-      childHookPath,
-      entrypointWrapper,
-    })
+    log('using app-runner module at %s', appRunnerModulePath)
+    log('using child-hook-path module at %s', childHookPath)
 
-    child = fork(entrypointWrapper, ['-r', childHookPath], {
+    child = fork(appRunnerModulePath, ['-r', childHookPath], {
       cwd: process.cwd(),
       env: {
         ...process.env,
-        PUMPKINS_EVAL: opts.eval?.code ?? undefined,
-        PUMPKINS_EVAL_FILENAME: opts.eval?.fileName ?? undefined,
+        PUMPKINS_EVAL: opts.eval.code,
+        PUMPKINS_EVAL_FILENAME: opts.eval.fileName,
       },
     })
 

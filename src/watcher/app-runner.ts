@@ -1,16 +1,15 @@
 import { fork } from 'child_process'
 import hook from './hook'
 import * as ipc from './ipc'
-import resolveMain from './resolveMain'
 const childProcess = require('child_process')
 import cfgFactory from './cfg'
 import { Script } from 'vm'
 import Module = require('module')
 
-// Remove wrap.js from the argv array
+// Remove app-runner.js from the argv array
 process.argv.splice(1, 1)
 
-const cfg = cfgFactory({})
+const cfg = cfgFactory()
 const cwd = process.cwd()
 
 // Set NODE_ENV to 'development' unless already set
@@ -76,11 +75,8 @@ function evalScript(script: string) {
   }).runInThisContext()
 }
 
-if (process.env.PUMPKINS_EVAL) {
-  evalScript(process.env.PUMPKINS_EVAL)
-} else {
-  // Resolve the location of the main script relative to cwd
-  const main = resolveMain(process.argv[1])
-  // Execute the wrapped script
-  require(main)
+if (!process.env.PUMPKINS_EVAL) {
+  throw new Error('process.env.PUMPKINS_EVAL is required')
 }
+
+evalScript(process.env.PUMPKINS_EVAL)
