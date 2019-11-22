@@ -1,15 +1,15 @@
 import * as path from 'path'
 import { runPrismaGenerators } from '../../framework/plugins'
-import { findServerEntryPoint } from '../../utils'
 import { watcher } from '../../watcher'
-import { Command, arg, isError } from '../helpers'
-import { createBootModuleContent } from '../utils'
+import { Command } from '../helpers'
+
 import React, { Component } from 'react'
 import { render, Box, Text, StdoutContext } from 'ink'
-import { scan } from '../../framework/layout'
+import { scan, Layout } from '../../framework/layout'
+import { createStartModuleContent } from '../../framework/start'
 
 interface Props {
-  entrypoint: string | null
+  layout: Layout
 }
 
 interface State {
@@ -31,10 +31,10 @@ class DevComponent extends Component<Props, State> {
   }
 
   componentDidMount() {
-    const bootModule = createBootModuleContent({
+    const bootModule = createStartModuleContent({
       stage: 'dev',
-      sourceEntrypoint: this.props.entrypoint ?? undefined,
-      app: !this.props.entrypoint,
+      layout: this.props.layout,
+      appPath: this.props.layout.app.path,
     })
 
     watcher(
@@ -97,7 +97,7 @@ export class Dev implements Command {
 
   async parse(_argv: string[]) {
     await runPrismaGenerators()
-    const { app } = await scan()
+    const layout = await scan()
 
     // watcher(
     //   undefined,
@@ -122,7 +122,7 @@ export class Dev implements Command {
     //   }
     // )
 
-    const { waitUntilExit } = render(<DevComponent entrypoint={app.path} />)
+    const { waitUntilExit } = render(<DevComponent layout={layout} />)
 
     await waitUntilExit()
   }
