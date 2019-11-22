@@ -1,6 +1,6 @@
 import * as path from 'path'
 import { runPrismaGenerators } from '../../framework/plugins'
-import { watcher } from '../../watcher'
+import { watcher, createWatcher } from '../../watcher'
 import { Command } from '../helpers'
 
 import React, { Component } from 'react'
@@ -37,20 +37,15 @@ class DevComponent extends Component<Props, State> {
       appPath: this.props.layout.app.path,
     })
 
-    watcher(
-      undefined,
-      [],
-      [],
-      {
-        'tree-kill': true,
-        'transpile-only': true,
-        respawn: true,
-        eval: {
-          code: bootModule,
-          fileName: '__start.js',
-        },
+    createWatcher({
+      'transpile-only': true,
+      respawn: true,
+      eval: {
+        code: bootModule,
+        fileName: 'start.js',
       },
-      {
+
+      callbacks: {
         onEvent: (event, data) => {
           if (event === 'start') {
             this.setState({ lastEvent: event })
@@ -64,8 +59,8 @@ class DevComponent extends Component<Props, State> {
           if (event === 'ready') {
           }
         },
-      }
-    )
+      },
+    })
   }
 
   renderMessage() {

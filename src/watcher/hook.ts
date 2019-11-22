@@ -2,7 +2,7 @@ const vm = require('vm')
 
 export default function(
   cfg: { vm: boolean },
-  wrapper: NodeModule,
+  appRunner: NodeModule,
   callback: (file: string) => void
 ) {
   // Hook into Node's `require(...)`
@@ -53,8 +53,8 @@ export default function(
    */
   function createHook(handler: any) {
     return function nodeDevHook(module: NodeJS.Module, filename: string) {
-      if (module.parent === wrapper) {
-        // If the main module is required conceal the wrapper
+      if (module.parent === appRunner) {
+        // If the main module is required conceal the app runner
         module.id = '.'
         module.parent = null
         process.mainModule = module

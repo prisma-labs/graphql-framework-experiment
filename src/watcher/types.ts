@@ -2,7 +2,12 @@ import { ChildProcess } from 'child_process'
 
 export interface Callbacks {
   onEvent?: (
-    event: 'start' | 'restart' | 'compiled' | 'logging' | 'ready',
+    event:
+      | 'start'
+      | 'restart'
+      | 'compiled'
+      | 'logging'
+      | 'ready'
     data?: string
   ) => void
 }
@@ -49,7 +54,6 @@ interface BooleanOpts {
   'prefer-ts'?: boolean
   debug?: boolean
   'exit-child'?: boolean
-  'tree-kill'?: boolean
 }
 
 interface StringOpts {
@@ -69,7 +73,7 @@ interface StringOpts {
   'ignore-watch'?: string[]
   interval?: string
   debounce?: string
-  eval?: {
+  eval: {
     code: string
     fileName: string
   }
@@ -79,9 +83,11 @@ export interface Opts extends BooleanOpts, StringOpts {
   log?: any
   watch?: string
   priorNodeArgs?: string[]
+  callbacks?: Callbacks
 }
 
 export interface Process extends ChildProcess {
   respawn?: boolean
   stopping?: boolean
+  exited: undefined | true
 }

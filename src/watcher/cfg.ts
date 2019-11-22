@@ -5,7 +5,7 @@ function resolvePath(unresolvedPath: string) {
   return path.resolve(process.cwd(), unresolvedPath)
 }
 
-export default function(opts: Opts) {
+export default function(opts?: Omit<Opts, 'eval'>) {
   const c: any = {}
 
   // Truthy == --all-deps, false: one level of deps
@@ -33,6 +33,6 @@ export default function(opts: Opts) {
     dedupe: !!c.dedupe,
     ignore: ignore,
     respawn: c.respawn || false,
-    debug: opts.debug,
+    debug: opts?.debug,
   }
 }
