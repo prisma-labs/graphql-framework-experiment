@@ -9,11 +9,11 @@ import { pog } from '../utils'
 const log = pog.sub('cli')
 
 process.on('uncaughtException', e => {
-  log(e)
+  console.error(e)
 })
 
 process.on('unhandledRejection', e => {
-  log(e)
+  console.error(e)
 })
 
 process.on('SIGINT', () => {
@@ -67,15 +67,4 @@ async function main(): Promise<number> {
 /**
  * Run our program
  */
-if (require.main === module) {
-  main()
-    .then(code => {
-      if (code !== 0) {
-        process.exit(code)
-      }
-    })
-    .catch(err => {
-      console.error(chalk.redBright.bold('Error: ') + err.stack)
-      process.exit(1)
-    })
-}
+main()
