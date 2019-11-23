@@ -1,5 +1,4 @@
 #!/usr/bin/env ts-node
-import debugLib from 'debug'
 import { CLI } from './helpers/CLI'
 import * as Commands from './commands'
 import { HelpError } from './helpers'
@@ -7,12 +6,24 @@ import { isError } from 'util'
 import chalk from 'chalk'
 import { pog } from '../utils'
 
-const debug = debugLib('prisma')
+const log = pog.sub('cli')
+
 process.on('uncaughtException', e => {
-  debug(e)
+  log(e)
 })
+
 process.on('unhandledRejection', e => {
-  debug(e)
+  log(e)
+})
+
+process.on('SIGINT', () => {
+  log('got SIGINT')
+  process.exit(0) // now the "exit" event will fire
+})
+
+process.on('SIGTERM', () => {
+  log('got SIGTERM')
+  process.exit(0) // now the "exit" event will fire
 })
 
 // warnings: no tanks
@@ -28,14 +39,16 @@ async function main(): Promise<number> {
 
   // create a new CLI with our subcommands
   const cli = CLI.new({
-    dev: Commands.Dev.new(),
+    dev: new Commands.Dev(),
     build: Commands.Build.new(),
     generate: Commands.Generate.new(),
     doctor: Commands.Doctor.new(),
     init: Commands.Init.new(),
   })
+
   // parse the arguments
   const result = await cli.parse(process.argv.slice(2))
+
   if (result instanceof HelpError) {
     console.error(result.message)
     return 1
@@ -43,24 +56,13 @@ async function main(): Promise<number> {
     console.error(result)
     return 1
   }
+
   if (result) {
     console.log(result)
   }
 
   return 0
 }
-
-const log = pog.sub('cli')
-
-process.on('SIGINT', () => {
-  log('got SIGINT')
-  process.exit(0) // now the "exit" event will fire
-})
-
-process.on('SIGTERM', () => {
-  log('got SIGTERM')
-  process.exit(0) // now the "exit" event will fire
-})
 
 /**
  * Run our program

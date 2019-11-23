@@ -1,21 +1,67 @@
 import * as path from 'path'
 import { runPrismaGenerators } from '../../framework/plugins'
-import { watcher, createWatcher } from '../../watcher'
+import { createWatcher } from '../../watcher'
 import { Command } from '../helpers'
 
 import React, { Component } from 'react'
-import { render, Box, Text, StdoutContext } from 'ink'
+import { render, Box, Text } from 'ink'
 import { scan, Layout } from '../../framework/layout'
 import { createStartModuleContent } from '../../framework/start'
+import { pog } from '../../utils'
+import * as fs from 'fs'
+import { ForkOptions } from 'child_process'
+
+const log = pog.sub('cli:dev')
+
+export class Dev implements Command {
+  async parse(_argv: string[]) {
+    const output = fs.createWriteStream('./stdout.log')
+    const errorOutput = fs.createWriteStream('./stderr.log')
+    const logger = new console.Console(output, errorOutput, false)
+    // TODO allow time for write streams "open" event
+    // await new Promise(resolve => setTimeout(resolve, 1000))
+    console.log = logger.log.bind(logger)
+    console.warn = logger.warn.bind(logger)
+    console.error = logger.error.bind(logger)
+    console.debug = logger.debug.bind(logger)
+    console.dir = logger.dir.bind(logger)
+    console.log('hello world')
+    require('debug').log = console.log
+    log('goodbye world')
+
+    // Right now dev mode assumes a tty and renders according to its height and
+    // width for example. This check is not strictly needed but keeps things
+    // simple for now. When we remove this constraint we should also optimize
+    // the dev mode to stop providing a rich resource intensive terminal ui.
+    if (process.stdout.isTTY === false) {
+      console.log(
+        'Sorry we do not support dev mode processes without an attached text terminal (tty)'
+      )
+      process.exit(0)
+    }
+
+    await runPrismaGenerators()
+    const layout = await scan()
+    const { waitUntilExit } = render(
+      <DevComponent
+        layout={layout}
+        runnerSTDIO={['ipc', output, errorOutput]}
+      />
+    )
+    await waitUntilExit()
+  }
+}
 
 interface Props {
   layout: Layout
+  runnerSTDIO: ForkOptions['stdio']
 }
 
 interface State {
   lastEvent: 'start' | 'restart' | 'compiled'
   fileName?: string
   logBuffer: string
+  i: number
 }
 
 class DevComponent extends Component<Props, State> {
@@ -25,9 +71,8 @@ class DevComponent extends Component<Props, State> {
     this.state = {
       lastEvent: 'start',
       logBuffer: ' ',
+      i: 0,
     }
-
-    this.renderMessage = this.renderMessage.bind(this)
   }
 
   componentDidMount() {
@@ -44,9 +89,10 @@ class DevComponent extends Component<Props, State> {
         code: bootModule,
         fileName: 'start.js',
       },
-
+      stdio: this.props.runnerSTDIO,
       callbacks: {
         onEvent: (event, data) => {
+          console.log('event', event)
           if (event === 'start') {
             this.setState({ lastEvent: event })
           }
@@ -61,64 +107,49 @@ class DevComponent extends Component<Props, State> {
         },
       },
     })
+    setInterval(() => {
+      this.setState({ i: this.state.i + 1 })
+    }, 1000)
   }
 
-  renderMessage() {
+  renderMessage = () => {
     if (this.state.lastEvent === 'start') {
       return '🎃  Starting pumpkins server...'
     }
     if (this.state.lastEvent === 'restart') {
-      return `🎃  ${path.relative(
-        process.cwd(),
-        this.state.fileName!
-      )} changed. Restarting...`
+      const relativePath = path.relative(process.cwd(), this.state.fileName!)
+      return `🎃  ${relativePath} changed. Restarting...`
     }
   }
 
   render() {
+    log(
+      'render -- terminal w x h = %s x %s',
+      process.stdout.rows,
+      process.stdout.columns
+    )
     return (
-      <Box>
-        <Text>Status: {this.renderMessage()}</Text>
-        <Text>{this.state.logBuffer}</Text>
+      <Box
+        flexDirection="column"
+        height={process.stdout.rows - 1}
+        width={process.stdout.columns - 1}
+      >
+        <Box>
+          <Text>{this.state.i}</Text>
+        </Box>
+        <Box>
+          <Text>{this.state.i}</Text>
+        </Box>
+        <Box>
+          <Text>{this.state.i}</Text>
+        </Box>
+        <Box>
+          <Text>{this.state.i}</Text>
+        </Box>
+        <Box>
+          <Text>{this.state.i}</Text>
+        </Box>
       </Box>
     )
-  }
-}
-
-export class Dev implements Command {
-  public static new(): Dev {
-    return new Dev()
-  }
-
-  async parse(_argv: string[]) {
-    await runPrismaGenerators()
-    const layout = await scan()
-
-    // watcher(
-    //   undefined,
-    //   [],
-    //   [],
-    //   {
-    //     'tree-kill': true,
-    //     'transpile-only': true,
-    //     respawn: true,
-    //     eval: {
-    //       code: createBootModuleContent({
-    //         stage: 'dev',
-    //         app: true,
-    //       }),
-    //       fileName: '__start.js',
-    //     },
-    //   },
-    //   {
-    //     onEvent: (event, data) => {
-    //       console.log(event, data)
-    //     },
-    //   }
-    // )
-
-    const { waitUntilExit } = render(<DevComponent layout={layout} />)
-
-    await waitUntilExit()
   }
 }

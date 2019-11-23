@@ -36,7 +36,7 @@ export function createWatcher(opts: Opts) {
 
   watcher.on('change', (file: string, isManualRestart: boolean) => {
     log('file watcher change event')
-    restartRunner(runner, file, isManualRestart)
+    restartRunner(file, isManualRestart)
   })
 
   watcher.on('fallback', function(limit: number) {
@@ -123,11 +123,7 @@ export function createWatcher(opts: Opts) {
     }
   }
 
-  function restartRunner(
-    child: Process,
-    file: string,
-    isManualRestart: boolean
-  ) {
+  function restartRunner(file: string, isManualRestart: boolean) {
     if (file === compiler.tsConfigPath) {
       log('reinitializing TS compilation')
       compiler.init(opts)
@@ -219,7 +215,8 @@ function startRunner(
 
   const child = fork(runnerModulePath, ['-r', childHookPath], {
     cwd: process.cwd(),
-    silent: true,
+    stdio: opts.stdio,
+    // silent: true,
     env: {
       ...process.env,
       PUMPKINS_EVAL: opts.eval.code,

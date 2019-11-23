@@ -1,13 +1,8 @@
-import { ChildProcess } from 'child_process'
+import { ChildProcess, ForkOptions } from 'child_process'
 
 export interface Callbacks {
   onEvent?: (
-    event:
-      | 'start'
-      | 'restart'
-      | 'compiled'
-      | 'logging'
-      | 'ready'
+    event: 'start' | 'restart' | 'compiled' | 'logging' | 'ready',
     data?: string
   ) => void
 }
@@ -84,6 +79,7 @@ export interface Opts extends BooleanOpts, StringOpts {
   watch?: string
   priorNodeArgs?: string[]
   callbacks?: Callbacks
+  stdio?: ForkOptions['stdio']
 }
 
 export interface Process extends ChildProcess {
