@@ -267,7 +267,7 @@ const getGenerators = async (schemaPath: string) => {
     photonjs: {
       // HACK (see var declaration LOC)
       outputPath: GENERATED_PHOTON_OUTPUT_PATH,
-      generatorPath: require.resolve('@prisma/photon/dist'),
+      generatorPath: require.resolve('@prisma/photon/generator-build'),
     },
   }
 
