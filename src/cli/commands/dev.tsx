@@ -56,7 +56,7 @@ export class Dev implements Command {
 
       // "Raw" mode so we must do our own kill switch
       if (key.sequence === '\u0003') {
-        process.exit()
+        process.emit('SIGTERM' as any)
       }
 
       if (data === 'd') {

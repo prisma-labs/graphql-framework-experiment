@@ -61,18 +61,22 @@ export function createWatcher(opts: Opts) {
 
   // Relay SIGTERM & SIGINT to the runner process tree
   //
-  // TODO Currently this clean up code does not effectively run because of process.exit code
-  // inside cli index.ts
-  //
   process.on('SIGTERM', () => {
     log('process got SIGTERM')
-    stopRunnerOnBeforeExit()
+    stopRunnerOnBeforeExit().then(() => {
+      process.exit()
+    })
   })
 
   process.on('SIGINT', () => {
     log('process got SIGINT')
-    stopRunnerOnBeforeExit()
+    stopRunnerOnBeforeExit().then(() => {
+      process.exit()
+    })
   })
+  // process.on('exit', () => {
+  //   stopRunnerOnBeforeExit()
+  // })
 
   function startRunnerDo(): Process {
     return startRunner(opts, cfg, watcher, {
@@ -83,20 +87,20 @@ export function createWatcher(opts: Opts) {
   }
 
   function stopRunnerOnBeforeExit() {
-    if (!runner.exited) {
-      // TODO maybe we should be a timeout here so that child process hanging
-      // will never prevent pumpkins dev from exiting nicely.
-      sendSigterm(runner)
-        .then(() => {
-          log('sigterm to runner process tree completed')
-        })
-        .catch(error => {
-          console.warn(
-            'attempt to sigterm the runner process tree ended with error: %O',
-            error
-          )
-        })
-    }
+    if (runner.exited) return Promise.resolve()
+
+    // TODO maybe we should be a timeout here so that child process hanging
+    // will never prevent pumpkins dev from exiting nicely.
+    return sendSigterm(runner)
+      .then(() => {
+        log('sigterm to runner process tree completed')
+      })
+      .catch(error => {
+        console.warn(
+          'attempt to sigterm the runner process tree ended with error: %O',
+          error
+        )
+      })
   }
 
   function stopRunner(child: Process, willTerminate?: boolean) {
