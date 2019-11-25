@@ -1,6 +1,6 @@
 {
   "name": "pumpkins",
-  "version": "0.0.0-sha.c85e2f5",
+  "version": "0.0.0-sha.fcf5a3d",
   "author": "Prisma Labs",
   "bin": {
     "pumpkins": "dist/cli/index.js"
@@ -67,14 +67,15 @@
   "repository": "prisma-labs/pumpkins",
   "scripts": {
     "publish:sha": "yarn publish --tag sha --no-git-tag-version --new-version \"0.0.0-sha.$(git show -s head --format='%h')\"",
+    "publish:pr": "test \"$PR\" && yarn publish --tag pr.${PR} --no-git-tag-version --new-version \"0.0.0-pr.${PR}.$(git show -s head --format='%h')\"",
     "format": "prettier --write '*/**/*.ts'",
     "build": "yarn -s clean && tsc -b",
     "build:doc": "doctoc README.md --notitle",
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
     "postpack": "yarn -s clean",
     "prepack": "yarn -s build",
-    "test": "jest --verbose --testTimeout 50000",
-    "test:dev": "jest --watch --verbose --testTimeout 50000",
+    "test": "jest --verbose --testTimeout 120000",
+    "test:dev": "jest --watch --verbose --testTimeout 120000",
     "dev": "tsc -b -w"
   },
   "prettier": {
