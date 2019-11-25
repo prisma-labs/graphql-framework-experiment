@@ -33,6 +33,9 @@ export function createWorkspace(config: Options): Workspace {
   return ws
 }
 
+// TODO if errors occur during workspace creation then the cache will be hit
+// next time but actual contents not suitable for use. Make the system more robust!
+
 /**
  * Core workspace creator, decoupled from jest.
  */
@@ -41,11 +44,14 @@ async function doCreateWorkspace(config: Options): Promise<Workspace> {
   // Setup Dir
   //
   const dir = {} as Workspace['dir']
-  const cacheKey = `v4-${
-    jetpack.inspect('yarn.lock', {
-      checksum: 'md5',
-    })!.md5
-  }-v${config.cacheVersion ?? '1'}`
+  const yarnLockHash = jetpack.inspect('yarn.lock', {
+    checksum: 'md5',
+  })!.md5
+  const testVer = config.cacheVersion ?? '1'
+  const currentGitBranch = (
+    await createGit().raw(['rev-parse', '--abbrev-ref', 'HEAD'])
+  ).trim()
+  const cacheKey = `v4-yarnlock-${yarnLockHash}-gitbranch-${currentGitBranch}-testv${testVer}`
 
   dir.path = `/tmp/pumpkins-integration-test-project-bases/${config.name}-${cacheKey}`
 
