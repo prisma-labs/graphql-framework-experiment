@@ -1,3 +1,5 @@
+// TODO boot and query to take integration test confidence even further
+
 import { createWorkspace } from '../__helpers'
 
 const ws = createWorkspace({
@@ -20,7 +22,24 @@ it('can build with just a schema module', () => {
   const result = ws.run('yarn -s pumpkins build')
   expect(result).toMatchSnapshot()
   expect(ws.fs.inspectTree('dist')).toMatchSnapshot()
-  // TODO ws.run('node dist/start') ...
+})
+
+it('can build with just a schema folder of modules', () => {
+  ws.fs.write(
+    'schema/a.ts',
+    `
+      objectType({
+        name: 'A',
+        definition(t) {
+          t.string('a')
+        }
+      })
+    `
+  )
+
+  const result = ws.run('yarn -s pumpkins build')
+  expect(result).toMatchSnapshot()
+  expect(ws.fs.inspectTree('dist')).toMatchSnapshot()
 })
 
 it('can build with schema + app modules', () => {
@@ -41,7 +60,6 @@ it('can build with schema + app modules', () => {
   const result = ws.run('yarn -s pumpkins build')
   expect(result).toMatchSnapshot()
   expect(ws.fs.inspectTree('dist')).toMatchSnapshot()
-  // TODO ws.run('node dist/start') ...
 })
 
 it('can build a plugin', () => {
@@ -104,7 +122,6 @@ it('can build a plugin', () => {
   const result = ws.run('yarn -s pumpkins build')
   expect(result).toMatchSnapshot()
   expect(ws.fs.inspectTree('dist')).toMatchSnapshot()
-  // TODO ws.run('node dist/start') ...
 })
 
 it.skip('can build a prisma framework project', () => {
@@ -141,5 +158,42 @@ it.skip('can build a prisma framework project', () => {
   const result = ws.run('yarn -s pumpkins build')
   expect(result).toMatchSnapshot()
   expect(ws.fs.inspectTree('dist')).toMatchSnapshot()
-  // TODO ws.run('node dist/start') ...
+})
+
+describe('schema alias term "graphql"', () => {
+  it('can build with just a graphql module', () => {
+    ws.fs.write(
+      'graphql.ts',
+      `
+        objectType({
+          name: 'A',
+          definition(t) {
+            t.string('a')
+          }
+        })
+      `
+    )
+
+    const result = ws.run('yarn -s pumpkins build')
+    expect(result).toMatchSnapshot()
+    expect(ws.fs.inspectTree('dist')).toMatchSnapshot()
+  })
+
+  it('can build with just a graphql folder of modules', () => {
+    ws.fs.write(
+      'graphql/a.ts',
+      `
+      objectType({
+        name: 'A',
+        definition(t) {
+          t.string('a')
+        }
+      })
+    `
+    )
+
+    const result = ws.run('yarn -s pumpkins build')
+    expect(result).toMatchSnapshot()
+    expect(ws.fs.inspectTree('dist')).toMatchSnapshot()
+  })
 })
