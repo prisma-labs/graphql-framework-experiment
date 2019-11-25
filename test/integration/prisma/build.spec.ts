@@ -38,5 +38,4 @@ it('can build a prisma framework project', () => {
   const result = ws.run('yarn -s pumpkins build')
   expect(result).toMatchSnapshot()
   expect(ws.fs.inspectTree('dist')).toMatchSnapshot()
-  // TODO ws.run('node dist/start') ...
 })

@@ -35,7 +35,6 @@ const log = pog.sub(__filename)
 // 1. https://prisma-company.slack.com/archives/C8AKVD5HU/p1574267904197600
 // 2. https://prisma-company.slack.com/archives/CEYCG2MCN/p1574267824465700
 const GENERATED_PHOTON_OUTPUT_PATH = fs.path('node_modules/@prisma/photon')
-// require.resolve('@prisma/photon')
 
 export const createPrismaPlugin: () => Plugin = () => {
   // TODO plugin api for .pumpkins sandboxed fs access
@@ -235,16 +234,9 @@ export async function runPrismaGenerators(
     console.log('🎃  Running Prisma generators ...')
   }
 
-  console.log(1)
   const generators = await getGenerators(prisma.schemaPath)
-  console.log(2)
 
   for (const g of generators) {
-    // // HACK (see var declaration LOC)
-    // if (g.manifest?.prettyName === 'Photon.js') {
-    //   g.options!.generator.output = GENERATED_PHOTON_OUTPUT_PATH
-    // }
-
     const resolvedSettings = getGeneratorResolvedSettings(g)
 
     log(
