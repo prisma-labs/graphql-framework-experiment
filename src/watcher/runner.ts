@@ -49,7 +49,12 @@ if (cfg.fork) {
   }
 }
 
+// TODO perhaps we should move these unhandled error/rejections
+// to start module because we probably want them just as much from production as
+// we do for development.
+
 // Error handler that displays a notification and logs the stack to stderr:
+
 let caught = false
 process.on('uncaughtException', function(err) {
   // Handle exepection only once
@@ -65,6 +70,33 @@ process.on('uncaughtException', function(err) {
   ipc.send({
     error: isTsError ? '' : err.name || 'Error',
     stack: err.stack,
+    willTerminate: hasCustomHandler,
+  })
+})
+
+// unhandled rejection will get whatever value the user rejected with, which
+// could be anything, sadly.
+//
+let rejected = false
+process.on('unhandledRejection', function(err: any) {
+  // Handle exepection only once
+  if (rejected) return
+  rejected = true
+  const stack = err?.stack ?? ''
+  const name = err?.name ?? 'Error'
+  const message = err?.message ?? ''
+  // If there's a custom uncaughtException handler expect it to terminate
+  // the process.
+  // TODO we should not ASSUME that it will terminate...unless our framework
+  // guarantees that :)
+  const hasCustomHandler = process.listeners('uncaughtException').length > 1
+  const isTsError = /TypeScript/.test(message)
+  if (!hasCustomHandler && !isTsError) {
+    console.error(stack || err)
+  }
+  ipc.send({
+    error: isTsError ? '' : name,
+    stack,
     willTerminate: hasCustomHandler,
   })
 })
