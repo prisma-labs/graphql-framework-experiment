@@ -74,6 +74,14 @@ export function createWatcher(opts: Opts) {
     stopRunnerOnBeforeExit()
   })
 
+  function startRunnerDo(): Process {
+    return startRunner(opts, cfg, watcher, {
+      onError: willTerminate => {
+        stopRunner(runner, willTerminate)
+      },
+    })
+  }
+
   function stopRunnerOnBeforeExit() {
     if (!runner.exited) {
       // TODO maybe we should be a timeout here so that child process hanging
@@ -89,14 +97,6 @@ export function createWatcher(opts: Opts) {
           )
         })
     }
-  }
-
-  function startRunnerDo(): Process {
-    return startRunner(opts, cfg, watcher, {
-      onError: willTerminate => {
-        stopRunner(runner, willTerminate)
-      },
-    })
   }
 
   function stopRunner(child: Process, willTerminate?: boolean) {
@@ -200,7 +200,7 @@ function startRunner(
   opts: Opts,
   cfg: ReturnType<typeof cfgFactory>,
   watcher: any,
-  callbacks?: { onError?: (willTerminate: any) => void } & Callbacks
+  callbacks?: { onError?: (willTerminate: any) => void }
 ): Process {
   log('will spawn runner')
 
@@ -215,8 +215,7 @@ function startRunner(
 
   const child = fork(runnerModulePath, ['-r', childHookPath], {
     cwd: process.cwd(),
-    stdio: opts.stdio,
-    // silent: true,
+    silent: true,
     env: {
       ...process.env,
       PUMPKINS_EVAL: opts.eval.code,
@@ -224,9 +223,18 @@ function startRunner(
     },
   }) as Process
 
-  child.stdout?.on('data', chunk => {
-    if (callbacks?.onEvent) {
-      callbacks.onEvent?.('logging', chunk.toString())
+  // stdout & stderr are guaranteed becuase we do not permit fork stdio to be
+  // configured with anything else than `pipe`.
+  //
+  child.stdout!.on('data', chunk => {
+    if (opts.callbacks?.onEvent) {
+      opts.callbacks.onEvent?.('logging', chunk.toString())
+    }
+  })
+
+  child.stderr!.on('data', chunk => {
+    if (opts.callbacks?.onEvent) {
+      opts.callbacks.onEvent?.('logging', chunk.toString())
     }
   })
 
@@ -235,6 +243,7 @@ function startRunner(
   fs.writeFileSync(compiler.getCompileReqFilePath(), '')
   compileReqWatcher.add(compiler.getCompileReqFilePath())
   compileReqWatcher.on('change', function(file: string) {
+    log('compileReqWatcher event change %s', file)
     fs.readFile(file, 'utf-8', function(err, data) {
       if (err) {
         console.error('error reading compile request file', err)
@@ -255,7 +264,7 @@ function startRunner(
     })
   })
 
-  child.on('exit', function(code, signal) {
+  child.on('exit', (code, signal) => {
     log('runner exiting')
     if (code === null) {
       log('runner did not exit on its own accord')
@@ -285,26 +294,37 @@ function startRunner(
     watcher.add(compiler.tsConfigPath)
   }
 
-  ipc.on(child, 'compile', function(message: {
-    compiledPath: string
-    compile: string
-  }) {
-    if (!message.compiledPath || currentCompilePath === message.compiledPath) {
-      return
+  ipc.on(
+    child,
+    'compile',
+    (message: { compiledPath: string; compile: string }) => {
+      log('got runner message "compile" %s', message)
+      if (
+        !message.compiledPath ||
+        currentCompilePath === message.compiledPath
+      ) {
+        return
+      }
+      currentCompilePath = message.compiledPath
+      ;(message as any).callbacks = opts.callbacks
+      compiler.compile({ ...message, callbacks: opts.callbacks ?? {} })
     }
-    currentCompilePath = message.compiledPath
-    ;(message as any).callbacks = opts.callbacks
-    compiler.compile({ ...message, callbacks: callbacks ?? {} })
-  })
+  )
 
   // Listen for `required` messages and watch the required file.
-  ipc.on(child, 'required', function(m) {
+  ipc.on(child, 'required', function(message) {
+    // This log is commented out because it is very noisey if e.g. node_modules
+    // are being watched––and not very interesting
+    // log('got runner message "required" %s', message)
     const isIgnored =
-      cfg.ignore.some(isPrefixOf(m.required)) ||
-      cfg.ignore.some(isRegExpMatch(m.required))
+      cfg.ignore.some(isPrefixOf(message.required)) ||
+      cfg.ignore.some(isRegExpMatch(message.required))
 
-    if (!isIgnored && (cfg.deps === -1 || getLevel(m.required) <= cfg.deps)) {
-      watcher.add(m.required)
+    if (
+      !isIgnored &&
+      (cfg.deps === -1 || getLevel(message.required) <= cfg.deps)
+    ) {
+      watcher.add(message.required)
     }
   })
 
@@ -315,8 +335,9 @@ function startRunner(
   })
 
   ipc.on(child, 'ready', message => {
-    if (callbacks?.onEvent) {
-      callbacks?.onEvent('ready')
+    log('got runner message "ready" %s', message)
+    if (opts.callbacks?.onEvent) {
+      opts.callbacks?.onEvent('ready')
     }
   })
 

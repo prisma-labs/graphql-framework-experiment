@@ -2,34 +2,22 @@ import * as path from 'path'
 import { runPrismaGenerators } from '../../framework/plugins'
 import { createWatcher } from '../../watcher'
 import { Command } from '../helpers'
+import * as readline from 'readline'
 
 import React, { Component, useState } from 'react'
-import { render, Box, Text, useInput, Key } from 'ink'
+import { render, Box, Text, useInput, Key, Static, Instance } from 'ink'
 import { scan, Layout } from '../../framework/layout'
 import { createStartModuleContent } from '../../framework/start'
-import { pog } from '../../utils'
+import { pog, readTsConfig } from '../../utils'
 import * as fs from 'fs'
 import { ForkOptions } from 'child_process'
+import { resolve } from 'dns'
 // import StyledBox from 'ink-box'
 
 const log = pog.sub('cli:dev')
 
 export class Dev implements Command {
   async parse(_argv: string[]) {
-    // Capture all debug and console.log output
-    // We could use a seperate file for stderr but this just seems to make it
-    // harder to tail in combination with stdout. If we think about how the
-    // experience of observing logs from an app in a tty typically works the
-    // separation of stderr and stdout is not done. So lets not do it here.
-    const output = fs.createWriteStream('./std_out_and_err.log')
-    const logger = new console.Console(output, output, false)
-    console.log = logger.log.bind(logger)
-    console.warn = logger.warn.bind(logger)
-    console.error = logger.error.bind(logger)
-    console.debug = logger.debug.bind(logger)
-    console.dir = logger.dir.bind(logger)
-    require('debug').log = console.log
-
     // Right now dev mode assumes a tty and renders according to its height and
     // width for example. This check is not strictly needed but keeps things
     // simple for now. When we remove this constraint we should also optimize
@@ -41,50 +29,150 @@ export class Dev implements Command {
       process.exit(0)
     }
 
-    await runPrismaGenerators()
     const layout = await scan()
 
-    const { waitUntilExit } = render(
-      <DevMode layout={layout} runnerSTDIO={['ipc', output, output]} />
-    )
-    await waitUntilExit()
+    // Setup ui/log toggling system
+    let state:
+      | { logMode: false; inkApp: Instance }
+      | { logMode: true; inkApp: null } = {
+      logMode: true,
+      inkApp: null,
+      // logMode: false,
+      // inkApp: render(<DevMode layout={layout} />),
+    }
+
+    // Readline lets us tap into the process events
+
+    // Allows us to listen for events from stdin
+    readline.emitKeypressEvents(process.stdin)
+
+    // Raw mode gets rid of standard keypress events and other
+    // functionality Node.js adds by default
+    process.stdin.setRawMode(true)
+
+    // Start the keypress listener for the process
+    process.stdin.on('keypress', async (data, key) => {
+      log('got keypress %s %s', data, key)
+
+      // "Raw" mode so we must do our own kill switch
+      if (key.sequence === '\u0003') {
+        process.exit()
+      }
+
+      if (data === 'd') {
+        if (state.logMode === false) {
+          log('entering log mode')
+          state.inkApp.unmount()
+          state = {
+            logMode: true,
+            inkApp: null,
+          }
+          await new Promise(resolve =>
+            readline.cursorTo(process.stdout, 0, 0, resolve)
+          )
+          await new Promise(resolve =>
+            readline.clearScreenDown(process.stdout, resolve)
+          )
+          await new Promise(resolve =>
+            readline.clearLine(process.stdout, 0, resolve)
+          )
+        } else {
+          log('entering ui mode')
+          state = {
+            logMode: false,
+            inkApp: render(<DevMode layout={layout} />),
+          }
+        }
+      }
+    })
+
+    // TODO
+    // await runPrismaGenerators()
+
+    const bootModule = createStartModuleContent({
+      stage: 'dev',
+      layout: layout,
+      appPath: layout.app.path,
+    })
+
+    createWatcher({
+      'transpile-only': true,
+      respawn: true,
+      eval: {
+        code: bootModule,
+        fileName: 'start.js',
+      },
+      callbacks: {
+        onEvent: (event, data) => {
+          if (state.logMode && event === 'logging' && data !== undefined) {
+            process.stdout.write(data)
+          }
+        },
+      },
+    })
   }
 }
 
 interface Props {
   layout: Layout
-  runnerSTDIO: ForkOptions['stdio']
 }
 
-interface State {
-  lastEvent: 'start' | 'restart' | 'compiled'
-  fileName?: string
-  lastInput?: string
-  logBuffer: string
-  i: number
-}
+type Mode = 'dashboard' | 'logs'
+
+// interface State {
+//   mode:
+//   lastEvent: 'start' | 'restart' | 'compiled'
+//   fileName?: string
+//   lastInput?: string
+//   logBuffer: string
+//   i: number
+// }
 
 const DevMode: React.FC<Props> = props => {
-  const [lastInput, updateLastUpdate] = useState<null | {
-    charOrPaste: string
-    keys: Key
-  }>(null)
+  const [mode, updateMode] = useState<null | Mode>(null)
 
-  useInput((charOrPaste, keys) => {
-    log('got input "%s" with modifier keys %O', charOrPaste, keys)
-    updateLastUpdate({ charOrPaste, keys })
-  })
+  // useInput((charOrPaste, keys) => {
+  //   log('got input "%s" with modifier keys %O', charOrPaste, keys)
+  //   switch (charOrPaste) {
+  //     case 'd':
+  //       updateMode('dashboard')
+  //       break
+  //     case 'l':
+  //       updateMode('logs')
+  //       break
+  //     default:
+  //       console.error(
+  //         'The given input is not associated with any action: "%s"',
+  //         charOrPaste
+  //       )
+  //   }
+  // })
+
+  let content: any
+
+  if (mode === 'logs') {
+    return <Text>...logs...</Text>
+  } else {
+    content = (
+      <Box flexDirection="column">
+        <Box>Nexus Typegen</Box>
+        <Box>Server</Box>
+      </Box>
+    )
+  }
 
   return (
     <Box
       flexDirection="column"
-      height={process.stdout.rows - 0}
-      width={process.stdout.columns - 0}
+      height={process.stdout.rows - 1}
+      width={process.stdout.columns}
     >
-      {/* <StyledBox borderStyle="round" borderColor="cyan" padding={1}>
-        {JSON.stringify(lastInput)}
-      </StyledBox> */}
-      <Box>hello world</Box>
+      <Box flexDirection="column" textWrap="wrap">
+        <Box key="title" paddingBottom={1}>
+          Pumpkins Development Dashboard (d to toggle)
+        </Box>
+      </Box>
+      {content}
     </Box>
   )
 }

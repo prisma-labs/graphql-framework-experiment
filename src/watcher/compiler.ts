@@ -5,7 +5,10 @@ import * as path from 'path'
 import { register } from 'ts-node'
 import { resolveSync } from 'tsconfig'
 import { Compiler, Opts } from './types'
+import { pog } from '../utils'
 const getCompiledPath = require('./get-compiled-path').default
+
+const log = pog.sub('cli:dev:compiler')
 
 let sourceMapSupportPath = require
   .resolve('source-map-support')
@@ -225,12 +228,7 @@ export const compiler: Compiler = {
     tsHandler(m, fileName)
     try {
       m._compile(code, fileName)
-      console.log(
-        fileName,
-        'compiled in',
-        new Date().getTime() - starTime,
-        'ms'
-      )
+      log('%s compiled in %s ms', fileName, new Date().getTime() - starTime)
       if (params.callbacks && params.callbacks.onEvent) {
         params.callbacks.onEvent('compiled', fileName)
       }
