@@ -1,6 +1,6 @@
 {
   "name": "pumpkins",
-  "version": "0.0.0-sha.c85e2f5",
+  "version": "0.0.0-sha.3a921da",
   "author": "Prisma Labs",
   "bin": {
     "pumpkins": "dist/cli/index.js"
