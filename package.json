@@ -70,8 +70,8 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
     "postpack": "yarn -s clean",
     "prepack": "yarn -s build",
-    "test": "jest --verbose --testTimeout 50000",
-    "test:dev": "jest --watch --verbose --testTimeout 50000",
+    "test": "jest --verbose --testTimeout 120000",
+    "test:dev": "jest --watch --verbose --testTimeout 120000",
     "dev": "tsc -b -w"
   },
   "prettier": {

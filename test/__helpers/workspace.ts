@@ -33,6 +33,9 @@ export function createWorkspace(config: Options): Workspace {
   return ws
 }
 
+// TODO if errors occur during workspace creation then the cache will be hit
+// next time but actual contents not suitable for use. Make the system more robust!
+
 /**
  * Core workspace creator, decoupled from jest.
  */
@@ -45,7 +48,7 @@ async function doCreateWorkspace(config: Options): Promise<Workspace> {
     checksum: 'md5',
   })!.md5
   const testVer = config.cacheVersion ?? '1'
-  const currentGitBranch = createGit().raw([
+  const currentGitBranch = await createGit().raw([
     'rev-parse',
     '--abbrev-ref',
     'HEAD',
