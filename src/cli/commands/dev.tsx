@@ -10,9 +10,6 @@ import { scan, Layout } from '../../framework/layout'
 import { createStartModuleContent } from '../../framework/start'
 import { pog, readTsConfig } from '../../utils'
 import * as fs from 'fs'
-import { ForkOptions } from 'child_process'
-import { resolve } from 'dns'
-// import StyledBox from 'ink-box'
 
 const log = pog.sub('cli:dev')
 
@@ -37,11 +34,7 @@ export class Dev implements Command {
       | { logMode: true; inkApp: null } = {
       logMode: true,
       inkApp: null,
-      // logMode: false,
-      // inkApp: render(<DevMode layout={layout} />),
     }
-
-    // Readline lets us tap into the process events
 
     // Allows us to listen for events from stdin
     readline.emitKeypressEvents(process.stdin)
@@ -67,6 +60,7 @@ export class Dev implements Command {
             logMode: true,
             inkApp: null,
           }
+          // https://github.com/vadimdemedes/ink/issues/94
           await new Promise(resolve =>
             readline.cursorTo(process.stdout, 0, 0, resolve)
           )
@@ -77,6 +71,8 @@ export class Dev implements Command {
             readline.clearLine(process.stdout, 0, resolve)
           )
         } else {
+          // TODO buffering so that when user toggles back they have a chance of
+          // seeing what happened while they weren't looking.
           log('entering ui mode')
           state = {
             logMode: false,
@@ -129,38 +125,7 @@ type Mode = 'dashboard' | 'logs'
 // }
 
 const DevMode: React.FC<Props> = props => {
-  const [mode, updateMode] = useState<null | Mode>(null)
-
-  // useInput((charOrPaste, keys) => {
-  //   log('got input "%s" with modifier keys %O', charOrPaste, keys)
-  //   switch (charOrPaste) {
-  //     case 'd':
-  //       updateMode('dashboard')
-  //       break
-  //     case 'l':
-  //       updateMode('logs')
-  //       break
-  //     default:
-  //       console.error(
-  //         'The given input is not associated with any action: "%s"',
-  //         charOrPaste
-  //       )
-  //   }
-  // })
-
-  let content: any
-
-  if (mode === 'logs') {
-    return <Text>...logs...</Text>
-  } else {
-    content = (
-      <Box flexDirection="column">
-        <Box>Nexus Typegen</Box>
-        <Box>Server</Box>
-      </Box>
-    )
-  }
-
+  // TODO why -1????
   return (
     <Box
       flexDirection="column"
@@ -172,7 +137,10 @@ const DevMode: React.FC<Props> = props => {
           Pumpkins Development Dashboard (d to toggle)
         </Box>
       </Box>
-      {content}
+      <Box flexDirection="column">
+        <Box>Nexus Typegen</Box>
+        <Box>Server</Box>
+      </Box>
     </Box>
   )
 }
