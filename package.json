@@ -1,6 +1,6 @@
 {
   "name": "pumpkins",
-  "version": "0.0.0-sha.c85e2f5",
+  "version": "0.0.0-sha.fcf5a3d",
   "author": "Prisma Labs",
   "bin": {
     "pumpkins": "dist/cli/index.js"
@@ -22,6 +22,7 @@
     "nexus-prisma": "^0.6.1",
     "prisma2": "2.0.0-alpha.344",
     "prismjs": "^1.17.1",
+    "resolve": "^1.12.2",
     "simple-git": "^1.126.0",
     "stacktrace-parser": "^0.1.7",
     "strip-indent": "^3.0.0",
@@ -40,6 +41,7 @@
     "@types/jest": "^24.0.22",
     "@types/node": "^12.12.11",
     "@types/prismjs": "^1.16.0",
+    "@types/resolve": "^0.0.8",
     "chai": "^4",
     "doctoc": "^1.4.0",
     "globby": "^10",

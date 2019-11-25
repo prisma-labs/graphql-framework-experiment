@@ -5,6 +5,7 @@ import * as Commands from './commands'
 import { HelpError } from './helpers'
 import { isError } from 'util'
 import chalk from 'chalk'
+import { pog } from '../utils'
 
 const debug = debugLib('prisma')
 process.on('uncaughtException', e => {
@@ -49,7 +50,15 @@ async function main(): Promise<number> {
   return 0
 }
 
+const log = pog.sub('cli')
+
 process.on('SIGINT', () => {
+  log('got SIGINT')
+  process.exit(0) // now the "exit" event will fire
+})
+
+process.on('SIGTERM', () => {
+  log('got SIGTERM')
   process.exit(0) // now the "exit" event will fire
 })
 

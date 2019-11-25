@@ -1,6 +1,6 @@
 import * as path from 'path'
 import { runPrismaGenerators } from '../../framework/plugins'
-import { watcher } from '../../watcher'
+import { createWatcher } from '../../watcher'
 import { Command } from '../helpers'
 import { createStartModuleContent } from '../../framework/start'
 import { scan } from '../../framework/layout'
@@ -17,36 +17,26 @@ export class Dev implements Command {
 
     const layout = await scan()
 
-    watcher(
-      undefined,
-      [],
-      [],
-      {
-        'tree-kill': true,
-        'transpile-only': true,
-        respawn: true,
-        eval: {
-          code: createStartModuleContent({
-            stage: 'dev',
-            appPath: layout.app.path,
-            layout,
-          }),
-          fileName: 'start.js',
-        },
+    createWatcher({
+      'transpile-only': true,
+      respawn: true,
+      eval: {
+        code: createStartModuleContent({
+          stage: 'dev',
+          appPath: layout.app.path,
+          layout,
+        }),
+        fileName: 'start.js',
       },
-      {
+      callbacks: {
         onStart() {
           console.log('🎃  Starting pumpkins server...')
         },
-        onRestart(fileName: string) {
-          console.log(
-            `🎃  ${path.relative(
-              process.cwd(),
-              fileName
-            )} changed. Restarting...`
-          )
+        onRestart(filePath: string) {
+          const filePathRelative = path.relative(process.cwd(), filePath)
+          console.log(`🎃  ${filePathRelative} changed. Restarting...`)
         },
-      }
-    )
+      },
+    })
   }
 }
