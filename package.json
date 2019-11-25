@@ -18,7 +18,6 @@
     "filewatcher": "^3.0.1",
     "fs-jetpack": "^2.2.3",
     "graphql": "^14.5.8",
-    "js-levenshtein": "^1.1.6",
     "nexus": "^0.12.0-rc.5",
     "nexus-prisma": "^0.6.1",
     "prisma2": "2.0.0-alpha.344",
