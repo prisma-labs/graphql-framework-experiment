@@ -33,21 +33,19 @@ const defaultServerOptions: Required<ServerOptions> = {
 
 export type App = {
   use: (plugin: Plugin<any>) => App
-  installGlobally: () => App
+  // installGlobally: () => App
   server: {
     start: (config?: ServerOptions) => Promise<void>
   }
-  schema: {
-    queryType: typeof nexus.queryType
-    mutationType: typeof nexus.mutationType
-    objectType: typeof nexus.objectType
-    inputObjectType: typeof nexus.inputObjectType
-    enumType: typeof nexus.enumType
-    scalarType: typeof nexus.scalarType
-    unionType: typeof nexus.unionType
-    intArg: typeof nexus.intArg
-    stringArg: typeof nexus.stringArg
-  }
+  queryType: typeof nexus.queryType
+  mutationType: typeof nexus.mutationType
+  objectType: typeof nexus.objectType
+  inputObjectType: typeof nexus.inputObjectType
+  enumType: typeof nexus.enumType
+  scalarType: typeof nexus.scalarType
+  unionType: typeof nexus.unionType
+  intArg: typeof nexus.intArg
+  stringArg: typeof nexus.stringArg
 }
 
 /**
@@ -71,25 +69,24 @@ export function createApp(appConfig?: { types?: any }): App {
   const plugins: Plugin[] = []
 
   const api: App = {
-    installGlobally() {
-      installGlobally(api)
-      return api
-    },
+    // TODO bring this back pending future discussion
+    // installGlobally() {
+    //   installGlobally(api)
+    //   return api
+    // },
     use(plugin) {
       plugins.push(plugin)
       return api
     },
-    schema: {
-      queryType,
-      mutationType,
-      objectType,
-      inputObjectType,
-      enumType,
-      scalarType,
-      unionType,
-      intArg,
-      stringArg,
-    },
+    queryType,
+    mutationType,
+    objectType,
+    inputObjectType,
+    enumType,
+    scalarType,
+    unionType,
+    intArg,
+    stringArg,
     server: {
       async start(config: ServerOptions = {}): Promise<void> {
         // During development we dynamically import all the schema modules
@@ -248,7 +245,7 @@ const installGlobally = (app: App): App => {
     unionType,
     intArg,
     stringArg,
-  } = app.schema
+  } = app
 
   Object.assign(global, {
     app,

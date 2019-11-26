@@ -49,7 +49,7 @@ system (in fact Prisma features are implemented as a plugin).
 
 ```
 yarn init -y
-yarn add pumpkins@sha
+yarn add pumpkins@master
 ```
 
 Add some files to get your app going:
@@ -74,8 +74,9 @@ Fill out your modules with some initial code:
 
 ```ts
 // graphql/schema.ts
+import { app } from 'pumpkins'
 
-objectType({
+app.objectType({
   name: 'User',
   definition(t) {
     t.id('id')
@@ -83,7 +84,7 @@ objectType({
   },
 })
 
-queryType({
+app.queryType({
   definition(t) {
     t.list.field('users', {
       type: 'User',
@@ -95,7 +96,7 @@ queryType({
 })
 ```
 
-You will see some static type errors. These will go away once you boot your app. Give it a shot:
+Enter dev mode to boot your app:
 
 ```
 $ yarn pumpkins dev
@@ -143,7 +144,7 @@ Reflecting on what we've just seen;
 
 2. Conventions save you from configuring `pumpkins` to find your schema module.
 
-3. You don't need a main entrypoint module. Grow into that as you wish.
+3. You don't need a main entrypoint module. Grow into that (see later sections) as you wish.
 
 ## Adding Prisma Framework
 
@@ -330,9 +331,7 @@ Prisma is optional yet seamlessly supported. You opt-in by creating a `schema.pr
 
 ### `app`
 
-### `createApp`
-
-Create an app instance
+A singleton export. Use this to build up your GraphQL schema and configure your server.
 
 <br>
 
