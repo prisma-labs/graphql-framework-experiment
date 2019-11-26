@@ -98,7 +98,6 @@ async function doCreateWorkspace(config: Options): Promise<Workspace> {
         "compilerOptions": {
           "target": "es2016",
           "strict": true,
-          "outDir": "dist",
           "skipLibCheck": true,
           "allowJs": true,
           "lib": ["esnext"]

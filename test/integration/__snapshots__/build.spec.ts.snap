@@ -35,7 +35,7 @@ Object {
       "type": "file",
     },
   ],
-  "name": "dist",
+  "name": "build",
   "size": 1562,
   "type": "dir",
 }
@@ -66,7 +66,7 @@ Object {
       "type": "file",
     },
   ],
-  "name": "dist",
+  "name": "build",
   "size": 567,
   "type": "dir",
 }
@@ -97,7 +97,7 @@ Object {
       "type": "file",
     },
   ],
-  "name": "dist",
+  "name": "build",
   "size": 565,
   "type": "dir",
 }
@@ -133,7 +133,7 @@ Object {
       "type": "file",
     },
   ],
-  "name": "dist",
+  "name": "build",
   "size": 738,
   "type": "dir",
 }

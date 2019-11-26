@@ -1,5 +1,6 @@
 import * as ts from 'typescript'
 import * as path from 'path'
+import { BUILD_FOLDER_NAME } from '../cli/commands/build'
 
 const diagnosticHost: ts.FormatDiagnosticsHost = {
   getNewLine: () => ts.sys.newLine,
@@ -55,7 +56,7 @@ function fixConfig(config: ts.ParsedCommandLine, projectDir: string) {
   }
 
   if (config.options.outDir === undefined) {
-    config.options.outDir = 'dist'
+    config.options.outDir = BUILD_FOLDER_NAME
   }
 
   // config.options.rootDir = projectDir

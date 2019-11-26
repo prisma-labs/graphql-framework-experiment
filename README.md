@@ -127,10 +127,14 @@ You should get back:
 }
 ```
 
-Once you're ready to go to production just build the app to get a ready-to-go node dist.
+Once you're ready to go to production just build your app and run the start module with node.
 
 ```
 $ pumpkins build
+```
+
+```
+$ node build/start
 ```
 
 Reflecting on what we've just seen;

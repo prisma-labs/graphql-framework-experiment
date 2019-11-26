@@ -21,7 +21,7 @@ it('can build with just a schema module', () => {
 
   const result = ws.run('yarn -s pumpkins build')
   expect(result).toMatchSnapshot()
-  expect(ws.fs.inspectTree('dist')).toMatchSnapshot()
+  expect(ws.fs.inspectTree('build')).toMatchSnapshot()
 })
 
 it('can build with just a schema folder of modules', () => {
@@ -39,7 +39,7 @@ it('can build with just a schema folder of modules', () => {
 
   const result = ws.run('yarn -s pumpkins build')
   expect(result).toMatchSnapshot()
-  expect(ws.fs.inspectTree('dist')).toMatchSnapshot()
+  expect(ws.fs.inspectTree('build')).toMatchSnapshot()
 })
 
 it('can build with schema + app modules', () => {
@@ -59,7 +59,7 @@ it('can build with schema + app modules', () => {
 
   const result = ws.run('yarn -s pumpkins build')
   expect(result).toMatchSnapshot()
-  expect(ws.fs.inspectTree('dist')).toMatchSnapshot()
+  expect(ws.fs.inspectTree('build')).toMatchSnapshot()
 })
 
 it('can nest modules', () => {
@@ -79,7 +79,7 @@ it('can nest modules', () => {
 
   const result = ws.run('yarn -s pumpkins build')
   expect(result).toMatchSnapshot()
-  expect(ws.fs.inspectTree('dist')).toMatchSnapshot()
+  expect(ws.fs.inspectTree('build')).toMatchSnapshot()
 })
 
 it('can build a plugin', () => {
@@ -141,7 +141,7 @@ it('can build a plugin', () => {
 
   const result = ws.run('yarn -s pumpkins build')
   expect(result).toMatchSnapshot()
-  expect(ws.fs.inspectTree('dist')).toMatchSnapshot()
+  expect(ws.fs.inspectTree('build')).toMatchSnapshot()
 })
 
 it.skip('can build a prisma framework project', () => {
@@ -177,5 +177,5 @@ it.skip('can build a prisma framework project', () => {
 
   const result = ws.run('yarn -s pumpkins build')
   expect(result).toMatchSnapshot()
-  expect(ws.fs.inspectTree('dist')).toMatchSnapshot()
+  expect(ws.fs.inspectTree('build')).toMatchSnapshot()
 })

@@ -10,6 +10,8 @@ import {
 import { createStartModuleContent } from '../../framework/start'
 import { Command } from '../helpers'
 
+export const BUILD_FOLDER_NAME = 'build'
+
 export class Build implements Command {
   public static new(): Build {
     return new Build()
@@ -36,7 +38,7 @@ export class Build implements Command {
     compile(tsConfig.fileNames, tsConfig.options)
 
     await fs.writeAsync(
-      fs.path('dist/start.js'),
+      fs.path(`${BUILD_FOLDER_NAME}/start.js`),
       transpileModule(
         createStartModuleContent({
           stage: 'build',
