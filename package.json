@@ -76,7 +76,8 @@
     "prepack": "yarn -s build",
     "test": "jest --verbose --testTimeout 120000",
     "test:dev": "jest --watch --verbose --testTimeout 120000",
-    "dev": "tsc -b -w"
+    "dev": "tsc -b -w",
+    "postinstall": "echo 'hello am I run???'"
   },
   "prettier": {
     "semi": false,
