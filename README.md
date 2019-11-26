@@ -73,7 +73,7 @@ Fill out your modules with some initial code:
 ```
 
 ```ts
-// src/schema.ts
+// graphql/schema.ts
 
 objectType({
   name: 'User',
@@ -154,7 +154,7 @@ touch prisma/dev.db
 ```
 
 ```groovy
-// schema.prisma
+// prisma/schema.prisma
 
 datasource db {
   provider = "sqlite"
