@@ -237,11 +237,6 @@ export async function runPrismaGenerators(
   const generators = await getGenerators(prisma.schemaPath)
 
   for (const g of generators) {
-    // HACK (see var declaration LOC)
-    if (g.manifest?.prettyName === 'Photon.js') {
-      g.options!.generator.output = GENERATED_PHOTON_OUTPUT_PATH
-    }
-
     const resolvedSettings = getGeneratorResolvedSettings(g)
 
     log(
@@ -261,7 +256,11 @@ export async function runPrismaGenerators(
  */
 const getGenerators = async (schemaPath: string) => {
   const aliases = {
-    photonjs: require.resolve('@prisma/photon/generator-build'),
+    photonjs: {
+      // HACK (see var declaration LOC)
+      outputPath: GENERATED_PHOTON_OUTPUT_PATH,
+      generatorPath: require.resolve('@prisma/photon/generator-build'),
+    },
   }
 
   return await Prisma.getGenerators({
