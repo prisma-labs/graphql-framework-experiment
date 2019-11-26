@@ -33,6 +33,7 @@ export class Build implements Command {
     )
 
     console.log('🎃  Compiling ...')
+    await fs.removeAsync(BUILD_FOLDER_NAME)
     const tsConfig = readTsConfig()
     compile(tsConfig.fileNames, tsConfig.options)
 
