@@ -25,7 +25,9 @@ it('can build a prisma framework project', () => {
   ws.fs.write(
     'schema.ts',
     `
-      objectType({
+      import { app } from 'pumpkins'
+
+      app.objectType({
         name: 'User',
         definition(t) {
           t.model.id()

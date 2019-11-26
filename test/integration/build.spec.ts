@@ -10,7 +10,9 @@ it('can build with just a schema module', () => {
   ws.fs.write(
     'schema.ts',
     `
-      objectType({
+      import { app } from 'pumpkins'
+
+      app.objectType({
         name: 'A',
         definition(t) {
           t.string('a')
@@ -28,7 +30,9 @@ it('can build with just a schema folder of modules', () => {
   ws.fs.write(
     'schema/a.ts',
     `
-      objectType({
+      import { app } from 'pumpkins'
+
+      app.objectType({
         name: 'A',
         definition(t) {
           t.string('a')
@@ -46,7 +50,9 @@ it('can build with schema + app modules', () => {
   ws.fs.write(
     'schema.ts',
     `
-      objectType({
+      import { app } from 'pumpkins'
+
+      app.objectType({
         name: 'A',
         definition(t) {
           t.string('a')
@@ -66,7 +72,9 @@ it('can nest modules', () => {
   ws.fs.write(
     'graphql/schema.ts',
     `
-      objectType({
+      import { app } from 'pumpkins'
+
+      app.objectType({
         name: 'A',
         definition(t) {
           t.string('a')
@@ -108,7 +116,10 @@ it('can build a plugin', () => {
 
   ws.fs.write(
     'schema.ts',
-    `queryType({	
+    `
+      import { app } from 'pumpkins'
+
+      app.queryType({	
         definition(t) {	
           t.int('a', (_root, _args, ctx) => ctx.a)	
           t.field('foo', {	
@@ -122,7 +133,7 @@ it('can build a plugin', () => {
         }	
       })	
 
-      objectType({	
+      app.objectType({	
         name: 'Foo',	
         definition(t) {	
           t.string('bar')	
@@ -134,7 +145,9 @@ it('can build a plugin', () => {
   ws.fs.write(
     'app.ts',
     `	
+      import { app } from 'pumpkins'
       import myplugin from './myplugin'	
+
       app.use(myplugin).server.start()	
     `
   )
