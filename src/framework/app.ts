@@ -8,6 +8,7 @@ import { typegenAutoConfig } from 'nexus/dist/core'
 import { Plugin } from './plugin'
 import { createPrismaPlugin, isPrismaEnabledSync } from './plugins'
 import { stripIndent } from 'common-tags'
+import { sendServerReadySignalToDevModeMaster } from './dev-mode'
 
 const log = pog.sub(__filename)
 
@@ -204,7 +205,7 @@ export function createApp(appConfig?: { types?: any }): App {
           console.log(mergedConfig.startMessage(mergedConfig.port))
         )
 
-        process.send!({ ready: true, cmd: 'NODE_DEV' })
+        sendServerReadySignalToDevModeMaster()
       },
     },
   }

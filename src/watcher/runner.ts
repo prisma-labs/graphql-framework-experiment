@@ -21,6 +21,9 @@ import { pog } from '../utils'
 // Remove app-runner.js from the argv array
 process.argv.splice(1, 1)
 
+// A signal that the framework can use to make integrity checks with
+process.env.PUMPKINS_DEV_MODE = 'true'
+
 if (process.env.DEBUG_RUNNER) {
   process.env.DEBUG = process.env.DEBUG_RUNNER
 }

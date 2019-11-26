@@ -23,11 +23,7 @@ export class Dev implements Command {
       process.exit(0)
     }
 
-    
-    const [layout] = await Promise.all([
-      scan(),
-      runPrismaGenerators()
-    ])
+    const [layout] = await Promise.all([scan(), runPrismaGenerators()])
 
     // Setup ui/log toggling system
     let state:
@@ -184,7 +180,7 @@ const DevMode: React.FC<Props> = props => {
 //           if (event === 'logging') {
 //             this.setState({ logBuffer: this.state.logBuffer + data })
 //           }
-//           if (event === 'ready') {
+//           if (event === SERVER_READY_SIGNAL) {
 //           }
 //         },
 //       },
