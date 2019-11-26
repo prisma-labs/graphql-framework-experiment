@@ -154,10 +154,10 @@ export function createApp(appConfig?: { types?: any }): App {
                 : `${config.contextType} & ${alias}.${typeExportName}`
           }
 
-          pog('built up Nexus typegenConfig: %O', config)
-
           return config
         }
+
+        pog('built up Nexus config: %O', nexusConfig)
 
         // Merge the plugin nexus plugins
         nexusConfig.plugins = nexusConfig.plugins ?? []

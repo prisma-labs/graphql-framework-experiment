@@ -103,15 +103,13 @@ export function createNexusSingleton() {
 export type NexusConfig = Nexus.core.SchemaConfig
 
 export function createNexusConfig(): NexusConfig {
-  const projectDir = findProjectDir()
-  const defaultSchemaPath = path.join(projectDir, 'schema.graphql')
   const defaultTypesPath = fs.path(
     'node_modules/@types/typegen-nexus/index.d.ts'
   )
 
   return {
     outputs: {
-      schema: defaultSchemaPath,
+      schema: false,
       typegen: defaultTypesPath,
     },
     typegenAutoConfig: {
