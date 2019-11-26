@@ -8,7 +8,7 @@ import { pog } from '../utils'
 import { sendSigterm } from './utils'
 const filewatcher = require('filewatcher')
 
-const log = pog.sub('watcher')
+const log = pog.sub('cli:dev:watcher')
 
 /**
  * Entrypoint into the watcher system.
@@ -110,9 +110,15 @@ export function createWatcher(opts: Opts) {
     child.stopping = true
     child.respawn = true
     if (child.connected === undefined || child.connected === true) {
-      log('Disconnecting from child')
       child.disconnect()
-      if (!willTerminate) {
+      if (willTerminate) {
+        log(
+          'Disconnecting from child. willTerminate === true so NOT sending sigterm to force runner end, assuming it will end itself.'
+        )
+      } else {
+        log(
+          'Disconnecting from child. willTerminate === false so sending sigterm to force runner end'
+        )
         sendSigterm(child)
           .then(() => {
             log('sigterm to runner process tree completed')
