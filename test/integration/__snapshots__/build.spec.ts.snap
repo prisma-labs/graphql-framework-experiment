@@ -31,12 +31,12 @@ Object {
     },
     Object {
       "name": "start.js",
-      "size": 579,
+      "size": 609,
       "type": "file",
     },
   ],
   "name": "dist",
-  "size": 1532,
+  "size": 1562,
   "type": "dir",
 }
 `;
@@ -129,12 +129,12 @@ Object {
     },
     Object {
       "name": "start.js",
-      "size": 579,
+      "size": 609,
       "type": "file",
     },
   ],
   "name": "dist",
-  "size": 708,
+  "size": 738,
   "type": "dir",
 }
 `;

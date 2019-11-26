@@ -2,13 +2,13 @@ import { fork } from 'child_process'
 import * as fs from 'fs'
 import { compiler } from './compiler'
 import * as ipc from './ipc'
-import { Opts, Process } from './types'
+import { Opts, Process, Callbacks } from './types'
 import cfgFactory from './cfg'
 import { pog } from '../utils'
 import { sendSigterm } from './utils'
 const filewatcher = require('filewatcher')
 
-const log = pog.sub('watcher')
+const log = pog.sub('cli:dev:watcher')
 
 /**
  * Entrypoint into the watcher system.
@@ -36,7 +36,7 @@ export function createWatcher(opts: Opts) {
 
   watcher.on('change', (file: string, isManualRestart: boolean) => {
     log('file watcher change event')
-    restartRunner(runner, file, isManualRestart)
+    restartRunner(file, isManualRestart)
   })
 
   watcher.on('fallback', function(limit: number) {
@@ -61,35 +61,22 @@ export function createWatcher(opts: Opts) {
 
   // Relay SIGTERM & SIGINT to the runner process tree
   //
-  // TODO Currently this clean up code does not effectively run because of process.exit code
-  // inside cli index.ts
-  //
   process.on('SIGTERM', () => {
     log('process got SIGTERM')
-    stopRunnerOnBeforeExit()
+    stopRunnerOnBeforeExit().then(() => {
+      process.exit()
+    })
   })
 
   process.on('SIGINT', () => {
     log('process got SIGINT')
-    stopRunnerOnBeforeExit()
+    stopRunnerOnBeforeExit().then(() => {
+      process.exit()
+    })
   })
-
-  function stopRunnerOnBeforeExit() {
-    if (!runner.exited) {
-      // TODO maybe we should be a timeout here so that child process hanging
-      // will never prevent pumpkins dev from exiting nicely.
-      sendSigterm(runner)
-        .then(() => {
-          log('sigterm to runner process tree completed')
-        })
-        .catch(error => {
-          console.warn(
-            'attempt to sigterm the runner process tree ended with error: %O',
-            error
-          )
-        })
-    }
-  }
+  // process.on('exit', () => {
+  //   stopRunnerOnBeforeExit()
+  // })
 
   function startRunnerDo(): Process {
     return startRunner(opts, cfg, watcher, {
@@ -99,6 +86,23 @@ export function createWatcher(opts: Opts) {
     })
   }
 
+  function stopRunnerOnBeforeExit() {
+    if (runner.exited) return Promise.resolve()
+
+    // TODO maybe we should be a timeout here so that child process hanging
+    // will never prevent pumpkins dev from exiting nicely.
+    return sendSigterm(runner)
+      .then(() => {
+        log('sigterm to runner process tree completed')
+      })
+      .catch(error => {
+        console.warn(
+          'attempt to sigterm the runner process tree ended with error: %O',
+          error
+        )
+      })
+  }
+
   function stopRunner(child: Process, willTerminate?: boolean) {
     if (child.exited || child.stopping) {
       return
@@ -106,9 +110,15 @@ export function createWatcher(opts: Opts) {
     child.stopping = true
     child.respawn = true
     if (child.connected === undefined || child.connected === true) {
-      log('Disconnecting from child')
       child.disconnect()
-      if (!willTerminate) {
+      if (willTerminate) {
+        log(
+          'Disconnecting from child. willTerminate === true so NOT sending sigterm to force runner end, assuming it will end itself.'
+        )
+      } else {
+        log(
+          'Disconnecting from child. willTerminate === false so sending sigterm to force runner end'
+        )
         sendSigterm(child)
           .then(() => {
             log('sigterm to runner process tree completed')
@@ -123,11 +133,7 @@ export function createWatcher(opts: Opts) {
     }
   }
 
-  function restartRunner(
-    child: Process,
-    file: string,
-    isManualRestart: boolean
-  ) {
+  function restartRunner(file: string, isManualRestart: boolean) {
     if (file === compiler.tsConfigPath) {
       log('reinitializing TS compilation')
       compiler.init(opts)
@@ -209,7 +215,7 @@ function startRunner(
   log('will spawn runner')
 
   // allow user to hook into start event
-  opts.callbacks?.onStart?.()
+  opts.callbacks?.onEvent?.('start')
 
   const runnerModulePath = require.resolve('./runner')
   const childHookPath = compiler.getChildHookPath()
@@ -219,6 +225,7 @@ function startRunner(
 
   const child = fork(runnerModulePath, ['-r', childHookPath], {
     cwd: process.cwd(),
+    silent: true,
     env: {
       ...process.env,
       PUMPKINS_EVAL: opts.eval.code,
@@ -226,14 +233,30 @@ function startRunner(
     },
   }) as Process
 
+  // stdout & stderr are guaranteed becuase we do not permit fork stdio to be
+  // configured with anything else than `pipe`.
+  //
+  child.stdout!.on('data', chunk => {
+    if (opts.callbacks?.onEvent) {
+      opts.callbacks.onEvent?.('logging', chunk.toString())
+    }
+  })
+
+  child.stderr!.on('data', chunk => {
+    if (opts.callbacks?.onEvent) {
+      opts.callbacks.onEvent?.('logging', chunk.toString())
+    }
+  })
+
   const compileReqWatcher = filewatcher({ forcePolling: opts.poll })
   let currentCompilePath: string
   fs.writeFileSync(compiler.getCompileReqFilePath(), '')
   compileReqWatcher.add(compiler.getCompileReqFilePath())
   compileReqWatcher.on('change', function(file: string) {
+    log('compileReqWatcher event change %s', file)
     fs.readFile(file, 'utf-8', function(err, data) {
       if (err) {
-        console.error('Error reading compile request file', err)
+        console.error('error reading compile request file', err)
         return
       }
       const [compile, compiledPath] = data.split('\n')
@@ -243,15 +266,15 @@ function startRunner(
       currentCompilePath = compiledPath
       if (compiledPath) {
         compiler.compile({
-          compile: compile,
-          compiledPath: compiledPath,
-          callbacks: opts.callbacks,
+          compile,
+          compiledPath,
+          callbacks: opts.callbacks ?? {},
         })
       }
     })
   })
 
-  child.on('exit', function(code, signal) {
+  child.on('exit', (code, signal) => {
     log('runner exiting')
     if (code === null) {
       log('runner did not exit on its own accord')
@@ -281,26 +304,37 @@ function startRunner(
     watcher.add(compiler.tsConfigPath)
   }
 
-  ipc.on(child, 'compile', function(message: {
-    compiledPath: string
-    compile: string
-  }) {
-    if (!message.compiledPath || currentCompilePath === message.compiledPath) {
-      return
+  ipc.on(
+    child,
+    'compile',
+    (message: { compiledPath: string; compile: string }) => {
+      log('got runner message "compile" %s', message)
+      if (
+        !message.compiledPath ||
+        currentCompilePath === message.compiledPath
+      ) {
+        return
+      }
+      currentCompilePath = message.compiledPath
+      ;(message as any).callbacks = opts.callbacks
+      compiler.compile({ ...message, callbacks: opts.callbacks ?? {} })
     }
-    currentCompilePath = message.compiledPath
-    ;(message as any).callbacks = opts.callbacks
-    compiler.compile(message)
-  })
+  )
 
   // Listen for `required` messages and watch the required file.
-  ipc.on(child, 'required', function(m) {
+  ipc.on(child, 'required', function(message) {
+    // This log is commented out because it is very noisey if e.g. node_modules
+    // are being watched––and not very interesting
+    // log('got runner message "required" %s', message)
     const isIgnored =
-      cfg.ignore.some(isPrefixOf(m.required)) ||
-      cfg.ignore.some(isRegExpMatch(m.required))
+      cfg.ignore.some(isPrefixOf(message.required)) ||
+      cfg.ignore.some(isRegExpMatch(message.required))
 
-    if (!isIgnored && (cfg.deps === -1 || getLevel(m.required) <= cfg.deps)) {
-      watcher.add(m.required)
+    if (
+      !isIgnored &&
+      (cfg.deps === -1 || getLevel(message.required) <= cfg.deps)
+    ) {
+      watcher.add(message.required)
     }
   })
 
@@ -308,6 +342,13 @@ function startRunner(
   ipc.on(child, 'error', function(m: any) {
     console.error(m.stack)
     callbacks?.onError?.(m.willTerminate)
+  })
+
+  ipc.on(child, 'ready', message => {
+    log('got runner message "ready" %s', message)
+    if (opts.callbacks?.onEvent) {
+      opts.callbacks?.onEvent('ready')
+    }
   })
 
   compiler.writeReadyFile()
