@@ -1,7 +1,7 @@
 import chalk from 'chalk'
 import * as stackTraceParser from 'stacktrace-parser'
 import { highlightTS } from './highlight/highlight'
-import dedent from 'strip-indent'
+import { stripIndents } from 'common-tags'
 
 function renderN(n: number, max: number): string {
   const wantedLetters = String(max).length
@@ -60,7 +60,7 @@ export const printStack = ({ callsite }: ErrorArgs): PrintStackResult => {
           .split('\n')
           .slice(start, lineNumber)
           .join('\n')
-        const lines = dedent(slicedFile).split('\n')
+        const lines = stripIndents(slicedFile).split('\n')
 
         const theLine = lines[lines.length - 1]
         //const slicePoint = theLine.indexOf('{')

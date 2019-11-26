@@ -1,15 +1,12 @@
-import * as path from 'path'
-import { runPrismaGenerators } from '../../framework/plugins'
+import { Box, Instance, render } from 'ink'
+import React from 'react'
+import * as readline from 'readline'
+import { Layout, scan } from '../../framework/layout'
+import { createStartModuleContent } from '../../framework/start'
+import { pog } from '../../utils'
 import { createWatcher } from '../../watcher'
 import { Command } from '../helpers'
-import * as readline from 'readline'
-
-import React, { Component, useState } from 'react'
-import { render, Box, Text, useInput, Key, Static, Instance } from 'ink'
-import { scan, Layout } from '../../framework/layout'
-import { createStartModuleContent } from '../../framework/start'
-import { pog, readTsConfig } from '../../utils'
-import * as fs from 'fs'
+import { runPrismaGenerators } from '../../framework/plugins'
 
 const log = pog.sub('cli:dev')
 
@@ -26,7 +23,11 @@ export class Dev implements Command {
       process.exit(0)
     }
 
-    const layout = await scan()
+    
+    const [layout] = await Promise.all([
+      scan(),
+      runPrismaGenerators()
+    ])
 
     // Setup ui/log toggling system
     let state:
@@ -92,7 +93,7 @@ export class Dev implements Command {
     })
 
     createWatcher({
-      'transpile-only': true,
+      transpileOnly: true,
       respawn: true,
       eval: {
         code: bootModule,
