@@ -62,23 +62,33 @@ function parseIsDevMode(): boolean {
  * This function checks that dev mode and IPC are algined. IPC should only be
  * enabled when dev mode master is running pumpkins app within its runner
  * process. Dev mode being on or off is signified via a special environment
- * variable. If the environment variable is ever present but IPC not or
- * vice-versa then this means something is deeply wrong, and explicitly or
- * subtlely not going to work.
+ * variable. If the environment variable is ever present but IPC not then this
+ * means something is deeply wrong, and explicitly or subtlely not going to work.
+ *
+ * We DO allow for IPC to be enabled while dev-mode is not, since we cannot
+ * control all the cases where pumpkins code might be forked and thus have IPC.
+ * For example typegen which uses ts-node under the hood does a spawn, but
+ * ts-node does a fork, and thus creates an IPC link.
  */
 function devModeIPCIntegrityCheck():
   | { ok: true; reason: null }
-  | { ok: false; reason: null | 'ipc_but_no_env' | 'env_but_no_ipc' } {
+  | { ok: false; reason: null | 'env_but_no_ipc' } {
   const isDevModeEnabled: boolean = parseIsDevMode()
-  const isIPCEnabled: boolean = process.send === undefined
+  const isIPCEnabled: boolean = typeof process.send === 'function'
+
+  if (!isDevModeEnabled) {
+    return { ok: true, reason: null }
+  }
 
   if (isDevModeEnabled && isIPCEnabled) {
     return { ok: true, reason: null }
-  } else if (isDevModeEnabled && !isIPCEnabled) {
-    return { ok: false, reason: 'env_but_no_ipc' }
-  } else {
-    return { ok: false, reason: 'ipc_but_no_env' }
   }
+
+  if (isDevModeEnabled && !isIPCEnabled) {
+    return { ok: false, reason: 'env_but_no_ipc' }
+  }
+
+  return undefined as never
 }
 
 /**
