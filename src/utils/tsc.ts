@@ -1,6 +1,6 @@
 import * as ts from 'typescript'
 import * as path from 'path'
-import { BUILD_FOLDER_NAME } from '../cli/commands/build'
+import { BUILD_FOLDER_NAME } from '../constants'
 
 const diagnosticHost: ts.FormatDiagnosticsHost = {
   getNewLine: () => ts.sys.newLine,

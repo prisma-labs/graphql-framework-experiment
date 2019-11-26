@@ -9,8 +9,7 @@ import {
 } from '../../utils'
 import { createStartModuleContent } from '../../framework/start'
 import { Command } from '../helpers'
-
-export const BUILD_FOLDER_NAME = 'build'
+import { BUILD_FOLDER_NAME } from '../../constants'
 
 export class Build implements Command {
   public static new(): Build {
