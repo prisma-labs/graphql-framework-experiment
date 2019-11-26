@@ -55,8 +55,9 @@ yarn add pumpkins@sha
 Add some files to get your app going:
 
 ```
-mkdir -p app
-touch schema.ts
+mkdir -p graphql
+touch graphql/schema.ts
+touch tsconfig.json
 ```
 
 Fill out your modules with some initial code:
@@ -72,7 +73,7 @@ Fill out your modules with some initial code:
 ```
 
 ```ts
-// schema.ts
+// graphql/schema.ts
 
 objectType({
   name: 'User',
@@ -126,19 +127,23 @@ You should get back:
 }
 ```
 
-Once you're ready to go to production just build the app to get a ready-to-go node dist.
+Once you're ready to go to production just build your app and run the start module with node.
 
 ```
 $ pumpkins build
+```
+
+```
+$ node build/start
 ```
 
 Reflecting on what we've just seen;
 
 1. The `resolve` func of `users` field is strongly typed and guarantees that the shape of data returned conforms to the schema definition of `User`. There is literally zero effort for you to get this working. Just enter dev mode and start working on your app.
 
-2. Flexible convention-over-configuration saves you from configuring `pumpkins` to find your entrypoint and schema modules.
+2. Conventions save you from configuring `pumpkins` to find your schema module.
 
-3. You don't have to provide a `app.ts` entrypoint up front. Grow into it as you wish.
+3. You don't need a main entrypoint module. Grow into that as you wish.
 
 ## Adding Prisma Framework
 
@@ -153,7 +158,7 @@ touch prisma/dev.db
 ```
 
 ```groovy
-// schema.prisma
+// prisma/schema.prisma
 
 datasource db {
   provider = "sqlite"
@@ -177,7 +182,7 @@ yarn prisma2 lift save
 yarn prisma2 lift up
 ```
 
-Run prisma generate followed by dev mode:
+Enter dev mode:
 
 ```
 yarn pumpkins dev
@@ -245,45 +250,24 @@ Reflecting on what we've just seen;
 
 ### Modules Overview
 
-```
-Name         Optional?    Purpose
+### `schema.ts` | `schema/*`
 
-app.ts       Y            Entrypoint
-context.ts   Y            Define GraphQL resolver context
-schema.ts    N            Define GraphQL types
-```
+Schema contains your GraphQL type definitions. It can be a single module or folder of modules. Multiple instances of module/folder-modules throughout your source tree is supported.
 
-### `schema.ts` | `schema/`
-
-Schema contains your GraphQL type definitions. It can be a single file or folder of files. There can also be multiple instances of file/folder throughout your source tree.
-
-During development all files will be found and dynamically synchronously imported at app construction time. At build time static imports will be generated.
-
-```
-schema.ts
-```
-
-```
-schema/
-  a.ts
-  b.ts
-  c.ts
-```
+In dev mode schema modules are synchronously found and imported at server boot time. At build time however static imports for all schema modules are inlined for boot performance.
 
 ### `context.ts`
 
 Context contains the definition of the context object that will be made available to all your GraphQL resolvers. There can only be at most a single `context.ts` file in your source tree. If you do not provide one, a defualt will be, findable in `.pumpkins`.
 
-```
-context.ts
-```
-
 ### `app.ts`
 
 App contains the entrypoint to your service, the place where it boots. There can only be at most a single `app.ts` in your source tree. If you do not provide one, a default will be, findable in `.pumpkins`.
 
+##### Aliases
+
 ```
-app.ts | main.ts | server.ts | service.ts
+main.ts server.ts
 ```
 
 ### Example Layouts
@@ -305,13 +289,10 @@ schema.ts
 Typical
 
 ```
-app/
-  app.ts
+graphql/
+  server.ts
   context.ts
-  graphql/
-    a.ts
-    b.ts
-    c.ts
+  schema.ts
 prisma/
   schema.prisma
 ```
@@ -336,7 +317,7 @@ prisma/
 
 # Prisma Support
 
-Prisma is optional yet seamlessly supported. You opt-in by creating a `schema.prisma` file somewhere in your project. Then, following things automatically happen:
+Prisma is optional yet seamlessly supported. You opt-in by creating a `schema.prisma` file somewhere in your project. Then, the following things automatically happen:
 
 1. Pumpkins CLI workflows are extended:
    1. On build, Prisma generators are run

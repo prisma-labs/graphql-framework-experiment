@@ -9,6 +9,7 @@ import {
 } from '../../utils'
 import { createStartModuleContent } from '../../framework/start'
 import { Command } from '../helpers'
+import { BUILD_FOLDER_NAME } from '../../constants'
 
 export class Build implements Command {
   public static new(): Build {
@@ -32,11 +33,12 @@ export class Build implements Command {
     )
 
     console.log('🎃  Compiling ...')
+    await fs.removeAsync(BUILD_FOLDER_NAME)
     const tsConfig = readTsConfig()
     compile(tsConfig.fileNames, tsConfig.options)
 
     await fs.writeAsync(
-      fs.path('dist/start.js'),
+      fs.path(`${BUILD_FOLDER_NAME}/start.js`),
       transpileModule(
         createStartModuleContent({
           stage: 'build',

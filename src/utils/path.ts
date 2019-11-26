@@ -64,7 +64,7 @@ export function findProjectDir() {
   return path.dirname(filePath)
 }
 
-// dist/index.js => index.ts
+// build/index.js => index.ts
 
 export function getTranspiledPath(
   projectDir: string,
@@ -78,7 +78,7 @@ export function getTranspiledPath(
   return path.join(outDir, pathToJsFile)
 }
 
-// dist/index.js => /Users/me/project/src/index.ts
+// build/index.js => /Users/me/project/src/index.ts
 
 export function sourceFilePathFromTranspiledPath({
   transpiledPath,

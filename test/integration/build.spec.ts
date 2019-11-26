@@ -1,3 +1,5 @@
+// TODO boot and query to take integration test confidence even further
+
 import { createWorkspace } from '../__helpers'
 
 const ws = createWorkspace({
@@ -19,8 +21,25 @@ it('can build with just a schema module', () => {
 
   const result = ws.run('yarn -s pumpkins build')
   expect(result).toMatchSnapshot()
-  expect(ws.fs.inspectTree('dist')).toMatchSnapshot()
-  // TODO ws.run('node dist/start') ...
+  expect(ws.fs.inspectTree('build')).toMatchSnapshot()
+})
+
+it('can build with just a schema folder of modules', () => {
+  ws.fs.write(
+    'schema/a.ts',
+    `
+      objectType({
+        name: 'A',
+        definition(t) {
+          t.string('a')
+        }
+      })
+    `
+  )
+
+  const result = ws.run('yarn -s pumpkins build')
+  expect(result).toMatchSnapshot()
+  expect(ws.fs.inspectTree('build')).toMatchSnapshot()
 })
 
 it('can build with schema + app modules', () => {
@@ -40,8 +59,27 @@ it('can build with schema + app modules', () => {
 
   const result = ws.run('yarn -s pumpkins build')
   expect(result).toMatchSnapshot()
-  expect(ws.fs.inspectTree('dist')).toMatchSnapshot()
-  // TODO ws.run('node dist/start') ...
+  expect(ws.fs.inspectTree('build')).toMatchSnapshot()
+})
+
+it('can nest modules', () => {
+  ws.fs.write(
+    'graphql/schema.ts',
+    `
+      objectType({
+        name: 'A',
+        definition(t) {
+          t.string('a')
+        }
+      })
+    `
+  )
+
+  ws.fs.write('graphql/app.ts', `app.server.start()`)
+
+  const result = ws.run('yarn -s pumpkins build')
+  expect(result).toMatchSnapshot()
+  expect(ws.fs.inspectTree('build')).toMatchSnapshot()
 })
 
 it('can build a plugin', () => {
@@ -103,8 +141,7 @@ it('can build a plugin', () => {
 
   const result = ws.run('yarn -s pumpkins build')
   expect(result).toMatchSnapshot()
-  expect(ws.fs.inspectTree('dist')).toMatchSnapshot()
-  // TODO ws.run('node dist/start') ...
+  expect(ws.fs.inspectTree('build')).toMatchSnapshot()
 })
 
 it.skip('can build a prisma framework project', () => {
@@ -140,6 +177,5 @@ it.skip('can build a prisma framework project', () => {
 
   const result = ws.run('yarn -s pumpkins build')
   expect(result).toMatchSnapshot()
-  expect(ws.fs.inspectTree('dist')).toMatchSnapshot()
-  // TODO ws.run('node dist/start') ...
+  expect(ws.fs.inspectTree('build')).toMatchSnapshot()
 })
