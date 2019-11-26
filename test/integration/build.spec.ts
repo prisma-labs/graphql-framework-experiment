@@ -62,6 +62,26 @@ it('can build with schema + app modules', () => {
   expect(ws.fs.inspectTree('dist')).toMatchSnapshot()
 })
 
+it('can nest modules', () => {
+  ws.fs.write(
+    'graphql/schema.ts',
+    `
+      objectType({
+        name: 'A',
+        definition(t) {
+          t.string('a')
+        }
+      })
+    `
+  )
+
+  ws.fs.write('graphql/app.ts', `app.server.start()`)
+
+  const result = ws.run('yarn -s pumpkins build')
+  expect(result).toMatchSnapshot()
+  expect(ws.fs.inspectTree('dist')).toMatchSnapshot()
+})
+
 it('can build a plugin', () => {
   ws.fs.write(
     'myplugin.ts',
@@ -158,42 +178,4 @@ it.skip('can build a prisma framework project', () => {
   const result = ws.run('yarn -s pumpkins build')
   expect(result).toMatchSnapshot()
   expect(ws.fs.inspectTree('dist')).toMatchSnapshot()
-})
-
-describe('schema alias term "graphql"', () => {
-  it('can build with just a graphql module', () => {
-    ws.fs.write(
-      'graphql.ts',
-      `
-        objectType({
-          name: 'A',
-          definition(t) {
-            t.string('a')
-          }
-        })
-      `
-    )
-
-    const result = ws.run('yarn -s pumpkins build')
-    expect(result).toMatchSnapshot()
-    expect(ws.fs.inspectTree('dist')).toMatchSnapshot()
-  })
-
-  it('can build with just a graphql folder of modules', () => {
-    ws.fs.write(
-      'graphql/a.ts',
-      `
-      objectType({
-        name: 'A',
-        definition(t) {
-          t.string('a')
-        }
-      })
-    `
-    )
-
-    const result = ws.run('yarn -s pumpkins build')
-    expect(result).toMatchSnapshot()
-    expect(ws.fs.inspectTree('dist')).toMatchSnapshot()
-  })
 })
