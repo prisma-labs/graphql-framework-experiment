@@ -59,7 +59,6 @@ export const createPrismaPlugin: () => Plugin = () => {
     'node_modules/@types/typegen-nexus-prisma/index.d.ts'
   )
 
-  console.log(GENERATED_PHOTON_OUTPUT_PATH)
   return {
     name: 'prisma',
     context: {
