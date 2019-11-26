@@ -55,9 +55,6 @@ process.env.NODE_NO_WARNINGS = '1'
  * Main function
  */
 async function main(): Promise<number> {
-  // react shut up
-  process.env.NODE_ENV = 'production'
-
   // create a new CLI with our subcommands
   const cli = CLI.new({
     dev: new Commands.Dev(),
