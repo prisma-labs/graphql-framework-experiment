@@ -1,6 +1,6 @@
 {
   "name": "pumpkins",
-  "version": "0.0.0-sha.fcf5a3d",
+  "version": "0.0.0-pr.59.0b023e8",
   "author": "Prisma Labs",
   "bin": {
     "pumpkins": "dist/cli/index.js"
@@ -77,7 +77,7 @@
     "test": "jest --verbose --testTimeout 120000",
     "test:dev": "jest --watch --verbose --testTimeout 120000",
     "dev": "tsc -b -w",
-    "postinstall": "echo 'hello am I run???'"
+    "postinstall": "node -e `console.log('???')`"
   },
   "prettier": {
     "semi": false,
