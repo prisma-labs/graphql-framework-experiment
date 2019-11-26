@@ -25,8 +25,16 @@ type UnknownFieldName = {
   typeName: string
 }
 
+type UnknownOutputType = {
+  unknownOutputType: string
+  error: Error
+  typeName: string
+  fieldName: string
+}
+
 type OptionsWithHook = Options & {
   onUnknownFieldName: (params: UnknownFieldName) => void
+  onUnknownOutputType: (params: UnknownOutputType) => void
 }
 
 const log = pog.sub(__filename)
@@ -80,6 +88,7 @@ export const createPrismaPlugin: () => Plugin = () => {
           },
           shouldGenerateArtifacts: shouldGenerateArtifacts(),
           onUnknownFieldName: params => renderUnknownFieldNameError(params),
+          onUnknownOutputType: params => renderUnknownOutputTypeError(params),
         } as OptionsWithHook),
       ],
     },
@@ -98,8 +107,20 @@ function renderUnknownFieldNameError(params: UnknownFieldName) {
   const suggestionMessage =
     suggestions.length === 0
       ? ''
-      : `Did you mean ${suggestions.map(s => `"${s}"`).join(', ')} ?`
-  const intro = chalk`{yellow Warning:} ${params.error.message}\n{yellow Warning:} in ${fileLineNumber}\n{yellow Warning:} ${suggestionMessage}`
+      : chalk`{yellow Warning:} Did you mean ${suggestions
+          .map(s => `"${s}"`)
+          .join(', ')} ?`
+  const intro = chalk`{yellow Warning:} ${params.error.message}\n{yellow Warning:} in ${fileLineNumber}\n${suggestionMessage}`
+
+  console.log(`${intro}${stack}`)
+}
+
+function renderUnknownOutputTypeError(params: UnknownOutputType) {
+  const { stack, fileLineNumber } = printStack({
+    callsite: params.error.stack,
+  })
+
+  const intro = chalk`{yellow Warning:} ${params.error.message}\n{yellow Warning:} in ${fileLineNumber}`
 
   console.log(`${intro}${stack}`)
 }
