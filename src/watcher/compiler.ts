@@ -5,7 +5,10 @@ import * as path from 'path'
 import { register } from 'ts-node'
 import { resolveSync } from 'tsconfig'
 import { Compiler, Opts } from './types'
+import { pog } from '../utils'
 const getCompiledPath = require('./get-compiled-path').default
+
+const log = pog.sub('cli:dev:compiler')
 
 let sourceMapSupportPath = require
   .resolve('source-map-support')
@@ -111,7 +114,6 @@ export const compiler: Compiler = {
   },
   init: function(options) {
     const project = options['project']
-    compiler.log = options.log
     compiler.tsConfigPath =
       resolveSync(cwd, typeof project === 'string' ? project : undefined) || ''
 
@@ -186,8 +188,8 @@ export const compiler: Compiler = {
     compiler.writeChildHookFile(options)
   },
   compileChanged: function(fileName, callbacks) {
-    if (callbacks && callbacks.onRestart) {
-      callbacks.onRestart(fileName)
+    if (callbacks && callbacks.onEvent) {
+      callbacks.onEvent('restart', fileName)
     }
     const ext = path.extname(fileName)
     if (extensions.indexOf(ext) < 0) return
@@ -206,11 +208,7 @@ export const compiler: Compiler = {
       console.error(e)
     }
   },
-  compile: function(params: {
-    compile: string
-    compiledPath: string
-    callbacks: any
-  }) {
+  compile: function(params) {
     const fileName = params.compile
     let code = fsJetPack.read(fileName)!
     const compiledPath = params.compiledPath
@@ -230,14 +228,9 @@ export const compiler: Compiler = {
     tsHandler(m, fileName)
     try {
       m._compile(code, fileName)
-      compiler.log.debug(
-        fileName,
-        'compiled in',
-        new Date().getTime() - starTime,
-        'ms'
-      )
-      if (params.callbacks && params.callbacks.onCompiled) {
-        params.callbacks.onCompiled(fileName)
+      log('%s compiled in %s ms', fileName, new Date().getTime() - starTime)
+      if (params.callbacks && params.callbacks.onEvent) {
+        params.callbacks.onEvent('compiled', fileName)
       }
     } catch (e) {
       code = 'throw ' + 'new Error(' + JSON.stringify(e.message) + ')' + ';'

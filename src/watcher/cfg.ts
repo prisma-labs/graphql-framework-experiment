@@ -23,6 +23,7 @@ export default function(opts?: Omit<Opts, 'eval'>) {
     ...(opts && opts['ignore-watch'] ? opts['ignore-watch'] : []),
   ]
   const ignore = ignoreWatch.concat(ignoreWatch.map(resolvePath))
+
   return {
     vm: c.vm !== false,
     fork: c.fork !== false,

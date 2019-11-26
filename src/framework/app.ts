@@ -212,6 +212,8 @@ export function createApp(appConfig?: { types?: any }): App {
         app.listen({ port: mergedConfig.port }, () =>
           console.log(mergedConfig.startMessage(mergedConfig.port))
         )
+
+        process.send!({ ready: true, cmd: 'NODE_DEV' })
       },
     },
   }
