@@ -52,7 +52,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
       `
     : stripIndent`
         // Start the server
-        cosnt { app } = require('pumpkins')
+        const { app } = require('pumpkins')
         app.server.start()
       `
 
