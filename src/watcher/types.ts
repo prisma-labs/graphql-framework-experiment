@@ -18,7 +18,7 @@ export interface Compiler {
   getChildHookPath: () => string
   writeReadyFile: () => void
   writeChildHookFile: (opts: any) => void
-  init: (opts: any) => void
+  init: (opts: Opts) => void
   compileChanged: (fileName: string, callbacks: Callbacks) => void
   compile: (params: {
     compile: string
@@ -34,29 +34,26 @@ interface BooleanOpts {
   deps?: boolean
   dedupe?: boolean
   poll?: boolean
-  respawn?: boolean
-  fast?: boolean
-  disableWarnings?: boolean
-  'disable-warnings'?: boolean
+  respawn: boolean
   'no-cache'?: boolean
-  cache?: boolean
   clear?: boolean
   'type-check'?: boolean
-  'transpile-only'?: boolean
-  transpileOnly?: boolean
+  transpileOnly: boolean
+  logError?: boolean
   files?: boolean
   pretty?: boolean
   'prefer-ts'?: boolean
+  'prefer-ts-exts'?: boolean
   debug?: boolean
   'exit-child'?: boolean
+  'skip-project'?: boolean
+  'skip-ignore'?: boolean
 }
 
 interface StringOpts {
   compiler?: string
   project?: string
   ignore?: string | string[]
-  'skip-project'?: string
-  'skip-ignore'?: string
   ignoreWarnings?: string
   'ignore-warnings'?: string[]
   ignoreDiagnostics?: string[]
@@ -68,10 +65,6 @@ interface StringOpts {
   'ignore-watch'?: string[]
   interval?: string
   debounce?: string
-  eval: {
-    code: string
-    fileName: string
-  }
 }
 
 export interface Opts extends BooleanOpts, StringOpts {
@@ -80,6 +73,10 @@ export interface Opts extends BooleanOpts, StringOpts {
   priorNodeArgs?: string[]
   callbacks?: Callbacks
   stdio?: ForkOptions['stdio']
+  eval: {
+    code: string
+    fileName: string
+  }
 }
 
 export interface Process extends ChildProcess {

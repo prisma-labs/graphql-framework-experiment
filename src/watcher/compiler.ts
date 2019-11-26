@@ -2,7 +2,7 @@ import * as fs from 'fs'
 import * as fsJetPack from 'fs-jetpack'
 import * as os from 'os'
 import * as path from 'path'
-import { register } from 'ts-node'
+import { register, RegisterOptions } from 'ts-node'
 import { resolveSync } from 'tsconfig'
 import { Compiler, Opts } from './types'
 import { pog } from '../utils'
@@ -138,35 +138,37 @@ export const compiler: Compiler = {
       }
     }
 
-    let ignore = options['ignore'] || process.env['TS_NODE_IGNORE']
+    let ignore = options['ignore'] ?? (process.env['TS_NODE_IGNORE'] as string)
+
     if (ignore && typeof ignore === 'string') {
-      ignore = [ignore]
+      ignore = [ignore] as string[]
     }
 
-    const tsNodeOptions = {
-      fast: options['fast'],
-      cache: options['cache'] || !options['no-cache'],
+    const tsNodeOptions: RegisterOptions = {
       typeCheck: options['type-check'],
-      transpileOnly: options['transpileOnly'] || options['transpile-only'],
+      transpileOnly: options['transpileOnly'],
       pretty: options['pretty'],
-      cacheDirectory: options['cache-directory'] || path.join(tmpDir, 'cache'),
       compiler: options['compiler'],
       project: options['project'],
       skipProject: options['skip-project'],
       skipIgnore: options['skip-ignore'],
-      ignore: ignore,
-      ignoreWarnings:
-        options['ignoreWarnings'] ||
-        options['ignoreDiagnostics'] ||
-        options['ignore-diagnostics'],
+      ignore: ignore as string[],
       ignoreDiagnostics:
         options['ignoreDiagnostics'] || options['ignore-diagnostics'],
-      logError: options['log-error'],
-      disableWarnings: options['disableWarnings'],
+      logError: options['logError'],
       preferTsExts: options['prefer-ts-exts'],
       compilerOptions: compilerOptions,
       files: options['files'] || true,
     }
+
+    /**
+     * TODO: If not set via env variable, transpileOnly does not work
+     * TODO: Figure out why???
+     */
+    if (options.transpileOnly) {
+      process.env.TS_NODE_TRANSPILE_ONLY = 'true'
+    }
+
     try {
       register(tsNodeOptions)
     } catch (e) {

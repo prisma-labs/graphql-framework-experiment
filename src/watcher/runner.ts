@@ -107,7 +107,7 @@ process.on('unhandledRejection', function(err: any) {
     willTerminate: hasCustomHandler,
   }
   log('unhandledRejection %O', {
-    error: errorMessage.error,
+    error: stack,
     willTerminate: errorMessage.willTerminate,
   })
   ipc.send(errorMessage)
