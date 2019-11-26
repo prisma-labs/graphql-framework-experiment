@@ -2,14 +2,8 @@ import { ApolloServer } from 'apollo-server-express'
 import express from 'express'
 import * as fs from 'fs-jetpack'
 import * as nexus from 'nexus'
-import {
-  requireSchemaModules,
-  createNexusConfig,
-  pog,
-  trimExt,
-  findFile,
-} from '../utils'
-import { createNexusSingleton } from './nexus'
+import { requireSchemaModules, pog, trimExt, findFile } from '../utils'
+import { createNexusSingleton, createNexusConfig } from './nexus'
 import { typegenAutoConfig } from 'nexus/dist/core'
 import { Plugin } from './plugin'
 import { createPrismaPlugin, isPrismaEnabledSync } from './plugins'

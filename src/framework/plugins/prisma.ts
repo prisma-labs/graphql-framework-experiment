@@ -4,7 +4,6 @@
 import {
   trimExt,
   pumpkinsPath,
-  shouldGenerateArtifacts,
   writePumpkinsFile,
   pog,
   findFiles,
@@ -17,6 +16,7 @@ import * as path from 'path'
 import { suggestionList } from '../../utils/levenstein'
 import { printStack } from '../../utils/stack/printStack'
 import { Plugin } from '../plugin'
+import { shouldGenerateArtifacts } from '../nexus'
 
 type UnknownFieldName = {
   error: Error

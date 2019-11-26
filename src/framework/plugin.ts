@@ -1,4 +1,4 @@
-import { NexusConfig } from '../utils'
+import { NexusConfig } from './nexus'
 
 export type Plugin<C extends {} = any> = {
   // TODO We need to enforce the invariant that plugin names are unique or
