@@ -1,5 +1,4 @@
 #!/usr/bin/env ts-node
-import debugLib from 'debug'
 import { CLI } from './helpers/CLI'
 import * as Commands from './commands'
 import { HelpError } from './helpers'
@@ -7,13 +6,46 @@ import { isError } from 'util'
 import chalk from 'chalk'
 import { pog } from '../utils'
 
-const debug = debugLib('prisma')
+const log = pog.sub('cli')
+
 process.on('uncaughtException', e => {
-  debug(e)
+  console.error(e)
 })
+
 process.on('unhandledRejection', e => {
-  debug(e)
+  console.error(e)
 })
+
+// HACK
+// in dev mode node is put into raw mode so that key presses can be handled so
+// that users can switch between log view and ui view.
+//
+// This in turn affects how sigterm is handled by node––automatic systems are
+// turned off such as how node forwards sigterm to child processes.
+
+// In turn this forces us to handle the sigterm manually in dev command. But that is not
+// possible with the following block of logic which will cause process exit
+// before a clean exit has happened. Dev command needs to kill its runner child
+// process.
+//
+// Overall we need to rethink all of this. The current approach is very error
+// prone and barely working and has 0 test coverage.
+//
+if (!process.argv.join(' ').includes('pumpkins dev')) {
+  if (process.argv[1] !== 'dev') {
+    process.on('SIGINT', () => {
+      log('got SIGINT')
+      process.exit(0) // now the "exit" event will fire
+    })
+
+    process.on('SIGTERM', () => {
+      log('got SIGTERM')
+      process.exit(0) // now the "exit" event will fire
+    })
+  }
+} else {
+  log('HACK letting dev command handle sigterm/sigint')
+}
 
 // warnings: no tanks
 // hides ExperimentalWarning: The fs.promises API is experimental
@@ -28,14 +60,16 @@ async function main(): Promise<number> {
 
   // create a new CLI with our subcommands
   const cli = CLI.new({
-    dev: Commands.Dev.new(),
+    dev: new Commands.Dev(),
     build: Commands.Build.new(),
     generate: Commands.Generate.new(),
     doctor: Commands.Doctor.new(),
     init: Commands.Init.new(),
   })
+
   // parse the arguments
   const result = await cli.parse(process.argv.slice(2))
+
   if (result instanceof HelpError) {
     console.error(result.message)
     return 1
@@ -43,6 +77,7 @@ async function main(): Promise<number> {
     console.error(result)
     return 1
   }
+
   if (result) {
     console.log(result)
   }
@@ -50,30 +85,7 @@ async function main(): Promise<number> {
   return 0
 }
 
-const log = pog.sub('cli')
-
-process.on('SIGINT', () => {
-  log('got SIGINT')
-  process.exit(0) // now the "exit" event will fire
-})
-
-process.on('SIGTERM', () => {
-  log('got SIGTERM')
-  process.exit(0) // now the "exit" event will fire
-})
-
 /**
  * Run our program
  */
-if (require.main === module) {
-  main()
-    .then(code => {
-      if (code !== 0) {
-        process.exit(code)
-      }
-    })
-    .catch(err => {
-      console.error(chalk.redBright.bold('Error: ') + err.stack)
-      process.exit(1)
-    })
-}
+main()

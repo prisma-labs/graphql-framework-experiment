@@ -16,6 +16,7 @@ const childProcess = require('child_process')
 import cfgFactory from './cfg'
 import { Script } from 'vm'
 import Module = require('module')
+import { pog } from '../utils'
 
 // Remove app-runner.js from the argv array
 process.argv.splice(1, 1)
@@ -24,6 +25,7 @@ if (process.env.DEBUG_RUNNER) {
   process.env.DEBUG = process.env.DEBUG_RUNNER
 }
 
+const log = pog.sub('cli:dev:runner')
 const cfg = cfgFactory()
 const cwd = process.cwd()
 
@@ -67,11 +69,16 @@ process.on('uncaughtException', function(err) {
   if (!hasCustomHandler && !isTsError) {
     console.error(err.stack || err)
   }
-  ipc.send({
+  const errorMessage = {
     error: isTsError ? '' : err.name || 'Error',
     stack: err.stack,
     willTerminate: hasCustomHandler,
+  }
+  log('uncaughtException %O', {
+    error: errorMessage.error,
+    willTerminate: errorMessage.willTerminate,
   })
+  ipc.send(errorMessage)
 })
 
 // unhandled rejection will get whatever value the user rejected with, which
@@ -89,16 +96,21 @@ process.on('unhandledRejection', function(err: any) {
   // the process.
   // TODO we should not ASSUME that it will terminate...unless our framework
   // guarantees that :)
-  const hasCustomHandler = process.listeners('uncaughtException').length > 1
+  const hasCustomHandler = process.listeners('unhandledRejection').length > 1
   const isTsError = /TypeScript/.test(message)
   if (!hasCustomHandler && !isTsError) {
     console.error(stack || err)
   }
-  ipc.send({
+  const errorMessage = {
     error: isTsError ? '' : name,
     stack,
     willTerminate: hasCustomHandler,
+  }
+  log('unhandledRejection %O', {
+    error: errorMessage.error,
+    willTerminate: errorMessage.willTerminate,
   })
+  ipc.send(errorMessage)
 })
 
 // Hook into require() and notify the parent process about required files
