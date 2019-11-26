@@ -50,9 +50,9 @@ export function createStartModuleContent(config: StartModuleConfig): string {
         // import the user's app module
         require("${config.appPath}")
       `
-    : // TODO if user has disabled global singleton, then honour that here
-      stripIndent`
+    : stripIndent`
         // Start the server
+        const { app } = require('pumpkins')
         app.server.start()
       `
 
