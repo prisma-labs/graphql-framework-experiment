@@ -47,11 +47,12 @@ async function doCreateWorkspace(config: Options): Promise<Workspace> {
   const yarnLockHash = jetpack.inspect('yarn.lock', {
     checksum: 'md5',
   })!.md5
+  const ver = '5'
   const testVer = config.cacheVersion ?? '1'
   const currentGitBranch = (
     await createGit().raw(['rev-parse', '--abbrev-ref', 'HEAD'])
   ).trim()
-  const cacheKey = `v4-yarnlock-${yarnLockHash}-gitbranch-${currentGitBranch}-testv${testVer}`
+  const cacheKey = `v${ver}-yarnlock-${yarnLockHash}-gitbranch-${currentGitBranch}-testv${testVer}`
 
   dir.path = `/tmp/pumpkins-integration-test-project-bases/${config.name}-${cacheKey}`
 
