@@ -1,6 +1,6 @@
 {
   "name": "pumpkins",
-  "version": "0.0.0-master.a4998bd",
+  "version": "0.0.0-pr.84.5ce4cb8",
   "author": "Prisma Labs",
   "bin": {
     "pumpkins": "dist/cli/index.js"
@@ -37,6 +37,7 @@
     "@types/debug": "^4.1.5",
     "@types/jest": "^24.0.22",
     "@types/node": "^12.12.11",
+    "@types/node-fetch": "^2.5.4",
     "@types/prismjs": "^1.16.0",
     "@types/react": "^16.9.11",
     "chai": "^4",

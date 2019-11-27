@@ -55,25 +55,14 @@ yarn add pumpkins@master
 Add some files to get your app going:
 
 ```
-mkdir -p graphql
-touch graphql/schema.ts
-touch tsconfig.json
+mkdir -p app
+touch app/schema.ts
 ```
 
 Fill out your modules with some initial code:
 
 ```ts
-// tsconfig.json
-{
-  "compilerOptions": {
-    "skipLibCheck": true,
-    "strict": true
-  }
-}
-```
-
-```ts
-// graphql/schema.ts
+// app/schema.ts
 import { app } from 'pumpkins'
 
 app.objectType({
@@ -135,7 +124,7 @@ $ pumpkins build
 ```
 
 ```
-$ node build/start
+$ node node_modules/.build/start
 ```
 
 Reflecting on what we've just seen;

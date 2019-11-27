@@ -1,3 +1,8 @@
+/**
+ * This module exists because chokidar does not support silently adding modules
+ * to the watch list. We've started a discussion about adding this feature into
+ * core here: https://github.com/paulmillr/chokidar/issues/953
+ */
 import * as chokidar from 'chokidar'
 import * as fs from 'fs'
 import { pog } from '../utils'
