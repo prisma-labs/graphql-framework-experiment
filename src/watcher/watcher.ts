@@ -6,7 +6,7 @@ import { Opts, Process, Callbacks } from './types'
 import cfgFactory from './cfg'
 import { pog, baseIgnores } from '../utils'
 import { sendSigterm } from './utils'
-import { watch } from 'chokidar'
+import { watch, FileWatcher } from './chokidar'
 import { SERVER_READY_SIGNAL } from '../framework/dev-mode'
 
 const log = pog.sub('cli:dev:watcher')
@@ -32,17 +32,11 @@ export function createWatcher(opts: Opts) {
   // now we disable that... any tradeoff we did not think about?
   const watcher = watch('*/**/*', {
     ignored: /.*node_modules.*/,
-  })
+    onAll(event, file) {
+      log('file watcher event "%s" originating from file/dir %s', event, file)
 
-  watcher.on('all', (event, file, _stats) => {
-    log('file watcher event "%s" originating from file/dir %s', event, file)
-
-    // HACK why is chokidar bringing in e.g.:
-    // /Users/jasonkuhrt/projects/prisma/pumpkins/dist/index.js
-    // ... ???????????
-    if (file.match(/pumpkins/)) return
-
-    restartRunner(file)
+      restartRunner(file)
+    },
   })
 
   // watcher.on('unlink', file => {
@@ -220,7 +214,7 @@ function isRegExpMatch(value: string) {
 function startRunner(
   opts: Opts,
   cfg: ReturnType<typeof cfgFactory>,
-  watcher: any,
+  watcher: FileWatcher,
   callbacks?: { onError?: (willTerminate: any) => void }
 ): Process {
   log('will spawn runner')
@@ -315,7 +309,7 @@ function startRunner(
   }
 
   if (compiler.tsConfigPath) {
-    watcher.add(compiler.tsConfigPath)
+    watcher.addSilently(compiler.tsConfigPath)
   }
 
   // TODO See above LOC ~238
@@ -349,7 +343,7 @@ function startRunner(
       !isIgnored &&
       (cfg.deps === -1 || getLevel(message.required) <= cfg.deps)
     ) {
-      watcher.add(message.required)
+      watcher.addSilently(message.required)
     }
   })
 
