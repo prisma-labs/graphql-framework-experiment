@@ -1,6 +1,6 @@
 {
   "name": "pumpkins",
-  "version": "0.0.0-master.5f023f9",
+  "version": "0.0.0-master.60b0d7c",
   "author": "Prisma Labs",
   "bin": {
     "pumpkins": "dist/cli/index.js"
@@ -12,9 +12,9 @@
     "apollo-server-express": "^2.9.11",
     "arg": "^4.1.1",
     "chalk": "^3.0.0",
+    "chokidar": "^3.3.0",
     "common-tags": "^1.8.0",
     "debug": "^4.1.1",
-    "filewatcher": "^3.0.1",
     "fs-jetpack": "^2.2.3",
     "graphql": "^14.5.8",
     "ink": "^2.5.0",

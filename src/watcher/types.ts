@@ -30,10 +30,10 @@ export interface Compiler {
 }
 
 interface BooleanOpts {
-  allDeps?: boolean
-  deps?: boolean
+  // allDeps?: boolean
+  // deps?: boolean
   dedupe?: boolean
-  poll?: boolean
+  // poll?: boolean
   respawn: boolean
   'no-cache'?: boolean
   clear?: boolean
