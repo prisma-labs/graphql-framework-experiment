@@ -66,7 +66,6 @@ Fill out your modules with some initial code:
 // tsconfig.json
 {
   "compilerOptions": {
-    "skipLibCheck": true,
     "strict": true
   }
 }

@@ -5,6 +5,7 @@ import { BUILD_FOLDER_NAME } from '../constants'
 import { Layout } from '../framework/layout'
 import { findProjectDir } from './path'
 import chalk = require('chalk')
+import { stripIndent } from 'common-tags'
 
 const diagnosticHost: ts.FormatDiagnosticsHost = {
   getNewLine: () => ts.sys.newLine,
@@ -156,17 +157,23 @@ ${chalk.yellow('Warning:')} We scaffolded one for you at ${path.join(
     )}.
     `)
 
-    const tsConfigContent = `\
-{
-  "target": "es2016",
-  "module": "commonjs",
-  "lib": ["esnext"],
-  "rootDir": "${path.relative(projectDir, layout.sourceRoot)}",
-  "outDir": "${BUILD_FOLDER_NAME}",
-  "skipLibCheck": true,
-  "strict": true,
-}
-`
+    const tsConfigContent = stripIndent`
+      {
+        "target": "es2016",
+        "module": "commonjs",
+        "lib": ["esnext"],
+        "strict": true,
+        //
+        // The following settings are managed by Pumpkins, do not edit these
+        // manually. Please refer to
+        // https://github.com/prisma/pumpkins/issues/82 and contribute
+        // feedback/use-cases if you feel strongly about controlling these
+        // settings manually.
+        //
+        // "rootDir": "${path.relative(projectDir, layout.sourceRoot)}",
+        // "outDir": "${BUILD_FOLDER_NAME}",
+      }
+    `
     const tsConfigPath = path.join(projectDir, 'tsconfig.json')
     await fs.writeAsync(tsConfigPath, tsConfigContent)
     return 'warning'
