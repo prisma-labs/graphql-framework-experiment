@@ -5,6 +5,7 @@ import { BUILD_FOLDER_NAME } from '../constants'
 import { Layout } from '../framework/layout'
 import { findProjectDir } from './path'
 import chalk = require('chalk')
+import { stripIndent } from 'common-tags'
 
 const diagnosticHost: ts.FormatDiagnosticsHost = {
   getNewLine: () => ts.sys.newLine,
@@ -43,12 +44,6 @@ export function findConfigFile(fileName: string, opts: { required: boolean }) {
 }
 
 function fixConfig(config: ts.ParsedCommandLine, projectDir: string) {
-  // Otherwise user gets an error caused by out utils/log.ts module
-  // Remove this and see the build integration test fail for example
-  if (config.options.esModuleInterop === undefined) {
-    config.options.esModuleInterop = true
-  }
-
   // Target ES5 output by default (instead of ES3).
   if (config.options.target === undefined) {
     config.options.target = ts.ScriptTarget.ES5
@@ -156,17 +151,26 @@ ${chalk.yellow('Warning:')} We scaffolded one for you at ${path.join(
     )}.
     `)
 
-    const tsConfigContent = `\
-{
-  "target": "es2016",
-  "module": "commonjs",
-  "lib": ["esnext"],
-  "rootDir": "${path.relative(projectDir, layout.sourceRoot)}",
-  "outDir": "${BUILD_FOLDER_NAME}",
-  "skipLibCheck": true,
-  "strict": true,
-}
-`
+    const tsConfigContent = stripIndent`
+      {
+        "compilerOptions": {
+          "target": "es2016",
+          "module": "commonjs",
+          "lib": ["esnext"],
+          "strict": true,
+          //
+          // The following settings are managed by Pumpkins.
+          // Do not edit these manually. Please refer to
+          // https://github.com/prisma/pumpkins/issues/82
+          // Contribute feedback/use-cases if you feel strongly
+          // about controlling these settings manually.
+          //
+          // "rootDir": "${path.relative(projectDir, layout.sourceRoot)}",
+          // "outDir": "${BUILD_FOLDER_NAME}",
+          //
+        }
+      }
+    `
     const tsConfigPath = path.join(projectDir, 'tsconfig.json')
     await fs.writeAsync(tsConfigPath, tsConfigContent)
     return 'warning'
