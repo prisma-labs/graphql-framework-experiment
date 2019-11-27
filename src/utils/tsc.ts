@@ -153,19 +153,22 @@ ${chalk.yellow('Warning:')} We scaffolded one for you at ${path.join(
 
     const tsConfigContent = stripIndent`
       {
-        "target": "es2016",
-        "module": "commonjs",
-        "lib": ["esnext"],
-        "strict": true,
-        //
-        // The following settings are managed by Pumpkins, do not edit these
-        // manually. Please refer to
-        // https://github.com/prisma/pumpkins/issues/82 and contribute
-        // feedback/use-cases if you feel strongly about controlling these
-        // settings manually.
-        //
-        // "rootDir": "${path.relative(projectDir, layout.sourceRoot)}",
-        // "outDir": "${BUILD_FOLDER_NAME}",
+        "compilerOptions": {
+          "target": "es2016",
+          "module": "commonjs",
+          "lib": ["esnext"],
+          "strict": true,
+          //
+          // The following settings are managed by Pumpkins.
+          // Do not edit these manually. Please refer to
+          // https://github.com/prisma/pumpkins/issues/82
+          // Contribute feedback/use-cases if you feel strongly
+          // about controlling these settings manually.
+          //
+          // "rootDir": "${path.relative(projectDir, layout.sourceRoot)}",
+          // "outDir": "${BUILD_FOLDER_NAME}",
+          //
+        }
       }
     `
     const tsConfigPath = path.join(projectDir, 'tsconfig.json')
