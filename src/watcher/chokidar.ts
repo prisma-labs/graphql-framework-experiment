@@ -1,5 +1,8 @@
 import * as chokidar from 'chokidar'
 import * as fs from 'fs'
+import { pog } from '../utils'
+
+const log = pog.sub('file-watcher')
 
 export type FileWatcher = chokidar.FSWatcher & {
   /**
@@ -20,6 +23,7 @@ export function watch(
   paths: string | ReadonlyArray<string>,
   options?: FileWatcherOptions
 ): FileWatcher {
+  log('starting', { paths, ...options })
   const watcher = chokidar.watch(paths, options) as FileWatcher
   const programmaticallyWatchedFiles: string[] = []
 
@@ -31,7 +35,10 @@ export function watch(
   if (options && options.onAll) {
     watcher.on('all', (event, file, stats) => {
       if (programmaticallyWatchedFiles.includes(file) && event === 'add') {
+        log('ignoring file addition because was added silently %s', file)
         return
+      } else {
+        log('file watcher event "%s" originating from file/dir %s', event, file)
       }
 
       options.onAll!(event, file, stats)
