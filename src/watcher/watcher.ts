@@ -28,29 +28,12 @@ export function createWatcher(opts: Opts) {
   //
 
   // Create a file watcher
-  // TODO ts-node-dev used to support watching node_modules by default
-  // now we disable that... any tradeoff we did not think about?
   const watcher = watch('./**/*', {
     ignored: /.*node_modules.*/,
     onAll(_event, file) {
       restartRunner(file)
     },
   })
-
-  // watcher.on('unlink', file => {
-  // })
-
-  // watcher.on('unlinkDir', file => {
-  //   restartRunner(file)
-  // })
-
-  // // watcher.on('add', (file, _stats) => {
-  // //   restartRunner(file)
-  // // })
-
-  // watcher.on('change', (file, _stats) => {
-  //   restartRunner(file)
-  // })
 
   watcher.on('error', error => {
     console.error('file watcher encountered an error: %j', error)
@@ -83,9 +66,6 @@ export function createWatcher(opts: Opts) {
       process.exit()
     })
   })
-  // process.on('exit', () => {
-  //   stopRunnerOnBeforeExit()
-  // })
 
   function startRunnerDo(): Process {
     return startRunner(opts, cfg, watcher, {
@@ -147,14 +127,17 @@ export function createWatcher(opts: Opts) {
       log('reinitializing TS compilation')
       compiler.init(opts)
     }
+
     /* eslint-disable no-octal-escape */
     if (cfg.clear) process.stdout.write('\\033[2J\\033[H')
 
     compiler.compileChanged(file, opts.callbacks ?? {})
+
     if (runnerRestarting) {
       log('already starting')
       return
     }
+
     runnerRestarting = true
     if (!runner.exited) {
       log('runner is still executing, will restart upon its exit')
