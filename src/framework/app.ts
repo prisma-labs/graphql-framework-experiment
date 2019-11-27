@@ -7,7 +7,7 @@ import { createNexusSingleton, createNexusConfig } from './nexus'
 import { typegenAutoConfig } from 'nexus/dist/core'
 import { Plugin } from './plugin'
 import { createPrismaPlugin, isPrismaEnabledSync } from './plugins'
-import { stripIndent } from 'common-tags'
+import { stripIndent, stripIndents } from 'common-tags'
 import { sendServerReadySignalToDevModeMaster } from './dev-mode'
 
 const log = pog.sub(__filename)
@@ -19,9 +19,17 @@ type ServerOptions = {
   introspection?: boolean
 }
 
+const serverStartMessage = (port: number): string => {
+  return stripIndent`
+    Your GraphQL API is now ready at localhost over port ${4000}
+
+    GraphQL Playground: http://localhost:${port}/graphql
+  `
+}
+
 const defaultServerOptions: Required<ServerOptions> = {
   port: 4000,
-  startMessage: port => `🎃  Server ready at http://localhost:${port}/`,
+  startMessage: serverStartMessage,
   introspection: true,
   playground: true,
 }
