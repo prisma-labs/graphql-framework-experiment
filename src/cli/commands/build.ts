@@ -1,16 +1,17 @@
 import * as fs from 'fs-jetpack'
+import { BUILD_FOLDER_NAME } from '../../constants'
 import { scan } from '../../framework/layout'
 import { runPrismaGenerators } from '../../framework/plugins'
+import { createStartModuleContent } from '../../framework/start'
 import {
   compile,
+  findOrScaffoldTsConfig,
   generateArtifacts,
+  pog,
   readTsConfig,
   transpileModule,
-  pog,
 } from '../../utils'
-import { createStartModuleContent } from '../../framework/start'
 import { Command } from '../helpers'
-import { BUILD_FOLDER_NAME } from '../../constants'
 
 const log = pog.sub('cli:build')
 
@@ -22,9 +23,10 @@ export class Build implements Command {
   async parse(argv: string[]) {
     // Handle Prisma integration
     // TODO pluggable CLI
-    await runPrismaGenerators()
-
     const layout = await scan()
+
+    await findOrScaffoldTsConfig(layout)
+    await runPrismaGenerators()
 
     log('running typegen')
     console.log('🎃  Generating Nexus artifacts ...')

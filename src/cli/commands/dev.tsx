@@ -2,11 +2,11 @@ import { Box, Instance, render } from 'ink'
 import React from 'react'
 import * as readline from 'readline'
 import { Layout, scan } from '../../framework/layout'
+import { runPrismaGenerators } from '../../framework/plugins'
 import { createStartModuleContent } from '../../framework/start'
-import { pog } from '../../utils'
+import { findOrScaffoldTsConfig, pog } from '../../utils'
 import { createWatcher } from '../../watcher'
 import { Command } from '../helpers'
-import { runPrismaGenerators } from '../../framework/plugins'
 
 const log = pog.sub('cli:dev')
 
@@ -23,7 +23,10 @@ export class Dev implements Command {
       process.exit(0)
     }
 
-    const [layout] = await Promise.all([scan(), runPrismaGenerators()])
+    const layout = await scan()
+
+    await findOrScaffoldTsConfig(layout)
+    await runPrismaGenerators()
 
     // Setup ui/log toggling system
     let state:

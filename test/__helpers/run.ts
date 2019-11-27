@@ -1,7 +1,12 @@
 import { spawnSync, SpawnSyncOptions } from 'child_process'
 import * as path from 'path'
+import { withoutColors } from './utils'
 
-type RunResult = { stderr: string; stdout: string; status: null | number }
+export type RunResult = {
+  stderr: string
+  stdout: string
+  status: null | number
+}
 type RunOptions = Omit<SpawnSyncOptions, 'encoding'> & {
   require?: boolean
 }
@@ -26,7 +31,7 @@ export const run = (command: string, options?: RunOptions): RunResult => {
     `)
   }
 
-  return { stderr, stdout, status }
+  return withoutColors({ stderr, stdout, status })
 }
 
 export const createRunner = (cwd: string): typeof run => {

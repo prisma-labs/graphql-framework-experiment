@@ -16,7 +16,7 @@ Object {
   "children": Array [
     Object {
       "name": "app.js",
-      "size": 319,
+      "size": 370,
       "type": "file",
     },
     Object {
@@ -26,17 +26,17 @@ Object {
     },
     Object {
       "name": "schema.js",
-      "size": 366,
+      "size": 499,
       "type": "file",
     },
     Object {
       "name": "start.js",
-      "size": 625,
+      "size": 480,
       "type": "file",
     },
   ],
-  "name": "dist",
-  "size": 1578,
+  "name": ".build",
+  "size": 1617,
   "type": "dir",
 }
 `;
@@ -57,17 +57,17 @@ Object {
   "children": Array [
     Object {
       "name": "a.js",
-      "size": 95,
+      "size": 213,
       "type": "file",
     },
     Object {
       "name": "start.js",
-      "size": 472,
+      "size": 509,
       "type": "file",
     },
   ],
-  "name": "build",
-  "size": 567,
+  "name": ".build",
+  "size": 722,
   "type": "dir",
 }
 `;
@@ -88,17 +88,17 @@ Object {
   "children": Array [
     Object {
       "name": "schema.js",
-      "size": 95,
+      "size": 213,
       "type": "file",
     },
     Object {
       "name": "start.js",
-      "size": 470,
+      "size": 507,
       "type": "file",
     },
   ],
-  "name": "build",
-  "size": 565,
+  "name": ".build",
+  "size": 720,
   "type": "dir",
 }
 `;

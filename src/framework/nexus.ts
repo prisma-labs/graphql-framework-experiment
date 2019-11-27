@@ -2,8 +2,6 @@ import * as nexus from 'nexus'
 import { generateSchema } from 'nexus/dist/core'
 import * as fs from 'fs-jetpack'
 import * as Nexus from 'nexus'
-import * as path from 'path'
-import { findProjectDir } from '../utils'
 
 export function createNexusSingleton() {
   const __types: any[] = []
