@@ -13,8 +13,8 @@ export default function(opts?: Omit<Opts, 'eval'>) {
 
   if (opts) {
     // Overwrite with CLI opts ...
-    if (opts.allDeps) c.deps = -1
-    if (!opts.deps) c.deps = 0
+    // if (opts.allDeps) c.deps = -1
+    // if (!opts.deps) c.deps = 0
     if (opts.dedupe) c.dedupe = true
     if (opts.respawn) c.respawn = true
   }

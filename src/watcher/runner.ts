@@ -77,10 +77,7 @@ process.on('uncaughtException', function(err) {
     stack: err.stack,
     willTerminate: hasCustomHandler,
   }
-  log('uncaughtException %O', {
-    error: errorMessage.error,
-    willTerminate: errorMessage.willTerminate,
-  })
+  log('uncaughtException %O', errorMessage)
   ipc.send(errorMessage)
 })
 
@@ -109,10 +106,7 @@ process.on('unhandledRejection', function(err: any) {
     stack,
     willTerminate: hasCustomHandler,
   }
-  log('unhandledRejection %O', {
-    error: stack,
-    willTerminate: errorMessage.willTerminate,
-  })
+  log('unhandledRejection %O', errorMessage)
   ipc.send(errorMessage)
 })
 

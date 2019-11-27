@@ -4,9 +4,10 @@ import { compiler } from './compiler'
 import * as ipc from './ipc'
 import { Opts, Process, Callbacks } from './types'
 import cfgFactory from './cfg'
-import { pog } from '../utils'
+import { pog, baseIgnores } from '../utils'
 import { sendSigterm } from './utils'
-const filewatcher = require('filewatcher')
+import { watch, FileWatcher } from './chokidar'
+import { SERVER_READY_SIGNAL } from '../framework/dev-mode'
 
 const log = pog.sub('cli:dev:watcher')
 
@@ -27,28 +28,38 @@ export function createWatcher(opts: Opts) {
   //
 
   // Create a file watcher
-  const watcher = filewatcher({
-    forcePolling: opts.poll,
-    interval: parseInt(opts.interval!, 10),
-    debounce: parseInt(opts.debounce!, 10),
-    recursive: true,
+  // TODO ts-node-dev used to support watching node_modules by default
+  // now we disable that... any tradeoff we did not think about?
+  const watcher = watch('*/**/*', {
+    ignored: /.*node_modules.*/,
+    onAll(event, file) {
+      log('file watcher event "%s" originating from file/dir %s', event, file)
+
+      restartRunner(file)
+    },
   })
 
-  watcher.on('change', (file: string, isManualRestart: boolean) => {
-    log('file watcher change event')
-    restartRunner(file, isManualRestart)
+  // watcher.on('unlink', file => {
+  // })
+
+  // watcher.on('unlinkDir', file => {
+  //   restartRunner(file)
+  // })
+
+  // // watcher.on('add', (file, _stats) => {
+  // //   restartRunner(file)
+  // // })
+
+  // watcher.on('change', (file, _stats) => {
+  //   restartRunner(file)
+  // })
+
+  watcher.on('error', error => {
+    console.error('file watcher encountered an error: %j', error)
   })
 
-  watcher.on('fallback', function(limit: number) {
-    log('file watcher fallback event')
-    console.warn(
-      'node-dev ran out of file handles after watching %s files.',
-      limit
-    )
-    console.warn('Falling back to polling which uses more CPU.')
-    console.info('Run ulimit -n 10000 to increase the file descriptor limit.')
-    if (cfg.deps)
-      console.info('... or add `--no-deps` to use less file handles.')
+  watcher.on('ready', () => {
+    log('file watcher is ready')
   })
 
   // Create a mutable runner
@@ -133,25 +144,19 @@ export function createWatcher(opts: Opts) {
     }
   }
 
-  function restartRunner(file: string, isManualRestart: boolean) {
+  function restartRunner(file: string) {
     if (file === compiler.tsConfigPath) {
       log('reinitializing TS compilation')
       compiler.init(opts)
     }
     /* eslint-disable no-octal-escape */
     if (cfg.clear) process.stdout.write('\\033[2J\\033[H')
-    if (isManualRestart === true) {
-      log('restarting manual restart from user')
-    } else {
-      log('Restarting %s has been modified')
-    }
+
     compiler.compileChanged(file, opts.callbacks ?? {})
     if (runnerRestarting) {
       log('already starting')
       return
     }
-    log('removing all watchers from files')
-    watcher.removeAll()
     runnerRestarting = true
     if (!runner.exited) {
       log('runner is still executing, will restart upon its exit')
@@ -209,7 +214,7 @@ function isRegExpMatch(value: string) {
 function startRunner(
   opts: Opts,
   cfg: ReturnType<typeof cfgFactory>,
-  watcher: any,
+  watcher: FileWatcher,
   callbacks?: { onError?: (willTerminate: any) => void }
 ): Process {
   log('will spawn runner')
@@ -248,31 +253,34 @@ function startRunner(
     }
   })
 
-  const compileReqWatcher = filewatcher({ forcePolling: opts.poll })
-  let currentCompilePath: string
-  fs.writeFileSync(compiler.getCompileReqFilePath(), '')
-  compileReqWatcher.add(compiler.getCompileReqFilePath())
-  compileReqWatcher.on('change', function(file: string) {
-    log('compileReqWatcher event change %s', file)
-    fs.readFile(file, 'utf-8', function(err, data) {
-      if (err) {
-        console.error('error reading compile request file', err)
-        return
-      }
-      const [compile, compiledPath] = data.split('\n')
-      if (currentCompilePath === compiledPath) {
-        return
-      }
-      currentCompilePath = compiledPath
-      if (compiledPath) {
-        compiler.compile({
-          compile,
-          compiledPath,
-          callbacks: opts.callbacks ?? {},
-        })
-      }
-    })
-  })
+  // TODO We have removed this code since switching to chokidar. What is the
+  // tradeoff exactly that we are making by no longer using this logic?
+  //
+  // const compileReqWatcher = filewatcher({ forcePolling: opts.poll })
+  // let currentCompilePath: string
+  // fs.writeFileSync(compiler.getCompileReqFilePath(), '')
+  // compileReqWatcher.add(compiler.getCompileReqFilePath())
+  // compileReqWatcher.on('change', function(file: string) {
+  //   log('compileReqWatcher event change %s', file)
+  //   fs.readFile(file, 'utf-8', function(err, data) {
+  //     if (err) {
+  //       console.error('error reading compile request file', err)
+  //       return
+  //     }
+  //     const [compile, compiledPath] = data.split('\n')
+  //     if (currentCompilePath === compiledPath) {
+  //       return
+  //     }
+  //     currentCompilePath = compiledPath
+  //     if (compiledPath) {
+  //       compiler.compile({
+  //         compile,
+  //         compiledPath,
+  //         callbacks: opts.callbacks ?? {},
+  //       })
+  //     }
+  //   })
+  // })
 
   child.on('exit', (code, signal) => {
     log('runner exiting')
@@ -301,25 +309,26 @@ function startRunner(
   }
 
   if (compiler.tsConfigPath) {
-    watcher.add(compiler.tsConfigPath)
+    watcher.addSilently(compiler.tsConfigPath)
   }
 
-  ipc.on(
-    child,
-    'compile',
-    (message: { compiledPath: string; compile: string }) => {
-      log('got runner message "compile" %s', message)
-      if (
-        !message.compiledPath ||
-        currentCompilePath === message.compiledPath
-      ) {
-        return
-      }
-      currentCompilePath = message.compiledPath
-      ;(message as any).callbacks = opts.callbacks
-      compiler.compile({ ...message, callbacks: opts.callbacks ?? {} })
-    }
-  )
+  // TODO See above LOC ~238
+  // ipc.on(
+  //   child,
+  //   'compile',
+  //   (message: { compiledPath: string; compile: string }) => {
+  //     log('got runner message "compile" %s', message)
+  //     if (
+  //       !message.compiledPath ||
+  //       currentCompilePath === message.compiledPath
+  //     ) {
+  //       return
+  //     }
+  //     currentCompilePath = message.compiledPath
+  //     ;(message as any).callbacks = opts.callbacks
+  //     compiler.compile({ ...message, callbacks: opts.callbacks ?? {} })
+  //   }
+  // )
 
   // Listen for `required` messages and watch the required file.
   ipc.on(child, 'required', function(message) {
@@ -334,7 +343,7 @@ function startRunner(
       !isIgnored &&
       (cfg.deps === -1 || getLevel(message.required) <= cfg.deps)
     ) {
-      watcher.add(message.required)
+      watcher.addSilently(message.required)
     }
   })
 
@@ -344,10 +353,10 @@ function startRunner(
     callbacks?.onError?.(m.willTerminate)
   })
 
-  ipc.on(child, 'ready', message => {
-    log('got runner message "ready" %s', message)
+  ipc.on(child, SERVER_READY_SIGNAL, message => {
+    log('got runner signal "%s"', SERVER_READY_SIGNAL)
     if (opts.callbacks?.onEvent) {
-      opts.callbacks?.onEvent('ready')
+      opts.callbacks?.onEvent(SERVER_READY_SIGNAL)
     }
   })
 
