@@ -1,22 +1,22 @@
 // TODO raise errors/feedback if the user has not supplied a photon generator
 // block in their PSL
 
-import {
-  trimExt,
-  pumpkinsPath,
-  writePumpkinsFile,
-  pog,
-  findFiles,
-} from '../../utils'
 import * as Prisma from '@prisma/sdk'
 import chalk from 'chalk'
 import * as fs from 'fs-jetpack'
 import { nexusPrismaPlugin, Options } from 'nexus-prisma'
 import * as path from 'path'
+import {
+  findFiles,
+  pog,
+  pumpkinsPath,
+  trimExt,
+  writePumpkinsFile,
+} from '../../utils'
 import { suggestionList } from '../../utils/levenstein'
 import { printStack } from '../../utils/stack/printStack'
-import { Plugin } from '../plugin'
 import { shouldGenerateArtifacts } from '../nexus'
+import { Plugin } from '../plugin'
 
 type UnknownFieldName = {
   error: Error
@@ -254,7 +254,13 @@ export async function runPrismaGenerators(
     console.log('🎃  Running Prisma generators ...')
   }
 
-  const generators = await getGenerators(prisma.schemaPath)
+  let generators = await getGenerators(prisma.schemaPath)
+
+  if (!generators.find(g => g.options?.generator.provider === 'photonjs')) {
+    await scaffoldPhotonGeneratorBlock(prisma.schemaPath)
+    // TODO: Generate it programmatically instead for performance reason
+    generators = await getGenerators(prisma.schemaPath)
+  }
 
   for (const g of generators) {
     const resolvedSettings = getGeneratorResolvedSettings(g)
@@ -363,4 +369,23 @@ async function shouldRegeneratePhoton(
     log('...did not find generated photon package or its local copy of PSL')
     return true
   }
+}
+
+async function scaffoldPhotonGeneratorBlock(schemaPath: string) {
+  console.log(`\
+${chalk.yellow(
+  'Warning:'
+)} A PhotonJS generator block is needed in your Prisma Schema at "${path.relative(
+    process.cwd(),
+    schemaPath
+  )}".
+${chalk.yellow('Warning:')} We scaffolded one for you.
+`)
+  const schemaContent = await fs.readAsync(schemaPath)!
+  const generatorBlock = `\
+generator photon {
+  provider = "photonjs"
+}
+`
+  await fs.writeAsync(schemaPath, `${generatorBlock}\n${schemaContent}`)
 }
