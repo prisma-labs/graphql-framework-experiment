@@ -30,7 +30,7 @@ export function createWatcher(opts: Opts) {
   // Create a file watcher
   // TODO ts-node-dev used to support watching node_modules by default
   // now we disable that... any tradeoff we did not think about?
-  const watcher = watch('.', {
+  const watcher = watch('./**/*', {
     ignored: /.*node_modules.*/,
     onAll(_event, file) {
       restartRunner(file)
