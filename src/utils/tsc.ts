@@ -1,6 +1,10 @@
-import * as ts from 'typescript'
+import * as fs from 'fs-jetpack'
 import * as path from 'path'
+import * as ts from 'typescript'
 import { BUILD_FOLDER_NAME } from '../constants'
+import { Layout } from '../framework/layout'
+import { findProjectDir } from './path'
+import chalk = require('chalk')
 
 const diagnosticHost: ts.FormatDiagnosticsHost = {
   getNewLine: () => ts.sys.newLine,
@@ -111,4 +115,62 @@ export function transpileModule(
   compilerOptions: ts.CompilerOptions
 ): string {
   return ts.transpileModule(input, { compilerOptions }).outputText
+}
+
+/**
+ * Find or scaffold a tsconfig.json file
+ * Process will exit if package.json is not in the projectDir**
+ */
+export async function findOrScaffoldTsConfig(
+  layout: Layout,
+  options: { exitAfterError: boolean } = { exitAfterError: true }
+): Promise<'success' | 'warning' | 'error'> {
+  const tsConfigPath = findConfigFile('tsconfig.json', { required: false })
+  const projectDir = findProjectDir()
+
+  if (tsConfigPath) {
+    if (path.dirname(tsConfigPath) !== projectDir) {
+      console.error(
+        chalk`{red ERROR:} Your tsconfig.json file needs to be in your project root directory`
+      )
+      console.error(
+        chalk`{red ERROR:} Found ${tsConfigPath}, expected ${path.join(
+          projectDir,
+          'tsconfig.json'
+        )}`
+      )
+      if (options.exitAfterError) {
+        process.exit(1)
+      } else {
+        return 'error'
+      }
+    }
+  }
+
+  if (!tsConfigPath) {
+    console.log(`
+${chalk.yellow('Warning:')} We could not find a "tsconfig.json" file.
+${chalk.yellow('Warning:')} We scaffolded one for you at ${path.join(
+      projectDir,
+      'tsconfig.json'
+    )}.
+    `)
+
+    const tsConfigContent = `\
+{
+  "target": "es2016",
+  "module": "commonjs",
+  "lib": ["esnext"],
+  "rootDir": "${path.relative(projectDir, layout.sourceRoot)}",
+  "outDir": "${BUILD_FOLDER_NAME}",
+  "skipLibCheck": true,
+  "strict": true,
+}
+`
+    const tsConfigPath = path.join(projectDir, 'tsconfig.json')
+    await fs.writeAsync(tsConfigPath, tsConfigContent)
+    return 'warning'
+  }
+
+  return 'success'
 }

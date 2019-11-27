@@ -49,19 +49,13 @@ export const writeCachedFile = async (
 }
 
 export function findProjectDir() {
-  let filePath = findConfigFile('package.json', { required: false })
+  let packageJsonPath = findConfigFile('package.json', { required: false })
 
-  if (!filePath) {
-    filePath = findConfigFile('tsconfig.json', { required: false })
+  if (packageJsonPath) {
+    return path.dirname(packageJsonPath)
   }
 
-  if (!filePath) {
-    throw new Error(
-      'Could not find the project directory. A "package.json" or "tsconfig.json" file is required.'
-    )
-  }
-
-  return path.dirname(filePath)
+  return process.cwd()
 }
 
 // build/index.js => index.ts

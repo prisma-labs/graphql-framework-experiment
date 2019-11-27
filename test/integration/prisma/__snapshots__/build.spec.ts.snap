@@ -1,0 +1,33 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`can build a prisma framework project 1`] = `
+Object {
+  "status": 0,
+  "stderr": "",
+  "stdout": "🎃  Running Prisma generators ...
+🎃  Generating Nexus artifacts ...
+🎃  Compiling ...
+🎃  Pumpkins server successfully compiled!
+",
+}
+`;
+
+exports[`can build a prisma framework project 2`] = `
+Object {
+  "children": Array [
+    Object {
+      "name": "schema.js",
+      "size": 239,
+      "type": "file",
+    },
+    Object {
+      "name": "start.js",
+      "size": 507,
+      "type": "file",
+    },
+  ],
+  "name": ".build",
+  "size": 746,
+  "type": "dir",
+}
+`;
