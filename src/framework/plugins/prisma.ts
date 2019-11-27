@@ -34,7 +34,7 @@ type UnknownOutputType = {
 
 type OptionsWithHook = Options & {
   onUnknownFieldName: (params: UnknownFieldName) => void
-  onUnknownOutputType: (params: UnknownOutputType) => void
+  onUnknownFieldType: (params: UnknownOutputType) => void
 }
 
 const log = pog.sub(__filename)
@@ -88,7 +88,7 @@ export const createPrismaPlugin: () => Plugin = () => {
           },
           shouldGenerateArtifacts: shouldGenerateArtifacts(),
           onUnknownFieldName: params => renderUnknownFieldNameError(params),
-          onUnknownOutputType: params => renderUnknownOutputTypeError(params),
+          onUnknownFieldType: params => renderUnknownOutputTypeError(params),
         } as OptionsWithHook),
       ],
     },
