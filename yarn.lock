@@ -4097,10 +4097,10 @@ neo-async@^2.6.0:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.1.tgz#ac27ada66167fa8849a6addd837f6b189ad2081c"
   integrity sha512-iyam8fBuCUpWeKPGpaNMetEocMt364qkCsfL9JuhjXX6dRnguRVOfk2GZaDpPjcOKiiXCPINZC1GczQ7iTq3Zw==
 
-nexus-prisma@^0.6.1:
-  version "0.6.1"
-  resolved "https://registry.yarnpkg.com/nexus-prisma/-/nexus-prisma-0.6.1.tgz#219641cf2e25da58385455382ed57eeb3c13d96e"
-  integrity sha512-V5/dQ/i5ZFmPkQuTLjtssddZ5Zq7QbvhrpXwf4TYrXLV9YzDrxF9uR/2A7tpSiWmU4u2ueeRX8nByE7oeNFJGg==
+nexus-prisma@^0.6.2-next.1:
+  version "0.6.2-next.1"
+  resolved "https://registry.yarnpkg.com/nexus-prisma/-/nexus-prisma-0.6.2-next.1.tgz#bcb8a7b1b61ab0b79fa9bd3ddb9f6158a3b835af"
+  integrity sha512-jxUElzShm4bN+YFI8tUK1RB1bQm+ghScBW02+Uf9pEV6EiTHM1CSy+KnS/77ULj9omlWQisvvB16UVwC3kDnBg==
   dependencies:
     camelcase "^5.3.1"
     fs-extra "^8.1.0"

@@ -36,7 +36,7 @@ export const printStack = ({ callsite }: ErrorArgs): PrintStackResult => {
     const stack = stackTraceParser.parse(callsite)
     // TODO: more resilient logic to find the right trace
     const trace = stack.find(
-      t => t.file && !t.file.includes('nexus-prisma/src/proxifier.ts')
+      t => t.file && !t.file.includes('nexus-prisma/src/')
     )
     if (
       process.env.NODE_ENV !== 'production' &&
