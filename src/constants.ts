@@ -1,1 +1,1 @@
-export const BUILD_FOLDER_NAME = 'build'
+export const BUILD_FOLDER_NAME = 'node_modules/.build'

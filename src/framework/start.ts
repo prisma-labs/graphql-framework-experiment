@@ -1,6 +1,6 @@
 import { stripIndent } from 'common-tags'
 import { printStaticSchemaImports } from './schema'
-import { Layout } from './layout'
+import { Layout, relativeTranspiledImportPath } from './layout'
 
 type StartModuleConfig = {
   stage: 'build' | 'dev'
@@ -36,19 +36,26 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   `
 
   if (config.stage === 'build') {
-    output += '\n\n\n'
-    output += stripIndent`
-      // Import the user's schema modules
-      // This MUST come after pumpkins package has been imported for its side-effects
-      ${printStaticSchemaImports(config.layout)}
-    `
+    const staticImports = printStaticSchemaImports(config.layout)
+    if (staticImports !== '') {
+      output += '\n\n\n'
+      output += stripIndent`
+        // Import the user's schema modules
+        // This MUST come after pumpkins package has been imported for its side-effects
+        ${staticImports}
+      `
+    }
   }
 
   output += '\n\n\n'
   output += config.appPath
     ? stripIndent`
         // import the user's app module
-        require("${config.appPath}")
+        require("${
+          config.stage === 'build'
+            ? relativeTranspiledImportPath(config.layout, config.appPath)
+            : config.appPath
+        }")
       `
     : stripIndent`
         // Start the server

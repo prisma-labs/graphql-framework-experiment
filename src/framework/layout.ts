@@ -1,9 +1,19 @@
-import { findFile, findFiles, findSchemaDirOrModules, pog } from '../utils'
+import { findFile, findSchemaDirOrModules, pog, stripExt } from '../utils'
 import * as Path from 'path'
 
 const log = pog.sub('layout')
 
-export function calcSourceRootToModule(layout: Layout, modulePath: string) {
+/**
+ * Build up what the import path will be for a module in its transpiled context.
+ */
+export function relativeTranspiledImportPath(
+  layout: Layout,
+  modulePath: string
+): string {
+  return './' + stripExt(calcSourceRootToModule(layout, modulePath))
+}
+
+function calcSourceRootToModule(layout: Layout, modulePath: string) {
   return Path.relative(layout.sourceRoot, modulePath)
 }
 

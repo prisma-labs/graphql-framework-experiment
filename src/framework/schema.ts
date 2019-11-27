@@ -1,6 +1,6 @@
 import * as fs from 'fs-jetpack'
 import { pog, flatMap, baseIgnores, stripExt } from '../utils'
-import { Layout, calcSourceRootToModule } from './layout'
+import { Layout, relativeTranspiledImportPath } from './layout'
 // import { stripIndents } from 'common-tags'
 
 const log = pog.sub(__filename)
@@ -81,7 +81,11 @@ export function requireSchemaModules(): void {
  */
 export function printStaticSchemaImports(layout: Layout): string {
   return findSchemaModules().expandedModules.reduce((script, modulePath) => {
-    const relPath = calcSourceRootToModule(layout, modulePath)
-    return `${script}\nimport './${stripExt(relPath)}'`
+    const relPath = relativeTranspiledImportPath(layout, modulePath)
+    return `${script}\n${printSideEffectsImport(relPath)}`
   }, '')
+}
+
+function printSideEffectsImport(modulePath: string): string {
+  return `import '${modulePath}'`
 }
