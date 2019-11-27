@@ -44,12 +44,6 @@ export function findConfigFile(fileName: string, opts: { required: boolean }) {
 }
 
 function fixConfig(config: ts.ParsedCommandLine, projectDir: string) {
-  // Otherwise user gets an error caused by out utils/log.ts module
-  // Remove this and see the build integration test fail for example
-  if (config.options.esModuleInterop === undefined) {
-    config.options.esModuleInterop = true
-  }
-
   // Target ES5 output by default (instead of ES3).
   if (config.options.target === undefined) {
     config.options.target = ts.ScriptTarget.ES5
