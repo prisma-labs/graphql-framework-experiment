@@ -214,6 +214,14 @@ export function createApp(appConfig?: { types?: any }): App {
               Object.assign(ctx, require(contextPath).createContext(req))
             }
 
+            // Integrate context from app context api
+            // TODO support async; probably always supported by apollo server
+            // TODO good runtime feedback to user if something goes wrong
+            //
+            for (const contextContributor of contextContributors) {
+              Object.assign(ctx, contextContributor(req))
+            }
+
             return ctx
           },
           schema,
