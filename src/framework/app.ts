@@ -34,8 +34,16 @@ const defaultServerOptions: Required<ServerOptions> = {
   playground: true,
 }
 
+// TODO plugins could augment the request
+// plugins will be able to use typegen to signal this fact
+// all places in the framework where the req object is referenced should be
+// actually referencing the typegen version, so that it reflects the req +
+// plugin augmentations type
+type ContextContributor<T extends {}> = (req: Express.Request) => T
+
 export type App = {
   use: (plugin: Plugin<any>) => App
+  addContext: <T extends {}>(contextContributor: ContextContributor<T>) => App
   // installGlobally: () => App
   server: {
     start: (config?: ServerOptions) => Promise<void>
@@ -71,6 +79,8 @@ export function createApp(appConfig?: { types?: any }): App {
 
   const plugins: Plugin[] = []
 
+  const contextContributors: ContextContributor<any>[] = []
+
   const api: App = {
     // TODO bring this back pending future discussion
     // installGlobally() {
@@ -79,6 +89,10 @@ export function createApp(appConfig?: { types?: any }): App {
     // },
     use(plugin) {
       plugins.push(plugin)
+      return api
+    },
+    addContext(contextContributor) {
+      contextContributors.push(contextContributor)
       return api
     },
     queryType,
