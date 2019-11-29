@@ -16,12 +16,25 @@ const childProcess = require('child_process')
 import cfgFactory from './cfg'
 import { Script } from 'vm'
 import Module = require('module')
-import { pog } from '../utils'
+import { pog, runCompilerExtensions, readTsConfig } from '../utils'
 import { register } from 'ts-node'
+
+const log = pog.sub('cli:dev:runner')
 
 register({
   transpileOnly: true,
 })
+
+log('starting context type extraction')
+import * as ts from 'typescript'
+const tsConfig = readTsConfig()
+const program = ts.createProgram({
+  rootNames: tsConfig.fileNames,
+  options: tsConfig.options,
+})
+const checker = program.getTypeChecker()
+runCompilerExtensions({ checker, program })
+log('finished context type extraction')
 
 // Remove app-runner.js from the argv array
 process.argv.splice(1, 1)
@@ -33,7 +46,6 @@ if (process.env.DEBUG_RUNNER) {
   process.env.DEBUG = process.env.DEBUG_RUNNER
 }
 
-const log = pog.sub('cli:dev:runner')
 const cfg = cfgFactory()
 const cwd = process.cwd()
 

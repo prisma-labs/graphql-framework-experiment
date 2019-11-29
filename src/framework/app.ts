@@ -165,7 +165,7 @@ export function createApp(appConfig?: { types?: any }): App {
           const config = await configurator(schema, outputPath)
 
           // Integrate the addContext calls
-          const addContextContributionsFilePath = `${process.cwd()}/node_modules/.pumpkins/add-context-contributions.ts`
+          const addContextContributionsFilePath = `${process.cwd()}/node_modules/@types/typegen-pumpkins-add-context/index.d.ts`
           if (fs.exists(addContextContributionsFilePath)) {
             addContextSource({
               importAlias: 'ContextFromAddContext',

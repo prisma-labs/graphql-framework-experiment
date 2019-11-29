@@ -7,6 +7,7 @@ import { findProjectDir } from './path'
 import chalk = require('chalk')
 import { stripIndent } from 'common-tags'
 import { pog } from './pog'
+import { removeWrite } from './fs'
 
 const log = pog.sub('compiler')
 
@@ -134,11 +135,11 @@ export function runCompilerExtensions({
   })
 
   if (contextTypeContributions.length > 0) {
-    fs.write(
-      'node_modules/.pumpkins/add-context-contributions.ts',
+    removeWrite(
+      'node_modules/@types/typegen-pumpkins-add-context/index.d.ts',
       stripIndent`
-      export type Context = ${contextTypeContributions.join(' & ')}
-    `
+        export type Context = ${contextTypeContributions.join(' & ')}
+      `
     )
   }
 
