@@ -7,26 +7,25 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-
 - [Introduction](#introduction)
-    - [Getting Started](#getting-started)
+  - [Getting Started](#getting-started)
   - [Adding Prisma Framework](#adding-prisma-framework)
 - [Conventions](#conventions)
-    - [Modules Overview](#modules-overview)
-    - [`schema.ts` | `schema/*`](#schemats--schema)
-    - [`app.ts`](#appts)
-        - [Aliases](#aliases)
-    - [Example Layouts](#example-layouts)
+  - [Modules Overview](#modules-overview)
+  - [`schema.ts` | `schema/*`](#schemats--schema)
+  - [`app.ts`](#appts)
+    - [Aliases](#aliases)
+  - [Example Layouts](#example-layouts)
 - [Prisma Support](#prisma-support)
 - [API](#api)
-    - [`app`](#app)
-    - [`app.addContext`](#appaddcontext)
-    - [`app.<nexusDefBlock>`](#appnexusdefblock)
+  - [`app`](#app)
+  - [`app.addContext`](#appaddcontext)
+  - [`app.<nexusDefBlock>`](#appnexusdefblock)
 - [CLI](#cli)
 - [Development](#development)
-    - [Overview](#overview)
-    - [Testing](#testing)
-    - [Working With Example Apps via Linking](#working-with-example-apps-via-linking)
+  - [Overview](#overview)
+  - [Testing](#testing)
+  - [Working With Example Apps via Linking](#working-with-example-apps-via-linking)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -117,7 +116,7 @@ You should get back:
 Once you're ready to go to production just build your app and run the start module with node.
 
 ```
-$ pumpkins build
+$ yarn pumpkins build
 ```
 
 ```
@@ -234,8 +233,6 @@ Reflecting on what we've just seen;
 <br>
 
 # Conventions
-
-### Modules Overview
 
 ### `schema.ts` | `schema/*`
 
