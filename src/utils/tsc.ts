@@ -3,7 +3,6 @@ import * as path from 'path'
 import * as ts from 'typescript'
 import { BUILD_FOLDER_NAME } from '../constants'
 import { Layout } from '../framework/layout'
-import { findProjectDir } from './path'
 import chalk = require('chalk')
 import { stripIndent } from 'common-tags'
 import { pog } from './pog'
@@ -47,29 +46,12 @@ export function findConfigFile(fileName: string, opts: { required: boolean }) {
   return configPath
 }
 
-function fixConfig(config: ts.ParsedCommandLine, projectDir: string) {
-  // Target ES5 output by default (instead of ES3).
-  if (config.options.target === undefined) {
-    config.options.target = ts.ScriptTarget.ES5
-  }
-
-  // Target CommonJS modules by default (instead of magically switching to ES6 when the target is ES6).
-  if (config.options.module === undefined) {
-    config.options.module = ts.ModuleKind.CommonJS
-  }
-
-  if (config.options.outDir === undefined) {
-    config.options.outDir = BUILD_FOLDER_NAME
-  }
-
-  // config.options.rootDir = projectDir
-
-  return config
-}
-
-export function readTsConfig() {
+/**
+ * Fetch the tsconfig file for pumpkins, handling special post-processing for
+ * pumpkins projects etc.
+ */
+export function readTsConfig(layout: Layout): ts.ParsedCommandLine {
   const tsConfigPath = findConfigFile('tsconfig.json', { required: true })
-  const projectDir = path.dirname(tsConfigPath)
   const tsConfigContent = ts.readConfigFile(tsConfigPath, ts.sys.readFile)
 
   if (tsConfigContent.error) {
@@ -81,14 +63,54 @@ export function readTsConfig() {
     )
   }
 
+  /**
+   * Only consider modules within our source root so that non-app TS files (e.g.
+   * prisma/seed.ts) do not get include into the  scope of compiler work (by
+   * default it will be) which then leads to unexpected emit folder structures or complaining that there are included files outside of `rootDir`.
+   *
+   * Note that the reason this is not part of the post-parse fixing (which is
+   * type-safe) is that TS API will execute on files/include/exlcude during the
+   * parse phase. So we need to work our conventions for this config BEFORE the
+   * parse. More detail cabout this nuance can be found in this Stack-Overflow thread:
+   *
+   * https://stackoverflow.com/questions/57333825/can-you-pull-in-excludes-includes-options-in-typescript-compiler-api
+   *
+   */
+  if (tsConfigContent.config.include === undefined) {
+    tsConfigContent.config.include = [layout.sourceRootRelative]
+  }
+
   const inputConfig = ts.parseJsonConfigFileContent(
     tsConfigContent.config,
     ts.sys,
-    projectDir,
+    layout.projectRoot,
     undefined,
     tsConfigPath
   )
-  return fixConfig(inputConfig, projectDir)
+
+  /**
+   * Force tsconfig settings in ways that align with pumpkins projects.
+   */
+
+  // Target ES5 output by default (instead of ES3).
+  if (inputConfig.options.target === undefined) {
+    inputConfig.options.target = ts.ScriptTarget.ES5
+  }
+
+  // Target CommonJS modules by default (instead of magically switching to ES6 when the target is ES6).
+  if (inputConfig.options.module === undefined) {
+    inputConfig.options.module = ts.ModuleKind.CommonJS
+  }
+
+  if (inputConfig.options.outDir === undefined) {
+    inputConfig.options.outDir = BUILD_FOLDER_NAME
+  }
+
+  if (inputConfig.options.rootDir === undefined) {
+    inputConfig.options.rootDir = layout.sourceRoot
+  }
+
+  return inputConfig
 }
 
 /**
@@ -217,16 +239,15 @@ export async function findOrScaffoldTsConfig(
   options: { exitAfterError: boolean } = { exitAfterError: true }
 ): Promise<'success' | 'warning' | 'error'> {
   const tsConfigPath = findConfigFile('tsconfig.json', { required: false })
-  const projectDir = findProjectDir()
 
   if (tsConfigPath) {
-    if (path.dirname(tsConfigPath) !== projectDir) {
+    if (path.dirname(tsConfigPath) !== layout.projectRoot) {
       console.error(
         chalk`{red ERROR:} Your tsconfig.json file needs to be in your project root directory`
       )
       console.error(
         chalk`{red ERROR:} Found ${tsConfigPath}, expected ${path.join(
-          projectDir,
+          layout.projectRoot,
           'tsconfig.json'
         )}`
       )
@@ -239,14 +260,16 @@ export async function findOrScaffoldTsConfig(
   }
 
   if (!tsConfigPath) {
-    console.log(`
-${chalk.yellow('Warning:')} We could not find a "tsconfig.json" file.
-${chalk.yellow('Warning:')} We scaffolded one for you at ${path.join(
-      projectDir,
-      'tsconfig.json'
-    )}.
+    const scaffoldPath = layout.projectRelative('tsconfig.json')
+    console.log(stripIndent`
+      ${chalk.yellow('Warning:')} We could not find a "tsconfig.json" file.
+      ${chalk.yellow('Warning:')} We scaffolded one for you at ${scaffoldPath}.
     `)
 
+    // It seems we cannot make `include` a comment below, because it is
+    // evaluated at tsconfig read time, see this Stack-Overflow thread:
+    // https://stackoverflow.com/questions/57333825/can-you-pull-in-excludes-includes-options-in-typescript-compiler-api
+    //
     const tsConfigContent = stripIndent`
       {
         "compilerOptions": {
@@ -254,21 +277,23 @@ ${chalk.yellow('Warning:')} We scaffolded one for you at ${path.join(
           "module": "commonjs",
           "lib": ["esnext"],
           "strict": true,
-          //
-          // The following settings are managed by Pumpkins.
-          // Do not edit these manually. Please refer to
-          // https://github.com/prisma/pumpkins/issues/82
-          // Contribute feedback/use-cases if you feel strongly
-          // about controlling these settings manually.
-          //
-          // "rootDir": "${path.relative(projectDir, layout.sourceRoot)}",
+          // [1] pumpkins managed
+          // "rootDir": "${layout.sourceRootRelative}",
           // "outDir": "${BUILD_FOLDER_NAME}",
-          //
-        }
+        },
+        // [1] pumpkins managed
+        // "include": "${layout.sourceRootRelative}"
       }
+
+      // [1] pumpkins managed
+      //
+      // These settings are managed by Pumpkins.
+      // Do not edit these manually. Please refer to
+      // https://github.com/prisma/pumpkins/issues/82
+      // Contribute feedback/use-cases if you feel strongly
+      // about controlling these settings manually.
     `
-    const tsConfigPath = path.join(projectDir, 'tsconfig.json')
-    await fs.writeAsync(tsConfigPath, tsConfigContent)
+    await fs.writeAsync(scaffoldPath, tsConfigContent)
     return 'warning'
   }
 

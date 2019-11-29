@@ -1,4 +1,5 @@
 import { ChildProcess, ForkOptions } from 'child_process'
+import { Layout } from '../framework/layout'
 
 export interface Callbacks {
   onEvent?: (
@@ -65,6 +66,7 @@ interface StringOpts {
 }
 
 export interface Opts extends BooleanOpts, StringOpts {
+  layout: Layout
   log?: any
   watch?: string
   priorNodeArgs?: string[]
