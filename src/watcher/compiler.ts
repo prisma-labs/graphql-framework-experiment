@@ -113,6 +113,7 @@ export const compiler: Compiler = {
     fsJetPack.write(compiler.getChildHookPath(), fileData)
   },
   init: function(options) {
+    log('init')
     const project = options['project']
     compiler.tsConfigPath =
       resolveSync(cwd, typeof project === 'string' ? project : undefined) || ''
@@ -170,6 +171,7 @@ export const compiler: Compiler = {
     }
 
     try {
+      log('applying ts-node register')
       register(tsNodeOptions)
     } catch (e) {
       console.log(e)
@@ -211,6 +213,7 @@ export const compiler: Compiler = {
     }
   },
   compile: function(params) {
+    log('compile start %s', params.compile)
     const fileName = params.compile
     let code = fsJetPack.read(fileName)!
     const compiledPath = params.compiledPath
@@ -223,14 +226,13 @@ export const compiler: Compiler = {
     if (fsJetPack.exists(compiledPath)) {
       return
     }
-    const starTime = new Date().getTime()
     const m = {
       _compile: writeCompiled,
     }
     tsHandler(m, fileName)
     try {
       m._compile(code, fileName)
-      log('%s compiled in %s ms', fileName, new Date().getTime() - starTime)
+      log('compile finish %s', fileName)
       if (params.callbacks && params.callbacks.onEvent) {
         params.callbacks.onEvent('compiled', fileName)
       }

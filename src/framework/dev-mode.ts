@@ -65,6 +65,10 @@ function parseIsDevMode(): boolean {
  * variable. If the environment variable is ever present but IPC not then this
  * means something is deeply wrong, and explicitly or subtlely not going to work.
  *
+ * TODO this comment rationale/example is bad, since ts-node, how we use it, is not forking...
+ *      ... actually we do, in typegen, mention that, but still, does ts-node
+ *      actually fork... ?
+ *
  * We DO allow for IPC to be enabled while dev-mode is not, since we cannot
  * control all the cases where pumpkins code might be forked and thus have IPC.
  * For example typegen which uses ts-node under the hood does a spawn, but

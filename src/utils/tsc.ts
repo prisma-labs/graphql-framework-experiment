@@ -90,6 +90,9 @@ export function readTsConfig() {
   return fixConfig(inputConfig, projectDir)
 }
 
+/**
+ * compile a program
+ */
 export function compile(rootNames: string[], options: ts.CompilerOptions) {
   const program = ts.createProgram({
     rootNames,

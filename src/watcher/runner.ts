@@ -17,6 +17,11 @@ import cfgFactory from './cfg'
 import { Script } from 'vm'
 import Module = require('module')
 import { pog } from '../utils'
+import { register } from 'ts-node'
+
+register({
+  transpileOnly: true,
+})
 
 // Remove app-runner.js from the argv array
 process.argv.splice(1, 1)
