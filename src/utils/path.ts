@@ -48,16 +48,6 @@ export const writeCachedFile = async (
   }
 }
 
-export function findProjectDir() {
-  let packageJsonPath = findConfigFile('package.json', { required: false })
-
-  if (packageJsonPath) {
-    return path.dirname(packageJsonPath)
-  }
-
-  return process.cwd()
-}
-
 // build/index.js => index.ts
 
 export function getTranspiledPath(
@@ -139,10 +129,6 @@ export const baseIgnores = [
   `!.${pumpkinsDotFolderName}/**/*`,
 ]
 
-export const trimExt = (filePath: string, ext: string): string => {
-  return path.join(path.dirname(filePath), path.basename(filePath, ext))
-}
-
 export function trimNodeModulesIfInPath(path: string) {
   if (path.includes('node_modules')) {
     return path.substring(
@@ -153,6 +139,12 @@ export function trimNodeModulesIfInPath(path: string) {
   return path
 }
 
+/**
+ * Strip the extension of a file path.
+ *
+ * This can be handy for example when going from a file to a module path
+ * suitable for import like a user would do, not supplying the ext.
+ */
 export function stripExt(filePath: string): string {
   const { dir, name } = path.parse(filePath)
   return path.join(dir, name)

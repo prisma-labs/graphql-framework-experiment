@@ -1,5 +1,5 @@
 import Git from 'simple-git/promise'
-import { scan } from '../../framework/layout'
+import * as Layout from '../../framework/layout'
 import { findOrScaffoldTsConfig } from '../../utils'
 import { Command } from '../helpers'
 import chalk from 'chalk'
@@ -19,7 +19,7 @@ export class Doctor implements Command {
  */
 async function tsconfig() {
   console.log(chalk.bold('-- tsconfig.json --'))
-  const layout = await scan()
+  const layout = await Layout.create()
   const result = await findOrScaffoldTsConfig(layout, {
     exitAfterError: false,
   })

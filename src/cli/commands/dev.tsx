@@ -1,7 +1,7 @@
 import { Box, Instance, render } from 'ink'
 import React from 'react'
 import * as readline from 'readline'
-import { Layout, scan } from '../../framework/layout'
+import * as Layout from '../../framework/layout'
 import { runPrismaGenerators } from '../../framework/plugins'
 import { createStartModuleContent } from '../../framework/start'
 import { findOrScaffoldTsConfig, pog } from '../../utils'
@@ -23,7 +23,7 @@ export class Dev implements Command {
       process.exit(0)
     }
 
-    const layout = await scan()
+    const layout = await Layout.create()
 
     await findOrScaffoldTsConfig(layout)
     await runPrismaGenerators()
@@ -92,6 +92,7 @@ export class Dev implements Command {
     })
 
     createWatcher({
+      layout,
       transpileOnly: true,
       respawn: true,
       eval: {
@@ -110,7 +111,7 @@ export class Dev implements Command {
 }
 
 interface Props {
-  layout: Layout
+  layout: Layout.Layout
 }
 
 type Mode = 'dashboard' | 'logs'

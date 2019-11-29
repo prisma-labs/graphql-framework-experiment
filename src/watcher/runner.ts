@@ -17,6 +17,7 @@ import cfgFactory from './cfg'
 import { Script } from 'vm'
 import Module = require('module')
 import { pog, runCompilerExtensions, readTsConfig } from '../utils'
+import * as Layout from '../framework/layout'
 import { register } from 'ts-node'
 
 const log = pog.sub('cli:dev:runner')
@@ -26,8 +27,12 @@ register({
 })
 
 log('starting context type extraction')
+// TODO HACK, big one, like running ts-node twice?
 import * as ts from 'typescript'
-const tsConfig = readTsConfig()
+const layout = Layout.createFromData(
+  JSON.parse(process.env.PUMPKINS_LAYOUT as string) as Layout.Data
+)
+const tsConfig = readTsConfig(layout)
 const program = ts.createProgram({
   rootNames: tsConfig.fileNames,
   options: tsConfig.options,

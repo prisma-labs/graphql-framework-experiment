@@ -1,6 +1,6 @@
 import * as fs from 'fs-jetpack'
 import { BUILD_FOLDER_NAME } from '../../constants'
-import { scan } from '../../framework/layout'
+import * as Layout from '../../framework/layout'
 import { runPrismaGenerators } from '../../framework/plugins'
 import { createStartModuleContent } from '../../framework/start'
 import {
@@ -23,7 +23,7 @@ export class Build implements Command {
   async parse(argv: string[]) {
     // Handle Prisma integration
     // TODO pluggable CLI
-    const layout = await scan()
+    const layout = await Layout.create()
 
     await findOrScaffoldTsConfig(layout)
     await runPrismaGenerators()
@@ -41,7 +41,7 @@ export class Build implements Command {
     log('compiling app')
     console.log('🎃  Compiling ...')
     await fs.removeAsync(BUILD_FOLDER_NAME)
-    const tsConfig = readTsConfig()
+    const tsConfig = readTsConfig(layout)
     compile(tsConfig.fileNames, tsConfig.options)
 
     log('transpiling start module')
@@ -51,7 +51,7 @@ export class Build implements Command {
         appPath: layout.app.path,
         layout,
       }),
-      readTsConfig().options
+      tsConfig.options
     )
 
     log('writing start module to disk')

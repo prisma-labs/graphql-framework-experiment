@@ -10,8 +10,8 @@ import {
   findFiles,
   pog,
   pumpkinsPath,
-  trimExt,
   writePumpkinsFile,
+  stripExt,
 } from '../../utils'
 import { suggestionList } from '../../utils/levenstein'
 import { printStack } from '../../utils/stack/printStack'
@@ -71,8 +71,7 @@ export const createPrismaPlugin: () => Plugin = () => {
     name: 'prisma',
     context: {
       create: _req => {
-        return require(trimExt(generatedContextTypePath.absolute, '.ts'))
-          .context
+        return require(stripExt(generatedContextTypePath.absolute)).context
       },
       typeSourcePath: generatedContextTypePath.absolute,
       typeExportName: 'Context',

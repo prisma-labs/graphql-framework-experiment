@@ -1,7 +1,7 @@
 import { generateArtifacts } from '../../utils'
 import { runPrismaGenerators } from '../../framework/plugins'
 import { createStartModuleContent } from '../../framework/start'
-import { scan } from '../../framework/layout'
+import * as Layout from '../../framework/layout'
 import { Command } from '../helpers'
 
 export class Generate implements Command {
@@ -16,7 +16,7 @@ export class Generate implements Command {
     // TODO pluggable CLI
     await runPrismaGenerators()
 
-    const layout = await scan()
+    const layout = await Layout.create()
 
     console.log('🎃  Generating Nexus artifacts ...')
     await generateArtifacts(

@@ -3,7 +3,7 @@ import { compiler } from './compiler'
 import * as ipc from './ipc'
 import { Opts, Process } from './types'
 import cfgFactory from './cfg'
-import { pog, baseIgnores } from '../utils'
+import { pog } from '../utils'
 import { sendSigterm } from './utils'
 import { watch, FileWatcher } from './chokidar'
 import { SERVER_READY_SIGNAL } from '../framework/dev-mode'
@@ -223,6 +223,7 @@ function startRunner(
       ...process.env,
       PUMPKINS_EVAL: opts.eval.code,
       PUMPKINS_EVAL_FILENAME: opts.eval.fileName,
+      PUMPKINS_LAYOUT: JSON.stringify(opts.layout.data),
     },
   }) as Process
 
