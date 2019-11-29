@@ -2,7 +2,13 @@ import { ApolloServer } from 'apollo-server-express'
 import express from 'express'
 import * as fs from 'fs-jetpack'
 import * as nexus from 'nexus'
-import { requireSchemaModules, pog, trimExt, findFile } from '../utils'
+import {
+  requireSchemaModules,
+  pog,
+  trimExt,
+  findFile,
+  stripExt,
+} from '../utils'
 import { createNexusSingleton, createNexusConfig } from './nexus'
 import { typegenAutoConfig } from 'nexus/dist/core'
 import { Plugin } from './plugin'
@@ -21,7 +27,7 @@ type ServerOptions = {
 
 const serverStartMessage = (port: number): string => {
   return stripIndent`
-    Your GraphQL API is now ready at localhost over port ${4000}
+    Your GraphQL API is now ready
 
     GraphQL Playground: http://localhost:${port}/graphql
   `
@@ -158,26 +164,45 @@ export function createApp(appConfig?: { types?: any }): App {
           const configurator = await typegenAutoConfig(typegenAutoConfigObject)
           const config = await configurator(schema, outputPath)
 
+          // Integrate the addContext calls
+          const addContextContributionsFilePath = `${process.cwd()}/node_modules/.pumpkins/add-context-contributions.ts`
+          if (fs.exists(addContextContributionsFilePath)) {
+            addContextSource({
+              importAlias: 'ContextFromAddContext',
+              importFrom: stripExt(addContextContributionsFilePath),
+            })
+          }
+
+          // Integrate the context contributions of plugins
           for (const p of plugins) {
             if (!p.context) continue
 
             // TODO validate that the plugin context source actually exports the type it pupports to
-            // TODO pascal case
-            const alias = `ContextFrom${p.name}`
-            const typeExportName = p.context.typeExportName ?? 'Context'
+            addContextSource({
+              // TODO pascal case
+              importAlias: `ContextFrom${p.name}`,
+              importFrom: stripExt(p.context.typeSourcePath),
+              exportName: p.context.typeExportName,
+            })
+          }
+
+          pog('built up Nexus typegenConfig: %O', config)
+          return config
+
+          function addContextSource(sourceConfig: {
+            importFrom: string
+            importAlias: string
+            exportName?: string
+          }): void {
+            const exportName = sourceConfig.exportName ?? 'Context'
             config.imports.push(
-              `import * as ${alias} from "${trimExt(
-                p.context.typeSourcePath,
-                '.ts'
-              )}"`
+              `import * as ${sourceConfig.importAlias} from '${sourceConfig.importFrom}'`
             )
             config.contextType =
               config.contextType === undefined
-                ? `${alias}.${typeExportName}`
-                : `${config.contextType} & ${alias}.${typeExportName}`
+                ? `${sourceConfig.importAlias}.${exportName}`
+                : `${config.contextType} & ${sourceConfig.importAlias}.${exportName}`
           }
-
-          return config
         }
 
         pog('built up Nexus config: %O', nexusConfig)
