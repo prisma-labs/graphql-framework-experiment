@@ -7,25 +7,24 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-
 - [Introduction](#introduction)
-    - [Getting Started](#getting-started)
+  - [Getting Started](#getting-started)
   - [Adding Prisma Framework](#adding-prisma-framework)
 - [Conventions](#conventions)
-    - [`schema.ts` | `schema/*`](#schemats--schema)
-    - [`app.ts`](#appts)
-        - [Aliases](#aliases)
-    - [Example Layouts](#example-layouts)
+  - [`schema.ts` | `schema/*`](#schemats--schema)
+  - [`app.ts`](#appts)
+    - [Aliases](#aliases)
+  - [Example Layouts](#example-layouts)
 - [Prisma Support](#prisma-support)
 - [API](#api)
-    - [`app`](#app)
-    - [`app.addContext`](#appaddcontext)
-    - [`app.<nexusDefBlock>`](#appnexusdefblock)
+  - [`app`](#app)
+  - [`app.addContext`](#appaddcontext)
+  - [`app.<nexusDefBlock>`](#appnexusdefblock)
 - [CLI](#cli)
 - [Development](#development)
-    - [Overview](#overview)
-    - [Testing](#testing)
-    - [Working With Example Apps via Linking](#working-with-example-apps-via-linking)
+  - [Overview](#overview)
+  - [Testing](#testing)
+  - [Working With Example Apps via Linking](#working-with-example-apps-via-linking)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -140,7 +139,6 @@ Add a schema.prisma file and fill it out with some content
 ```diff
 mkdir -p prisma
 touch prisma/schema.prisma
-touch prisma/dev.db
 ```
 
 ```groovy
@@ -160,7 +158,7 @@ model User {
 Initialize your database:
 
 ```
-yarn prisma2 lift save
+yarn prisma2 lift save --create-db --name init
 yarn prisma2 lift up
 ```
 
