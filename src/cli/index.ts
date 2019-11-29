@@ -1,4 +1,4 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env node
 import { CLI } from './helpers/CLI'
 import * as Commands from './commands'
 import { HelpError } from './helpers'

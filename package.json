@@ -80,14 +80,5 @@
     "semi": false,
     "singleQuote": true,
     "trailingComma": "es5"
-  },
-  "ava": {
-    "compileEnhancements": false,
-    "extensions": [
-      "ts"
-    ],
-    "require": [
-      "ts-node/register"
-    ]
   }
 }

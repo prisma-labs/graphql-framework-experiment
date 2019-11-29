@@ -242,17 +242,13 @@ Reflecting on what we've just seen;
 
 ### `schema.ts` | `schema/*`
 
-Schema contains your GraphQL type definitions. It can be a single module or folder of modules. Multiple instances of module/folder-modules throughout your source tree is supported.
+Optional. Schema contains your GraphQL type definitions. It can be a single module or folder of modules. Multiple instances of module/folder-modules throughout your source tree is supported.
 
 In dev mode schema modules are synchronously found and imported at server boot time. At build time however static imports for all schema modules are inlined for boot performance.
 
-### `context.ts`
-
-Context contains the definition of the context object that will be made available to all your GraphQL resolvers. There can only be at most a single `context.ts` file in your source tree. If you do not provide one, a defualt will be, findable in `.pumpkins`.
-
 ### `app.ts`
 
-App contains the entrypoint to your service, the place where it boots. There can only be at most a single `app.ts` in your source tree. If you do not provide one, a default will be, findable in `.pumpkins`.
+Optional. App contains the entrypoint to your service, the place where it boots. There can only be at most a single `app.ts` in your source tree.
 
 ##### Aliases
 
@@ -261,6 +257,12 @@ main.ts server.ts
 ```
 
 ### Example Layouts
+
+Nothing!
+
+```
+
+```
 
 Nano
 
@@ -272,33 +274,15 @@ Micro
 
 ```
 app.ts
-context.ts
 schema.ts
 ```
 
-Typical
+Basic
 
 ```
-graphql/
+app/
   server.ts
-  context.ts
   schema.ts
-prisma/
-  schema.prisma
-```
-
-Wacky
-
-```
-A/
-  app.ts
-  B/
-    C/
-      context.ts
-  X/
-    Y/
-      Z/
-        schema.ts
 prisma/
   schema.prisma
 ```
@@ -320,7 +304,66 @@ Prisma is optional yet seamlessly supported. You opt-in by creating a `schema.pr
 
 ### `app`
 
-A singleton export. Use this to build up your GraphQL schema and configure your server.
+A singleton pumpkins app. Use this to build up your GraphQL schema and configure your server.
+
+**Example**
+
+```ts
+// schema.ts
+
+import { app } from 'pumpkins'
+
+app.objectType({
+  name: 'Foo',
+  definition(t) {
+    t.id('id')
+  },
+})
+```
+
+### `app.addContext`
+
+Add context to your graphql resolver functions. The objects returned by your context contributor callbacks will be shallow-merged into `ctx`. The `ctx` type will also accurately reflect the types you return from callbacks passed to `addContext`.
+
+**Example**
+
+```ts
+// app.ts
+
+import { app } from 'pumpkins'
+
+app.addContext(req => {
+  return {
+    foo: 'bar',
+  }
+})
+
+app.objectType({
+  name: 'Foo',
+  definition(t) {
+    t.string('foo', (_parent, _args, ctx) => ctx.foo)
+  },
+})
+```
+
+### `app.<nexusDefBlock>`
+
+Add types to your GraphQL Schema. The available nexus definition block functions include `objectType` `inputObjectType` `enumType` and so on. Refer to the [official Nexus API documentation](https://nexus.js.org/docs/api-objecttype) for more information about these functions.
+
+**Example**
+
+```ts
+// schema.ts
+
+import { app } from 'pumpkins'
+
+app.objectType({
+  name: 'Foo',
+  definition(t) {
+    t.id('id')
+  },
+})
+```
 
 <br>
 

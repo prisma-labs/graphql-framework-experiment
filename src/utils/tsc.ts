@@ -6,6 +6,10 @@ import { Layout } from '../framework/layout'
 import { findProjectDir } from './path'
 import chalk = require('chalk')
 import { stripIndent } from 'common-tags'
+import { pog } from './pog'
+import { removeWrite } from './fs'
+
+const log = pog.sub('compiler')
 
 const diagnosticHost: ts.FormatDiagnosticsHost = {
   getNewLine: () => ts.sys.newLine,
@@ -87,11 +91,17 @@ export function readTsConfig() {
   return fixConfig(inputConfig, projectDir)
 }
 
+/**
+ * compile a program
+ */
 export function compile(rootNames: string[], options: ts.CompilerOptions) {
   const program = ts.createProgram({
     rootNames,
     options,
   })
+
+  const checker = program.getTypeChecker()
+  runCompilerExtensions({ program, checker })
 
   const emitResult = program.emit()
   const allDiagnostics = ts
@@ -102,6 +112,92 @@ export function compile(rootNames: string[], options: ts.CompilerOptions) {
     throw new Error(
       ts.formatDiagnosticsWithColorAndContext(allDiagnostics, diagnosticHost)
     )
+  }
+}
+
+/**
+ * Run our custom compiler extension features, like extracting context types
+ * from all `addContext` calls.
+ */
+export function runCompilerExtensions({
+  checker,
+  program,
+}: {
+  checker: ts.TypeChecker
+  program: ts.Program
+}): void {
+  const contextTypeContributions: string[] = []
+
+  program.getSourceFiles().forEach(visit)
+
+  log('finished compiler extension processing with results %O', {
+    contextTypeContributions,
+  })
+
+  if (contextTypeContributions.length > 0) {
+    removeWrite(
+      'node_modules/@types/typegen-pumpkins-add-context/index.d.ts',
+      stripIndent`
+        export type Context = ${contextTypeContributions.join(' & ')}
+      `
+    )
+  }
+
+  /**
+   * Given a node, traverse the tree of nodes under it.
+   */
+  function visit(n: ts.Node) {
+    if (ts.isCallExpression(n)) {
+      const lastToken = n.expression.getLastToken()
+      if (
+        lastToken !== undefined &&
+        ts.isIdentifier(lastToken) &&
+        // TODO use id.unescapedText
+        lastToken.escapedText === 'addContext'
+      ) {
+        log('found addContext call %o', lastToken.getFullText())
+
+        // Get the argument passed too addContext so we can extract its type
+        const args = n.arguments
+        if (args.length === 0) {
+          log(
+            'no arguments passed to addContext, this is wrong, stopping context type extraction'
+          )
+          return
+        }
+        if (args.length > 1) {
+          log(
+            'multiple arguments passed to addContext, this is wrong, stopping context type extraction'
+          )
+          return
+        }
+        const arg = args[0]
+        log('found addContext arg %o', arg.getFullText())
+
+        // Get the signature of the argument so we can extract its return type
+        const argType = checker.getTypeAtLocation(arg)
+        const argSigs = argType.getCallSignatures()
+        if (argSigs.length === 0) {
+          log(
+            'argument passed to addContext had no signatures, this is wrong, stopping context type extraction'
+          )
+          return
+        }
+        if (argSigs.length > 1) {
+          log(
+            'argument passed to addContext has more than one signature, this might be wrong, stopping context type extraction'
+          )
+          return
+        }
+        const argSig = argSigs[0]
+
+        const retType = checker.getReturnTypeOfSignature(argSig)
+        const retTypeString = checker.typeToString(retType)
+        contextTypeContributions.push(retTypeString)
+      }
+    } else {
+      n.forEachChild(visit)
+    }
   }
 }
 

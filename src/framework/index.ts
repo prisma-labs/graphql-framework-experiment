@@ -1,12 +1,4 @@
-import { register } from 'ts-node'
 import { createApp } from './app'
-
-/**
- * Use ts-node register to require .ts file and transpile them "on-the-fly"
- */
-register({
-  transpileOnly: true,
-})
 
 // TODO Pending future discussion
 // declare global {
