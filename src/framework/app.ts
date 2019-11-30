@@ -158,45 +158,53 @@ export function createApp(appConfig?: { types?: any }): App {
           const configurator = await typegenAutoConfig(typegenAutoConfigObject)
           const config = await configurator(schema, outputPath)
 
-          // Integrate the addContext calls
-          const addContextContributionsFilePath = `${process.cwd()}/node_modules/@types/typegen-pumpkins-add-context/index.d.ts`
-          if (fs.exists(addContextContributionsFilePath)) {
-            addContextSource({
-              importAlias: 'ContextFromAddContext',
-              importFrom: stripExt(addContextContributionsFilePath),
-            })
-          }
+          // Initialize
+          config.imports.push('interface Context {}')
+          config.contextType = 'Context'
 
-          // Integrate the context contributions of plugins
+          // Integrate the addContext calls
+          const addContextCallResults: string[] = process.env
+            .PUMPKINS_TYPEGEN_ADD_CONTEXT_RESULTS
+            ? JSON.parse(process.env.PUMPKINS_TYPEGEN_ADD_CONTEXT_RESULTS)
+            : []
+
+          const typeDec = addContextCallResults
+            .map(result => {
+              return stripIndents`
+                interface Context ${result}
+              `
+            })
+            .join('\n\n')
+
+          config.imports.push(typeDec)
+
+          // Integrate plugin context contributions
           for (const p of plugins) {
             if (!p.context) continue
 
-            // TODO validate that the plugin context source actually exports the type it pupports to
-            addContextSource({
-              // TODO pascal case
-              importAlias: `ContextFrom${p.name}`,
-              importFrom: stripExt(p.context.typeSourcePath),
-              exportName: p.context.typeExportName,
-            })
+            if (p.context.typeGen.imports) {
+              config.imports.push(
+                ...p.context.typeGen.imports.map(
+                  im => `import * as ${im.as} from '${im.from}'`
+                )
+              )
+            }
+
+            const typeDec = stripIndents`
+              interface Context {
+                ${Object.entries(p.context.typeGen.fields)
+                  .map(([name, type]) => {
+                    return `${name}: ${type}`
+                  })
+                  .join('\n')}
+              }
+            `
+
+            config.imports.push(typeDec)
           }
 
           pog('built up Nexus typegenConfig: %O', config)
           return config
-
-          function addContextSource(sourceConfig: {
-            importFrom: string
-            importAlias: string
-            exportName?: string
-          }): void {
-            const exportName = sourceConfig.exportName ?? 'Context'
-            config.imports.push(
-              `import * as ${sourceConfig.importAlias} from '${sourceConfig.importFrom}'`
-            )
-            config.contextType =
-              config.contextType === undefined
-                ? `${sourceConfig.importAlias}.${exportName}`
-                : `${config.contextType} & ${sourceConfig.importAlias}.${exportName}`
-          }
         }
 
         pog('built up Nexus config: %O', nexusConfig)

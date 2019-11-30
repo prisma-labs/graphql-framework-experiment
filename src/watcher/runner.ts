@@ -16,7 +16,7 @@ const childProcess = require('child_process')
 import cfgFactory from './cfg'
 import { Script } from 'vm'
 import Module = require('module')
-import { pog, runCompilerExtensions, readTsConfig } from '../utils'
+import { pog, extractContextTypes, readTsConfig } from '../utils'
 import * as Layout from '../framework/layout'
 import { register } from 'ts-node'
 
@@ -37,8 +37,9 @@ const program = ts.createProgram({
   rootNames: tsConfig.fileNames,
   options: tsConfig.options,
 })
-const checker = program.getTypeChecker()
-runCompilerExtensions({ checker, program })
+process.env.PUMPKINS_TYPEGEN_ADD_CONTEXT_RESULTS = JSON.stringify(
+  extractContextTypes(program)
+)
 log('finished context type extraction')
 
 // Remove app-runner.js from the argv array

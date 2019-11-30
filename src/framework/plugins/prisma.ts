@@ -6,13 +6,7 @@ import chalk from 'chalk'
 import * as fs from 'fs-jetpack'
 import { nexusPrismaPlugin, Options } from 'nexus-prisma'
 import * as path from 'path'
-import {
-  findFiles,
-  pog,
-  pumpkinsPath,
-  writePumpkinsFile,
-  stripExt,
-} from '../../utils'
+import { findFiles, pog } from '../../utils'
 import { suggestionList } from '../../utils/levenstein'
 import { printStack } from '../../utils/stack/printStack'
 import { shouldGenerateArtifacts } from '../nexus'
@@ -45,36 +39,24 @@ const log = pog.sub(__filename)
 const GENERATED_PHOTON_OUTPUT_PATH = fs.path('node_modules/@prisma/photon')
 
 export const createPrismaPlugin: () => Plugin = () => {
-  // TODO plugin api for .pumpkins sandboxed fs access
-  const generatedContextTypePath = pumpkinsPath('prisma/context.ts')
-
-  writePumpkinsFile(
-    generatedContextTypePath.relative,
-    `
-      import { Photon } from '${GENERATED_PHOTON_OUTPUT_PATH}'
-      
-      export type Context = {
-        photon: Photon
-      }
-      
-      export const context: Context = {
-        photon: new Photon(),
-      }
-    `
-  )
-
   const nexusPrismaTypegenOutput = fs.path(
     'node_modules/@types/typegen-nexus-prisma/index.d.ts'
   )
+  const { Photon } = require('@prisma/photon')
+  const photon = new Photon()
 
   return {
     name: 'prisma',
     context: {
       create: _req => {
-        return require(stripExt(generatedContextTypePath.absolute)).context
+        return { photon }
       },
-      typeSourcePath: generatedContextTypePath.absolute,
-      typeExportName: 'Context',
+      typeGen: {
+        imports: [{ as: 'Photon', from: GENERATED_PHOTON_OUTPUT_PATH }],
+        fields: {
+          photon: 'Photon.Photon',
+        },
+      },
     },
     nexus: {
       plugins: [

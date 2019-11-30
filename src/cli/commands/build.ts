@@ -10,6 +10,8 @@ import {
   pog,
   readTsConfig,
   transpileModule,
+  createTSProgram,
+  extractContextTypes,
 } from '../../utils'
 import { Command } from '../helpers'
 
@@ -28,6 +30,12 @@ export class Build implements Command {
     await findOrScaffoldTsConfig(layout)
     await runPrismaGenerators()
 
+    const tsProgram = createTSProgram(layout)
+    const contextFieldTypes = extractContextTypes(tsProgram)
+    process.env.PUMPKINS_TYPEGEN_ADD_CONTEXT_RESULTS = JSON.stringify(
+      contextFieldTypes
+    )
+
     log('running typegen')
     console.log('🎃  Generating Nexus artifacts ...')
     await generateArtifacts(
@@ -40,9 +48,7 @@ export class Build implements Command {
 
     log('compiling app')
     console.log('🎃  Compiling ...')
-    await fs.removeAsync(BUILD_FOLDER_NAME)
-    const tsConfig = readTsConfig(layout)
-    compile(tsConfig.fileNames, tsConfig.options)
+    compile(tsProgram)
 
     log('transpiling start module')
     const startModule = transpileModule(
@@ -51,7 +57,7 @@ export class Build implements Command {
         appPath: layout.app.path,
         layout,
       }),
-      tsConfig.options
+      tsProgram.getCompilerOptions()
     )
 
     log('writing start module to disk')

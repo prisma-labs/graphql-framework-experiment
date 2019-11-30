@@ -1,28 +1,6 @@
 import * as fs from 'fs-jetpack'
 import * as path from 'path'
-import { findOrScaffold } from './scaffold'
-import { findConfigFile } from './tsc'
 import { pog } from './pog'
-
-export const pumpkinsDotFolderName = 'pumpkins'
-
-export const pumpkinsDotFolderPath = fs.path(`.${pumpkinsDotFolderName}`)
-
-export const writePumpkinsFile = async (
-  subPath: string,
-  content: string
-): Promise<void> => {
-  await writeCachedFile(pumpkinsPath(subPath).absolute, content)
-}
-
-export const pumpkinsPath = (
-  subPath: string
-): { relative: string; absolute: string } => {
-  return {
-    relative: subPath,
-    absolute: path.join(pumpkinsDotFolderPath, subPath),
-  }
-}
 
 export const writeCachedFile = async (
   filePath: string,
@@ -96,7 +74,6 @@ export function findFile(
       ...paths,
       '!node_modules/**/*',
       '!.yalc/**/*',
-      `!.${pumpkinsDotFolderName}/**/*`,
       ...(config?.ignore?.map(i => `!${i}`) ?? []),
     ],
   })
@@ -123,11 +100,7 @@ export async function findFiles(
   })
 }
 
-export const baseIgnores = [
-  '!node_modules/**/*',
-  '!.yalc/**/*',
-  `!.${pumpkinsDotFolderName}/**/*`,
-]
+export const baseIgnores = ['!node_modules/**/*', '!.yalc/**/*']
 
 export function trimNodeModulesIfInPath(path: string) {
   if (path.includes('node_modules')) {
