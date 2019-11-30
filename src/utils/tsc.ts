@@ -113,18 +113,20 @@ export function readTsConfig(layout: Layout): ts.ParsedCommandLine {
   return inputConfig
 }
 
+export function createTSProgram(layout: Layout): ts.Program {
+  const tsConfig = readTsConfig(layout)
+  const program = ts.createProgram({
+    rootNames: tsConfig.fileNames,
+    options: tsConfig.options,
+  })
+  return program
+}
+
 /**
  * compile a program
  */
-export function compile(rootNames: string[], options: ts.CompilerOptions) {
-  const program = ts.createProgram({
-    rootNames,
-    options,
-  })
-
-  const checker = program.getTypeChecker()
-  runCompilerExtensions({ program, checker })
-
+export function compile(program: ts.Program): void {
+  fs.remove(BUILD_FOLDER_NAME)
   const emitResult = program.emit()
   const allDiagnostics = ts
     .getPreEmitDiagnostics(program)
@@ -141,13 +143,8 @@ export function compile(rootNames: string[], options: ts.CompilerOptions) {
  * Run our custom compiler extension features, like extracting context types
  * from all `addContext` calls.
  */
-export function runCompilerExtensions({
-  checker,
-  program,
-}: {
-  checker: ts.TypeChecker
-  program: ts.Program
-}): void {
+export function extractContextTypes(program: ts.Program): string[] {
+  const checker = program.getTypeChecker()
   const contextTypeContributions: string[] = []
 
   program.getSourceFiles().forEach(visit)
@@ -156,14 +153,7 @@ export function runCompilerExtensions({
     contextTypeContributions,
   })
 
-  if (contextTypeContributions.length > 0) {
-    removeWrite(
-      'node_modules/@types/typegen-pumpkins-add-context/index.d.ts',
-      stripIndent`
-        export type Context = ${contextTypeContributions.join(' & ')}
-      `
-    )
-  }
+  return contextTypeContributions
 
   /**
    * Given a node, traverse the tree of nodes under it.

@@ -7,9 +7,13 @@ export type Plugin<C extends {} = any> = {
   // like their package name.
   name: string
   context?: {
-    typeExportName?: string
-    // TODO we could make this optional by using some node v8 api trickery to get the __filename of the caller, by default
-    typeSourcePath: string
+    typeGen: {
+      fields: Record<string, string>
+      imports?: Array<{
+        as: string
+        from: string
+      }>
+    }
     create: (req: Express.Request) => C
   }
   nexus?: {
