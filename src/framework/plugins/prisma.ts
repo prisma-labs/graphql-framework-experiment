@@ -6,13 +6,7 @@ import chalk from 'chalk'
 import * as fs from 'fs-jetpack'
 import { nexusPrismaPlugin, Options } from 'nexus-prisma'
 import * as path from 'path'
-import {
-  findFiles,
-  pog,
-  pumpkinsPath,
-  writePumpkinsFile,
-  stripExt,
-} from '../../utils'
+import { findFiles, pog } from '../../utils'
 import { suggestionList } from '../../utils/levenstein'
 import { printStack } from '../../utils/stack/printStack'
 import { shouldGenerateArtifacts } from '../nexus'
