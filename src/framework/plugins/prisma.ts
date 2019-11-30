@@ -54,7 +54,7 @@ export const createPrismaPlugin: () => Plugin = () => {
       typeGen: {
         imports: [{ as: 'Photon', from: GENERATED_PHOTON_OUTPUT_PATH }],
         fields: {
-          photon: 'Photon',
+          photon: 'Photon.Photon',
         },
       },
     },
