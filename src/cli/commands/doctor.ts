@@ -5,10 +5,6 @@ import { Command } from '../helpers'
 import chalk from 'chalk'
 
 export class Doctor implements Command {
-  public static new(): Doctor {
-    return new Doctor()
-  }
-
   async parse() {
     await tsconfig()
   }

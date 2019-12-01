@@ -3,7 +3,6 @@ import { CLI } from './helpers/CLI'
 import * as Commands from './commands'
 import { HelpError } from './helpers'
 import { isError } from 'util'
-import chalk from 'chalk'
 import { pog } from '../utils'
 
 const log = pog.sub('cli')
@@ -47,10 +46,6 @@ if (!process.argv.join(' ').includes('pumpkins dev')) {
   log('HACK letting dev command handle sigterm/sigint')
 }
 
-// warnings: no tanks
-// hides ExperimentalWarning: The fs.promises API is experimental
-process.env.NODE_NO_WARNINGS = '1'
-
 /**
  * Main function
  */
@@ -58,10 +53,10 @@ async function main(): Promise<number> {
   // create a new CLI with our subcommands
   const cli = CLI.new({
     dev: new Commands.Dev(),
-    build: Commands.Build.new(),
-    generate: Commands.Generate.new(),
-    doctor: Commands.Doctor.new(),
-    init: Commands.Init.new(),
+    build: new Commands.Build(),
+    generate: new Commands.Generate(),
+    doctor: new Commands.Doctor(),
+    init: new Commands.Init(),
   })
 
   // parse the arguments

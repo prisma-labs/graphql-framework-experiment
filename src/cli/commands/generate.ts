@@ -5,10 +5,6 @@ import * as Layout from '../../framework/layout'
 import { Command } from '../helpers'
 
 export class Generate implements Command {
-  public static new(): Generate {
-    return new Generate()
-  }
-
   async parse() {
     // const { flags } = this.parse(Generate)
 

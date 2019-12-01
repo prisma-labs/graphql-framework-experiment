@@ -18,10 +18,6 @@ import { Command } from '../helpers'
 const log = pog.sub('cli:build')
 
 export class Build implements Command {
-  public static new(): Build {
-    return new Build()
-  }
-
   async parse(argv: string[]) {
     // Handle Prisma integration
     // TODO pluggable CLI
