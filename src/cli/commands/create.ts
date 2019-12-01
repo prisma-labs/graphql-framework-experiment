@@ -1,6 +1,6 @@
 import { Command } from '../helpers'
 
-export class Init implements Command {
+export class Create implements Command {
   async parse() {
     console.log('todo')
   }
