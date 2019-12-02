@@ -1,3 +1,4 @@
+import chalk from 'chalk'
 import { Box, Instance, render } from 'ink'
 import React from 'react'
 import * as readline from 'readline'
@@ -101,6 +102,9 @@ export class Dev implements Command {
       },
       callbacks: {
         onEvent: (event, data) => {
+          if (event === 'restart') {
+            console.log(chalk`{bgBlue INFO} Restarting...`, data)
+          }
           if (state.logMode && event === 'logging' && data !== undefined) {
             process.stdout.write(data)
           }
