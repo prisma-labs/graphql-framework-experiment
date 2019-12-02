@@ -70,6 +70,8 @@ Some highlights:
 
 3. You don't need a main entrypoint module. Grow into that (see later sections) as you wish.
 
+4. Prisma integration is seamless, yet optional
+
 ## Adding Prisma Framework
 
 ### Overview
