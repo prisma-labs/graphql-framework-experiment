@@ -49,7 +49,6 @@ system (in fact Prisma features are implemented as a plugin).
 Setup your system
 
 ```
-yarn global add pumpkins@master
 mkdir -p ~/projects/my-pumpkins-app
 cd ~/projects/my-pumpkins-app
 ```
@@ -57,7 +56,7 @@ cd ~/projects/my-pumpkins-app
 Kick off a new project
 
 ```
-pumpkins create
+npx pumpkins create
 ```
 
 Follow the prompts
