@@ -24,6 +24,8 @@ type FileWatcherOptions = chokidar.WatchOptions & {
   ) => void
 }
 
+const SILENT_EVENTS = ['add', 'addDir']
+
 export function watch(
   paths: string | ReadonlyArray<string>,
   options?: FileWatcherOptions
@@ -42,7 +44,7 @@ export function watch(
     watcher.on('all', (event, file, stats) => {
       if (
         (!watcherReady || programmaticallyWatchedFiles.includes(file)) &&
-        event === 'add'
+        SILENT_EVENTS.includes(event)
       ) {
         log('ignoring file addition because was added silently %s', file)
         return
