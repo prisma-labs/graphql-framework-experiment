@@ -7,9 +7,8 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-
 - [Introduction](#introduction)
-    - [Getting Started](#getting-started)
+  - [Getting Started](#getting-started)
   - [Adding Prisma Framework](#adding-prisma-framework)
     - [Overview](#overview)
     - [Tutorial](#tutorial)
@@ -19,17 +18,17 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
   - [Conventions](#conventions)
     - [`schema.ts` | `schema/*`](#schemats--schema)
     - [`app.ts`](#appts)
-        - [Aliases](#aliases)
+      - [Aliases](#aliases)
     - [Example Layouts](#example-layouts)
 - [API](#api)
-    - [`app`](#app)
-    - [`app.addContext`](#appaddcontext)
-    - [`app.<nexusDefBlock>`](#appnexusdefblock)
+  - [`app`](#app)
+  - [`app.addContext`](#appaddcontext)
+  - [`app.<nexusDefBlock>`](#appnexusdefblock)
 - [CLI](#cli)
 - [Development](#development)
-    - [Overview](#overview-1)
-    - [Testing](#testing)
-    - [Working With Example Apps via Linking](#working-with-example-apps-via-linking)
+  - [Overview](#overview-1)
+  - [Testing](#testing)
+  - [Working With Example Apps via Linking](#working-with-example-apps-via-linking)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -70,6 +69,8 @@ Some highlights:
 2. Conventions save you from configuring `pumpkins` to find your schema module.
 
 3. You don't need a main entrypoint module. Grow into that (see later sections) as you wish.
+
+4. Prisma integration is seamless, yet optional
 
 ## Adding Prisma Framework
 
@@ -119,63 +120,6 @@ Enter dev mode:
 ```
 yarn pumpkins dev
 ```
-
-The following shows an example of transitioning your API codebase to use the extensions brought on
-by the Prisma extension:
-
-```diff
-  objectType({
-    name: 'User',
-    definition(t) {
--     t.id('id)
--     t.string('name')
-+     t.model.id()
-+     t.model.name()
-    },
-  })
-```
-
-After doing this you will see a static type error on our `users` field resolver. This is because the user `id` field has changed from an `ID` type to a `Int` type. We don't need to resolve this directly though because we'll rewrite our resolver to talk to a real database now. The behind-the-scenes prisma integration has already given us a photon client ready to use on the resolver context object.
-
-```diff
-  queryType({
-    definition(t) {
-      t.list.field('users', {
-        type: 'User',
--       resolve() {
--         return [{ id: '1643', name: 'newton' }]
-+       resolve(_root, _args, ctx) {
-+         return ctx.photon.users.findMany()
-        },
-      })
-    },
-  })
-```
-
-Finally lets try our query again at http://localhost:4000/graphql:
-
-```gql
-query {
-  users {
-    id
-    name
-  }
-}
-```
-
-You should get back:
-
-```json
-{
-  "data": {
-    "users": []
-  }
-}
-```
-
-Reflecting on what we've just seen;
-
-1. Integrating Prisma is literally a matter of just using it. `pumpkins` will react to the presence of a `schema.prisma`, run Prisma generators, setup Photon.js, and setup `nexus-prisma` Nexus plugin.
 
 <br>
 
