@@ -1,3 +1,5 @@
+import { fatal } from '../utils/process'
+
 /**
  * Dev Mode is a module providing functions that support special dev-mode-only
  * features. This module is aware of when dev mode is on or off, and takes the
@@ -106,13 +108,4 @@ function assertDevModeIPCIntegrityCheck(): void {
       status.reason
     )
   }
-}
-
-/**
- * Log a meaningful semantic error message sans stack track and then crash
- * the program with exit code 1. Parameters are a passthrough to `console.error`.
- */
-function fatal(format: string, ...vars: unknown[]): void {
-  console.error(format, ...vars)
-  process.exit(1)
 }

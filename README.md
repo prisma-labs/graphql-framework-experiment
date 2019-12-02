@@ -42,87 +42,23 @@ system (in fact Prisma features are implemented as a plugin).
 
 ### Getting Started
 
-```
-yarn init -y
-yarn add pumpkins@master
-```
-
-Add some files to get your app going:
+Setup your system
 
 ```
-mkdir -p app
-touch app/schema.ts
+yarn global add pumpkins@master
+mkdir -p ~/projects/my-pumpkins-app
+cd ~/projects/my-pumpkins-app
 ```
 
-Fill out your modules with some initial code:
-
-```ts
-// app/schema.ts
-import { app } from 'pumpkins'
-
-app.objectType({
-  name: 'User',
-  definition(t) {
-    t.id('id')
-    t.string('name')
-  },
-})
-
-app.queryType({
-  definition(t) {
-    t.list.field('users', {
-      type: 'User',
-      resolve() {
-        return [{ id: '1643', name: 'newton' }]
-      },
-    })
-  },
-})
-```
-
-Enter dev mode to boot your app:
+Kick off a new project
 
 ```
-$ yarn pumpkins dev
+pumpkins create
 ```
 
-Go to http://localhost:4000/graphql and try this query:
+Follow the prompts
 
-```gql
-query {
-  users {
-    id
-    name
-  }
-}
-```
-
-You should get back:
-
-```json
-{
-  "data": {
-    "users": [
-      {
-        "id": "1643",
-        "name": "newton"
-      }
-    ]
-  }
-}
-```
-
-Once you're ready to go to production just build your app and run the start module with node.
-
-```
-$ yarn pumpkins build
-```
-
-```
-$ node node_modules/.build/start
-```
-
-Reflecting on what we've just seen;
+Some highlights:
 
 1. The `resolve` func of `users` field is strongly typed and guarantees that the shape of data returned conforms to the schema definition of `User`. There is literally zero effort for you to get this working. Just enter dev mode and start working on your app.
 
@@ -168,7 +104,8 @@ Enter dev mode:
 yarn pumpkins dev
 ```
 
-Now we can go back and and integrate our data layer into our GraphQL API:
+The following shows an example of transitioning your API codebase to use the extensions brought on
+by the Prisma extension:
 
 ```diff
   objectType({
@@ -223,6 +160,88 @@ You should get back:
 Reflecting on what we've just seen;
 
 1. Integrating Prisma is literally a matter of just using it. `pumpkins` will react to the presence of a `schema.prisma`, run Prisma generators, setup Photon.js, and setup `nexus-prisma` Nexus plugin.
+
+<br>
+
+# Guide
+
+### Going to Proudction
+
+Once you're ready to go to production just build your app and run the start module with node.
+
+```
+$ yarn pumpkins build
+```
+
+```
+$ node node_modules/.build/start
+```
+
+## Adding Prisma Framework
+
+Prisma Framework is a next-generation developer-centric tool chain focused on making the data layer easy. In turn, `pumpkins` makes it easy to integrate Prisma Framework into your app. Let's see how.
+
+Add a schema.prisma file and fill it out with some content
+
+```diff
+mkdir -p prisma
+touch prisma/schema.prisma
+```
+
+```groovy
+// prisma/schema.prisma
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:dev.db"
+}
+
+model User {
+  id   Int    @id
+  name String
+}
+```
+
+Initialize your database:
+
+```
+yarn prisma2 lift save --create-db --name init
+yarn prisma2 lift up
+```
+
+The following shows an example of transitioning your API codebase to use the extensions brought on
+by the Prisma extension.
+
+Using the model DSL:
+
+```diff
+  objectType({
+    name: 'User',
+    definition(t) {
+-     t.id('id)
+-     t.string('name')
++     t.model.id()
++     t.model.name()
+    },
+  })
+```
+
+Using the photon instance on `ctx`:
+
+```diff
+  queryType({
+    definition(t) {
+      t.list.field('users', {
+        type: 'User',
+-       resolve() {
+-         return [{ id: '1643', name: 'newton' }]
++       resolve(_root, _args, ctx) {
++         return ctx.photon.users.findMany()
+        },
+      })
+    },
+  })
+```
 
 <br>
 
