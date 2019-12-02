@@ -11,6 +11,8 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
 - [Introduction](#introduction)
     - [Getting Started](#getting-started)
   - [Adding Prisma Framework](#adding-prisma-framework)
+    - [Overview](#overview)
+    - [Tutorial](#tutorial)
 - [Guide](#guide)
   - [Going to Proudction](#going-to-proudction)
   - [Adding Prisma Framework](#adding-prisma-framework-1)
@@ -19,14 +21,13 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
     - [`app.ts`](#appts)
         - [Aliases](#aliases)
     - [Example Layouts](#example-layouts)
-- [Prisma Support](#prisma-support)
 - [API](#api)
     - [`app`](#app)
     - [`app.addContext`](#appaddcontext)
     - [`app.<nexusDefBlock>`](#appnexusdefblock)
 - [CLI](#cli)
 - [Development](#development)
-    - [Overview](#overview)
+    - [Overview](#overview-1)
     - [Testing](#testing)
     - [Working With Example Apps via Linking](#working-with-example-apps-via-linking)
 
@@ -72,7 +73,18 @@ Some highlights:
 
 ## Adding Prisma Framework
 
-Prisma Framework is a next-generation developer-centric tool chain focused on making the data layer easy. In turn, `pumpkins` makes it easy to integrate Prisma Framework into your app. Let's see how.
+### Overview
+
+Prisma Framework is a next-generation developer-centric tool chain focused on making the data layer easy. In turn, `pumpkins` makes it easy to integrate Prisma Framework into your app. You opt-in by creating a `schema.prisma` file somewhere in your project. Then, the following things automatically happen:
+
+1. Pumpkins CLI workflows are extended:
+   1. On build, Prisma generators are run
+   2. During dev, Prisma generators are run after prisma schema file changes
+2. The `nexus-prisma` Nexus plugin is automatically used. This you get access to `t.model` and `t.crud`.
+3. An instance of the generated Photon.JS client is a added to context under `photon` property
+4. The TypeScript types representing your Prisma models are registered as a Nexus data source. In short this enables proper typing of `parent` parameters in your resolves. They reflect the data of the correspondingly named Prisma model.
+
+### Tutorial
 
 Add a schema.prisma file and fill it out with some content
 
@@ -299,17 +311,6 @@ prisma/
 ```
 
 <br>
-
-# Prisma Support
-
-Prisma is optional yet seamlessly supported. You opt-in by creating a `schema.prisma` file somewhere in your project. Then, the following things automatically happen:
-
-1. Pumpkins CLI workflows are extended:
-   1. On build, Prisma generators are run
-   2. During dev, Prisma generators are run after prisma schema file changes
-2. The `nexus-prisma` Nexus plugin is automatically used. This you get access to `t.model` and `t.crud`.
-3. An instance of the generated Photon.JS client is a added to context under `photon` property
-4. The TypeScript types representing your Prisma models are registered as a Nexus data source. In short this enables proper typing of `parent` parameters in your resolves. They reflect the data of the correspondingly named Prisma model.
 
 # API
 
