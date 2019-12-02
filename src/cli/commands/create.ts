@@ -3,6 +3,8 @@ import { Command } from '../helpers'
 import { fatal, run } from '../../utils/process'
 import { stripIndent } from 'common-tags'
 import Git from 'simple-git/promise'
+import * as Layout from '../../framework/layout'
+import { createTSConfigContents } from '../../utils'
 
 export class Create implements Command {
   async parse() {
@@ -10,7 +12,16 @@ export class Create implements Command {
     await assertIsCleanSlate()
 
     console.log('scaffolding project files...')
-    await scaffoldNewProject()
+    const layout = Layout.createFromData({
+      app: {
+        exists: false,
+        path: null,
+      },
+      projectRoot: fs.path(),
+      sourceRoot: fs.path('./app'),
+      sourceRootRelative: './app',
+    })
+    await scaffoldNewProject(layout)
 
     console.log(
       'installing dependencies... (this will take around ~30 seconds)'
@@ -83,7 +94,8 @@ async function assertIsCleanSlate() {
 /**
  * Scaffold a new pumpkins project from scratch
  */
-async function scaffoldNewProject() {
+async function scaffoldNewProject(layout: Layout.Layout) {
+  // TODO eventually `master` should become `latest`
   // TODO blog example? Template selector?
   // TODO generate code name for pumpkins app?
   // TODO given that we're scaffolding, we know the layout ahead of time. We
@@ -92,7 +104,9 @@ async function scaffoldNewProject() {
     fs.writeAsync('package.json', {
       name: 'my-app',
       license: 'UNLICENSED',
-      dependencies: { pumpkins: 'master' },
+      dependencies: {
+        pumpkins: 'master',
+      },
       scripts: {
         dev: 'pumpkins dev',
         build: 'pumpkins build',
@@ -100,7 +114,7 @@ async function scaffoldNewProject() {
       },
     }),
 
-    fs.writeAsync('tsconfig.json', '{}'),
+    fs.writeAsync('tsconfig.json', createTSConfigContents(layout)),
 
     fs.writeAsync(
       'prisma/schema.prisma',
@@ -147,7 +161,7 @@ async function scaffoldNewProject() {
     ),
 
     fs.writeAsync(
-      'app/schema.ts',
+      layout.sourcePath('schema.ts'),
       stripIndent`
         import { app } from "pumpkins"
 

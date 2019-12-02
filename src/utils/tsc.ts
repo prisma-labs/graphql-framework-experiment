@@ -260,32 +260,35 @@ export async function findOrScaffoldTsConfig(
     // evaluated at tsconfig read time, see this Stack-Overflow thread:
     // https://stackoverflow.com/questions/57333825/can-you-pull-in-excludes-includes-options-in-typescript-compiler-api
     //
-    const tsConfigContent = stripIndent`
-      {
-        "compilerOptions": {
-          "target": "es2016",
-          "module": "commonjs",
-          "lib": ["esnext"],
-          "strict": true,
-          // [1] pumpkins managed
-          // "rootDir": "${layout.sourceRootRelative}",
-          // "outDir": "${BUILD_FOLDER_NAME}",
-        },
-        // [1] pumpkins managed
-        // "include": "${layout.sourceRootRelative}"
-      }
-
-      // [1] pumpkins managed
-      //
-      // These settings are managed by Pumpkins.
-      // Do not edit these manually. Please refer to
-      // https://github.com/prisma/pumpkins/issues/82
-      // Contribute feedback/use-cases if you feel strongly
-      // about controlling these settings manually.
-    `
-    await fs.writeAsync(scaffoldPath, tsConfigContent)
+    await fs.writeAsync(scaffoldPath, createTSConfigContents(layout))
     return 'warning'
   }
 
   return 'success'
+}
+
+export function createTSConfigContents(layout: Layout): string {
+  return stripIndent`
+    {
+      "compilerOptions": {
+        "target": "es2016",
+        "module": "commonjs",
+        "lib": ["esnext"],
+        "strict": true,
+        // [1] pumpkins managed
+        // "rootDir": "${layout.sourceRootRelative}",
+        // "outDir": "${BUILD_FOLDER_NAME}",
+      },
+      // [1] pumpkins managed
+      // "include": "${layout.sourceRootRelative}"
+    }
+
+    // [1] pumpkins managed
+    //
+    // These settings are managed by Pumpkins.
+    // Do not edit these manually. Please refer to
+    // https://github.com/prisma/pumpkins/issues/82
+    // Contribute feedback/use-cases if you feel strongly
+    // about controlling these settings manually.
+  `
 }

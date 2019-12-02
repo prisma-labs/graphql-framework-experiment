@@ -56,6 +56,8 @@ export type Layout = Data & {
    */
   data: Data
   projectRelative(filePath: string): string
+  sourceRelative(filePath: string): string
+  sourcePath(subPath: string): string
 }
 
 /**
@@ -75,6 +77,10 @@ export function createFromData(layoutData: Data): Layout {
     ...layoutData,
     data: layoutData,
     projectRelative: Path.relative.bind(null, layoutData.projectRoot),
+    sourceRelative: Path.relative.bind(null, layoutData.sourceRoot),
+    sourcePath(subpath: string): string {
+      return Path.join(layoutData.sourceRoot, subpath)
+    },
   }
 }
 
