@@ -1,50 +1,12 @@
-import { spawnSync, SpawnSyncOptions } from 'child_process'
+import { RunOptions, run } from '../../src/utils'
 import * as path from 'path'
-import { withoutColors } from './utils'
-
-export type RunResult = {
-  stderr: string
-  stdout: string
-  status: null | number
-}
-type RunOptions = Omit<SpawnSyncOptions, 'encoding'> & {
-  require?: boolean
-}
-
-// TODO conditional type over require option
-export const run = (command: string, options?: RunOptions): RunResult => {
-  const [name, ...args] = command.split(' ')
-  const { stderr, stdout, status } = spawnSync(name, args, {
-    ...options,
-    encoding: 'utf8',
-  })
-
-  if (options?.require !== false && stderr !== '') {
-    throw new Error(`
-      The following command failed to complete successfully:
-
-          ${command}
-
-      Becuase of this error output by it:
-
-          ${stderr}
-    `)
-  }
-
-  return withoutColors({ stderr, stdout, status })
-}
-
-export const createRunner = (cwd: string): typeof run => {
-  return (cmd, opts) => {
-    return run(cmd, { ...opts, cwd })
-  }
-}
 
 export const createCLIRunner = (optionsBase?: RunOptions) => (
   command: string,
   options?: RunOptions
 ) => {
   const mergedOptions = { ...optionsBase, ...options }
+
   // TODO Why is the extra `../` needed...
   const entrypint = 'src/cli/index.ts'
   const pathToProject =

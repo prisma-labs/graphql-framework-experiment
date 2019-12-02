@@ -14,7 +14,7 @@ export type RunResult = {
   stdout: string
   status: null | number
 }
-type RunOptions = Omit<SpawnSyncOptions, 'encoding'> & {
+export type RunOptions = Omit<SpawnSyncOptions, 'encoding'> & {
   require?: boolean
 }
 

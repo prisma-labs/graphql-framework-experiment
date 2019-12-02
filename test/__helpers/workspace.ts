@@ -1,8 +1,8 @@
 import * as jetpack from 'fs-jetpack'
 import * as path from 'path'
 import createGit, { SimpleGit } from 'simple-git/promise'
-import { createRunner } from './run'
 import { gitRepo, gitReset } from './utils'
+import { createRunner } from '../../src/utils'
 
 type Workspace = {
   dir: { path: string; pathRelativeToPumpkins: string; cacheHit: boolean }
