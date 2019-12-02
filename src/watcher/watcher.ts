@@ -32,6 +32,7 @@ export function createWatcher(opts: Opts) {
     onAll(_event, file) {
       restartRunner(file)
     },
+    cwd: process.cwd(), // prevent globbed files and required files from being watched twice
   })
 
   watcher.on('error', error => {
