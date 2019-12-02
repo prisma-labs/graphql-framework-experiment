@@ -349,3 +349,11 @@ local node_modules](https://github.com/yarnpkg/yarn/issues/5713).
 ### Working With Example Apps via Linking
 
 Refer to https://github.com/prisma/pumpkins-examples
+
+### Working with create command
+
+In any example you can use this workflow:
+
+```
+rm -rf test-create && mcd test-create && ../node_modules/.bin/pumpkins create
+```
