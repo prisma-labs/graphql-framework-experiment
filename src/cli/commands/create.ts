@@ -1,18 +1,28 @@
 import * as fs from 'fs-jetpack'
 import { Command } from '../helpers'
 import { fatal, run } from '../../utils/process'
-import { stripIndent } from 'common-tags'
+import { stripIndent, stripIndents } from 'common-tags'
 
 export class Create implements Command {
   async parse() {
     console.log('checking folder is in a clean state...')
     await assertIsCleanSlate()
+
     console.log('scaffolding project files...')
     await scaffoldNewProject()
+
     console.log(
       'installing dependencies... (this will take around ~30 seconds)'
     )
     await run('yarn')
+
+    console.log('initializing development database...')
+    await run('yarn -s prisma2 lift save --create-db --name init')
+    await run('yarn -s prisma2 lift up')
+
+    console.log('seeding data...')
+    await run('yarn -s ts-node prisma/seed')
+
     console.log(stripIndent`
       all done now please run:
 
@@ -60,16 +70,47 @@ async function scaffoldNewProject() {
       license: 'UNLICENSED',
       dependencies: { pumpkins: 'master' },
       scripts: {
-        build: 'pumpkins build',
         dev: 'pumpkins dev',
+        build: 'pumpkins build',
+        start: 'node node_modules/.build/start',
       },
     }),
 
     fs.writeAsync('tsconfig.json', '{}'),
 
     fs.writeAsync(
-      'prisma/prisma.schema',
+      'prisma/schema.prisma',
+      stripIndent`
+        datasource db {
+          provider = "sqlite"
+          url      = "file:dev.db"
+        }
+
+        generator photon {
+          provider = "photonjs"
+        }
+
+        model World {
+          id         Int     @id
+          name       String  @unique
+          population Int
+        }
       `
+    ),
+
+    fs.writeAsync(
+      'prisma/seed.ts',
+      stripIndent`
+        import { Photon } from "@prisma/photon"
+
+        const photon = new Photon()
+        
+        photon.worlds.create({
+          data: {
+            name: "Earth",
+            population: 6_000_000_000
+          }
+        })
     `
     ),
 
@@ -89,10 +130,8 @@ async function scaffoldNewProject() {
           definition(t) {
             t.field("hello", {
               type: "World",
-              resolve() {
-                return {
-                  population: 6_000_000_000
-                }
+              resolve(_root, _args, ctx) {
+                return ctx.photon.worlds.findOne({ name: 'earth' })
               }
             })
           }
