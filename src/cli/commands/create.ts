@@ -32,6 +32,7 @@ export class Create implements Command {
 
           query {
             hello {
+              name
               population
             }
           }
@@ -57,13 +58,9 @@ async function assertIsCleanSlate() {
  * Scaffold a new pumpkins project from scratch
  */
 async function scaffoldNewProject() {
-  // TODO given that we're scaffolding, we know the layout ahead of time. We
   // TODO generate code name for pumpkins app
+  // TODO given that we're scaffolding, we know the layout ahead of time. We
   // should take advantage of that, e.g. precompute layout data
-  // write a package.json
-  // write a tsconfig
-  // write a prisma config
-  // write an app.ts
   await Promise.all([
     fs.writeAsync('package.json', {
       name: 'my-app',
@@ -93,7 +90,7 @@ async function scaffoldNewProject() {
         model World {
           id         Int     @id
           name       String  @unique
-          population Int
+          population Float
         }
       `
     ),
@@ -105,13 +102,21 @@ async function scaffoldNewProject() {
 
         const photon = new Photon()
         
-        photon.worlds.create({
-          data: {
-            name: "Earth",
-            population: 6_000_000_000
-          }
-        })
-    `
+        main()
+        
+        async function main() {
+          const result = await photon.worlds.create({
+            data: {
+              name: "Earth",
+              population: 6_000_000_000
+            }
+          })
+        
+          console.log("Seeded: %j", result)
+        
+          photon.disconnect()
+        }
+      `
     ),
 
     fs.writeAsync(
@@ -122,7 +127,9 @@ async function scaffoldNewProject() {
         app.objectType({
           name: "World",
           definition(t) {
-            t.float("population")
+            t.model.id()
+            t.model.name()
+            t.model.population()
           }
         })
         
@@ -131,7 +138,11 @@ async function scaffoldNewProject() {
             t.field("hello", {
               type: "World",
               resolve(_root, _args, ctx) {
-                return ctx.photon.worlds.findOne({ name: 'earth' })
+                return ctx.photon.worlds.findOne({
+                  where: {
+                    name: "Earth"
+                  }
+                })
               }
             })
           }
