@@ -1,7 +1,8 @@
 import * as fs from 'fs-jetpack'
 import { Command } from '../helpers'
 import { fatal, run } from '../../utils/process'
-import { stripIndent, stripIndents } from 'common-tags'
+import { stripIndent } from 'common-tags'
+import Git from 'simple-git/promise'
 
 export class Create implements Command {
   async parse() {
@@ -19,6 +20,22 @@ export class Create implements Command {
     console.log('initializing development database...')
     await run('yarn -s prisma2 lift save --create-db --name init')
     await run('yarn -s prisma2 lift up')
+
+    console.log('initializing git repo...')
+    const git = Git()
+    await fs.write(
+      '.gitignore',
+      stripIndent`
+        # Node
+        node_modules
+
+        # TypeScript
+        *.tsbuildinfo
+      `
+    )
+    await git.init()
+    await git.raw(['add', '-A'])
+    await git.raw(['commit', '-m', 'initial commit'])
 
     console.log('seeding data...')
     await run('yarn -s ts-node prisma/seed')
@@ -58,7 +75,8 @@ async function assertIsCleanSlate() {
  * Scaffold a new pumpkins project from scratch
  */
 async function scaffoldNewProject() {
-  // TODO generate code name for pumpkins app
+  // TODO blog example? Template selector?
+  // TODO generate code name for pumpkins app?
   // TODO given that we're scaffolding, we know the layout ahead of time. We
   // should take advantage of that, e.g. precompute layout data
   await Promise.all([
