@@ -7,24 +7,29 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
+
 - [Introduction](#introduction)
-  - [Getting Started](#getting-started)
+    - [Getting Started](#getting-started)
   - [Adding Prisma Framework](#adding-prisma-framework)
-- [Conventions](#conventions)
-  - [`schema.ts` | `schema/*`](#schemats--schema)
-  - [`app.ts`](#appts)
-    - [Aliases](#aliases)
-  - [Example Layouts](#example-layouts)
-- [Prisma Support](#prisma-support)
+    - [Overview](#overview)
+    - [Tutorial](#tutorial)
+- [Guide](#guide)
+  - [Going to Proudction](#going-to-proudction)
+  - [Adding Prisma Framework](#adding-prisma-framework-1)
+  - [Conventions](#conventions)
+    - [`schema.ts` | `schema/*`](#schemats--schema)
+    - [`app.ts`](#appts)
+        - [Aliases](#aliases)
+    - [Example Layouts](#example-layouts)
 - [API](#api)
-  - [`app`](#app)
-  - [`app.addContext`](#appaddcontext)
-  - [`app.<nexusDefBlock>`](#appnexusdefblock)
+    - [`app`](#app)
+    - [`app.addContext`](#appaddcontext)
+    - [`app.<nexusDefBlock>`](#appnexusdefblock)
 - [CLI](#cli)
 - [Development](#development)
-  - [Overview](#overview)
-  - [Testing](#testing)
-  - [Working With Example Apps via Linking](#working-with-example-apps-via-linking)
+    - [Overview](#overview-1)
+    - [Testing](#testing)
+    - [Working With Example Apps via Linking](#working-with-example-apps-via-linking)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -42,87 +47,23 @@ system (in fact Prisma features are implemented as a plugin).
 
 ### Getting Started
 
-```
-yarn init -y
-yarn add pumpkins@master
-```
-
-Add some files to get your app going:
+Setup your system
 
 ```
-mkdir -p app
-touch app/schema.ts
+yarn global add pumpkins@master
+mkdir -p ~/projects/my-pumpkins-app
+cd ~/projects/my-pumpkins-app
 ```
 
-Fill out your modules with some initial code:
-
-```ts
-// app/schema.ts
-import { app } from 'pumpkins'
-
-app.objectType({
-  name: 'User',
-  definition(t) {
-    t.id('id')
-    t.string('name')
-  },
-})
-
-app.queryType({
-  definition(t) {
-    t.list.field('users', {
-      type: 'User',
-      resolve() {
-        return [{ id: '1643', name: 'newton' }]
-      },
-    })
-  },
-})
-```
-
-Enter dev mode to boot your app:
+Kick off a new project
 
 ```
-$ yarn pumpkins dev
+pumpkins create
 ```
 
-Go to http://localhost:4000/graphql and try this query:
+Follow the prompts
 
-```gql
-query {
-  users {
-    id
-    name
-  }
-}
-```
-
-You should get back:
-
-```json
-{
-  "data": {
-    "users": [
-      {
-        "id": "1643",
-        "name": "newton"
-      }
-    ]
-  }
-}
-```
-
-Once you're ready to go to production just build your app and run the start module with node.
-
-```
-$ yarn pumpkins build
-```
-
-```
-$ node node_modules/.build/start
-```
-
-Reflecting on what we've just seen;
+Some highlights:
 
 1. The `resolve` func of `users` field is strongly typed and guarantees that the shape of data returned conforms to the schema definition of `User`. There is literally zero effort for you to get this working. Just enter dev mode and start working on your app.
 
@@ -132,7 +73,18 @@ Reflecting on what we've just seen;
 
 ## Adding Prisma Framework
 
-Prisma Framework is a next-generation developer-centric tool chain focused on making the data layer easy. In turn, `pumpkins` makes it easy to integrate Prisma Framework into your app. Let's see how.
+### Overview
+
+Prisma Framework is a next-generation developer-centric tool chain focused on making the data layer easy. In turn, `pumpkins` makes it easy to integrate Prisma Framework into your app. You opt-in by creating a `schema.prisma` file somewhere in your project. Then, the following things automatically happen:
+
+1. Pumpkins CLI workflows are extended:
+   1. On build, Prisma generators are run
+   2. During dev, Prisma generators are run after prisma schema file changes
+2. The `nexus-prisma` Nexus plugin is automatically used. This you get access to `t.model` and `t.crud`.
+3. An instance of the generated Photon.JS client is a added to context under `photon` property
+4. The TypeScript types representing your Prisma models are registered as a Nexus data source. In short this enables proper typing of `parent` parameters in your resolves. They reflect the data of the correspondingly named Prisma model.
+
+### Tutorial
 
 Add a schema.prisma file and fill it out with some content
 
@@ -168,7 +120,8 @@ Enter dev mode:
 yarn pumpkins dev
 ```
 
-Now we can go back and and integrate our data layer into our GraphQL API:
+The following shows an example of transitioning your API codebase to use the extensions brought on
+by the Prisma extension:
 
 ```diff
   objectType({
@@ -226,7 +179,89 @@ Reflecting on what we've just seen;
 
 <br>
 
-# Conventions
+# Guide
+
+## Going to Proudction
+
+Once you're ready to go to production just build your app and run the start module with node.
+
+```
+$ yarn pumpkins build
+```
+
+```
+$ node node_modules/.build/start
+```
+
+## Adding Prisma Framework
+
+Prisma Framework is a next-generation developer-centric tool chain focused on making the data layer easy. In turn, `pumpkins` makes it easy to integrate Prisma Framework into your app. Let's see how.
+
+Add a schema.prisma file and fill it out with some content
+
+```diff
+mkdir -p prisma
+touch prisma/schema.prisma
+```
+
+```groovy
+// prisma/schema.prisma
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:dev.db"
+}
+
+model User {
+  id   Int    @id
+  name String
+}
+```
+
+Initialize your database:
+
+```
+yarn prisma2 lift save --create-db --name init
+yarn prisma2 lift up
+```
+
+The following shows an example of transitioning your API codebase to use the extensions brought on
+by the Prisma extension.
+
+Using the model DSL:
+
+```diff
+  objectType({
+    name: 'User',
+    definition(t) {
+-     t.id('id)
+-     t.string('name')
++     t.model.id()
++     t.model.name()
+    },
+  })
+```
+
+Using the photon instance on `ctx`:
+
+```diff
+  queryType({
+    definition(t) {
+      t.list.field('users', {
+        type: 'User',
+-       resolve() {
+-         return [{ id: '1643', name: 'newton' }]
++       resolve(_root, _args, ctx) {
++         return ctx.photon.users.findMany()
+        },
+      })
+    },
+  })
+```
+
+<br>
+
+## Conventions
 
 ### `schema.ts` | `schema/*`
 
@@ -276,17 +311,6 @@ prisma/
 ```
 
 <br>
-
-# Prisma Support
-
-Prisma is optional yet seamlessly supported. You opt-in by creating a `schema.prisma` file somewhere in your project. Then, the following things automatically happen:
-
-1. Pumpkins CLI workflows are extended:
-   1. On build, Prisma generators are run
-   2. During dev, Prisma generators are run after prisma schema file changes
-2. The `nexus-prisma` Nexus plugin is automatically used. This you get access to `t.model` and `t.crud`.
-3. An instance of the generated Photon.JS client is a added to context under `photon` property
-4. The TypeScript types representing your Prisma models are registered as a Nexus data source. In short this enables proper typing of `parent` parameters in your resolves. They reflect the data of the correspondingly named Prisma model.
 
 # API
 
