@@ -68,6 +68,12 @@ async function scaffoldNewProject() {
     fs.writeAsync('tsconfig.json', '{}'),
 
     fs.writeAsync(
+      'prisma/prisma.schema',
+      `
+    `
+    ),
+
+    fs.writeAsync(
       'app/schema.ts',
       stripIndent`
         import { app } from "pumpkins"

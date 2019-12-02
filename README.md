@@ -12,9 +12,9 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
     - [Getting Started](#getting-started)
   - [Adding Prisma Framework](#adding-prisma-framework)
 - [Guide](#guide)
-    - [Going to Proudction](#going-to-proudction)
+  - [Going to Proudction](#going-to-proudction)
   - [Adding Prisma Framework](#adding-prisma-framework-1)
-- [Conventions](#conventions)
+  - [Conventions](#conventions)
     - [`schema.ts` | `schema/*`](#schemats--schema)
     - [`app.ts`](#appts)
         - [Aliases](#aliases)
@@ -169,7 +169,7 @@ Reflecting on what we've just seen;
 
 # Guide
 
-### Going to Proudction
+## Going to Proudction
 
 Once you're ready to go to production just build your app and run the start module with node.
 
@@ -249,7 +249,7 @@ Using the photon instance on `ctx`:
 
 <br>
 
-# Conventions
+## Conventions
 
 ### `schema.ts` | `schema/*`
 
