@@ -23,11 +23,20 @@ export class Create implements Command {
 
     console.log('initializing git repo...')
     const git = Git()
+
+    // An exhaustive .gitignore tailored for Node can be found here:
+    // https://github.com/github/gitignore/blob/master/Node.gitignore
+    // We intentionally stay minimal here, as we want the default ignore file
+    // to be as meaningful for pumpkins users as possible.
     await fs.write(
       '.gitignore',
       stripIndent`
         # Node
         node_modules
+        npm-debug.log*
+        yarn-debug.log*
+        yarn-error.log*
+        lerna-debug.log*
 
         # TypeScript
         *.tsbuildinfo
