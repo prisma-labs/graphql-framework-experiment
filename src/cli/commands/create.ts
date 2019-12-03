@@ -5,7 +5,7 @@ import { stripIndent } from 'common-tags'
 import Git from 'simple-git/promise'
 import * as Layout from '../../framework/layout'
 import { createTSConfigContents } from '../../utils'
-import { fork, spawn } from 'child_process'
+import { spawn } from 'child_process'
 
 export class Create implements Command {
   async parse() {
