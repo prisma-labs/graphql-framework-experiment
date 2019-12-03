@@ -26,9 +26,15 @@ export function createWatcher(opts: Opts) {
   // Setup State
   //
 
-  // Create a file watcher
-  const watcher = watch('./**/*', {
-    ignored: /.*node_modules.*/,
+  const photonPath = require.resolve('@prisma/photon')
+
+  /**
+   * Create a file watcher
+   * - Watch photon's path to restart server when prisma2 dev regenerates it
+   * - Ignore migrations & prisma.schema because prisma2 dev already watches it
+   */
+  const watcher = watch([`${opts.layout.sourceRoot}/**/*`, photonPath], {
+    ignored: ['migrations/*', 'prisma.schema'],
     ignoreInitial: true,
     onAll(_event, file) {
       restartRunner(file)
