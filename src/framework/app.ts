@@ -4,7 +4,6 @@ import * as fs from 'fs-jetpack'
 import * as nexus from 'nexus'
 import { requireSchemaModules, pog, findFile, stripExt } from '../utils'
 import { createNexusSingleton, createNexusConfig } from './nexus'
-import { typegenAutoConfig } from 'nexus/dist/core'
 import { Plugin } from './plugin'
 import { createPrismaPlugin, isPrismaEnabledSync } from './plugins'
 import { stripIndent, stripIndents } from 'common-tags'
@@ -155,7 +154,9 @@ export function createApp(appConfig?: { types?: any }): App {
         // curreent use-case, fairly basic, integrated into the auto system, here:
         // https://github.com/prisma-labs/nexus/issues/323
         nexusConfig.typegenConfig = async (schema, outputPath) => {
-          const configurator = await typegenAutoConfig(typegenAutoConfigObject)
+          const configurator = await nexus.core.typegenAutoConfig(
+            typegenAutoConfigObject
+          )
           const config = await configurator(schema, outputPath)
 
           // Initialize

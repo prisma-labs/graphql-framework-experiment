@@ -34,7 +34,11 @@ export function createWatcher(opts: Opts) {
    * - Ignore migrations & prisma.schema because prisma2 dev already watches it
    */
   const watcher = watch([`${opts.layout.sourceRoot}/**/*`, photonPath], {
-    ignored: ['migrations/*', 'prisma.schema'],
+    ignored: [
+      'migrations/*',
+      'prisma.schema',
+      'node_modules/@types/typegen-nexus-prisma/index.d.ts',
+    ],
     ignoreInitial: true,
     onAll(_event, file) {
       restartRunner(file)
@@ -138,7 +142,10 @@ export function createWatcher(opts: Opts) {
     /* eslint-disable no-octal-escape */
     if (cfg.clear) process.stdout.write('\\033[2J\\033[H')
 
-    compiler.compileChanged(file, opts.callbacks ?? {})
+    if (opts.callbacks?.onEvent) {
+      opts.callbacks.onEvent('restart', file)
+    }
+    //compiler.compileChanged(file, opts.callbacks ?? {})
 
     if (runnerRestarting) {
       log('already starting')
@@ -331,7 +338,7 @@ function startRunner(
   ipc.on(child, 'required', function(message) {
     // This log is commented out because it is very noisey if e.g. node_modules
     // are being watched––and not very interesting
-    // log('got runner message "required" %s', message)
+    //log('got runner message "required" %s', message)
     const isIgnored =
       cfg.ignore.some(isPrefixOf(message.required)) ||
       cfg.ignore.some(isRegExpMatch(message.required))

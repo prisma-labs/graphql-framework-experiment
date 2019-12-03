@@ -104,10 +104,11 @@ export function createNexusConfig(): NexusConfig {
   const defaultTypesPath = fs.path(
     'node_modules/@types/typegen-nexus/index.d.ts'
   )
+  const defaultSchemaPath = fs.path('schema.graphql')
 
   return {
     outputs: {
-      schema: false,
+      schema: defaultSchemaPath,
       typegen: defaultTypesPath,
     },
     typegenAutoConfig: {
