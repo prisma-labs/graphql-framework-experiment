@@ -5,6 +5,7 @@ import { stripIndent } from 'common-tags'
 import Git from 'simple-git/promise'
 import * as Layout from '../../framework/layout'
 import { createTSConfigContents } from '../../utils'
+import { spawn } from 'child_process'
 
 export class Create implements Command {
   async parse() {
@@ -61,11 +62,9 @@ export class Create implements Command {
     await run('yarn -s ts-node prisma/seed')
 
     console.log(stripIndent`
-      all done now please run:
-
-          yarn dev
+      entering dev mode...
           
-      then try this query out:
+      Try this query to get started: 
 
           query {
             hello {
@@ -74,6 +73,36 @@ export class Create implements Command {
             }
           }
     `)
+
+    // We will enter dev mode with the local version of pumpkins. This is a kind
+    // of cheat, but what we want users to have as their mental model. When they
+    // terminate this dev session, they will restart it typically with e.g. `$
+    // yarn dev`. This global-pumpkins-process-wrapping-local-pumpkins-process
+    // is unique to bootstrapping situations.
+
+    const child = spawn('yarn', ['-s', 'dev'], { stdio: 'inherit' })
+
+    const [exitCode, err] = await new Promise<[number | null, Error | null]>(
+      resolve => {
+        // NOTE "exit" may fire after "error", in which case it will be a noop
+        // as per how promises work.
+
+        child.once('error', error => {
+          console.log('er')
+          resolve([1, error])
+        })
+
+        child.once('exit', (exitCode, signal) => {
+          console.log('%s %s', exitCode, signal)
+          resolve([exitCode ?? 0, null])
+        })
+      }
+    )
+
+    // TODO integrate this concept into the cli runner proper. E.g. maybe be
+    // able to return { code, err }
+    if (err) console.error(err.message)
+    if (exitCode) process.exit(exitCode)
   }
 }
 
