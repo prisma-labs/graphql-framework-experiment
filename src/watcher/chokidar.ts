@@ -33,7 +33,6 @@ export function watch(
   log('starting', { paths, ...options })
   const watcher = chokidar.watch(paths, options) as FileWatcher
   const programmaticallyWatchedFiles: string[] = []
-  let watcherReady = false
 
   watcher.addSilently = path => {
     programmaticallyWatchedFiles.push(path)
@@ -43,7 +42,7 @@ export function watch(
   if (options && options.onAll) {
     watcher.on('all', (event, file, stats) => {
       if (
-        (!watcherReady || programmaticallyWatchedFiles.includes(file)) &&
+        programmaticallyWatchedFiles.includes(file) &&
         SILENT_EVENTS.includes(event)
       ) {
         log('ignoring file addition because was added silently %s', file)
@@ -53,9 +52,6 @@ export function watch(
       }
 
       options.onAll!(event, file, stats)
-    })
-    watcher.on('ready', () => {
-      watcherReady = true
     })
   }
 

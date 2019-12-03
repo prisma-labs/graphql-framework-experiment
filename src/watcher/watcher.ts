@@ -29,6 +29,7 @@ export function createWatcher(opts: Opts) {
   // Create a file watcher
   const watcher = watch('./**/*', {
     ignored: /.*node_modules.*/,
+    ignoreInitial: true,
     onAll(_event, file) {
       restartRunner(file)
     },
