@@ -133,7 +133,7 @@ export function compile(program: ts.Program): void {
   const emitResult = program.emit()
   log(
     'done - %s files emitted',
-    emitResult.emittedFiles?.length,
+    emitResult.emittedFiles?.length ?? 0,
     emitResult.emitSkipped
   )
   const allDiagnostics = ts
