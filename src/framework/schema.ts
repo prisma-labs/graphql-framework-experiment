@@ -6,12 +6,22 @@ import { Layout, relativeTranspiledImportPath } from './layout'
 const log = pog.sub(__filename)
 
 export function findSchemaDirOrModules(): string[] {
-  return fs.find({
-    directories: true,
-    files: true,
-    recursive: true,
-    matching: ['schema', 'schema.ts', ...baseIgnores],
-  })
+  // TODO async
+  return fs
+    .find({
+      directories: false,
+      files: true,
+      recursive: true,
+      matching: ['schema.ts', ...baseIgnores],
+    })
+    .concat(
+      fs.find({
+        directories: true,
+        files: false,
+        recursive: true,
+        matching: ['schema', ...baseIgnores],
+      })
+    )
 }
 
 function findSchemaModules(): {
