@@ -31,6 +31,9 @@ const defaultServerOptions: Required<ServerOptions> = {
   port:
     typeof process.env.PUMPKINS_PORT === 'string'
       ? parseInt(process.env.PUMPKINS_PORT, 10)
+      : typeof process.env.PORT === 'string'
+      ? // e.g. Heroku convention https://stackoverflow.com/questions/28706180/setting-the-port-for-node-js-server-on-heroku
+        parseInt(process.env.PORT, 10)
       : process.env.NODE_ENV === 'production'
       ? 80
       : 4000,
