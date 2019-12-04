@@ -33,6 +33,9 @@ export class Create implements Command {
     await run('yarn -s prisma2 lift save --create-db --name init')
     await run('yarn -s prisma2 lift up')
 
+    console.log('seeding data...')
+    await run('yarn -s ts-node prisma/seed')
+
     console.log('initializing git repo...')
     const git = Git()
 
@@ -58,9 +61,6 @@ export class Create implements Command {
     await git.raw(['add', '-A'])
     await git.raw(['commit', '-m', 'initial commit'])
 
-    console.log('seeding data...')
-    await run('yarn -s ts-node prisma/seed')
-
     console.log(stripIndent`
       entering dev mode...
           
@@ -72,8 +72,8 @@ export class Create implements Command {
               population
             }
           }
-
     `)
+    console.log() // force a newline to give code block breathing room, stripped by template tag above
 
     // We will enter dev mode with the local version of pumpkins. This is a kind
     // of cheat, but what we want users to have as their mental model. When they
