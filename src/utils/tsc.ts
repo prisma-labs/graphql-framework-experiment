@@ -121,7 +121,7 @@ export function createTSProgram(
     rootNames: tsConfig.fileNames,
     options: {
       incremental: true,
-      tsBuildInfoFile: './tsbuildinfo',
+      tsBuildInfoFile: './node_modules/.pumpkins/cache.tsbuildinfo',
       ...tsConfig.options,
     },
   })

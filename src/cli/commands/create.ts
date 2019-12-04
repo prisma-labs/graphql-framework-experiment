@@ -52,9 +52,6 @@ export class Create implements Command {
         yarn-debug.log*
         yarn-error.log*
         lerna-debug.log*
-
-        # TypeScript
-        *.tsbuildinfo
       `
     )
     await git.init()
