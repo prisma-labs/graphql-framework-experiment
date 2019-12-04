@@ -126,8 +126,16 @@ export function createTSProgram(layout: Layout): ts.Program {
  * compile a program
  */
 export function compile(program: ts.Program): void {
+  log('remove previous build folder if present...')
   fs.remove(BUILD_FOLDER_NAME)
+  log('done')
+  log('emit transpiled modules to disk...')
   const emitResult = program.emit()
+  log(
+    'done - %s files emitted',
+    emitResult.emittedFiles?.length ?? 0,
+    emitResult.emitSkipped
+  )
   const allDiagnostics = ts
     .getPreEmitDiagnostics(program)
     .concat(emitResult.diagnostics)
