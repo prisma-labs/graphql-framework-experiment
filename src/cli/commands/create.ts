@@ -89,12 +89,10 @@ export class Create implements Command {
         // as per how promises work.
 
         child.once('error', error => {
-          console.log('er')
           resolve([1, error])
         })
 
         child.once('exit', (exitCode, signal) => {
-          console.log('%s %s', exitCode, signal)
           resolve([exitCode ?? 0, null])
         })
       }
@@ -210,12 +208,12 @@ async function scaffoldNewProject(layout: Layout.Layout) {
             t.field("hello", {
               type: "World",
               args: {
-                earth: stringArg({ required: true })
+                world: stringArg({ required: true })
               },
               async resolve(_root, args, ctx) {
                 const world = await ctx.photon.worlds.findOne({
                   where: {
-                    name: args.earth
+                    name: args.world
                   }
                 })
 
