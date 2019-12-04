@@ -43,6 +43,7 @@ export class Build implements Command {
     )
 
     log('compiling app')
+    tsProgram.getTypeChecker()
     console.log('🎃  Compiling ...')
     compile(tsProgram)
 

@@ -136,6 +136,15 @@ $ yarn pumpkins build
 $ node node_modules/.build/start
 ```
 
+### Heroku
+
+```json
+  "scripts": {
+    "build": "pumpkins build",
+    "start": "node node_modules/.build/start"
+  }
+```
+
 ## Adding Prisma Framework
 
 Prisma Framework is a next-generation developer-centric tool chain focused on making the data layer easy. In turn, `pumpkins` makes it easy to integrate Prisma Framework into your app. Let's see how.

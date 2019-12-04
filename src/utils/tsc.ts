@@ -131,11 +131,7 @@ export function compile(program: ts.Program): void {
   log('done')
   log('emit transpiled modules to disk...')
   const emitResult = program.emit()
-  log(
-    'done - %s files emitted',
-    emitResult.emittedFiles?.length ?? 0,
-    emitResult.emitSkipped
-  )
+  log('done - %s files emitted', emitResult.emittedFiles?.length ?? 0)
   const allDiagnostics = ts
     .getPreEmitDiagnostics(program)
     .concat(emitResult.diagnostics)
