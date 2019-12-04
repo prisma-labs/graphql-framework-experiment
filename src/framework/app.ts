@@ -28,7 +28,12 @@ const serverStartMessage = (port: number): string => {
 }
 
 const defaultServerOptions: Required<ServerOptions> = {
-  port: 4000,
+  port:
+    typeof process.env.PUMPKINS_PORT === 'string'
+      ? parseInt(process.env.PUMPKINS_PORT, 10)
+      : process.env.NODE_ENV === 'production'
+      ? 80
+      : 4000,
   startMessage: serverStartMessage,
   introspection: true,
   playground: true,
