@@ -33,9 +33,13 @@ const layout = Layout.createFromData(
   JSON.parse(process.env.PUMPKINS_LAYOUT as string) as Layout.Data
 )
 const tsConfig = readTsConfig(layout)
-const program = ts.createProgram({
+const program = ts.createIncrementalProgram({
   rootNames: tsConfig.fileNames,
-  options: tsConfig.options,
+  options: {
+    incremental: true,
+    tsBuildInfoFile: './tsbuildinfo',
+    ...tsConfig.options,
+  },
 })
 process.env.PUMPKINS_TYPEGEN_ADD_CONTEXT_RESULTS = JSON.stringify(
   extractContextTypes(program)

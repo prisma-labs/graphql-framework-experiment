@@ -113,11 +113,17 @@ export function readTsConfig(layout: Layout): ts.ParsedCommandLine {
   return inputConfig
 }
 
-export function createTSProgram(layout: Layout): ts.Program {
+export function createTSProgram(
+  layout: Layout
+): ts.EmitAndSemanticDiagnosticsBuilderProgram {
   const tsConfig = readTsConfig(layout)
-  const program = ts.createProgram({
+  const program = ts.createIncrementalProgram({
     rootNames: tsConfig.fileNames,
-    options: tsConfig.options,
+    options: {
+      incremental: true,
+      tsBuildInfoFile: './tsbuildinfo',
+      ...tsConfig.options,
+    },
   })
   return program
 }
@@ -125,19 +131,17 @@ export function createTSProgram(layout: Layout): ts.Program {
 /**
  * compile a program
  */
-export function compile(program: ts.Program): void {
+export function compile(
+  program: ts.EmitAndSemanticDiagnosticsBuilderProgram
+): void {
   log('remove previous build folder if present...')
   fs.remove(BUILD_FOLDER_NAME)
   log('done')
   log('emit transpiled modules to disk...')
   const emitResult = program.emit()
-  log(
-    'done - %s files emitted',
-    emitResult.emittedFiles?.length ?? 0,
-    emitResult.emitSkipped
-  )
+  log('done - %s files emitted', emitResult.emittedFiles?.length ?? 0)
   const allDiagnostics = ts
-    .getPreEmitDiagnostics(program)
+    .getPreEmitDiagnostics(program.getProgram())
     .concat(emitResult.diagnostics)
 
   if (allDiagnostics.length > 0) {
@@ -151,8 +155,10 @@ export function compile(program: ts.Program): void {
  * Run our custom compiler extension features, like extracting context types
  * from all `addContext` calls.
  */
-export function extractContextTypes(program: ts.Program): string[] {
-  const checker = program.getTypeChecker()
+export function extractContextTypes(
+  program: ts.EmitAndSemanticDiagnosticsBuilderProgram
+): string[] {
+  const checker = program.getProgram().getTypeChecker()
   const contextTypeContributions: string[] = []
 
   program.getSourceFiles().forEach(visit)
