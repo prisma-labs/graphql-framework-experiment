@@ -72,6 +72,7 @@ export class Create implements Command {
               population
             }
           }
+
     `)
 
     // We will enter dev mode with the local version of pumpkins. This is a kind
@@ -193,7 +194,8 @@ async function scaffoldNewProject(layout: Layout.Layout) {
       layout.sourcePath('schema.ts'),
       stripIndent`
         import { app } from "pumpkins"
-
+        import { stringArg } from "nexus"
+        
         app.objectType({
           name: "World",
           definition(t) {
@@ -202,17 +204,24 @@ async function scaffoldNewProject(layout: Layout.Layout) {
             t.model.population()
           }
         })
-        
+
         app.queryType({
           definition(t) {
             t.field("hello", {
               type: "World",
-              resolve(_root, _args, ctx) {
-                return ctx.photon.worlds.findOne({
+              args: {
+                earth: stringArg({ required: true })
+              },
+              async resolve(_root, args, ctx) {
+                const world = await ctx.photon.worlds.findOne({
                   where: {
-                    name: "Earth"
+                    name: args.earth
                   }
                 })
+
+                if (!world) throw new Error(\`No such world named "\${args.world}"\`)
+
+                return world
               }
             })
           }

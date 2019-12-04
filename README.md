@@ -56,7 +56,7 @@ cd ~/projects/my-pumpkins-app
 Kick off a new project
 
 ```
-npx pumpkins create
+npx pumpkins@master create
 ```
 
 Follow the prompts
