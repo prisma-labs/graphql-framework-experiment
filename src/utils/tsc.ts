@@ -120,6 +120,7 @@ export function createTSProgram(
   const program = ts.createIncrementalProgram({
     rootNames: tsConfig.fileNames,
     options: {
+      incremental: true,
       tsBuildInfoFile: './tsbuildinfo',
       ...tsConfig.options,
     },
