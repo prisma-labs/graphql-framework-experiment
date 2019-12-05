@@ -34,12 +34,7 @@ export function createWatcher(opts: Opts) {
    * - Ignore migrations & prisma.schema because prisma2 dev already watches it
    */
   const watcher = watch([`${opts.layout.sourceRoot}/**/*`, photonPath], {
-    ignored: [
-      './.gjt/**/*',
-      './prisma/**/*',
-      './node_modules/@types/**/*',
-      './node_modules/prisma2/**/*',
-    ],
+    ignored: [],
     ignoreInitial: true,
     onAll(_event, file) {
       restartRunner(file)
