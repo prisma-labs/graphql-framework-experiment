@@ -1,7 +1,6 @@
 import * as fs from 'fs-jetpack'
 import { pog, flatMap, baseIgnores, stripExt } from '../utils'
 import { Layout, relativeTranspiledImportPath } from './layout'
-// import { stripIndents } from 'common-tags'
 
 const log = pog.sub(__filename)
 
@@ -33,25 +32,6 @@ function findSchemaModules(): {
   const dirsOrModules = findSchemaDirOrModules()
 
   log('...found %O', dirsOrModules)
-
-  // if (files.length === 0) {
-  //   const schemaPath = fs.path('.pumpkins', 'schema.ts')
-
-  //   fs.write(
-  //     schemaPath,
-  //     stripIndents`
-  //       // Move out of folder to edit, or create a new one in your app folder.
-
-  //       queryType({
-  //         definition(t) {
-  //           t.string('welcomeToPumpkins', () => 'Welcome to Pumpkins!')
-  //         }
-  //       })
-  //     `
-  //   )
-
-  //   return [schemaPath]
-  // }
 
   const expandedModules = flatMap(dirsOrModules, fileOrDir => {
     const absolutePath = fs.path(fileOrDir)
