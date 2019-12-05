@@ -5,6 +5,7 @@ import { stripIndent } from 'common-tags'
 import Git from 'simple-git/promise'
 import * as Layout from '../../framework/layout'
 import { createTSConfigContents } from '../../utils'
+import { spawn } from 'child_process'
 
 export class Create implements Command {
   async parse() {
@@ -32,6 +33,9 @@ export class Create implements Command {
     await run('yarn -s prisma2 lift save --create-db --name init')
     await run('yarn -s prisma2 lift up')
 
+    console.log('seeding data...')
+    await run('yarn -s ts-node prisma/seed')
+
     console.log('initializing git repo...')
     const git = Git()
 
@@ -48,24 +52,16 @@ export class Create implements Command {
         yarn-debug.log*
         yarn-error.log*
         lerna-debug.log*
-
-        # TypeScript
-        *.tsbuildinfo
       `
     )
     await git.init()
     await git.raw(['add', '-A'])
     await git.raw(['commit', '-m', 'initial commit'])
 
-    console.log('seeding data...')
-    await run('yarn -s ts-node prisma/seed')
-
     console.log(stripIndent`
-      all done now please run:
-
-          yarn dev
+      entering dev mode...
           
-      then try this query out:
+      Try this query to get started: 
 
           query {
             hello {
@@ -74,6 +70,35 @@ export class Create implements Command {
             }
           }
     `)
+    console.log() // force a newline to give code block breathing room, stripped by template tag above
+
+    // We will enter dev mode with the local version of pumpkins. This is a kind
+    // of cheat, but what we want users to have as their mental model. When they
+    // terminate this dev session, they will restart it typically with e.g. `$
+    // yarn dev`. This global-pumpkins-process-wrapping-local-pumpkins-process
+    // is unique to bootstrapping situations.
+
+    const child = spawn('yarn', ['-s', 'dev'], { stdio: 'inherit' })
+
+    const [exitCode, err] = await new Promise<[number | null, Error | null]>(
+      resolve => {
+        // NOTE "exit" may fire after "error", in which case it will be a noop
+        // as per how promises work.
+
+        child.once('error', error => {
+          resolve([1, error])
+        })
+
+        child.once('exit', (exitCode, signal) => {
+          resolve([exitCode ?? 0, null])
+        })
+      }
+    )
+
+    // TODO integrate this concept into the cli runner proper. E.g. maybe be
+    // able to return { code, err }
+    if (err) console.error(err.message)
+    if (exitCode) process.exit(exitCode)
   }
 }
 
@@ -164,7 +189,8 @@ async function scaffoldNewProject(layout: Layout.Layout) {
       layout.sourcePath('schema.ts'),
       stripIndent`
         import { app } from "pumpkins"
-
+        import { stringArg } from "nexus"
+        
         app.objectType({
           name: "World",
           definition(t) {
@@ -173,17 +199,24 @@ async function scaffoldNewProject(layout: Layout.Layout) {
             t.model.population()
           }
         })
-        
+
         app.queryType({
           definition(t) {
             t.field("hello", {
               type: "World",
-              resolve(_root, _args, ctx) {
-                return ctx.photon.worlds.findOne({
+              args: {
+                world: stringArg({ required: true })
+              },
+              async resolve(_root, args, ctx) {
+                const world = await ctx.photon.worlds.findOne({
                   where: {
-                    name: "Earth"
+                    name: args.world
                   }
                 })
+
+                if (!world) throw new Error(\`No such world named "\${args.world}"\`)
+
+                return world
               }
             })
           }

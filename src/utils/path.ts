@@ -100,7 +100,7 @@ export async function findFiles(
   })
 }
 
-export const baseIgnores = ['!node_modules/**/*', '!.yalc/**/*']
+export const baseIgnores = ['!node_modules/**/*', '!.*/**/*']
 
 export function trimNodeModulesIfInPath(path: string) {
   if (path.includes('node_modules')) {

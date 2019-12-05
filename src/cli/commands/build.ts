@@ -44,7 +44,10 @@ export class Build implements Command {
 
     log('compiling app')
     console.log('🎃  Compiling ...')
-    compile(tsProgram)
+    // Recreate our program instance so that it picks up the typegen. We use
+    // incremental builder type of program so that the cache from the previous
+    // run of TypeScript should make re-building up this one cheap.
+    compile(createTSProgram(layout))
 
     log('transpiling start module')
     const startModule = transpileModule(

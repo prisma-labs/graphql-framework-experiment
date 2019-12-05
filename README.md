@@ -56,7 +56,7 @@ cd ~/projects/my-pumpkins-app
 Kick off a new project
 
 ```
-npx pumpkins create
+npx pumpkins@master create
 ```
 
 Follow the prompts
@@ -134,6 +134,15 @@ $ yarn pumpkins build
 
 ```
 $ node node_modules/.build/start
+```
+
+### Heroku
+
+```json
+  "scripts": {
+    "build": "pumpkins build",
+    "start": "node node_modules/.build/start"
+  }
 ```
 
 ## Adding Prisma Framework
