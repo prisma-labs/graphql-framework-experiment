@@ -28,10 +28,15 @@ export function createWatcher(opts: Opts) {
   //
 
   // Create a file watcher
+  // TODO watch for changes to tsconfig and take correct action
+  // TODO watch for changes to package json and take correct action (imagine
+  // there could be pumpkins config in there)
+  // TODO restart should take place following npm install/remove yarn
+  // add/remove/install etc.
   // TODO plugins need to be able to add things to watch
-  const watcher = watch(['./**/*', './**/schema.prisma'], {
+  const watcher = watch([opts.layout.sourceRoot, 'schema.prisma'], {
     // TODO plugins need to be able to add things to ignore
-    ignored: [/.*node_modules.*/, /.*prisma\/.*/],
+    ignored: ['./node_modules', './.*'],
     ignoreInitial: true,
     onAll(_event, file) {
       // TODO plugins need to be able to register callback on file change
