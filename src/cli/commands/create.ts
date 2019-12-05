@@ -130,7 +130,7 @@ async function scaffoldNewProject(layout: Layout.Layout) {
       name: 'my-app',
       license: 'UNLICENSED',
       dependencies: {
-        pumpkins: 'master',
+        pumpkins: 'pr.113',
       },
       scripts: {
         dev: 'pumpkins dev',
