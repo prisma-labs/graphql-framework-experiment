@@ -58,7 +58,7 @@ export class CLI implements Command {
 
     ${chalk.bold('Commands')}
 
-          init   Setup a ready-to-use Pumpkins
+        create   Setup a ready-to-use Pumpkins
            dev   Develop your application in watch mode
          build   Build a production-ready server
       generate   Generate the artifacts
@@ -67,7 +67,7 @@ export class CLI implements Command {
     ${chalk.bold('Examples')}
 
       Initialize files for a new Pumpkins project
-      ${chalk.dim(`$`)} pumpkins init
+      ${chalk.dim(`$`)} pumpkins create
 
       Start developing and watch your changes locally
       ${chalk.dim(`$`)} pumpkins dev
