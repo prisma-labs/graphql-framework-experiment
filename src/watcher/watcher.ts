@@ -8,6 +8,7 @@ import { sendSigterm } from './utils'
 import { watch, FileWatcher } from './chokidar'
 import { SERVER_READY_SIGNAL } from '../framework/dev-mode'
 import { onDevModePrismaSchemaChange } from '../framework/plugins'
+import chalk = require('chalk')
 
 const log = pog.sub('cli:dev:watcher')
 
@@ -50,7 +51,9 @@ export function createWatcher(opts: Opts) {
       // TODO plugins need to be able to register callback on file change
       // patterns hook into watcher
       if (file.match(/.*schema\.prisma$/)) {
-        console.log('Prisma Schema change detected, lifting...')
+        console.log(
+          chalk`{bgBlue INFO} Prisma Schema change detected, lifting...`
+        )
         onDevModePrismaSchemaChange()
       }
       restartRunner(file)
