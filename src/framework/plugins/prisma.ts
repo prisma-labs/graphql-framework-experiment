@@ -6,7 +6,7 @@ import chalk from 'chalk'
 import * as fs from 'fs-jetpack'
 import { nexusPrismaPlugin, Options } from 'nexus-prisma'
 import * as path from 'path'
-import { findFiles, pog } from '../../utils'
+import { findFiles, pog, run } from '../../utils'
 import { suggestionList } from '../../utils/levenstein'
 import { printStack } from '../../utils/stack/printStack'
 import { shouldGenerateArtifacts } from '../nexus'
@@ -174,6 +174,13 @@ const maybeFindPrismaSchema = async (): Promise<null | string> => {
   }
 
   return schemaPaths[0] ?? null
+}
+
+export async function onDevModePrismaSchemaChange() {
+  // Raw code being run is this https://github.com/prisma/lift/blob/dce60fe2c44e8a0d951d961187aec95a50a33c6f/src/cli/commands/LiftTmpPrepare.ts#L33-L45
+  log('running lift...')
+  const result = run('prisma2 tmp-prepare', { require: true })
+  log('done %O', result)
 }
 
 export function isPrismaEnabledSync():
