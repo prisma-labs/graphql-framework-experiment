@@ -28,13 +28,21 @@ export function createWatcher(opts: Opts) {
   //
 
   // Create a file watcher
+
+  // TODO preferably we allow schema.prisma to be anywhere but they show up in
+  // migrations folder too and we don't know how to achieve semantic "anywhere
+  // but migrations folder"
+  const prismaFilePAtterns = ['./schema.prisma', './prisma/schema.prisma']
   // TODO watch for changes to tsconfig and take correct action
   // TODO watch for changes to package json and take correct action (imagine
   // there could be pumpkins config in there)
   // TODO restart should take place following npm install/remove yarn
   // add/remove/install etc.
   // TODO plugins need to be able to add things to watch
-  const watcher = watch([opts.layout.sourceRoot, './**/schema.prisma'], {
+  // TODO need a way to test file matching given patterns. Hard to get right,
+  // right now, and feedback loop sucks. For instance allow to find prisma
+  // schema anywhere except in migrations ignore it, that is hard right now.
+  const watcher = watch([opts.layout.sourceRoot, ...prismaFilePAtterns], {
     // TODO plugins need to be able to add things to ignore
     ignored: ['./node_modules', './.*'],
     ignoreInitial: true,
