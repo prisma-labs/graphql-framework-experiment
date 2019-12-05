@@ -35,6 +35,7 @@ export function createWatcher(opts: Opts) {
    */
   const watcher = watch([`${opts.layout.sourceRoot}/**/*`, photonPath], {
     ignored: [
+      './.git/**/*',
       'migrations/*',
       'schema.prisma',
       './**/schema.prisma',
