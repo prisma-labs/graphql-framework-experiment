@@ -50,6 +50,7 @@ export function createWatcher(opts: Opts) {
       // TODO plugins need to be able to register callback on file change
       // patterns hook into watcher
       if (file.match(/.*schema\.prisma$/)) {
+        console.log('Prisma Schema change detected, lifting...')
         onDevModePrismaSchemaChange()
       }
       restartRunner(file)
