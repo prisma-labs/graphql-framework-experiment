@@ -36,12 +36,7 @@ export function createWatcher(opts: Opts) {
   const watcher = watch([`${opts.layout.sourceRoot}/**/*`, photonPath], {
     ignored: [
       './.git/**/*',
-      'migrations/*',
-      'schema.prisma',
-      './**/schema.prisma',
-      `./prisma/schema.prisma`,
-      `${opts.layout.sourceRoot}/prisma/schema.prisma`,
-      `${opts.layout.sourceRoot}/**/schema.prisma`,
+      './prisma/**/*',
       'node_modules/@types/typegen-nexus-prisma/index.d.ts',
     ],
     ignoreInitial: true,
