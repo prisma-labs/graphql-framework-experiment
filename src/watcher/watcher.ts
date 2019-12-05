@@ -28,11 +28,14 @@ export function createWatcher(opts: Opts) {
   //
 
   // Create a file watcher
-  const watcher = watch('./**/*', {
-    ignored: /.*node_modules.*/,
+  // TODO plugins need to be able to add things to watch
+  const watcher = watch(['./**/*', './**/schema.prisma'], {
+    // TODO plugins need to be able to add things to ignore
+    ignored: [/.*node_modules.*/, /.*prisma\/.*/],
     ignoreInitial: true,
     onAll(_event, file) {
-      // TODO plugins need to be able to hook into watcher
+      // TODO plugins need to be able to register callback on file change
+      // patterns hook into watcher
       if (file.match(/.*schema\.prisma$/)) {
         onDevModePrismaSchemaChange()
       }
