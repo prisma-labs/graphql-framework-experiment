@@ -186,7 +186,7 @@ async function scaffoldNewProject(layout: Layout.Layout) {
     ),
 
     fs.writeAsync(
-      layout.sourcePath('schema.ts'),
+      layout.sourcePath('graphql.ts'),
       stripIndent`
         import { app } from "pumpkins"
         import { stringArg } from "nexus"
