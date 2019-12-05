@@ -177,7 +177,7 @@ const maybeFindPrismaSchema = async (): Promise<null | string> => {
 }
 
 export async function onDevModePrismaSchemaChange() {
-  const result = run('prisma2 lift tmp-prepare', { require: true })
+  const result = run('prisma2 tmp-prepare', { require: true })
   log('ran lift %O', result)
   // // Code adapted from https://github.com/prisma/lift/blob/dce60fe2c44e8a0d951d961187aec95a50a33c6f/src/cli/commands/LiftTmpPrepare.ts#L33-L45
   // const lift = new Lift()
