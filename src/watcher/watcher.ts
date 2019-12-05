@@ -37,7 +37,8 @@ export function createWatcher(opts: Opts) {
     ignored: [
       './.git/**/*',
       './prisma/**/*',
-      'node_modules/@types/typegen-nexus-prisma/index.d.ts',
+      './node_modules/**/*',
+      '!./node_modules/@prisma/photon/**/*',
     ],
     ignoreInitial: true,
     onAll(_event, file) {
