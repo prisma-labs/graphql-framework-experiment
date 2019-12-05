@@ -34,7 +34,7 @@ export function createWatcher(opts: Opts) {
   // TODO restart should take place following npm install/remove yarn
   // add/remove/install etc.
   // TODO plugins need to be able to add things to watch
-  const watcher = watch([opts.layout.sourceRoot, 'schema.prisma'], {
+  const watcher = watch([opts.layout.sourceRoot, './**/schema.prisma'], {
     // TODO plugins need to be able to add things to ignore
     ignored: ['./node_modules', './.*'],
     ignoreInitial: true,
