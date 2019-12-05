@@ -7,6 +7,7 @@ import { pog } from '../utils'
 import { sendSigterm } from './utils'
 import { watch, FileWatcher } from './chokidar'
 import { SERVER_READY_SIGNAL } from '../framework/dev-mode'
+import { onDevModePrismaSchemaChange } from '../framework/plugins'
 
 const log = pog.sub('cli:dev:watcher')
 
@@ -31,6 +32,10 @@ export function createWatcher(opts: Opts) {
     ignored: /.*node_modules.*/,
     ignoreInitial: true,
     onAll(_event, file) {
+      // TODO plugins need to be able to hook into watcher
+      if (file.match(/.*schema\.prisma$/)) {
+        onDevModePrismaSchemaChange()
+      }
       restartRunner(file)
     },
     cwd: process.cwd(), // prevent globbed files and required files from being watched twice
