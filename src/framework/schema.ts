@@ -12,14 +12,14 @@ export function findSchemaDirOrModules(): string[] {
       directories: false,
       files: true,
       recursive: true,
-      matching: ['schema.ts', ...baseIgnores],
+      matching: ['graphql.ts', ...baseIgnores],
     })
     .concat(
       fs.find({
         directories: true,
         files: false,
         recursive: true,
-        matching: ['schema', ...baseIgnores],
+        matching: ['graphql', ...baseIgnores],
       })
     )
 }
