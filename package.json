@@ -8,7 +8,7 @@
   "bugs": "https://github.com/prisma-labs/pumpkins/issues",
   "dependencies": {
     "@prisma/photon": "2.0.0-preview017.2",
-    "@prisma/sdk": "0.0.72",
+    "@prisma/sdk": "0.0.82",
     "apollo-server-express": "^2.9.11",
     "arg": "^4.1.1",
     "chalk": "^3.0.0",
