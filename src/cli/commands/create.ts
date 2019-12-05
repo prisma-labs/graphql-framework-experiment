@@ -19,8 +19,8 @@ export class Create implements Command {
         path: null,
       },
       projectRoot: fs.path(),
-      sourceRoot: fs.path('./app'),
-      sourceRootRelative: './app',
+      sourceRoot: fs.path('./src'),
+      sourceRootRelative: './src',
     })
     await scaffoldNewProject(layout)
 
