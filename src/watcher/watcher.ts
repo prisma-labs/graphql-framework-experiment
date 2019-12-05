@@ -33,21 +33,19 @@ export function createWatcher(opts: Opts) {
    * - Watch photon's path to restart server when prisma2 dev regenerates it
    * - Ignore migrations & prisma.schema because prisma2 dev already watches it
    */
-  const watcher = watch(
-    [
-      `${opts.layout.sourceRoot}/**/*`,
-      photonPath,
-      './node_modules/@prisma/photon/**/*',
+  const watcher = watch([`${opts.layout.sourceRoot}/**/*`, photonPath], {
+    ignored: [
+      './.gjt/**/*',
+      './prisma/**/*',
+      './node_modules/@types/**/*',
+      './node_modules/prisma2/**/*',
     ],
-    {
-      ignored: ['./.git/**/*', './prisma/**/*', './node_modules/**/*'],
-      ignoreInitial: true,
-      onAll(_event, file) {
-        restartRunner(file)
-      },
-      cwd: process.cwd(), // prevent globbed files and required files from being watched twice
-    }
-  )
+    ignoreInitial: true,
+    onAll(_event, file) {
+      restartRunner(file)
+    },
+    cwd: process.cwd(), // prevent globbed files and required files from being watched twice
+  })
 
   watcher.on('error', error => {
     console.error('file watcher encountered an error: %j', error)
