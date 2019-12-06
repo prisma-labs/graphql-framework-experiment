@@ -62,7 +62,13 @@ it('can build with schema + app modules', () => {
     `
   )
 
-  ws.fs.write('app.ts', `app.server.start()`)
+  ws.fs.write(
+    'app.ts',
+    `
+      import { app } from 'pumpkins'
+      app.server.start()
+    `
+  )
 
   const result = ws.run('yarn -s pumpkins build')
   expect(result).toMatchSnapshot()
@@ -84,7 +90,13 @@ it('can nest modules', () => {
     `
   )
 
-  ws.fs.write('graphql/app.ts', `app.server.start()`)
+  ws.fs.write(
+    'graphql/app.ts',
+    `
+      import { app } from 'pumpkins'
+      app.server.start()
+    `
+  )
 
   const result = ws.run('yarn -s pumpkins build')
   expect(result).toMatchSnapshot()
@@ -104,7 +116,11 @@ it('can build a plugin', () => {
       export default {	
         name: 'myplugin',	
         context: {	
-          typeSourcePath: __filename,	
+          typeGen: {
+            fields: {
+              a: 'number'
+            },
+          },
           create() {	
             return {	
               a: 1,	
