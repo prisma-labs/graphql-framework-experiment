@@ -207,5 +207,5 @@ export async function scanProjectType(): Promise<
  */
 async function isEmptyCWD(): Promise<boolean> {
   const contents = await fs.listAsync()
-  return contents !== undefined && contents.length > 0
+  return contents === undefined || contents.length === 0
 }
