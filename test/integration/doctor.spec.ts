@@ -12,13 +12,9 @@ it('warns and scaffold if there is no tsconfig', () => {
     Object {
       "status": 0,
       "stderr": "",
-      "stdout": "-- .gitignore --
-    OK:  .pumpkins is git-ignored correctly
-    -- tsconfig.json --
-
-    Warning: We could not find a \\"tsconfig.json\\" file.
-    Warning: We scaffolded one for you at /private/tmp/pumpkins-integration-test-project-bases/doctor-v5-yarnlock-319895dfc0c76e09f06a149233eb6be6-gitbranch-master-testv1/tsconfig.json.
-        
+      "stdout": "[1m-- tsconfig.json --[22m
+    [33mWarning:[39m We could not find a \\"tsconfig.json\\" file.
+    [33mWarning:[39m We scaffolded one for you at tsconfig.json.
     ",
     }
   `)
