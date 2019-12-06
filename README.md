@@ -7,28 +7,32 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
+
 - [Introduction](#introduction)
-  - [Getting Started](#getting-started)
+    - [Getting Started](#getting-started)
+    - [Next Step, Getting a Sense for End to End Type Safety](#next-step-getting-a-sense-for-end-to-end-type-safety)
   - [Adding Prisma Framework](#adding-prisma-framework)
     - [Overview](#overview)
     - [Tutorial](#tutorial)
 - [Guide](#guide)
   - [Going to Proudction](#going-to-proudction)
+    - [Heroku](#heroku)
   - [Adding Prisma Framework](#adding-prisma-framework-1)
   - [Conventions](#conventions)
     - [`schema.ts` | `schema/*`](#schemats--schema)
     - [`app.ts`](#appts)
-      - [Aliases](#aliases)
+        - [Aliases](#aliases)
     - [Example Layouts](#example-layouts)
 - [API](#api)
-  - [`app`](#app)
-  - [`app.addContext`](#appaddcontext)
-  - [`app.<nexusDefBlock>`](#appnexusdefblock)
+    - [`app`](#app)
+    - [`app.addContext`](#appaddcontext)
+    - [`app.<nexusDefBlock>`](#appnexusdefblock)
 - [CLI](#cli)
 - [Development](#development)
-  - [Overview](#overview-1)
-  - [Testing](#testing)
-  - [Working With Example Apps via Linking](#working-with-example-apps-via-linking)
+    - [Overview](#overview-1)
+    - [Testing](#testing)
+    - [Working With Example Apps via Linking](#working-with-example-apps-via-linking)
+    - [Working with create command](#working-with-create-command)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
