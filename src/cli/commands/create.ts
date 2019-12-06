@@ -4,7 +4,7 @@ import { Command } from '../helpers'
 import { stripIndent } from 'common-tags'
 import Git from 'simple-git/promise'
 import * as Layout from '../../framework/layout'
-import { createTSConfigContents, generateProjectName } from '../../utils'
+import { createTSConfigContents, CWDProjectNameOrGenerate } from '../../utils'
 import { spawn } from 'child_process'
 
 export class Create implements Command {
@@ -20,7 +20,7 @@ type Options = {
 export async function run(optionsGiven?: Partial<Options>): Promise<void> {
   const options: Options = {
     ...optionsGiven,
-    projectName: generateProjectName(),
+    projectName: CWDProjectNameOrGenerate(),
   }
 
   console.log('checking folder is in a clean state...')
@@ -133,7 +133,6 @@ async function assertIsCleanSlate() {
 async function scaffoldNewProject(layout: Layout.Layout, options: Options) {
   // TODO eventually `master` should become `latest`
   // TODO blog example? Template selector?
-  // TODO generate code name for pumpkins app?
   // TODO given that we're scaffolding, we know the layout ahead of time. We
   // should take advantage of that, e.g. precompute layout data
   await Promise.all([
