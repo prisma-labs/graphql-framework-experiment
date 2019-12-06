@@ -29,12 +29,10 @@ it('errors if tsconfig is not in the project dir', () => {
     .toMatchInlineSnapshot(`
     Object {
       "status": 0,
-      "stderr": "ERROR: Your tsconfig.json file needs to be in your project root directory
-    ERROR: Found /private/tmp/pumpkins-integration-test-project-bases/tsconfig.json, expected /private/tmp/pumpkins-integration-test-project-bases/doctor-v5-yarnlock-319895dfc0c76e09f06a149233eb6be6-gitbranch-master-testv1/tsconfig.json
+      "stderr": "[31mERROR:[39m Your tsconfig.json file needs to be in your project root directory
+    [31mERROR:[39m Found /private/tmp/pumpkins-integration-test-project-bases/tsconfig.json, expected /private/tmp/pumpkins-integration-test-project-bases/doctor-v5-yarnlock-201221dbef7978122d753bdd99660770-gitbranch-master-testv1/tsconfig.json
     ",
-      "stdout": "-- .gitignore --
-    OK:  .pumpkins is git-ignored correctly
-    -- tsconfig.json --
+      "stdout": "[1m-- tsconfig.json --[22m
     ",
     }
   `)
@@ -49,10 +47,8 @@ it('validates that there is a tsconfig.json file', () => {
     Object {
       "status": 0,
       "stderr": "",
-      "stdout": "-- .gitignore --
-    OK:  .pumpkins is git-ignored correctly
-    -- tsconfig.json --
-    OK: \\"tsconfig.json\\" is present and in the right directory
+      "stdout": "[1m-- tsconfig.json --[22m
+    [32mOK:[39m \\"tsconfig.json\\" is present and in the right directory
     ",
     }
   `)
