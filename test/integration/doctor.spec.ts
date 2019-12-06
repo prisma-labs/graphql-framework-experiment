@@ -4,37 +4,6 @@ const ws = createWorkspace({
   name: 'doctor',
 })
 
-// TODO test where .pumpkins has been commited to repo and so is being tracked
-
-it('warns if .pumpkins is not git-ignored', () => {
-  expect(ws.run('yarn -s pumpkins doctor')).toMatchInlineSnapshot(`
-    Object {
-      "status": 0,
-      "stderr": "",
-      "stdout": "-- .gitignore --
-    Warning:  Please add .pumpkins to your gitignore file
-    -- tsconfig.json --
-    OK: \\"tsconfig.json\\" is present and in the right directory
-    ",
-    }
-  `)
-})
-
-it('validates if .pumpkins is git-ignored', () => {
-  ws.fs.write('.gitignore', '.pumpkins')
-  expect(ws.run('yarn -s pumpkins doctor')).toMatchInlineSnapshot(`
-    Object {
-      "status": 0,
-      "stderr": "",
-      "stdout": "-- .gitignore --
-    OK:  .pumpkins is git-ignored correctly
-    -- tsconfig.json --
-    OK: \\"tsconfig.json\\" is present and in the right directory
-    ",
-    }
-  `)
-})
-
 it('warns and scaffold if there is no tsconfig', () => {
   ws.fs.write('.gitignore', '.pumpkins')
   ws.fs.remove('tsconfig.json')
