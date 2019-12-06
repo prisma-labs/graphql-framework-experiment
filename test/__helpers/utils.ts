@@ -1,6 +1,6 @@
 import { SimpleGit } from 'simple-git/promise'
 import stripAnsi from 'strip-ansi'
-import { RunResult } from './run'
+import { RunResult } from '../../src/utils'
 
 export async function gitReset(git: SimpleGit) {
   await Promise.all([
