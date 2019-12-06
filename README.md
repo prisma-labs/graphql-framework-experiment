@@ -11,10 +11,10 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
 - [Introduction](#introduction)
     - [Getting Started](#getting-started)
     - [Next Step, Getting a Sense for End to End Type Safety](#next-step-getting-a-sense-for-end-to-end-type-safety)
+- [Guide](#guide)
   - [Adding Prisma Framework](#adding-prisma-framework)
     - [Overview](#overview)
     - [Tutorial](#tutorial)
-- [Guide](#guide)
   - [Going to Proudction](#going-to-proudction)
     - [Heroku](#heroku)
   - [Adding Prisma Framework](#adding-prisma-framework-1)
@@ -198,6 +198,8 @@ Our Hello World schema doesn't account for information about moons, lets change 
 
    Hopefully that gives you a taste of the power under your finger tips. There's a ton more to discover. Happy coding! 🙌
 
+# Guide
+
 ## Adding Prisma Framework
 
 ### Overview
@@ -248,8 +250,6 @@ yarn pumpkins dev
 ```
 
 <br>
-
-# Guide
 
 ## Going to Proudction
 
