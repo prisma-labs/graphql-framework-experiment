@@ -75,12 +75,12 @@ export async function run(optionsGiven?: Partial<Options>): Promise<void> {
         
     Try this query to get started: 
 
-        query {
-          hello {
-            name
-            population
-          }
+      query {
+        hello(world: "Earth") {
+          name
+          population
         }
+      }
   `)
   console.log() // force a newline to give code block breathing room, stripped by template tag above
 
