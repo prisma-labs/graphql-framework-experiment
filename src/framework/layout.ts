@@ -6,6 +6,7 @@ import {
   findConfigFile,
 } from '../utils'
 import * as Path from 'path'
+import * as fs from 'fs-jetpack'
 
 const log = pog.sub('layout')
 
@@ -144,7 +145,7 @@ export const findAppModule = async () => {
  *
  */
 export function findProjectDir(): string {
-  let packageJsonPath = findConfigFile('package.json', { required: false })
+  let packageJsonPath = findPackageJsonPath()
 
   if (packageJsonPath) {
     return Path.dirname(packageJsonPath)
@@ -165,4 +166,46 @@ export function relativeTranspiledImportPath(
 
 function calcSourceRootToModule(layout: Layout, modulePath: string) {
   return Path.relative(layout.sourceRoot, modulePath)
+}
+
+/**
+ * Find the package.json file path. Looks recursively upward to disk root. If no
+ * package.json found along search, returns null.
+ */
+function findPackageJsonPath(): string | null {
+  return findConfigFile('package.json', { required: false })
+}
+
+/**
+ * Detect whether or not CWD is inside a pumpkins project. Pumpkins project is
+ * defined as there being a package.json in or above CWD with pumpkins as a
+ * direct dependency.
+ */
+export async function scanProjectType(): Promise<
+  | { type: 'unknown' | 'new' }
+  | { type: 'pumpkins_project' | 'node_project'; packageJson: {} }
+> {
+  const packageJsonPath = findPackageJsonPath()
+
+  if (packageJsonPath === null) {
+    if (await isEmptyCWD()) {
+      return { type: 'new' }
+    }
+    return { type: 'unknown' }
+  }
+
+  const packageJson = fs.read(packageJsonPath, 'json')
+  if (packageJson?.dependencies?.pumpkins)
+    return { type: 'pumpkins_project', packageJson }
+
+  return { type: 'node_project', packageJson }
+}
+
+/**
+ * Check if the CWD is empty of any files or folders.
+ * TODO we should make nice exceptions for known meaningless files, like .DS_Store
+ */
+async function isEmptyCWD(): Promise<boolean> {
+  const contents = await fs.listAsync()
+  return contents !== undefined && contents.length > 0
 }

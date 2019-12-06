@@ -23,10 +23,11 @@ export function findConfigFile(
 export function findConfigFile(
   fileName: string,
   opts: { required: false }
-): string | undefined
+): string | null
 
 /**
- * Find a config file
+ * Find a config file. If required but not found, then an error is raised. If
+ * not required and not found then null is returned.
  */
 export function findConfigFile(fileName: string, opts: { required: boolean }) {
   const configPath = ts.findConfigFile(
@@ -39,7 +40,7 @@ export function findConfigFile(fileName: string, opts: { required: boolean }) {
     if (opts.required === true) {
       throw new Error(`Could not find a valid '${fileName}'.`)
     } else {
-      return undefined
+      return null
     }
   }
 
