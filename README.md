@@ -14,10 +14,9 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
 - [Guide](#guide)
   - [Adding Prisma Framework](#adding-prisma-framework)
     - [Overview](#overview)
-    - [Tutorial](#tutorial)
+    - [Example](#example)
   - [Going to Proudction](#going-to-proudction)
     - [Heroku](#heroku)
-  - [Adding Prisma Framework](#adding-prisma-framework-1)
   - [Conventions](#conventions)
     - [`schema.ts` | `schema/*`](#schemats--schema)
     - [`app.ts`](#appts)
@@ -213,7 +212,7 @@ Prisma Framework is a next-generation developer-centric tool chain focused on ma
 3. An instance of the generated Photon.JS client is a added to context under `photon` property
 4. The TypeScript types representing your Prisma models are registered as a Nexus data source. In short this enables proper typing of `parent` parameters in your resolves. They reflect the data of the correspondingly named Prisma model.
 
-### Tutorial
+### Example
 
 Add a schema.prisma file and fill it out with some content
 
@@ -249,61 +248,6 @@ Enter dev mode:
 yarn pumpkins dev
 ```
 
-<br>
-
-## Going to Proudction
-
-Once you're ready to go to production just build your app and run the start module with node.
-
-```
-$ yarn pumpkins build
-```
-
-```
-$ node node_modules/.build/start
-```
-
-### Heroku
-
-```json
-  "scripts": {
-    "build": "pumpkins build",
-    "start": "node node_modules/.build/start"
-  }
-```
-
-## Adding Prisma Framework
-
-Prisma Framework is a next-generation developer-centric tool chain focused on making the data layer easy. In turn, `pumpkins` makes it easy to integrate Prisma Framework into your app. Let's see how.
-
-Add a schema.prisma file and fill it out with some content
-
-```diff
-mkdir -p prisma
-touch prisma/schema.prisma
-```
-
-```groovy
-// prisma/schema.prisma
-
-datasource db {
-  provider = "sqlite"
-  url      = "file:dev.db"
-}
-
-model User {
-  id   Int    @id
-  name String
-}
-```
-
-Initialize your database:
-
-```
-yarn prisma2 lift save --create-db --name init
-yarn prisma2 lift up
-```
-
 The following shows an example of transitioning your API codebase to use the extensions brought on
 by the Prisma extension.
 
@@ -336,6 +280,29 @@ Using the photon instance on `ctx`:
       })
     },
   })
+```
+
+<br>
+
+## Going to Proudction
+
+Once you're ready to go to production just build your app and run the start module with node.
+
+```
+$ yarn pumpkins build
+```
+
+```
+$ node node_modules/.build/start
+```
+
+### Heroku
+
+```json
+  "scripts": {
+    "build": "pumpkins build",
+    "start": "node node_modules/.build/start"
+  }
 ```
 
 <br>
