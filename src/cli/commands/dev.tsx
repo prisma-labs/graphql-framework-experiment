@@ -12,7 +12,7 @@ import { Command } from '../helpers'
 const log = pog.sub('cli:dev')
 
 export class Dev implements Command {
-  async parse(_argv: string[]) {
+  async parse() {
     // Right now dev mode assumes a tty and renders according to its height and
     // width for example. This check is not strictly needed but keeps things
     // simple for now. When we remove this constraint we should also optimize

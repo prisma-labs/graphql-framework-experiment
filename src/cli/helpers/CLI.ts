@@ -7,10 +7,7 @@ import { unknownCommand, HelpError, Command, Commands } from '.'
  * CLI command
  */
 export class CLI implements Command {
-  static new(cmds: Commands): CLI {
-    return new CLI(cmds)
-  }
-  private constructor(private readonly cmds: Commands) {}
+  constructor(private readonly cmds: Commands) {}
 
   async parse(argv: string[]) {
     // parse the args according to the following spec
@@ -20,15 +17,26 @@ export class CLI implements Command {
       '--version': Boolean,
       '-v': '--version',
     })
+
     if (isError(args)) {
       return this.help(args.message)
     }
+
     if (args['--version']) {
       return Version.new().parse(argv)
     }
-    // display help for help flag or no subcommand
-    if (args._.length === 0 || args['--help']) {
+
+    if (args['--help']) {
       return this.help()
+    }
+
+    // When no sub-command given display help or the default sub-command if registered
+    if (args._.length === 0) {
+      if (Reflect.has(this.cmds, '__default')) {
+        return this.cmds.__default.parse(args._.slice(1))
+      } else {
+        return this.help()
+      }
     }
 
     // check if we have that subcommand
