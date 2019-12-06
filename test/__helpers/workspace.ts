@@ -24,6 +24,9 @@ export function createWorkspace(config: Options): Workspace {
 
   beforeAll(async () => {
     Object.assign(ws, await doCreateWorkspace({ name: config.name }))
+    // In case of a cache hit where we manually debugged the directory or
+    // somehow else it changed.
+    await gitReset(ws.git)
   })
 
   afterEach(async () => {

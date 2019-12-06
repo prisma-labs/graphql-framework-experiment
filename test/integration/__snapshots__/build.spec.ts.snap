@@ -78,7 +78,7 @@ Object {
   "stderr": "",
   "stdout": "🎃  Generating Nexus artifacts ...
 🎃  Compiling ...
-🎃  Pumpkins server successfully compiled!
+🎃  Pumpkins app successfully compiled! node_modules/.build
 ",
 }
 `;

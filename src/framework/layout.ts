@@ -115,7 +115,10 @@ export const scan = async (): Promise<Data> => {
         : ({ exists: true, path: maybeAppModule } as const),
     projectRoot,
     sourceRoot,
-    sourceRootRelative: Path.relative(projectRoot, sourceRoot),
+    // when source and project roots are the same relative is computed as '' but
+    // this is not valid path like syntax in a lot cases at least such as
+    // tsconfig include field.
+    sourceRootRelative: Path.relative(projectRoot, sourceRoot) || './',
   }
 
   log('...completed scan with result: %O', result)
