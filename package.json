@@ -1,6 +1,6 @@
 {
   "name": "pumpkins",
-  "version": "0.0.0-master.21beb02",
+  "version": "0.0.0-pr.137.eb90d06",
   "author": "Prisma Labs",
   "bin": {
     "pumpkins": "dist/cli/index.js"
@@ -13,6 +13,7 @@
     "arg": "^4.1.1",
     "chalk": "^3.0.0",
     "chokidar": "^3.3.0",
+    "codename": "^0.0.6",
     "common-tags": "^1.8.0",
     "debug": "^4.1.1",
     "fs-jetpack": "^2.2.3",

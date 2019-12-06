@@ -33,7 +33,7 @@ export class CLI implements Command {
     // When no sub-command given display help or the default sub-command if registered
     if (args._.length === 0) {
       if (Reflect.has(this.cmds, '__default')) {
-        return this.cmds.default.parse(args._.slice(1))
+        return this.cmds.__default.parse(args._.slice(1))
       } else {
         return this.help()
       }
