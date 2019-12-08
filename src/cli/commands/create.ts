@@ -200,7 +200,7 @@ async function scaffoldNewProject(layout: Layout.Layout, options: Options) {
       stripIndent`
         import { app } from "pumpkins"
         import { stringArg } from "nexus"
-        
+
         app.objectType({
           name: "World",
           definition(t) {
@@ -215,12 +215,13 @@ async function scaffoldNewProject(layout: Layout.Layout, options: Options) {
             t.field("hello", {
               type: "World",
               args: {
-                world: stringArg({ required: true })
+                world: stringArg({ required: false })
               },
               async resolve(_root, args, ctx) {
+                const worldToFindByName = args.name ?? 'Earth'
                 const world = await ctx.photon.worlds.findOne({
                   where: {
-                    name: args.world
+                    name: worldToFindByName
                   }
                 })
 
