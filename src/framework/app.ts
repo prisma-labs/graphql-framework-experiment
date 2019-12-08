@@ -12,6 +12,9 @@ import { sendServerReadySignalToDevModeMaster } from './dev-mode'
 
 const log = pog.sub(__filename)
 
+/**
+ * The available server options to configure how your app runs its server.
+ */
 type ServerOptions = {
   port?: number
   startMessage?: (port: number) => string
@@ -19,6 +22,10 @@ type ServerOptions = {
   introspection?: boolean
 }
 
+/**
+ * Create a message suitable for printing to the terminal about the server
+ * having been booted.
+ */
 const serverStartMessage = (port: number): string => {
   return stripIndent`
     Your GraphQL API is now ready
@@ -27,6 +34,10 @@ const serverStartMessage = (port: number): string => {
   `
 }
 
+/**
+ * The default server options. These are merged with whatever you provide. Your
+ * settings take precedence over these.
+ */
 const defaultServerOptions: Required<ServerOptions> = {
   port:
     typeof process.env.PUMPKINS_PORT === 'string'
@@ -55,6 +66,7 @@ export type App = {
   // installGlobally: () => App
   server: {
     start: (config?: ServerOptions) => Promise<void>
+    __is_was_start_called_before: boolean
   }
   queryType: typeof nexus.queryType
   mutationType: typeof nexus.mutationType
@@ -113,7 +125,15 @@ export function createApp(appConfig?: { types?: any }): App {
     intArg,
     stringArg,
     server: {
+      __is_was_start_called_before: false,
+      /**
+       * Start the server. If you do not call this explicitly then pumpkins will
+       * for you. You should not normally need to call this function yourself.
+       */
       async start(config: ServerOptions = {}): Promise<void> {
+        // Track the start call so that we can know in entrypoint whether to run
+        // or not start for the user.
+        api.server.__is_was_start_called_before = true
         // During development we dynamically import all the schema modules
         //
         // TODO IDEA we have concept of schema module and schema dir

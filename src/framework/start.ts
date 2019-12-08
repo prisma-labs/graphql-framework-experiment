@@ -1,4 +1,4 @@
-import { stripIndent } from 'common-tags'
+import { stripIndent, stripIndents } from 'common-tags'
 import { printStaticSchemaImports } from './schema'
 import { Layout, relativeTranspiledImportPath } from './layout'
 
@@ -62,6 +62,20 @@ export function createStartModuleContent(config: StartModuleConfig): string {
         const { app } = require('pumpkins')
         app.server.start()
       `
+  // TODO Despite the comment below there are still sometimes reasons to do so
+  // https://github.com/prisma/pumpkins/issues/141
+  output += '\n\n\n'
+  output += stripIndent`
+    // Boot the server for the user if they did not alreay do so manually.
+    // Users should normally not boot the server manually as doing so does not
+    // bring value to the user's codebase.
+
+    const { app } = require('pumpkins')
+
+    if (app.server.__is_was_start_called_before === false) {
+      app.server.start()
+    }
+  `
 
   return output
 }
