@@ -145,7 +145,7 @@ async function scaffoldNewProject(layout: Layout.Layout, options: Options) {
       scripts: {
         dev: 'pumpkins dev',
         build: 'pumpkins build',
-        start: 'node node_modules/.build/start',
+        start: 'node node_modules/.build',
       },
     }),
 
