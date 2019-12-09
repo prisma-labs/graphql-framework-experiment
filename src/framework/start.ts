@@ -47,6 +47,8 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     }
   }
 
+  // TODO Despite the comment below there are still sometimes reasons to do so
+  // https://github.com/prisma/pumpkins/issues/141
   output += '\n\n\n'
   output += config.appPath
     ? stripIndent`
@@ -56,27 +58,23 @@ export function createStartModuleContent(config: StartModuleConfig): string {
             ? relativeTranspiledImportPath(config.layout, config.appPath)
             : config.appPath
         }")
-      `
+
+        // Boot the server for the user if they did not alreay do so manually.
+        // Users should normally not boot the server manually as doing so does not
+        // bring value to the user's codebase.
+
+        const { app } = require('pumpkins')
+        const singletonChecks = require('pumpkins/dist/framework/singleton-checks')
+
+        if (singletonChecks.state.is_was_server_start_called === false) {
+          app.server.start()
+        }
+        `
     : stripIndent`
         // Start the server
         const { app } = require('pumpkins')
         app.server.start()
       `
-  // TODO Despite the comment below there are still sometimes reasons to do so
-  // https://github.com/prisma/pumpkins/issues/141
-  output += '\n\n\n'
-  output += stripIndent`
-    // Boot the server for the user if they did not alreay do so manually.
-    // Users should normally not boot the server manually as doing so does not
-    // bring value to the user's codebase.
-
-    const { app } = require('pumpkins')
-    const singletonChecks = require('pumpkins/dist/framework/singleton-checks')
-
-    if (singletonChecks.state.is_was_server_start_called === false) {
-      app.server.start()
-    }
-  `
 
   return output
 }
