@@ -51,21 +51,6 @@ export async function run(optionsGiven?: Partial<Options>): Promise<void> {
   console.log('initializing git repo...')
   const git = Git()
 
-  // An exhaustive .gitignore tailored for Node can be found here:
-  // https://github.com/github/gitignore/blob/master/Node.gitignore
-  // We intentionally stay minimal here, as we want the default ignore file
-  // to be as meaningful for pumpkins users as possible.
-  await fs.write(
-    '.gitignore',
-    stripIndent`
-      # Node
-      node_modules
-      npm-debug.log*
-      yarn-debug.log*
-      yarn-error.log*
-      lerna-debug.log*
-    `
-  )
   await git.init()
   await git.raw(['add', '-A'])
   await git.raw(['commit', '-m', 'initial commit'])
@@ -136,6 +121,25 @@ async function scaffoldNewProject(layout: Layout.Layout, options: Options) {
   // TODO given that we're scaffolding, we know the layout ahead of time. We
   // should take advantage of that, e.g. precompute layout data
   await Promise.all([
+    // An exhaustive .gitignore tailored for Node can be found here:
+    // https://github.com/github/gitignore/blob/master/Node.gitignore
+    // We intentionally stay minimal here, as we want the default ignore file
+    // to be as meaningful for pumpkins users as possible.
+    await fs.write(
+      '.gitignore',
+      stripIndent`
+      # Node
+      node_modules
+      npm-debug.log*
+      yarn-debug.log*
+      yarn-error.log*
+      lerna-debug.log*
+
+      # TypeScript + VSCode
+      .vscode
+    `
+    ),
+
     fs.writeAsync('package.json', {
       name: options.projectName,
       license: 'UNLICENSED',
@@ -194,6 +198,11 @@ async function scaffoldNewProject(layout: Layout.Layout, options: Options) {
         }
       `
     ),
+
+    // TODO should be linted for
+    fs.writeAsync('.vscode/settings.json', {
+      'typescript.tsdk': 'node_modules/typescript/lib',
+    }),
 
     fs.writeAsync(
       layout.sourcePath('schema.ts'),
