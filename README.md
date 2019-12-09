@@ -7,9 +7,10 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
+
 - [Introduction](#introduction)
-  - [Getting Started](#getting-started)
-  - [Next Step, Getting a Sense for End to End Type Safety](#next-step-getting-a-sense-for-end-to-end-type-safety)
+    - [Getting Started](#getting-started)
+    - [Next Step, Getting a Sense for End to End Type Safety](#next-step-getting-a-sense-for-end-to-end-type-safety)
 - [Guide](#guide)
   - [Adding Prisma Framework](#adding-prisma-framework)
     - [Overview](#overview)
@@ -18,19 +19,23 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
     - [Heroku](#heroku)
   - [Conventions](#conventions)
     - [`schema.ts` | `schema/*`](#schemats--schema)
+        - [About](#about)
+        - [Aliases](#aliases)
     - [`app.ts`](#appts)
-      - [Aliases](#aliases)
+        - [About](#about-1)
+        - [Aliases](#aliases-1)
     - [Example Layouts](#example-layouts)
 - [API](#api)
-  - [`app`](#app)
-  - [`app.addContext`](#appaddcontext)
-  - [`app.<nexusDefBlock>`](#appnexusdefblock)
+    - [`app`](#app)
+    - [`app.addContext`](#appaddcontext)
+    - [`app.<nexusDefBlock>`](#appnexusdefblock)
+    - [`app.server.start`](#appserverstart)
 - [CLI](#cli)
 - [Development](#development)
-  - [Overview](#overview-1)
-  - [Testing](#testing)
-  - [Working With Example Apps via Linking](#working-with-example-apps-via-linking)
-  - [Working with create command](#working-with-create-command)
+    - [Overview](#overview-1)
+    - [Testing](#testing)
+    - [Working With Example Apps via Linking](#working-with-example-apps-via-linking)
+    - [Working with create command](#working-with-create-command)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -426,6 +431,10 @@ app.objectType({
   },
 })
 ```
+
+### `app.server.start`
+
+Start the server. If you don't call this pumpkins will. Usually you should not have to call it. Please share your use-case with us if you do!
 
 <br>
 

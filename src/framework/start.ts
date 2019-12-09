@@ -1,4 +1,4 @@
-import { stripIndent, stripIndents } from 'common-tags'
+import { stripIndent } from 'common-tags'
 import { printStaticSchemaImports } from './schema'
 import { Layout, relativeTranspiledImportPath } from './layout'
 
