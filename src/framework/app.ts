@@ -63,7 +63,7 @@ type ContextContributor<T extends {}> = (req: Express.Request) => T
 
 export type App = {
   use: (plugin: Plugin<any>) => App
-  addContext: <T extends {}>(contextContributor: ContextContributor<T>) => App
+  addToContext: <T extends {}>(contextContributor: ContextContributor<T>) => App
   // installGlobally: () => App
   server: {
     start: (config?: ServerOptions) => Promise<void>
@@ -111,7 +111,7 @@ export function createApp(appConfig?: { types?: any }): App {
       plugins.push(plugin)
       return api
     },
-    addContext(contextContributor) {
+    addToContext(contextContributor) {
       contextContributors.push(contextContributor)
       return api
     },
@@ -189,13 +189,13 @@ export function createApp(appConfig?: { types?: any }): App {
           config.imports.push('interface Context {}')
           config.contextType = 'Context'
 
-          // Integrate the addContext calls
-          const addContextCallResults: string[] = process.env
+          // Integrate the addToContext calls
+          const addToContextCallResults: string[] = process.env
             .PUMPKINS_TYPEGEN_ADD_CONTEXT_RESULTS
             ? JSON.parse(process.env.PUMPKINS_TYPEGEN_ADD_CONTEXT_RESULTS)
             : []
 
-          const typeDec = addContextCallResults
+          const typeDec = addToContextCallResults
             .map(result => {
               return stripIndents`
                 interface Context ${result}

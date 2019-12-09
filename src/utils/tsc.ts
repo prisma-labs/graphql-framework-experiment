@@ -154,7 +154,7 @@ export function compile(
 
 /**
  * Run our custom compiler extension features, like extracting context types
- * from all `addContext` calls.
+ * from all `addToContext` calls.
  */
 export function extractContextTypes(
   program: ts.EmitAndSemanticDiagnosticsBuilderProgram
@@ -180,39 +180,39 @@ export function extractContextTypes(
         lastToken !== undefined &&
         ts.isIdentifier(lastToken) &&
         // TODO use id.unescapedText
-        lastToken.escapedText === 'addContext'
+        lastToken.escapedText === 'addToContext'
       ) {
-        log('found addContext call %o', lastToken.getFullText())
+        log('found addToContext call %o', lastToken.getFullText())
 
-        // Get the argument passed too addContext so we can extract its type
+        // Get the argument passed too addToContext so we can extract its type
         const args = n.arguments
         if (args.length === 0) {
           log(
-            'no arguments passed to addContext, this is wrong, stopping context type extraction'
+            'no arguments passed to addToContext, this is wrong, stopping context type extraction'
           )
           return
         }
         if (args.length > 1) {
           log(
-            'multiple arguments passed to addContext, this is wrong, stopping context type extraction'
+            'multiple arguments passed to addToContext, this is wrong, stopping context type extraction'
           )
           return
         }
         const arg = args[0]
-        log('found addContext arg %o', arg.getFullText())
+        log('found addToContext arg %o', arg.getFullText())
 
         // Get the signature of the argument so we can extract its return type
         const argType = checker.getTypeAtLocation(arg)
         const argSigs = argType.getCallSignatures()
         if (argSigs.length === 0) {
           log(
-            'argument passed to addContext had no signatures, this is wrong, stopping context type extraction'
+            'argument passed to addToContext had no signatures, this is wrong, stopping context type extraction'
           )
           return
         }
         if (argSigs.length > 1) {
           log(
-            'argument passed to addContext has more than one signature, this might be wrong, stopping context type extraction'
+            'argument passed to addToContext has more than one signature, this might be wrong, stopping context type extraction'
           )
           return
         }

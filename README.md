@@ -27,7 +27,7 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
     - [Example Layouts](#example-layouts)
 - [API](#api)
     - [`app`](#app)
-    - [`app.addContext`](#appaddcontext)
+    - [`app.addToContext`](#appaddtocontext)
     - [`app.<nexusDefBlock>`](#appnexusdefblock)
     - [`app.server.start`](#appserverstart)
 - [CLI](#cli)
@@ -388,9 +388,9 @@ app.objectType({
 })
 ```
 
-### `app.addContext`
+### `app.addToContext`
 
-Add context to your graphql resolver functions. The objects returned by your context contributor callbacks will be shallow-merged into `ctx`. The `ctx` type will also accurately reflect the types you return from callbacks passed to `addContext`.
+Add context to your graphql resolver functions. The objects returned by your context contributor callbacks will be shallow-merged into `ctx`. The `ctx` type will also accurately reflect the types you return from callbacks passed to `addToContext`.
 
 **Example**
 
@@ -399,7 +399,7 @@ Add context to your graphql resolver functions. The objects returned by your con
 
 import { app } from 'pumpkins'
 
-app.addContext(req => {
+app.addToContext(req => {
   return {
     foo: 'bar',
   }
