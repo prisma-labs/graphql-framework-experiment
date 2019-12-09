@@ -19,13 +19,17 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
     - [Heroku](#heroku)
   - [Conventions](#conventions)
     - [`schema.ts` | `schema/*`](#schemats--schema)
-    - [`app.ts`](#appts)
+        - [About](#about)
         - [Aliases](#aliases)
+    - [`app.ts`](#appts)
+        - [About](#about-1)
+        - [Aliases](#aliases-1)
     - [Example Layouts](#example-layouts)
 - [API](#api)
     - [`app`](#app)
     - [`app.addContext`](#appaddcontext)
     - [`app.<nexusDefBlock>`](#appnexusdefblock)
+    - [`app.server.start`](#appserverstart)
 - [CLI](#cli)
 - [Development](#development)
     - [Overview](#overview-1)
@@ -302,18 +306,32 @@ $ node node_modules/.build
 
 ### `schema.ts` | `schema/*`
 
-Optional. Schema contains your GraphQL type definitions. It can be a single module or folder of modules. Multiple instances of module/folder-modules throughout your source tree is supported.
+Optional –– Your GraphQL type definitions.
+
+##### About
+
+It can be a single module or folder of modules. Multiple instances of module/folder-modules throughout your source tree is supported.
 
 In dev mode schema modules are synchronously found and imported at server boot time. At build time however static imports for all schema modules are inlined for boot performance.
 
+##### Aliases
+
+n/a
+
 ### `app.ts`
 
-Optional. App contains the entrypoint to your service, the place where it boots. There can only be at most a single `app.ts` in your source tree.
+Optional –– The entrypoint to your app
+
+##### About
+
+There can only be at most a single `app.ts`/`server.ts`/`service.ts` module in your source tree.
+
+This module is optional **when** you just have schema modules and so pumpkins already knows how import them into the final build. Otherwise you'll need this module to import your custom modules etc.
 
 ##### Aliases
 
 ```
-main.ts server.ts
+server.ts service.ts
 ```
 
 ### Example Layouts
@@ -413,6 +431,10 @@ app.objectType({
   },
 })
 ```
+
+### `app.server.start`
+
+Start the server. If you don't call this pumpkins will. Usually you should not have to call it. Please share your use-case with us if you do!
 
 <br>
 

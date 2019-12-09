@@ -9,9 +9,13 @@ import { Plugin } from './plugin'
 import { createPrismaPlugin, isPrismaEnabledSync } from './plugins'
 import { stripIndent, stripIndents } from 'common-tags'
 import { sendServerReadySignalToDevModeMaster } from './dev-mode'
+import * as singletonChecks from './singleton-checks'
 
 const log = pog.sub(__filename)
 
+/**
+ * The available server options to configure how your app runs its server.
+ */
 type ServerOptions = {
   port?: number
   startMessage?: (port: number) => string
@@ -19,6 +23,10 @@ type ServerOptions = {
   introspection?: boolean
 }
 
+/**
+ * Create a message suitable for printing to the terminal about the server
+ * having been booted.
+ */
 const serverStartMessage = (port: number): string => {
   return stripIndent`
     Your GraphQL API is now ready
@@ -27,6 +35,10 @@ const serverStartMessage = (port: number): string => {
   `
 }
 
+/**
+ * The default server options. These are merged with whatever you provide. Your
+ * settings take precedence over these.
+ */
 const defaultServerOptions: Required<ServerOptions> = {
   port:
     typeof process.env.PUMPKINS_PORT === 'string'
@@ -113,7 +125,14 @@ export function createApp(appConfig?: { types?: any }): App {
     intArg,
     stringArg,
     server: {
+      /**
+       * Start the server. If you do not call this explicitly then pumpkins will
+       * for you. You should not normally need to call this function yourself.
+       */
       async start(config: ServerOptions = {}): Promise<void> {
+        // Track the start call so that we can know in entrypoint whether to run
+        // or not start for the user.
+        singletonChecks.state.is_was_server_start_called = true
         // During development we dynamically import all the schema modules
         //
         // TODO IDEA we have concept of schema module and schema dir
