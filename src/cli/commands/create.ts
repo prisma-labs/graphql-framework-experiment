@@ -218,7 +218,7 @@ async function scaffoldNewProject(layout: Layout.Layout, options: Options) {
                 world: stringArg({ required: false })
               },
               async resolve(_root, args, ctx) {
-                const worldToFindByName = args.name ?? 'Earth'
+                const worldToFindByName = args.world ?? 'Earth'
                 const world = await ctx.photon.worlds.findOne({
                   where: {
                     name: worldToFindByName
