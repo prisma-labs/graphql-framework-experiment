@@ -9,6 +9,7 @@ import { Plugin } from './plugin'
 import { createPrismaPlugin, isPrismaEnabledSync } from './plugins'
 import { stripIndent, stripIndents } from 'common-tags'
 import { sendServerReadySignalToDevModeMaster } from './dev-mode'
+import * as singletonChecks from './singleton-checks'
 
 const log = pog.sub(__filename)
 
@@ -66,7 +67,6 @@ export type App = {
   // installGlobally: () => App
   server: {
     start: (config?: ServerOptions) => Promise<void>
-    __is_was_start_called_before: boolean
   }
   queryType: typeof nexus.queryType
   mutationType: typeof nexus.mutationType
@@ -125,7 +125,6 @@ export function createApp(appConfig?: { types?: any }): App {
     intArg,
     stringArg,
     server: {
-      __is_was_start_called_before: false,
       /**
        * Start the server. If you do not call this explicitly then pumpkins will
        * for you. You should not normally need to call this function yourself.
@@ -133,7 +132,7 @@ export function createApp(appConfig?: { types?: any }): App {
       async start(config: ServerOptions = {}): Promise<void> {
         // Track the start call so that we can know in entrypoint whether to run
         // or not start for the user.
-        api.server.__is_was_start_called_before = true
+        singletonChecks.state.is_was_server_start_called = true
         // During development we dynamically import all the schema modules
         //
         // TODO IDEA we have concept of schema module and schema dir

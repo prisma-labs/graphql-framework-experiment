@@ -71,8 +71,10 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     // bring value to the user's codebase.
 
     const { app } = require('pumpkins')
+    const { app } = require('pumpkins')
+    const singletonChecks = require('pumpkins/dist/framework/singleton-checks')
 
-    if (app.server.__is_was_start_called_before === false) {
+    if (singletonChecks.state.is_was_server_start_called === false) {
       app.server.start()
     }
   `
