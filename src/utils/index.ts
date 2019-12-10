@@ -1,3 +1,5 @@
+// Keep './pog' export first as ../framework/schema uses it and it might break
+export * from './pog'
 export * from '../framework/schema'
 export * from './array'
 export * from './artifact-generation'
@@ -5,8 +7,6 @@ export * from './console'
 export * from './fs'
 export * from './helpers'
 export * from './path'
-export * from './pog'
 export * from './process'
 export * from './scaffold'
 export * from './tsc'
-
