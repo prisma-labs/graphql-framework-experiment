@@ -8,12 +8,24 @@ import { createStartModuleContent } from '../../framework/start'
 import { findOrScaffoldTsConfig, pog } from '../../utils'
 import { clearConsole } from '../../utils/console'
 import { createWatcher } from '../../watcher'
-import { Command } from '../helpers'
+import { arg, Command, isError } from '../helpers'
 
 const log = pog.sub('cli:dev')
 
+const DEV_ARGS = {
+  '--inspect-brk': Number,
+}
+
+type Args = typeof DEV_ARGS
+
 export class Dev implements Command {
-  async parse() {
+  async parse(argv: string[]) {
+    const args = arg(argv, DEV_ARGS)
+
+    if (isError(args)) {
+      return
+    }
+
     // Right now dev mode assumes a tty and renders according to its height and
     // width for example. This check is not strictly needed but keeps things
     // simple for now. When we remove this constraint we should also optimize
@@ -96,14 +108,21 @@ export class Dev implements Command {
       appPath: layout.app.path,
     })
 
+    const nodeArgs = []
+
+    if (args['--inspect-brk']) {
+      nodeArgs.push(`--inspect-brk=${args['--inspect-brk']}`)
+    }
+
     createWatcher({
       layout,
       transpileOnly: true,
-      respawn: true,
+      respawn: args['--inspect-brk'] ? false : true,
       eval: {
         code: bootModule,
         fileName: 'start.js',
       },
+      nodeArgs,
       onEvent: e => {
         if (state.logMode && e.event === 'restart') {
           clearConsole()

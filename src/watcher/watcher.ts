@@ -240,7 +240,8 @@ function startRunner(
   // We are leaving this as a future fix, refer to:
   // https://github.com/prisma/pumpkins/issues/76
   //
-  const child = fork(runnerModulePath, ['-r', childHookPath], {
+  const cmd = [...(opts.nodeArgs || []), runnerModulePath]
+  const child = fork(cmd[0], cmd.slice(1), {
     cwd: process.cwd(),
     silent: true,
     env: {
