@@ -29,8 +29,8 @@ const log = pog.sub('cli:build')
 const BUILD_ARGS = {
   '--output': String,
   '-o': '--output',
-  '--target': String,
-  '-t': '--target',
+  '--deployment': String,
+  '-d': '--deployment',
   '--help': Boolean,
   '-h': '--help',
 }
@@ -53,14 +53,14 @@ export class Build implements Command {
     const plugins = await loadPlugins()
     const layout = await Layout.create()
 
-    const target = normalizeTarget(args['--target'])
+    const deploymentTarget = normalizeTarget(args['--deployment'])
     const outDir =
       args['--output'] ??
-      computeOutputBuildFromTarget(target) ??
+      computeOutputBuildFromTarget(deploymentTarget) ??
       BUILD_FOLDER_NAME
 
-    if (target) {
-      if (!validateTarget(target, layout, outDir)) {
+    if (deploymentTarget) {
+      if (!validateTarget(deploymentTarget, layout, outDir)) {
         process.exit(1)
       }
     }
@@ -98,8 +98,8 @@ export class Build implements Command {
     await writeStartModule(layout, tsProgram, outDir)
 
     console.log('🎃  Pumpkins app successfully compiled at %s', outDir)
-    if (target) {
-      logTargetPostBuildMessage(target)
+    if (deploymentTarget) {
+      logTargetPostBuildMessage(deploymentTarget)
     }
   }
 
@@ -110,9 +110,9 @@ export class Build implements Command {
       Build a production-ready pumpkins server
 
       Flags:
-            -o, --output    Relative path to output directory
-            -t, --target    Enable custom build for some deployment platforms ("now")
-            -h,   --help    Show this help message
+        -o,     --output    Relative path to output directory
+        -d, --deployment    Enable custom build for some deployment platforms ("now")
+        -h,       --help    Show this help message
     `
   }
 }
