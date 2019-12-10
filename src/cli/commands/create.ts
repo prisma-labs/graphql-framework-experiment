@@ -7,7 +7,7 @@ import * as Layout from '../../framework/layout'
 import { createTSConfigContents, CWDProjectNameOrGenerate } from '../../utils'
 import { spawn } from 'child_process'
 
-export class Create implements Command {
+export class Init implements Command {
   async parse() {
     await run()
   }
