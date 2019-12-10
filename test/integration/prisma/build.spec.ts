@@ -1,5 +1,5 @@
 import { createWorkspace } from '../../__helpers'
-import { DEFAULT_BUILD_FOLDER_NAME } from '../../../src/constants'
+import { DEFAULT_BUILD_FOLDER_NAME } from '../../../src/framework/layout'
 
 const ws = createWorkspace({
   name: 'prisma-build',
