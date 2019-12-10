@@ -191,10 +191,8 @@ export const compiler: Compiler = {
     tsHandler = require.extensions['.ts']
     compiler.writeChildHookFile(options)
   },
-  compileChanged: function(fileName, callbacks) {
-    if (callbacks && callbacks.onEvent) {
-      callbacks.onEvent('restart', fileName)
-    }
+  compileChanged: function(fileName, onEvent) {
+    onEvent({ event: 'restart', file: fileName })
     const ext = path.extname(fileName)
     if (extensions.indexOf(ext) < 0) return
     try {
@@ -206,7 +204,7 @@ export const compiler: Compiler = {
           fileName,
           compiler.getCompiledDir()
         ),
-        callbacks,
+        onEvent,
       })
     } catch (e) {
       console.error(e)
@@ -233,9 +231,7 @@ export const compiler: Compiler = {
     try {
       m._compile(code, fileName)
       log('compile finish %s', fileName)
-      if (params.callbacks && params.callbacks.onEvent) {
-        params.callbacks.onEvent('compiled', fileName)
-      }
+      params.onEvent({ event: 'compiled', file: fileName })
     } catch (e) {
       code = 'throw ' + 'new Error(' + JSON.stringify(e.message) + ')' + ';'
       writeCompiled(code)

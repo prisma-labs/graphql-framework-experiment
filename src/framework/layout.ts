@@ -33,6 +33,7 @@ export type Data = {
   sourceRoot: string
   sourceRootRelative: string
   projectRoot: string
+  schemaModules: string[]
   // schema:
   //   | {
   //       exists: boolean
@@ -109,13 +110,15 @@ export const scan = async (): Promise<Data> => {
 
   const projectRoot = findProjectDir()
 
-  const result = {
+  const result: Data = {
     app:
       maybeAppModule === null
         ? ({ exists: false, path: maybeAppModule } as const)
         : ({ exists: true, path: maybeAppModule } as const),
     projectRoot,
     sourceRoot,
+    schemaModules: maybeSchemaModules,
+
     // when source and project roots are the same relative is computed as '' but
     // this is not valid path like syntax in a lot cases at least such as
     // tsconfig include field.

@@ -35,6 +35,7 @@ export async function run(optionsGiven?: Partial<Options>): Promise<void> {
     projectRoot: fs.path(),
     sourceRoot: fs.path('./app'),
     sourceRootRelative: './app',
+    schemaModules: ['app/schema.ts'],
   })
   await scaffoldNewProject(layout, options)
 

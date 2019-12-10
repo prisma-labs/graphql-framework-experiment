@@ -1,12 +1,32 @@
 import { ChildProcess, ForkOptions } from 'child_process'
 import { Layout } from '../framework/layout'
 
-export interface Callbacks {
-  onEvent?: (
-    event: 'start' | 'restart' | 'compiled' | 'logging' | 'ready',
-    data?: string
-  ) => void
+type EventRestart = {
+  event: 'restart'
+  file: string
 }
+
+type EventCompiled = {
+  event: 'compiled'
+  file: string
+}
+
+type EventLogging = {
+  event: 'logging'
+  data: string
+}
+
+type EventReady = {
+  event: 'ready'
+}
+
+type Events =
+  | EventRestart
+  | EventCompiled
+  | EventLogging
+  | EventReady
+
+type OnEvent = (e: Events) => void
 
 export interface Compiler {
   allowJs: boolean
@@ -20,11 +40,11 @@ export interface Compiler {
   writeReadyFile: () => void
   writeChildHookFile: (opts: any) => void
   init: (opts: Opts) => void
-  compileChanged: (fileName: string, callbacks: Callbacks) => void
+  compileChanged: (fileName: string, onEvent: OnEvent) => void
   compile: (params: {
     compile: string
     compiledPath: string
-    callbacks: Callbacks
+    onEvent: OnEvent
   }) => void
   log?: any
   stop?: any
@@ -70,7 +90,7 @@ export interface Opts extends BooleanOpts, StringOpts {
   log?: any
   watch?: string
   priorNodeArgs?: string[]
-  callbacks?: Callbacks
+  onEvent: OnEvent
   stdio?: ForkOptions['stdio']
   eval: {
     code: string

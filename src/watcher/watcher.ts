@@ -157,7 +157,7 @@ export function createWatcher(opts: Opts) {
     /* eslint-disable no-octal-escape */
     if (cfg.clear) process.stdout.write('\\033[2J\\033[H')
 
-    compiler.compileChanged(file, opts.callbacks ?? {})
+    compiler.compileChanged(file, opts.onEvent)
 
     if (runnerRestarting) {
       log('already starting')
@@ -226,9 +226,6 @@ function startRunner(
 ): Process {
   log('will spawn runner')
 
-  // allow user to hook into start event
-  opts.callbacks?.onEvent?.('start')
-
   const runnerModulePath = require.resolve('./runner')
   const childHookPath = compiler.getChildHookPath()
 
@@ -258,15 +255,11 @@ function startRunner(
   // configured with anything else than `pipe`.
   //
   child.stdout!.on('data', chunk => {
-    if (opts.callbacks?.onEvent) {
-      opts.callbacks.onEvent?.('logging', chunk.toString())
-    }
+    opts.onEvent({ event: 'logging', data: chunk.toString() })
   })
 
   child.stderr!.on('data', chunk => {
-    if (opts.callbacks?.onEvent) {
-      opts.callbacks.onEvent?.('logging', chunk.toString())
-    }
+    opts.onEvent?.({ event: 'logging', data: chunk.toString() })
   })
 
   // TODO We have removed this code since switching to chokidar. What is the
@@ -371,9 +364,7 @@ function startRunner(
 
   ipc.on(child, SERVER_READY_SIGNAL, message => {
     log('got runner signal "%s"', SERVER_READY_SIGNAL)
-    if (opts.callbacks?.onEvent) {
-      opts.callbacks?.onEvent(SERVER_READY_SIGNAL)
-    }
+    opts.onEvent({ event: SERVER_READY_SIGNAL })
   })
 
   compiler.writeReadyFile()

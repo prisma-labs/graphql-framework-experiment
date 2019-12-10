@@ -19,8 +19,8 @@ type UnknownFieldName = {
   typeName: string
 }
 
-type UnknownOutputType = {
-  unknownOutputType: string
+export type UnknownFieldType = {
+  unknownFieldType: string
   error: Error
   typeName: string
   fieldName: string
@@ -28,7 +28,7 @@ type UnknownOutputType = {
 
 type OptionsWithHook = Options & {
   onUnknownFieldName: (params: UnknownFieldName) => void
-  onUnknownFieldType: (params: UnknownOutputType) => void
+  onUnknownFieldType: (params: UnknownFieldType) => void
 }
 
 const log = pog.sub(__filename)
@@ -69,7 +69,7 @@ export const createPrismaPlugin: () => Plugin = () => {
           },
           shouldGenerateArtifacts: shouldGenerateArtifacts(),
           onUnknownFieldName: params => renderUnknownFieldNameError(params),
-          onUnknownFieldType: params => renderUnknownOutputTypeError(params),
+          onUnknownFieldType: params => renderUnknownFieldTypeError(params),
         } as OptionsWithHook),
       ],
     },
@@ -96,7 +96,7 @@ function renderUnknownFieldNameError(params: UnknownFieldName) {
   console.log(`${intro}${stack}`)
 }
 
-function renderUnknownOutputTypeError(params: UnknownOutputType) {
+function renderUnknownFieldTypeError(params: UnknownFieldType) {
   const { stack, fileLineNumber } = printStack({
     callsite: params.error.stack,
   })
