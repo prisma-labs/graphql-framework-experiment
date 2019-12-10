@@ -3,12 +3,12 @@ import { Box, Instance, render } from 'ink'
 import React from 'react'
 import * as readline from 'readline'
 import * as Layout from '../../framework/layout'
-import { runPrismaGenerators } from '../../framework/plugins'
 import { createStartModuleContent } from '../../framework/start'
 import { findOrScaffoldTsConfig, pog } from '../../utils'
 import { clearConsole } from '../../utils/console'
 import { createWatcher } from '../../watcher'
 import { Command } from '../helpers'
+import { loadPlugins } from '../helpers/utils'
 
 const log = pog.sub('cli:dev')
 
@@ -31,7 +31,11 @@ export class Dev implements Command {
     const layout = await Layout.create()
 
     await findOrScaffoldTsConfig(layout)
-    await runPrismaGenerators()
+    const plugins = await loadPlugins()
+
+    for (const p of plugins) {
+      await p.onDevStart?.()
+    }
 
     // Setup ui/log toggling system
     let state:
@@ -87,9 +91,6 @@ export class Dev implements Command {
       }
     })
 
-    // TODO
-    // await runPrismaGenerators()
-
     const bootModule = createStartModuleContent({
       stage: 'dev',
       layout: layout,
@@ -97,6 +98,7 @@ export class Dev implements Command {
     })
 
     createWatcher({
+      plugins: plugins,
       layout,
       transpileOnly: true,
       respawn: true,

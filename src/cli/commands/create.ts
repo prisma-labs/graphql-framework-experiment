@@ -6,6 +6,7 @@ import Git from 'simple-git/promise'
 import * as Layout from '../../framework/layout'
 import { createTSConfigContents, CWDProjectNameOrGenerate } from '../../utils'
 import { spawn } from 'child_process'
+import { loadPlugins } from '../helpers/utils'
 
 export class Create implements Command {
   async parse() {
@@ -18,6 +19,8 @@ type Options = {
 }
 
 export async function run(optionsGiven?: Partial<Options>): Promise<void> {
+  const plugins = await loadPlugins()
+
   const options: Options = {
     ...optionsGiven,
     projectName: CWDProjectNameOrGenerate(),
@@ -39,15 +42,23 @@ export async function run(optionsGiven?: Partial<Options>): Promise<void> {
   })
   await scaffoldNewProject(layout, options)
 
+  const socket = {
+    log: console.log,
+    layout,
+  }
+
+  for (const p of plugins) {
+    await p.onCreateAfterScaffold?.(socket)
+  }
+
   console.log('installing dependencies... (this will take around ~30 seconds)')
   await proc.run('yarn')
 
-  console.log('initializing development database...')
-  await proc.run('yarn -s prisma2 lift save --create-db --name init')
-  await proc.run('yarn -s prisma2 lift up')
+  console.log('running plugins...')
 
-  console.log('seeding data...')
-  await proc.run('yarn -s ts-node prisma/seed')
+  for (const p of plugins) {
+    await p.onCreateAfterDepInstall?.(socket)
+  }
 
   console.log('initializing git repo...')
   const git = Git()
@@ -133,7 +144,7 @@ async function assertIsCleanSlate() {
  */
 async function scaffoldNewProject(layout: Layout.Layout, options: Options) {
   // TODO eventually `master` should become `latest`
-  // TODO blog example? Template selector?
+  // TODO Template selector?
   // TODO given that we're scaffolding, we know the layout ahead of time. We
   // should take advantage of that, e.g. precompute layout data
   await Promise.all([
@@ -153,50 +164,6 @@ async function scaffoldNewProject(layout: Layout.Layout, options: Options) {
     fs.writeAsync('tsconfig.json', createTSConfigContents(layout)),
 
     fs.writeAsync(
-      'prisma/schema.prisma',
-      stripIndent`
-        datasource db {
-          provider = "sqlite"
-          url      = "file:dev.db"
-        }
-
-        generator photon {
-          provider = "photonjs"
-        }
-
-        model World {
-          id         Int     @id
-          name       String  @unique
-          population Float
-        }
-      `
-    ),
-
-    fs.writeAsync(
-      'prisma/seed.ts',
-      stripIndent`
-        import { Photon } from "@prisma/photon"
-
-        const photon = new Photon()
-        
-        main()
-        
-        async function main() {
-          const result = await photon.worlds.create({
-            data: {
-              name: "Earth",
-              population: 6_000_000_000
-            }
-          })
-        
-          console.log("Seeded: %j", result)
-        
-          photon.disconnect()
-        }
-      `
-    ),
-
-    fs.writeAsync(
       layout.sourcePath('schema.ts'),
       stripIndent`
         import { app } from "pumpkins"
@@ -205,9 +172,9 @@ async function scaffoldNewProject(layout: Layout.Layout, options: Options) {
         app.objectType({
           name: "World",
           definition(t) {
-            t.model.id()
-            t.model.name()
-            t.model.population()
+            t.id('id')
+            t.string('name')
+            t.float('population')
           }
         })
 
@@ -220,11 +187,10 @@ async function scaffoldNewProject(layout: Layout.Layout, options: Options) {
               },
               async resolve(_root, args, ctx) {
                 const worldToFindByName = args.world ?? 'Earth'
-                const world = await ctx.photon.worlds.findOne({
-                  where: {
-                    name: worldToFindByName
-                  }
-                })
+                const world = {
+                  Earth: { id: '1', population: 6_000_000, name: 'Earth' },
+                  Mars: { id: '2', population: 0, name: 'Mars' },
+                }[worldToFindByName]
 
                 if (!world) throw new Error(\`No such world named "\${args.world}"\`)
 

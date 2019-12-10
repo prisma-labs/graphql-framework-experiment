@@ -58,7 +58,7 @@ export class CLI implements Command {
 
   // static help template
   private static help = format(`
-    Pumpkins - Nexus & Prisma without the hassle
+    Pumpkins - GraphQL APIs without the hassle
 
     ${chalk.bold('Usage')}
 

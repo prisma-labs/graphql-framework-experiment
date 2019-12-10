@@ -1,4 +1,9 @@
 import { NexusConfig } from './nexus'
+import * as Layout from './layout'
+import * as Chokidar from '../watcher/chokidar'
+
+// TODO move to utils module
+type MaybePromise<T> = void | Promise<void>
 
 export type Plugin<C extends {} = any> = {
   // TODO We need to enforce the invariant that plugin names are unique or
@@ -6,6 +11,20 @@ export type Plugin<C extends {} = any> = {
   // import alias) or derive unique identifier from plugins off something else
   // like their package name.
   name: string
+  workflow?: WorkflowContributions
+  runtime?: {
+    /**
+     * Run when ... TODO
+     */
+    onInstall?: () => RuntimeContributions
+  }
+}
+
+/**
+ * The possible things that plugins can contribute toward at runtime. Everything
+ * is optional.
+ */
+export type RuntimeContributions<C extends {} = any> = {
   context?: {
     typeGen: {
       fields: Record<string, string>
@@ -19,5 +38,25 @@ export type Plugin<C extends {} = any> = {
   nexus?: {
     plugins: NexusConfig['plugins']
   }
-  onBuild?: () => void
+}
+
+export type WorkflowContributions = {
+  onBuildStart?: () => MaybePromise<void>
+  onDevStart?: () => MaybePromise<void>
+  onDevFileWatcherEvent?: Chokidar.FileWatcherEventCallback
+  watchFilePatterns?: string[]
+  ignoreFilePatterns?: string[]
+  onGenerateStart?: () => MaybePromise<void>
+  onCreateAfterScaffold?: (socket: Socket) => MaybePromise<void>
+  onCreateAfterDepInstall?: (socket: Socket) => MaybePromise<void>
+}
+
+/**
+ * Cutely named, this is just the handle that plugins get access to aid
+ * integration. Includes utilities for logging, and access to project layout data.
+ */
+export type Socket = {
+  // TODO something richer
+  log: typeof console.log
+  layout: Layout.Layout
 }
