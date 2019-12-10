@@ -13,8 +13,7 @@ export const DEFAULT_BUILD_FOLDER_NAME = 'node_modules/.build'
 const log = pog.sub('layout')
 
 /**
- * Layout represents the important edges of the project to support things like
- * scaffolding, build, and dev against the correct paths.
+ * The part of layout data resulting from the dynamic file/folder inspection.
  */
 export type ScanResult = {
   // build: {
@@ -53,10 +52,18 @@ export type ScanResult = {
   // }
 }
 
+/**
+ * The combination of manual datums the user can specify about the layout plus
+ * the dynamic scan results.
+ */
 export type Data = ScanResult & {
   buildOutput: string
 }
 
+/**
+ * Layout represents the important edges of the project to support things like
+ * scaffolding, build, and dev against the correct paths.
+ */
 export type Layout = Data & {
   /**
    * Property that aliases all the and only the data properties, makes it
