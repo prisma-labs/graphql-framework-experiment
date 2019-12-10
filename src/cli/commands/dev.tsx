@@ -2,6 +2,7 @@ import chalk from 'chalk'
 import { Box, Instance, render } from 'ink'
 import React from 'react'
 import * as readline from 'readline'
+import { BUILD_FOLDER_NAME } from '../../constants'
 import * as Layout from '../../framework/layout'
 import { runPrismaGenerators } from '../../framework/plugins'
 import { createStartModuleContent } from '../../framework/start'
@@ -30,7 +31,7 @@ export class Dev implements Command {
 
     const layout = await Layout.create()
 
-    await findOrScaffoldTsConfig(layout)
+    await findOrScaffoldTsConfig(layout, BUILD_FOLDER_NAME)
     await runPrismaGenerators()
 
     // Setup ui/log toggling system

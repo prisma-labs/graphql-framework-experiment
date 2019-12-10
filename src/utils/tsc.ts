@@ -1,12 +1,10 @@
+import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import * as path from 'path'
 import * as ts from 'typescript'
-import { BUILD_FOLDER_NAME } from '../constants'
 import { Layout } from '../framework/layout'
-import chalk = require('chalk')
-import { stripIndent } from 'common-tags'
 import { pog } from './pog'
-import { removeWrite } from './fs'
+import chalk = require('chalk')
 
 const log = pog.sub('compiler')
 
@@ -51,7 +49,10 @@ export function findConfigFile(fileName: string, opts: { required: boolean }) {
  * Fetch the tsconfig file for pumpkins, handling special post-processing for
  * pumpkins projects etc.
  */
-export function readTsConfig(layout: Layout): ts.ParsedCommandLine {
+export function readTsConfig(
+  layout: Layout,
+  outDir: string
+): ts.ParsedCommandLine {
   const tsConfigPath = findConfigFile('tsconfig.json', { required: true })
   const tsConfigContent = ts.readConfigFile(tsConfigPath, ts.sys.readFile)
 
@@ -104,7 +105,7 @@ export function readTsConfig(layout: Layout): ts.ParsedCommandLine {
   }
 
   if (inputConfig.options.outDir === undefined) {
-    inputConfig.options.outDir = BUILD_FOLDER_NAME
+    inputConfig.options.outDir = outDir
   }
 
   if (inputConfig.options.rootDir === undefined) {
@@ -115,9 +116,10 @@ export function readTsConfig(layout: Layout): ts.ParsedCommandLine {
 }
 
 export function createTSProgram(
-  layout: Layout
+  layout: Layout,
+  outDir: string
 ): ts.EmitAndSemanticDiagnosticsBuilderProgram {
-  const tsConfig = readTsConfig(layout)
+  const tsConfig = readTsConfig(layout, outDir)
   const program = ts.createIncrementalProgram({
     rootNames: tsConfig.fileNames,
     options: {
@@ -133,10 +135,11 @@ export function createTSProgram(
  * compile a program
  */
 export function compile(
-  program: ts.EmitAndSemanticDiagnosticsBuilderProgram
+  program: ts.EmitAndSemanticDiagnosticsBuilderProgram,
+  outDir: string
 ): void {
   log('remove previous build folder if present...')
-  fs.remove(BUILD_FOLDER_NAME)
+  fs.remove(outDir)
   log('done')
   log('emit transpiled modules to disk...')
   const emitResult = program.emit()
@@ -241,6 +244,7 @@ export function transpileModule(
  */
 export async function findOrScaffoldTsConfig(
   layout: Layout,
+  outDir: string,
   options: { exitAfterError: boolean } = { exitAfterError: true }
 ): Promise<'success' | 'warning' | 'error'> {
   const tsConfigPath = findConfigFile('tsconfig.json', { required: false })
@@ -275,14 +279,14 @@ export async function findOrScaffoldTsConfig(
     // evaluated at tsconfig read time, see this Stack-Overflow thread:
     // https://stackoverflow.com/questions/57333825/can-you-pull-in-excludes-includes-options-in-typescript-compiler-api
     //
-    await fs.writeAsync(scaffoldPath, createTSConfigContents(layout))
+    await fs.writeAsync(scaffoldPath, createTSConfigContents(layout, outDir))
     return 'warning'
   }
 
   return 'success'
 }
 
-export function createTSConfigContents(layout: Layout): string {
+export function createTSConfigContents(layout: Layout, outDir: string): string {
   return stripIndent`
     {
       "compilerOptions": {
@@ -292,7 +296,7 @@ export function createTSConfigContents(layout: Layout): string {
         "strict": true,
         // [1] pumpkins managed
         // "rootDir": "${layout.sourceRootRelative}",
-        // "outDir": "${BUILD_FOLDER_NAME}",
+        // "outDir": "${outDir}",
       },
       // [1] pumpkins managed
       // "include": "${layout.sourceRootRelative}"

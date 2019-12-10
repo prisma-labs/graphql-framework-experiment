@@ -1,8 +1,8 @@
-import Git from 'simple-git/promise'
+import chalk from 'chalk'
+import { BUILD_FOLDER_NAME } from '../../constants'
 import * as Layout from '../../framework/layout'
 import { findOrScaffoldTsConfig } from '../../utils'
 import { Command } from '../helpers'
-import chalk from 'chalk'
 
 export class Doctor implements Command {
   async parse() {
@@ -16,7 +16,7 @@ export class Doctor implements Command {
 async function tsconfig() {
   console.log(chalk.bold('-- tsconfig.json --'))
   const layout = await Layout.create()
-  const result = await findOrScaffoldTsConfig(layout, {
+  const result = await findOrScaffoldTsConfig(layout, BUILD_FOLDER_NAME, {
     exitAfterError: false,
   })
   if (result === 'success') {

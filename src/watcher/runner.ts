@@ -10,15 +10,18 @@ process.stdout.isTTY = true
 process.stderr.isTTY = true
 
 import { fork } from 'child_process'
+import { register } from 'ts-node'
+// TODO HACK, big one, like running ts-node twice?
+import * as ts from 'typescript'
+import { Script } from 'vm'
+import { BUILD_FOLDER_NAME } from '../constants'
+import * as Layout from '../framework/layout'
+import { extractContextTypes, pog, readTsConfig } from '../utils'
+import cfgFactory from './cfg'
 import hook from './hook'
 import * as ipc from './ipc'
 const childProcess = require('child_process')
-import cfgFactory from './cfg'
-import { Script } from 'vm'
 import Module = require('module')
-import { pog, extractContextTypes, readTsConfig } from '../utils'
-import * as Layout from '../framework/layout'
-import { register } from 'ts-node'
 
 const log = pog.sub('cli:dev:runner')
 
@@ -27,12 +30,10 @@ register({
 })
 
 log('starting context type extraction')
-// TODO HACK, big one, like running ts-node twice?
-import * as ts from 'typescript'
 const layout = Layout.createFromData(
   JSON.parse(process.env.PUMPKINS_LAYOUT as string) as Layout.Data
 )
-const tsConfig = readTsConfig(layout)
+const tsConfig = readTsConfig(layout, BUILD_FOLDER_NAME)
 const program = ts.createIncrementalProgram({
   rootNames: tsConfig.fileNames,
   options: {

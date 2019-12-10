@@ -1,11 +1,12 @@
-import * as fs from 'fs-jetpack'
-import * as proc from '../../utils/process'
-import { Command } from '../helpers'
+import { spawn } from 'child_process'
 import { stripIndent } from 'common-tags'
+import * as fs from 'fs-jetpack'
 import Git from 'simple-git/promise'
+import { BUILD_FOLDER_NAME } from '../../constants'
 import * as Layout from '../../framework/layout'
 import { createTSConfigContents, CWDProjectNameOrGenerate } from '../../utils'
-import { spawn } from 'child_process'
+import * as proc from '../../utils/process'
+import { Command } from '../helpers'
 
 export class Create implements Command {
   async parse() {
@@ -150,7 +151,10 @@ async function scaffoldNewProject(layout: Layout.Layout, options: Options) {
       },
     }),
 
-    fs.writeAsync('tsconfig.json', createTSConfigContents(layout)),
+    fs.writeAsync(
+      'tsconfig.json',
+      createTSConfigContents(layout, BUILD_FOLDER_NAME)
+    ),
 
     fs.writeAsync(
       'prisma/schema.prisma',
