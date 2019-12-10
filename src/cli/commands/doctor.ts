@@ -1,11 +1,11 @@
 import { Command } from '../helpers'
-import * as Checks from '../../checks'
 import * as Layout from '../../framework/layout'
+import doctor from '../../doctor'
 
 export class Doctor implements Command {
   async parse() {
     const layout = await Layout.create()
-    await Checks.tsconfig.check(layout)
-    await Checks.vscodeTypeScriptVersion.check()
+    await doctor.tsconfig.check(layout)
+    await doctor.vscodeTypeScriptVersion.check()
   }
 }

@@ -7,8 +7,8 @@ import { runPrismaGenerators } from '../../framework/plugins'
 import { createStartModuleContent } from '../../framework/start'
 import { createWatcher } from '../../watcher'
 import { Command } from '../helpers'
-import * as Checks from '../../checks'
 import { pog } from '../../utils'
+import doctor from '../../doctor'
 
 const log = pog.sub('cli:dev')
 
@@ -27,7 +27,7 @@ export class Dev implements Command {
 
     const layout = await Layout.create()
 
-    await Checks.tsconfig.check(layout)
+    await doctor.tsconfig.check(layout)
     await runPrismaGenerators()
 
     // Setup ui/log toggling system

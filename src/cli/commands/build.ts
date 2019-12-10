@@ -15,7 +15,7 @@ import {
 import { Command } from '../helpers'
 import ts = require('typescript')
 import { stripIndent } from 'common-tags'
-import * as Checks from '../../checks'
+import doctor from '../../doctor'
 
 const log = pog.sub('cli:build')
 
@@ -25,7 +25,7 @@ export class Build implements Command {
     // TODO pluggable CLI
     const layout = await Layout.create()
 
-    await Checks.tsconfig.check(layout)
+    await doctor.tsconfig.check(layout)
     await runPrismaGenerators()
 
     const tsProgram = createTSProgram(layout)

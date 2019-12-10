@@ -6,7 +6,7 @@ import Git from 'simple-git/promise'
 import * as Layout from '../../framework/layout'
 import { createTSConfigContents, CWDProjectNameOrGenerate } from '../../utils'
 import { spawn } from 'child_process'
-import * as Checks from '../../checks'
+import doctor from '../../doctor'
 
 export class Create implements Command {
   async parse() {
@@ -58,7 +58,7 @@ export async function run(optionsGiven?: Partial<Options>): Promise<void> {
 
   console.log()
   console.log('Note:')
-  await Checks.vscodeTypeScriptVersion.showMessageMissingFileOrNotSet()
+  await doctor.vscodeTypeScriptVersion.showMessageMissingFileOrNotSet()
   console.log()
 
   console.log(stripIndent`
