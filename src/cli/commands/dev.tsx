@@ -98,6 +98,7 @@ export class Dev implements Command {
     })
 
     createWatcher({
+      plugins: plugins,
       layout,
       transpileOnly: true,
       respawn: true,

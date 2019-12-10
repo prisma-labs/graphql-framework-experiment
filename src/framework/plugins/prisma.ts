@@ -153,6 +153,18 @@ export const createPrismaPlugin: () => Plugin = () => {
       async onGenerateStart() {
         await runPrismaGenerators()
       },
+      onDevFileWatcherEvent(event, file) {
+        if (file.match(/.*schema\.prisma$/)) {
+          console.log(
+            chalk`{bgBlue INFO} Prisma Schema change detected, lifting...`
+          )
+          onDevModePrismaSchemaChange()
+        }
+      },
+      // TODO preferably we allow schema.prisma to be anywhere but they show up in
+      // migrations folder too and we don't know how to achieve semantic "anywhere
+      // but migrations folder"
+      prismaFilePAtterns: ['./schema.prisma', './prisma/schema.prisma'],
     },
     runtime: {
       onInstall() {

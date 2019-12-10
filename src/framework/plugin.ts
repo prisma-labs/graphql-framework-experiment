@@ -1,5 +1,6 @@
 import { NexusConfig } from './nexus'
 import * as Layout from './layout'
+import * as Chokidar from '../watcher/chokidar'
 
 // TODO move to utils module
 type MaybePromise<T> = void | Promise<void>
@@ -42,6 +43,9 @@ export type RuntimeContributions<C extends {} = any> = {
 export type WorkflowContributions = {
   onBuildStart?: () => MaybePromise<void>
   onDevStart?: () => MaybePromise<void>
+  onDevFileWatcherEvent?: Chokidar.FileWatcherEventCallback
+  watchFilePatterns?: string[]
+  ignoreFilePatterns?: string[]
   onGenerateStart?: () => MaybePromise<void>
   onCreateAfterScaffold?: (socket: Socket) => MaybePromise<void>
   onCreateAfterDepInstall?: (socket: Socket) => MaybePromise<void>
