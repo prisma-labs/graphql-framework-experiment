@@ -1,11 +1,12 @@
 import { spawnSync, SpawnSyncOptions } from 'child_process'
+import { logger } from './logger'
 
 /**
  * Log a meaningful semantic error message sans stack track and then crash
  * the program with exit code 1. Parameters are a passthrough to `console.error`.
  */
 export function fatal(format: string, ...vars: unknown[]): void {
-  console.error(format, ...vars)
+  logger.error(format, ...vars)
   process.exit(1)
 }
 

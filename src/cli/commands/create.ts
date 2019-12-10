@@ -1,11 +1,11 @@
-import * as fs from 'fs-jetpack'
-import * as proc from '../../utils/process'
-import { Command } from '../helpers'
+import { spawn } from 'child_process'
 import { stripIndent } from 'common-tags'
+import * as fs from 'fs-jetpack'
 import Git from 'simple-git/promise'
 import * as Layout from '../../framework/layout'
 import { createTSConfigContents, CWDProjectNameOrGenerate } from '../../utils'
-import { spawn } from 'child_process'
+import * as proc from '../../utils/process'
+import { Command } from '../helpers'
 import { loadPlugins } from '../helpers/utils'
 
 export class Create implements Command {
@@ -39,6 +39,7 @@ export async function run(optionsGiven?: Partial<Options>): Promise<void> {
     sourceRoot: fs.path('./app'),
     sourceRootRelative: './app',
     schemaModules: ['app/schema.ts'],
+    buildOutput: Layout.DEFAULT_BUILD_FOLDER_NAME,
   })
   await scaffoldNewProject(layout, options)
 

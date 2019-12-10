@@ -1,12 +1,10 @@
+import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import * as path from 'path'
 import * as ts from 'typescript'
-import { BUILD_FOLDER_NAME } from '../constants'
 import { Layout } from '../framework/layout'
-import chalk = require('chalk')
-import { stripIndent } from 'common-tags'
 import { pog } from './pog'
-import { removeWrite } from './fs'
+import { logger } from './logger'
 
 const log = pog.sub('compiler')
 
@@ -103,8 +101,10 @@ export function readTsConfig(layout: Layout): ts.ParsedCommandLine {
     inputConfig.options.module = ts.ModuleKind.CommonJS
   }
 
+  // TODO Seems wrong. If anything, layout module should encapsulate the logic
+  // of honuring outDir, if we really want that. Hmmm...
   if (inputConfig.options.outDir === undefined) {
-    inputConfig.options.outDir = BUILD_FOLDER_NAME
+    inputConfig.options.outDir = layout.buildOutput
   }
 
   if (inputConfig.options.rootDir === undefined) {
@@ -133,10 +133,11 @@ export function createTSProgram(
  * compile a program
  */
 export function compile(
-  program: ts.EmitAndSemanticDiagnosticsBuilderProgram
+  program: ts.EmitAndSemanticDiagnosticsBuilderProgram,
+  layout: Layout
 ): void {
   log('remove previous build folder if present...')
-  fs.remove(BUILD_FOLDER_NAME)
+  fs.remove(layout.buildOutput)
   log('done')
   log('emit transpiled modules to disk...')
   const emitResult = program.emit()
@@ -247,11 +248,11 @@ export async function findOrScaffoldTsConfig(
 
   if (tsConfigPath) {
     if (path.dirname(tsConfigPath) !== layout.projectRoot) {
-      console.error(
-        chalk`{red ERROR:} Your tsconfig.json file needs to be in your project root directory`
+      logger.error(
+        `Your tsconfig.json file needs to be in your project root directory`
       )
-      console.error(
-        chalk`{red ERROR:} Found ${tsConfigPath}, expected ${path.join(
+      logger.error(
+        `Found ${tsConfigPath}, expected ${path.join(
           layout.projectRoot,
           'tsconfig.json'
         )}`
@@ -266,10 +267,8 @@ export async function findOrScaffoldTsConfig(
 
   if (!tsConfigPath) {
     const scaffoldPath = layout.projectRelative('tsconfig.json')
-    console.log(stripIndent`
-      ${chalk.yellow('Warning:')} We could not find a "tsconfig.json" file.
-      ${chalk.yellow('Warning:')} We scaffolded one for you at ${scaffoldPath}.
-    `)
+    logger.warn('We could not find a "tsconfig.json" file')
+    logger.warn(`We scaffolded one for you at ${scaffoldPath}`)
 
     // It seems we cannot make `include` a comment below, because it is
     // evaluated at tsconfig read time, see this Stack-Overflow thread:
@@ -292,7 +291,7 @@ export function createTSConfigContents(layout: Layout): string {
         "strict": true,
         // [1] pumpkins managed
         // "rootDir": "${layout.sourceRootRelative}",
-        // "outDir": "${BUILD_FOLDER_NAME}",
+        // "outDir": "${layout.buildOutput}",
       },
       // [1] pumpkins managed
       // "include": "${layout.sourceRootRelative}"
