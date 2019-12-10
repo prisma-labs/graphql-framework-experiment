@@ -57,7 +57,7 @@ async function main(): Promise<number> {
     build: new Commands.Build(),
     generate: new Commands.Generate(),
     doctor: new Commands.Doctor(),
-    init: new Commands.Init(),
+    create: new Commands.Create(),
   })
 
   // parse the arguments

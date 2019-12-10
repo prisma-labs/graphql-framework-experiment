@@ -8,7 +8,7 @@ import { createTSConfigContents, CWDProjectNameOrGenerate } from '../../utils'
 import { spawn } from 'child_process'
 import { loadPlugins } from '../helpers/utils'
 
-export class Init implements Command {
+export class Create implements Command {
   async parse() {
     await run()
   }
