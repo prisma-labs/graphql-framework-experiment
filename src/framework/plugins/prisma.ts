@@ -164,7 +164,7 @@ export const createPrismaPlugin: () => Plugin = () => {
       // TODO preferably we allow schema.prisma to be anywhere but they show up in
       // migrations folder too and we don't know how to achieve semantic "anywhere
       // but migrations folder"
-      prismaFilePAtterns: ['./schema.prisma', './prisma/schema.prisma'],
+      watchFilePatterns: ['./schema.prisma', './prisma/schema.prisma'],
     },
     runtime: {
       onInstall() {
