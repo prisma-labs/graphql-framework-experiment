@@ -1,5 +1,6 @@
 import { ChildProcess, ForkOptions } from 'child_process'
 import { Layout } from '../framework/layout'
+import * as Plugin from '../framework/plugin'
 
 type EventRestart = {
   event: 'restart'
@@ -92,6 +93,7 @@ export interface Opts extends BooleanOpts, StringOpts {
     code: string
     fileName: string
   }
+  plugins: Plugin.WorkflowContributions[]
 }
 
 export interface Process extends ChildProcess {

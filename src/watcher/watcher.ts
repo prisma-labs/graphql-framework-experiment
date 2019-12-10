@@ -7,8 +7,6 @@ import { pog } from '../utils'
 import { sendSigterm } from './utils'
 import { watch, FileWatcher } from './chokidar'
 import { SERVER_READY_SIGNAL } from '../framework/dev-mode'
-import { onDevModePrismaSchemaChange } from '../framework/plugins'
-import chalk = require('chalk')
 
 const log = pog.sub('cli:dev:watcher')
 
@@ -30,31 +28,31 @@ export function createWatcher(opts: Opts) {
 
   // Create a file watcher
 
-  // TODO preferably we allow schema.prisma to be anywhere but they show up in
-  // migrations folder too and we don't know how to achieve semantic "anywhere
-  // but migrations folder"
-  const prismaFilePAtterns = ['./schema.prisma', './prisma/schema.prisma']
   // TODO watch for changes to tsconfig and take correct action
   // TODO watch for changes to package json and take correct action (imagine
   // there could be pumpkins config in there)
   // TODO restart should take place following npm install/remove yarn
   // add/remove/install etc.
-  // TODO plugins need to be able to add things to watch
   // TODO need a way to test file matching given patterns. Hard to get right,
   // right now, and feedback loop sucks. For instance allow to find prisma
   // schema anywhere except in migrations ignore it, that is hard right now.
-  const watcher = watch([opts.layout.sourceRoot, ...prismaFilePAtterns], {
-    // TODO plugins need to be able to add things to ignore
-    ignored: ['./node_modules', './.*'],
+
+  const pluginWatchContributions = opts.plugins.reduce(
+    (patterns, p) => patterns.concat(p.watchFilePatterns || []),
+    [] as string[]
+  )
+
+  const pluginIgnoreContributions = opts.plugins.reduce(
+    (patterns, p) => patterns.concat(p.ignoreFilePatterns || []),
+    [] as string[]
+  )
+
+  const watcher = watch([opts.layout.sourceRoot, ...pluginWatchContributions], {
+    ignored: ['./node_modules', './.*', ...pluginIgnoreContributions],
     ignoreInitial: true,
-    onAll(_event, file) {
-      // TODO plugins need to be able to register callback on file change
-      // patterns hook into watcher
-      if (file.match(/.*schema\.prisma$/)) {
-        console.log(
-          chalk`{bgBlue INFO} Prisma Schema change detected, lifting...`
-        )
-        onDevModePrismaSchemaChange()
+    onAll(event, file) {
+      for (const p of opts.plugins) {
+        p.onDevFileWatcherEvent?.(event, file)
       }
       restartRunner(file)
     },

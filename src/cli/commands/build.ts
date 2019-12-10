@@ -1,7 +1,6 @@
 import * as fs from 'fs-jetpack'
 import { BUILD_FOLDER_NAME, START_MODULE_NAME } from '../../constants'
 import * as Layout from '../../framework/layout'
-import { runPrismaGenerators } from '../../framework/plugins'
 import { createStartModuleContent } from '../../framework/start'
 import {
   compile,
@@ -16,17 +15,20 @@ import {
 import { Command } from '../helpers'
 import ts = require('typescript')
 import { stripIndent } from 'common-tags'
+import { loadPlugins } from '../helpers/utils'
 
 const log = pog.sub('cli:build')
 
 export class Build implements Command {
   async parse(argv: string[]) {
-    // Handle Prisma integration
-    // TODO pluggable CLI
+    const plugins = await loadPlugins()
     const layout = await Layout.create()
 
     await findOrScaffoldTsConfig(layout)
-    await runPrismaGenerators()
+
+    for (const p of plugins) {
+      await p.onBuildStart?.()
+    }
 
     const tsProgram = createTSProgram(layout)
     const contextFieldTypes = extractContextTypes(tsProgram)
