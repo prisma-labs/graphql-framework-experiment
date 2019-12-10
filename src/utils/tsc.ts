@@ -4,7 +4,7 @@ import * as path from 'path'
 import * as ts from 'typescript'
 import { Layout } from '../framework/layout'
 import { pog } from './pog'
-import chalk = require('chalk')
+import { logger } from './logger'
 
 const log = pog.sub('compiler')
 
@@ -251,11 +251,11 @@ export async function findOrScaffoldTsConfig(
 
   if (tsConfigPath) {
     if (path.dirname(tsConfigPath) !== layout.projectRoot) {
-      console.error(
-        chalk`{red ERROR:} Your tsconfig.json file needs to be in your project root directory`
+      logger.error(
+        `Your tsconfig.json file needs to be in your project root directory`
       )
-      console.error(
-        chalk`{red ERROR:} Found ${tsConfigPath}, expected ${path.join(
+      logger.error(
+        `Found ${tsConfigPath}, expected ${path.join(
           layout.projectRoot,
           'tsconfig.json'
         )}`
@@ -270,10 +270,8 @@ export async function findOrScaffoldTsConfig(
 
   if (!tsConfigPath) {
     const scaffoldPath = layout.projectRelative('tsconfig.json')
-    console.log(stripIndent`
-      ${chalk.yellow('Warning:')} We could not find a "tsconfig.json" file.
-      ${chalk.yellow('Warning:')} We scaffolded one for you at ${scaffoldPath}.
-    `)
+    logger.warn('We could not find a "tsconfig.json" file')
+    logger.warn(`We scaffolded one for you at ${scaffoldPath}`)
 
     // It seems we cannot make `include` a comment below, because it is
     // evaluated at tsconfig read time, see this Stack-Overflow thread:
