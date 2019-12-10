@@ -136,6 +136,7 @@ async function scaffoldNewProject(layout: Layout.Layout, options: Options) {
   // TODO blog example? Template selector?
   // TODO given that we're scaffolding, we know the layout ahead of time. We
   // should take advantage of that, e.g. precompute layout data
+  const appEntrypointPath = layout.sourcePath('schema.ts')
   await Promise.all([
     fs.writeAsync('package.json', {
       name: options.projectName,
@@ -197,10 +198,9 @@ async function scaffoldNewProject(layout: Layout.Layout, options: Options) {
     ),
 
     fs.writeAsync(
-      layout.sourcePath('schema.ts'),
+      appEntrypointPath,
       stripIndent`
         import { app } from "pumpkins"
-        import { stringArg } from "nexus"
 
         app.objectType({
           name: "World",
@@ -216,7 +216,7 @@ async function scaffoldNewProject(layout: Layout.Layout, options: Options) {
             t.field("hello", {
               type: "World",
               args: {
-                world: stringArg({ required: false })
+                world: app.stringArg({ required: false })
               },
               async resolve(_root, args, ctx) {
                 const worldToFindByName = args.world ?? 'Earth'
@@ -234,6 +234,28 @@ async function scaffoldNewProject(layout: Layout.Layout, options: Options) {
           }
         })
       `
+    ),
+    fs.writeAsync(
+      '.vscode/launch.json',
+      stripIndent`
+    {
+      // Note: You can delete this file if you're not using vscode
+      "version": "0.2.0",
+      "configurations": [
+        {
+          "type": "node",
+          "request": "launch",
+          "name": "Debug Pumpkins Server",
+          "protocol": "inspector",
+          "runtimeExecutable": "\${workspaceRoot}/node_modules/.bin/pumpkins",
+          "runtimeArgs": ["dev"],
+          "args": ["${layout.projectRelative(appEntrypointPath)}"],
+          "sourceMaps": true,
+          "console": "integratedTerminal"
+        }
+      ]
+    }    
+    `
     ),
   ])
 }
