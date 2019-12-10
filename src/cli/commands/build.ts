@@ -5,7 +5,6 @@ import { runPrismaGenerators } from '../../framework/plugins'
 import { createStartModuleContent } from '../../framework/start'
 import {
   compile,
-  findOrScaffoldTsConfig,
   generateArtifacts,
   pog,
   transpileModule,
@@ -16,6 +15,7 @@ import {
 import { Command } from '../helpers'
 import ts = require('typescript')
 import { stripIndent } from 'common-tags'
+import * as Checks from '../../checks'
 
 const log = pog.sub('cli:build')
 
@@ -25,7 +25,7 @@ export class Build implements Command {
     // TODO pluggable CLI
     const layout = await Layout.create()
 
-    await findOrScaffoldTsConfig(layout)
+    await Checks.tsconfig.check(layout)
     await runPrismaGenerators()
 
     const tsProgram = createTSProgram(layout)

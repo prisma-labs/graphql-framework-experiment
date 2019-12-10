@@ -6,6 +6,7 @@ import Git from 'simple-git/promise'
 import * as Layout from '../../framework/layout'
 import { createTSConfigContents, CWDProjectNameOrGenerate } from '../../utils'
 import { spawn } from 'child_process'
+import * as Checks from '../../checks'
 
 export class Create implements Command {
   async parse() {
@@ -54,6 +55,11 @@ export async function run(optionsGiven?: Partial<Options>): Promise<void> {
   await git.init()
   await git.raw(['add', '-A'])
   await git.raw(['commit', '-m', 'initial commit'])
+
+  console.log()
+  console.log('Note:')
+  await Checks.vscodeTypeScriptVersion.showMessageMissingFileOrNotSet()
+  console.log()
 
   console.log(stripIndent`
     entering dev mode...

@@ -235,53 +235,6 @@ export function transpileModule(
   return ts.transpileModule(input, { compilerOptions }).outputText
 }
 
-/**
- * Find or scaffold a tsconfig.json file
- * Process will exit if package.json is not in the projectDir**
- */
-export async function findOrScaffoldTsConfig(
-  layout: Layout,
-  options: { exitAfterError: boolean } = { exitAfterError: true }
-): Promise<'success' | 'warning' | 'error'> {
-  const tsConfigPath = findConfigFile('tsconfig.json', { required: false })
-
-  if (tsConfigPath) {
-    if (path.dirname(tsConfigPath) !== layout.projectRoot) {
-      console.error(
-        chalk`{red ERROR:} Your tsconfig.json file needs to be in your project root directory`
-      )
-      console.error(
-        chalk`{red ERROR:} Found ${tsConfigPath}, expected ${path.join(
-          layout.projectRoot,
-          'tsconfig.json'
-        )}`
-      )
-      if (options.exitAfterError) {
-        process.exit(1)
-      } else {
-        return 'error'
-      }
-    }
-  }
-
-  if (!tsConfigPath) {
-    const scaffoldPath = layout.projectRelative('tsconfig.json')
-    console.log(stripIndent`
-      ${chalk.yellow('Warning:')} We could not find a "tsconfig.json" file.
-      ${chalk.yellow('Warning:')} We scaffolded one for you at ${scaffoldPath}.
-    `)
-
-    // It seems we cannot make `include` a comment below, because it is
-    // evaluated at tsconfig read time, see this Stack-Overflow thread:
-    // https://stackoverflow.com/questions/57333825/can-you-pull-in-excludes-includes-options-in-typescript-compiler-api
-    //
-    await fs.writeAsync(scaffoldPath, createTSConfigContents(layout))
-    return 'warning'
-  }
-
-  return 'success'
-}
-
 export function createTSConfigContents(layout: Layout): string {
   return stripIndent`
     {
