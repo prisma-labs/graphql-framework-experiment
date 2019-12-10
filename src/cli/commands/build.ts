@@ -15,7 +15,7 @@ import {
   transpileModule,
 } from '../../utils'
 import {
-  computeOutputBuildFromTarget,
+  computeBuildOutputFromTarget,
   logTargetPostBuildMessage,
   normalizeTarget,
   validateTarget,
@@ -53,7 +53,7 @@ export class Build implements Command {
     const layout = await Layout.create({
       buildOutput:
         args['--output'] ??
-        computeOutputBuildFromTarget(deploymentTarget) ??
+        computeBuildOutputFromTarget(deploymentTarget) ??
         undefined,
     })
 

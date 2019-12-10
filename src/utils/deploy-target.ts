@@ -5,48 +5,55 @@ import { START_MODULE_NAME } from '../constants'
 import { Layout } from '../framework/layout'
 import { logger } from './logger'
 import { findConfigFile } from './tsc'
+import { fatal } from './process'
+import { stripIndent } from 'common-tags'
 
 const log = pog.sub(__filename)
 
-const SUPPORTED_TARGETS = ['now'] as const
-const formattedSupportedTargets = SUPPORTED_TARGETS.map(t => `"${t}"`).join(',')
+const SUPPORTED_DEPLOY_TARGETS = ['now'] as const
+const formattedSupportedDeployTargets = SUPPORTED_DEPLOY_TARGETS.map(
+  t => `"${t}"`
+).join(',')
 
-type SupportedTargets = typeof SUPPORTED_TARGETS[number]
+type SupportedTargets = typeof SUPPORTED_DEPLOY_TARGETS[number]
 
+/**
+ * Take user input of a deploy target, validate it, and parse it into a
+ * normalized form.
+ */
 export function normalizeTarget(
-  inputTarget: string | undefined
+  inputDeployTarget: string | undefined
 ): SupportedTargets | null {
-  if (!inputTarget) {
+  if (!inputDeployTarget) {
     return null
   }
 
-  const target = inputTarget.toLowerCase()
+  const deployTarget = inputDeployTarget.toLowerCase()
 
-  if (!SUPPORTED_TARGETS.includes(target as any)) {
-    logger.error(
-      `--target \`${target}\` is not supported by Pumpkins. Supported targets: ${formattedSupportedTargets}}`
+  if (!SUPPORTED_DEPLOY_TARGETS.includes(deployTarget as any)) {
+    fatal(
+      `--deployment \`${deployTarget}\` is not supported by Pumpkins. Supported deployment targets: ${formattedSupportedDeployTargets}}`
     )
-    process.exit(1)
   }
 
-  return target as SupportedTargets
+  return deployTarget as SupportedTargets
 }
 
-const TARGET_TO_OUTPUT_BUILD: Record<SupportedTargets, string> = {
+const TARGET_TO_BUILD_OUTPUT: Record<SupportedTargets, string> = {
   now: 'dist',
 }
 
-export function computeOutputBuildFromTarget(target: SupportedTargets | null) {
+export function computeBuildOutputFromTarget(target: SupportedTargets | null) {
   if (!target) {
     return null
   }
 
-  return TARGET_TO_OUTPUT_BUILD[target]
+  return TARGET_TO_BUILD_OUTPUT[target]
 }
 
 const TARGET_VALIDATORS: Record<
   SupportedTargets,
-  (layout: Layout, outDir: string) => boolean
+  (layout: Layout) => boolean
 > = {
   now: validateNow,
 }
@@ -56,8 +63,7 @@ export function validateTarget(
   layout: Layout
 ): boolean {
   const validator = TARGET_VALIDATORS[target]
-
-  return validator(layout, layout.buildOutput)
+  return validator(layout)
 }
 
 interface NowJson {
@@ -67,9 +73,12 @@ interface NowJson {
   routes?: Array<{ src: string; dest: string }>
 }
 
-function validateNow(layout: Layout, outDir: string): boolean {
+/**
+ * Validate the user's now configuration file.
+ */
+function validateNow(layout: Layout): boolean {
   const maybeNowJsonPath = findConfigFile('now.json', { required: false })
-  const startModulePath = `${outDir}/${START_MODULE_NAME}.js`
+  const startModulePath = `${layout.buildOutput}/${START_MODULE_NAME}.js`
   let isValid = true
 
   if (!maybeNowJsonPath) {
@@ -77,19 +86,19 @@ function validateNow(layout: Layout, outDir: string): boolean {
     const packageJson = fs.read('package.json', 'json')
     const projectName = packageJson?.name ?? 'now_rename_me'
 
-    const nowJsonContent = `\
-{
-  "version": 2,
-  "name": "${projectName}",
-  "builds": [
-    {
-      "src": "${startModulePath}",
-      "use": "@now/node-server"
-    }
-  ],
-  "routes": [{ "src": "/.*", "dest": "${startModulePath}" }]
-}
-`
+    const nowJsonContent = stripIndent`
+      {
+        "version": 2,
+        "name": "${projectName}",
+        "builds": [
+          {
+            "src": "${startModulePath}",
+            "use": "@now/node-server"
+          }
+        ],
+        "routes": [{ "src": "/.*", "dest": "${startModulePath}" }]
+      }
+    `
     const nowJsonPath = path.join(layout.projectRoot, 'now.json')
     fs.write(nowJsonPath, nowJsonContent)
     logger.warn(
