@@ -1,5 +1,6 @@
 import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
+import ts from 'typescript'
 import { BUILD_FOLDER_NAME, START_MODULE_NAME } from '../../constants'
 import * as Layout from '../../framework/layout'
 import { runPrismaGenerators } from '../../framework/plugins'
@@ -16,13 +17,12 @@ import {
 } from '../../utils'
 import {
   computeOutputBuildFromTarget,
+  logTargetPostBuildMessage,
   normalizeTarget,
   validateTarget,
-  logTargetPostBuildMessage,
 } from '../../utils/deploy-target'
-import { arg, Command, isError } from '../helpers'
-import ts = require('typescript')
 import { logger } from '../../utils/logger'
+import { arg, Command, isError } from '../helpers'
 
 const log = pog.sub('cli:build')
 
@@ -103,8 +103,15 @@ export class Build implements Command {
 
   help() {
     return `
-TODO
-    `
+Usage: pumpkins build [flags]
+
+Build a production-ready pumpkins server
+
+Flags:
+       -o, --output    Relative path to output directory
+       -t, --target    Enable custom build for some deployment platforms ("now")
+       -h,   --help    Show this help message
+`
   }
 }
 
