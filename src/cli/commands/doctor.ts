@@ -1,5 +1,4 @@
 import chalk from 'chalk'
-import { BUILD_FOLDER_NAME } from '../../constants'
 import * as Layout from '../../framework/layout'
 import { findOrScaffoldTsConfig } from '../../utils'
 import { Command } from '../helpers'
@@ -16,7 +15,7 @@ export class Doctor implements Command {
 async function tsconfig() {
   console.log(chalk.bold('-- tsconfig.json --'))
   const layout = await Layout.create()
-  const result = await findOrScaffoldTsConfig(layout, BUILD_FOLDER_NAME, {
+  const result = await findOrScaffoldTsConfig(layout, {
     exitAfterError: false,
   })
   if (result === 'success') {

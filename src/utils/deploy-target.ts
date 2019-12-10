@@ -53,12 +53,11 @@ const TARGET_VALIDATORS: Record<
 
 export function validateTarget(
   target: SupportedTargets,
-  layout: Layout,
-  outDir: string
+  layout: Layout
 ): boolean {
   const validator = TARGET_VALIDATORS[target]
 
-  return validator(layout, outDir)
+  return validator(layout, layout.buildOutput)
 }
 
 interface NowJson {

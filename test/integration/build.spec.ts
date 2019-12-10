@@ -1,7 +1,7 @@
 // TODO boot and query to take integration test confidence even further
 
 import { createWorkspace } from '../__helpers'
-import { BUILD_FOLDER_NAME } from '../../src/constants'
+import { DEFAULT_BUILD_FOLDER_NAME } from '../../src/constants'
 
 const ws = createWorkspace({
   name: 'build',
@@ -24,7 +24,7 @@ it('can build with just a schema module', () => {
 
   const result = ws.run('yarn -s pumpkins build')
   expect(result).toMatchSnapshot()
-  expect(ws.fs.inspectTree(BUILD_FOLDER_NAME)).toMatchSnapshot()
+  expect(ws.fs.inspectTree(DEFAULT_BUILD_FOLDER_NAME)).toMatchSnapshot()
 })
 
 it('can build with just a schema folder of modules', () => {
@@ -44,7 +44,7 @@ it('can build with just a schema folder of modules', () => {
 
   const result = ws.run('yarn -s pumpkins build')
   expect(result).toMatchSnapshot()
-  expect(ws.fs.inspectTree(BUILD_FOLDER_NAME)).toMatchSnapshot()
+  expect(ws.fs.inspectTree(DEFAULT_BUILD_FOLDER_NAME)).toMatchSnapshot()
 })
 
 it('can build with schema + app modules', () => {
@@ -72,7 +72,7 @@ it('can build with schema + app modules', () => {
 
   const result = ws.run('yarn -s pumpkins build')
   expect(result).toMatchSnapshot()
-  expect(ws.fs.inspectTree(BUILD_FOLDER_NAME)).toMatchSnapshot()
+  expect(ws.fs.inspectTree(DEFAULT_BUILD_FOLDER_NAME)).toMatchSnapshot()
 })
 
 it('can nest modules', () => {
@@ -100,7 +100,7 @@ it('can nest modules', () => {
 
   const result = ws.run('yarn -s pumpkins build')
   expect(result).toMatchSnapshot()
-  expect(ws.fs.inspectTree(BUILD_FOLDER_NAME)).toMatchSnapshot()
+  expect(ws.fs.inspectTree(DEFAULT_BUILD_FOLDER_NAME)).toMatchSnapshot()
 })
 
 it('can build a plugin', () => {
@@ -171,5 +171,5 @@ it('can build a plugin', () => {
 
   const result = ws.run('yarn -s pumpkins build')
   expect(result).toMatchSnapshot()
-  expect(ws.fs.inspectTree(BUILD_FOLDER_NAME)).toMatchSnapshot()
+  expect(ws.fs.inspectTree(DEFAULT_BUILD_FOLDER_NAME)).toMatchSnapshot()
 })

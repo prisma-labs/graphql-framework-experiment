@@ -1,5 +1,5 @@
 import { createWorkspace } from '../../__helpers'
-import { BUILD_FOLDER_NAME } from '../../../src/constants'
+import { DEFAULT_BUILD_FOLDER_NAME } from '../../../src/constants'
 
 const ws = createWorkspace({
   name: 'prisma-build',
@@ -40,5 +40,5 @@ it('can build a prisma framework project', () => {
 
   const result = ws.run('yarn -s pumpkins build')
   expect(result).toMatchSnapshot()
-  expect(ws.fs.inspectTree(BUILD_FOLDER_NAME)).toMatchSnapshot()
+  expect(ws.fs.inspectTree(DEFAULT_BUILD_FOLDER_NAME)).toMatchSnapshot()
 })

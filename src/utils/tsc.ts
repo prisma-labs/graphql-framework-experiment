@@ -49,10 +49,7 @@ export function findConfigFile(fileName: string, opts: { required: boolean }) {
  * Fetch the tsconfig file for pumpkins, handling special post-processing for
  * pumpkins projects etc.
  */
-export function readTsConfig(
-  layout: Layout,
-  outDir: string
-): ts.ParsedCommandLine {
+export function readTsConfig(layout: Layout): ts.ParsedCommandLine {
   const tsConfigPath = findConfigFile('tsconfig.json', { required: true })
   const tsConfigContent = ts.readConfigFile(tsConfigPath, ts.sys.readFile)
 
@@ -104,8 +101,10 @@ export function readTsConfig(
     inputConfig.options.module = ts.ModuleKind.CommonJS
   }
 
+  // TODO Seems wrong. If anything, layout module should encapsulate the logic
+  // of honuring outDir, if we really want that. Hmmm...
   if (inputConfig.options.outDir === undefined) {
-    inputConfig.options.outDir = outDir
+    inputConfig.options.outDir = layout.buildOutput
   }
 
   if (inputConfig.options.rootDir === undefined) {
@@ -116,10 +115,9 @@ export function readTsConfig(
 }
 
 export function createTSProgram(
-  layout: Layout,
-  outDir: string
+  layout: Layout
 ): ts.EmitAndSemanticDiagnosticsBuilderProgram {
-  const tsConfig = readTsConfig(layout, outDir)
+  const tsConfig = readTsConfig(layout)
   const program = ts.createIncrementalProgram({
     rootNames: tsConfig.fileNames,
     options: {
@@ -136,10 +134,10 @@ export function createTSProgram(
  */
 export function compile(
   program: ts.EmitAndSemanticDiagnosticsBuilderProgram,
-  outDir: string
+  layout: Layout
 ): void {
   log('remove previous build folder if present...')
-  fs.remove(outDir)
+  fs.remove(layout.buildOutput)
   log('done')
   log('emit transpiled modules to disk...')
   const emitResult = program.emit()
@@ -244,7 +242,6 @@ export function transpileModule(
  */
 export async function findOrScaffoldTsConfig(
   layout: Layout,
-  outDir: string,
   options: { exitAfterError: boolean } = { exitAfterError: true }
 ): Promise<'success' | 'warning' | 'error'> {
   const tsConfigPath = findConfigFile('tsconfig.json', { required: false })
@@ -277,14 +274,14 @@ export async function findOrScaffoldTsConfig(
     // evaluated at tsconfig read time, see this Stack-Overflow thread:
     // https://stackoverflow.com/questions/57333825/can-you-pull-in-excludes-includes-options-in-typescript-compiler-api
     //
-    await fs.writeAsync(scaffoldPath, createTSConfigContents(layout, outDir))
+    await fs.writeAsync(scaffoldPath, createTSConfigContents(layout))
     return 'warning'
   }
 
   return 'success'
 }
 
-export function createTSConfigContents(layout: Layout, outDir: string): string {
+export function createTSConfigContents(layout: Layout): string {
   return stripIndent`
     {
       "compilerOptions": {
@@ -294,7 +291,7 @@ export function createTSConfigContents(layout: Layout, outDir: string): string {
         "strict": true,
         // [1] pumpkins managed
         // "rootDir": "${layout.sourceRootRelative}",
-        // "outDir": "${outDir}",
+        // "outDir": "${layout.buildOutput}",
       },
       // [1] pumpkins managed
       // "include": "${layout.sourceRootRelative}"

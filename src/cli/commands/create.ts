@@ -2,7 +2,6 @@ import { spawn } from 'child_process'
 import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import Git from 'simple-git/promise'
-import { BUILD_FOLDER_NAME } from '../../constants'
 import * as Layout from '../../framework/layout'
 import { createTSConfigContents, CWDProjectNameOrGenerate } from '../../utils'
 import * as proc from '../../utils/process'
@@ -40,6 +39,7 @@ export async function run(optionsGiven?: Partial<Options>): Promise<void> {
     sourceRoot: fs.path('./app'),
     sourceRootRelative: './app',
     schemaModules: ['app/schema.ts'],
+    buildOutput: Layout.DEFAULT_BUILD_FOLDER_NAME,
   })
   await scaffoldNewProject(layout, options)
 
@@ -163,10 +163,7 @@ async function scaffoldNewProject(layout: Layout.Layout, options: Options) {
       },
     }),
 
-    fs.writeAsync(
-      'tsconfig.json',
-      createTSConfigContents(layout, BUILD_FOLDER_NAME)
-    ),
+    fs.writeAsync('tsconfig.json', createTSConfigContents(layout)),
 
     fs.writeAsync(
       appEntrypointPath,

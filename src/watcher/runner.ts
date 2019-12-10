@@ -14,7 +14,6 @@ import { register } from 'ts-node'
 // TODO HACK, big one, like running ts-node twice?
 import * as ts from 'typescript'
 import { Script } from 'vm'
-import { BUILD_FOLDER_NAME } from '../constants'
 import * as Layout from '../framework/layout'
 import { extractContextTypes, pog, readTsConfig } from '../utils'
 import cfgFactory from './cfg'
@@ -33,7 +32,7 @@ log('starting context type extraction')
 const layout = Layout.createFromData(
   JSON.parse(process.env.PUMPKINS_LAYOUT as string) as Layout.Data
 )
-const tsConfig = readTsConfig(layout, BUILD_FOLDER_NAME)
+const tsConfig = readTsConfig(layout)
 const program = ts.createIncrementalProgram({
   rootNames: tsConfig.fileNames,
   options: {

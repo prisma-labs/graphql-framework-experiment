@@ -2,7 +2,6 @@ import chalk from 'chalk'
 import { Box, Instance, render } from 'ink'
 import React from 'react'
 import * as readline from 'readline'
-import { BUILD_FOLDER_NAME } from '../../constants'
 import * as Layout from '../../framework/layout'
 import { createStartModuleContent } from '../../framework/start'
 import { findOrScaffoldTsConfig, pog } from '../../utils'
@@ -43,7 +42,7 @@ export class Dev implements Command {
 
     const layout = await Layout.create()
 
-    await findOrScaffoldTsConfig(layout, BUILD_FOLDER_NAME)
+    await findOrScaffoldTsConfig(layout)
     const plugins = await loadPlugins()
 
     for (const p of plugins) {

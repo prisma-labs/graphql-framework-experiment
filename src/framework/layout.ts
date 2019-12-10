@@ -8,13 +8,15 @@ import {
 import * as Path from 'path'
 import * as fs from 'fs-jetpack'
 
+export const DEFAULT_BUILD_FOLDER_NAME = 'node_modules/.build'
+
 const log = pog.sub('layout')
 
 /**
  * Layout represents the important edges of the project to support things like
  * scaffolding, build, and dev against the correct paths.
  */
-export type Data = {
+export type ScanResult = {
   // build: {
   //   dir: string
   // }
@@ -51,6 +53,10 @@ export type Data = {
   // }
 }
 
+export type Data = ScanResult & {
+  buildOutput: string
+}
+
 export type Layout = Data & {
   /**
    * Property that aliases all the and only the data properties, makes it
@@ -62,12 +68,24 @@ export type Layout = Data & {
   sourcePath(subPath: string): string
 }
 
+type Options = {
+  buildOutput?: string
+}
+
+const optionDefaults = {
+  buildOutput: DEFAULT_BUILD_FOLDER_NAME,
+}
+
 /**
  * Perform a layout scan and return results with attached helper functions.
  */
-export async function create(): Promise<Layout> {
+export async function create(optionsGiven?: Options): Promise<Layout> {
+  // TODO lodash merge defaults or something
+  const options: Required<Options> = {
+    buildOutput: optionsGiven?.buildOutput ?? optionDefaults.buildOutput,
+  }
   const data = await scan()
-  return createFromData(data)
+  return createFromData({ ...data, buildOutput: options.buildOutput })
 }
 
 /**
@@ -90,7 +108,7 @@ export function createFromData(layoutData: Data): Layout {
  * Analyze the user's project files/folders for how conventions are being used
  * and where key modules exist.
  */
-export const scan = async (): Promise<Data> => {
+export const scan = async (): Promise<ScanResult> => {
   log('starting scan...')
   const maybeAppModule = await findAppModule()
   const maybeSchemaModules = findSchemaDirOrModules()
@@ -110,7 +128,7 @@ export const scan = async (): Promise<Data> => {
 
   const projectRoot = findProjectDir()
 
-  const result: Data = {
+  const result: ScanResult = {
     app:
       maybeAppModule === null
         ? ({ exists: false, path: maybeAppModule } as const)
