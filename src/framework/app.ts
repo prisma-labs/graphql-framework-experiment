@@ -2,14 +2,16 @@ import { ApolloServer } from 'apollo-server-express'
 import express from 'express'
 import * as fs from 'fs-jetpack'
 import * as nexus from 'nexus'
-import { requireSchemaModules, pog, findFile, stripExt } from '../utils'
+import { requireSchemaModules, pog, findFile } from '../utils'
 import { createNexusSingleton, createNexusConfig } from './nexus'
 import { typegenAutoConfig } from 'nexus/dist/core'
-import { Plugin } from './plugin'
+import { Plugin, RuntimeContributions } from './plugin'
 import { createPrismaPlugin, isPrismaEnabledSync } from './plugins'
 import { stripIndent, stripIndents } from 'common-tags'
 import { sendServerReadySignalToDevModeMaster } from './dev-mode'
 import * as singletonChecks from './singleton-checks'
+
+type RequiredValue<T> = T extends null ? never : T extends void ? never : T
 
 const log = pog.sub(__filename)
 
@@ -97,7 +99,7 @@ export function createApp(appConfig?: { types?: any }): App {
     makeSchema,
   } = createNexusSingleton()
 
-  const plugins: Plugin[] = []
+  const plugins: RuntimeContributions[] = []
 
   const contextContributors: ContextContributor<any>[] = []
 
@@ -108,7 +110,9 @@ export function createApp(appConfig?: { types?: any }): App {
     //   return api
     // },
     use(plugin) {
-      plugins.push(plugin)
+      if (plugin.runtime?.onInstall) {
+        plugins.push(plugin.runtime!.onInstall!())
+      }
       return api
     },
     addToContext(contextContributor) {

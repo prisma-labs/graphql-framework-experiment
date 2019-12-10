@@ -42,38 +42,54 @@ export const createPrismaPlugin: () => Plugin = () => {
   const nexusPrismaTypegenOutput = fs.path(
     'node_modules/@types/typegen-nexus-prisma/index.d.ts'
   )
-  const { Photon } = require('@prisma/photon')
-  const photon = new Photon()
 
   return {
     name: 'prisma',
-    context: {
-      create: _req => {
-        return { photon }
+    workflow: {
+      async onBuildStart() {
+        await runPrismaGenerators()
       },
-      typeGen: {
-        imports: [{ as: 'Photon', from: GENERATED_PHOTON_OUTPUT_PATH }],
-        fields: {
-          photon: 'Photon.Photon',
-        },
+      async onDevStart() {
+        await runPrismaGenerators()
       },
     },
-    nexus: {
-      plugins: [
-        nexusPrismaPlugin({
-          inputs: {
-            photon: GENERATED_PHOTON_OUTPUT_PATH,
+    runtime: {
+      onInstall() {
+        const { Photon } = require('@prisma/photon')
+        const photon = new Photon()
+
+        return {
+          context: {
+            create: _req => {
+              return { photon }
+            },
+            typeGen: {
+              imports: [{ as: 'Photon', from: GENERATED_PHOTON_OUTPUT_PATH }],
+              fields: {
+                photon: 'Photon.Photon',
+              },
+            },
           },
-          outputs: {
-            typegen: nexusPrismaTypegenOutput,
+          nexus: {
+            plugins: [
+              nexusPrismaPlugin({
+                inputs: {
+                  photon: GENERATED_PHOTON_OUTPUT_PATH,
+                },
+                outputs: {
+                  typegen: nexusPrismaTypegenOutput,
+                },
+                shouldGenerateArtifacts: shouldGenerateArtifacts(),
+                onUnknownFieldName: params =>
+                  renderUnknownFieldNameError(params),
+                onUnknownFieldType: params =>
+                  renderUnknownFieldTypeError(params),
+              } as OptionsWithHook),
+            ],
           },
-          shouldGenerateArtifacts: shouldGenerateArtifacts(),
-          onUnknownFieldName: params => renderUnknownFieldNameError(params),
-          onUnknownFieldType: params => renderUnknownFieldTypeError(params),
-        } as OptionsWithHook),
-      ],
+        }
+      },
     },
-    onBuild() {},
   }
 }
 
@@ -105,33 +121,6 @@ function renderUnknownFieldTypeError(params: UnknownFieldType) {
 
   console.log(`${intro}${stack}`)
 }
-
-// plugin()
-//   .onDevStart(() => {
-//     // generate prisma
-//   })
-//   .onBuildStart(() => {
-//     // generate prisma
-//   })
-//   .onInstall(() => {
-//   })
-
-// plugin((hooks) => {
-//   hooks.onDevStart(() => {})
-//   hooks.onBuildStart(() => {})
-//   // hooks.onInstall(() => {})
-
-//   return {
-//     name: 'prisma',
-//     context: {
-//       create: _req => {
-//         return { photon }
-//       },
-//       typeSourcePath: generatedContextTypePath,
-//       typeExportName: 'Context',
-//     },
-//   }
-// })
 
 /**
  * Check the project to find out if the user intends prisma to be enabled or
