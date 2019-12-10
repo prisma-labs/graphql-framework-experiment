@@ -1,6 +1,7 @@
 // TODO raise errors/feedback if the user has not supplied a photon generator
 // block in their PSL
 
+import * as proc from '../../utils/process'
 import * as Prisma from '@prisma/sdk'
 import chalk from 'chalk'
 import * as fs from 'fs-jetpack'
@@ -11,6 +12,7 @@ import { suggestionList } from '../../utils/levenstein'
 import { printStack } from '../../utils/stack/printStack'
 import { shouldGenerateArtifacts } from '../nexus'
 import { Plugin } from '../plugin'
+import { stripIndent } from 'common-tags'
 
 type UnknownFieldName = {
   error: Error
@@ -42,38 +44,165 @@ export const createPrismaPlugin: () => Plugin = () => {
   const nexusPrismaTypegenOutput = fs.path(
     'node_modules/@types/typegen-nexus-prisma/index.d.ts'
   )
-  const { Photon } = require('@prisma/photon')
-  const photon = new Photon()
 
   return {
     name: 'prisma',
-    context: {
-      create: _req => {
-        return { photon }
+    workflow: {
+      async onBuildStart() {
+        await runPrismaGenerators()
       },
-      typeGen: {
-        imports: [{ as: 'Photon', from: GENERATED_PHOTON_OUTPUT_PATH }],
-        fields: {
-          photon: 'Photon.Photon',
-        },
+      async onDevStart() {
+        await runPrismaGenerators()
+      },
+      async onCreateAfterScaffold(pumpkins) {
+        // TODO augment package.json to include pumpkins-plugin-prisma
+        await Promise.all([
+          fs.writeAsync(
+            'prisma/schema.prisma',
+            stripIndent`
+              datasource db {
+                provider = "sqlite"
+                url      = "file:dev.db"
+              }
+      
+              generator photon {
+                provider = "photonjs"
+              }
+      
+              model World {
+                id         Int     @id
+                name       String  @unique
+                population Float
+              }
+            `
+          ),
+
+          fs.writeAsync(
+            'prisma/seed.ts',
+            stripIndent`
+              import { Photon } from "@prisma/photon"
+      
+              const photon = new Photon()
+              
+              main()
+              
+              async function main() {
+                const result = await photon.worlds.create({
+                  data: {
+                    name: "Earth",
+                    population: 6_000_000_000
+                  }
+                })
+              
+                console.log("Seeded: %j", result)
+              
+                photon.disconnect()
+              }
+            `
+          ),
+
+          fs.writeAsync(
+            pumpkins.layout.sourcePath('schema.ts'),
+            stripIndent`
+              import { app } from "pumpkins"
+              import { stringArg } from "nexus"
+      
+              app.objectType({
+                name: "World",
+                definition(t) {
+                  t.model.id()
+                  t.model.name()
+                  t.model.population()
+                }
+              })
+      
+              app.queryType({
+                definition(t) {
+                  t.field("hello", {
+                    type: "World",
+                    args: {
+                      world: stringArg({ required: false })
+                    },
+                    async resolve(_root, args, ctx) {
+                      const worldToFindByName = args.world ?? 'Earth'
+                      const world = await ctx.photon.worlds.findOne({
+                        where: {
+                          name: worldToFindByName
+                        }
+                      })
+      
+                      if (!world) throw new Error(\`No such world named "\${args.world}"\`)
+      
+                      return world
+                    }
+                  })
+                }
+              })
+            `
+          ),
+        ])
+      },
+      async onCreateAfterDepInstall(pumpkins) {
+        pumpkins.log('initializing development database...')
+        await proc.run('yarn -s prisma2 lift save --create-db --name init')
+        await proc.run('yarn -s prisma2 lift up')
+
+        pumpkins.log('seeding data...')
+        await proc.run('yarn -s ts-node prisma/seed')
+      },
+      async onGenerateStart() {
+        await runPrismaGenerators()
+      },
+      onDevFileWatcherEvent(event, file) {
+        if (file.match(/.*schema\.prisma$/)) {
+          console.log(
+            chalk`{bgBlue INFO} Prisma Schema change detected, lifting...`
+          )
+          onDevModePrismaSchemaChange()
+        }
+      },
+      // TODO preferably we allow schema.prisma to be anywhere but they show up in
+      // migrations folder too and we don't know how to achieve semantic "anywhere
+      // but migrations folder"
+      watchFilePatterns: ['./schema.prisma', './prisma/schema.prisma'],
+    },
+    runtime: {
+      onInstall() {
+        const { Photon } = require('@prisma/photon')
+        const photon = new Photon()
+
+        return {
+          context: {
+            create: _req => {
+              return { photon }
+            },
+            typeGen: {
+              imports: [{ as: 'Photon', from: GENERATED_PHOTON_OUTPUT_PATH }],
+              fields: {
+                photon: 'Photon.Photon',
+              },
+            },
+          },
+          nexus: {
+            plugins: [
+              nexusPrismaPlugin({
+                inputs: {
+                  photon: GENERATED_PHOTON_OUTPUT_PATH,
+                },
+                outputs: {
+                  typegen: nexusPrismaTypegenOutput,
+                },
+                shouldGenerateArtifacts: shouldGenerateArtifacts(),
+                onUnknownFieldName: params =>
+                  renderUnknownFieldNameError(params),
+                onUnknownFieldType: params =>
+                  renderUnknownFieldTypeError(params),
+              } as OptionsWithHook),
+            ],
+          },
+        }
       },
     },
-    nexus: {
-      plugins: [
-        nexusPrismaPlugin({
-          inputs: {
-            photon: GENERATED_PHOTON_OUTPUT_PATH,
-          },
-          outputs: {
-            typegen: nexusPrismaTypegenOutput,
-          },
-          shouldGenerateArtifacts: shouldGenerateArtifacts(),
-          onUnknownFieldName: params => renderUnknownFieldNameError(params),
-          onUnknownFieldType: params => renderUnknownFieldTypeError(params),
-        } as OptionsWithHook),
-      ],
-    },
-    onBuild() {},
   }
 }
 
@@ -105,33 +234,6 @@ function renderUnknownFieldTypeError(params: UnknownFieldType) {
 
   console.log(`${intro}${stack}`)
 }
-
-// plugin()
-//   .onDevStart(() => {
-//     // generate prisma
-//   })
-//   .onBuildStart(() => {
-//     // generate prisma
-//   })
-//   .onInstall(() => {
-//   })
-
-// plugin((hooks) => {
-//   hooks.onDevStart(() => {})
-//   hooks.onBuildStart(() => {})
-//   // hooks.onInstall(() => {})
-
-//   return {
-//     name: 'prisma',
-//     context: {
-//       create: _req => {
-//         return { photon }
-//       },
-//       typeSourcePath: generatedContextTypePath,
-//       typeExportName: 'Context',
-//     },
-//   }
-// })
 
 /**
  * Check the project to find out if the user intends prisma to be enabled or

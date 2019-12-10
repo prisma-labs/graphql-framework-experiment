@@ -3,14 +3,15 @@ import { runPrismaGenerators } from '../../framework/plugins'
 import { createStartModuleContent } from '../../framework/start'
 import * as Layout from '../../framework/layout'
 import { Command } from '../helpers'
+import { loadPlugins } from '../helpers/utils'
 
 export class Generate implements Command {
   async parse() {
-    // const { flags } = this.parse(Generate)
+    const plugins = await loadPlugins()
 
-    // Handle Prisma integration
-    // TODO pluggable CLI
-    await runPrismaGenerators()
+    for (const p of plugins) {
+      await p.onGenerateStart?.()
+    }
 
     const layout = await Layout.create()
 

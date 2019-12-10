@@ -4,17 +4,29 @@ import React from 'react'
 import * as readline from 'readline'
 import { BUILD_FOLDER_NAME } from '../../constants'
 import * as Layout from '../../framework/layout'
-import { runPrismaGenerators } from '../../framework/plugins'
 import { createStartModuleContent } from '../../framework/start'
 import { findOrScaffoldTsConfig, pog } from '../../utils'
 import { clearConsole } from '../../utils/console'
 import { createWatcher } from '../../watcher'
-import { Command } from '../helpers'
+import { arg, Command, isError } from '../helpers'
+import { loadPlugins } from '../helpers/utils'
 
 const log = pog.sub('cli:dev')
 
+const DEV_ARGS = {
+  '--inspect-brk': Number,
+}
+
+type Args = typeof DEV_ARGS
+
 export class Dev implements Command {
-  async parse() {
+  async parse(argv: string[]) {
+    const args = arg(argv, DEV_ARGS)
+
+    if (isError(args)) {
+      return
+    }
+
     // Right now dev mode assumes a tty and renders according to its height and
     // width for example. This check is not strictly needed but keeps things
     // simple for now. When we remove this constraint we should also optimize
@@ -32,7 +44,11 @@ export class Dev implements Command {
     const layout = await Layout.create()
 
     await findOrScaffoldTsConfig(layout, BUILD_FOLDER_NAME)
-    await runPrismaGenerators()
+    const plugins = await loadPlugins()
+
+    for (const p of plugins) {
+      await p.onDevStart?.()
+    }
 
     // Setup ui/log toggling system
     let state:
@@ -88,23 +104,28 @@ export class Dev implements Command {
       }
     })
 
-    // TODO
-    // await runPrismaGenerators()
-
     const bootModule = createStartModuleContent({
       stage: 'dev',
       layout: layout,
       appPath: layout.app.path,
     })
 
+    const nodeArgs = []
+
+    if (args['--inspect-brk']) {
+      nodeArgs.push(`--inspect-brk=${args['--inspect-brk']}`)
+    }
+
     createWatcher({
+      plugins: plugins,
       layout,
       transpileOnly: true,
-      respawn: true,
+      respawn: args['--inspect-brk'] ? false : true,
       eval: {
         code: bootModule,
         fileName: 'start.js',
       },
+      nodeArgs,
       onEvent: e => {
         if (state.logMode && e.event === 'restart') {
           clearConsole()

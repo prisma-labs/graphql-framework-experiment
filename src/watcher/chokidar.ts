@@ -16,12 +16,14 @@ export type FileWatcher = chokidar.FSWatcher & {
   addSilently(path: string): void
 }
 
+export type FileWatcherEventCallback = (
+  eventName: 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir',
+  path: string,
+  stats?: fs.Stats
+) => void
+
 type FileWatcherOptions = chokidar.WatchOptions & {
-  onAll?: (
-    eventName: 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir',
-    path: string,
-    stats?: fs.Stats
-  ) => void
+  onAll?: FileWatcherEventCallback
 }
 
 const SILENT_EVENTS = ['add', 'addDir']

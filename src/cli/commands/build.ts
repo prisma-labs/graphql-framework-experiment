@@ -3,7 +3,6 @@ import * as fs from 'fs-jetpack'
 import ts from 'typescript'
 import { BUILD_FOLDER_NAME, START_MODULE_NAME } from '../../constants'
 import * as Layout from '../../framework/layout'
-import { runPrismaGenerators } from '../../framework/plugins'
 import { createStartModuleContent } from '../../framework/start'
 import {
   compile,
@@ -23,6 +22,7 @@ import {
 } from '../../utils/deploy-target'
 import { logger } from '../../utils/logger'
 import { arg, Command, isError } from '../helpers'
+import { loadPlugins } from '../helpers/utils'
 
 const log = pog.sub('cli:build')
 
@@ -50,8 +50,7 @@ export class Build implements Command {
       return this.help()
     }
 
-    // Handle Prisma integration
-    // TODO pluggable CLI
+    const plugins = await loadPlugins()
     const layout = await Layout.create()
 
     const target = normalizeTarget(args['--target'])
@@ -67,7 +66,10 @@ export class Build implements Command {
     }
 
     await findOrScaffoldTsConfig(layout, outDir)
-    await runPrismaGenerators()
+
+    for (const p of plugins) {
+      await p.onBuildStart?.()
+    }
 
     const tsProgram = createTSProgram(layout, outDir)
     const contextFieldTypes = extractContextTypes(tsProgram)
@@ -102,16 +104,16 @@ export class Build implements Command {
   }
 
   help() {
-    return `
-Usage: pumpkins build [flags]
+    return stripIndent`
+      Usage: pumpkins build [flags]
 
-Build a production-ready pumpkins server
+      Build a production-ready pumpkins server
 
-Flags:
-       -o, --output    Relative path to output directory
-       -t, --target    Enable custom build for some deployment platforms ("now")
-       -h,   --help    Show this help message
-`
+      Flags:
+            -o, --output    Relative path to output directory
+            -t, --target    Enable custom build for some deployment platforms ("now")
+            -h,   --help    Show this help message
+    `
   }
 }
 

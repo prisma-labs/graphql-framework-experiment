@@ -1,5 +1,6 @@
 import { ChildProcess, ForkOptions } from 'child_process'
 import { Layout } from '../framework/layout'
+import * as Plugin from '../framework/plugin'
 
 type EventRestart = {
   event: 'restart'
@@ -20,11 +21,7 @@ type EventReady = {
   event: 'ready'
 }
 
-type Events =
-  | EventRestart
-  | EventCompiled
-  | EventLogging
-  | EventReady
+type Events = EventRestart | EventCompiled | EventLogging | EventReady
 
 type OnEvent = (e: Events) => void
 
@@ -83,19 +80,20 @@ interface StringOpts {
   'ignore-watch'?: string[]
   interval?: string
   debounce?: string
+  nodeArgs?: string[]
 }
 
 export interface Opts extends BooleanOpts, StringOpts {
   layout: Layout
   log?: any
   watch?: string
-  priorNodeArgs?: string[]
   onEvent: OnEvent
   stdio?: ForkOptions['stdio']
   eval: {
     code: string
     fileName: string
   }
+  plugins: Plugin.WorkflowContributions[]
 }
 
 export interface Process extends ChildProcess {
