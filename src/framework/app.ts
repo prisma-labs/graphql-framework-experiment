@@ -330,6 +330,7 @@ const installGlobally = (app: App): App => {
     unionType,
     intArg,
     stringArg,
+    //TODO rest of the statics...
   } = app
 
   Object.assign(global, {
