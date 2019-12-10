@@ -298,6 +298,8 @@ export function createApp(appConfig?: { types?: any }): App {
     },
   }
 
+  // TODO find different heurisitc for this, prisma will be formally extracted
+  // from  core...
   if (isPrismaEnabledSync().enabled) {
     log(
       'enabling prisma plugin because detected prisma framework is being used on this project'

@@ -1,6 +1,7 @@
 // TODO raise errors/feedback if the user has not supplied a photon generator
 // block in their PSL
 
+import * as proc from '../../utils/process'
 import * as Prisma from '@prisma/sdk'
 import chalk from 'chalk'
 import * as fs from 'fs-jetpack'
@@ -11,6 +12,7 @@ import { suggestionList } from '../../utils/levenstein'
 import { printStack } from '../../utils/stack/printStack'
 import { shouldGenerateArtifacts } from '../nexus'
 import { Plugin } from '../plugin'
+import { stripIndent } from 'common-tags'
 
 type UnknownFieldName = {
   error: Error
@@ -50,6 +52,105 @@ export const createPrismaPlugin: () => Plugin = () => {
         await runPrismaGenerators()
       },
       async onDevStart() {
+        await runPrismaGenerators()
+      },
+      async onCreateAfterScaffold(pumpkins) {
+        // TODO augment package.json to include pumpkins-plugin-prisma
+        await Promise.all([
+          fs.writeAsync(
+            'prisma/schema.prisma',
+            stripIndent`
+              datasource db {
+                provider = "sqlite"
+                url      = "file:dev.db"
+              }
+      
+              generator photon {
+                provider = "photonjs"
+              }
+      
+              model World {
+                id         Int     @id
+                name       String  @unique
+                population Float
+              }
+            `
+          ),
+
+          fs.writeAsync(
+            'prisma/seed.ts',
+            stripIndent`
+              import { Photon } from "@prisma/photon"
+      
+              const photon = new Photon()
+              
+              main()
+              
+              async function main() {
+                const result = await photon.worlds.create({
+                  data: {
+                    name: "Earth",
+                    population: 6_000_000_000
+                  }
+                })
+              
+                console.log("Seeded: %j", result)
+              
+                photon.disconnect()
+              }
+            `
+          ),
+
+          fs.writeAsync(
+            pumpkins.layout.sourcePath('schema.ts'),
+            stripIndent`
+              import { app } from "pumpkins"
+              import { stringArg } from "nexus"
+      
+              app.objectType({
+                name: "World",
+                definition(t) {
+                  t.model.id()
+                  t.model.name()
+                  t.model.population()
+                }
+              })
+      
+              app.queryType({
+                definition(t) {
+                  t.field("hello", {
+                    type: "World",
+                    args: {
+                      world: stringArg({ required: false })
+                    },
+                    async resolve(_root, args, ctx) {
+                      const worldToFindByName = args.world ?? 'Earth'
+                      const world = await ctx.photon.worlds.findOne({
+                        where: {
+                          name: worldToFindByName
+                        }
+                      })
+      
+                      if (!world) throw new Error(\`No such world named "\${args.world}"\`)
+      
+                      return world
+                    }
+                  })
+                }
+              })
+            `
+          ),
+        ])
+      },
+      async onCreateAfterDepInstall(pumpkins) {
+        pumpkins.log('initializing development database...')
+        await proc.run('yarn -s prisma2 lift save --create-db --name init')
+        await proc.run('yarn -s prisma2 lift up')
+
+        pumpkins.log('seeding data...')
+        await proc.run('yarn -s ts-node prisma/seed')
+      },
+      async onGenerateStart() {
         await runPrismaGenerators()
       },
     },
