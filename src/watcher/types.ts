@@ -80,13 +80,13 @@ interface StringOpts {
   'ignore-watch'?: string[]
   interval?: string
   debounce?: string
+  nodeArgs?: string[]
 }
 
 export interface Opts extends BooleanOpts, StringOpts {
   layout: Layout
   log?: any
   watch?: string
-  priorNodeArgs?: string[]
   onEvent: OnEvent
   stdio?: ForkOptions['stdio']
   eval: {

@@ -23,7 +23,7 @@ export class __Default implements Command {
         break
       case 'pumpkins_project':
         log('detected CWD is within a pumpkins project, delegating to dev mode')
-        await new Dev().parse()
+        await new Dev().parse([])
         break
       case 'node_project':
         log('detected CWD is within a node but not pumpkins project, aborting')

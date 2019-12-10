@@ -230,15 +230,13 @@ function startRunner(
   log('using runner module at %s', runnerModulePath)
   log('using child-hook-path module at %s', childHookPath)
 
-  // This -r <module> is not doing what it seems. Its simply not called. It
-  // should be:
-  //
+  // TODO: childHook is no longer used at all
   // const child = fork('-r' [runnerModulePath, childHookPath], {
   //
   // We are leaving this as a future fix, refer to:
   // https://github.com/prisma/pumpkins/issues/76
-  //
-  const child = fork(runnerModulePath, ['-r', childHookPath], {
+  const cmd = [...(opts.nodeArgs || []), runnerModulePath]
+  const child = fork(cmd[0], cmd.slice(1), {
     cwd: process.cwd(),
     silent: true,
     env: {
