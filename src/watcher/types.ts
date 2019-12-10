@@ -1,5 +1,6 @@
 import { ChildProcess, ForkOptions } from 'child_process'
 import { Layout } from '../framework/layout'
+import { UnknownFieldType } from '../framework/plugins'
 
 type EventRestart = {
   event: 'restart'
@@ -20,11 +21,17 @@ type EventReady = {
   event: 'ready'
 }
 
+type EventUnknownFieldType = {
+  event: 'unknown-field-type'
+  data: UnknownFieldType
+}
+
 type Events =
   | EventRestart
   | EventCompiled
   | EventLogging
   | EventReady
+  | EventUnknownFieldType
 
 type OnEvent = (e: Events) => void
 

@@ -362,6 +362,13 @@ function startRunner(
     callbacks?.onError?.(m.willTerminate)
   })
 
+  ipc.on(child, 'unknownFieldType', (m: any) => {
+    opts.onEvent({
+      event: 'unknown-field-type',
+      data: m.unknownFieldType,
+    })
+  })
+
   ipc.on(child, SERVER_READY_SIGNAL, message => {
     log('got runner signal "%s"', SERVER_READY_SIGNAL)
     opts.onEvent({ event: SERVER_READY_SIGNAL })
