@@ -2,18 +2,24 @@ import * as fs from 'fs-jetpack'
 import * as path from 'path'
 import { pog } from '.'
 import { START_MODULE_NAME } from '../constants'
-import { Layout } from '../framework/layout'
+import { Layout, DEFAULT_BUILD_FOLDER_NAME } from '../framework/layout'
 import { logger } from './logger'
 import { findConfigFile } from './tsc'
 import { fatal } from './process'
 import { stripIndent } from 'common-tags'
+import chalk from 'chalk'
+import { PackageJson } from 'type-fest'
 
 const log = pog.sub(__filename)
 
-const SUPPORTED_DEPLOY_TARGETS = ['now'] as const
-const formattedSupportedDeployTargets = SUPPORTED_DEPLOY_TARGETS.map(
+/**
+ * If you add a new deploy target, please start by adding a new item to the `SUPPORTED_DEPLOY_TARGETS`
+ */
+const SUPPORTED_DEPLOY_TARGETS = ['now', 'heroku'] as const
+
+export const formattedSupportedDeployTargets = SUPPORTED_DEPLOY_TARGETS.map(
   t => `"${t}"`
-).join(',')
+).join(', ')
 
 type SupportedTargets = typeof SUPPORTED_DEPLOY_TARGETS[number]
 
@@ -41,6 +47,7 @@ export function normalizeTarget(
 
 const TARGET_TO_BUILD_OUTPUT: Record<SupportedTargets, string> = {
   now: 'dist',
+  heroku: DEFAULT_BUILD_FOLDER_NAME,
 }
 
 export function computeBuildOutputFromTarget(target: SupportedTargets | null) {
@@ -56,6 +63,7 @@ const TARGET_VALIDATORS: Record<
   (layout: Layout) => boolean
 > = {
   now: validateNow,
+  heroku: validateHeroku,
 }
 
 export function validateTarget(
@@ -81,6 +89,7 @@ function validateNow(layout: Layout): boolean {
   const startModulePath = `${layout.buildOutput}/${START_MODULE_NAME}.js`
   let isValid = true
 
+  // Make sure there's a now.json file
   if (!maybeNowJsonPath) {
     log('creating now.json because none exists yet')
     const packageJson = fs.read('package.json', 'json')
@@ -107,6 +116,7 @@ function validateNow(layout: Layout): boolean {
   } else {
     const nowJson: NowJson = fs.read(maybeNowJsonPath, 'json')
 
+    // Make sure the now.json file has the right `builds` values
     if (
       !nowJson.builds ||
       !nowJson.builds.find(
@@ -125,6 +135,7 @@ function validateNow(layout: Layout): boolean {
       isValid = false
     }
 
+    // Make sure the now.json file has a `routes` property
     if (!nowJson.routes) {
       logger.error(
         `We could not find a \`routes\` property in your \`now.json\` file.`
@@ -136,6 +147,7 @@ function validateNow(layout: Layout): boolean {
       isValid = false
     }
 
+    // Make sure the now.json file has the right `routes` values
     if (!nowJson.routes?.find(route => route.dest === startModulePath)) {
       logger.error(
         `We could not find a route property that redirects to your api in your \`now.json\` file.`
@@ -152,8 +164,113 @@ function validateNow(layout: Layout): boolean {
   return isValid
 }
 
+function validateHeroku(layout: Layout): boolean {
+  const nodeMajorVersion = Number(process.versions.node.split('.')[0])
+  const packageJsonPath = findConfigFile('package.json', { required: false })
+  let isValid = true
+
+  // Make sure there's a package.json file
+  if (!packageJsonPath) {
+    logger.error('We could not find a `package.json` file.')
+    isValid = false
+  } else {
+    const packageJsonContent = fs.read(packageJsonPath, 'json') as PackageJson
+
+    // Make sure there's an engine: { node: <version> } property set
+    // TODO: scaffold the `engines` property automatically
+    if (!packageJsonContent.engines?.node) {
+      logger.error(
+        'An `engines` property is needed in your `package.json` file.'
+      )
+      logger.error(
+        `Please add the following to your \`package.json\` file: "engines": { "node": "${nodeMajorVersion}.x" }`
+      )
+      isValid = false
+    }
+
+    // Warn if version used by heroku is different than local one
+    if (packageJsonContent.engines?.node) {
+      const packageJsonNodeVersion = Number(
+        packageJsonContent.engines.node.split('.')[0]
+      )
+      if (packageJsonNodeVersion !== nodeMajorVersion) {
+        logger.warn(
+          `Your local node version is different than the one that will be used by heroku (defined in your \`package.json\` file in the "engines" property).`
+        )
+        logger.warn(
+          `Local version: ${nodeMajorVersion}. Heroku version: ${packageJsonNodeVersion}`
+        )
+      }
+    }
+
+    // Make sure there's a build script
+    if (!packageJsonContent.scripts?.build) {
+      logger.error('A `build` script is needed in your `package.json` file.')
+      logger.error(
+        `Please add the following to your \`package.json\` file: "scripts": { "build": "pumpkins build -d heroku" }`
+      )
+      isValid = false
+    }
+
+    // Make sure the build script is using pumpkins build
+    if (
+      packageJsonContent.scripts?.build &&
+      !packageJsonContent.scripts.build.includes('pumpkins build')
+    ) {
+      logger.error(
+        'Please make sure your `build` script in your `package.json` file runs the command `pumpkins build -d heroku`'
+      )
+      isValid = false
+    }
+
+    // Make sure there's a start script
+    if (!packageJsonContent.scripts?.start) {
+      logger.error(
+        `Please add the following to your \`package.json\` file: "scripts": { "start": "node ${layout.buildOutput}" }`
+      )
+      isValid = false
+    }
+
+    // Make sure the start script starts the built server
+    if (
+      !packageJsonContent.scripts?.start?.includes(`node ${layout.buildOutput}`)
+    ) {
+      logger.error(
+        `Please make sure your \`start\` script points to your built server`
+      )
+      logger.error(`Found: "${packageJsonContent.scripts?.start}"`)
+      logger.error(`Expected: "node ${layout.buildOutput}"`)
+      isValid = false
+    }
+  }
+
+  return isValid
+}
+
 const TARGET_TO_POST_BUILD_MESSAGE: Record<SupportedTargets, string> = {
   now: `Please run \`now\` to deploy your pumpkins server. Your endpoint will be available at http://<id>.now.sh/graphql`,
+  heroku: `\
+Please run the following commands to deploy to heroku:
+
+$ heroku login
+${chalk.gray(`\
+Enter your Heroku credentials.
+...`)}
+
+$ heroku create
+${chalk.gray(`\
+Creating arcane-lowlands-8408... done, stack is cedar
+http://arcane-lowlands-8408.herokuapp.com/ | git@heroku.com:arcane-lowlands-8408.git'
+Git remote heroku added`)}
+
+$ git push heroku master
+${chalk.gray(`\
+...
+-----> Node.js app detected
+...
+-----> Launching... done
+       http://arcane-lowlands-8408.herokuapp.com deployed to Heroku`)}
+`,
 }
 
 export function logTargetPostBuildMessage(target: SupportedTargets): void {
