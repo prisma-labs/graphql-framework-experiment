@@ -1,7 +1,5 @@
 import { stripIndents } from 'common-tags'
 import Arg from 'arg'
-import * as Plugin from '../../framework/plugin'
-import * as Layout from '../../framework/layout'
 
 /**
  * format
@@ -29,16 +27,4 @@ export function arg<T extends Arg.Spec>(
  */
 export function isError(result: any): result is Error {
   return result instanceof Error
-}
-
-// HACK WIP
-
-import * as PrismaPlugin from 'pumpkins-plugin-prisma'
-
-/**
- * Load used plugins
- */
-export async function loadPlugins(layout: Layout.Layout): Promise<any[]> {
-  // return []
-  return [PrismaPlugin.create.loadWorkflowPlugin()]
 }

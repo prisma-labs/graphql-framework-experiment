@@ -1,4 +1,5 @@
 import { createApp } from './app'
+import * as Plugin from './plugin'
 
 // TODO Pending future discussion
 // declare global {
@@ -12,4 +13,3 @@ import { createApp } from './app'
 // }
 
 export const app = createApp()
-export { Plugin } from './plugin'

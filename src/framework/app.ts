@@ -6,7 +6,6 @@ import * as Plugin from './plugin'
 import { requireSchemaModules, pog, findFile } from '../utils'
 import { createNexusSingleton, createNexusConfig } from './nexus'
 import { typegenAutoConfig } from 'nexus/dist/core'
-import * as PrismaPlugin from 'pumpkins-plugin-prisma'
 import { stripIndent, stripIndents } from 'common-tags'
 import { sendServerReadySignalToDevModeMaster } from './dev-mode'
 import * as singletonChecks from './singleton-checks'
@@ -64,7 +63,7 @@ const defaultServerOptions: Required<ServerOptions> = {
 type ContextContributor<T extends {}> = (req: Express.Request) => T
 
 export type App = {
-  use: (plugin: Plugin.Plugin) => App
+  use: (plugin: Plugin.Driver) => App
   addToContext: <T extends {}>(contextContributor: ContextContributor<T>) => App
   // installGlobally: () => App
   server: {
@@ -101,7 +100,16 @@ export function createApp(appConfig?: { types?: any }): App {
 
   const plugins: Plugin.RuntimeContributions[] = []
 
+  // Automatically use all installed plugins
+  // TODO during build step we should turn this into static imports, not unlike
+  // the schema module imports system.
+  plugins.push(...Plugin.loadAllRuntimePluginsFromPackageJsonSync())
+
   const contextContributors: ContextContributor<any>[] = []
+
+  /**
+   * Auto-use all runtime plugins that are installed in the project
+   */
 
   const api: App = {
     // TODO bring this back pending future discussion
@@ -109,6 +117,9 @@ export function createApp(appConfig?: { types?: any }): App {
     //   installGlobally(api)
     //   return api
     // },
+    // TODO think hard about this api... When/why would it be used with auto-use
+    // import system? "Inproject" plugins? What is the right place to expose
+    // this? app.plugins.use() ?
     use(pluginDriver) {
       const plugin = pluginDriver.loadRuntimePlugin()
       if (plugin) {
@@ -299,18 +310,18 @@ export function createApp(appConfig?: { types?: any }): App {
     },
   }
 
-  // TODO find different heurisitc for this, prisma will be formally extracted
-  // from  core...
-  if (fs.find('prisma', { matching: 'schema.prisma' })) {
-    log(
-      'enabling prisma plugin because detected prisma framework is being used on this project'
-    )
-    api.use(PrismaPlugin.create)
-  } else {
-    log(
-      'disabling prisma plugin because detected prisma framework not being used on this project'
-    )
-  }
+  // // TODO find different heurisitc for this, prisma will be formally extracted
+  // // from  core...
+  // if (fs.find('prisma', { matching: 'schema.prisma' })) {
+  //   log(
+  //     'enabling prisma plugin because detected prisma framework is being used on this project'
+  //   )
+  //   api.use(PrismaPlugin.create)
+  // } else {
+  //   log(
+  //     'disabling prisma plugin because detected prisma framework not being used on this project'
+  //   )
+  // }
 
   return api
 }
