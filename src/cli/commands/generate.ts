@@ -1,5 +1,4 @@
 import { generateArtifacts } from '../../utils'
-import { runPrismaGenerators } from '../../framework/plugins'
 import { createStartModuleContent } from '../../framework/start'
 import * as Layout from '../../framework/layout'
 import { Command } from '../helpers'

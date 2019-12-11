@@ -6,7 +6,7 @@ import { requireSchemaModules, pog, findFile } from '../utils'
 import { createNexusSingleton, createNexusConfig } from './nexus'
 import { typegenAutoConfig } from 'nexus/dist/core'
 import { Plugin, RuntimeContributions } from './plugin'
-import { createPrismaPlugin, isPrismaEnabledSync } from './plugins'
+// import { isPrismaEnabledSync } from 'pumpkins-plugin-prisma'
 import { stripIndent, stripIndents } from 'common-tags'
 import { sendServerReadySignalToDevModeMaster } from './dev-mode'
 import * as singletonChecks from './singleton-checks'
@@ -300,16 +300,16 @@ export function createApp(appConfig?: { types?: any }): App {
 
   // TODO find different heurisitc for this, prisma will be formally extracted
   // from  core...
-  if (isPrismaEnabledSync().enabled) {
-    log(
-      'enabling prisma plugin because detected prisma framework is being used on this project'
-    )
-    api.use(createPrismaPlugin())
-  } else {
-    log(
-      'disabling prisma plugin because detected prisma framework not being used on this project'
-    )
-  }
+  // if (isPrismaEnabledSync().enabled) {
+  //   log(
+  //     'enabling prisma plugin because detected prisma framework is being used on this project'
+  //   )
+  //   // api.use(createPrismaPlugin())
+  // } else {
+  //   log(
+  //     'disabling prisma plugin because detected prisma framework not being used on this project'
+  //   )
+  // }
 
   return api
 }

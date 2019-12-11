@@ -31,12 +31,14 @@ export function isError(result: any): result is Error {
 }
 
 // HACK WIP
+// TODO
 
-import * as PrismaPlugin from '../../framework/plugins/prisma'
+// import * as PrismaPlugin from 'pumpkins-plugin-prisma'
 
 /**
  * Load used plugins
  */
 export async function loadPlugins(): Promise<Plugin.WorkflowContributions[]> {
-  return [PrismaPlugin.createPrismaPlugin().workflow!]
+  // return [PrismaPlugin.createPrismaPlugin().workflow!]
+  return []
 }

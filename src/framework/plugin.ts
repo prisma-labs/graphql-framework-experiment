@@ -1,16 +1,41 @@
 import { NexusConfig } from './nexus'
 import * as Layout from './layout'
 import * as Chokidar from '../watcher/chokidar'
+import { logger } from '../utils/logger'
+import { run, pog } from '../utils'
+import { Debugger } from 'debug'
 
 // TODO move to utils module
 type MaybePromise<T> = void | Promise<void>
+
+export type Controller = {
+  layout: Layout.Layout
+  log: typeof logger
+  run: typeof run
+  debug: Debugger
+}
+
+export function createController(layout: Layout.Layout): Controller {
+  return {
+    layout,
+    log: logger,
+    run: run,
+    debug: pog.sub('plugin'),
+  }
+}
+
+type Definer = (controller: Controller) => Plugin
+
+export function create(definer: Definer): Definer {
+  return definer
+}
 
 export type Plugin<C extends {} = any> = {
   // TODO We need to enforce the invariant that plugin names are unique or
   // adding randomization into where they are used for naming (e.g. context
   // import alias) or derive unique identifier from plugins off something else
   // like their package name.
-  name: string
+  // name: string
   workflow?: WorkflowContributions
   runtime?: {
     /**
