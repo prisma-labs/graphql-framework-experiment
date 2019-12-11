@@ -7,8 +7,6 @@
   },
   "bugs": "https://github.com/prisma-labs/pumpkins/issues",
   "dependencies": {
-    "@prisma/photon": "2.0.0-preview017.2",
-    "@prisma/sdk": "0.0.82",
     "apollo-server-express": "^2.9.11",
     "arg": "^4.1.1",
     "chalk": "^3.0.0",
@@ -20,8 +18,6 @@
     "graphql": "^14.5.8",
     "ink": "^2.5.0",
     "nexus": "^0.12.0-rc.5",
-    "nexus-prisma": "^0.6.2-next.1",
-    "prisma2": "2.0.0-preview017.2",
     "pumpkins-plugin-prisma": "^0.0.0-master.e9aae82",
     "react": "^16.12.0",
     "simple-git": "^1.126.0",
