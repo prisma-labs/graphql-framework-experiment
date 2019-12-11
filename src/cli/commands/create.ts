@@ -90,7 +90,7 @@ export async function run(optionsGiven?: Partial<Options>): Promise<void> {
     Try this query to get started: 
 
       query {
-        hello(world: "Earth") {
+        hello {
           name
           population
         }
