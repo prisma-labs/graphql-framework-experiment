@@ -19,6 +19,7 @@ import {
   logTargetPostBuildMessage,
   normalizeTarget,
   validateTarget,
+  formattedSupportedDeployTargets,
 } from '../../utils/deploy-target'
 import { logger } from '../../utils/logger'
 import { arg, Command, isError } from '../helpers'
@@ -112,7 +113,7 @@ export class Build implements Command {
 
       Flags:
         -o,     --output    Relative path to output directory
-        -d, --deployment    Enable custom build for some deployment platforms ("now")
+        -d, --deployment    Enable custom build for some deployment platforms (${formattedSupportedDeployTargets})
         -h,       --help    Show this help message
     `
   }
