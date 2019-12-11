@@ -6,7 +6,7 @@ import * as Plugin from './plugin'
 import { requireSchemaModules, pog, findFile } from '../utils'
 import { createNexusSingleton, createNexusConfig } from './nexus'
 import { typegenAutoConfig } from 'nexus/dist/core'
-import createPrismaPlugin from 'pumpkins-plugin-prisma'
+import * as PrismaPlugin from 'pumpkins-plugin-prisma'
 import { stripIndent, stripIndents } from 'common-tags'
 import { sendServerReadySignalToDevModeMaster } from './dev-mode'
 import * as singletonChecks from './singleton-checks'
@@ -305,7 +305,7 @@ export function createApp(appConfig?: { types?: any }): App {
     log(
       'enabling prisma plugin because detected prisma framework is being used on this project'
     )
-    api.use(createPrismaPlugin)
+    api.use(PrismaPlugin.create)
   } else {
     log(
       'disabling prisma plugin because detected prisma framework not being used on this project'
