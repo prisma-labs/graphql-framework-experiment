@@ -49,7 +49,6 @@ export class Build implements Command {
       return this.help()
     }
 
-    const plugins = await loadPlugins()
     const deploymentTarget = normalizeTarget(args['--deployment'])
     const layout = await Layout.create({
       buildOutput:
@@ -57,6 +56,7 @@ export class Build implements Command {
         computeBuildOutputFromTarget(deploymentTarget) ??
         undefined,
     })
+    const plugins = await loadPlugins(layout)
 
     if (deploymentTarget) {
       if (!validateTarget(deploymentTarget, layout)) {

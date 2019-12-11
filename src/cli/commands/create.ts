@@ -19,17 +19,6 @@ type Options = {
 }
 
 export async function run(optionsGiven?: Partial<Options>): Promise<void> {
-  const plugins = await loadPlugins()
-
-  const options: Options = {
-    ...optionsGiven,
-    projectName: CWDProjectNameOrGenerate(),
-  }
-
-  console.log('checking folder is in a clean state...')
-  await assertIsCleanSlate()
-
-  console.log('scaffolding project files...')
   const layout = Layout.createFromData({
     app: {
       exists: false,
@@ -41,6 +30,18 @@ export async function run(optionsGiven?: Partial<Options>): Promise<void> {
     schemaModules: ['app/schema.ts'],
     buildOutput: Layout.DEFAULT_BUILD_FOLDER_NAME,
   })
+  const plugins = await loadPlugins(layout)
+
+  const options: Options = {
+    ...optionsGiven,
+    projectName: CWDProjectNameOrGenerate(),
+  }
+
+  console.log('checking folder is in a clean state...')
+  await assertIsCleanSlate()
+
+  console.log('scaffolding project files...')
+
   await scaffoldNewProject(layout, options)
 
   const socket = {

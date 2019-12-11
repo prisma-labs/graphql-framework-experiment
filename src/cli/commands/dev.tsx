@@ -41,9 +41,9 @@ export class Dev implements Command {
     console.log(chalk`{bgBlue INFO} Starting dev server...`)
 
     const layout = await Layout.create()
+    const plugins = await loadPlugins(layout)
 
     await findOrScaffoldTsConfig(layout)
-    const plugins = await loadPlugins()
 
     for (const p of plugins) {
       await p.onDevStart?.()
