@@ -22,7 +22,7 @@
     "nexus": "^0.12.0-rc.5",
     "nexus-prisma": "^0.6.2-next.1",
     "prisma2": "2.0.0-preview017.2",
-    "pumpkins-plugin-prisma": "^0.0.0-master.e0f9cd2",
+    "pumpkins-plugin-prisma": "^0.0.0-pr.1.df52bf8",
     "react": "^16.12.0",
     "simple-git": "^1.126.0",
     "stacktrace-parser": "^0.1.7",

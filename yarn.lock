@@ -4830,10 +4830,10 @@ pump@^3.0.0:
     end-of-stream "^1.1.0"
     once "^1.3.1"
 
-pumpkins-plugin-prisma@^0.0.0-master.e0f9cd2:
-  version "0.0.0-master.e0f9cd2"
-  resolved "https://registry.yarnpkg.com/pumpkins-plugin-prisma/-/pumpkins-plugin-prisma-0.0.0-master.e0f9cd2.tgz#62ce80329d37e90adeb4719c24e3ed05d5aa553b"
-  integrity sha512-F2iiN7i8IviqSSR4FNR686YCY0JoYWpxG3mT07y4Nz5ClBOxf9RSo1m5o63ql3Vu7M5tDqw/h+DAURs4g+YOSg==
+pumpkins-plugin-prisma@^0.0.0-pr.1.df52bf8:
+  version "0.0.0-pr.1.df52bf8"
+  resolved "https://registry.yarnpkg.com/pumpkins-plugin-prisma/-/pumpkins-plugin-prisma-0.0.0-pr.1.df52bf8.tgz#65535a492bcabd84369ee3d2d12e54510846a9ed"
+  integrity sha512-/+s7L6/ENAbRlbtNsQLsdTutAdMu/JJsrMEso3lNxd8BnbLU88z6BiQEO1nmwtIKn0Pbl3xzKIJnjpXtso0rog==
   dependencies:
     chalk "^3.0.0"
     common-tags "^1.8.0"
