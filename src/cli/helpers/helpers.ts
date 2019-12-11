@@ -1,9 +1,5 @@
-import { stripIndents, stripIndent } from 'common-tags'
+import { stripIndents } from 'common-tags'
 import Arg from 'arg'
-import * as Layout from '../../framework/layout'
-import * as fs from 'fs-jetpack'
-import { fatal } from '../../utils'
-import * as Plugin from '../../framework/plugin'
 
 /**
  * format
