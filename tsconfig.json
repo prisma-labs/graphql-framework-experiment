@@ -7,7 +7,8 @@
     "allowJs": true,
     "resolveJsonModule": true,
     "jsx": "react",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "esModuleInterop": true
   },
   "include": ["src"]
 }
