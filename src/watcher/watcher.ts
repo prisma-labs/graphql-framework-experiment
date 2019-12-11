@@ -38,12 +38,14 @@ export function createWatcher(opts: Opts) {
   // schema anywhere except in migrations ignore it, that is hard right now.
 
   const pluginWatchContributions = opts.plugins.reduce(
-    (patterns, p) => patterns.concat(p.watchFilePatterns || []),
+    (patterns, p) =>
+      patterns.concat(p.dev.addToSettings.watchFilePatterns || []),
     [] as string[]
   )
 
   const pluginIgnoreContributions = opts.plugins.reduce(
-    (patterns, p) => patterns.concat(p.ignoreFilePatterns || []),
+    (patterns, p) =>
+      patterns.concat(p.dev.addToSettings.ignoreFilePatterns || []),
     [] as string[]
   )
 
@@ -52,7 +54,7 @@ export function createWatcher(opts: Opts) {
     ignoreInitial: true,
     onAll(event, file) {
       for (const p of opts.plugins) {
-        p.onDevFileWatcherEvent?.(event, file)
+        p.dev.onFileWatcherEvent?.(event, file)
       }
       restartRunner(file)
     },

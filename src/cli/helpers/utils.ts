@@ -1,6 +1,7 @@
 import { stripIndents } from 'common-tags'
 import Arg from 'arg'
 import * as Plugin from '../../framework/plugin'
+import * as Layout from '../../framework/layout'
 
 /**
  * format
@@ -32,11 +33,12 @@ export function isError(result: any): result is Error {
 
 // HACK WIP
 
-import * as PrismaPlugin from '../../framework/plugins/prisma'
+import * as PrismaPlugin from 'pumpkins-plugin-prisma'
 
 /**
  * Load used plugins
  */
-export async function loadPlugins(): Promise<Plugin.WorkflowContributions[]> {
-  return [PrismaPlugin.createPrismaPlugin().workflow!]
+export async function loadPlugins(layout: Layout.Layout): Promise<any[]> {
+  // return []
+  return [PrismaPlugin.create.loadWorkflowPlugin()]
 }

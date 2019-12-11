@@ -93,7 +93,7 @@ export interface Opts extends BooleanOpts, StringOpts {
     code: string
     fileName: string
   }
-  plugins: Plugin.WorkflowContributions[]
+  plugins: Plugin.WorkflowHooks[]
 }
 
 export interface Process extends ChildProcess {

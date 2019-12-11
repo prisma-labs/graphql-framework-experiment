@@ -2,11 +2,11 @@ import { ApolloServer } from 'apollo-server-express'
 import express from 'express'
 import * as fs from 'fs-jetpack'
 import * as nexus from 'nexus'
+import * as Plugin from './plugin'
 import { requireSchemaModules, pog, findFile } from '../utils'
 import { createNexusSingleton, createNexusConfig } from './nexus'
 import { typegenAutoConfig } from 'nexus/dist/core'
-import { Plugin, RuntimeContributions } from './plugin'
-import { createPrismaPlugin, isPrismaEnabledSync } from './plugins'
+import * as PrismaPlugin from 'pumpkins-plugin-prisma'
 import { stripIndent, stripIndents } from 'common-tags'
 import { sendServerReadySignalToDevModeMaster } from './dev-mode'
 import * as singletonChecks from './singleton-checks'
@@ -64,7 +64,7 @@ const defaultServerOptions: Required<ServerOptions> = {
 type ContextContributor<T extends {}> = (req: Express.Request) => T
 
 export type App = {
-  use: (plugin: Plugin<any>) => App
+  use: (plugin: Plugin.Plugin) => App
   addToContext: <T extends {}>(contextContributor: ContextContributor<T>) => App
   // installGlobally: () => App
   server: {
@@ -99,7 +99,7 @@ export function createApp(appConfig?: { types?: any }): App {
     makeSchema,
   } = createNexusSingleton()
 
-  const plugins: RuntimeContributions[] = []
+  const plugins: Plugin.RuntimeContributions[] = []
 
   const contextContributors: ContextContributor<any>[] = []
 
@@ -109,9 +109,10 @@ export function createApp(appConfig?: { types?: any }): App {
     //   installGlobally(api)
     //   return api
     // },
-    use(plugin) {
-      if (plugin.runtime?.onInstall) {
-        plugins.push(plugin.runtime!.onInstall!())
+    use(pluginDriver) {
+      const plugin = pluginDriver.loadRuntimePlugin()
+      if (plugin) {
+        plugins.push(plugin)
       }
       return api
     },
@@ -300,11 +301,11 @@ export function createApp(appConfig?: { types?: any }): App {
 
   // TODO find different heurisitc for this, prisma will be formally extracted
   // from  core...
-  if (isPrismaEnabledSync().enabled) {
+  if (fs.find('prisma', { matching: 'schema.prisma' })) {
     log(
       'enabling prisma plugin because detected prisma framework is being used on this project'
     )
-    api.use(createPrismaPlugin())
+    api.use(PrismaPlugin.create)
   } else {
     log(
       'disabling prisma plugin because detected prisma framework not being used on this project'
