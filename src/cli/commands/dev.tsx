@@ -8,7 +8,7 @@ import { findOrScaffoldTsConfig, pog } from '../../utils'
 import { clearConsole } from '../../utils/console'
 import { createWatcher } from '../../watcher'
 import { arg, Command, isError } from '../helpers'
-import { loadPlugins } from '../helpers/utils'
+import * as Plugin from '../../framework/plugin'
 
 const log = pog.sub('cli:dev')
 
@@ -41,12 +41,12 @@ export class Dev implements Command {
     console.log(chalk`{bgBlue INFO} Starting dev server...`)
 
     const layout = await Layout.create()
-    const plugins = await loadPlugins(layout)
+    const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
 
     await findOrScaffoldTsConfig(layout)
 
     for (const p of plugins) {
-      await p.onDevStart?.()
+      await p.dev.onStart?.()
     }
 
     // Setup ui/log toggling system

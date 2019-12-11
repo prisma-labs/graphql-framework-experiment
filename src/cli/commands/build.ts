@@ -23,7 +23,7 @@ import {
 } from '../../utils/deploy-target'
 import { logger } from '../../utils/logger'
 import { arg, Command, isError } from '../helpers'
-import { loadPlugins } from '../helpers/utils'
+import * as Plugin from '../../framework/plugin'
 
 const log = pog.sub('cli:build')
 
@@ -56,7 +56,7 @@ export class Build implements Command {
         computeBuildOutputFromTarget(deploymentTarget) ??
         undefined,
     })
-    const plugins = await loadPlugins(layout)
+    const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
 
     if (deploymentTarget) {
       if (!validateTarget(deploymentTarget, layout)) {
@@ -67,7 +67,7 @@ export class Build implements Command {
     await findOrScaffoldTsConfig(layout)
 
     for (const p of plugins) {
-      await p.onBuildStart?.()
+      await p.build.onStart?.()
     }
 
     const tsProgram = createTSProgram(layout)

@@ -1,5 +1,5 @@
 import chalk from 'chalk'
-import { arg, isError, format } from './utils'
+import { arg, isError, format } from './helpers'
 import { Version } from './Version'
 import { unknownCommand, HelpError, Command, Commands } from '.'
 

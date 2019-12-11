@@ -2,8 +2,12 @@ import { NexusConfig } from './nexus'
 import * as Layout from './layout'
 import * as Chokidar from '../watcher/chokidar'
 import { logger } from '../utils/logger'
-import { run, pog } from '../utils'
+import { run, pog, fatal } from '../utils'
 import { Debugger } from 'debug'
+import * as fs from 'fs-jetpack'
+import { stripIndent, stripIndents } from 'common-tags'
+import { plugin } from 'nexus'
+import { Runtime } from 'inspector'
 
 // TODO move to utils module
 type MaybePromise<T = void> = T | Promise<T>
@@ -31,7 +35,10 @@ export type WorkflowHooks = {
   }
 }
 
-type WorkflowPlugin = (hooks: WorkflowHooks, layout: Layout.Layout) => void
+export type WorkflowDefiner = (
+  hooks: WorkflowHooks,
+  layout: Layout.Layout
+) => void
 
 /**
  * The possible things that plugins can contribute toward at runtime. Everything
@@ -57,7 +64,7 @@ type RuntimePlugin = () => RuntimeContributions
 
 export type Lens = {
   runtime: CallbackRegistrar<RuntimePlugin>
-  workflow: CallbackRegistrar<WorkflowPlugin>
+  workflow: CallbackRegistrar<WorkflowDefiner>
   utils: {
     log: typeof logger
     run: typeof run
@@ -65,49 +72,61 @@ export type Lens = {
   }
 }
 
+type PluginPackage = {
+  create: DriverCreator
+}
+
 type Definer = (lens: Lens) => void
 
-export type PluginDriver = {
+export type DriverCreator = (pluginName: string) => Driver
+
+export type Driver = {
+  name: string
+  extendsWorkflow: boolean
+  extendsRuntime: boolean
   loadWorkflowPlugin: (layout: Layout.Layout) => WorkflowHooks
   loadRuntimePlugin: () => undefined | RuntimeContributions
 }
 
-export type Plugin = PluginDriver
-
-export function create(definer: Definer): PluginDriver {
-  let maybeWorkflowPlugin: undefined | WorkflowPlugin
+export function create(definer: Definer): DriverCreator {
+  let maybeWorkflowPlugin: undefined | WorkflowDefiner
   let maybeRuntimePlugin: undefined | RuntimePlugin
 
-  definer({
-    runtime(f) {
-      maybeRuntimePlugin = f
-    },
-    workflow(f) {
-      maybeWorkflowPlugin = f
-    },
-    utils: {
-      log: logger,
-      run: run,
-      debug: pog.sub('plugin'),
-    },
-  })
+  return pluginName => {
+    definer({
+      runtime(f) {
+        maybeRuntimePlugin = f
+      },
+      workflow(f) {
+        maybeWorkflowPlugin = f
+      },
+      utils: {
+        log: logger,
+        run: run,
+        debug: pog.sub(`plugin:${pluginName}`),
+      },
+    })
 
-  return {
-    loadWorkflowPlugin(layout) {
-      const hooks = {
-        create: {},
-        dev: {
-          addToSettings: {},
-        },
-        build: {},
-        generate: {},
-      }
-      maybeWorkflowPlugin?.(hooks, layout)
-      return hooks
-    },
-    loadRuntimePlugin() {
-      return maybeRuntimePlugin?.()
-    },
+    return {
+      name: pluginName,
+      extendsWorkflow: maybeWorkflowPlugin !== undefined,
+      extendsRuntime: maybeRuntimePlugin !== undefined,
+      loadWorkflowPlugin(layout) {
+        const hooks = {
+          create: {},
+          dev: {
+            addToSettings: {},
+          },
+          build: {},
+          generate: {},
+        }
+        maybeWorkflowPlugin?.(hooks, layout)
+        return hooks
+      },
+      loadRuntimePlugin() {
+        return maybeRuntimePlugin?.()
+      },
+    }
   }
 }
 
@@ -146,3 +165,172 @@ export function create(definer: Definer): PluginDriver {
 //   log: typeof console.log
 //   layout: Layout.Layout
 // }
+
+/**
+ * Load all pumpkins plugins installed into the project
+ */
+export async function loadAllFromPackageJson(): Promise<Driver[]> {
+  const packageJson: undefined | Record<string, any> = await fs.readAsync(
+    'package.json',
+    'json'
+  )
+  return __doLoadAllFromPackageJson(packageJson)
+}
+
+/**
+ * Load all pumpkins plugins installed into the project
+ */
+export function loadAllFromPackageJsonSync(): Driver[] {
+  const packageJson: undefined | Record<string, any> = fs.read(
+    'package.json',
+    'json'
+  )
+  return __doLoadAllFromPackageJson(packageJson)
+}
+
+/**
+ * Logic shared between sync/async variants.
+ */
+function __doLoadAllFromPackageJson(
+  packageJson: undefined | Record<string, any>
+): Driver[] {
+  if (packageJson === undefined) return []
+
+  const deps: Record<string, string> = packageJson?.dependencies ?? {}
+
+  const depNames = Object.keys(deps)
+  if (depNames.length === 0) return []
+
+  const pumpkinsPluginDepNames = depNames.filter(depName =>
+    depName.match(/^pumpkins-plugin-.+/)
+  )
+  if (pumpkinsPluginDepNames.length === 0) return []
+
+  const instantiatedPlugins: Driver[] = pumpkinsPluginDepNames.map(depName => {
+    const pluginName = parsePluginName(depName)! // filter above guarantees
+
+    let SomePlugin: PluginPackage
+    try {
+      SomePlugin = require(depName)
+    } catch (error) {
+      fatal(
+        stripIndent`
+        An error occured while importing the plugin ${pluginName}:
+
+        ${error}
+      `
+      )
+    }
+
+    if (typeof SomePlugin.create !== 'function') {
+      // TODO add link to issue tracker extracted from plugin's package.json
+      fatal(
+        `The plugin "${pluginName}" you are attempting to use does not export a "create" value.`
+      )
+    }
+
+    // Do symbol check to improve feedback upon install failure
+
+    let instantiatedPlugin: Driver
+    try {
+      instantiatedPlugin = SomePlugin.create(pluginName)
+    } catch (error) {
+      fatal(
+        stripIndent`
+          An error occured while loading the plugin "${pluginName}":
+
+          ${error}
+        `
+      )
+    }
+    return instantiatedPlugin
+  })
+
+  return instantiatedPlugins
+}
+
+/**
+ * Parse a pumpkins plugin package name to just the plugin name.
+ */
+export function parsePluginName(packageName: string): null | string {
+  const matchResult = packageName.match(/^pumpkins-plugin-(.+)/)
+
+  if (matchResult === null) return null
+
+  const pluginName = matchResult[1]
+
+  return pluginName
+}
+
+/**
+ * Load all workflow plugins that are installed into the project.
+ */
+export async function loadAllWorkflowPluginsFromPackageJson(
+  layout: Layout.Layout
+): Promise<WorkflowHooks[]> {
+  const plugins = await loadAllFromPackageJson()
+  const workflowHooks = plugins
+    .filter(driver => driver.extendsWorkflow)
+    .map(driver => {
+      let workflowComponent: WorkflowHooks
+      try {
+        workflowComponent = driver.loadWorkflowPlugin(layout)
+      } catch (error) {
+        fatal(
+          stripIndent`
+          Error while trying to load the workflow component of plugin "${driver.name}":
+          
+          ${error}
+        `
+        )
+      }
+      return workflowComponent
+    })
+
+  return workflowHooks
+}
+
+/**
+ * Load all runtime plugins that are installed into the project.
+ */
+export async function loadAllRuntimePluginsFromPackageJson(): Promise<
+  RuntimeContributions[]
+> {
+  const plugins = await loadAllFromPackageJson()
+  return __doLoadAllRuntimePluginsFromPackageJson(plugins)
+}
+
+/**
+ * Load all runtime plugins that are installed into the project.
+ */
+export function loadAllRuntimePluginsFromPackageJsonSync(): RuntimeContributions[] {
+  const plugins = loadAllFromPackageJsonSync()
+  return __doLoadAllRuntimePluginsFromPackageJson(plugins)
+}
+
+/**
+ * Logic shared between sync/async variants.
+ */
+export function __doLoadAllRuntimePluginsFromPackageJson(
+  plugins: Driver[]
+): RuntimeContributions[] {
+  const workflowHooks = plugins
+    .filter(driver => driver.extendsRuntime)
+    .map(driver => {
+      let runtimeContributions: RuntimeContributions
+      try {
+        runtimeContributions = driver.loadRuntimePlugin()! // guaranteed by above filter
+      } catch (error) {
+        fatal(
+          stripIndent`
+          Error while trying to load the runtime component of plugin "${driver.name}":
+          
+          ${error}
+        `
+        )
+      }
+      return runtimeContributions
+    })
+
+  return workflowHooks
+}

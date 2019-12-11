@@ -64,7 +64,7 @@ const defaultServerOptions: Required<ServerOptions> = {
 type ContextContributor<T extends {}> = (req: Express.Request) => T
 
 export type App = {
-  use: (plugin: Plugin.Plugin) => App
+  use: (plugin: Plugin.Driver) => App
   addToContext: <T extends {}>(contextContributor: ContextContributor<T>) => App
   // installGlobally: () => App
   server: {
@@ -101,7 +101,16 @@ export function createApp(appConfig?: { types?: any }): App {
 
   const plugins: Plugin.RuntimeContributions[] = []
 
+  // Automatically use all installed plugins
+  // TODO during build step we should turn this into static imports, not unlike
+  // the schema module imports system.
+  plugins.push(...Plugin.loadAllRuntimePluginsFromPackageJsonSync())
+
   const contextContributors: ContextContributor<any>[] = []
+
+  /**
+   * Auto-use all runtime plugins that are installed in the project
+   */
 
   const api: App = {
     // TODO bring this back pending future discussion
@@ -109,6 +118,9 @@ export function createApp(appConfig?: { types?: any }): App {
     //   installGlobally(api)
     //   return api
     // },
+    // TODO think hard about this api... When/why would it be used with auto-use
+    // import system? "Inproject" plugins? What is the right place to expose
+    // this? app.plugins.use() ?
     use(pluginDriver) {
       const plugin = pluginDriver.loadRuntimePlugin()
       if (plugin) {

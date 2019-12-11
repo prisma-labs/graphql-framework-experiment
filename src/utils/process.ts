@@ -5,7 +5,7 @@ import { logger } from './logger'
  * Log a meaningful semantic error message sans stack track and then crash
  * the program with exit code 1. Parameters are a passthrough to `console.error`.
  */
-export function fatal(format: string, ...vars: unknown[]): void {
+export function fatal(format: string, ...vars: unknown[]): never {
   logger.error(format, ...vars)
   process.exit(1)
 }

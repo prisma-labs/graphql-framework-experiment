@@ -6,7 +6,7 @@ import * as Layout from '../../framework/layout'
 import { createTSConfigContents, CWDProjectNameOrGenerate } from '../../utils'
 import * as proc from '../../utils/process'
 import { Command } from '../helpers'
-import { loadPlugins } from '../helpers/utils'
+import * as Plugin from '../../framework/plugin'
 
 export class Create implements Command {
   async parse() {
@@ -30,7 +30,7 @@ export async function run(optionsGiven?: Partial<Options>): Promise<void> {
     schemaModules: ['app/schema.ts'],
     buildOutput: Layout.DEFAULT_BUILD_FOLDER_NAME,
   })
-  const plugins = await loadPlugins(layout)
+  const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
 
   const options: Options = {
     ...optionsGiven,
@@ -44,13 +44,8 @@ export async function run(optionsGiven?: Partial<Options>): Promise<void> {
 
   await scaffoldNewProject(layout, options)
 
-  const socket = {
-    log: console.log,
-    layout,
-  }
-
   for (const p of plugins) {
-    await p.onCreateAfterScaffold?.(socket)
+    await p.create.onAfterScaffold?.()
   }
 
   console.log('installing dependencies... (this will take around ~30 seconds)')
@@ -59,7 +54,7 @@ export async function run(optionsGiven?: Partial<Options>): Promise<void> {
   console.log('running plugins...')
 
   for (const p of plugins) {
-    await p.onCreateAfterDepInstall?.(socket)
+    await p.create.onAfterDepInstall?.()
   }
 
   console.log('initializing git repo...')
