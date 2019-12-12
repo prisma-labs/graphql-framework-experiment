@@ -27,6 +27,9 @@ type Options = {
   projectName: string
 }
 
+/**
+ * TODO
+ */
 export async function run(optionsGiven?: Partial<Options>): Promise<void> {
   if (process.env.PUMPKINS_CREATE_HANDOFF === 'true') {
     await runLocalHandOff(optionsGiven)
@@ -35,6 +38,9 @@ export async function run(optionsGiven?: Partial<Options>): Promise<void> {
   }
 }
 
+/**
+ * TODO
+ */
 export async function runLocalHandOff(
   optionsGiven?: Partial<Options>
 ): Promise<void> {
@@ -52,6 +58,9 @@ export async function runLocalHandOff(
   }
 }
 
+/**
+ * TODO
+ */
 export async function runBootstrapper(
   optionsGiven?: Partial<Options>
 ): Promise<void> {
@@ -126,7 +135,7 @@ export async function runBootstrapper(
 
   // TODO spawn create hand off
   console.log('select a template to continue with...')
-  const templatingChild = spawn('yarn', ['-s', 'create'], {
+  const templatingChild = spawn('yarn', ['-s', 'pumpkins create'], {
     stdio: 'inherit',
     env: { ...process.env, PUMPKINS_CREATE_HANDOFF: 'true' },
   })
