@@ -280,7 +280,7 @@ async function scaffoldBaseFiles(layout: Layout.Layout, options: Options) {
       name: options.projectName,
       license: 'UNLICENSED',
       dependencies: {
-        pumpkins: 'master',
+        pumpkins: 'pr.161',
       },
       scripts: {
         dev: 'pumpkins dev',
