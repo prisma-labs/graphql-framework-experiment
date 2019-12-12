@@ -2,6 +2,7 @@ import * as nexus from 'nexus'
 import { generateSchema } from 'nexus/dist/core'
 import * as fs from 'fs-jetpack'
 import * as Nexus from 'nexus'
+import { connectionPlugin } from './plugins'
 
 export function createNexusSingleton() {
   const __types: any[] = []
@@ -116,6 +117,7 @@ export function createNexusConfig(): NexusConfig {
     shouldGenerateArtifacts: shouldGenerateArtifacts(),
     shouldExitAfterGenerateArtifacts: shouldExitAfterGenerateArtifacts(),
     types: [],
+    plugins: [connectionPlugin({ autoCursor: true })]
   }
 }
 
