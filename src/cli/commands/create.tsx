@@ -32,10 +32,15 @@ export async function run(optionsGiven?: Partial<Options>): Promise<void> {
 export async function runLocalHandOff(
   optionsGiven?: Partial<Options>
 ): Promise<void> {
-  // const layout = Layout.loadDataFromParentProcess()
-  // const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
+  const layout = Layout.loadDataFromParentProcess()
+  const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
+
+  // TOOD
   console.log('TODO display template selection')
-  // TODO
+
+  for (const p of plugins) {
+    await p.create.onAfterBaseSetup?.()
+  }
 }
 
 export async function runBootstrapper(
@@ -96,7 +101,8 @@ export async function runBootstrapper(
       'installing prisma plugin... (this will take around ~10 seconds)'
     )
     // TODO @latest
-    await proc.run('yarn add pumpkins-plugin-prisma@master', {
+    await proc.run('yarn add pumpkins-plugin-prisma@pr.2', {
+      // await proc.run('yarn add pumpkins-plugin-prisma@master', {
       // This allows installing prisma without a warning being emitted about there
       // being a missing prisma schema. For more detail refer to
       // https://prisma-company.slack.com/archives/CEYCG2MCN/p1575480721184700 and

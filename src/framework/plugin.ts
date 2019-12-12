@@ -16,8 +16,7 @@ type SideEffector = () => MaybePromise
 
 export type WorkflowHooks = {
   create: {
-    onAfterScaffold?: SideEffector
-    onAfterDepInstall?: SideEffector
+    onAfterBaseSetup?: SideEffector
   }
   dev: {
     onStart?: SideEffector
