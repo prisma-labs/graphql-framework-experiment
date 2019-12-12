@@ -32,8 +32,9 @@ export async function run(optionsGiven?: Partial<Options>): Promise<void> {
 export async function runLocalHandOff(
   optionsGiven?: Partial<Options>
 ): Promise<void> {
-  const layout = Layout.loadDataFromParentProcess()
-  const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
+  // const layout = Layout.loadDataFromParentProcess()
+  // const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
+  console.log('TODO display template selection')
   // TODO
 }
 
@@ -90,9 +91,11 @@ export async function runBootstrapper(
   console.log('installing pumpkins... (this will take around ~20 seconds)')
   await proc.run('yarn')
 
-  console.log('installing prisma plugin... (this will take around ~10 seconds)')
-  // TODO @latest
   if (usePrisma) {
+    console.log(
+      'installing prisma plugin... (this will take around ~10 seconds)'
+    )
+    // TODO @latest
     await proc.run('yarn add pumpkins-plugin-prisma@master', {
       // This allows installing prisma without a warning being emitted about there
       // being a missing prisma schema. For more detail refer to
@@ -104,8 +107,28 @@ export async function runBootstrapper(
     })
   }
 
-  console.log('select a template to continue with...')
   // TODO spawn create hand off
+  console.log('select a template to continue with...')
+  const templatingChild = spawn('yarn', ['-s', 'dev'], {
+    stdio: 'inherit',
+    env: { ...process.env, PUMPKINS_CREATE_HANDOFF: 'true' },
+  })
+  const [exitCode1, err1] = await new Promise<[number | null, Error | null]>(
+    resolve => {
+      // NOTE "exit" may fire after "error", in which case it will be a noop
+      // as per how promises work.
+
+      templatingChild.once('error', error => {
+        resolve([1, error])
+      })
+
+      templatingChild.once('exit', (exitCode, signal) => {
+        resolve([exitCode ?? 0, null])
+      })
+    }
+  )
+  if (err1) console.error(err1.message)
+  if (exitCode1) process.exit(exitCode1)
 
   console.log('initializing git repo...')
   const git = Git()
