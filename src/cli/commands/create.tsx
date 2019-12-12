@@ -126,7 +126,7 @@ export async function runBootstrapper(
 
   // TODO spawn create hand off
   console.log('select a template to continue with...')
-  const templatingChild = spawn('yarn', ['-s', 'dev'], {
+  const templatingChild = spawn('yarn', ['-s', 'create'], {
     stdio: 'inherit',
     env: { ...process.env, PUMPKINS_CREATE_HANDOFF: 'true' },
   })
