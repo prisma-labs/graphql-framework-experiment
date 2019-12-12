@@ -29,9 +29,7 @@ register({
 })
 
 log('starting context type extraction')
-const layout = Layout.createFromData(
-  JSON.parse(process.env.PUMPKINS_LAYOUT as string) as Layout.Data
-)
+const layout = Layout.loadDataFromParentProcess()
 const tsConfig = readTsConfig(layout)
 const program = ts.createIncrementalProgram({
   rootNames: tsConfig.fileNames,

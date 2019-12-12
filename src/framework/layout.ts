@@ -237,3 +237,19 @@ async function isEmptyCWD(): Promise<boolean> {
   const contents = await fs.listAsync()
   return contents === undefined || contents.length === 0
 }
+
+const ENV_VAR_DATA_NAME = 'PUMPKINS_LAYOUT'
+
+export function saveDataForChildProcess(
+  layout: Layout
+): { PUMPKINS_LAYOUT: string } {
+  return {
+    [ENV_VAR_DATA_NAME]: JSON.stringify(layout.data),
+  }
+}
+
+export function loadDataFromParentProcess(): Layout {
+  return createFromData(
+    JSON.parse(process.env[ENV_VAR_DATA_NAME] as string) as Data
+  )
+}

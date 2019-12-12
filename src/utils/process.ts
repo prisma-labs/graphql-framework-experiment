@@ -16,15 +16,20 @@ export type RunResult = {
   status: null | number
 }
 export type RunOptions = Omit<SpawnSyncOptions, 'encoding'> & {
+  envAdditions?: Record<string, string>
   require?: boolean
 }
 
 // TODO conditional type over require option
 export const run = (command: string, options?: RunOptions): RunResult => {
   const [name, ...args] = command.split(' ')
+  const env = options?.envAdditions
+    ? { ...process.env, ...options.envAdditions }
+    : process.env
   const { stderr, stdout, status } = spawnSync(name, args, {
     ...options,
     encoding: 'utf8',
+    env,
   })
 
   if (options?.require !== false && status !== 0) {
