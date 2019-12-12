@@ -113,7 +113,7 @@ export async function runBootstrapper(
   ).waitUntilExit()
 
   console.log('installing pumpkins... (this will take around ~20 seconds)')
-  await proc.run('yarn')
+  await proc.run('yarn', { require: true })
 
   if (usePrisma) {
     console.log(
@@ -129,31 +129,21 @@ export async function runBootstrapper(
       envAdditions: {
         SKIP_GENERATE: 'true',
       },
+      require: true,
     })
   }
 
-  // TODO spawn create hand off
   console.log('select a template to continue with...')
-  const templatingChild = spawn('yarn', ['-s', 'pumpkins', 'create'], {
-    stdio: 'inherit',
-    env: { ...process.env, PUMPKINS_CREATE_HANDOFF: 'true' },
-  })
-  const [exitCode1, err1] = await new Promise<[number | null, Error | null]>(
-    resolve => {
-      // NOTE "exit" may fire after "error", in which case it will be a noop
-      // as per how promises work.
-
-      templatingChild.once('error', error => {
-        resolve([1, error])
-      })
-
-      templatingChild.once('exit', (exitCode, signal) => {
-        resolve([exitCode ?? 0, null])
-      })
-    }
-  )
-  if (err1) console.error(err1.message)
-  if (exitCode1) process.exit(exitCode1)
+  await proc
+    .run('yarn -s pumpkins create', {
+      stdio: 'inherit',
+      envAdditions: { PUMPKINS_CREATE_HANDOFF: 'true' },
+      require: true,
+    })
+    .catch(error => {
+      console.error(error.message)
+      process.exit(error.exitCode ?? 1)
+    })
 
   console.log('initializing git repo...')
   const git = Git()
@@ -197,27 +187,16 @@ export async function runBootstrapper(
   // yarn dev`. This global-pumpkins-process-wrapping-local-pumpkins-process
   // is unique to bootstrapping situations.
 
-  const child = spawn('yarn', ['-s', 'dev'], { stdio: 'inherit' })
-
-  const [exitCode, err] = await new Promise<[number | null, Error | null]>(
-    resolve => {
-      // NOTE "exit" may fire after "error", in which case it will be a noop
-      // as per how promises work.
-
-      child.once('error', error => {
-        resolve([1, error])
-      })
-
-      child.once('exit', (exitCode, signal) => {
-        resolve([exitCode ?? 0, null])
-      })
-    }
-  )
-
-  // TODO integrate this concept into the cli runner proper. E.g. maybe be
-  // able to return { code, err }
-  if (err) console.error(err.message)
-  if (exitCode) process.exit(exitCode)
+  await proc
+    .run('yarn -s dev', {
+      stdio: 'inherit',
+      envAdditions: { PUMPKINS_CREATE_HANDOFF: 'true' },
+      require: true,
+    })
+    .catch(error => {
+      console.error(error.message)
+      process.exit(error.exitCode ?? 1)
+    })
 }
 
 /**
