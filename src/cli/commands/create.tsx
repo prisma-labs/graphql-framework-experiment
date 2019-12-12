@@ -50,8 +50,7 @@ export async function runLocalHandOff(
   const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
   log('plugins %O', plugins)
 
-  // TOOD
-  console.log('TODO select a template...')
+  // TODO select a template
 
   for (const p of plugins) {
     await p.create.onAfterBaseSetup?.()
