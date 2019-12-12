@@ -2,12 +2,10 @@ import { NexusConfig } from './nexus'
 import * as Layout from './layout'
 import * as Chokidar from '../watcher/chokidar'
 import { logger } from '../utils/logger'
-import { run, pog, fatal } from '../utils'
+import { runSync, pog, fatal, run } from '../utils'
 import { Debugger } from 'debug'
 import * as fs from 'fs-jetpack'
-import { stripIndent, stripIndents } from 'common-tags'
-import { plugin } from 'nexus'
-import { Runtime } from 'inspector'
+import { stripIndent } from 'common-tags'
 
 // TODO move to utils module
 type MaybePromise<T = void> = T | Promise<T>
@@ -66,6 +64,7 @@ export type Lens = {
   workflow: CallbackRegistrar<WorkflowDefiner>
   utils: {
     log: typeof logger
+    runSync: typeof runSync
     run: typeof run
     debug: Debugger
   }
@@ -101,7 +100,8 @@ export function create(definer: Definer): DriverCreator {
       },
       utils: {
         log: logger,
-        run: run,
+        run,
+        runSync,
         debug: pog.sub(`plugin:${pluginName}`),
       },
     })
