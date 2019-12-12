@@ -15,6 +15,7 @@ export type RunResult = {
   stdout: string
   status: null | number
 }
+
 export type RunOptions = Omit<SpawnSyncOptions, 'encoding'> & {
   envAdditions?: Record<string, string>
   require?: boolean
