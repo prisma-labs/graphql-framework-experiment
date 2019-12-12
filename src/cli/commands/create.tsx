@@ -1,5 +1,4 @@
 import React from 'react'
-import { spawn } from 'child_process'
 import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import Git from 'simple-git/promise'
@@ -257,17 +256,17 @@ async function helloWorldTemplate(layout: Layout.Layout) {
  * Scaffold a new pumpkins project from scratch
  */
 async function scaffoldBaseFiles(layout: Layout.Layout, options: Options) {
-  // TODO eventually `master` should become `latest`
   // TODO Template selector?
   // TODO given that we're scaffolding, we know the layout ahead of time. We
   // should take advantage of that, e.g. precompute layout data
   const appEntrypointPath = layout.sourcePath('schema.ts')
+  const thisPumpkinsVersion = require('../../../package.json').version as string
   await Promise.all([
     fs.writeAsync('package.json', {
       name: options.projectName,
       license: 'UNLICENSED',
       dependencies: {
-        pumpkins: 'master',
+        pumpkins: `^${thisPumpkinsVersion}`,
       },
       scripts: {
         dev: 'pumpkins dev',
