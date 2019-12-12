@@ -36,6 +36,9 @@ export class __Default implements Command {
         // We can get the user on the happy path by asking them for a project
         // name and then changing into that directory.
         const projectName = generateProjectName()
+        console.log(
+          `creating ./${projectName} where all subsequent work will occur`
+        )
         await fs.dirAsync(projectName)
         process.chdir(fs.path(projectName))
         await run({ projectName })

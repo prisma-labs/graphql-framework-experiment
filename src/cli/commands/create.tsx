@@ -1,12 +1,21 @@
+import React from 'react'
 import { spawn } from 'child_process'
 import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import Git from 'simple-git/promise'
 import * as Layout from '../../framework/layout'
-import { createTSConfigContents, CWDProjectNameOrGenerate } from '../../utils'
+import {
+  createTSConfigContents,
+  CWDProjectNameOrGenerate,
+  pog,
+} from '../../utils'
 import * as proc from '../../utils/process'
 import { Command } from '../helpers'
 import * as Plugin from '../../framework/plugin'
+import { render, AppContext } from 'ink'
+import SelectInput from 'ink-select-input'
+
+const log = pog.sub('cli:create')
 
 export class Create implements Command {
   async parse() {
@@ -18,7 +27,46 @@ type Options = {
   projectName: string
 }
 
+/**
+ * TODO
+ */
 export async function run(optionsGiven?: Partial<Options>): Promise<void> {
+  if (process.env.PUMPKINS_CREATE_HANDOFF === 'true') {
+    await runLocalHandOff(optionsGiven)
+  } else {
+    await runBootstrapper(optionsGiven)
+  }
+}
+
+/**
+ * TODO
+ */
+export async function runLocalHandOff(
+  optionsGiven?: Partial<Options>
+): Promise<void> {
+  log('start local handoff')
+
+  const layout = await Layout.loadDataFromParentProcess()
+  const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
+  log('plugins %O', plugins)
+
+  // TODO select a template
+
+  for (const p of plugins) {
+    await p.create.onAfterBaseSetup?.()
+  }
+}
+
+/**
+ * TODO
+ */
+export async function runBootstrapper(
+  optionsGiven?: Partial<Options>
+): Promise<void> {
+  log('start bootstrapper')
+
+  // TODO given the presence of plugin templates it does not make sense anymore
+  // for an assumpton about how the layout is going to look
   const layout = Layout.createFromData({
     app: {
       exists: false,
@@ -30,7 +78,7 @@ export async function run(optionsGiven?: Partial<Options>): Promise<void> {
     schemaModules: ['app/schema.ts'],
     buildOutput: Layout.DEFAULT_BUILD_FOLDER_NAME,
   })
-  const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
+  Object.assign(process.env, Layout.saveDataForChildProcess(layout))
 
   const options: Options = {
     ...optionsGiven,
@@ -40,22 +88,72 @@ export async function run(optionsGiven?: Partial<Options>): Promise<void> {
   console.log('checking folder is in a clean state...')
   await assertIsCleanSlate()
 
-  console.log('scaffolding project files...')
+  console.log('scaffolding base project files...')
+  await scaffoldBaseFiles(layout, options)
 
-  await scaffoldNewProject(layout, options)
+  console.log('Would you like to use Prisma? (https://prisma.io)')
+  // TODO in the future scan npm registry for pumpkins plugins, organize by
+  // github stars, and so on.
+  let usePrisma = true
+  await render(
+    <AppContext.Consumer>
+      {({ exit }) => (
+        <SelectInput
+          items={[
+            { label: 'yes', value: 'true' },
+            { label: 'no', value: 'false' },
+          ]}
+          onSelect={item => {
+            usePrisma = item.value === 'true'
+            exit()
+          }}
+        ></SelectInput>
+      )}
+    </AppContext.Consumer>
+  ).waitUntilExit()
 
-  for (const p of plugins) {
-    await p.create.onAfterScaffold?.()
-  }
-
-  console.log('installing dependencies... (this will take around ~30 seconds)')
+  console.log('installing pumpkins... (this will take around ~20 seconds)')
   await proc.run('yarn')
 
-  console.log('running plugins...')
-
-  for (const p of plugins) {
-    await p.create.onAfterDepInstall?.()
+  if (usePrisma) {
+    console.log(
+      'installing prisma plugin... (this will take around ~10 seconds)'
+    )
+    // TODO @latest
+    await proc.run('yarn add pumpkins-plugin-prisma@pr.2', {
+      // await proc.run('yarn add pumpkins-plugin-prisma@master', {
+      // This allows installing prisma without a warning being emitted about there
+      // being a missing prisma schema. For more detail refer to
+      // https://prisma-company.slack.com/archives/CEYCG2MCN/p1575480721184700 and
+      // https://github.com/prisma/photonjs/blob/master/packages/photon/scripts/generate.js#L67
+      envAdditions: {
+        SKIP_GENERATE: 'true',
+      },
+    })
   }
+
+  // TODO spawn create hand off
+  console.log('select a template to continue with...')
+  const templatingChild = spawn('yarn', ['-s', 'pumpkins', 'create'], {
+    stdio: 'inherit',
+    env: { ...process.env, PUMPKINS_CREATE_HANDOFF: 'true' },
+  })
+  const [exitCode1, err1] = await new Promise<[number | null, Error | null]>(
+    resolve => {
+      // NOTE "exit" may fire after "error", in which case it will be a noop
+      // as per how promises work.
+
+      templatingChild.once('error', error => {
+        resolve([1, error])
+      })
+
+      templatingChild.once('exit', (exitCode, signal) => {
+        resolve([exitCode ?? 0, null])
+      })
+    }
+  )
+  if (err1) console.error(err1.message)
+  if (exitCode1) process.exit(exitCode1)
 
   console.log('initializing git repo...')
   const git = Git()
@@ -136,10 +234,50 @@ async function assertIsCleanSlate() {
   }
 }
 
+async function helloWorldTemplate(layout: Layout.Layout) {
+  await fs.writeAsync(
+    layout.sourcePath('schema.ts'),
+    stripIndent`
+      import { app } from "pumpkins"
+
+      app.objectType({
+        name: "World",
+        definition(t) {
+          t.id('id')
+          t.string('name')
+          t.float('population')
+        }
+      })
+
+      app.queryType({
+        definition(t) {
+          t.field("hello", {
+            type: "World",
+            args: {
+              world: app.stringArg({ required: false })
+            },
+            async resolve(_root, args, ctx) {
+              const worldToFindByName = args.world ?? 'Earth'
+              const world = {
+                Earth: { id: '1', population: 6_000_000, name: 'Earth' },
+                Mars: { id: '2', population: 0, name: 'Mars' },
+              }[worldToFindByName]
+
+              if (!world) throw new Error(\`No such world named "\${args.world}"\`)
+
+              return world
+            }
+          })
+        }
+      })
+    `
+  )
+}
+
 /**
  * Scaffold a new pumpkins project from scratch
  */
-async function scaffoldNewProject(layout: Layout.Layout, options: Options) {
+async function scaffoldBaseFiles(layout: Layout.Layout, options: Options) {
   // TODO eventually `master` should become `latest`
   // TODO Template selector?
   // TODO given that we're scaffolding, we know the layout ahead of time. We
@@ -150,7 +288,7 @@ async function scaffoldNewProject(layout: Layout.Layout, options: Options) {
       name: options.projectName,
       license: 'UNLICENSED',
       dependencies: {
-        pumpkins: 'master',
+        pumpkins: 'pr.161',
       },
       scripts: {
         dev: 'pumpkins dev',
@@ -162,44 +300,6 @@ async function scaffoldNewProject(layout: Layout.Layout, options: Options) {
     fs.writeAsync('tsconfig.json', createTSConfigContents(layout)),
 
     fs.writeAsync(
-      appEntrypointPath,
-      stripIndent`
-        import { app } from "pumpkins"
-
-        app.objectType({
-          name: "World",
-          definition(t) {
-            t.id('id')
-            t.string('name')
-            t.float('population')
-          }
-        })
-
-        app.queryType({
-          definition(t) {
-            t.field("hello", {
-              type: "World",
-              args: {
-                world: app.stringArg({ required: false })
-              },
-              async resolve(_root, args, ctx) {
-                const worldToFindByName = args.world ?? 'Earth'
-                const world = {
-                  Earth: { id: '1', population: 6_000_000, name: 'Earth' },
-                  Mars: { id: '2', population: 0, name: 'Mars' },
-                }[worldToFindByName]
-
-                if (!world) throw new Error(\`No such world named "\${args.world}"\`)
-
-                return world
-              }
-            })
-          }
-        })
-      `
-    ),
-
-    fs.writeAsync(
       '.vscode/launch.json',
       stripIndent`
         {
@@ -209,7 +309,7 @@ async function scaffoldNewProject(layout: Layout.Layout, options: Options) {
             {
               "type": "node",
               "request": "launch",
-              "name": "Debug Pumpkins Server",
+              "name": "Debug Pumpkins App",
               "protocol": "inspector",
               "runtimeExecutable": "\${workspaceRoot}/node_modules/.bin/pumpkins",
               "runtimeArgs": ["dev"],
