@@ -80,10 +80,11 @@ export async function runBootstrapper(
   })
   Object.assign(process.env, Layout.saveDataForChildProcess(layout))
 
+  // TODO options given will always be overriden...
   const options: Options = {
     ...optionsGiven,
     projectName: CWDProjectNameOrGenerate(),
-    pumpkinsVersion: `^${require('../../../package.json').version}`,
+    pumpkinsVersion: require('../../../package.json').version,
   }
 
   console.log('checking folder is in a clean state...')

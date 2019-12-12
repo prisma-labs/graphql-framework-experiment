@@ -66,6 +66,7 @@
     "build": "yarn -s clean && tsc -b",
     "build:doc": "doctoc README.md --notitle",
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "postpublish": "yarn -s clean",
     "prepublishOnly": "yarn -s build",
     "test": "jest --verbose --testTimeout 120000",
     "test:dev": "jest --watch --verbose --testTimeout 120000",
