@@ -8,7 +8,7 @@ import { createTSConfigContents, CWDProjectNameOrGenerate } from '../../utils'
 import * as proc from '../../utils/process'
 import { Command } from '../helpers'
 import * as Plugin from '../../framework/plugin'
-import { render } from 'ink'
+import { render, AppContext } from 'ink'
 import SelectInput from 'ink-select-input'
 
 export class Create implements Command {
@@ -66,20 +66,25 @@ export async function runBootstrapper(
   console.log('scaffolding base project files...')
   await scaffoldBaseFiles(layout, options)
 
-  console.log('select plugins to add to your project...')
+  console.log('Would you like to use Prisma? (https://prisma.io)')
   // TODO in the future scan npm registry for pumpkins plugins, organize by
   // github stars, and so on.
-  let usePrisma: boolean
+  let usePrisma = true
   await render(
-    <SelectInput
-      items={[
-        { label: 'yes', value: 'true' },
-        { label: 'no', value: 'false' },
-      ]}
-      onSelect={item => {
-        usePrisma = item.value === 'true'
-      }}
-    ></SelectInput>
+    <AppContext.Consumer>
+      {({ exit }) => (
+        <SelectInput
+          items={[
+            { label: 'yes', value: 'true' },
+            { label: 'no', value: 'false' },
+          ]}
+          onSelect={item => {
+            usePrisma = item.value === 'true'
+            exit()
+          }}
+        ></SelectInput>
+      )}
+    </AppContext.Consumer>
   ).waitUntilExit()
 
   console.log('installing pumpkins... (this will take around ~20 seconds)')
@@ -87,15 +92,17 @@ export async function runBootstrapper(
 
   console.log('installing prisma plugin... (this will take around ~10 seconds)')
   // TODO @latest
-  await proc.run('yarn add pumpkins-prisma-plugin@master', {
-    // This allows installing prisma without a warning being emitted about there
-    // being a missing prisma schema. For more detail refer to
-    // https://prisma-company.slack.com/archives/CEYCG2MCN/p1575480721184700 and
-    // https://github.com/prisma/photonjs/blob/master/packages/photon/scripts/generate.js#L67
-    envAdditions: {
-      SKIP_GENERATE: 'true',
-    },
-  })
+  if (usePrisma) {
+    await proc.run('yarn add pumpkins-plugin-prisma@master', {
+      // This allows installing prisma without a warning being emitted about there
+      // being a missing prisma schema. For more detail refer to
+      // https://prisma-company.slack.com/archives/CEYCG2MCN/p1575480721184700 and
+      // https://github.com/prisma/photonjs/blob/master/packages/photon/scripts/generate.js#L67
+      envAdditions: {
+        SKIP_GENERATE: 'true',
+      },
+    })
+  }
 
   console.log('select a template to continue with...')
   // TODO spawn create hand off
