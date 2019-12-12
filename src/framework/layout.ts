@@ -248,8 +248,14 @@ export function saveDataForChildProcess(
   }
 }
 
-export function loadDataFromParentProcess(): Layout {
-  return createFromData(
-    JSON.parse(process.env[ENV_VAR_DATA_NAME] as string) as Data
-  )
+export async function loadDataFromParentProcess(): Promise<Layout> {
+  const savedData: undefined | string = process.env[ENV_VAR_DATA_NAME]
+  if (!savedData) {
+    log(
+      'WARNING an attempt to load saved layout data was made but no serialized data was found in the environment. This may represent a bug. Layout is being re-calculated as a fallback solution. This should result in the same layout data (if not, another probably bug, compounding confusion) but at least adds latentency to user experience.'
+    )
+    return create({}) // todo no build output...
+  } else {
+    return createFromData(JSON.parse(savedData) as Data)
+  }
 }

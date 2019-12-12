@@ -46,7 +46,7 @@ export async function runLocalHandOff(
 ): Promise<void> {
   log('start local handoff')
 
-  const layout = Layout.loadDataFromParentProcess()
+  const layout = await Layout.loadDataFromParentProcess()
   const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
   log('plugins %O', plugins)
 
