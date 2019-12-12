@@ -24,6 +24,7 @@ export class Create implements Command {
 
 type Options = {
   projectName: string
+  pumpkinsVersion: string
 }
 
 /**
@@ -82,6 +83,7 @@ export async function runBootstrapper(
   const options: Options = {
     ...optionsGiven,
     projectName: CWDProjectNameOrGenerate(),
+    pumpkinsVersion: `^${require('../../../package.json').version}`,
   }
 
   console.log('checking folder is in a clean state...')
@@ -111,7 +113,9 @@ export async function runBootstrapper(
     </AppContext.Consumer>
   ).waitUntilExit()
 
-  console.log('installing pumpkins... (this will take around ~20 seconds)')
+  console.log(
+    `installing pumpkins@${options.pumpkinsVersion}... (this will take around ~20 seconds)`
+  )
   await proc.run('yarn', { require: true })
 
   if (usePrisma) {
@@ -260,13 +264,12 @@ async function scaffoldBaseFiles(layout: Layout.Layout, options: Options) {
   // TODO given that we're scaffolding, we know the layout ahead of time. We
   // should take advantage of that, e.g. precompute layout data
   const appEntrypointPath = layout.sourcePath('schema.ts')
-  const thisPumpkinsVersion = require('../../../package.json').version as string
   await Promise.all([
     fs.writeAsync('package.json', {
       name: options.projectName,
       license: 'UNLICENSED',
       dependencies: {
-        pumpkins: `^${thisPumpkinsVersion}`,
+        pumpkins: options.pumpkinsVersion,
       },
       scripts: {
         dev: 'pumpkins dev',
