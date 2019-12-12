@@ -120,7 +120,7 @@ export async function runBootstrapper(
       'installing prisma plugin... (this will take around ~10 seconds)'
     )
     // TODO @latest
-    await proc.run('yarn add pumpkins-plugin-prisma@pr.2', {
+    await proc.run('yarn add pumpkins-plugin-prisma@master', {
       // await proc.run('yarn add pumpkins-plugin-prisma@master', {
       // This allows installing prisma without a warning being emitted about there
       // being a missing prisma schema. For more detail refer to
@@ -288,7 +288,7 @@ async function scaffoldBaseFiles(layout: Layout.Layout, options: Options) {
       name: options.projectName,
       license: 'UNLICENSED',
       dependencies: {
-        pumpkins: 'pr.161',
+        pumpkins: 'master',
       },
       scripts: {
         dev: 'pumpkins dev',
