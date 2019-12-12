@@ -4,12 +4,18 @@ import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import Git from 'simple-git/promise'
 import * as Layout from '../../framework/layout'
-import { createTSConfigContents, CWDProjectNameOrGenerate } from '../../utils'
+import {
+  createTSConfigContents,
+  CWDProjectNameOrGenerate,
+  pog,
+} from '../../utils'
 import * as proc from '../../utils/process'
 import { Command } from '../helpers'
 import * as Plugin from '../../framework/plugin'
 import { render, AppContext } from 'ink'
 import SelectInput from 'ink-select-input'
+
+const log = pog.sub('cli:create')
 
 export class Create implements Command {
   async parse() {
@@ -32,11 +38,14 @@ export async function run(optionsGiven?: Partial<Options>): Promise<void> {
 export async function runLocalHandOff(
   optionsGiven?: Partial<Options>
 ): Promise<void> {
+  log('start local handoff')
+
   const layout = Layout.loadDataFromParentProcess()
   const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
+  log('plugins %O', plugins)
 
   // TOOD
-  console.log('TODO display template selection')
+  console.log('TODO select a template...')
 
   for (const p of plugins) {
     await p.create.onAfterBaseSetup?.()
@@ -46,6 +55,8 @@ export async function runLocalHandOff(
 export async function runBootstrapper(
   optionsGiven?: Partial<Options>
 ): Promise<void> {
+  log('start bootstrapper')
+
   // TODO given the presence of plugin templates it does not make sense anymore
   // for an assumpton about how the layout is going to look
   const layout = Layout.createFromData({
