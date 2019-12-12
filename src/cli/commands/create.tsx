@@ -1,5 +1,4 @@
 import React from 'react'
-import { spawn } from 'child_process'
 import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import Git from 'simple-git/promise'
@@ -25,6 +24,7 @@ export class Create implements Command {
 
 type Options = {
   projectName: string
+  pumpkinsVersion: string
 }
 
 /**
@@ -80,9 +80,11 @@ export async function runBootstrapper(
   })
   Object.assign(process.env, Layout.saveDataForChildProcess(layout))
 
+  // TODO options given will always be overriden...
   const options: Options = {
     ...optionsGiven,
     projectName: CWDProjectNameOrGenerate(),
+    pumpkinsVersion: require('../../../package.json').version,
   }
 
   console.log('checking folder is in a clean state...')
@@ -112,7 +114,9 @@ export async function runBootstrapper(
     </AppContext.Consumer>
   ).waitUntilExit()
 
-  console.log('installing pumpkins... (this will take around ~20 seconds)')
+  console.log(
+    `installing pumpkins@${options.pumpkinsVersion}... (this will take around ~20 seconds)`
+  )
   await proc.run('yarn', { require: true })
 
   if (usePrisma) {
@@ -257,7 +261,6 @@ async function helloWorldTemplate(layout: Layout.Layout) {
  * Scaffold a new pumpkins project from scratch
  */
 async function scaffoldBaseFiles(layout: Layout.Layout, options: Options) {
-  // TODO eventually `master` should become `latest`
   // TODO Template selector?
   // TODO given that we're scaffolding, we know the layout ahead of time. We
   // should take advantage of that, e.g. precompute layout data
@@ -267,7 +270,7 @@ async function scaffoldBaseFiles(layout: Layout.Layout, options: Options) {
       name: options.projectName,
       license: 'UNLICENSED',
       dependencies: {
-        pumpkins: 'master',
+        pumpkins: options.pumpkinsVersion,
       },
       scripts: {
         dev: 'pumpkins dev',

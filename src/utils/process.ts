@@ -179,6 +179,7 @@ function createCommandError({
   signal,
   stderr,
   stdout,
+  exitCode,
   underlyingError,
 }: Omit<SuccessfulRunResult, 'error'> & {
   underlyingError: null | Error
@@ -188,9 +189,9 @@ function createCommandError({
 
         ${command}
 
-    It exited with this status code:
+    It ended with this exit code:
 
-        ${status}
+        ${exitCode}
 
     This underlying error occured (null = none occured):
 
