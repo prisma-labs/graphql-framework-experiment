@@ -646,6 +646,11 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-10.17.9.tgz#4f251a1ed77ac7ef09d456247d67fc8173f6b9da"
   integrity sha512-+6VygF9LbG7Gaqeog2G7u1+RUcmo0q1rI+2ZxdIg2fAUngk5Vz9fOCHXdloNUOHEPd1EuuOpL5O0CdgN9Fx5UQ==
 
+"@types/prompts@^2.0.3":
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/@types/prompts/-/prompts-2.0.3.tgz#9928714a7a5c2017919f8fecef517369d27dd5df"
+  integrity sha512-5+r923liPATAzRQhLTGfrRuel9vv7Mk1DZ/CJkgRrLctmM9QeOIbuVolA7wAACaw+m0Ysug85CjPbkb5ZgE1Ag==
+
 "@types/prop-types@*":
   version "15.7.3"
   resolved "https://registry.yarnpkg.com/@types/prop-types/-/prop-types-15.7.3.tgz#2ab0d5da2e5815f94b0b9d4b95d1e5f243ab2ca7"
@@ -1454,9 +1459,6 @@ cli-truncate@^2.0.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/cli-truncate/-/cli-truncate-2.1.0.tgz#c39e28bf05edcde5be3b98992a22deed5a2b93c7"
   integrity sha512-n8fOixwDD6b/ObinzTrp1ZKFzbgvKZvuz/TvejnLn1aQfC6r52XEx85FmuC+3HI+JM7coBRXUvNqEU2PHVrHpg==
-  dependencies:
-    slice-ansi "^3.0.0"
-    string-width "^4.2.0"
 
 cliui@^5.0.0:
   version "5.0.0"
@@ -4171,7 +4173,7 @@ process-nextick-args@~2.0.0:
   resolved "https://registry.yarnpkg.com/process-nextick-args/-/process-nextick-args-2.0.1.tgz#7820d9b16120cc55ca9ae7792680ae7dba6d7fe2"
   integrity sha512-3ouUOpQhtgrbOa17J7+uxOTpITYWaGP7/AhoR3+A+/1e9skrzelGi/dXzEYyvbxubEF6Wn2ypscTKiKJFFn1ag==
 
-prompts@^2.0.1:
+prompts@^2.0.1, prompts@^2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/prompts/-/prompts-2.3.0.tgz#a444e968fa4cc7e86689a74050685ac8006c4cc4"
   integrity sha512-NfbbPPg/74fT7wk2XYQ7hAIp9zJyZp5Fu19iRbORqqy1BhtrkZ0fPafBU+7bmn8ie69DpT0R6QpJIN2oisYjJg==
@@ -4865,7 +4867,7 @@ string-width@^3.0.0, string-width@^3.1.0:
     is-fullwidth-code-point "^2.0.0"
     strip-ansi "^5.1.0"
 
-string-width@^4.0.0, string-width@^4.1.0, string-width@^4.2.0:
+string-width@^4.0.0, string-width@^4.1.0:
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/string-width/-/string-width-4.2.0.tgz#952182c46cc7b2c313d1596e623992bd163b72b5"
   integrity sha512-zUz5JD+tgqtuDjMhwIg5uFVV3dtqZ9yQJlZVfq4I01/K5Paj5UHj7VyrQOJvzawSVlKpObApbfD0Ed6yJc+1eg==

@@ -1,12 +1,13 @@
+import * as fs from 'fs-jetpack'
+import * as Path from 'path'
+import { PackageJson } from 'type-fest'
 import {
+  findConfigFile,
   findFile,
   findSchemaDirOrModules,
   pog,
   stripExt,
-  findConfigFile,
 } from '../utils'
-import * as Path from 'path'
-import * as fs from 'fs-jetpack'
 
 export const DEFAULT_BUILD_FOLDER_NAME = 'node_modules/.build'
 
@@ -31,6 +32,10 @@ export type ScanResult = {
         exists: false
         path: null
       }
+  project: {
+    name: string
+    isAnonymous: boolean
+  }
   sourceRoot: string
   sourceRootRelative: string
   projectRoot: string
@@ -143,11 +148,11 @@ export const scan = async (): Promise<ScanResult> => {
     projectRoot,
     sourceRoot,
     schemaModules: maybeSchemaModules,
-
     // when source and project roots are the same relative is computed as '' but
     // this is not valid path like syntax in a lot cases at least such as
     // tsconfig include field.
     sourceRootRelative: Path.relative(projectRoot, sourceRoot) || './',
+    project: readProjectInfo(),
   }
 
   log('...completed scan with result: %O', result)
@@ -257,5 +262,23 @@ export async function loadDataFromParentProcess(): Promise<Layout> {
     return create({}) // todo no build output...
   } else {
     return createFromData(JSON.parse(savedData) as Data)
+  }
+}
+
+function readProjectInfo(): ScanResult['project'] {
+  try {
+    const packageJson: PackageJson = require(fs.path('package.json'))
+
+    if (packageJson.name) {
+      return {
+        name: packageJson.name,
+        isAnonymous: false,
+      }
+    }
+  } catch {}
+
+  return {
+    name: 'anonymous',
+    isAnonymous: true,
   }
 }

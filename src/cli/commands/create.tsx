@@ -1,18 +1,19 @@
-import React from 'react'
+import chalk from 'chalk'
 import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
+import prompts from 'prompts'
 import Git from 'simple-git/promise'
+import { PackageJson } from 'type-fest'
 import * as Layout from '../../framework/layout'
+import * as Plugin from '../../framework/plugin'
 import {
   createTSConfigContents,
   CWDProjectNameOrGenerate,
   pog,
 } from '../../utils'
+import { logger } from '../../utils/logger'
 import * as proc from '../../utils/process'
 import { Command } from '../helpers'
-import * as Plugin from '../../framework/plugin'
-import { render, AppContext } from 'ink'
-import SelectInput from 'ink-select-input'
 
 const log = pog.sub('cli:create')
 
@@ -46,14 +47,14 @@ export async function runLocalHandOff(
 ): Promise<void> {
   log('start local handoff')
 
-  const layout = await Layout.loadDataFromParentProcess()
+  const { layout, connectionURI, database } = await loadDataFromParentProcess()
   const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
   log('plugins %O', plugins)
 
   // TODO select a template
 
   for (const p of plugins) {
-    await p.create.onAfterBaseSetup?.()
+    await p.create.onAfterBaseSetup?.({ database, connectionURI })
   }
 }
 
@@ -77,8 +78,11 @@ export async function runBootstrapper(
     sourceRootRelative: './app',
     schemaModules: ['app/schema.ts'],
     buildOutput: Layout.DEFAULT_BUILD_FOLDER_NAME,
+    project: {
+      name: optionsGiven?.projectName ?? CWDProjectNameOrGenerate(),
+      isAnonymous: false,
+    },
   })
-  Object.assign(process.env, Layout.saveDataForChildProcess(layout))
 
   // TODO options given will always be overriden...
   const options: Options = {
@@ -87,41 +91,27 @@ export async function runBootstrapper(
     pumpkinsVersion: require('../../../package.json').version,
   }
 
-  console.log('checking folder is in a clean state...')
+  log('checking folder is in a clean state...')
   await assertIsCleanSlate()
 
-  console.log('scaffolding base project files...')
-  await scaffoldBaseFiles(layout, options)
-
-  console.log('Would you like to use Prisma? (https://prisma.io)')
   // TODO in the future scan npm registry for pumpkins plugins, organize by
   // github stars, and so on.
-  let usePrisma = true
-  await render(
-    <AppContext.Consumer>
-      {({ exit }) => (
-        <SelectInput
-          items={[
-            { label: 'yes', value: 'true' },
-            { label: 'no', value: 'false' },
-          ]}
-          onSelect={item => {
-            usePrisma = item.value === 'true'
-            exit()
-          }}
-        ></SelectInput>
-      )}
-    </AppContext.Consumer>
-  ).waitUntilExit()
+  const askDatabase = await askForDatabase()
 
-  console.log(
-    `installing pumpkins@${options.pumpkinsVersion}... (this will take around ~20 seconds)`
+  logger.successBold('Scaffolding base project files...')
+  await scaffoldBaseFiles(layout, options)
+
+  logger.successBold(
+    `Installing pumpkins@${options.pumpkinsVersion}... (this will take around ~20 seconds)`
   )
   await proc.run('yarn', { require: true })
 
-  if (usePrisma) {
-    console.log(
-      'installing prisma plugin... (this will take around ~10 seconds)'
+  /**
+   * First class support for Prisma
+   */
+  if (askDatabase.database) {
+    logger.successBold(
+      'Installing Prisma plugin... (this will take around ~10 seconds)'
     )
     // TODO @latest
     await proc.run('yarn add pumpkins-plugin-prisma@master', {
@@ -135,9 +125,18 @@ export async function runBootstrapper(
       },
       require: true,
     })
+
+    // Pass chosen database to plugin
+    saveDataForChildProcess({
+      layout: layout.data,
+      database: askDatabase.choice,
+      connectionURI: askDatabase.connectionURI,
+    })
+  } else {
+    await helloWorldTemplate(layout)
+    saveDataForChildProcess({ layout: layout.data })
   }
 
-  console.log('select a template to continue with...')
   await proc
     .run('yarn -s pumpkins create', {
       stdio: 'inherit',
@@ -148,9 +147,6 @@ export async function runBootstrapper(
       console.error(error.message)
       process.exit(error.exitCode ?? 1)
     })
-
-  console.log('initializing git repo...')
-  const git = Git()
 
   // An exhaustive .gitignore tailored for Node can be found here:
   // https://github.com/github/gitignore/blob/master/Node.gitignore
@@ -167,12 +163,15 @@ export async function runBootstrapper(
       lerna-debug.log*
     `
   )
+
+  const git = Git()
   await git.init()
   await git.raw(['add', '-A'])
   await git.raw(['commit', '-m', 'initial commit'])
 
-  console.log(stripIndent`
-    entering dev mode...
+  if (askDatabase.database && askDatabase.connectionURI) {
+    logger.success(stripIndent`
+    ${chalk.bold('Entering dev mode...')}
         
     Try this query to get started: 
 
@@ -183,24 +182,91 @@ export async function runBootstrapper(
         }
       }
   `)
-  console.log() // force a newline to give code block breathing room, stripped by template tag above
+    console.log() // force a newline to give code block breathing room, stripped by template tag above
 
-  // We will enter dev mode with the local version of pumpkins. This is a kind
-  // of cheat, but what we want users to have as their mental model. When they
-  // terminate this dev session, they will restart it typically with e.g. `$
-  // yarn dev`. This global-pumpkins-process-wrapping-local-pumpkins-process
-  // is unique to bootstrapping situations.
+    // We will enter dev mode with the local version of pumpkins. This is a kind
+    // of cheat, but what we want users to have as their mental model. When they
+    // terminate this dev session, they will restart it typically with e.g. `$
+    // yarn dev`. This global-pumpkins-process-wrapping-local-pumpkins-process
+    // is unique to bootstrapping situations.
 
-  await proc
-    .run('yarn -s dev', {
-      stdio: 'inherit',
-      envAdditions: { PUMPKINS_CREATE_HANDOFF: 'true' },
-      require: true,
+    await proc
+      .run('yarn -s dev', {
+        stdio: 'inherit',
+        envAdditions: { PUMPKINS_CREATE_HANDOFF: 'true' },
+        require: true,
+      })
+      .catch(error => {
+        console.error(error.message)
+        process.exit(error.exitCode ?? 1)
+      })
+  }
+}
+
+type Database = 'SQLite' | 'PostgreSQL' | 'MySQL'
+
+async function askForDatabase(): Promise<
+  | { database: false }
+  | { database: true; choice: Database; connectionURI: string | undefined }
+> {
+  let {
+    usePrisma,
+  }: {
+    usePrisma: boolean
+  } = await prompts({
+    type: 'confirm',
+    name: 'usePrisma',
+    message: 'Do you want to use a database? (https://prisma.io)',
+  })
+
+  if (!usePrisma) {
+    return { database: false }
+  }
+  let { database }: { database: Database } = await prompts({
+    type: 'select',
+    name: 'database',
+    message: 'Choose a database',
+    choices: [
+      {
+        title: 'SQLite',
+        description: 'Easiest to set up',
+        value: 'SQLite',
+      },
+      {
+        title: 'MySQL',
+        description: 'Requires running a MySQL database',
+        value: 'MySQL',
+      },
+      {
+        title: 'PostgreSQL',
+        description: 'Requires running a PostgreSQL database',
+        value: 'PostgreSQL',
+      },
+    ] as any, // Typings are missing the 'description' property...
+    initial: 0,
+  })
+
+  if (database === 'SQLite') {
+    return { database: true, choice: 'SQLite', connectionURI: 'file://dev.db' }
+  }
+
+  let { hasURI }: { hasURI: boolean } = await prompts({
+    type: 'confirm',
+    name: 'hasURI',
+    message: `Do you have a connection URI to connect to your ${database} database?`,
+  })
+
+  if (hasURI) {
+    let { connectionURI }: { connectionURI: string } = await prompts({
+      type: 'text',
+      message: `Fill in your connection URI for ${database}`,
+      name: 'connectionURI',
     })
-    .catch(error => {
-      console.error(error.message)
-      process.exit(error.exitCode ?? 1)
-    })
+
+    return { database: true, choice: database, connectionURI }
+  }
+
+  return { database: true, choice: database, connectionURI: undefined }
 }
 
 /**
@@ -221,38 +287,39 @@ async function helloWorldTemplate(layout: Layout.Layout) {
   await fs.writeAsync(
     layout.sourcePath('schema.ts'),
     stripIndent`
-      import { app } from "pumpkins"
+    import { app } from "pumpkins";
 
-      app.objectType({
-        name: "World",
-        definition(t) {
-          t.id('id')
-          t.string('name')
-          t.float('population')
-        }
-      })
+    app.objectType({
+      name: "World",
+      definition(t) {
+        t.id("id");
+        t.string("name");
+        t.float("population");
+      }
+    });
 
-      app.queryType({
-        definition(t) {
-          t.field("hello", {
-            type: "World",
-            args: {
-              world: app.stringArg({ required: false })
-            },
-            async resolve(_root, args, ctx) {
-              const worldToFindByName = args.world ?? 'Earth'
-              const world = {
-                Earth: { id: '1', population: 6_000_000, name: 'Earth' },
-                Mars: { id: '2', population: 0, name: 'Mars' },
-              }[worldToFindByName]
+    app.queryType({
+      definition(t) {
+        t.field("hello", {
+          type: "World",
+          args: {
+            world: app.stringArg({ required: false })
+          },
+          async resolve(_root, args, ctx) {
+            const worldToFindByName = args.world || "Earth";
+            const worlds = [
+              { id: "1", population: 6_000_000, name: "Earth" },
+              { id: "2", population: 0, name: "Mars" }
+            ];
+            const world = worlds.find(w => w.name === worldToFindByName);
 
-              if (!world) throw new Error(\`No such world named "\${args.world}"\`)
+            if (!world) throw new Error(\`No such world named "\${args.world}"\`);
 
-              return world
-            }
-          })
-        }
-      })
+            return world;
+          }
+        });
+      }
+    });
     `
   )
 }
@@ -277,7 +344,7 @@ async function scaffoldBaseFiles(layout: Layout.Layout, options: Options) {
         build: 'pumpkins build',
         start: 'node node_modules/.build',
       },
-    }),
+    } as PackageJson),
 
     fs.writeAsync('tsconfig.json', createTSConfigContents(layout)),
 
@@ -304,4 +371,43 @@ async function scaffoldBaseFiles(layout: Layout.Layout, options: Options) {
       `
     ),
   ])
+}
+
+const ENV_PARENT_DATA = 'PUMPKINS_CREATE_DATA'
+
+type SerializableParentData = {
+  layout: Layout.Layout['data']
+  database?: Plugin.OnAfterBaseSetupLens['database']
+  connectionURI?: Plugin.OnAfterBaseSetupLens['connectionURI']
+}
+
+type ParentData = Omit<SerializableParentData, 'layout'> & {
+  layout: Layout.Layout
+}
+
+async function loadDataFromParentProcess(): Promise<ParentData> {
+  if (!process.env[ENV_PARENT_DATA]) {
+    logger.warn(
+      'We could not retrieve neccessary data from pumpkins. Falling back to SQLite database.'
+    )
+
+    return {
+      layout: await Layout.create({}),
+      database: 'SQLite',
+      connectionURI: 'file://dev.db',
+    }
+  }
+
+  const deserializedParentData: SerializableParentData = JSON.parse(
+    process.env[ENV_PARENT_DATA]!
+  )
+
+  return {
+    ...deserializedParentData,
+    layout: Layout.createFromData(deserializedParentData.layout),
+  }
+}
+
+function saveDataForChildProcess(data: SerializableParentData): void {
+  process.env[ENV_PARENT_DATA] = JSON.stringify(data)
 }
