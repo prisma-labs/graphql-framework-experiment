@@ -2,22 +2,22 @@ import chalk from 'chalk'
 import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import prompts from 'prompts'
-import Git from 'simple-git/promise'
 import { PackageJson } from 'type-fest'
-import * as Layout from '../../framework/layout'
-import * as Plugin from '../../framework/plugin'
+import * as Layout from '../../../framework/layout'
+import * as Plugin from '../../../framework/plugin'
 import {
   createTSConfigContents,
   CWDProjectNameOrGenerate,
   pog,
-} from '../../utils'
-import { logger } from '../../utils/logger'
-import * as proc from '../../utils/process'
-import { Command } from '../helpers'
+  createGitRepository,
+} from '../../../utils'
+import { logger } from '../../../utils/logger'
+import * as proc from '../../../utils/process'
+import { Command } from '../../helpers'
 
-const log = pog.sub('cli:create')
+const log = pog.sub('cli:create:app')
 
-export class Create implements Command {
+export default class App implements Command {
   async parse() {
     await run()
   }
@@ -84,7 +84,7 @@ export async function runBootstrapper(
     },
   })
 
-  // TODO options given will always be overriden...
+  // FIXME options given will always be overriden...
   const options: Options = {
     ...optionsGiven,
     projectName: CWDProjectNameOrGenerate(),
@@ -164,10 +164,7 @@ export async function runBootstrapper(
     `
   )
 
-  const git = Git()
-  await git.init()
-  await git.raw(['add', '-A'])
-  await git.raw(['commit', '-m', 'initial commit'])
+  await createGitRepository()
 
   if (askDatabase.database && askDatabase.connectionURI) {
     logger.success(stripIndent`

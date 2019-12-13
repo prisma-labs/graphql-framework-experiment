@@ -1,7 +1,7 @@
 import { Command } from '../helpers'
 import * as Layout from '../../framework/layout'
 import { pog, generateProjectName, CWDProjectNameOrGenerate } from '../../utils'
-import { run } from './create'
+import { run } from './create/app'
 import { Dev } from './dev'
 import * as fs from 'fs-jetpack'
 import { stripIndent } from 'common-tags'
