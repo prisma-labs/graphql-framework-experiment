@@ -80,7 +80,7 @@ export async function runBootstrapper(
     buildOutput: Layout.DEFAULT_BUILD_FOLDER_NAME,
     project: {
       name: optionsGiven?.projectName ?? CWDProjectNameOrGenerate(),
-      anonymous: false,
+      isAnonymous: false,
     },
   })
 

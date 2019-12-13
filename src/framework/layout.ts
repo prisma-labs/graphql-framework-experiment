@@ -34,7 +34,7 @@ export type ScanResult = {
       }
   project: {
     name: string
-    anonymous: boolean
+    isAnonymous: boolean
   }
   sourceRoot: string
   sourceRootRelative: string
@@ -272,13 +272,13 @@ function readProjectInfo(): ScanResult['project'] {
     if (packageJson.name) {
       return {
         name: packageJson.name,
-        anonymous: false,
+        isAnonymous: false,
       }
     }
   } catch {}
 
   return {
     name: 'anonymous',
-    anonymous: true,
+    isAnonymous: true,
   }
 }
