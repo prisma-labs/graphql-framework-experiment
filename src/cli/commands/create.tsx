@@ -287,38 +287,39 @@ async function helloWorldTemplate(layout: Layout.Layout) {
   await fs.writeAsync(
     layout.sourcePath('schema.ts'),
     stripIndent`
-      import { app } from "pumpkins"
+    import { app } from "pumpkins";
 
-      app.objectType({
-        name: "World",
-        definition(t) {
-          t.id('id')
-          t.string('name')
-          t.float('population')
-        }
-      })
+    app.objectType({
+      name: "World",
+      definition(t) {
+        t.id("id");
+        t.string("name");
+        t.float("population");
+      }
+    });
 
-      app.queryType({
-        definition(t) {
-          t.field("hello", {
-            type: "World",
-            args: {
-              world: app.stringArg({ required: false })
-            },
-            async resolve(_root, args, ctx) {
-              const worldToFindByName = args.world || 'Earth'
-              const world = {
-                Earth: { id: '1', population: 6_000_000, name: 'Earth' },
-                Mars: { id: '2', population: 0, name: 'Mars' },
-              }[worldToFindByName]
+    app.queryType({
+      definition(t) {
+        t.field("hello", {
+          type: "World",
+          args: {
+            world: app.stringArg({ required: false })
+          },
+          async resolve(_root, args, ctx) {
+            const worldToFindByName = args.world || "Earth";
+            const worlds = [
+              { id: "1", population: 6_000_000, name: "Earth" },
+              { id: "2", population: 0, name: "Mars" }
+            ];
+            const world = worlds.find(w => w.name === worldToFindByName);
 
-              if (!world) throw new Error(\`No such world named "\${args.world}"\`)
+            if (!world) throw new Error(\`No such world named "${args.world}"\`);
 
-              return world
-            }
-          })
-        }
-      })
+            return world;
+          }
+        });
+      }
+    });
     `
   )
 }
