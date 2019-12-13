@@ -313,7 +313,7 @@ async function helloWorldTemplate(layout: Layout.Layout) {
             ];
             const world = worlds.find(w => w.name === worldToFindByName);
 
-            if (!world) throw new Error(\`No such world named "${args.world}"\`);
+            if (!world) throw new Error(\`No such world named "\${args.world}"\`);
 
             return world;
           }
