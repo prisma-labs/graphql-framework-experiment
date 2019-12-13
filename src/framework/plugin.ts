@@ -6,15 +6,21 @@ import { runSync, pog, fatal, run } from '../utils'
 import { Debugger } from 'debug'
 import * as fs from 'fs-jetpack'
 import { stripIndent } from 'common-tags'
+import prompts from 'prompts'
 
 // TODO move to utils module
 type MaybePromise<T = void> = T | Promise<T>
 type CallbackRegistrar<F> = (f: F) => void
 type SideEffector = () => MaybePromise
 
+export type OnAfterBaseSetupLens = {
+  database: 'SQLite' | 'MySQL' | 'PostgreSQL' | undefined
+  connectionURI: string | undefined
+}
+
 export type WorkflowHooks = {
   create: {
-    onAfterBaseSetup?: SideEffector
+    onAfterBaseSetup?: (lens: OnAfterBaseSetupLens) => MaybePromise
   }
   dev: {
     onStart?: SideEffector
@@ -34,7 +40,9 @@ export type WorkflowHooks = {
 
 export type WorkflowDefiner = (
   hooks: WorkflowHooks,
-  layout: Layout.Layout
+  workflowContext: {
+    layout: Layout.Layout
+  }
 ) => void
 
 /**
@@ -67,6 +75,10 @@ export type Lens = {
     runSync: typeof runSync
     run: typeof run
     debug: Debugger
+    /**
+     * Check out https://github.com/terkelg/prompts for documentation
+     */
+    prompt: typeof prompts
   }
 }
 
@@ -103,6 +115,7 @@ export function create(definer: Definer): DriverCreator {
         run,
         runSync,
         debug: pog.sub(`plugin:${pluginName}`),
+        prompt: prompts,
       },
     })
 
@@ -119,7 +132,7 @@ export function create(definer: Definer): DriverCreator {
           build: {},
           generate: {},
         }
-        maybeWorkflowPlugin?.(hooks, layout)
+        maybeWorkflowPlugin?.(hooks, { layout })
         return hooks
       },
       loadRuntimePlugin() {
