@@ -133,6 +133,7 @@ export async function runBootstrapper(
       connectionURI: askDatabase.connectionURI,
     })
   } else {
+    await helloWorldTemplate(layout)
     saveDataForChildProcess({ layout: layout.data })
   }
 
