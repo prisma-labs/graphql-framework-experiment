@@ -3,6 +3,7 @@ import * as fs from 'fs-jetpack'
 import ts from 'typescript'
 import { START_MODULE_NAME } from '../../constants'
 import * as Layout from '../../framework/layout'
+import * as Plugin from '../../framework/plugin'
 import { createStartModuleContent } from '../../framework/start'
 import {
   compile,
@@ -16,14 +17,13 @@ import {
 } from '../../utils'
 import {
   computeBuildOutputFromTarget,
+  formattedSupportedDeployTargets,
   logTargetPostBuildMessage,
   normalizeTarget,
   validateTarget,
-  formattedSupportedDeployTargets,
 } from '../../utils/deploy-target'
 import { logger } from '../../utils/logger'
 import { arg, Command, isError } from '../helpers'
-import * as Plugin from '../../framework/plugin'
 
 const log = pog.sub('cli:build')
 
@@ -32,6 +32,7 @@ const BUILD_ARGS = {
   '-o': '--output',
   '--deployment': String,
   '-d': '--deployment',
+  '--stage': String,
   '--help': Boolean,
   '-h': '--help',
 }

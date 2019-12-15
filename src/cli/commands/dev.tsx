@@ -3,12 +3,13 @@ import { Box, Instance, render } from 'ink'
 import React from 'react'
 import * as readline from 'readline'
 import * as Layout from '../../framework/layout'
+import * as Plugin from '../../framework/plugin'
 import { createStartModuleContent } from '../../framework/start'
 import { findOrScaffoldTsConfig, pog } from '../../utils'
+import { loadAndProcessConfig } from '../../utils/config'
 import { clearConsole } from '../../utils/console'
 import { createWatcher } from '../../watcher'
 import { arg, Command, isError } from '../helpers'
-import * as Plugin from '../../framework/plugin'
 
 const log = pog.sub('cli:dev')
 
@@ -36,6 +37,8 @@ export class Dev implements Command {
       )
       process.exit(0)
     }
+
+    loadAndProcessConfig('development')
 
     clearConsole()
     console.log(chalk`{bgBlue INFO} Starting dev server...`)

@@ -1,5 +1,5 @@
 import { createApp } from './app'
-import * as Plugin from './plugin'
+export { createConfig } from '../utils/config'
 
 // TODO Pending future discussion
 // declare global {
