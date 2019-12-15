@@ -44,12 +44,33 @@ export interface Command {
  *  $ some-cli b b3 b32
  *
  */
-export type Commands = {
-  // TODO how?
-  // __default?: Command | string
-  [name: string]: Command | Commands | string
+export type CommandsLayout = {
+  [name: string]: CommandsLayoutEntry
+}
+export type CommandsLayoutEntry = string | Command | CommandsLayout
+
+// TODO use a generic tree a library...
+
+export type CommandNode = CommandRef | ConcreteCommand | CommandNamespace
+export type CommandNamespace = {
+  parent: null | CommandNamespace // nullable because may be tree root
+  type: 'command_namespace'
+  value: Record<string, CommandNode>
+}
+export type CommandRef = {
+  parent: CommandNamespace
+  type: 'command_reference'
+  value: {
+    original: string
+    commandPointer: ConcreteCommand
+  }
+}
+export type ConcreteCommand = {
+  parent: CommandNamespace
+  type: 'concrete_command'
+  value: Command
 }
 
-export type Dictionary<T> = {
+export type Index<T> = {
   [key: string]: T
 }

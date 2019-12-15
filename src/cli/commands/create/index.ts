@@ -1,3 +1,3 @@
 import Plugin from './plugin'
-import Project from './app'
-export { Plugin, Project }
+import App from './app'
+export { Plugin, App }
