@@ -57,7 +57,7 @@ system (in fact Prisma features are implemented as a plugin).
    - With Docker
 
      ```
-     docker run --detach --publish 5432:5432 --name 'pumpkins-getting-started' --env POSTGRES_PASSWORD=pumpkins postgres
+     docker run --detach --publish 5432:5432 --name 'myapp-db' --env POSTGRES_PASSWORD=pumpkins postgres
      ```
 
      Connection URL will be TODO
@@ -68,7 +68,7 @@ system (in fact Prisma features are implemented as a plugin).
      brew install postgres
      ```
 
-     Connection URL will be TODO
+     Connection URL will be `postgresql://postgres:pumpkins@localhost:5432/myapp`
 
 2. Kick off a new project. When asked whether to use Prisma or not, choose yes.
 
