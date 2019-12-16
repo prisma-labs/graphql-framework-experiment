@@ -64,7 +64,7 @@ async function guardNotGlobalPumpkinsWithLocalPumpkinsProject(): Promise<void> {
     fatal(stripIndent`
         You are using the pumpkins cli from a globally installed location. Please use the locally installed one:
 
-            yarn pumpkins ${process.argv.slice(2)}
+            yarn -s pumpkins ${process.argv.slice(2)}
       `)
   }
 }

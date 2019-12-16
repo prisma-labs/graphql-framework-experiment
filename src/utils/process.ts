@@ -241,6 +241,9 @@ function isFailedExitCode(exitCode: null | number): boolean {
 export function isProcessFromProjectBin(packageJsonPath: string): boolean {
   const processBinPath = process.argv[1]
   const processBinDirPath = Path.dirname(processBinPath)
-  const projectBinDirPath = Path.join(packageJsonPath, 'node_modules/.bin')
+  const projectBinDirPath = Path.join(
+    Path.dirname(packageJsonPath),
+    'node_modules/.bin'
+  )
   return processBinDirPath !== projectBinDirPath
 }
