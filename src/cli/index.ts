@@ -3,7 +3,10 @@ import { CLI } from './helpers/CLI'
 import * as Commands from './commands'
 import { HelpError } from './helpers'
 import { isError } from 'util'
-import { pog } from '../utils'
+import { pog, fatal } from '../utils'
+import * as Layout from '../framework/layout'
+import * as Path from 'path'
+import { stripIndent } from 'common-tags'
 
 const log = pog.sub('cli')
 
@@ -46,10 +49,30 @@ if (!process.argv.join(' ').includes('pumpkins dev')) {
   log('HACK letting dev command handle sigterm/sigint')
 }
 
+async function guardNotGlobalPumpkinsWithLocalPumpkinsProject(): Promise<void> {
+  // TODO data is attainable from layout scan calculated later on... not optimal to call this twice...
+  const projectType = await Layout.scanProjectType()
+  if (projectType.type === 'pumpkins_project') {
+    const pumpkinsBinPath = process.argv[1]
+    const packageJsonPath = Path.dirname(projectType.packageJsonPath)
+    const projectBinPath = Path.join(packageJsonPath, 'node_modules/.bin')
+    // TODO make npm aware
+    if (Path.dirname(pumpkinsBinPath) !== projectBinPath) {
+      fatal(stripIndent`
+        You are using the pumpkins cli from a globally installed location. Please use the locally installed one:
+
+            yarn pumpkins ${process.argv.slice(2)}
+      `)
+    }
+  }
+}
+
 /**
  * Main function
  */
 async function main(): Promise<number> {
+  await guardNotGlobalPumpkinsWithLocalPumpkinsProject()
+
   // create a new CLI with our subcommands
   const cli = new CLI({
     dev: new Commands.Dev(),

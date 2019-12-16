@@ -216,7 +216,11 @@ function findPackageJsonPath(): string | null {
  */
 export async function scanProjectType(): Promise<
   | { type: 'unknown' | 'new' }
-  | { type: 'pumpkins_project' | 'node_project'; packageJson: {} }
+  | {
+      type: 'pumpkins_project' | 'node_project'
+      packageJson: {}
+      packageJsonPath: string
+    }
 > {
   const packageJsonPath = findPackageJsonPath()
 
@@ -228,10 +232,11 @@ export async function scanProjectType(): Promise<
   }
 
   const packageJson = fs.read(packageJsonPath, 'json')
-  if (packageJson?.dependencies?.pumpkins)
-    return { type: 'pumpkins_project', packageJson }
+  if (packageJson?.dependencies?.pumpkins) {
+    return { type: 'pumpkins_project', packageJson, packageJsonPath }
+  }
 
-  return { type: 'node_project', packageJson }
+  return { type: 'node_project', packageJson, packageJsonPath }
 }
 
 /**
