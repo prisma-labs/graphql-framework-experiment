@@ -6,6 +6,7 @@ import { isError } from 'util'
 import { pog, fatal, isProcessFromProjectBin } from '../utils'
 import * as Layout from '../framework/layout'
 import { stripIndent } from 'common-tags'
+import * as PackageManager from '../utils/package-manager'
 
 const log = pog.sub('cli')
 
@@ -53,7 +54,9 @@ if (!process.argv.join(' ').includes('pumpkins dev')) {
  * veresion unless there is local project or the local project does not have
  * pumpkins installed.
  */
-async function guardNotGlobalPumpkinsWithLocalPumpkinsProject(): Promise<void> {
+async function guardNotGlobalPumpkinsWithLocalPumpkinsProject(
+  packageManager: PackageManager.PackageManager
+): Promise<void> {
   // TODO data is attainable from layout scan calculated later on... not optimal to call this twice...
   const projectType = await Layout.scanProjectType()
   if (
@@ -70,7 +73,7 @@ async function guardNotGlobalPumpkinsWithLocalPumpkinsProject(): Promise<void> {
         
         Please use the pumpkins CLI for this project:
 
-            yarn -s pumpkins ${process.argv.slice(2)}
+            ${packageManager.renderRunBin('pumpkins ' + process.argv.slice(2))}
       `)
   }
 }
@@ -79,7 +82,8 @@ async function guardNotGlobalPumpkinsWithLocalPumpkinsProject(): Promise<void> {
  * Main function
  */
 async function main(): Promise<number> {
-  await guardNotGlobalPumpkinsWithLocalPumpkinsProject()
+  const packageManager = await PackageManager.create()
+  await guardNotGlobalPumpkinsWithLocalPumpkinsProject(packageManager)
 
   // create a new CLI with our subcommands
   const cli = new CLI({
