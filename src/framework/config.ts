@@ -1,14 +1,14 @@
 import * as fs from 'fs-jetpack'
 import { LiteralUnion } from 'type-fest'
-import * as ts from 'typescript'
-import { pog } from './pog'
-import { fatal } from './process'
+import { ScriptTarget } from 'typescript'
+import { fatal, pog, transpileModule } from '../utils'
+import { stripIndent } from 'common-tags'
 
 const log = pog.sub(__filename)
 
 type StageNames = LiteralUnion<'development', string>
 
-interface Config {
+export interface Config {
   environments: {
     development?: Environment
     [x: string]: Environment | undefined
@@ -105,6 +105,10 @@ function processEnvMappingFromConfig(config: Config): void {
   for (const sourceEnvName in config.environment_mapping) {
     const targetEnvName = config.environment_mapping[sourceEnvName]
 
+    if (!targetEnvName) {
+      continue
+    }
+
     if (targetEnvName) {
       log(
         'env var "%s" is not mapped to env var "%s" because "%s" is already set to "%s"',
@@ -150,9 +154,9 @@ function registerTsExt(): { unregister: () => void } {
     const _compile = m._compile
 
     m._compile = function(code: string, fileName: string) {
-      const transpiledModule = ts.transpileModule(code, {
-        compilerOptions: { target: ts.ScriptTarget.ES5 },
-      }).outputText
+      const transpiledModule = transpileModule(code, {
+        target: ScriptTarget.ES5,
+      })
       return _compile.call(this, transpiledModule, fileName)
     }
 
@@ -166,12 +170,69 @@ function registerTsExt(): { unregister: () => void } {
   }
 }
 
-export function loadAndProcessConfig(inputStage: StageNames | undefined): void {
+export function loadAndProcessConfig(
+  inputStage: StageNames | undefined
+): Config | null {
   const config = loadConfig()
 
   if (config) {
     processConfig(config, inputStage)
   }
+
+  return config
+}
+
+function printStaticEnvSetter(
+  envName: string,
+  value: string | undefined
+): string {
+  if (!value) {
+    return ''
+  }
+
+  return stripIndent`
+  if (!process.env.${envName}) {
+    process.env.${envName} = "${String(value)}"
+  }
+  `
+}
+
+function printStaticEnvMapping(
+  source: string,
+  target: string | undefined
+): string {
+  if (!target) {
+    return ''
+  }
+
+  return stripIndent`
+  if (!process.env.${target}) {
+    process.env.${target} = process.env.${source}
+  }
+  `
+}
+
+export function printStaticEnvSetters(config: Config, stage: string): string {
+  let output: string = ''
+  const env = config.environments[stage]
+
+  if (env) {
+    for (const envName in env) {
+      output += printStaticEnvSetter(envName, env[envName])
+    }
+  }
+
+  const envMapping = config.environment_mapping
+
+  if (envMapping) {
+    for (const sourceEnvName in envMapping) {
+      const targetEnvName = envMapping[sourceEnvName]
+
+      output += printStaticEnvMapping(sourceEnvName, targetEnvName)
+    }
+  }
+
+  return output
 }
 
 /**
@@ -187,6 +248,6 @@ export function loadAndProcessConfig(inputStage: StageNames | undefined): void {
  *   }
  * })
  */
-export function createConfig(config: Config) {
+export function createConfig(config: Config): Config {
   return config
 }

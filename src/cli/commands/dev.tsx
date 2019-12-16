@@ -1,10 +1,11 @@
 import { Box, Instance, render } from 'ink'
 import React from 'react'
 import * as readline from 'readline'
+import * as Config from '../../framework/config'
 import * as Layout from '../../framework/layout'
 import * as Plugin from '../../framework/plugin'
 import { createStartModuleContent } from '../../framework/start'
-import { findOrScaffoldTsConfig, pog, loadAndProcessConfig } from '../../utils'
+import { findOrScaffoldTsConfig, pog } from '../../utils'
 import { clearConsole } from '../../utils/console'
 import { logger } from '../../utils/logger'
 import { createWatcher } from '../../watcher'
@@ -40,7 +41,7 @@ export class Dev implements Command {
     /**
      * Load config before loading plugins which may rely on env vars being defined
      */
-    loadAndProcessConfig('development')
+    Config.loadAndProcessConfig('development')
 
     const layout = await Layout.create()
     const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
@@ -106,7 +107,7 @@ export class Dev implements Command {
     })
 
     const bootModule = createStartModuleContent({
-      stage: 'dev',
+      internalStage: 'dev',
       layout: layout,
       appPath: layout.app.path,
     })

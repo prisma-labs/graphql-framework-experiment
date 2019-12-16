@@ -1,27 +1,40 @@
 import { stripIndent } from 'common-tags'
 import { printStaticSchemaImports } from './schema'
 import { Layout, relativeTranspiledImportPath } from './layout'
+import { Config, printStaticEnvSetters } from './config'
 
-type StartModuleConfig = {
-  stage: 'build' | 'dev'
-  /**
-   * Whether or not app content needs to be scaffolded. This is needed when for
-   * example the user only supplies a schemta.ts module.
-   */
-  appPath: null | string
-  layout: Layout
-}
+type StartModuleConfig =
+  | {
+      internalStage: 'dev'
+      /**
+       * Whether or not app content needs to be scaffolded. This is needed when for
+       * example the user only supplies a schemta.ts module.
+       */
+      appPath: null | string
+      layout: Layout
+    }
+  | {
+      internalStage: 'build'
+      /**
+       * Whether or not app content needs to be scaffolded. This is needed when for
+       * example the user only supplies a schemta.ts module.
+       */
+      appPath: null | string
+      layout: Layout
+      config: Config | null
+      buildStage: string
+    }
 
 export function createStartModuleContent(config: StartModuleConfig): string {
   let output = ''
 
-  if (config.stage === 'build') {
+  if (config.internalStage === 'build') {
     output += stripIndent`
       // Guarantee that development mode features will not accidentally run
       process.env.PUMPKINS_SHOULD_GENERATE_ARTIFACTS = 'false'
 
     `
-  } else if (config.stage === 'dev') {
+  } else if (config.internalStage === 'dev') {
     output += stripIndent`
       // Guarantee that development mode features are on
       process.env.PUMPKINS_SHOULD_GENERATE_ARTIFACTS = 'true'
@@ -35,7 +48,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     require("pumpkins")
   `
 
-  if (config.stage === 'build') {
+  if (config.internalStage === 'build') {
     const staticImports = printStaticSchemaImports(config.layout)
     if (staticImports !== '') {
       output += '\n\n\n'
@@ -47,6 +60,21 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     }
   }
 
+  if (config.internalStage === 'build' && config.config !== null) {
+    const staticEnvSetters = printStaticEnvSetters(
+      config.config,
+      config.buildStage
+    )
+
+    if (staticEnvSetters !== '') {
+      output += '\n\n\n'
+      output += stripIndent`
+          // Define the environments variables based on pumpkins.config.ts file or build -d flag
+          ${staticEnvSetters}
+        `
+    }
+  }
+
   // TODO Despite the comment below there are still sometimes reasons to do so
   // https://github.com/prisma/pumpkins/issues/141
   output += '\n\n\n'
@@ -54,8 +82,8 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     ? stripIndent`
         // import the user's app module
         require("${
-          config.stage === 'build'
-            ? relativeTranspiledImportPath(config.layout, config.appPath)
+          config.internalStage === 'build'
+            ? relativeTranspiledImportPath(config.layout, config.appPath!)
             : config.appPath
         }")
 

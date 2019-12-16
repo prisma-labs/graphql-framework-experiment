@@ -1,5 +1,5 @@
 import { createApp } from './app'
-export { createConfig } from '../utils/config'
+export { createConfig } from './config'
 
 // TODO Pending future discussion
 // declare global {

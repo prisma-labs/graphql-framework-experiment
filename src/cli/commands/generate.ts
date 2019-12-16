@@ -16,7 +16,7 @@ export class Generate implements Command {
     console.log('🎃  Generating Nexus artifacts ...')
     await generateArtifacts(
       createStartModuleContent({
-        stage: 'dev',
+        internalStage: 'dev',
         appPath: layout.app.path,
         layout,
       })
