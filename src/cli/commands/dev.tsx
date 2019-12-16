@@ -49,7 +49,7 @@ export class Dev implements Command {
     await findOrScaffoldTsConfig(layout)
 
     for (const p of plugins) {
-      await p.dev.onStart?.()
+      await p.hooks.dev.onStart?.()
     }
 
     // Setup ui/log toggling system
@@ -122,7 +122,7 @@ export class Dev implements Command {
     logger.info('Starting dev server...')
 
     createWatcher({
-      plugins: plugins,
+      plugins: plugins.map(p => p.hooks),
       layout,
       transpileOnly: true,
       respawn: args['--inspect-brk'] ? false : true,

@@ -54,7 +54,7 @@ export async function runLocalHandOff(
   // TODO select a template
 
   for (const p of plugins) {
-    await p.create.onAfterBaseSetup?.({ database, connectionURI })
+    await p.hooks.create.onAfterBaseSetup?.({ database, connectionURI })
   }
 }
 

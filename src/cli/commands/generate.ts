@@ -10,7 +10,7 @@ export class Generate implements Command {
     const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
 
     for (const p of plugins) {
-      await p.generate.onStart?.()
+      await p.hooks.generate.onStart?.()
     }
 
     console.log('🎃  Generating Nexus artifacts ...')

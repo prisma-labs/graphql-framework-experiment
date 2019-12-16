@@ -18,6 +18,11 @@ export type OnAfterBaseSetupLens = {
   connectionURI: string | undefined
 }
 
+export type DbContext = {
+  database: 'SQLite' | 'MySQL' | 'PostgreSQL' | undefined
+  connectionURI: string | undefined
+}
+
 export type WorkflowHooks = {
   create: {
     onAfterBaseSetup?: (lens: OnAfterBaseSetupLens) => MaybePromise
@@ -35,6 +40,22 @@ export type WorkflowHooks = {
   }
   build: {
     onStart?: SideEffector
+  }
+  db?: {
+    init: {
+      onStart: SideEffector
+    }
+    migrate: {
+      plan: {
+        onStart: SideEffector
+      }
+      apply: {
+        onStart: SideEffector
+      }
+      rollback: {
+        onStart: SideEffector
+      }
+    }
   }
 }
 
@@ -124,7 +145,7 @@ export function create(definer: Definer): DriverCreator {
       extendsWorkflow: maybeWorkflowPlugin !== undefined,
       extendsRuntime: maybeRuntimePlugin !== undefined,
       loadWorkflowPlugin(layout) {
-        const hooks = {
+        const hooks: WorkflowHooks = {
           create: {},
           dev: {
             addToSettings: {},
@@ -279,7 +300,7 @@ export function parsePluginName(packageName: string): null | string {
  */
 export async function loadAllWorkflowPluginsFromPackageJson(
   layout: Layout.Layout
-): Promise<WorkflowHooks[]> {
+): Promise<{ name: string; hooks: WorkflowHooks }[]> {
   const plugins = await loadAllFromPackageJson()
   const workflowHooks = plugins
     .filter(driver => driver.extendsWorkflow)
@@ -296,7 +317,7 @@ export async function loadAllWorkflowPluginsFromPackageJson(
         `
         )
       }
-      return workflowComponent
+      return { name: driver.name, hooks: workflowComponent }
     })
 
   return workflowHooks
