@@ -49,6 +49,11 @@ if (!process.argv.join(' ').includes('pumpkins dev')) {
   log('HACK letting dev command handle sigterm/sigint')
 }
 
+/**
+ * Check that this pumpkins process is being run from a locally installed
+ * veresion unless there is local project or the local project does not have
+ * pumpkins installed.
+ */
 async function guardNotGlobalPumpkinsWithLocalPumpkinsProject(): Promise<void> {
   // TODO data is attainable from layout scan calculated later on... not optimal to call this twice...
   const projectType = await Layout.scanProjectType()
