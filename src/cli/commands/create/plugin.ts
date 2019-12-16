@@ -14,14 +14,16 @@ const log = pog.sub('cli:create:plugin')
 
 export default class Plugin implements Command {
   async parse() {
-    logger.info('scaffolding a pumpkins plugin')
+    logger.info('Scaffolding a pumpkins plugin')
 
     const pluginName = await askUserPluginName()
     const pluginPackageName = 'pumpkins-plugin-' + pluginName
+    logger.info(`Creating directory ${pluginPackageName}...`)
     const projectPath = fs.path(pluginPackageName)
     await fs.dirAsync(projectPath)
     process.chdir(projectPath)
 
+    logger.info(`Scaffolding files...`)
     await Promise.all([
       fs.writeAsync(
         'README.md',
@@ -171,6 +173,7 @@ export default class Plugin implements Command {
       ),
     ])
 
+    logger.info(`Installing dev dependencies...`)
     await proc.run(
       'yarn add --dev ' +
         [
@@ -187,27 +190,13 @@ export default class Plugin implements Command {
         ].join(' ')
     )
 
-    await proc.run(
-      'yarn add ' +
-        [
-          '@babel/core',
-          '@babel/plugin-proposal-nullish-coalescing-operator',
-          '@babel/plugin-proposal-optional-chaining',
-          '@types/jest',
-          'husky',
-          'pumpkins@master',
-          'tsdx',
-          'tslib',
-          'typescript',
-        ].join(' ')
-    )
-
+    logger.info(`Initializing git repository...`)
     await createGitRepository()
 
     logger.info(stripIndent`
         Done! To get started:
 
-          cd ${pluginPackageName} && yarn dev
+               cd ${pluginPackageName} && yarn dev
     `)
   }
 }
