@@ -14,12 +14,7 @@ import { register } from 'ts-node'
 import * as ts from 'typescript'
 import { Script } from 'vm'
 import * as Layout from '../framework/layout'
-import {
-  extractContextTypes,
-  pog,
-  readTsConfig,
-  loadAndProcessConfig,
-} from '../utils'
+import { extractContextTypes, pog, readTsConfig } from '../utils'
 import cfgFactory from './cfg'
 import hook from './hook'
 import * as ipc from './ipc'
@@ -33,10 +28,6 @@ register({
   transpileOnly: true,
 })
 ;(async function() {
-  log('starting config loading')
-  loadAndProcessConfig('development')
-  log('finished config loading')
-
   log('starting context type extraction')
   const layout = await Layout.loadDataFromParentProcess()
   const tsConfig = readTsConfig(layout)

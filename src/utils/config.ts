@@ -1,7 +1,8 @@
 import * as fs from 'fs-jetpack'
 import { LiteralUnion } from 'type-fest'
-import { logger } from './logger'
+import * as ts from 'typescript'
 import { pog } from './pog'
+import { fatal } from './process'
 
 const log = pog.sub(__filename)
 
@@ -21,8 +22,12 @@ interface Environment {
 }
 
 function tryLoadConfig(configPath: string): object | null {
+  const { unregister } = registerTsExt()
+
   try {
-    return require(configPath)
+    const config = require(configPath)
+    unregister()
+    return config
   } catch (e) {
     log(
       'we could not load pumpkins config file at %s. reason: %O',
@@ -40,21 +45,16 @@ function validateConfig(config: any): Config | null {
   }
 
   if (!config.default) {
-    logger.error(
-      'Your config needs to be default exported. `export default createConfig({ ... })`'
+    fatal(
+      'Your config in `pumpkins.config.ts` needs to be default exported. `export default createConfig({ ... })`'
     )
-    return null
   }
 
   return config.default as Config
 }
 
 export function loadConfig(): Config | null {
-  let config = tryLoadConfig(fs.path('pumpkins.config.js'))
-
-  if (!config) {
-    config = tryLoadConfig(fs.path('pumpkins.config.ts'))
-  }
+  const config = tryLoadConfig(fs.path('pumpkins.config.ts'))
 
   return validateConfig(config)
 }
@@ -133,6 +133,36 @@ function processEnvMappingFromConfig(config: Config): void {
       process.env[sourceEnvName]
     )
     process.env[targetEnvName] = process.env[sourceEnvName]
+  }
+}
+
+/**
+ * Register .ts extension only if it wasn't set already
+ */
+function registerTsExt(): { unregister: () => void } {
+  if (require.extensions['.ts']) {
+    return { unregister: () => {} }
+  }
+
+  const originalHandler = require.extensions['.js']
+
+  require.extensions['.ts'] = (m: any, filename) => {
+    const _compile = m._compile
+
+    m._compile = function(code: string, fileName: string) {
+      const transpiledModule = ts.transpileModule(code, {
+        compilerOptions: { target: ts.ScriptTarget.ES5 },
+      }).outputText
+      return _compile.call(this, transpiledModule, fileName)
+    }
+
+    return originalHandler(m, filename)
+  }
+
+  return {
+    unregister: () => {
+      delete require.extensions['.ts']
+    },
   }
 }
 

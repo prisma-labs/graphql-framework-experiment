@@ -4,7 +4,7 @@ import * as readline from 'readline'
 import * as Layout from '../../framework/layout'
 import * as Plugin from '../../framework/plugin'
 import { createStartModuleContent } from '../../framework/start'
-import { findOrScaffoldTsConfig, pog } from '../../utils'
+import { findOrScaffoldTsConfig, pog, loadAndProcessConfig } from '../../utils'
 import { clearConsole } from '../../utils/console'
 import { logger } from '../../utils/logger'
 import { createWatcher } from '../../watcher'
@@ -37,8 +37,10 @@ export class Dev implements Command {
       process.exit(0)
     }
 
-    clearConsole()
-    logger.info('Starting dev server...')
+    /**
+     * Load config before loading plugins which may rely on env vars being defined
+     */
+    loadAndProcessConfig('development')
 
     const layout = await Layout.create()
     const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
@@ -114,6 +116,9 @@ export class Dev implements Command {
     if (args['--inspect-brk']) {
       nodeArgs.push(`--inspect-brk=${args['--inspect-brk']}`)
     }
+
+    clearConsole()
+    logger.info('Starting dev server...')
 
     createWatcher({
       plugins: plugins,
