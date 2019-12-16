@@ -1,6 +1,7 @@
 import { spawnSync, SpawnSyncOptions, spawn } from 'child_process'
 import { logger } from './logger'
 import { stripIndent } from 'common-tags'
+import * as Path from 'path'
 
 /**
  * Log a meaningful semantic error message sans stack track and then crash
@@ -231,4 +232,15 @@ function parseCommandString(cmd: string): { name: string; args: string[] } {
 
 function isFailedExitCode(exitCode: null | number): boolean {
   return typeof exitCode === 'number' && exitCode !== 0
+}
+
+/**
+ * Check if this process was created from the bin of the given project or not.
+ * @param packageJsonPath
+ */
+export function isProcessFromProjectBin(packageJsonPath: string): boolean {
+  const processBinPath = process.argv[1]
+  const processBinDirPath = Path.dirname(processBinPath)
+  const projectBinDirPath = Path.join(packageJsonPath, 'node_modules/.bin')
+  return processBinDirPath !== projectBinDirPath
 }

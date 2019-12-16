@@ -3,9 +3,8 @@ import { CLI } from './helpers/CLI'
 import * as Commands from './commands'
 import { HelpError } from './helpers'
 import { isError } from 'util'
-import { pog, fatal } from '../utils'
+import { pog, fatal, isProcessFromProjectBin } from '../utils'
 import * as Layout from '../framework/layout'
-import * as Path from 'path'
 import { stripIndent } from 'common-tags'
 
 const log = pog.sub('cli')
@@ -57,19 +56,16 @@ if (!process.argv.join(' ').includes('pumpkins dev')) {
 async function guardNotGlobalPumpkinsWithLocalPumpkinsProject(): Promise<void> {
   // TODO data is attainable from layout scan calculated later on... not optimal to call this twice...
   const projectType = await Layout.scanProjectType()
-  if (projectType.type === 'pumpkins_project') {
-    const pumpkinsBinPath = process.argv[1]
-    const pumpkinsBinDirPath = Path.dirname(pumpkinsBinPath)
-    const packageJsonPath = Path.dirname(projectType.packageJsonPath)
-    const projectBinDirPath = Path.join(packageJsonPath, 'node_modules/.bin')
-    if (pumpkinsBinDirPath !== projectBinDirPath) {
-      // TODO make npm aware
-      fatal(stripIndent`
+  if (
+    projectType.type === 'pumpkins_project' &&
+    isProcessFromProjectBin(projectType.packageJsonPath)
+  ) {
+    // TODO make npm aware
+    fatal(stripIndent`
         You are using the pumpkins cli from a globally installed location. Please use the locally installed one:
 
             yarn pumpkins ${process.argv.slice(2)}
       `)
-    }
   }
 }
 
