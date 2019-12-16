@@ -15,8 +15,8 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
   - [Adding Prisma](#adding-prisma)
     - [Overview](#overview)
     - [Example](#example)
-  - [Database workflows](#database-workflows)
-    - [Setup a localhost postgres database](#setup-a-localhost-postgres-database)
+  - [Databases](#databases)
+    - [Setup a local postgres](#setup-a-local-postgres)
   - [Going to Proudction](#going-to-proudction)
     - [Heroku](#heroku)
   - [Conventions](#conventions)
@@ -283,26 +283,27 @@ Using the photon instance on `ctx`:
 
 <br>
 
-## Database workflows
+## Databases
 
-### Setup a localhost postgres database
+### Setup a local postgres
 
-- With Docker
+The reccommended way to run postgres locally is with docker, because it is easy flexible and reliable.
 
-  ```
-  docker run --detach --publish 5432:5432 --name 'myapp-db' --env POSTGRES_PASSWORD=pumpkins postgres
-  ```
+1. Start a postgres server for your app:
 
-  Connection URL will be TODO
+   ```
+   docker run --detach --publish 5432:5432 --name 'myapp-db' --env POSTGRES_PASSWORD=pumpkins postgres
+   ```
 
-- With Brew
+2. Now you can use a connection URL like:
 
-  ```
-  brew install postgres
-  ```
+   ```
+   postgresql://postgres:pumpkins@localhost:5432/myapp
+   ```
 
-  Connection URL will be
-  `postgresql://postgres:pumpkins@localhost:5432/myapp`
+If you don't want to use a docker, here are some links to alternative approaches:
+
+- [With Homebrew](https://wiki.postgresql.org/wiki/Homebrew)
 
 <br>
 
