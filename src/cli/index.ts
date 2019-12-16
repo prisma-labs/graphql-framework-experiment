@@ -52,16 +52,16 @@ if (!process.argv.join(' ').includes('pumpkins dev')) {
 async function main(): Promise<number> {
   // create a new CLI with our subcommands
   const cli = new CLI({
-    __default: new Commands.__Default(),
     dev: new Commands.Dev(),
     build: new Commands.Build(),
     generate: new Commands.Generate(),
     doctor: new Commands.Doctor(),
     create: {
-      __default: 'app',
       app: new Commands.Create.App(),
       plugin: new Commands.Create.Plugin(),
+      __default: 'app',
     },
+    __default: new Commands.__Default(),
   })
 
   // parse the arguments

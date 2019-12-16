@@ -68,6 +68,10 @@ function buildCommandsEntry(
   parent: CommandNamespace
 ): CommandNode {
   if (typeof cmd === 'string') {
+    // TODO need concept of createUnresolvedCommandRef because de-referring
+    // needs to come after the tree of concrete command values has been built.
+    // Easy workaround for now is to keep all reference nodes at the bottom of
+    // their respective namespace...!
     return createCommandRef(cmd, parent)
   } else if (typeof cmd.parse === 'function') {
     return createConcreteCommand(cmd as Command, parent)
@@ -121,7 +125,7 @@ export class CLI implements Command {
     while (true) {
       if (targettedCommand.type !== 'command_namespace') break
 
-      const nextArg = args._.pop()
+      const nextArg = args._.shift()
 
       if (nextArg === undefined) break
 
