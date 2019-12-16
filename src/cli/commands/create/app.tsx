@@ -88,7 +88,7 @@ export async function runBootstrapper(
   const options: Options = {
     ...optionsGiven,
     projectName: CWDProjectNameOrGenerate(),
-    pumpkinsVersion: require('../../../package.json').version,
+    pumpkinsVersion: require('../../../../package.json').version,
   }
 
   log('checking folder is in a clean state...')
