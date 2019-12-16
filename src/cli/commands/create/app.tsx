@@ -113,8 +113,11 @@ export async function runBootstrapper(
     logger.successBold(
       'Installing Prisma plugin... (this will take around ~10 seconds)'
     )
+    // Env var used for development
+    const prismaPluginVersion =
+      process.env.PUMPKINS_PLUGIN_PRISMA_VERSION ?? 'master'
     // TODO @latest
-    await proc.run('yarn add pumpkins-plugin-prisma@master', {
+    await proc.run(`yarn add pumpkins-plugin-prisma@${prismaPluginVersion}`, {
       // await proc.run('yarn add pumpkins-plugin-prisma@master', {
       // This allows installing prisma without a warning being emitted about there
       // being a missing prisma schema. For more detail refer to
