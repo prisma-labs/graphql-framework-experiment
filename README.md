@@ -12,7 +12,7 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
     - [Getting Started](#getting-started)
     - [Next Step, Getting a Sense for End to End Type Safety](#next-step-getting-a-sense-for-end-to-end-type-safety)
 - [Guide](#guide)
-  - [Adding Prisma Framework](#adding-prisma-framework)
+  - [Adding Prisma](#adding-prisma)
     - [Overview](#overview)
     - [Example](#example)
   - [Database workflows](#database-workflows)
@@ -198,7 +198,7 @@ Our Hello World schema doesn't account for information about moons, lets change 
 
 # Guide
 
-## Adding Prisma Framework
+## Adding Prisma
 
 ### Overview
 
