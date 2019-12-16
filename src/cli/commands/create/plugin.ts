@@ -114,14 +114,6 @@ export default class Plugin implements Command {
           sourceMap: true,
           rootDir: './',
           strict: true,
-          noImplicitAny: true,
-          strictNullChecks: true,
-          strictFunctionTypes: true,
-          strictPropertyInitialization: true,
-          noImplicitThis: true,
-          alwaysStrict: true,
-          noUnusedLocals: true,
-          noUnusedParameters: true,
           noImplicitReturns: true,
           noFallthroughCasesInSwitch: true,
           moduleResolution: 'node',
@@ -224,8 +216,7 @@ export default class Plugin implements Command {
  * Promp the user to give the plugin they are about to work on a name.
  */
 async function askUserPluginName(): Promise<string> {
-  // TODO rather than asking them not to write the prefix, have them type at
-  // the prompt with "pumpkins-plugin-" text faded gray e.g.
+  // TODO prompt with "pumpkins-plugin-" text faded gray e.g.
   //
   // > pumpkins-plugin-|
   //
@@ -236,8 +227,8 @@ async function askUserPluginName(): Promise<string> {
   const { pluginName }: { pluginName: string } = await prompts({
     type: 'text',
     name: 'pluginName',
-    message:
-      'What is the name of your plugin? (do not write the pumpkins-plugin- prefix)',
+    message: 'What is the name of your plugin?',
   })
-  return pluginName
+  const pluginNameNormalized = pluginName.replace(/^pumpkins-plugin-(.+)/, '$1')
+  return pluginNameNormalized
 }
