@@ -1,8 +1,8 @@
+import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import { LiteralUnion } from 'type-fest'
 import { ScriptTarget } from 'typescript'
 import { fatal, pog, transpileModule } from '../utils'
-import { stripIndent } from 'common-tags'
 
 const log = pog.sub(__filename)
 
@@ -20,6 +20,8 @@ interface Environment {
   PUMPKINS_DATABASE_URL?: string
   [env_key: string]: string | undefined
 }
+
+export const DATABASE_URL_ENV_NAME = 'PUMPKINS_DATABASE_URL'
 
 function tryLoadConfig(configPath: string): object | null {
   const { unregister } = registerTsExt()
@@ -59,23 +61,19 @@ export function loadConfig(): Config | null {
   return validateConfig(config)
 }
 
-export function processConfig(
-  config: Config,
-  inputStage: string | undefined
-): void {
-  loadEnvFromConfig(config, inputStage)
+export function processConfig(config: Config, stage: string | undefined): void {
+  processEnvFromConfig(config, stage)
   processEnvMappingFromConfig(config)
 }
 
+/**
+ * Take stage from args passed to cli, or from node_env, or fallback to development if none were set
+ */
 function readStage(inputStage: string | undefined): StageNames {
-  if (Boolean(process.env.PUMPKINS_DEV_MODE) === true) {
-    return 'development'
-  }
-
   return inputStage ?? process.env.NODE_ENV ?? 'development'
 }
 
-function loadEnvFromConfig(
+function processEnvFromConfig(
   config: Config,
   inputStage: string | undefined
 ): void {
@@ -171,12 +169,12 @@ function registerTsExt(): { unregister: () => void } {
 }
 
 export function loadAndProcessConfig(
-  inputStage: StageNames | undefined
+  stage: StageNames | undefined
 ): Config | null {
   const config = loadConfig()
 
   if (config) {
-    processConfig(config, inputStage)
+    processConfig(config, stage)
   }
 
   return config

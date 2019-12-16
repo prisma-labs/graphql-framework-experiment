@@ -51,6 +51,10 @@ export class Build implements Command {
       return this.help()
     }
 
+    /**
+     * Load config before loading plugins which may rely on env vars being defined
+     */
+    const config = Config.loadAndProcessConfig(args['--stage'])
     const deploymentTarget = normalizeTarget(args['--deployment'])
     const layout = await Layout.create({
       buildOutput:
@@ -58,17 +62,14 @@ export class Build implements Command {
         computeBuildOutputFromTarget(deploymentTarget) ??
         undefined,
     })
-    /**
-     * Load config before loading plugins which may rely on env vars being defined
-     */
-    const config = Config.loadAndProcessConfig(args['--stage'])
-    const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
 
     if (deploymentTarget) {
-      if (!validateTarget(deploymentTarget, layout)) {
+      if (!validateTarget(deploymentTarget, config, layout)) {
         process.exit(1)
       }
     }
+
+    const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
 
     await findOrScaffoldTsConfig(layout)
 
