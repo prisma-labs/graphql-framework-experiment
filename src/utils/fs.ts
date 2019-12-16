@@ -1,4 +1,5 @@
 import * as fs from 'fs-jetpack'
+import * as Path from 'path'
 
 /**
  * Write a file after forcefully removing it, so that VSC will observe the
