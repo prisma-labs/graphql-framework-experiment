@@ -144,21 +144,19 @@ export class CLI implements Command {
 
     switch (targettedCommand.type) {
       case 'concrete_command':
-        return targettedCommand.value.parse(args._.slice(1))
+        return targettedCommand.value.parse(args._)
       case 'command_reference':
-        return targettedCommand.value.commandPointer.value.parse(
-          args._.slice(1)
-        )
+        return targettedCommand.value.commandPointer.value.parse(args._)
       case 'command_namespace':
         const nsDefault = lookupCommand('__default', targettedCommand)
         // When no sub-command given display help or the default sub-command if
         // registered
         if (nsDefault !== undefined) {
           if (nsDefault.type === 'concrete_command') {
-            return nsDefault.value.parse(args._.slice(1))
+            return nsDefault.value.parse(args._)
           }
           if (nsDefault.type === 'command_reference') {
-            return nsDefault.value.commandPointer.value.parse(args._.slice(1))
+            return nsDefault.value.commandPointer.value.parse(args._)
           }
           throw new Error(
             `Attempt to run namespace default failed because was not a command or reference to a command. Was: ${nsDefault}`
