@@ -99,6 +99,8 @@ function lookupCommand(
 export class CLI implements Command {
   constructor(private readonly cmds: CommandsLayout) {}
 
+  // TODO setup stop at positional option, have each sub-command parse in turn
+  // https://github.com/zeit/arg#stopatpositional
   async parse(argv: string[]) {
     const args = arg(argv, {
       '--help': Boolean,

@@ -28,6 +28,8 @@ export default class Plugin implements Command {
         stripIndent`
           # ${pluginPackageName} <!-- omit in toc -->
 
+          **Contents**
+
           <!-- START doctoc generated TOC please keep comment here to allow auto update -->
           <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
           <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -51,13 +53,13 @@ export default class Plugin implements Command {
 
           ## CLI Contributions
 
-          N/A
+          TODO
 
           <br>
 
           ## API Contributions
 
-          N/A
+          TODO
         `
       ),
       fs.writeAsync('package.json', {
@@ -149,10 +151,10 @@ export default class Plugin implements Command {
         stripIndent`
           import * as PumpkinsPlugin from 'pumpkins/dist/framework/plugin'
 
-          export const PumpkinsPlugin.create(pumpkins => {
-            pumpkins.workflow((hooks, context) => {
-              hook.build.onStart = async () => {
-                pumpkins.log.info('Hello from ${pluginName}!')
+          export const create = PumpkinsPlugin.create(pumpkins => {
+            pumpkins.workflow((hooks, _context) => {
+              hooks.build.onStart = async () => {
+                pumpkins.utils.log.info('Hello from ${pluginName}!')
               }
             })
 
@@ -189,6 +191,7 @@ export default class Plugin implements Command {
           'tsdx',
           'tslib',
           'typescript',
+          'doctoc',
         ].join(' ')
     )
 
