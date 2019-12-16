@@ -2,7 +2,9 @@ import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import ts from 'typescript'
 import { START_MODULE_NAME } from '../../constants'
+import * as Config from '../../framework/config'
 import * as Layout from '../../framework/layout'
+import * as Plugin from '../../framework/plugin'
 import { createStartModuleContent } from '../../framework/start'
 import {
   compile,
@@ -16,14 +18,13 @@ import {
 } from '../../utils'
 import {
   computeBuildOutputFromTarget,
+  formattedSupportedDeployTargets,
   logTargetPostBuildMessage,
   normalizeTarget,
   validateTarget,
-  formattedSupportedDeployTargets,
 } from '../../utils/deploy-target'
 import { logger } from '../../utils/logger'
 import { arg, Command, isError } from '../helpers'
-import * as Plugin from '../../framework/plugin'
 
 const log = pog.sub('cli:build')
 
@@ -32,6 +33,7 @@ const BUILD_ARGS = {
   '-o': '--output',
   '--deployment': String,
   '-d': '--deployment',
+  '--stage': String,
   '--help': Boolean,
   '-h': '--help',
 }
@@ -49,6 +51,10 @@ export class Build implements Command {
       return this.help()
     }
 
+    /**
+     * Load config before loading plugins which may rely on env vars being defined
+     */
+    const config = Config.loadAndProcessConfig(args['--stage'])
     const deploymentTarget = normalizeTarget(args['--deployment'])
     const layout = await Layout.create({
       buildOutput:
@@ -56,13 +62,14 @@ export class Build implements Command {
         computeBuildOutputFromTarget(deploymentTarget) ??
         undefined,
     })
-    const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
 
     if (deploymentTarget) {
-      if (!validateTarget(deploymentTarget, layout)) {
+      if (!validateTarget(deploymentTarget, config, layout)) {
         process.exit(1)
       }
     }
+
+    const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
 
     await findOrScaffoldTsConfig(layout)
 
@@ -80,7 +87,7 @@ export class Build implements Command {
     console.log('🎃  Generating Nexus artifacts ...')
     await generateArtifacts(
       createStartModuleContent({
-        stage: 'dev',
+        internalStage: 'dev',
         appPath: layout.app.path,
         layout,
       })
@@ -94,7 +101,12 @@ export class Build implements Command {
     const tsProgramWithTypegen = createTSProgram(layout)
     compile(tsProgramWithTypegen, layout)
 
-    await writeStartModule(layout, tsProgram)
+    await writeStartModule(
+      config,
+      args['--stage'] ?? 'production',
+      layout,
+      tsProgram
+    )
 
     console.log(
       '🎃  Pumpkins app successfully compiled at %s',
@@ -124,6 +136,8 @@ export class Build implements Command {
  * pumpkins app.
  */
 async function writeStartModule(
+  config: Config.Config | null,
+  buildStage: string,
   layout: Layout.Layout,
   tsProgram: ts.EmitAndSemanticDiagnosticsBuilderProgram
 ): Promise<void> {
@@ -143,9 +157,11 @@ async function writeStartModule(
   log('transpiling start module...')
   const startModule = transpileModule(
     createStartModuleContent({
-      stage: 'build',
+      internalStage: 'build',
       appPath: layout.app.path,
       layout,
+      config,
+      buildStage,
     }),
     tsProgram.getCompilerOptions()
   )

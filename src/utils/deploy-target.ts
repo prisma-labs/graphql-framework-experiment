@@ -1,14 +1,15 @@
+import chalk from 'chalk'
+import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import * as path from 'path'
+import { PackageJson } from 'type-fest'
 import { pog } from '.'
 import { START_MODULE_NAME } from '../constants'
-import { Layout, DEFAULT_BUILD_FOLDER_NAME } from '../framework/layout'
+import { Config, DATABASE_URL_ENV_NAME } from '../framework/config'
+import { DEFAULT_BUILD_FOLDER_NAME, Layout } from '../framework/layout'
 import { logger } from './logger'
-import { findConfigFile } from './tsc'
 import { fatal } from './process'
-import { stripIndent } from 'common-tags'
-import chalk from 'chalk'
-import { PackageJson } from 'type-fest'
+import { findConfigFile } from './tsc'
 
 const log = pog.sub(__filename)
 
@@ -60,7 +61,7 @@ export function computeBuildOutputFromTarget(target: SupportedTargets | null) {
 
 const TARGET_VALIDATORS: Record<
   SupportedTargets,
-  (layout: Layout) => boolean
+  (config: Config | null, layout: Layout) => boolean
 > = {
   now: validateNow,
   heroku: validateHeroku,
@@ -68,10 +69,11 @@ const TARGET_VALIDATORS: Record<
 
 export function validateTarget(
   target: SupportedTargets,
+  config: Config | null,
   layout: Layout
 ): boolean {
   const validator = TARGET_VALIDATORS[target]
-  return validator(layout)
+  return validator(config, layout)
 }
 
 interface NowJson {
@@ -84,7 +86,7 @@ interface NowJson {
 /**
  * Validate the user's now configuration file.
  */
-function validateNow(layout: Layout): boolean {
+function validateNow(_config: Config | null, layout: Layout): boolean {
   const maybeNowJsonPath = findConfigFile('now.json', { required: false })
   const startModulePath = `${layout.buildOutput}/${START_MODULE_NAME}.js`
   let isValid = true
@@ -164,7 +166,7 @@ function validateNow(layout: Layout): boolean {
   return isValid
 }
 
-function validateHeroku(layout: Layout): boolean {
+function validateHeroku(config: Config | null, layout: Layout): boolean {
   const nodeMajorVersion = Number(process.versions.node.split('.')[0])
   const packageJsonPath = findConfigFile('package.json', { required: false })
   let isValid = true
@@ -172,6 +174,7 @@ function validateHeroku(layout: Layout): boolean {
   // Make sure there's a package.json file
   if (!packageJsonPath) {
     logger.error('We could not find a `package.json` file.')
+    console.log()
     isValid = false
   } else {
     const packageJsonContent = fs.read(packageJsonPath, 'json') as PackageJson
@@ -185,6 +188,7 @@ function validateHeroku(layout: Layout): boolean {
       logger.error(
         `Please add the following to your \`package.json\` file: "engines": { "node": "${nodeMajorVersion}.x" }`
       )
+      console.log()
       isValid = false
     }
 
@@ -200,6 +204,7 @@ function validateHeroku(layout: Layout): boolean {
         logger.warn(
           `Local version: ${nodeMajorVersion}. Heroku version: ${packageJsonNodeVersion}`
         )
+        console.log()
       }
     }
 
@@ -209,6 +214,7 @@ function validateHeroku(layout: Layout): boolean {
       logger.error(
         `Please add the following to your \`package.json\` file: "scripts": { "build": "pumpkins build -d heroku" }`
       )
+      console.log()
       isValid = false
     }
 
@@ -220,6 +226,7 @@ function validateHeroku(layout: Layout): boolean {
       logger.error(
         'Please make sure your `build` script in your `package.json` file runs the command `pumpkins build -d heroku`'
       )
+      console.log()
       isValid = false
     }
 
@@ -228,6 +235,7 @@ function validateHeroku(layout: Layout): boolean {
       logger.error(
         `Please add the following to your \`package.json\` file: "scripts": { "start": "node ${layout.buildOutput}" }`
       )
+      console.log()
       isValid = false
     }
 
@@ -240,8 +248,49 @@ function validateHeroku(layout: Layout): boolean {
       )
       logger.error(`Found: "${packageJsonContent.scripts?.start}"`)
       logger.error(`Expected: "node ${layout.buildOutput}"`)
+      console.log()
       isValid = false
     }
+  }
+
+  if (!config) {
+    config = {
+      environments: {},
+      environment_mapping: {
+        DATABASE_URL: DATABASE_URL_ENV_NAME,
+      },
+    }
+    logger.warn(
+      'Heroku pass the database url to your pass using the environment variable `DATABASE_URL`'
+    )
+    logger.warn(
+      `We aliased the environment variable "${DATABASE_URL_ENV_NAME}" to DATABASE_URL`
+    )
+    console.log()
+  }
+
+  if (!config?.environment_mapping?.DATABASE_URL) {
+    config = {
+      ...config,
+      environment_mapping: {
+        ...config.environment_mapping,
+        DATABASE_URL: DATABASE_URL_ENV_NAME,
+      },
+    }
+
+    logger.warn(
+      'Heroku pass the database url to your app using the environment variable `DATABASE_URL`'
+    )
+    logger.warn(
+      `We aliased the environment variable \`${DATABASE_URL_ENV_NAME}\` to \`DATABASE_URL\``
+    )
+    logger.warn(
+      'If you want to get rid of this warning, please add the following to your `pumpkins.config.ts` file:'
+    )
+    logger.warn(
+      `createConfig(..., { environment_mapping: { DATABASE_URL: '${DATABASE_URL_ENV_NAME}' } })`
+    )
+    console.log()
   }
 
   return isValid

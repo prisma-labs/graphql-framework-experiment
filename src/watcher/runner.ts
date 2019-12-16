@@ -11,7 +11,6 @@ process.stderr.isTTY = true
 
 import { fork } from 'child_process'
 import { register } from 'ts-node'
-// TODO HACK, big one, like running ts-node twice?
 import * as ts from 'typescript'
 import { Script } from 'vm'
 import * as Layout from '../framework/layout'
@@ -24,6 +23,7 @@ import Module = require('module')
 
 const log = pog.sub('cli:dev:runner')
 
+// TODO HACK, big one, like running ts-node twice?
 register({
   transpileOnly: true,
 })

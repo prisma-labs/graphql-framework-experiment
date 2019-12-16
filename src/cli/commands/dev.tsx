@@ -1,14 +1,15 @@
-import chalk from 'chalk'
 import { Box, Instance, render } from 'ink'
 import React from 'react'
 import * as readline from 'readline'
+import * as Config from '../../framework/config'
 import * as Layout from '../../framework/layout'
+import * as Plugin from '../../framework/plugin'
 import { createStartModuleContent } from '../../framework/start'
 import { findOrScaffoldTsConfig, pog } from '../../utils'
 import { clearConsole } from '../../utils/console'
+import { logger } from '../../utils/logger'
 import { createWatcher } from '../../watcher'
 import { arg, Command, isError } from '../helpers'
-import * as Plugin from '../../framework/plugin'
 
 const log = pog.sub('cli:dev')
 
@@ -37,8 +38,10 @@ export class Dev implements Command {
       process.exit(0)
     }
 
-    clearConsole()
-    console.log(chalk`{bgBlue INFO} Starting dev server...`)
+    /**
+     * Load config before loading plugins which may rely on env vars being defined
+     */
+    Config.loadAndProcessConfig('development')
 
     const layout = await Layout.create()
     const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
@@ -104,7 +107,7 @@ export class Dev implements Command {
     })
 
     const bootModule = createStartModuleContent({
-      stage: 'dev',
+      internalStage: 'dev',
       layout: layout,
       appPath: layout.app.path,
     })
@@ -114,6 +117,9 @@ export class Dev implements Command {
     if (args['--inspect-brk']) {
       nodeArgs.push(`--inspect-brk=${args['--inspect-brk']}`)
     }
+
+    clearConsole()
+    logger.info('Starting dev server...')
 
     createWatcher({
       plugins: plugins,
@@ -128,7 +134,7 @@ export class Dev implements Command {
       onEvent: e => {
         if (state.logMode && e.event === 'restart') {
           clearConsole()
-          console.log(chalk`{bgBlue INFO} Restarting...`, e.file)
+          logger.info('Restarting...', e.file)
         }
         if (state.logMode && e.event === 'logging') {
           process.stdout.write(e.data)
