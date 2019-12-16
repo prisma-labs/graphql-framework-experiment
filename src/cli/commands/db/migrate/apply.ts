@@ -1,3 +1,4 @@
+import * as Config from '../../../../framework/config'
 import { fatal, validateAndLoadDBDriver } from '../../../../utils'
 import { arg, Command, isError } from '../../../helpers'
 import { generateHelpForCommand } from '../../../helpers/helpers'
@@ -7,6 +8,7 @@ export class DbApply implements Command {
     const args = arg(argv, {
       '--force': Boolean,
       '-f': '--force',
+      '--stage': String,
       '--help': Boolean,
       '-h': '--help',
     })
@@ -20,8 +22,12 @@ export class DbApply implements Command {
     }
 
     const dbDriver = await validateAndLoadDBDriver()
+    const secrets = Config.loadEnvironmentFromConfig(args['--stage']) ?? {}
 
-    await dbDriver.db?.migrate.apply.onStart({ force: args['--force'] })
+    await dbDriver.db?.migrate.apply.onStart({
+      force: args['--force'],
+      secrets,
+    })
   }
 
   help() {
@@ -33,6 +39,10 @@ export class DbApply implements Command {
           name: 'force',
           alias: 'f',
           description: 'Force the migration to be applied',
+        },
+        {
+          name: 'stage',
+          description: 'Set the stage to load an environment',
         },
       ]
     )

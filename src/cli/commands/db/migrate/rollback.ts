@@ -1,3 +1,4 @@
+import * as Config from '../../../../framework/config'
 import { fatal, validateAndLoadDBDriver } from '../../../../utils'
 import { Command } from '../../../helpers'
 import { arg, generateHelpForCommand, isError } from '../../../helpers/helpers'
@@ -5,6 +6,7 @@ import { arg, generateHelpForCommand, isError } from '../../../helpers/helpers'
 export class DbRollback implements Command {
   async parse(argv: string[]) {
     const args = arg(argv, {
+      '--stage': String,
       '--help': String,
       '-h': '--help',
     })
@@ -17,15 +19,21 @@ export class DbRollback implements Command {
     }
 
     const dbDriver = await validateAndLoadDBDriver()
+    const secrets = Config.loadEnvironmentFromConfig(args['--stage']) ?? {}
 
-    await dbDriver.db?.migrate.rollback.onStart()
+    await dbDriver.db?.migrate.rollback.onStart({ secrets })
   }
 
   help() {
     const help = generateHelpForCommand(
       'db rollback',
       'Rollback a migration to your database',
-      []
+      [
+        {
+          name: 'stage',
+          description: 'Set the stage to load an environment',
+        },
+      ]
     )
 
     console.log(help)

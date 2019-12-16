@@ -350,6 +350,19 @@ function tryLoadSecrets(
   return null
 }
 
+export function loadEnvironmentFromConfig(
+  inputStage: string | undefined
+): Environment | null {
+  const config = loadConfig()
+  const stage = readStage(inputStage)
+
+  if (!config) {
+    return null
+  }
+
+  return loadEnvironment(config.environments, stage) ?? null
+}
+
 /**
  * Helper method to configure pumpkins. **Must be default exported in a `pumpkins.config.ts` file**
  *

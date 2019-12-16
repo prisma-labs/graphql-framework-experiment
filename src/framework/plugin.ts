@@ -10,7 +10,7 @@ import prompts from 'prompts'
 
 // TODO move to utils module
 type MaybePromise<T = void> = T | Promise<T>
-type CallbackRegistrar<F> = (f: F) => void
+type CallbackRegistrer<F> = (f: F) => void
 type SideEffector = () => MaybePromise
 
 export type OnAfterBaseSetupLens = {
@@ -18,12 +18,24 @@ export type OnAfterBaseSetupLens = {
   connectionURI: string | undefined
 }
 
+type Secrets = Record<string, string | undefined>
+
 export type DbMigratePlanContext = {
   migrationName: string | undefined
+  secrets: Secrets
 }
 
 export type DbMigrateApplyContext = {
   force: boolean | undefined
+  secrets: Secrets
+}
+
+export type DbInitContext = {
+  secrets: Secrets
+}
+
+export type DbMigrateRollbackContext = {
+  secrets: Secrets
 }
 
 export type WorkflowHooks = {
@@ -46,7 +58,7 @@ export type WorkflowHooks = {
   }
   db?: {
     init: {
-      onStart: SideEffector
+      onStart: (ctx: DbInitContext) => void
     }
     migrate: {
       plan: {
@@ -56,7 +68,7 @@ export type WorkflowHooks = {
         onStart: (ctx: DbMigrateApplyContext) => void
       }
       rollback: {
-        onStart: SideEffector
+        onStart: (ctx: DbMigrateRollbackContext) => void
       }
     }
   }
@@ -92,8 +104,8 @@ export type RuntimeContributions<C extends {} = any> = {
 type RuntimePlugin = () => RuntimeContributions
 
 export type Lens = {
-  runtime: CallbackRegistrar<RuntimePlugin>
-  workflow: CallbackRegistrar<WorkflowDefiner>
+  runtime: CallbackRegistrer<RuntimePlugin>
+  workflow: CallbackRegistrer<WorkflowDefiner>
   utils: {
     log: typeof logger
     runSync: typeof runSync
