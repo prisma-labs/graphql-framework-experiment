@@ -54,7 +54,7 @@ system (in fact Prisma features are implemented as a plugin).
 
 ### Getting Started
 
-1. For this tutorial we will use postgres. Install it if needed and then get its connection URL. If in doubt check out [our db setup guide](#setup-a-local-postgres).
+1. For this tutorial we will use postgres. Install it if needed and then get its connection URL. If in doubt check out [our db setup guide](#setup-a-local-postgresql).
 
 2. Kick off a new project. Say yes to the prisma option.
 
@@ -284,7 +284,7 @@ Using the photon instance on `ctx`:
 
 ## Databases
 
-### Setup a local postgres
+### Setup a local PostgreSQL
 
 The reccommended way to run postgres locally is with docker, because it is easy flexible and reliable.
 
