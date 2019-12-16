@@ -52,21 +52,39 @@ system (in fact Prisma features are implemented as a plugin).
 
 ### Getting Started
 
-Kick off a new project
+1. Setup postgres on your machine and get the connection URL
 
-```
-npx pumpkins@master
-```
+   - With Docker
 
-Some highlights of what you'll see:
+     ```
+     docker run --detach --publish 5432:5432 --name 'pumpkins-getting-started' --env POSTGRES_PASSWORD=pumpkins postgres
+     ```
 
-- The `resolve` func of `users` field is strongly typed and guarantees that the shape of data returned conforms to the schema definition of `User`. There is literally zero effort for you to get this working. Just enter dev mode and start working on your app.
+     Connection URL will be TODO
 
-- Conventions save you from configuring `pumpkins` to find your schema module.
+   - With Brew
 
-- You don't need a main entrypoint module. Grow into that (see later sections) as you wish.
+     ```
+     brew install postgres
+     ```
 
-- Prisma integration is seamless, yet optional
+     Connection URL will be TODO
+
+2. Kick off a new project. When asked whether to use Prisma or not, choose yes.
+
+   ```
+   npx pumpkins@master
+   ```
+
+   Some highlights of what you'll see:
+
+   - The `resolve` func of `users` field is strongly typed and guarantees that the shape of data returned conforms to the schema definition of `User`. There is literally zero effort for you to get this working. Just enter dev mode and start working on your app.
+
+   - Conventions save you from configuring `pumpkins` to find your schema module.
+
+   - You don't need a main entrypoint module. Grow into that (see later sections) as you wish.
+
+   - Prisma integration is seamless, yet optional
 
 ### Next Step, Getting a Sense for End to End Type Safety
 
