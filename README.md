@@ -7,34 +7,37 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
+
 - [Introduction](#introduction)
-  - [Getting Started](#getting-started)
-  - [Next Step, Getting a Sense for End to End Type Safety](#next-step-getting-a-sense-for-end-to-end-type-safety)
+    - [Getting Started](#getting-started)
+    - [Next Step, Getting a Sense for End to End Type Safety](#next-step-getting-a-sense-for-end-to-end-type-safety)
 - [Guide](#guide)
   - [Adding Prisma Framework](#adding-prisma-framework)
     - [Overview](#overview)
     - [Example](#example)
+  - [Database workflows](#database-workflows)
+    - [Setup a localhost postgres database](#setup-a-localhost-postgres-database)
   - [Going to Proudction](#going-to-proudction)
     - [Heroku](#heroku)
   - [Conventions](#conventions)
     - [`schema.ts` | `schema/*`](#schemats--schema)
-      - [About](#about)
-      - [Aliases](#aliases)
+        - [About](#about)
+        - [Aliases](#aliases)
     - [`app.ts`](#appts)
-      - [About](#about-1)
-      - [Aliases](#aliases-1)
+        - [About](#about-1)
+        - [Aliases](#aliases-1)
     - [Example Layouts](#example-layouts)
 - [API](#api)
-  - [`app`](#app)
-  - [`app.addToContext`](#appaddtocontext)
-  - [`app.<nexusDefBlock>`](#appnexusdefblock)
-  - [`app.server.start`](#appserverstart)
+    - [`app`](#app)
+    - [`app.addToContext`](#appaddtocontext)
+    - [`app.<nexusDefBlock>`](#appnexusdefblock)
+    - [`app.server.start`](#appserverstart)
 - [CLI](#cli)
 - [Development](#development)
-  - [Overview](#overview-1)
-  - [Testing](#testing)
-  - [Working With Example Apps via Linking](#working-with-example-apps-via-linking)
-  - [Working with create command](#working-with-create-command)
+    - [Overview](#overview-1)
+    - [Testing](#testing)
+    - [Working With Example Apps via Linking](#working-with-example-apps-via-linking)
+    - [Working with create command](#working-with-create-command)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -52,23 +55,7 @@ system (in fact Prisma features are implemented as a plugin).
 
 ### Getting Started
 
-1. Setup postgres on your machine and get the connection URL
-
-   - With Docker
-
-     ```
-     docker run --detach --publish 5432:5432 --name 'myapp-db' --env POSTGRES_PASSWORD=pumpkins postgres
-     ```
-
-     Connection URL will be TODO
-
-   - With Brew
-
-     ```
-     brew install postgres
-     ```
-
-     Connection URL will be `postgresql://postgres:pumpkins@localhost:5432/myapp`
+1. Setup postgres on your machine and get the connection URL (e.g. `postgresql://postgres:pumpkins@localhost:5432/myapp`). If in doubt check out our [guide on localhost db setup](#setup-a-localhost-postgres-database).
 
 2. Kick off a new project. When asked whether to use Prisma or not, choose yes.
 
@@ -293,6 +280,29 @@ Using the photon instance on `ctx`:
     },
   })
 ```
+
+<br>
+
+## Database workflows
+
+### Setup a localhost postgres database
+
+- With Docker
+
+  ```
+  docker run --detach --publish 5432:5432 --name 'myapp-db' --env POSTGRES_PASSWORD=pumpkins postgres
+  ```
+
+  Connection URL will be TODO
+
+- With Brew
+
+  ```
+  brew install postgres
+  ```
+
+  Connection URL will be
+  `postgresql://postgres:pumpkins@localhost:5432/myapp`
 
 <br>
 
