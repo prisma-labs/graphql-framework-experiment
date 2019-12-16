@@ -54,9 +54,9 @@ system (in fact Prisma features are implemented as a plugin).
 
 ### Getting Started
 
-1. Setup postgres on your machine and get the connection URL (e.g. `postgresql://postgres:pumpkins@localhost:5432/myapp`). If in doubt check out our [guide on localhost db setup](#setup-a-local-postgres).
+1. For this tutorial we will use postgres. Install it if needed and then get its connection URL. If in doubt check out [our db setup guide](#setup-a-local-postgres).
 
-2. Kick off a new project. When asked whether to use Prisma or not, choose yes.
+2. Kick off a new project. Say yes to the prisma option.
 
    ```
    npx pumpkins@master
