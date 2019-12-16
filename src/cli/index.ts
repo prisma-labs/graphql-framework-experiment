@@ -54,10 +54,11 @@ async function guardNotGlobalPumpkinsWithLocalPumpkinsProject(): Promise<void> {
   const projectType = await Layout.scanProjectType()
   if (projectType.type === 'pumpkins_project') {
     const pumpkinsBinPath = process.argv[1]
+    const pumpkinsBinDirPath = Path.dirname(pumpkinsBinPath)
     const packageJsonPath = Path.dirname(projectType.packageJsonPath)
-    const projectBinPath = Path.join(packageJsonPath, 'node_modules/.bin')
-    // TODO make npm aware
-    if (Path.dirname(pumpkinsBinPath) !== projectBinPath) {
+    const projectBinDirPath = Path.join(packageJsonPath, 'node_modules/.bin')
+    if (pumpkinsBinDirPath !== projectBinDirPath) {
+      // TODO make npm aware
       fatal(stripIndent`
         You are using the pumpkins cli from a globally installed location. Please use the locally installed one:
 
