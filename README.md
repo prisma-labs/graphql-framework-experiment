@@ -56,7 +56,7 @@ system (in fact Prisma features are implemented as a plugin).
 
 1. For this tutorial we will use postgres. Install it if needed and then get its connection URL. If in doubt check out [our db setup guide](#setup-a-local-postgresql).
 
-2. Kick off a new project. Say yes to the prisma option.
+2. Kick off a new project. Say yes (`y`) to the prisma option. Choose `PostgreSQL` for the db option.
 
    ```
    npx pumpkins@master
