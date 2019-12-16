@@ -62,7 +62,13 @@ async function guardNotGlobalPumpkinsWithLocalPumpkinsProject(): Promise<void> {
   ) {
     // TODO make npm aware
     fatal(stripIndent`
-        You are using the pumpkins cli from a globally installed location. Please use the locally installed one:
+        You are using the pumpkins cli from a location other than this project.
+
+        Location of the pumpkins CLI you executed:      ${process.argv[1]}
+        Location of the pumpkins CLI for this project:  ${projectType.packageJsonPath +
+          '/node_modules/.bin/pumpkins'}
+        
+        Please use the pumpkins CLI for this project:
 
             yarn -s pumpkins ${process.argv.slice(2)}
       `)
