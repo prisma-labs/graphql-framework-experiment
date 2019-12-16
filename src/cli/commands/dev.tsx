@@ -1,4 +1,3 @@
-import chalk from 'chalk'
 import { Box, Instance, render } from 'ink'
 import React from 'react'
 import * as readline from 'readline'
@@ -6,8 +5,8 @@ import * as Layout from '../../framework/layout'
 import * as Plugin from '../../framework/plugin'
 import { createStartModuleContent } from '../../framework/start'
 import { findOrScaffoldTsConfig, pog } from '../../utils'
-import { loadAndProcessConfig } from '../../utils/config'
 import { clearConsole } from '../../utils/console'
+import { logger } from '../../utils/logger'
 import { createWatcher } from '../../watcher'
 import { arg, Command, isError } from '../helpers'
 
@@ -38,10 +37,8 @@ export class Dev implements Command {
       process.exit(0)
     }
 
-    loadAndProcessConfig('development')
-
     clearConsole()
-    console.log(chalk`{bgBlue INFO} Starting dev server...`)
+    logger.info('Starting dev server...')
 
     const layout = await Layout.create()
     const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
@@ -131,7 +128,7 @@ export class Dev implements Command {
       onEvent: e => {
         if (state.logMode && e.event === 'restart') {
           clearConsole()
-          console.log(chalk`{bgBlue INFO} Restarting...`, e.file)
+          logger.info('Restarting...', e.file)
         }
         if (state.logMode && e.event === 'logging') {
           process.stdout.write(e.data)
