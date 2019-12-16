@@ -1,10 +1,42 @@
-import { validateAndLoadDBDriver } from '../../../../utils'
-import { Command } from '../../../helpers'
+import { fatal, validateAndLoadDBDriver } from '../../../../utils'
+import { arg, Command, isError } from '../../../helpers'
+import { generateHelpForCommand } from '../../../helpers/helpers'
 
 export class DbApply implements Command {
-  async parse() {
+  async parse(argv: string[]) {
+    const args = arg(argv, {
+      '--force': Boolean,
+      '-f': '--force',
+      '--help': Boolean,
+      '-h': '--help',
+    })
+
+    if (isError(args)) {
+      fatal(args.message)
+    }
+
+    if (args['--help']) {
+      return this.help()
+    }
+
     const dbDriver = await validateAndLoadDBDriver()
 
-    await dbDriver.db?.migrate.apply.onStart()
+    await dbDriver.db?.migrate.apply.onStart({ force: args['--force'] })
+  }
+
+  help() {
+    const help = generateHelpForCommand(
+      'db apply',
+      'Apply a migrate to your database',
+      [
+        {
+          name: 'force',
+          alias: 'f',
+          description: 'Force the migration to be applied',
+        },
+      ]
+    )
+
+    console.log(help)
   }
 }

@@ -18,9 +18,12 @@ export type OnAfterBaseSetupLens = {
   connectionURI: string | undefined
 }
 
-export type DbContext = {
-  database: 'SQLite' | 'MySQL' | 'PostgreSQL' | undefined
-  connectionURI: string | undefined
+export type DbMigratePlanContext = {
+  migrationName: string | undefined
+}
+
+export type DbMigrateApplyContext = {
+  force: boolean | undefined
 }
 
 export type WorkflowHooks = {
@@ -47,10 +50,10 @@ export type WorkflowHooks = {
     }
     migrate: {
       plan: {
-        onStart: SideEffector
+        onStart: (ctx: DbMigratePlanContext) => void
       }
       apply: {
-        onStart: SideEffector
+        onStart: (ctx: DbMigrateApplyContext) => void
       }
       rollback: {
         onStart: SideEffector

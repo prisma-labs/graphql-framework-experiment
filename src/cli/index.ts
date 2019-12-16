@@ -67,7 +67,9 @@ async function main(): Promise<number> {
         apply: new Commands.Db.Migrate.Apply(),
         plan: new Commands.Db.Migrate.Plan(),
         rollback: new Commands.Db.Migrate.Rollback(),
+        __default: new Commands.Db.Migrate.Default(),
       },
+      __default: new Commands.Db.Default(),
     },
     __default: new Commands.__Default(),
   })

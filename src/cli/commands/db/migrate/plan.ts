@@ -1,10 +1,35 @@
-import { validateAndLoadDBDriver } from '../../../../utils'
-import { Command } from '../../../helpers'
+import { fatal, validateAndLoadDBDriver } from '../../../../utils'
+import { arg, Command, isError } from '../../../helpers'
+import { generateHelpForCommand } from '../../../helpers/helpers'
 
 export class DbPlan implements Command {
-  async parse() {
+  async parse(argv: string[]) {
+    const args = arg(argv, {
+      '--name': String,
+      '--help': String,
+      '-h': '--help',
+    })
+
+    if (isError(args)) {
+      fatal(args.message)
+    }
+
+    if (args['--help']) {
+      return this.help()
+    }
+
     const dbDriver = await validateAndLoadDBDriver()
 
-    await dbDriver.db?.migrate.plan.onStart()
+    await dbDriver.db?.migrate.plan.onStart({ migrationName: args['--name'] })
+  }
+
+  help() {
+    const help = generateHelpForCommand(
+      'db plan',
+      'Generate a migration file',
+      [{ name: 'name', description: 'Name of the migration' }]
+    )
+
+    console.log(help)
   }
 }
