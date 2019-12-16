@@ -114,7 +114,7 @@ Our Hello World schema doesn't account for information about moons, lets change 
 
    ```
     Warning: Your GraphQL `World` object definition is projecting a field `moons` with `Moon` as output type, but `Moon` is not defined in your GraphQL Schema
-    Warning: in /Users/jasonkuhrt/foobar/app/schema.ts:10:13
+    Warning: in /Users/jasonkuhrt/foobar/src/schema.ts:10:13
 
       6 definition(t) {
       7 t.model.id();
