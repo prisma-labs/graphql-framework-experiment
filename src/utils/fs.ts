@@ -19,3 +19,31 @@ export async function removeWriteAsync(
   await fs.removeAsync(filePath)
   await fs.writeAsync(filePath, fileContent)
 }
+
+/**
+ * Search for a file in cwd or in parent directory recursively up to the root directory.
+ */
+export async function findFileRecurisvelyUpward(
+  fileName: string
+): Promise<null | string> {
+  let path: null | string = null
+  let currentDir = process.cwd()
+
+  while (path === null) {
+    const checkFilePath = Path.join(currentDir, fileName)
+
+    if (await fs.existsAsync(checkFilePath)) {
+      path = checkFilePath
+      break
+    }
+
+    if (currentDir === '/') {
+      // we reached root, no where left to go
+      break
+    }
+
+    currentDir = Path.dirname(currentDir)
+  }
+
+  return path
+}
