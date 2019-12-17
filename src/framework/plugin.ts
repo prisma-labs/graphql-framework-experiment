@@ -11,12 +11,32 @@ import * as PackageManager from '../utils/package-manager'
 
 // TODO move to utils module
 type MaybePromise<T = void> = T | Promise<T>
-type CallbackRegistrar<F> = (f: F) => void
+type CallbackRegistrer<F> = (f: F) => void
 type SideEffector = () => MaybePromise
 
 export type OnAfterBaseSetupLens = {
   database: 'SQLite' | 'MySQL' | 'PostgreSQL' | undefined
   connectionURI: string | undefined
+}
+
+type Secrets = Record<string, string | undefined>
+
+export type DbMigratePlanContext = {
+  migrationName: string | undefined
+  secrets: Secrets
+}
+
+export type DbMigrateApplyContext = {
+  force: boolean | undefined
+  secrets: Secrets
+}
+
+export type DbInitContext = {
+  secrets: Secrets
+}
+
+export type DbMigrateRollbackContext = {
+  secrets: Secrets
 }
 
 export type WorkflowHooks = {
@@ -36,6 +56,22 @@ export type WorkflowHooks = {
   }
   build: {
     onStart?: SideEffector
+  }
+  db?: {
+    init: {
+      onStart: (ctx: DbInitContext) => void
+    }
+    migrate: {
+      plan: {
+        onStart: (ctx: DbMigratePlanContext) => void
+      }
+      apply: {
+        onStart: (ctx: DbMigrateApplyContext) => void
+      }
+      rollback: {
+        onStart: (ctx: DbMigrateRollbackContext) => void
+      }
+    }
   }
 }
 
@@ -70,8 +106,8 @@ export type RuntimeContributions<C extends {} = any> = {
 type RuntimePlugin = () => RuntimeContributions
 
 export type Lens = {
-  runtime: CallbackRegistrar<RuntimePlugin>
-  workflow: CallbackRegistrar<WorkflowDefiner>
+  runtime: CallbackRegistrer<RuntimePlugin>
+  workflow: CallbackRegistrer<WorkflowDefiner>
   utils: {
     log: typeof logger
     runSync: typeof runSync
@@ -126,7 +162,7 @@ export function create(definer: Definer): DriverCreator {
       extendsWorkflow: maybeWorkflowPlugin !== undefined,
       extendsRuntime: maybeRuntimePlugin !== undefined,
       loadWorkflowPlugin(layout) {
-        const hooks = {
+        const hooks: WorkflowHooks = {
           create: {},
           dev: {
             addToSettings: {},
@@ -284,7 +320,7 @@ export function parsePluginName(packageName: string): null | string {
  */
 export async function loadAllWorkflowPluginsFromPackageJson(
   layout: Layout.Layout
-): Promise<WorkflowHooks[]> {
+): Promise<{ name: string; hooks: WorkflowHooks }[]> {
   const plugins = await loadAllFromPackageJson()
   const workflowHooks = plugins
     .filter(driver => driver.extendsWorkflow)
@@ -301,7 +337,7 @@ export async function loadAllWorkflowPluginsFromPackageJson(
         `
         )
       }
-      return workflowComponent
+      return { name: driver.name, hooks: workflowComponent }
     })
 
   return workflowHooks

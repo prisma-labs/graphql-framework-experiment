@@ -5,7 +5,7 @@ import * as Config from '../../framework/config'
 import * as Layout from '../../framework/layout'
 import * as Plugin from '../../framework/plugin'
 import { createStartModuleContent } from '../../framework/start'
-import { findOrScaffoldTsConfig, pog } from '../../utils'
+import { fatal, findOrScaffoldTsConfig, pog } from '../../utils'
 import { clearConsole } from '../../utils/console'
 import { logger } from '../../utils/logger'
 import { createWatcher } from '../../watcher'
@@ -24,7 +24,7 @@ export class Dev implements Command {
     const args = arg(argv, DEV_ARGS)
 
     if (isError(args)) {
-      return
+      fatal(args.message)
     }
 
     // Right now dev mode assumes a tty and renders according to its height and
@@ -49,7 +49,7 @@ export class Dev implements Command {
     await findOrScaffoldTsConfig(layout)
 
     for (const p of plugins) {
-      await p.dev.onStart?.()
+      await p.hooks.dev.onStart?.()
     }
 
     // Setup ui/log toggling system
@@ -122,7 +122,7 @@ export class Dev implements Command {
     logger.info('Starting dev server...')
 
     createWatcher({
-      plugins: plugins,
+      plugins: plugins.map(p => p.hooks),
       layout,
       transpileOnly: true,
       respawn: args['--inspect-brk'] ? false : true,

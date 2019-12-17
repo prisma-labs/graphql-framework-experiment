@@ -1,20 +1,29 @@
 import { stripIndent } from 'common-tags'
+import dotenv from 'dotenv'
 import * as fs from 'fs-jetpack'
+import * as path from 'path'
 import { LiteralUnion } from 'type-fest'
 import { ScriptTarget } from 'typescript'
 import { fatal, pog, transpileModule } from '../utils'
+import { logger } from '../utils/logger'
 
 const log = pog.sub(__filename)
 
-type StageNames = LiteralUnion<'development', string>
+type StageNames = LiteralUnion<'development' | 'production', string>
 
 export interface Config {
   environments: {
-    development?: Environment
-    [x: string]: Environment | undefined
+    development?: EnvironmentWithSecretLoader
+    production?: EnvironmentWithSecretLoader
+    [x: string]: EnvironmentWithSecretLoader | undefined
   }
   environment_mapping?: Record<string, string>
 }
+
+type EnvironmentWithSecretLoader =
+  | ((load: SecretLoader) => Environment | undefined)
+  | Environment
+  | undefined
 
 interface Environment {
   PUMPKINS_DATABASE_URL?: string
@@ -78,17 +87,17 @@ function processEnvFromConfig(
   inputStage: string | undefined
 ): void {
   const stage = readStage(inputStage)
-  const configEnv = config.environments[stage]
+  const loadedEnv = loadEnvironment(config.environments, stage)
 
-  if (!configEnv) {
+  if (!loadedEnv) {
     log('No environment to load from config with NODE_ENV=%s', stage)
     return
   }
 
-  for (const envName in configEnv) {
+  for (const envName in loadedEnv) {
     if (!process.env[envName]) {
-      log('setting env var %s=%s', envName, configEnv[envName])
-      process.env[envName] = configEnv[envName]
+      log('setting env var %s=%s', envName, loadedEnv[envName])
+      process.env[envName] = loadedEnv[envName]
     } else {
       log(
         'env var %s is not loaded from config as its already set to value %s',
@@ -97,6 +106,20 @@ function processEnvFromConfig(
       )
     }
   }
+}
+
+function loadEnvironment(
+  environments: Config['environments'],
+  stage: string
+): Environment | undefined {
+  if (!environments || !environments[stage]) {
+    return undefined
+  }
+
+  const envToLoad = environments[stage]!
+  const secretLoader = createSecretLoader(stage)
+
+  return typeof envToLoad === 'function' ? envToLoad(secretLoader) : envToLoad
 }
 
 function processEnvMappingFromConfig(config: Config): void {
@@ -212,7 +235,7 @@ function printStaticEnvMapping(
 
 export function printStaticEnvSetters(config: Config, stage: string): string {
   let output: string = ''
-  const env = config.environments[stage]
+  const env = loadEnvironment(config.environments, stage)
 
   if (env) {
     for (const envName in env) {
@@ -231,6 +254,113 @@ export function printStaticEnvSetters(config: Config, stage: string): string {
   }
 
   return output
+}
+
+type SecretLoader = {
+  secret: (secretName: string) => string | undefined
+  secrets: (...secretNames: string[]) => Environment | undefined
+}
+
+function createSecretLoader(stage: string): SecretLoader {
+  const secretsByStageCache: Record<
+    string,
+    { secrets: Record<string, string>; file: string }
+  > = {}
+  const loadSecrets = () => {
+    const result = secretsByStageCache[stage]
+      ? secretsByStageCache[stage]
+      : tryLoadSecrets(stage)
+
+    if (!result) {
+      logger.warn(
+        `We could not load your secret(s) for environment \`${stage}\``
+      )
+      logger.warn(`A file \`${stage}.env\` or .secrets/${stage}.env must exist`)
+      return null
+    }
+
+    return result
+  }
+
+  return {
+    secret: secretName => {
+      const loadedSecrets = loadSecrets()
+
+      if (!loadedSecrets?.secrets[secretName]) {
+        logger.warn(
+          `We could not load your secret \`${secretName}\` for environment \`${stage}\``
+        )
+        logger.warn(
+          `${loadedSecrets?.file} does not export any secret called \`${secretName}\``
+        )
+        return undefined
+      }
+
+      return loadedSecrets.secrets[secretName]
+    },
+    secrets: (...secretsNames) => {
+      const loadedSecrets = loadSecrets()
+
+      if (!loadedSecrets) {
+        return undefined
+      }
+
+      if (secretsNames.length === 0) {
+        return loadedSecrets.secrets
+      }
+
+      const pickedSecrets = Object.entries(loadedSecrets.secrets).reduce<
+        Record<string, string>
+      >((acc, [secretName, secretValue]) => {
+        if (secretsNames.includes(secretName)) {
+          acc[secretName] = secretValue
+        } else {
+          logger.warn(
+            `We could not load your secret \`${secretName}\` for environment \`${stage}\``
+          )
+          logger.warn(
+            `${loadedSecrets?.file} does not export any secret called \`${secretName}\``
+          )
+        }
+        return acc
+      }, {})
+
+      return pickedSecrets
+    },
+  }
+}
+
+function tryLoadSecrets(
+  stage: string
+): { secrets: Record<string, string>; file: string } | null {
+  const secretFileName = `${stage}.env`
+  let secretPath = path.join('.secrets', secretFileName)
+  let secretContent = fs.read(secretPath)
+
+  if (secretContent) {
+    return { secrets: dotenv.parse(secretContent), file: secretPath }
+  }
+
+  secretContent = fs.read(secretFileName)
+
+  if (secretContent) {
+    return { secrets: dotenv.parse(secretContent), file: secretFileName }
+  }
+
+  return null
+}
+
+export function loadEnvironmentFromConfig(
+  inputStage: string | undefined
+): Environment | null {
+  const config = loadConfig()
+  const stage = readStage(inputStage)
+
+  if (!config) {
+    return null
+  }
+
+  return loadEnvironment(config.environments, stage) ?? null
 }
 
 /**

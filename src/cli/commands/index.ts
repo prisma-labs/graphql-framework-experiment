@@ -1,5 +1,7 @@
 import * as Create from './create'
-export { Create }
+import * as Db from './db'
+
+export { Create, Db }
 export { Build } from './build'
 export { Dev } from './dev'
 export { Doctor } from './doctor'

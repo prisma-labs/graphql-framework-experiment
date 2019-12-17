@@ -22,7 +22,7 @@ export type SuccessfulRunResult = {
 }
 
 export type RunOptions = Omit<SpawnSyncOptions, 'encoding'> & {
-  envAdditions?: Record<string, string>
+  envAdditions?: Record<string, string | undefined>
   require?: boolean
 }
 

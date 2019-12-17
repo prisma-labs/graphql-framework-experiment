@@ -60,7 +60,7 @@ export function renderRunScript(
 export function runBin(
   pmt: PackageManagerType,
   commandString: string,
-  options: proc.RunOptions
+  options?: proc.RunOptions
 ): ReturnType<typeof proc.run> {
   const packageManagerRunCommand = renderRunBin(pmt, commandString)
   return proc.run(packageManagerRunCommand, options)
@@ -72,7 +72,7 @@ export function runBin(
 export function runScript(
   pmt: PackageManagerType,
   scriptName: string,
-  options: proc.RunOptions
+  options?: proc.RunOptions
 ): ReturnType<typeof proc.run> {
   const packageManagerRunScript = renderRunScript(pmt, scriptName)
   return proc.run(packageManagerRunScript, options)
@@ -83,7 +83,7 @@ export function runScript(
  */
 export function installDeps(
   pmt: PackageManagerType,
-  options: proc.RunOptions
+  options?: proc.RunOptions
 ): ReturnType<typeof proc.run> {
   return pmt === 'npm'
     ? proc.run('npm install', options)
@@ -96,12 +96,23 @@ export function installDeps(
 export function addDeps(
   pmt: PackageManagerType,
   packages: string[],
-  options: { dev?: boolean } & proc.RunOptions
+  options?: { dev?: boolean } & proc.RunOptions
 ): ReturnType<typeof proc.run> {
-  const dev = options.dev ?? false
+  return proc.run(renderAddDeps(pmt, packages, { dev: options?.dev }), options)
+}
+
+/**
+ * Add a package to the project.
+ */
+export function renderAddDeps(
+  pmt: PackageManagerType,
+  packages: string[],
+  options?: { dev?: boolean }
+): string {
+  const dev = options?.dev ?? false
   return pmt === 'npm'
-    ? proc.run(`npm install ${dev ? '--save-dev' : ''}`, options)
-    : proc.run(`yarn add ${dev ? '--dev' : ''} ${packages.join(' ')}`, options)
+    ? `npm install ${dev ? '--save-dev' : ''}`
+    : `yarn add ${dev ? '--dev' : ''} ${packages.join(' ')}`
 }
 
 //
@@ -120,6 +131,7 @@ export type PackageManager = {
   runScript: OmitFirstArg<typeof runScript>
   renderRunBin: OmitFirstArg<typeof renderRunBin>
   renderRunScript: OmitFirstArg<typeof renderRunScript>
+  renderAddDeps: OmitFirstArg<typeof renderAddDeps>
 }
 
 /**
@@ -144,6 +156,7 @@ function createDo(pmt: PackageManagerType): PackageManager {
     type: pmt,
     renderRunBin: renderRunBin.bind(null, pmt),
     renderRunScript: renderRunScript.bind(null, pmt),
+    renderAddDeps: renderAddDeps.bind(null, pmt),
     runBin: runBin.bind(null, pmt),
     runScript: runScript.bind(null, pmt),
     installDeps: installDeps.bind(null, pmt),

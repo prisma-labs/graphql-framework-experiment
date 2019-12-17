@@ -192,6 +192,7 @@ export class CLI implements Command {
          build   Build a production-ready server
       generate   Generate the artifacts
         doctor   Check your project state for any problems
+            db   Set of commands to work with your database
 
     ${chalk.bold('Examples')}
 

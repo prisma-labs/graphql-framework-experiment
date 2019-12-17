@@ -74,7 +74,7 @@ export class Build implements Command {
     await findOrScaffoldTsConfig(layout)
 
     for (const p of plugins) {
-      await p.build.onStart?.()
+      await p.hooks.build.onStart?.()
     }
 
     const tsProgram = createTSProgram(layout)

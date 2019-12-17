@@ -96,6 +96,16 @@ async function main(): Promise<number> {
       plugin: new Commands.Create.Plugin(),
       __default: 'app',
     },
+    db: {
+      init: new Commands.Db.Init(),
+      migrate: {
+        apply: new Commands.Db.Migrate.Apply(),
+        plan: new Commands.Db.Migrate.Plan(),
+        rollback: new Commands.Db.Migrate.Rollback(),
+        __default: new Commands.Db.Migrate.Default(),
+      },
+      __default: new Commands.Db.Default(),
+    },
     __default: new Commands.__Default(),
   })
 
