@@ -1,11 +1,21 @@
 {
   "name": "pumpkins",
-  "version": "0.0.0-master.2adf1ca",
   "author": "Prisma Labs",
+  "version": "0.0.0-master.2adf1ca",
+  "homepage": "https://github.com/prisma-labs/pumpkins",
+  "repository": "prisma-labs/pumpkins",
+  "bugs": "https://github.com/prisma-labs/pumpkins/issues",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "files": [
+    "/dist",
+    "/src",
+    "config.js",
+    "config.d.ts"
+  ],
   "bin": {
     "pumpkins": "dist/cli/index.js"
   },
-  "bugs": "https://github.com/prisma-labs/pumpkins/issues",
   "dependencies": {
     "apollo-server-express": "^2.9.11",
     "arg": "^4.1.1",
@@ -53,20 +63,10 @@
   "engines": {
     "node": ">=8.0.0"
   },
-  "files": [
-    "/dist",
-    "/src",
-    "config.js",
-    "config.d.ts"
-  ],
-  "homepage": "https://github.com/prisma-labs/pumpkins",
-  "license": "MIT",
-  "main": "dist/index.js",
   "jest": {
     "preset": "ts-jest",
     "testEnvironment": "node"
   },
-  "repository": "prisma-labs/pumpkins",
   "scripts": {
     "publish:master": "[ \"$(git rev-parse --abbrev-ref HEAD)\" = \"master\" ] && yarn publish --tag master --no-git-tag-version --new-version \"0.0.0-master.$(git show -s head --format='%h')\" && git commit -am 'chore: version' && git push && git push --tags",
     "publish:sha": "yarn publish --tag sha --no-git-tag-version --new-version \"0.0.0-sha.$(git show -s head --format='%h')\"",
