@@ -55,7 +55,9 @@
   },
   "files": [
     "/dist",
-    "/src"
+    "/src",
+    "config.js",
+    "config.d.ts"
   ],
   "homepage": "https://github.com/prisma-labs/pumpkins",
   "license": "MIT",
