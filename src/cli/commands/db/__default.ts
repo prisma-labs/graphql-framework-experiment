@@ -13,6 +13,10 @@ export class DbDefault implements Command {
         name: 'migrate',
         description: 'Set of commands to migrate your database',
       },
+      {
+        name: 'ui',
+        description: 'Browse your data with a database UI',
+      },
     ])
 
     console.log(help)
