@@ -116,7 +116,7 @@ function loadEnvironment(
     return undefined
   }
 
-  const envToLoad = environments[stage]!
+  const envToLoad = environments[stage]
   const secretLoader = createSecretLoader(stage)
 
   return typeof envToLoad === 'function' ? envToLoad(secretLoader) : envToLoad
