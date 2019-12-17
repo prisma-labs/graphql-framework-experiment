@@ -301,6 +301,7 @@ async function askForPackageManager(): Promise<
   const result: Result = await prompts({
     name: 'packageManagerType',
     type: 'select',
+    message: 'Please select which package manager you would like to use',
     choices,
   })
 
