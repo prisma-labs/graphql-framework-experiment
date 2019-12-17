@@ -104,6 +104,7 @@ async function main(): Promise<number> {
         rollback: new Commands.Db.Migrate.Rollback(),
         __default: new Commands.Db.Migrate.Default(),
       },
+      ui: new Commands.Db.Ui(),
       __default: new Commands.Db.Default(),
     },
     __default: new Commands.__Default(),

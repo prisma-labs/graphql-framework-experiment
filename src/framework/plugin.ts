@@ -30,6 +30,10 @@ export type DbMigrateApplyContext = {
   force: boolean | undefined
 }
 
+export type DbUiContext = {
+  port?: number
+}
+
 export type WorkflowHooks = {
   create: {
     onAfterBaseSetup?: (lens: OnAfterBaseSetupLens) => MaybePromise
@@ -62,6 +66,9 @@ export type WorkflowHooks = {
       rollback: {
         onStart: SideEffector
       }
+    }
+    ui: {
+      onStart: (ctx: DbUiContext) => void
     }
   }
 }
