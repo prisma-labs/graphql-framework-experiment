@@ -35,7 +35,7 @@ export async function detectProjectPackageManager(): Promise<
 }
 
 /**
- * Render a string of the given command as coming from the local bin.
+ * Render the running of the given command as coming from the local bin.
  */
 export function renderRunBin(
   pmt: PackageManagerType,
@@ -45,15 +45,37 @@ export function renderRunBin(
 }
 
 /**
+ * Render running of the given script defined in package.json.
+ */
+export function renderRunScript(
+  pmt: PackageManagerType,
+  scriptName: string
+): string {
+  return pmt === 'npm' ? `npm run -s ${scriptName}` : `yarn -s ${scriptName}`
+}
+
+/**
  * Run a command from the local project bin.
  */
-export function run(
+export function runBin(
   pmt: PackageManagerType,
   commandString: string,
   options: proc.RunOptions
 ): ReturnType<typeof proc.run> {
-  const packageManagerCommand = renderRunBin(pmt, commandString)
-  return proc.run(packageManagerCommand, options)
+  const packageManagerRunCommand = renderRunBin(pmt, commandString)
+  return proc.run(packageManagerRunCommand, options)
+}
+
+/**
+ * Run a script defined in the local project package.json.
+ */
+export function runScript(
+  pmt: PackageManagerType,
+  scriptName: string,
+  options: proc.RunOptions
+): ReturnType<typeof proc.run> {
+  const packageManagerRunScript = renderRunScript(pmt, scriptName)
+  return proc.run(packageManagerRunScript, options)
 }
 
 /**
@@ -94,8 +116,10 @@ export type PackageManager = {
   type: PackageManagerType
   installDeps: OmitFirstArg<typeof installDeps>
   addDeps: OmitFirstArg<typeof addDeps>
-  run: OmitFirstArg<typeof run>
-  renderRun: OmitFirstArg<typeof renderRunBin>
+  runBin: OmitFirstArg<typeof runBin>
+  runScript: OmitFirstArg<typeof runScript>
+  renderRunBin: OmitFirstArg<typeof renderRunBin>
+  renderRunScript: OmitFirstArg<typeof renderRunScript>
 }
 
 /**
@@ -118,8 +142,10 @@ export function create(
 function createDo(pmt: PackageManagerType): PackageManager {
   return {
     type: pmt,
-    renderRun: renderRunBin.bind(null, pmt),
-    run: run.bind(null, pmt),
+    renderRunBin: renderRunBin.bind(null, pmt),
+    renderRunScript: renderRunScript.bind(null, pmt),
+    runBin: runBin.bind(null, pmt),
+    runScript: runScript.bind(null, pmt),
     installDeps: installDeps.bind(null, pmt),
     addDeps: addDeps.bind(null, pmt),
   }

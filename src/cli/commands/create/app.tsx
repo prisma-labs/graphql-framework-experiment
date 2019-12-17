@@ -149,7 +149,7 @@ export async function runBootstrapper(
   }
 
   await layout.packageManager
-    .run('pumpkins create', {
+    .runBin('pumpkins create', {
       stdio: 'inherit',
       envAdditions: { PUMPKINS_CREATE_HANDOFF: 'true' },
       require: true,
@@ -199,7 +199,7 @@ export async function runBootstrapper(
     // is unique to bootstrapping situations.
 
     await layout.packageManager
-      .run('dev', {
+      .runScript('dev', {
         stdio: 'inherit',
         envAdditions: { PUMPKINS_CREATE_HANDOFF: 'true' },
         require: true,
