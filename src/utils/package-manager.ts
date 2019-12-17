@@ -111,8 +111,8 @@ export function renderAddDeps(
 ): string {
   const dev = options?.dev ?? false
   return pmt === 'npm'
-    ? `npm install ${dev ? '--save-dev' : ''}`
-    : `yarn add ${dev ? '--dev' : ''} ${packages.join(' ')}`
+    ? `npm install ${dev ? '--save-dev ' : ''}${packages.join(' ')}`
+    : `yarn add ${dev ? '--dev ' : ''}${packages.join(' ')}`
 }
 
 //
