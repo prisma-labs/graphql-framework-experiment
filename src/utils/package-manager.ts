@@ -7,11 +7,13 @@
  * agnostic way.
  */
 import * as fsHelpers from './fs'
+import * as proc from './process'
+import { OmitFirstArg } from './helpers'
 
 const YARN_LOCK_FILE_NAME = 'yarn.lock'
 const NPM_LOCK_FILE_NAME = 'package-lock.json'
 
-type PackageManagerType = 'yarn' | 'npm'
+export type PackageManagerType = 'yarn' | 'npm'
 
 /**
  * Detect if the project is yarn or npm based. Detection is based on the kind of
@@ -36,13 +38,53 @@ export async function detectProjectPackageManager(): Promise<
  * Render a string of the given command as coming from the local bin.
  */
 export function renderRunBin(
-  packageManagerType: PackageManagerType,
+  pmt: PackageManagerType,
   commandString: string
 ): string {
-  return packageManagerType === 'npm'
-    ? `npx ${commandString}`
-    : `yarn -s ${commandString}`
+  return pmt === 'npm' ? `npx ${commandString}` : `yarn -s ${commandString}`
 }
+
+/**
+ * Run a command from the local project bin.
+ */
+export function run(
+  pmt: PackageManagerType,
+  commandString: string,
+  options: proc.RunOptions
+): ReturnType<typeof proc.run> {
+  const packageManagerCommand = renderRunBin(pmt, commandString)
+  return proc.run(packageManagerCommand, options)
+}
+
+/**
+ * Run package installation.
+ */
+export function installDeps(
+  pmt: PackageManagerType,
+  options: proc.RunOptions
+): ReturnType<typeof proc.run> {
+  return pmt === 'npm'
+    ? proc.run('npm install', options)
+    : proc.run('yarn install', options)
+}
+
+/**
+ * Add a package to the project.
+ */
+export function addDeps(
+  pmt: PackageManagerType,
+  packages: string[],
+  options: { dev?: boolean } & proc.RunOptions
+): ReturnType<typeof proc.run> {
+  const dev = options.dev ?? false
+  return pmt === 'npm'
+    ? proc.run(`npm install ${dev ? '--save-dev' : ''}`, options)
+    : proc.run(`yarn add ${dev ? '--dev' : ''} ${packages.join(' ')}`, options)
+}
+
+//
+// Fluent API
+//
 
 /**
  * The package manager as a fluent API, all statics partially applied with the
@@ -50,7 +92,10 @@ export function renderRunBin(
  */
 export type PackageManager = {
   type: PackageManagerType
-  renderRunBin: (commandString: string) => string
+  installDeps: OmitFirstArg<typeof installDeps>
+  addDeps: OmitFirstArg<typeof addDeps>
+  run: OmitFirstArg<typeof run>
+  renderRun: OmitFirstArg<typeof renderRunBin>
 }
 
 /**
@@ -58,11 +103,24 @@ export type PackageManager = {
  * statics with the package manager type. Creation is async since it requires
  * running IO to detect the project's package manager.
  */
-export async function create(): Promise<PackageManager> {
-  const packageManagerType = await detectProjectPackageManager()
+export function create<T extends undefined | PackageManagerType>(
+  givenPackageManagerType?: T
+): T extends undefined ? Promise<PackageManager> : PackageManager
 
+export function create(
+  givenPackageManagerType?: undefined | PackageManagerType
+): Promise<PackageManager> | PackageManager {
+  return givenPackageManagerType === undefined
+    ? detectProjectPackageManager().then(createDo)
+    : createDo(givenPackageManagerType)
+}
+
+function createDo(pmt: PackageManagerType): PackageManager {
   return {
-    type: packageManagerType,
-    renderRunBin: renderRunBin.bind(null, packageManagerType),
+    type: pmt,
+    renderRun: renderRunBin.bind(null, pmt),
+    run: run.bind(null, pmt),
+    installDeps: installDeps.bind(null, pmt),
+    addDeps: addDeps.bind(null, pmt),
   }
 }

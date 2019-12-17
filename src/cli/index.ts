@@ -73,7 +73,7 @@ async function guardNotGlobalPumpkinsWithLocalPumpkinsProject(
         
         Please use the pumpkins CLI for this project:
 
-            ${packageManager.renderRunBin('pumpkins ' + process.argv.slice(2))}
+            ${packageManager.renderRun('pumpkins ' + process.argv.slice(2))}
       `)
   }
 }
