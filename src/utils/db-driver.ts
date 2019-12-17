@@ -1,6 +1,7 @@
 import * as Layout from '../framework/layout'
 import * as Plugin from '../framework/plugin'
 import { fatal } from './process'
+import { stripIndent } from 'common-tags'
 
 export async function validateAndLoadDBDriver(): Promise<Plugin.WorkflowHooks> {
   const layout = await Layout.create()
@@ -9,7 +10,12 @@ export async function validateAndLoadDBDriver(): Promise<Plugin.WorkflowHooks> {
 
   if (dbDrivers.length === 0) {
     fatal(
-      `You have no database driver installed. Official drivers: "pumpkins-plugin-prisma".\nRun npm install <db-driver> to install one.`
+      stripIndent`
+        You have no database driver installed. Official drivers: "pumpkins-plugin-prisma".
+        Run ${layout.packageManager.renderAddDeps([
+          '<db-driver>',
+        ])} to install one.
+      `
     )
   }
 
