@@ -233,25 +233,26 @@ async function askForDatabase(): Promise<
   if (!usePrisma) {
     return { database: false }
   }
+  // TODO the supported databases should come from the plugin driver...
   let { database }: { database: Database } = await prompts({
     type: 'select',
     name: 'database',
     message: 'Choose a database',
     choices: [
       {
+        title: 'PostgreSQL',
+        description: 'Requires running a PostgreSQL database',
+        value: 'PostgreSQL',
+      },
+      {
         title: 'SQLite',
-        description: 'Easiest to set up',
+        description: 'No operational overhead',
         value: 'SQLite',
       },
       {
         title: 'MySQL',
         description: 'Requires running a MySQL database',
         value: 'MySQL',
-      },
-      {
-        title: 'PostgreSQL',
-        description: 'Requires running a PostgreSQL database',
-        value: 'PostgreSQL',
       },
     ] as any, // Typings are missing the 'description' property...
     initial: 0,
