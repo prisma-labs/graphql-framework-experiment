@@ -52,30 +52,17 @@ than with vanilla JavaScript or just TypeScript.
 Pumpkins brings Nexus, Prisma, Apollo Server and more together into a pluggable
 system (in fact Prisma features are implemented as a plugin).
 
-### Getting Started
+### Get started
 
-1. For this tutorial we will use postgres. Install it if needed and then get its connection URL. If in doubt check out [our db setup guide](#setup-a-local-postgresql).
+1. For this tutorial we will use postgres. Install it if needed and then get its connection URL. Check out [our db setup guide](#setup-a-local-postgresql) if unsure.
 
-2. Kick off a new project. Say yes (`y`) to the prisma option. Choose `PostgreSQL` for the db option.
+2. Kick off a new project. Say yes (`y`) to the prisma option. Choose `PostgreSQL` for the db option. Take a few moments to look around, poke things. But don't feel pressure to understand everything right away : )
 
    ```
    npx pumpkins@master
    ```
 
-   Some highlights of what you'll see:
-
-   - The `resolve` func of `users` field is strongly typed and guarantees that the shape of data returned conforms to the schema definition of `User`. There is literally zero effort for you to get this working. Just enter dev mode and start working on your app.
-
-   - Conventions save you from configuring `pumpkins` to find your schema module.
-
-   - You don't need a main entrypoint module. Grow into that (see later sections) as you wish.
-
-   - Prisma integration is seamless, yet optional
-
-### Next Step, Getting a Sense for End to End Type Safety
-
-The following will give you a sense for the powerful mechanics going on under
-the hood.
+### Get a sense for db-to-api workflow
 
 Our Hello World schema doesn't account for information about moons, lets change that.
 
