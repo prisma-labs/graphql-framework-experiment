@@ -14,6 +14,7 @@ import {
 import { logger } from '../../../utils/logger'
 import * as proc from '../../../utils/process'
 import { Command } from '../../helpers'
+import * as PackageManager from '../../../utils/package-manager'
 
 const log = pog.sub('cli:create:app')
 
@@ -66,6 +67,11 @@ export async function runBootstrapper(
 ): Promise<void> {
   log('start bootstrapper')
 
+  log('checking folder is in a clean state...')
+  await assertIsCleanSlate()
+
+  const packageManagerType = await askForPackageManager()
+
   // TODO given the presence of plugin templates it does not make sense anymore
   // for an assumpton about how the layout is going to look
   const layout = Layout.createFromData({
@@ -82,17 +88,16 @@ export async function runBootstrapper(
       name: optionsGiven?.projectName ?? CWDProjectNameOrGenerate(),
       isAnonymous: false,
     },
+    packageManagerType,
   })
 
   // FIXME options given will always be overriden...
   const options: Options = {
     ...optionsGiven,
     projectName: CWDProjectNameOrGenerate(),
+    // @ts-ignore
     pumpkinsVersion: require('../../../../package.json').version,
   }
-
-  log('checking folder is in a clean state...')
-  await assertIsCleanSlate()
 
   // TODO in the future scan npm registry for pumpkins plugins, organize by
   // github stars, and so on.
@@ -104,7 +109,7 @@ export async function runBootstrapper(
   logger.successBold(
     `Installing pumpkins@${options.pumpkinsVersion}... (this will take around ~20 seconds)`
   )
-  await proc.run('yarn', { require: true })
+  await layout.packageManager.installDeps({ require: true })
 
   /**
    * First class support for Prisma
@@ -117,17 +122,20 @@ export async function runBootstrapper(
     const prismaPluginVersion =
       process.env.PUMPKINS_PLUGIN_PRISMA_VERSION ?? 'master'
     // TODO @latest
-    await proc.run(`yarn add pumpkins-plugin-prisma@${prismaPluginVersion}`, {
-      // await proc.run('yarn add pumpkins-plugin-prisma@master', {
-      // This allows installing prisma without a warning being emitted about there
-      // being a missing prisma schema. For more detail refer to
-      // https://prisma-company.slack.com/archives/CEYCG2MCN/p1575480721184700 and
-      // https://github.com/prisma/photonjs/blob/master/packages/photon/scripts/generate.js#L67
-      envAdditions: {
-        SKIP_GENERATE: 'true',
-      },
-      require: true,
-    })
+    await layout.packageManager.addDeps(
+      [`pumpkins-plugin-prisma@${prismaPluginVersion}`],
+      {
+        // await proc.run('yarn add pumpkins-plugin-prisma@master', {
+        // This allows installing prisma without a warning being emitted about there
+        // being a missing prisma schema. For more detail refer to
+        // https://prisma-company.slack.com/archives/CEYCG2MCN/p1575480721184700 and
+        // https://github.com/prisma/photonjs/blob/master/packages/photon/scripts/generate.js#L67
+        envAdditions: {
+          SKIP_GENERATE: 'true',
+        },
+        require: true,
+      }
+    )
 
     // Pass chosen database to plugin
     saveDataForChildProcess({
@@ -140,8 +148,8 @@ export async function runBootstrapper(
     saveDataForChildProcess({ layout: layout.data })
   }
 
-  await proc
-    .run('yarn -s pumpkins create', {
+  await layout.packageManager
+    .runBin('pumpkins create', {
       stdio: 'inherit',
       envAdditions: { PUMPKINS_CREATE_HANDOFF: 'true' },
       require: true,
@@ -190,8 +198,8 @@ export async function runBootstrapper(
     // yarn dev`. This global-pumpkins-process-wrapping-local-pumpkins-process
     // is unique to bootstrapping situations.
 
-    await proc
-      .run('yarn -s dev', {
+    await layout.packageManager
+      .runScript('dev', {
         stdio: 'inherit',
         envAdditions: { PUMPKINS_CREATE_HANDOFF: 'true' },
         require: true,
@@ -205,6 +213,9 @@ export async function runBootstrapper(
 
 type Database = 'SQLite' | 'PostgreSQL' | 'MySQL'
 
+/**
+ * Ask the user if they would like to use a database driver.
+ */
 async function askForDatabase(): Promise<
   | { database: false }
   | { database: true; choice: Database; connectionURI: string | undefined }
@@ -267,6 +278,34 @@ async function askForDatabase(): Promise<
   }
 
   return { database: true, choice: database, connectionURI: undefined }
+}
+
+/**
+ * Ask the user if they would like to use npm or yarn.
+ * TODO if we detect that yarn is installed on the user's machine then we should
+ * default to that, otherwise default to npm.
+ */
+async function askForPackageManager(): Promise<
+  PackageManager.PackageManagerType
+> {
+  const choices: {
+    title: string
+    value: PackageManager.PackageManagerType
+  }[] = [
+    { title: 'npm', value: 'npm' },
+    { title: 'yarn', value: 'yarn' },
+  ]
+
+  type Result = { packageManagerType: PackageManager.PackageManagerType }
+
+  const result: Result = await prompts({
+    name: 'packageManagerType',
+    type: 'select',
+    message: 'Please select which package manager you would like to use',
+    choices,
+  })
+
+  return result.packageManagerType
 }
 
 /**

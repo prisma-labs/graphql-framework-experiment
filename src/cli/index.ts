@@ -3,7 +3,10 @@ import { CLI } from './helpers/CLI'
 import * as Commands from './commands'
 import { HelpError } from './helpers'
 import { isError } from 'util'
-import { pog } from '../utils'
+import { pog, fatal, isProcessFromProjectBin } from '../utils'
+import * as Layout from '../framework/layout'
+import { stripIndent } from 'common-tags'
+import * as PackageManager from '../utils/package-manager'
 
 const log = pog.sub('cli')
 
@@ -47,9 +50,41 @@ if (!process.argv.join(' ').includes('pumpkins dev')) {
 }
 
 /**
+ * Check that this pumpkins process is being run from a locally installed
+ * veresion unless there is local project or the local project does not have
+ * pumpkins installed.
+ */
+async function guardNotGlobalPumpkinsWithLocalPumpkinsProject(
+  packageManager: PackageManager.PackageManager
+): Promise<void> {
+  // TODO data is attainable from layout scan calculated later on... not optimal to call this twice...
+  const projectType = await Layout.scanProjectType()
+  if (
+    projectType.type === 'pumpkins_project' &&
+    isProcessFromProjectBin(projectType.packageJsonPath)
+  ) {
+    // TODO make npm aware
+    fatal(stripIndent`
+        You are using the pumpkins cli from a location other than this project.
+
+        Location of the pumpkins CLI you executed:      ${process.argv[1]}
+        Location of the pumpkins CLI for this project:  ${projectType.packageJsonPath +
+          '/node_modules/.bin/pumpkins'}
+        
+        Please use the pumpkins CLI for this project:
+
+            ${packageManager.renderRunBin('pumpkins ' + process.argv.slice(2))}
+      `)
+  }
+}
+
+/**
  * Main function
  */
 async function main(): Promise<number> {
+  const packageManager = await PackageManager.create()
+  await guardNotGlobalPumpkinsWithLocalPumpkinsProject(packageManager)
+
   // create a new CLI with our subcommands
   const cli = new CLI({
     dev: new Commands.Dev(),

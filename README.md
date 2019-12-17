@@ -11,9 +11,11 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
   - [Getting Started](#getting-started)
   - [Next Step, Getting a Sense for End to End Type Safety](#next-step-getting-a-sense-for-end-to-end-type-safety)
 - [Guide](#guide)
-  - [Adding Prisma Framework](#adding-prisma-framework)
+  - [Adding Prisma](#adding-prisma)
     - [Overview](#overview)
     - [Example](#example)
+  - [Databases](#databases)
+    - [Setup a local postgres](#setup-a-local-postgres)
   - [Going to Proudction](#going-to-proudction)
     - [Heroku](#heroku)
   - [Conventions](#conventions)
@@ -52,21 +54,23 @@ system (in fact Prisma features are implemented as a plugin).
 
 ### Getting Started
 
-Kick off a new project
+1. For this tutorial we will use postgres. Install it if needed and then get its connection URL. If in doubt check out [our db setup guide](#setup-a-local-postgresql).
 
-```
-npx pumpkins@master
-```
+2. Kick off a new project. Say yes (`y`) to the prisma option. Choose `PostgreSQL` for the db option.
 
-Some highlights of what you'll see:
+   ```
+   npx pumpkins@master
+   ```
 
-- The `resolve` func of `users` field is strongly typed and guarantees that the shape of data returned conforms to the schema definition of `User`. There is literally zero effort for you to get this working. Just enter dev mode and start working on your app.
+   Some highlights of what you'll see:
 
-- Conventions save you from configuring `pumpkins` to find your schema module.
+   - The `resolve` func of `users` field is strongly typed and guarantees that the shape of data returned conforms to the schema definition of `User`. There is literally zero effort for you to get this working. Just enter dev mode and start working on your app.
 
-- You don't need a main entrypoint module. Grow into that (see later sections) as you wish.
+   - Conventions save you from configuring `pumpkins` to find your schema module.
 
-- Prisma integration is seamless, yet optional
+   - You don't need a main entrypoint module. Grow into that (see later sections) as you wish.
+
+   - Prisma integration is seamless, yet optional
 
 ### Next Step, Getting a Sense for End to End Type Safety
 
@@ -193,7 +197,7 @@ Our Hello World schema doesn't account for information about moons, lets change 
 
 # Guide
 
-## Adding Prisma Framework
+## Adding Prisma
 
 ### Overview
 
@@ -275,6 +279,30 @@ Using the photon instance on `ctx`:
     },
   })
 ```
+
+<br>
+
+## Databases
+
+### Setup a local PostgreSQL
+
+The reccommended way to run postgres locally is with docker, because it is easy flexible and reliable.
+
+1. Start a postgres server for your app:
+
+   ```
+   docker run --detach --publish 5432:5432 --name 'myapp-db' --env POSTGRES_PASSWORD=pumpkins postgres
+   ```
+
+2. Now you can use a connection URL like:
+
+   ```
+   postgresql://postgres:pumpkins@localhost:5432/myapp
+   ```
+
+If you don't want to use a docker, here are some links to alternative approaches:
+
+- [With Homebrew](https://wiki.postgresql.org/wiki/Homebrew)
 
 <br>
 

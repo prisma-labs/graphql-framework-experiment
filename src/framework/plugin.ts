@@ -7,6 +7,7 @@ import { Debugger } from 'debug'
 import * as fs from 'fs-jetpack'
 import { stripIndent } from 'common-tags'
 import prompts from 'prompts'
+import * as PackageManager from '../utils/package-manager'
 
 // TODO move to utils module
 type MaybePromise<T = void> = T | Promise<T>
@@ -78,6 +79,7 @@ export type WorkflowDefiner = (
   hooks: WorkflowHooks,
   workflowContext: {
     layout: Layout.Layout
+    packageManager: PackageManager.PackageManager
   }
 ) => void
 
@@ -168,7 +170,10 @@ export function create(definer: Definer): DriverCreator {
           build: {},
           generate: {},
         }
-        maybeWorkflowPlugin?.(hooks, { layout })
+        maybeWorkflowPlugin?.(hooks, {
+          layout,
+          packageManager: layout.packageManager,
+        })
         return hooks
       },
       loadRuntimePlugin() {

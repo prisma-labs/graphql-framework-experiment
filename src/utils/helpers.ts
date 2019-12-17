@@ -1,6 +1,13 @@
 import * as Path from 'path'
 import Git from 'simple-git/promise'
 
+export type OmitFirstArg<Func> = Func extends (
+  firstArg: any,
+  ...args: infer Args
+) => infer Ret
+  ? (...args: Args) => Ret
+  : never
+
 const createCodeNameGenerator = require('codename')
 
 /**

@@ -8,6 +8,7 @@ import {
   pog,
   stripExt,
 } from '../utils'
+import * as PackageManager from '../utils/package-manager'
 
 export const DEFAULT_BUILD_FOLDER_NAME = 'node_modules/.build'
 
@@ -40,6 +41,7 @@ export type ScanResult = {
   sourceRootRelative: string
   projectRoot: string
   schemaModules: string[]
+  packageManagerType: PackageManager.PackageManager['type']
   // schema:
   //   | {
   //       exists: boolean
@@ -78,6 +80,7 @@ export type Layout = Data & {
   projectRelative(filePath: string): string
   sourceRelative(filePath: string): string
   sourcePath(subPath: string): string
+  packageManager: PackageManager.PackageManager
 }
 
 type Options = {
@@ -113,6 +116,7 @@ export function createFromData(layoutData: Data): Layout {
     sourcePath(subpath: string): string {
       return Path.join(layoutData.sourceRoot, subpath)
     },
+    packageManager: PackageManager.create(layoutData.packageManagerType),
   }
 }
 
@@ -122,6 +126,7 @@ export function createFromData(layoutData: Data): Layout {
  */
 export const scan = async (): Promise<ScanResult> => {
   log('starting scan...')
+  const packageManagerType = await PackageManager.detectProjectPackageManager()
   const maybeAppModule = await findAppModule()
   const maybeSchemaModules = findSchemaDirOrModules()
 
@@ -153,6 +158,7 @@ export const scan = async (): Promise<ScanResult> => {
     // tsconfig include field.
     sourceRootRelative: Path.relative(projectRoot, sourceRoot) || './',
     project: readProjectInfo(),
+    packageManagerType,
   }
 
   log('...completed scan with result: %O', result)
@@ -216,7 +222,11 @@ function findPackageJsonPath(): string | null {
  */
 export async function scanProjectType(): Promise<
   | { type: 'unknown' | 'new' }
-  | { type: 'pumpkins_project' | 'node_project'; packageJson: {} }
+  | {
+      type: 'pumpkins_project' | 'node_project'
+      packageJson: {}
+      packageJsonPath: string
+    }
 > {
   const packageJsonPath = findPackageJsonPath()
 
@@ -228,10 +238,11 @@ export async function scanProjectType(): Promise<
   }
 
   const packageJson = fs.read(packageJsonPath, 'json')
-  if (packageJson?.dependencies?.pumpkins)
-    return { type: 'pumpkins_project', packageJson }
+  if (packageJson?.dependencies?.pumpkins) {
+    return { type: 'pumpkins_project', packageJson, packageJsonPath }
+  }
 
-  return { type: 'node_project', packageJson }
+  return { type: 'node_project', packageJson, packageJsonPath }
 }
 
 /**
