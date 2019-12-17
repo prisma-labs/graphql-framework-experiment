@@ -20,12 +20,11 @@ export class DbPlan implements Command {
       return this.help()
     }
 
-    const dbDriver = await validateAndLoadDBDriver()
-    const secrets = Config.loadEnvironmentFromConfig(args['--stage']) ?? {}
+    const config = Config.loadAndProcessConfig(args['--stage']) ?? {}
+    const dbDriver = await validateAndLoadDBDriver(config)
 
     await dbDriver.db?.migrate.plan.onStart({
       migrationName: args['--name'],
-      secrets,
     })
   }
 

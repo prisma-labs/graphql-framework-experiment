@@ -6,15 +6,15 @@ import { PackageJson } from 'type-fest'
 import * as Layout from '../../../framework/layout'
 import * as Plugin from '../../../framework/plugin'
 import {
+  createGitRepository,
   createTSConfigContents,
   CWDProjectNameOrGenerate,
   pog,
-  createGitRepository,
+  logger,
 } from '../../../utils'
-import { logger } from '../../../utils/logger'
+import * as PackageManager from '../../../utils/package-manager'
 import * as proc from '../../../utils/process'
 import { Command } from '../../helpers'
-import * as PackageManager from '../../../utils/package-manager'
 
 const log = pog.sub('cli:create:app')
 
@@ -49,7 +49,7 @@ export async function runLocalHandOff(
   log('start local handoff')
 
   const { layout, connectionURI, database } = await loadDataFromParentProcess()
-  const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
+  const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout, {})
   log('plugins %O', plugins)
 
   // TODO select a template

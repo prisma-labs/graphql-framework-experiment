@@ -41,10 +41,12 @@ export class Dev implements Command {
     /**
      * Load config before loading plugins which may rely on env vars being defined
      */
-    Config.loadAndProcessConfig('development')
-
     const layout = await Layout.create()
-    const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
+    const config = Config.loadAndProcessConfig('development') ?? {}
+    const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(
+      layout,
+      config
+    )
 
     await findOrScaffoldTsConfig(layout)
 

@@ -54,7 +54,9 @@ export class Build implements Command {
     /**
      * Load config before loading plugins which may rely on env vars being defined
      */
-    const config = Config.loadAndProcessConfig(args['--stage'])
+    let configBeforeTargetValidation = Config.loadAndProcessConfig(
+      args['--stage']
+    )
     const deploymentTarget = normalizeTarget(args['--deployment'])
     const layout = await Layout.create({
       buildOutput:
@@ -64,12 +66,22 @@ export class Build implements Command {
     })
 
     if (deploymentTarget) {
-      if (!validateTarget(deploymentTarget, config, layout)) {
+      const validatedTarget = validateTarget(
+        deploymentTarget,
+        configBeforeTargetValidation,
+        layout
+      )
+      if (!validatedTarget.valid) {
         process.exit(1)
+      } else {
+        configBeforeTargetValidation = validatedTarget.config
       }
     }
-
-    const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
+    const finalConfig = configBeforeTargetValidation ?? {}
+    const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(
+      layout,
+      finalConfig
+    )
 
     await findOrScaffoldTsConfig(layout)
 
@@ -102,7 +114,7 @@ export class Build implements Command {
     compile(tsProgramWithTypegen, layout)
 
     await writeStartModule(
-      config,
+      finalConfig,
       args['--stage'] ?? 'production',
       layout,
       tsProgram
@@ -136,7 +148,7 @@ export class Build implements Command {
  * pumpkins app.
  */
 async function writeStartModule(
-  config: Config.Config | null,
+  config: Config.LoadedConfig,
   buildStage: string,
   layout: Layout.Layout,
   tsProgram: ts.EmitAndSemanticDiagnosticsBuilderProgram

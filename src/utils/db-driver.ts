@@ -1,11 +1,17 @@
+import { stripIndent } from 'common-tags'
+import * as Config from '../framework/config'
 import * as Layout from '../framework/layout'
 import * as Plugin from '../framework/plugin'
 import { fatal } from './process'
-import { stripIndent } from 'common-tags'
 
-export async function validateAndLoadDBDriver(): Promise<Plugin.WorkflowHooks> {
+export async function validateAndLoadDBDriver(
+  config: Config.LoadedConfig
+): Promise<Plugin.WorkflowHooks> {
   const layout = await Layout.create()
-  const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
+  const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(
+    layout,
+    config
+  )
   const dbDrivers = plugins.filter(p => p.hooks.db !== undefined)
 
   if (dbDrivers.length === 0) {

@@ -1,7 +1,7 @@
 import { stripIndent } from 'common-tags'
 import { printStaticSchemaImports } from './schema'
 import { Layout, relativeTranspiledImportPath } from './layout'
-import { Config, printStaticEnvSetters } from './config'
+import { LoadedConfig, printStaticEnvSetters } from './config'
 
 type StartModuleConfig =
   | {
@@ -21,7 +21,7 @@ type StartModuleConfig =
        */
       appPath: null | string
       layout: Layout
-      config: Config | null
+      config: LoadedConfig | null
       buildStage: string
     }
 

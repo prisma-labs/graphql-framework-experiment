@@ -1,13 +1,16 @@
-import { NexusConfig } from './nexus'
-import * as Layout from './layout'
-import * as Chokidar from '../watcher/chokidar'
-import { logger } from '../utils/logger'
-import { runSync, pog, fatal, run } from '../utils'
+import { stripIndent } from 'common-tags'
 import { Debugger } from 'debug'
 import * as fs from 'fs-jetpack'
-import { stripIndent } from 'common-tags'
 import prompts from 'prompts'
+import { fatal, pog, run, runSync } from '../utils'
+import { logger } from '../utils/logger'
 import * as PackageManager from '../utils/package-manager'
+import * as Chokidar from '../watcher/chokidar'
+import * as Config from './config'
+import * as Layout from './layout'
+import { NexusConfig } from './nexus'
+
+const log = pog.sub('plugin-manager')
 
 // TODO move to utils module
 type MaybePromise<T = void> = T | Promise<T>
@@ -19,24 +22,12 @@ export type OnAfterBaseSetupLens = {
   connectionURI: string | undefined
 }
 
-type Secrets = Record<string, string | undefined>
-
 export type DbMigratePlanContext = {
   migrationName: string | undefined
-  secrets: Secrets
 }
 
 export type DbMigrateApplyContext = {
   force: boolean | undefined
-  secrets: Secrets
-}
-
-export type DbInitContext = {
-  secrets: Secrets
-}
-
-export type DbMigrateRollbackContext = {
-  secrets: Secrets
 }
 
 export type WorkflowHooks = {
@@ -59,7 +50,7 @@ export type WorkflowHooks = {
   }
   db?: {
     init: {
-      onStart: (ctx: DbInitContext) => void
+      onStart: SideEffector
     }
     migrate: {
       plan: {
@@ -69,7 +60,7 @@ export type WorkflowHooks = {
         onStart: (ctx: DbMigrateApplyContext) => void
       }
       rollback: {
-        onStart: (ctx: DbMigrateRollbackContext) => void
+        onStart: SideEffector
       }
     }
   }
@@ -80,6 +71,7 @@ export type WorkflowDefiner = (
   workflowContext: {
     layout: Layout.Layout
     packageManager: PackageManager.PackageManager
+    config: Config.LoadedConfig
   }
 ) => void
 
@@ -132,7 +124,10 @@ export type Driver = {
   name: string
   extendsWorkflow: boolean
   extendsRuntime: boolean
-  loadWorkflowPlugin: (layout: Layout.Layout) => WorkflowHooks
+  loadWorkflowPlugin: (
+    layout: Layout.Layout,
+    config: Config.LoadedConfig
+  ) => WorkflowHooks
   loadRuntimePlugin: () => undefined | RuntimeContributions
 }
 
@@ -161,7 +156,7 @@ export function create(definer: Definer): DriverCreator {
       name: pluginName,
       extendsWorkflow: maybeWorkflowPlugin !== undefined,
       extendsRuntime: maybeRuntimePlugin !== undefined,
-      loadWorkflowPlugin(layout) {
+      loadWorkflowPlugin(layout, config) {
         const hooks: WorkflowHooks = {
           create: {},
           dev: {
@@ -170,9 +165,11 @@ export function create(definer: Definer): DriverCreator {
           build: {},
           generate: {},
         }
+        log('loading workflow of plugin %s', pluginName)
         maybeWorkflowPlugin?.(hooks, {
           layout,
           packageManager: layout.packageManager,
+          config,
         })
         return hooks
       },
@@ -319,7 +316,8 @@ export function parsePluginName(packageName: string): null | string {
  * Load all workflow plugins that are installed into the project.
  */
 export async function loadAllWorkflowPluginsFromPackageJson(
-  layout: Layout.Layout
+  layout: Layout.Layout,
+  config: Config.LoadedConfig
 ): Promise<{ name: string; hooks: WorkflowHooks }[]> {
   const plugins = await loadAllFromPackageJson()
   const workflowHooks = plugins
@@ -327,7 +325,7 @@ export async function loadAllWorkflowPluginsFromPackageJson(
     .map(driver => {
       let workflowComponent: WorkflowHooks
       try {
-        workflowComponent = driver.loadWorkflowPlugin(layout)
+        workflowComponent = driver.loadWorkflowPlugin(layout, config)
       } catch (error) {
         fatal(
           stripIndent`
@@ -372,6 +370,7 @@ export function __doLoadAllRuntimePluginsFromPackageJson(
     .map(driver => {
       let runtimeContributions: RuntimeContributions
       try {
+        log('loading runtime of plugin %s', driver.name)
         runtimeContributions = driver.loadRuntimePlugin()! // guaranteed by above filter
       } catch (error) {
         fatal(

@@ -20,6 +20,11 @@ export interface Config {
   environment_mapping?: Record<string, string>
 }
 
+export interface LoadedConfig {
+  environment?: Environment
+  environment_mapping?: Record<string, string>
+}
+
 type EnvironmentWithSecretLoader =
   | ((load: SecretLoader) => Environment | undefined)
   | Environment
@@ -32,7 +37,7 @@ interface Environment {
 
 export const DATABASE_URL_ENV_NAME = 'PUMPKINS_DATABASE_URL'
 
-function tryLoadConfig(configPath: string): object | null {
+function tryReadConfig(configPath: string): object | null {
   const { unregister } = registerTsExt()
 
   try {
@@ -64,30 +69,56 @@ function validateConfig(config: any): Config | null {
   return config.default as Config
 }
 
-export function loadConfig(): Config | null {
-  const config = tryLoadConfig(fs.path('pumpkins.config.ts'))
+export function readConfig(): Config | null {
+  const config = tryReadConfig(fs.path('pumpkins.config.ts'))
+  const validatedConfig = validateConfig(config)
 
-  return validateConfig(config)
+  if (!validateConfig(config)) {
+    return null
+  }
+
+  return validatedConfig
 }
 
-export function processConfig(config: Config, stage: string | undefined): void {
-  processEnvFromConfig(config, stage)
-  processEnvMappingFromConfig(config)
+export function loadConfig(
+  inputStage: StageNames | undefined
+): LoadedConfig | null {
+  const config = readConfig()
+  const stage = normalizeStage(inputStage)
+
+  if (!config) {
+    return null
+  }
+
+  const env = loadEnvironment(config.environments, stage)
+
+  return {
+    environment: env,
+    environment_mapping: config.environment_mapping,
+  }
+}
+
+export function processConfig(
+  loadedConfig: LoadedConfig,
+  stage: StageNames | undefined
+): void {
+  processEnvFromConfig(loadedConfig, stage)
+  processEnvMappingFromConfig(loadedConfig)
 }
 
 /**
  * Take stage from args passed to cli, or from node_env, or fallback to development if none were set
  */
-function readStage(inputStage: string | undefined): StageNames {
+function normalizeStage(inputStage: string | undefined): StageNames {
   return inputStage ?? process.env.NODE_ENV ?? 'development'
 }
 
 function processEnvFromConfig(
-  config: Config,
+  loadedConfig: LoadedConfig,
   inputStage: string | undefined
 ): void {
-  const stage = readStage(inputStage)
-  const loadedEnv = loadEnvironment(config.environments, stage)
+  const stage = normalizeStage(inputStage)
+  const loadedEnv = loadedConfig.environment
 
   if (!loadedEnv) {
     log('No environment to load from config with NODE_ENV=%s', stage)
@@ -110,7 +141,7 @@ function processEnvFromConfig(
 
 function loadEnvironment(
   environments: Config['environments'],
-  stage: string
+  stage: StageNames
 ): Environment | undefined {
   if (!environments || !environments[stage]) {
     return undefined
@@ -122,9 +153,9 @@ function loadEnvironment(
   return typeof envToLoad === 'function' ? envToLoad(secretLoader) : envToLoad
 }
 
-function processEnvMappingFromConfig(config: Config): void {
-  for (const sourceEnvName in config.environment_mapping) {
-    const targetEnvName = config.environment_mapping[sourceEnvName]
+function processEnvMappingFromConfig(loadedConfig: LoadedConfig): void {
+  for (const sourceEnvName in loadedConfig.environment_mapping) {
+    const targetEnvName = loadedConfig.environment_mapping[sourceEnvName]
 
     if (!targetEnvName) {
       continue
@@ -136,7 +167,7 @@ function processEnvMappingFromConfig(config: Config): void {
         sourceEnvName,
         targetEnvName,
         targetEnvName,
-        config.environment_mapping[targetEnvName]
+        loadedConfig.environment_mapping[targetEnvName]
       )
       return
     }
@@ -192,9 +223,10 @@ function registerTsExt(): { unregister: () => void } {
 }
 
 export function loadAndProcessConfig(
-  stage: StageNames | undefined
-): Config | null {
-  const config = loadConfig()
+  inputStage: StageNames | undefined
+): LoadedConfig | null {
+  const stage = normalizeStage(inputStage)
+  const config = loadConfig(stage)
 
   if (config) {
     processConfig(config, stage)
@@ -233,9 +265,12 @@ function printStaticEnvMapping(
   `
 }
 
-export function printStaticEnvSetters(config: Config, stage: string): string {
+export function printStaticEnvSetters(
+  config: LoadedConfig,
+  stage: StageNames
+): string {
   let output: string = ''
-  const env = loadEnvironment(config.environments, stage)
+  const env = config.environment
 
   if (env) {
     for (const envName in env) {
@@ -353,14 +388,13 @@ function tryLoadSecrets(
 export function loadEnvironmentFromConfig(
   inputStage: string | undefined
 ): Environment | null {
-  const config = loadConfig()
-  const stage = readStage(inputStage)
+  const config = loadConfig(inputStage)
 
   if (!config) {
     return null
   }
 
-  return loadEnvironment(config.environments, stage) ?? null
+  return config.environment ?? null
 }
 
 /**

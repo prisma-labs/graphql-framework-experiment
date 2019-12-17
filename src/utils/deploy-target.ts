@@ -5,7 +5,7 @@ import * as path from 'path'
 import { PackageJson } from 'type-fest'
 import { pog } from '.'
 import { START_MODULE_NAME } from '../constants'
-import { Config, DATABASE_URL_ENV_NAME } from '../framework/config'
+import { DATABASE_URL_ENV_NAME, LoadedConfig } from '../framework/config'
 import { DEFAULT_BUILD_FOLDER_NAME, Layout } from '../framework/layout'
 import { logger } from './logger'
 import { fatal } from './process'
@@ -59,9 +59,10 @@ export function computeBuildOutputFromTarget(target: SupportedTargets | null) {
   return TARGET_TO_BUILD_OUTPUT[target]
 }
 
+type ValidatorResult = { valid: boolean; config: LoadedConfig }
 const TARGET_VALIDATORS: Record<
   SupportedTargets,
-  (config: Config | null, layout: Layout) => boolean
+  (config: LoadedConfig | null, layout: Layout) => ValidatorResult
 > = {
   now: validateNow,
   heroku: validateHeroku,
@@ -69,9 +70,9 @@ const TARGET_VALIDATORS: Record<
 
 export function validateTarget(
   target: SupportedTargets,
-  config: Config | null,
+  config: LoadedConfig | null,
   layout: Layout
-): boolean {
+): ValidatorResult {
   const validator = TARGET_VALIDATORS[target]
   return validator(config, layout)
 }
@@ -86,7 +87,10 @@ interface NowJson {
 /**
  * Validate the user's now configuration file.
  */
-function validateNow(_config: Config | null, layout: Layout): boolean {
+function validateNow(
+  _config: LoadedConfig | null,
+  layout: Layout
+): ValidatorResult {
   const maybeNowJsonPath = findConfigFile('now.json', { required: false })
   const startModulePath = `${layout.buildOutput}/${START_MODULE_NAME}.js`
   let isValid = true
@@ -163,10 +167,13 @@ function validateNow(_config: Config | null, layout: Layout): boolean {
     }
   }
 
-  return isValid
+  return { valid: isValid, config: _config ?? {} }
 }
 
-function validateHeroku(config: Config | null, layout: Layout): boolean {
+function validateHeroku(
+  config: LoadedConfig | null,
+  layout: Layout
+): ValidatorResult {
   const nodeMajorVersion = Number(process.versions.node.split('.')[0])
   const packageJsonPath = findConfigFile('package.json', { required: false })
   let isValid = true
@@ -255,7 +262,7 @@ function validateHeroku(config: Config | null, layout: Layout): boolean {
 
   if (!config) {
     config = {
-      environments: {},
+      environment: {},
       environment_mapping: {
         DATABASE_URL: DATABASE_URL_ENV_NAME,
       },
@@ -293,7 +300,7 @@ function validateHeroku(config: Config | null, layout: Layout): boolean {
     console.log()
   }
 
-  return isValid
+  return { valid: isValid, config }
 }
 
 const TARGET_TO_POST_BUILD_MESSAGE: Record<SupportedTargets, string> = {
