@@ -177,7 +177,15 @@ export async function runBootstrapper(
 
   await createGitRepository()
 
-  logger.success(stripIndent`
+  // If the user setup a db driver but not the connection URI yet, then do not
+  // enter dev mode yet. Dev mode will result in a runtime-crashing app.
+  if (!(askDatabase.database && !askDatabase.connectionURI)) {
+    // We will enter dev mode with the local version of graphql-santa. This is a kind
+    // of cheat, but what we want users to have as their mental model. When they
+    // terminate this dev session, they will restart it typically with e.g. `$
+    // yarn dev`. This global-graphql-santa-process-wrapping-local-graphql-santa-process
+    // is unique to bootstrapping situations.
+    logger.success(stripIndent`
     ${chalk.bold('Entering dev mode...')}
         
     Try this query to get started: 
@@ -189,16 +197,7 @@ export async function runBootstrapper(
         }
       }
   `)
-  console.log() // force a newline to give code block breathing room, stripped by template tag above
-
-  // If the user setup a db driver but not the connection URI yet, then do not
-  // enter dev mode yet. Dev mode will result in a runtime-crashing app.
-  if (!(askDatabase.database && !askDatabase.connectionURI)) {
-    // We will enter dev mode with the local version of graphql-santa. This is a kind
-    // of cheat, but what we want users to have as their mental model. When they
-    // terminate this dev session, they will restart it typically with e.g. `$
-    // yarn dev`. This global-graphql-santa-process-wrapping-local-graphql-santa-process
-    // is unique to bootstrapping situations.
+    console.log() // force a newline to give code block breathing room, stripped by template tag above
 
     await layout.packageManager
       .runScript('dev', {
