@@ -186,7 +186,7 @@ Our Hello World schema doesn't account for information about moons, lets change 
    1. Attach your project to the app: `heroku git:remote --app <app-name>`
    1. Add a postgres database to it: `heroku addons:create heroku-postgresql --app <app-name>`
    1. Get the postgres database credentials: `heroku pg:credentials:url --app <app-name>`
-   1. Initialize the postgres database: `yarn -s graphql-santa db init --connection-url <connection-url>`
+   1. Initialize the postgres database: `npx graphql-santa db init --connection-url <connection-url>`
    1. Deploy using the git push to master workflow. See your app running in the cloud!
 
 4. Conclusion
@@ -211,6 +211,12 @@ Prisma Framework is a next-generation developer-centric tool chain focused on ma
 
 ### Example
 
+Install the prisma plugin:
+
+```
+npm install graphql-santa-plugin-prisma
+```
+
 Add a schema.prisma file and fill it out with some content
 
 ```diff
@@ -232,17 +238,10 @@ model User {
 }
 ```
 
-Initialize your database:
-
-```
-yarn prisma2 lift save --create-db --name init
-yarn prisma2 lift up
-```
-
 Enter dev mode:
 
 ```
-yarn graphql-santa dev
+npx graphql-santa dev
 ```
 
 The following shows an example of transitioning your API codebase to use the extensions brought on
