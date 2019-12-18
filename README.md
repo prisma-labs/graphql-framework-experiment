@@ -186,8 +186,8 @@ Our Hello World schema doesn't account for information about moons, lets change 
    1. Attach your project to the app: `heroku git:remote --app <app-name>`
    1. Add a postgres database to it: `heroku addons:create heroku-postgresql --app <app-name>`
    1. Get the postgres database credentials: `heroku pg:credentials:url --app <app-name>`
-   1. Initialize the postgres database: `yarn -s graphql-santa db init --connection-url ${}`
-   1. Deploy using the git push to master workflow. See your app running in the cloud.
+   1. Initialize the postgres database: `yarn -s graphql-santa db init --connection-url <connection-url>`
+   1. Deploy using the git push to master workflow. See your app running in the cloud!
 
 4. Conclusion
 
