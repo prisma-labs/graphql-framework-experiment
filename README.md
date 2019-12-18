@@ -8,14 +8,14 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 - [Introduction](#introduction)
-  - [Getting Started](#getting-started)
-  - [Next Step, Getting a Sense for End to End Type Safety](#next-step-getting-a-sense-for-end-to-end-type-safety)
+  - [Get started](#get-started)
+  - [Get a sense for db-to-api workflow](#get-a-sense-for-db-to-api-workflow)
 - [Guide](#guide)
   - [Adding Prisma](#adding-prisma)
     - [Overview](#overview)
     - [Example](#example)
   - [Databases](#databases)
-    - [Setup a local postgres](#setup-a-local-postgres)
+    - [Setup a local PostgreSQL](#setup-a-local-postgresql)
   - [Going to Proudction](#going-to-proudction)
     - [Heroku](#heroku)
   - [Conventions](#conventions)
