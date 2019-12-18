@@ -2,7 +2,7 @@ import * as Config from '../../framework/config'
 import * as Layout from '../../framework/layout'
 import * as Plugin from '../../framework/plugin'
 import { createStartModuleContent } from '../../framework/start'
-import { generateArtifacts } from '../../utils'
+import { generateArtifacts, logger } from '../../utils'
 import { Command } from '../helpers'
 
 export class Generate implements Command {
@@ -18,7 +18,7 @@ export class Generate implements Command {
       await p.hooks.generate.onStart?.()
     }
 
-    console.log('🎃  Generating Nexus artifacts ...')
+    logger.info('Generating Nexus artifacts ...')
     await generateArtifacts(
       createStartModuleContent({
         internalStage: 'dev',
@@ -26,6 +26,7 @@ export class Generate implements Command {
         layout,
       })
     )
-    console.log('🎃  Successfully generated the artifacts')
+
+    logger.successBold('Success!')
   }
 }

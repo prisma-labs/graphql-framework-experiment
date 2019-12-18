@@ -330,5 +330,5 @@ ${chalk.gray(`\
 }
 
 export function logTargetPostBuildMessage(target: SupportedTargets): void {
-  console.log(`🎃  ${TARGET_TO_POST_BUILD_MESSAGE[target]}`)
+  logger.info(TARGET_TO_POST_BUILD_MESSAGE[target])
 }
