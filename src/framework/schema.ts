@@ -34,25 +34,6 @@ function findSchemaModules(): {
 
   log('...found %O', dirsOrModules)
 
-  // if (files.length === 0) {
-  //   const schemaPath = fs.path('.pumpkins', 'schema.ts')
-
-  //   fs.write(
-  //     schemaPath,
-  //     stripIndents`
-  //       // Move out of folder to edit, or create a new one in your app folder.
-
-  //       queryType({
-  //         definition(t) {
-  //           t.string('welcomeToPumpkins', () => 'Welcome to Pumpkins!')
-  //         }
-  //       })
-  //     `
-  //   )
-
-  //   return [schemaPath]
-  // }
-
   const expandedModules = flatMap(dirsOrModules, fileOrDir => {
     const absolutePath = fs.path(fileOrDir)
 

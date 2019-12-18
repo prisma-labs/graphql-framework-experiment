@@ -216,14 +216,14 @@ function findPackageJsonPath(): string | null {
 }
 
 /**
- * Detect whether or not CWD is inside a pumpkins project. Pumpkins project is
- * defined as there being a package.json in or above CWD with pumpkins as a
+ * Detect whether or not CWD is inside a graphql-santa project. graphql-santa project is
+ * defined as there being a package.json in or above CWD with graphql-santa as a
  * direct dependency.
  */
 export async function scanProjectType(): Promise<
   | { type: 'unknown' | 'new' }
   | {
-      type: 'pumpkins_project' | 'node_project'
+      type: 'graphql_santa_project' | 'node_project'
       packageJson: {}
       packageJsonPath: string
     }
@@ -238,8 +238,8 @@ export async function scanProjectType(): Promise<
   }
 
   const packageJson = fs.read(packageJsonPath, 'json')
-  if (packageJson?.dependencies?.pumpkins) {
-    return { type: 'pumpkins_project', packageJson, packageJsonPath }
+  if (packageJson?.dependencies?.['graphql-santa']) {
+    return { type: 'graphql_santa_project', packageJson, packageJsonPath }
   }
 
   return { type: 'node_project', packageJson, packageJsonPath }
@@ -254,11 +254,11 @@ async function isEmptyCWD(): Promise<boolean> {
   return contents === undefined || contents.length === 0
 }
 
-const ENV_VAR_DATA_NAME = 'PUMPKINS_LAYOUT'
+const ENV_VAR_DATA_NAME = 'GRAPHQL_SANTA_LAYOUT'
 
 export function saveDataForChildProcess(
   layout: Layout
-): { PUMPKINS_LAYOUT: string } {
+): { GRAPHQL_SANTA_LAYOUT: string } {
   return {
     [ENV_VAR_DATA_NAME]: JSON.stringify(layout.data),
   }

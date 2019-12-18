@@ -224,7 +224,7 @@ export function create(definer: Definer): DriverCreator {
 // }
 
 /**
- * Load all pumpkins plugins installed into the project
+ * Load all graphql-santa plugins installed into the project
  */
 export async function loadAllFromPackageJson(): Promise<Driver[]> {
   const packageJson: undefined | Record<string, any> = await fs.readAsync(
@@ -235,7 +235,7 @@ export async function loadAllFromPackageJson(): Promise<Driver[]> {
 }
 
 /**
- * Load all pumpkins plugins installed into the project
+ * Load all graphql-santa plugins installed into the project
  */
 export function loadAllFromPackageJsonSync(): Driver[] {
   const packageJson: undefined | Record<string, any> = fs.read(
@@ -258,12 +258,12 @@ function __doLoadAllFromPackageJson(
   const depNames = Object.keys(deps)
   if (depNames.length === 0) return []
 
-  const pumpkinsPluginDepNames = depNames.filter(depName =>
-    depName.match(/^pumpkins-plugin-.+/)
+  const pluginDepNames = depNames.filter(depName =>
+    depName.match(/^graphql-santa-plugin-.+/)
   )
-  if (pumpkinsPluginDepNames.length === 0) return []
+  if (pluginDepNames.length === 0) return []
 
-  const instantiatedPlugins: Driver[] = pumpkinsPluginDepNames.map(depName => {
+  const instantiatedPlugins: Driver[] = pluginDepNames.map(depName => {
     const pluginName = parsePluginName(depName)! // filter above guarantees
 
     let SomePlugin: PluginPackage
@@ -307,10 +307,10 @@ function __doLoadAllFromPackageJson(
 }
 
 /**
- * Parse a pumpkins plugin package name to just the plugin name.
+ * Parse a graphql-santa plugin package name to just the plugin name.
  */
 export function parsePluginName(packageName: string): null | string {
-  const matchResult = packageName.match(/^pumpkins-plugin-(.+)/)
+  const matchResult = packageName.match(/^graphql-santa-plugin-(.+)/)
 
   if (matchResult === null) return null
 

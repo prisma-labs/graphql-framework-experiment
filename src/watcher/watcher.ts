@@ -31,7 +31,7 @@ export function createWatcher(opts: Opts) {
 
   // TODO watch for changes to tsconfig and take correct action
   // TODO watch for changes to package json and take correct action (imagine
-  // there could be pumpkins config in there)
+  // there could be graphql-santa config in there)
   // TODO restart should take place following npm install/remove yarn
   // add/remove/install etc.
   // TODO need a way to test file matching given patterns. Hard to get right,
@@ -106,7 +106,7 @@ export function createWatcher(opts: Opts) {
     if (runner.exited) return Promise.resolve()
 
     // TODO maybe we should be a timeout here so that child process hanging
-    // will never prevent pumpkins dev from exiting nicely.
+    // will never prevent graphql-santa dev from exiting nicely.
     return sendSigterm(runner)
       .then(() => {
         log('sigterm to runner process tree completed')
@@ -237,15 +237,15 @@ function startRunner(
   // const child = fork('-r' [runnerModulePath, childHookPath], {
   //
   // We are leaving this as a future fix, refer to:
-  // https://github.com/prisma/pumpkins/issues/76
+  // https://github.com/prisma-labs/graphql-santa/issues/76
   const cmd = [...(opts.nodeArgs || []), runnerModulePath]
   const child = fork(cmd[0], cmd.slice(1), {
     cwd: process.cwd(),
     silent: true,
     env: {
       ...process.env,
-      PUMPKINS_EVAL: opts.eval.code,
-      PUMPKINS_EVAL_FILENAME: opts.eval.fileName,
+      GRAPHQL_SANTA_EVAL: opts.eval.code,
+      GRAPHQL_SANTA_EVAL_FILENAME: opts.eval.fileName,
       ...saveDataForChildProcess(opts.layout),
     },
   }) as Process

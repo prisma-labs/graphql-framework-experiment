@@ -5,7 +5,7 @@ import { gitRepo, gitReset } from './utils'
 import { createRunner } from '../../src/utils'
 
 type Workspace = {
-  dir: { path: string; pathRelativeToPumpkins: string; cacheHit: boolean }
+  dir: { path: string; pathRelativeToGraphqlSanta: string; cacheHit: boolean }
   run: ReturnType<typeof createRunner>
   fs: ReturnType<typeof jetpack.dir>
   git: SimpleGit
@@ -57,9 +57,9 @@ async function doCreateWorkspace(config: Options): Promise<Workspace> {
   ).trim()
   const cacheKey = `v${ver}-yarnlock-${yarnLockHash}-gitbranch-${currentGitBranch}-testv${testVer}`
 
-  dir.path = `/tmp/pumpkins-integration-test-project-bases/${config.name}-${cacheKey}`
+  dir.path = `/tmp/graphql-santa-integration-test-project-bases/${config.name}-${cacheKey}`
 
-  dir.pathRelativeToPumpkins =
+  dir.pathRelativeToGraphqlSanta =
     '../' + path.relative(dir.path, path.join(__dirname, '../..'))
 
   if ((await jetpack.existsAsync(dir.path)) !== false) {
@@ -87,11 +87,11 @@ async function doCreateWorkspace(config: Options): Promise<Workspace> {
         name: 'test-app',
         license: 'MIT',
         dependencies: {
-          pumpkins: dir.pathRelativeToPumpkins,
+          'graphql-santa': dir.pathRelativeToGraphqlSanta,
         },
         scripts: {
           postinstall:
-            'yarn -s link pumpkins && chmod +x node_modules/.bin/pumpkins',
+            'yarn -s link graphql-santa && chmod +x node_modules/.bin/graphql-santa',
         },
       }),
       fs.writeAsync(

@@ -17,7 +17,7 @@ export async function validateAndLoadDBDriver(
   if (dbDrivers.length === 0) {
     fatal(
       stripIndent`
-        You have no database driver installed. Official drivers: "pumpkins-plugin-prisma".
+        You have no database driver installed. Official drivers: "graphql-santa-plugin-prisma".
         Run ${layout.packageManager.renderAddDeps([
           '<db-driver>',
         ])} to install one.

@@ -1,8 +1,8 @@
 ```
-Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks! 🎃
+Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks! 🎄
 ```
 
-# pumpkins <!-- omit in toc -->
+# graphql-santa <!-- omit in toc -->
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -44,12 +44,12 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
 
 # Introduction
 
-Pumpkins is a GraphQL API framework. It takes a code-first approach (as opposed
+`graphql-santa` is a GraphQL API framework. It takes a code-first approach (as opposed
 to schema-first) and brings together a set of tools that provide robust type
 safety so that if your app compiles, you have a much higher degree of confidence
 than with vanilla JavaScript or just TypeScript.
 
-Pumpkins brings Nexus, Prisma, Apollo Server and more together into a pluggable
+`graphql-santa` brings Nexus, Prisma, Apollo Server and more together into a pluggable
 system (in fact Prisma features are implemented as a plugin).
 
 ### Get started
@@ -59,7 +59,7 @@ system (in fact Prisma features are implemented as a plugin).
 2. Kick off a new project. Say yes (`y`) to the prisma option. Choose `PostgreSQL` for the db option. Take a few moments to look around, poke things. But don't feel pressure to understand everything right away : )
 
    ```
-   npx pumpkins@master
+   npx graphql-santa
    ```
 
 ### Get a sense for db-to-api workflow
@@ -83,7 +83,7 @@ Our Hello World schema doesn't account for information about moons, lets change 
    + }
    ```
 
-   `pumpkins` reacts to changes in your Prisma schema. By saving the above, your dev database will be automatically migrated and photon regenerated. You literally now just move on to updating your GraphQL API.
+   `graphql-santa` reacts to changes in your Prisma schema. By saving the above, your dev database will be automatically migrated and photon regenerated. You literally now just move on to updating your GraphQL API.
 
 2. We have data about `Earth` from before, but now we need to update it with information about its moon. Instead of working with photon inside one-off scripts, lets enhance our API and make the update as if a client app were.
 
@@ -186,7 +186,7 @@ Our Hello World schema doesn't account for information about moons, lets change 
    1. Attach your project to the app: `heroku git:remote --app <app-name>`
    1. Add a postgres database to it: `heroku addons:create heroku-postgresql --app <app-name>`
    1. Get the postgres database credentials: `heroku pg:credentials:url --app <app-name>`
-   1. Initialize the postgres database: `yarn -s pumpkins db init --connection-url ${}`
+   1. Initialize the postgres database: `yarn -s graphql-santa db init --connection-url ${}`
    1. Deploy using the git push to master workflow. See your app running in the cloud.
 
 4. Conclusion
@@ -199,11 +199,12 @@ Our Hello World schema doesn't account for information about moons, lets change 
 
 ### Overview
 
-Prisma Framework is a next-generation developer-centric tool chain focused on making the data layer easy. In turn, `pumpkins` makes it easy to integrate Prisma Framework into your app. You opt-in by creating a `schema.prisma` file somewhere in your project. Then, the following things automatically happen:
+Prisma Framework is a next-generation developer-centric tool chain focused on making the data layer easy. In turn, `graphql-santa` makes it easy to integrate Prisma Framework into your app. You opt-in by creating a `schema.prisma` file somewhere in your project. Then, the following things automatically happen:
 
-1. Pumpkins CLI workflows are extended:
+1. graphql-santa CLI workflows are extended: db, dev, build
    1. On build, Prisma generators are run
    2. During dev, Prisma generators are run after prisma schema file changes
+   3. `db` command becomes powered by `prisma2 lift`
 2. The `nexus-prisma` Nexus plugin is automatically used. This you get access to `t.model` and `t.crud`.
 3. An instance of the generated Photon.JS client is a added to context under `photon` property
 4. The TypeScript types representing your Prisma models are registered as a Nexus data source. In short this enables proper typing of `parent` parameters in your resolves. They reflect the data of the correspondingly named Prisma model.
@@ -241,7 +242,7 @@ yarn prisma2 lift up
 Enter dev mode:
 
 ```
-yarn pumpkins dev
+yarn graphql-santa dev
 ```
 
 The following shows an example of transitioning your API codebase to use the extensions brought on
@@ -289,13 +290,13 @@ The reccommended way to run postgres locally is with docker, because it is easy 
 1. Start a postgres server for your app:
 
    ```
-   docker run --detach --publish 5432:5432 --name 'myapp-db' --env POSTGRES_PASSWORD=pumpkins postgres
+   docker run --detach --publish 5432:5432 --name 'myapp-db' --env POSTGRES_PASSWORD=postgres postgres
    ```
 
 2. Now you can use a connection URL like:
 
    ```
-   postgresql://postgres:pumpkins@localhost:5432/myapp
+   postgresql://postgres:postgres@localhost:5432/myapp
    ```
 
 If you don't want to use a docker, here are some links to alternative approaches:
@@ -309,7 +310,7 @@ If you don't want to use a docker, here are some links to alternative approaches
 Once you're ready to go to production just build your app and run the start module with node.
 
 ```
-$ yarn pumpkins build
+$ npx graphql-santa build
 ```
 
 ```
@@ -320,7 +321,7 @@ $ node node_modules/.build
 
 ```json
   "scripts": {
-    "build": "pumpkins build",
+    "build": "graphql-santa build",
     "start": "node node_modules/.build"
   }
 ```
@@ -351,7 +352,7 @@ Optional –– The entrypoint to your app
 
 There can only be at most a single `app.ts`/`server.ts`/`service.ts` module in your source tree.
 
-This module is optional **when** you just have schema modules and so pumpkins already knows how import them into the final build. Otherwise you'll need this module to import your custom modules etc.
+This module is optional **when** you just have schema modules and so graphql-santa already knows how import them into the final build. Otherwise you'll need this module to import your custom modules etc.
 
 ##### Aliases
 
@@ -396,14 +397,14 @@ prisma/
 
 ### `app`
 
-A singleton pumpkins app. Use this to build up your GraphQL schema and configure your server.
+A singleton graphql-santa app. Use this to build up your GraphQL schema and configure your server.
 
 **Example**
 
 ```ts
 // schema.ts
 
-import { app } from 'pumpkins'
+import { app } from 'graphql-santa'
 
 app.objectType({
   name: 'Foo',
@@ -422,7 +423,7 @@ Add context to your graphql resolver functions. The objects returned by your con
 ```ts
 // app.ts
 
-import { app } from 'pumpkins'
+import { app } from 'graphql-santa'
 
 app.addToContext(req => {
   return {
@@ -447,7 +448,7 @@ Add types to your GraphQL Schema. The available nexus definition block functions
 ```ts
 // schema.ts
 
-import { app } from 'pumpkins'
+import { app } from 'graphql-santa'
 
 app.objectType({
   name: 'Foo',
@@ -459,14 +460,14 @@ app.objectType({
 
 ### `app.server.start`
 
-Start the server. If you don't call this pumpkins will. Usually you should not have to call it. Please share your use-case with us if you do!
+Start the server. If you don't call this graphql-santa will. Usually you should not have to call it. Please share your use-case with us if you do!
 
 <br>
 
 # CLI
 
-- [`pumpkins build`](#pumpkins-build)
-- [`pumpkins dev`](#pumpkins-dev)
+- [`graphql-santa build`](#graphql-santa-build)
+- [`graphql-santa dev`](#graphql-santa-dev)
 
 # Development
 
@@ -489,12 +490,12 @@ local node_modules](https://github.com/yarnpkg/yarn/issues/5713).
 
 ### Working With Example Apps via Linking
 
-Refer to https://github.com/prisma/pumpkins-examples
+Refer to https://github.com/prisma-labs/graphql-santa-examples
 
 ### Working with create command
 
 In any example you can use this workflow:
 
 ```
-rm -rf test-create && mcd test-create && ../node_modules/.bin/pumpkins create
+rm -rf test-create && mcd test-create && ../node_modules/.bin/graphql-santa create
 ```

@@ -46,8 +46,8 @@ export function findConfigFile(fileName: string, opts: { required: boolean }) {
 }
 
 /**
- * Fetch the tsconfig file for pumpkins, handling special post-processing for
- * pumpkins projects etc.
+ * Fetch the tsconfig file for graphql-santa, handling special post-processing for
+ * graphql-santa projects etc.
  */
 export function readTsConfig(layout: Layout): ts.ParsedCommandLine {
   const tsConfigPath = findConfigFile('tsconfig.json', { required: true })
@@ -88,7 +88,7 @@ export function readTsConfig(layout: Layout): ts.ParsedCommandLine {
   )
 
   /**
-   * Force tsconfig settings in ways that align with pumpkins projects.
+   * Force tsconfig settings in ways that align with graphql-santa projects.
    */
 
   // Target ES5 output by default (instead of ES3).
@@ -122,7 +122,7 @@ export function createTSProgram(
     rootNames: tsConfig.fileNames,
     options: {
       incremental: true,
-      tsBuildInfoFile: './node_modules/.pumpkins/cache.tsbuildinfo',
+      tsBuildInfoFile: './node_modules/.graphql-santa/cache.tsbuildinfo',
       ...tsConfig.options,
     },
   })
@@ -289,19 +289,19 @@ export function createTSConfigContents(layout: Layout): string {
         "module": "commonjs",
         "lib": ["esnext"],
         "strict": true,
-        // [1] pumpkins managed
+        // [1] graphql-santa managed
         // "rootDir": "${layout.sourceRootRelative}",
         // "outDir": "${layout.buildOutput}",
       },
-      // [1] pumpkins managed
+      // [1] graphql-santa managed
       // "include": "${layout.sourceRootRelative}"
     }
 
-    // [1] pumpkins managed
+    // [1] graphql-santa managed
     //
-    // These settings are managed by Pumpkins.
+    // These settings are managed by graphql-santa.
     // Do not edit these manually. Please refer to
-    // https://github.com/prisma/pumpkins/issues/82
+    // https://github.com/prisma-labs/graphql-santa/issues/82
     // Contribute feedback/use-cases if you feel strongly
     // about controlling these settings manually.
   `

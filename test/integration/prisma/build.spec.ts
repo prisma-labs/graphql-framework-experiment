@@ -26,7 +26,7 @@ it('can build a prisma framework project', () => {
   ws.fs.write(
     'schema.ts',
     `
-      import { app } from 'pumpkins'
+      import { app } from 'graphql-santa'
 
       app.objectType({
         name: 'User',
@@ -38,7 +38,7 @@ it('can build a prisma framework project', () => {
     `
   )
 
-  const result = ws.run('yarn -s pumpkins build')
+  const result = ws.run('yarn -s graphql-santa build')
   expect(result).toMatchSnapshot()
   expect(ws.fs.inspectTree(DEFAULT_BUILD_FOLDER_NAME)).toMatchSnapshot()
 })

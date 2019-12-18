@@ -26,14 +26,14 @@ export default class App implements Command {
 
 type Options = {
   projectName: string
-  pumpkinsVersion: string
+  graphqlSantaVersion: string
 }
 
 /**
  * TODO
  */
 export async function run(optionsGiven?: Partial<Options>): Promise<void> {
-  if (process.env.PUMPKINS_CREATE_HANDOFF === 'true') {
+  if (process.env.GRAPHQL_SANTA_CREATE_HANDOFF === 'true') {
     await runLocalHandOff(optionsGiven)
   } else {
     await runBootstrapper(optionsGiven)
@@ -96,10 +96,10 @@ export async function runBootstrapper(
     ...optionsGiven,
     projectName: CWDProjectNameOrGenerate(),
     // @ts-ignore
-    pumpkinsVersion: require('../../../../package.json').version,
+    graphqlSantaVersion: require('../../../../package.json').version,
   }
 
-  // TODO in the future scan npm registry for pumpkins plugins, organize by
+  // TODO in the future scan npm registry for graphql-santa plugins, organize by
   // github stars, and so on.
   const askDatabase = await askForDatabase()
 
@@ -107,7 +107,7 @@ export async function runBootstrapper(
   await scaffoldBaseFiles(layout, options)
 
   logger.successBold(
-    `Installing pumpkins@${options.pumpkinsVersion}... (this will take around ~20 seconds)`
+    `Installing graphql-santa@${options.graphqlSantaVersion}... (this will take around ~20 seconds)`
   )
   await layout.packageManager.installDeps({ require: true })
 
@@ -120,12 +120,12 @@ export async function runBootstrapper(
     )
     // Env var used for development
     const prismaPluginVersion =
-      process.env.PUMPKINS_PLUGIN_PRISMA_VERSION ?? 'master'
+      process.env.GRAPHQL_SANTA_PLUGIN_PRISMA_VERSION ?? 'master'
     // TODO @latest
     await layout.packageManager.addDeps(
-      [`pumpkins-plugin-prisma@${prismaPluginVersion}`],
+      [`graphql-santa-plugin-prisma@${prismaPluginVersion}`],
       {
-        // await proc.run('yarn add pumpkins-plugin-prisma@master', {
+        // await proc.run('yarn add graphql-santa-plugin-prisma@master', {
         // This allows installing prisma without a warning being emitted about there
         // being a missing prisma schema. For more detail refer to
         // https://prisma-company.slack.com/archives/CEYCG2MCN/p1575480721184700 and
@@ -149,9 +149,9 @@ export async function runBootstrapper(
   }
 
   await layout.packageManager
-    .runBin('pumpkins create', {
+    .runBin('graphql-santa create', {
       stdio: 'inherit',
-      envAdditions: { PUMPKINS_CREATE_HANDOFF: 'true' },
+      envAdditions: { GRAPHQL_SANTA_CREATE_HANDOFF: 'true' },
       require: true,
     })
     .catch(error => {
@@ -162,7 +162,7 @@ export async function runBootstrapper(
   // An exhaustive .gitignore tailored for Node can be found here:
   // https://github.com/github/gitignore/blob/master/Node.gitignore
   // We intentionally stay minimal here, as we want the default ignore file
-  // to be as meaningful for pumpkins users as possible.
+  // to be as meaningful for graphql-santa users as possible.
   await fs.write(
     '.gitignore',
     stripIndent`
@@ -192,16 +192,16 @@ export async function runBootstrapper(
   `)
     console.log() // force a newline to give code block breathing room, stripped by template tag above
 
-    // We will enter dev mode with the local version of pumpkins. This is a kind
+    // We will enter dev mode with the local version of graphql-santa. This is a kind
     // of cheat, but what we want users to have as their mental model. When they
     // terminate this dev session, they will restart it typically with e.g. `$
-    // yarn dev`. This global-pumpkins-process-wrapping-local-pumpkins-process
+    // yarn dev`. This global-graphql-santa-process-wrapping-local-graphql-santa-process
     // is unique to bootstrapping situations.
 
     await layout.packageManager
       .runScript('dev', {
         stdio: 'inherit',
-        envAdditions: { PUMPKINS_CREATE_HANDOFF: 'true' },
+        envAdditions: { GRAPHQL_SANTA_CREATE_HANDOFF: 'true' },
         require: true,
       })
       .catch(error => {
@@ -310,14 +310,14 @@ async function askForPackageManager(): Promise<
 }
 
 /**
- * Check that the cwd is a suitable place to start a new pumpkins project.
+ * Check that the cwd is a suitable place to start a new graphql-santa project.
  */
 async function assertIsCleanSlate() {
   const contents = await fs.listAsync()
 
   if (contents !== undefined && contents.length > 0) {
     proc.fatal(
-      'Cannot create a new pumpkins project here because the directory is not empty:\n %s',
+      'Cannot create a new graphql-santa project here because the directory is not empty:\n %s',
       contents
     )
   }
@@ -327,7 +327,7 @@ async function helloWorldTemplate(layout: Layout.Layout) {
   await fs.writeAsync(
     layout.sourcePath('schema.ts'),
     stripIndent`
-    import { app } from "pumpkins";
+    import { app } from "graphql-santa";
 
     app.objectType({
       name: "World",
@@ -365,7 +365,7 @@ async function helloWorldTemplate(layout: Layout.Layout) {
 }
 
 /**
- * Scaffold a new pumpkins project from scratch
+ * Scaffold a new graphql-santa project from scratch
  */
 async function scaffoldBaseFiles(layout: Layout.Layout, options: Options) {
   // TODO Template selector?
@@ -377,11 +377,11 @@ async function scaffoldBaseFiles(layout: Layout.Layout, options: Options) {
       name: options.projectName,
       license: 'UNLICENSED',
       dependencies: {
-        pumpkins: options.pumpkinsVersion,
+        'graphql-santa': options.graphqlSantaVersion,
       },
       scripts: {
-        dev: 'pumpkins dev',
-        build: 'pumpkins build',
+        dev: 'graphql-santa dev',
+        build: 'graphql-santa build',
         start: 'node node_modules/.build',
       },
     } as PackageJson),
@@ -398,9 +398,9 @@ async function scaffoldBaseFiles(layout: Layout.Layout, options: Options) {
             {
               "type": "node",
               "request": "launch",
-              "name": "Debug Pumpkins App",
+              "name": "Debug graphql-santa App",
               "protocol": "inspector",
-              "runtimeExecutable": "\${workspaceRoot}/node_modules/.bin/pumpkins",
+              "runtimeExecutable": "\${workspaceRoot}/node_modules/.bin/graphql-santa",
               "runtimeArgs": ["dev"],
               "args": ["${layout.projectRelative(appEntrypointPath)}"],
               "sourceMaps": true,
@@ -413,7 +413,7 @@ async function scaffoldBaseFiles(layout: Layout.Layout, options: Options) {
   ])
 }
 
-const ENV_PARENT_DATA = 'PUMPKINS_CREATE_DATA'
+const ENV_PARENT_DATA = 'GRAPHQL_SANTA_CREATE_DATA'
 
 type SerializableParentData = {
   layout: Layout.Layout['data']
@@ -428,7 +428,7 @@ type ParentData = Omit<SerializableParentData, 'layout'> & {
 async function loadDataFromParentProcess(): Promise<ParentData> {
   if (!process.env[ENV_PARENT_DATA]) {
     logger.warn(
-      'We could not retrieve neccessary data from pumpkins. Falling back to SQLite database.'
+      'We could not retrieve neccessary data from graphql-santa. Falling back to SQLite database.'
     )
 
     return {

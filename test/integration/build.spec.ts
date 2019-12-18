@@ -11,7 +11,7 @@ it('can build with just a schema module', () => {
   ws.fs.write(
     'schema.ts',
     `
-      import { app } from 'pumpkins'
+      import { app } from 'graphql-santa'
 
       app.objectType({
         name: 'A',
@@ -22,7 +22,7 @@ it('can build with just a schema module', () => {
     `
   )
 
-  const result = ws.run('yarn -s pumpkins build')
+  const result = ws.run('yarn -s graphql-santa build')
   expect(result).toMatchSnapshot()
   expect(ws.fs.inspectTree(DEFAULT_BUILD_FOLDER_NAME)).toMatchSnapshot()
 })
@@ -31,7 +31,7 @@ it('can build with just a schema folder of modules', () => {
   ws.fs.write(
     'schema/a.ts',
     `
-      import { app } from 'pumpkins'
+      import { app } from 'graphql-santa'
 
       app.objectType({
         name: 'A',
@@ -42,7 +42,7 @@ it('can build with just a schema folder of modules', () => {
     `
   )
 
-  const result = ws.run('yarn -s pumpkins build')
+  const result = ws.run('yarn -s graphql-santa build')
   expect(result).toMatchSnapshot()
   expect(ws.fs.inspectTree(DEFAULT_BUILD_FOLDER_NAME)).toMatchSnapshot()
 })
@@ -51,7 +51,7 @@ it('can build with schema + app modules', () => {
   ws.fs.write(
     'schema.ts',
     `
-      import { app } from 'pumpkins'
+      import { app } from 'graphql-santa'
 
       app.objectType({
         name: 'A',
@@ -65,12 +65,12 @@ it('can build with schema + app modules', () => {
   ws.fs.write(
     'app.ts',
     `
-      import { app } from 'pumpkins'
+      import { app } from 'graphql-santa'
       app.server.start()
     `
   )
 
-  const result = ws.run('yarn -s pumpkins build')
+  const result = ws.run('yarn -s graphql-santa build')
   expect(result).toMatchSnapshot()
   expect(ws.fs.inspectTree(DEFAULT_BUILD_FOLDER_NAME)).toMatchSnapshot()
 })
@@ -79,7 +79,7 @@ it('can nest modules', () => {
   ws.fs.write(
     'graphql/schema.ts',
     `
-      import { app } from 'pumpkins'
+      import { app } from 'graphql-santa'
 
       app.objectType({
         name: 'A',
@@ -93,12 +93,12 @@ it('can nest modules', () => {
   ws.fs.write(
     'graphql/app.ts',
     `
-      import { app } from 'pumpkins'
+      import { app } from 'graphql-santa'
       app.server.start()
     `
   )
 
-  const result = ws.run('yarn -s pumpkins build')
+  const result = ws.run('yarn -s graphql-santa build')
   expect(result).toMatchSnapshot()
   expect(ws.fs.inspectTree(DEFAULT_BUILD_FOLDER_NAME)).toMatchSnapshot()
 })
@@ -107,7 +107,7 @@ it('can build a plugin', () => {
   ws.fs.write(
     'myplugin.ts',
     `	
-      import { Plugin } from 'pumpkins'	
+      import { Plugin } from 'graphql-santa'	
 
       export type Context = {	
         a: 1	
@@ -134,7 +134,7 @@ it('can build a plugin', () => {
   ws.fs.write(
     'schema.ts',
     `
-      import { app } from 'pumpkins'
+      import { app } from 'graphql-santa'
 
       app.queryType({	
         definition(t) {	
@@ -162,14 +162,14 @@ it('can build a plugin', () => {
   ws.fs.write(
     'app.ts',
     `	
-      import { app } from 'pumpkins'
+      import { app } from 'graphql-santa'
       import myplugin from './myplugin'	
 
       app.use(myplugin).server.start()	
     `
   )
 
-  const result = ws.run('yarn -s pumpkins build')
+  const result = ws.run('yarn -s graphql-santa build')
   expect(result).toMatchSnapshot()
   expect(ws.fs.inspectTree(DEFAULT_BUILD_FOLDER_NAME)).toMatchSnapshot()
 })

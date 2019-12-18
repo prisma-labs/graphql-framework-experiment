@@ -33,7 +33,7 @@ process.on('unhandledRejection', e => {
 // Overall we need to rethink all of this. The current approach is very error
 // prone and barely working and has 0 test coverage.
 //
-if (!process.argv.join(' ').includes('pumpkins dev')) {
+if (!process.argv.join(' ').includes('graphql-santa dev')) {
   if (process.argv[1] !== 'dev') {
     process.on('SIGINT', () => {
       log('got SIGINT')
@@ -50,30 +50,32 @@ if (!process.argv.join(' ').includes('pumpkins dev')) {
 }
 
 /**
- * Check that this pumpkins process is being run from a locally installed
+ * Check that this graphql-santa process is being run from a locally installed
  * veresion unless there is local project or the local project does not have
- * pumpkins installed.
+ * graphql-santa installed.
  */
-async function guardNotGlobalPumpkinsWithLocalPumpkinsProject(
+async function guardNotGlobalCLIWithLocalProject(
   packageManager: PackageManager.PackageManager
 ): Promise<void> {
   // TODO data is attainable from layout scan calculated later on... not optimal to call this twice...
   const projectType = await Layout.scanProjectType()
   if (
-    projectType.type === 'pumpkins_project' &&
+    projectType.type === 'graphql_santa_project' &&
     isProcessFromProjectBin(projectType.packageJsonPath)
   ) {
     // TODO make npm aware
     fatal(stripIndent`
-        You are using the pumpkins cli from a location other than this project.
+        You are using the graphql-santa cli from a location other than this project.
 
-        Location of the pumpkins CLI you executed:      ${process.argv[1]}
-        Location of the pumpkins CLI for this project:  ${projectType.packageJsonPath +
-          '/node_modules/.bin/pumpkins'}
+        Location of the graphql-santa CLI you executed:      ${process.argv[1]}
+        Location of the graphql-santa CLI for this project:  ${projectType.packageJsonPath +
+          '/node_modules/.bin/graphql-santa'}
         
-        Please use the pumpkins CLI for this project:
+        Please use the graphql-santa CLI for this project:
 
-            ${packageManager.renderRunBin('pumpkins ' + process.argv.slice(2))}
+            ${packageManager.renderRunBin(
+              'graphql-santa ' + process.argv.slice(2)
+            )}
       `)
   }
 }
@@ -83,7 +85,7 @@ async function guardNotGlobalPumpkinsWithLocalPumpkinsProject(
  */
 async function main(): Promise<number> {
   const packageManager = await PackageManager.create()
-  await guardNotGlobalPumpkinsWithLocalPumpkinsProject(packageManager)
+  await guardNotGlobalCLIWithLocalProject(packageManager)
 
   // create a new CLI with our subcommands
   const cli = new CLI({

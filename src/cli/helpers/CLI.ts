@@ -179,15 +179,15 @@ export class CLI implements Command {
   // TODO generate this from cli tree
   // static help template
   private static help = format(`
-    Pumpkins - GraphQL APIs without the hassle
+    graphql-santa - GraphQL APIs without the hassle
 
     ${chalk.bold('Usage')}
 
-      ${chalk.dim(`$`)} pumpkins [command]
+      ${chalk.dim(`$`)} graphql-santa [command]
 
     ${chalk.bold('Commands')}
 
-        create   Setup a ready-to-use Pumpkins
+        create   Setup a ready-to-use graphql-santa
            dev   Develop your application in watch mode
          build   Build a production-ready server
       generate   Generate the artifacts
@@ -196,13 +196,13 @@ export class CLI implements Command {
 
     ${chalk.bold('Examples')}
 
-      Initialize files for a new Pumpkins project
-      ${chalk.dim(`$`)} pumpkins create
+      Initialize files for a new graphql-santa project
+      ${chalk.dim(`$`)} graphql-santa create
 
       Start developing and watch your changes locally
-      ${chalk.dim(`$`)} pumpkins dev
+      ${chalk.dim(`$`)} graphql-santa dev
 
       Build a production-ready server
-      ${chalk.dim(`$`)} pumpkins build
+      ${chalk.dim(`$`)} graphql-santa build
   `)
 }

@@ -1,10 +1,10 @@
 {
-  "name": "pumpkins",
+  "name": "graphql-santa",
   "author": "Prisma Labs",
   "version": "0.0.0-master.16ffbe4",
-  "homepage": "https://github.com/prisma-labs/pumpkins",
-  "repository": "prisma-labs/pumpkins",
-  "bugs": "https://github.com/prisma-labs/pumpkins/issues",
+  "homepage": "https://github.com/prisma-labs/graphql-santa",
+  "repository": "prisma-labs/graphql-santa",
+  "bugs": "https://github.com/prisma-labs/graphql-santa/issues",
   "license": "MIT",
   "main": "dist/index.js",
   "files": [
@@ -14,7 +14,7 @@
     "config.d.ts"
   ],
   "bin": {
-    "pumpkins": "dist/cli/index.js"
+    "graphql-santa": "dist/cli/index.js"
   },
   "dependencies": {
     "apollo-server-express": "^2.9.11",

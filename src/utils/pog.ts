@@ -1,7 +1,7 @@
 import createDebugger from 'debug'
 import { parse } from 'path'
 
-const doLog = createDebugger('pumpkins')
+const doLog = createDebugger('graphql-santa')
 
 export function pog(
   formatter: unknown,
@@ -12,7 +12,7 @@ export function pog(
 
 export namespace pog {
   /**
-   * Create a debug logger prefixed with pumpkins log namesapce.
+   * Create a debug logger prefixed with graphql-santa log namesapce.
    * The given component name can be a path and the dir path and extension will
    * be automatically stripped. This allows the following pattern from the
    * caller side.
@@ -25,6 +25,6 @@ export namespace pog {
    */
   export const sub = (component: string) => {
     const parsed = parse(component)
-    return createDebugger(`pumpkins:${parsed.name}`)
+    return createDebugger(`graphql-santa:${parsed.name}`)
   }
 }

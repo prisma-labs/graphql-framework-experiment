@@ -91,12 +91,12 @@ export class Build implements Command {
 
     const tsProgram = createTSProgram(layout)
     const contextFieldTypes = extractContextTypes(tsProgram)
-    process.env.PUMPKINS_TYPEGEN_ADD_CONTEXT_RESULTS = JSON.stringify(
+    process.env.GRAPHQL_SANTA_TYPEGEN_ADD_CONTEXT_RESULTS = JSON.stringify(
       contextFieldTypes
     )
 
     log('running typegen')
-    console.log('🎃  Generating Nexus artifacts ...')
+    console.log('Generating Nexus artifacts ...')
     await generateArtifacts(
       createStartModuleContent({
         internalStage: 'dev',
@@ -106,7 +106,7 @@ export class Build implements Command {
     )
 
     log('compiling app...')
-    console.log('🎃  Compiling ...')
+    console.log('Compiling ...')
     // Recreate our program instance so that it picks up the typegen. We use
     // incremental builder type of program so that the cache from the previous
     // run of TypeScript should make re-building up this one cheap.
@@ -121,7 +121,7 @@ export class Build implements Command {
     )
 
     console.log(
-      '🎃  Pumpkins app successfully compiled at %s',
+      'graphql-santa app successfully compiled at %s',
       layout.buildOutput
     )
     if (deploymentTarget) {
@@ -131,9 +131,9 @@ export class Build implements Command {
 
   help() {
     return stripIndent`
-      Usage: pumpkins build [flags]
+      Usage: graphql-santa build [flags]
 
-      Build a production-ready pumpkins server
+      Build a production-ready graphql-santa server
 
       Flags:
         -o,     --output    Relative path to output directory
@@ -145,7 +145,7 @@ export class Build implements Command {
 
 /**
  * Output to disk in the build the start module that will be used to boot the
- * pumpkins app.
+ * graphql-santa app.
  */
 async function writeStartModule(
   config: Config.LoadedConfig,
@@ -159,10 +159,10 @@ async function writeStartModule(
   // their module index.ts.
   if (fs.exists(`${layout.buildOutput}/${START_MODULE_NAME}.js`)) {
     fatal(stripIndent`
-      Pumpkins reserves the source root module name ${START_MODULE_NAME}.js for its own use.
+      graphql-santa reserves the source root module name ${START_MODULE_NAME}.js for its own use.
       Please change your app layout to not have this module.
       This is a temporary limitation that we intend to remove in the future. 
-      For more details please see this GitHub issue: https://github.com/prisma/pumpkins/issues/139
+      For more details please see this GitHub issue: https://github.com/prisma-labs/graphql-santa/issues/139
     `)
   }
 

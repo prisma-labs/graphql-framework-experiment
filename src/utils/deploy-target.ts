@@ -39,7 +39,7 @@ export function normalizeTarget(
 
   if (!SUPPORTED_DEPLOY_TARGETS.includes(deployTarget as any)) {
     fatal(
-      `--deployment \`${deployTarget}\` is not supported by Pumpkins. Supported deployment targets: ${formattedSupportedDeployTargets}}`
+      `--deployment \`${deployTarget}\` is not supported by graphql-santa. Supported deployment targets: ${formattedSupportedDeployTargets}}`
     )
   }
 
@@ -219,19 +219,19 @@ function validateHeroku(
     if (!packageJsonContent.scripts?.build) {
       logger.error('A `build` script is needed in your `package.json` file.')
       logger.error(
-        `Please add the following to your \`package.json\` file: "scripts": { "build": "pumpkins build -d heroku" }`
+        `Please add the following to your \`package.json\` file: "scripts": { "build": "graphql-santa build -d heroku" }`
       )
       console.log()
       isValid = false
     }
 
-    // Make sure the build script is using pumpkins build
+    // Make sure the build script is using graphql-santa build
     if (
       packageJsonContent.scripts?.build &&
-      !packageJsonContent.scripts.build.includes('pumpkins build')
+      !packageJsonContent.scripts.build.includes('graphql-santa build')
     ) {
       logger.error(
-        'Please make sure your `build` script in your `package.json` file runs the command `pumpkins build -d heroku`'
+        'Please make sure your `build` script in your `package.json` file runs the command `graphql-santa build -d heroku`'
       )
       console.log()
       isValid = false
@@ -292,7 +292,7 @@ function validateHeroku(
       `We aliased the environment variable \`${DATABASE_URL_ENV_NAME}\` to \`DATABASE_URL\``
     )
     logger.warn(
-      'If you want to get rid of this warning, please add the following to your `pumpkins.config.ts` file:'
+      'If you want to get rid of this warning, please add the following to your `graphql-santa.config.ts` file:'
     )
     logger.warn(
       `createConfig(..., { environment_mapping: { DATABASE_URL: '${DATABASE_URL_ENV_NAME}' } })`
@@ -304,7 +304,7 @@ function validateHeroku(
 }
 
 const TARGET_TO_POST_BUILD_MESSAGE: Record<SupportedTargets, string> = {
-  now: `Please run \`now\` to deploy your pumpkins server. Your endpoint will be available at http://<id>.now.sh/graphql`,
+  now: `Please run \`now\` to deploy your graphql-santa server. Your endpoint will be available at http://<id>.now.sh/graphql`,
   heroku: `\
 Please run the following commands to deploy to heroku:
 

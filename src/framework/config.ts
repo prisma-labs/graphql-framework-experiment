@@ -31,11 +31,11 @@ type EnvironmentWithSecretLoader =
   | undefined
 
 interface Environment {
-  PUMPKINS_DATABASE_URL?: string
+  GRAPHQL_SANTA_DATABASE_URL?: string
   [env_key: string]: string | undefined
 }
 
-export const DATABASE_URL_ENV_NAME = 'PUMPKINS_DATABASE_URL'
+export const DATABASE_URL_ENV_NAME = 'GRAPHQL_SANTA_DATABASE_URL'
 
 function tryReadConfig(configPath: string): object | null {
   const { unregister } = registerTsExt()
@@ -46,7 +46,7 @@ function tryReadConfig(configPath: string): object | null {
     return config
   } catch (e) {
     log(
-      'we could not load pumpkins config file at %s. reason: %O',
+      'we could not load graphql-santa config file at %s. reason: %O',
       configPath,
       e
     )
@@ -62,7 +62,7 @@ function validateConfig(config: any): Config | null {
 
   if (!config.default) {
     fatal(
-      'Your config in `pumpkins.config.ts` needs to be default exported. `export default createConfig({ ... })`'
+      'Your config in `graphql-santa.config.ts` needs to be default exported. `export default createConfig({ ... })`'
     )
   }
 
@@ -70,7 +70,7 @@ function validateConfig(config: any): Config | null {
 }
 
 export function readConfig(): Config | null {
-  const config = tryReadConfig(fs.path('pumpkins.config.ts'))
+  const config = tryReadConfig(fs.path('graphql-santa.config.ts'))
   const validatedConfig = validateConfig(config)
 
   if (!validateConfig(config)) {
@@ -398,14 +398,14 @@ export function loadEnvironmentFromConfig(
 }
 
 /**
- * Helper method to configure pumpkins. **Must be default exported in a `pumpkins.config.ts` file**
+ * Helper method to configure graphql-santa. **Must be default exported in a `graphql-santa.config.ts` file**
  *
  * @example
  *
  * export default createConfig({
  *   environments: {
  *     development: {
- *       PUMPKINS_DATABASE_URL: "<database_connection_url>"
+ *       GRAPHQL_SANTA_DATABASE_URL: "<database_connection_url>"
  *     }
  *   }
  * })

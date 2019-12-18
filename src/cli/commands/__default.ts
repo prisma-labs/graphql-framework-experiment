@@ -16,23 +16,27 @@ export class __Default implements Command {
     switch (projectType.type) {
       case 'new':
         log(
-          'detected CWD is empty and not within an existing pumpkins project, delegating to create sub-command'
+          'detected CWD is empty and not within an existing graphql-santa project, delegating to create sub-command'
         )
-        console.log('Creating a new pumpkins project')
+        console.log('Creating a new graphql-santa project')
         await run({ projectName: CWDProjectNameOrGenerate() })
         break
-      case 'pumpkins_project':
-        log('detected CWD is within a pumpkins project, delegating to dev mode')
+      case 'graphql-santa_project':
+        log(
+          'detected CWD is within a graphql-santa project, delegating to dev mode'
+        )
         await new Dev().parse([])
         break
       case 'node_project':
-        log('detected CWD is within a node but not pumpkins project, aborting')
+        log(
+          'detected CWD is within a node but not graphql-santa project, aborting'
+        )
         console.log(
-          "Looks like you are inside a node but not pumpkins project. Please either add pumpkins to this project's dependencies and re-run this command or navigate to a new empty folder that does not have a package.json file present in an anecestor directory."
+          "Looks like you are inside a node but not graphql-santa project. Please either add graphql-santa to this project's dependencies and re-run this command or navigate to a new empty folder that does not have a package.json file present in an anecestor directory."
         )
         break
       case 'unknown':
-        log('detected CWD is not empty nor a pumpkins project, aborting')
+        log('detected CWD is not empty nor a graphql-santa project, aborting')
         // We can get the user on the happy path by asking them for a project
         // name and then changing into that directory.
         const projectName = generateProjectName()
@@ -54,7 +58,7 @@ export class __Default implements Command {
           NOTE
           ----
 
-          Your new pumpkins project was created in ${projectName}. Only you can navigate into it:
+          Your new graphql-santa project was created in ${projectName}. Only you can navigate into it:
           
             cd ./${projectName}
         `)

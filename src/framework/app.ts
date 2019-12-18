@@ -42,8 +42,8 @@ const serverStartMessage = (port: number): string => {
  */
 const defaultServerOptions: Required<ServerOptions> = {
   port:
-    typeof process.env.PUMPKINS_PORT === 'string'
-      ? parseInt(process.env.PUMPKINS_PORT, 10)
+    typeof process.env.GRAPHQL_SANTA_PORT === 'string'
+      ? parseInt(process.env.GRAPHQL_SANTA_PORT, 10)
       : typeof process.env.PORT === 'string'
       ? // e.g. Heroku convention https://stackoverflow.com/questions/28706180/setting-the-port-for-node-js-server-on-heroku
         parseInt(process.env.PORT, 10)
@@ -142,7 +142,7 @@ export function createApp(appConfig?: { types?: any }): App {
     stringArg,
     server: {
       /**
-       * Start the server. If you do not call this explicitly then pumpkins will
+       * Start the server. If you do not call this explicitly then graphql-santa will
        * for you. You should not normally need to call this function yourself.
        */
       async start(config: ServerOptions = {}): Promise<void> {
@@ -162,7 +162,7 @@ export function createApp(appConfig?: { types?: any }): App {
         // During dev mode we will dynamically require the user's schema modules.
         // At build time we inline static imports.
         // This code MUST run after user/system has had chance to run global installation
-        if (process.env.PUMPKINS_STAGE === 'dev') {
+        if (process.env.GRAPHQL_SANTA_STAGE === 'dev') {
           requireSchemaModules()
         }
 
@@ -207,8 +207,8 @@ export function createApp(appConfig?: { types?: any }): App {
 
           // Integrate the addToContext calls
           const addToContextCallResults: string[] = process.env
-            .PUMPKINS_TYPEGEN_ADD_CONTEXT_RESULTS
-            ? JSON.parse(process.env.PUMPKINS_TYPEGEN_ADD_CONTEXT_RESULTS)
+            .GRAPHQL_SANTA_TYPEGEN_ADD_CONTEXT_RESULTS
+            ? JSON.parse(process.env.GRAPHQL_SANTA_TYPEGEN_ADD_CONTEXT_RESULTS)
             : []
 
           const typeDec = addToContextCallResults
@@ -358,14 +358,15 @@ const installGlobally = (app: App): App => {
     stringArg,
   })
 
-  const pumpkinsTypeGenPath = 'node_modules/@types/typegen-pumpkins/index.d.ts'
-  log('generating app global singleton typegen to %s', pumpkinsTypeGenPath)
+  const graphqlSantaTypeGenPath =
+    'node_modules/@types/typegen-graphql-santa/index.d.ts'
+  log('generating app global singleton typegen to %s', graphqlSantaTypeGenPath)
 
   fs.write(
-    pumpkinsTypeGenPath,
+    graphqlSantaTypeGenPath,
     stripIndent`
       import * as nexus from 'nexus'
-      import * as pumpkins from 'pumpkins'
+      import * as GQLSanta from 'graphql-santa'
 
       type QueryType = typeof nexus.core.queryType
       type MutationType = typeof nexus.core.mutationType
@@ -378,7 +379,7 @@ const installGlobally = (app: App): App => {
       type StringArg = typeof nexus.stringArg
       
       declare global {
-        var app: pumpkins.App
+        var app: GQLSanta.App
         var queryType: QueryType
         var mutationType: MutationType
         var objectType: ObjectType
@@ -389,11 +390,11 @@ const installGlobally = (app: App): App => {
         var intArg: IntArg
         var stringArg: StringArg
 
-        interface PumpkinsSingletonApp extends pumpkins.App {}
+        interface GQLSantaSingletonApp extends GQLSanta.App {}
       
         namespace NodeJS {
           interface Global {
-            app: pumpkins.App
+            app: GQLSanta.App
             queryType: QueryType
             mutationType: MutationType
             objectType: ObjectType
@@ -414,5 +415,5 @@ const installGlobally = (app: App): App => {
 
 export const isGlobalSingletonEnabled = (): boolean => {
   const packageJson = fs.read('package.json', 'json')
-  return packageJson?.pumpkins?.singleton !== false
+  return packageJson?.['graphql-santa']?.singleton !== false
 }

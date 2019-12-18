@@ -37,7 +37,7 @@ export function generateHelpForCommandIndex(
   return `
 ${chalk.bold('Usage:')}
     
-${chalk.gray('$')} pumpkins ${commandName} [${subCommands
+${chalk.gray('$')} graphql-santa ${commandName} [${subCommands
     .map(c => c.name)
     .join('|')}]
 
@@ -62,7 +62,7 @@ ${description}
 
 ${chalk.bold('Usage:')}
     
-${chalk.gray('$')} pumpkins ${commandName} [options]
+${chalk.gray('$')} graphql-santa ${commandName} [options]
 
 ${chalk.bold('Options:')}
 
