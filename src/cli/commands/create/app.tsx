@@ -80,9 +80,9 @@ export async function runBootstrapper(
       path: null,
     },
     projectRoot: fs.path(),
-    sourceRoot: fs.path('./app'),
-    sourceRootRelative: './app',
-    schemaModules: ['app/schema.ts'],
+    sourceRoot: fs.path('./src'),
+    sourceRootRelative: './src',
+    schemaModules: ['src/schema.ts'],
     buildOutput: Layout.DEFAULT_BUILD_FOLDER_NAME,
     project: {
       name: optionsGiven?.projectName ?? CWDProjectNameOrGenerate(),
