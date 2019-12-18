@@ -21,7 +21,7 @@ export class __Default implements Command {
         console.log('Creating a new graphql-santa project')
         await run({ projectName: CWDProjectNameOrGenerate() })
         break
-      case 'graphql-santa_project':
+      case 'graphql_santa_project':
         log(
           'detected CWD is within a graphql-santa project, delegating to dev mode'
         )
