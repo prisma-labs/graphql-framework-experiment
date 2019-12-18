@@ -5,7 +5,6 @@ import * as path from 'path'
 import { PackageJson } from 'type-fest'
 import { pog } from '.'
 import { START_MODULE_NAME } from '../constants'
-import { DATABASE_URL_ENV_NAME, LoadedConfig } from '../framework/config'
 import { DEFAULT_BUILD_FOLDER_NAME, Layout } from '../framework/layout'
 import { logger } from './logger'
 import { fatal } from './process'
@@ -59,10 +58,10 @@ export function computeBuildOutputFromTarget(target: SupportedTargets | null) {
   return TARGET_TO_BUILD_OUTPUT[target]
 }
 
-type ValidatorResult = { valid: boolean; config: LoadedConfig }
+type ValidatorResult = { valid: boolean }
 const TARGET_VALIDATORS: Record<
   SupportedTargets,
-  (config: LoadedConfig | null, layout: Layout) => ValidatorResult
+  (layout: Layout) => ValidatorResult
 > = {
   now: validateNow,
   heroku: validateHeroku,
@@ -70,11 +69,10 @@ const TARGET_VALIDATORS: Record<
 
 export function validateTarget(
   target: SupportedTargets,
-  config: LoadedConfig | null,
   layout: Layout
 ): ValidatorResult {
   const validator = TARGET_VALIDATORS[target]
-  return validator(config, layout)
+  return validator(layout)
 }
 
 interface NowJson {
@@ -87,10 +85,7 @@ interface NowJson {
 /**
  * Validate the user's now configuration file.
  */
-function validateNow(
-  _config: LoadedConfig | null,
-  layout: Layout
-): ValidatorResult {
+function validateNow(layout: Layout): ValidatorResult {
   const maybeNowJsonPath = findConfigFile('now.json', { required: false })
   const startModulePath = `${layout.buildOutput}/${START_MODULE_NAME}.js`
   let isValid = true
@@ -167,13 +162,10 @@ function validateNow(
     }
   }
 
-  return { valid: isValid, config: _config ?? {} }
+  return { valid: isValid }
 }
 
-function validateHeroku(
-  config: LoadedConfig | null,
-  layout: Layout
-): ValidatorResult {
+function validateHeroku(layout: Layout): ValidatorResult {
   const nodeMajorVersion = Number(process.versions.node.split('.')[0])
   const packageJsonPath = findConfigFile('package.json', { required: false })
   let isValid = true
@@ -260,47 +252,7 @@ function validateHeroku(
     }
   }
 
-  if (!config) {
-    config = {
-      environment: {},
-      environment_mapping: {
-        DATABASE_URL: DATABASE_URL_ENV_NAME,
-      },
-    }
-    logger.warn(
-      'Heroku pass the database url to your pass using the environment variable `DATABASE_URL`'
-    )
-    logger.warn(
-      `We aliased the environment variable "${DATABASE_URL_ENV_NAME}" to DATABASE_URL`
-    )
-    console.log()
-  }
-
-  if (!config?.environment_mapping?.DATABASE_URL) {
-    config = {
-      ...config,
-      environment_mapping: {
-        ...config.environment_mapping,
-        DATABASE_URL: DATABASE_URL_ENV_NAME,
-      },
-    }
-
-    logger.warn(
-      'Heroku pass the database url to your app using the environment variable `DATABASE_URL`'
-    )
-    logger.warn(
-      `We aliased the environment variable \`${DATABASE_URL_ENV_NAME}\` to \`DATABASE_URL\``
-    )
-    logger.warn(
-      'If you want to get rid of this warning, please add the following to your `graphql-santa.config.ts` file:'
-    )
-    logger.warn(
-      `createConfig(..., { environment_mapping: { DATABASE_URL: '${DATABASE_URL_ENV_NAME}' } })`
-    )
-    console.log()
-  }
-
-  return { valid: isValid, config }
+  return { valid: isValid }
 }
 
 const TARGET_TO_POST_BUILD_MESSAGE: Record<SupportedTargets, string> = {

@@ -1,7 +1,6 @@
 import { stripIndent } from 'common-tags'
-import { printStaticSchemaImports } from './schema'
 import { Layout, relativeTranspiledImportPath } from './layout'
-import { LoadedConfig, printStaticEnvSetters } from './config'
+import { printStaticSchemaImports } from './schema'
 
 type StartModuleConfig =
   | {
@@ -21,7 +20,6 @@ type StartModuleConfig =
        */
       appPath: null | string
       layout: Layout
-      config: LoadedConfig | null
       buildStage: string
     }
 
@@ -57,21 +55,6 @@ export function createStartModuleContent(config: StartModuleConfig): string {
         // This MUST come after graphql-santa package has been imported for its side-effects
         ${staticImports}
       `
-    }
-  }
-
-  if (config.internalStage === 'build' && config.config !== null) {
-    const staticEnvSetters = printStaticEnvSetters(
-      config.config,
-      config.buildStage
-    )
-
-    if (staticEnvSetters !== '') {
-      output += '\n\n\n'
-      output += stripIndent`
-          // Define the environments variables based on graphql-santa.config.ts file or build -d flag
-          ${staticEnvSetters}
-        `
     }
   }
 

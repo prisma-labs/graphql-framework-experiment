@@ -49,7 +49,7 @@ export async function runLocalHandOff(
   log('start local handoff')
 
   const { layout, connectionURI, database } = await loadDataFromParentProcess()
-  const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout, {})
+  const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
   log('plugins %O', plugins)
 
   // TODO select a template

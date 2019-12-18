@@ -1,4 +1,3 @@
-import * as Config from '../../../../framework/config'
 import { fatal, validateAndLoadDBDriver } from '../../../../utils'
 import { arg, Command, isError } from '../../../helpers'
 import { generateHelpForCommand } from '../../../helpers/helpers'
@@ -21,8 +20,7 @@ export class DbApply implements Command {
       return this.help()
     }
 
-    const config = Config.loadAndProcessConfig(args['--stage']) ?? {}
-    const dbDriver = await validateAndLoadDBDriver(config)
+    const dbDriver = await validateAndLoadDBDriver()
 
     await dbDriver.db?.migrate.apply.onStart({
       force: args['--force'],

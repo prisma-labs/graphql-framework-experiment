@@ -1,4 +1,3 @@
-import * as Config from '../../framework/config'
 import * as Layout from '../../framework/layout'
 import * as Plugin from '../../framework/plugin'
 import { createStartModuleContent } from '../../framework/start'
@@ -7,12 +6,8 @@ import { Command } from '../helpers'
 
 export class Generate implements Command {
   async parse() {
-    const config = Config.loadAndProcessConfig('development') ?? {}
     const layout = await Layout.create()
-    const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(
-      layout,
-      config
-    )
+    const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
 
     for (const p of plugins) {
       await p.hooks.generate.onStart?.()

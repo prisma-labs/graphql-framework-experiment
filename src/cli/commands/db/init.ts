@@ -1,6 +1,5 @@
-import * as Config from '../../../framework/config'
-import { validateAndLoadDBDriver, fatal } from '../../../utils'
-import { Command, arg, isError } from '../../helpers'
+import { fatal, validateAndLoadDBDriver } from '../../../utils'
+import { arg, Command, isError } from '../../helpers'
 import { generateHelpForCommand } from '../../helpers/helpers'
 
 export class DbInit implements Command {
@@ -19,8 +18,7 @@ export class DbInit implements Command {
       return this.help()
     }
 
-    const config = Config.loadAndProcessConfig(args['--stage']) ?? {}
-    const dbDriver = await validateAndLoadDBDriver(config)
+    const dbDriver = await validateAndLoadDBDriver()
 
     await dbDriver.db?.init.onStart()
   }

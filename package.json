@@ -9,9 +9,7 @@
   "main": "dist/index.js",
   "files": [
     "/dist",
-    "/src",
-    "config.js",
-    "config.d.ts"
+    "/src"
   ],
   "bin": {
     "graphql-santa": "dist/cli/index.js",
