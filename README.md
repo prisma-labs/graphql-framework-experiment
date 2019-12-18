@@ -4,28 +4,34 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
 
 # graphql-santa <!-- omit in toc -->
 
+`graphql-santa` is a GraphQL API framework. It takes a code-first approach and brings together a set of tools that provide robust type safety so that if your app compiles, you have a high degree of confidence that it works.
+
+Tools and libraries used include:
+
+- TypeScript
+- Express
+- Nexus
+- Apollo Server
+
+**Contents**
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-- [Introduction](#introduction)
-  - [Get started](#get-started)
-  - [Get a sense for db-to-api workflow](#get-a-sense-for-db-to-api-workflow)
-- [Guide](#guide)
-  - [Adding Prisma](#adding-prisma)
-    - [Overview](#overview)
-    - [Example](#example)
-  - [Databases](#databases)
-    - [Setup a local PostgreSQL](#setup-a-local-postgresql)
-  - [Going to Proudction](#going-to-proudction)
-    - [Heroku](#heroku)
-  - [Conventions](#conventions)
-    - [`schema.ts` | `schema/*`](#schemats--schema)
-      - [About](#about)
-      - [Aliases](#aliases)
-    - [`app.ts`](#appts)
-      - [About](#about-1)
-      - [Aliases](#aliases-1)
-    - [Example Layouts](#example-layouts)
+- [Tutorial](#tutorial)
+- [Recipes](#recipes)
+  - [Add Prisma](#add-prisma)
+  - [Setup a local PostgreSQL](#setup-a-local-postgresql)
+  - [Go to proudction](#go-to-proudction)
+  - [Go to production with Prisma, Heroku, Heroku PostgreSQL](#go-to-production-with-prisma-heroku-heroku-postgresql)
+- [Conventions](#conventions)
+  - [`schema.ts` | `schema/*`](#schemats--schema)
+    - [About](#about)
+    - [Aliases](#aliases)
+  - [`app.ts`](#appts)
+    - [About](#about-1)
+    - [Aliases](#aliases-1)
+  - [Example Layouts](#example-layouts)
 - [API](#api)
   - [`app`](#app)
   - [`app.addToContext`](#appaddtocontext)
@@ -33,7 +39,7 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
   - [`app.server.start`](#appserverstart)
 - [CLI](#cli)
 - [Development](#development)
-  - [Overview](#overview-1)
+  - [Overview](#overview)
   - [Testing](#testing)
   - [Working With Example Apps via Linking](#working-with-example-apps-via-linking)
   - [Working with create command](#working-with-create-command)
@@ -42,33 +48,22 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
 
 <br>
 
-# Introduction
+# Tutorial
 
-`graphql-santa` is a GraphQL API framework. It takes a code-first approach (as opposed
-to schema-first) and brings together a set of tools that provide robust type
-safety so that if your app compiles, you have a much higher degree of confidence
-than with vanilla JavaScript or just TypeScript.
+1. For this tutorial we will use Prisma with PostgreSQL. Install PostgreSQL it if needed and then get its connection URL. Check out [our postgresql setup guide](#setup-a-local-postgresql) if unsure.
 
-`graphql-santa` brings Nexus, Prisma, Apollo Server and more together into a pluggable
-system (in fact Prisma features are implemented as a plugin).
-
-### Get started
-
-1. For this tutorial we will use postgres. Install it if needed and then get its connection URL. Check out [our db setup guide](#setup-a-local-postgresql) if unsure.
-
-2. Kick off a new project. Say yes (`y`) to the prisma option. Choose `PostgreSQL` for the db option. Take a few moments to look around, poke things. But don't feel pressure to understand everything right away : )
+1. Kick off a new project. Say yes (`y`) to the prisma option. Choose `PostgreSQL` for the db option.
 
    ```
-   npx graphql-santa
+   $ npx graphql-santa
    ```
 
-### Get a sense for db-to-api workflow
+1. Our Hello World schema doesn't account for information about moons, lets change that.
 
-Our Hello World schema doesn't account for information about moons, lets change that.
-
-1. Start by updating our data layer to model information about moons. We don't want to go crazy scientific here but a bit of modelling will serve us well. A world may have more than one moon, and a moon may have properites in its own right. So lets give moons a first class model representation. Then, we can connect them to their respective worlds:
+   Start by updating our data layer to model information about moons. We don't want to go crazy scientific here but a bit of modelling will serve us well. A world may have more than one moon, and a moon may have properites in its own right. So lets give moons a first class model representation. Then, we can connect them to their respective worlds:
 
    ```diff
+   +++ prisma/schema.prisma
      model World {
        id         Int    @id
        name       String @unique
@@ -85,11 +80,12 @@ Our Hello World schema doesn't account for information about moons, lets change 
 
    `graphql-santa` reacts to changes in your Prisma schema. By saving the above, your dev database will be automatically migrated and photon regenerated. You literally now just move on to updating your GraphQL API.
 
-2. We have data about `Earth` from before, but now we need to update it with information about its moon. Instead of working with photon inside one-off scripts, lets enhance our API and make the update as if a client app were.
+1. We have data about `Earth` from before, but now we need to update it with information about its moon. Instead of working with photon inside one-off scripts, lets enhance our API and make the update as if a client app were.
 
    We're going to need to expose the `moons` world field to clients
 
    ```diff
+   +++ src/schema.ts
      app.objectType({
        name: "World",
        definition(t) {
@@ -117,6 +113,7 @@ Our Hello World schema doesn't account for information about moons, lets change 
    The feedback is pretty clear already but to restate: The problem is that we're project a Prisma model field (`moons`) that is a connection to another Prisma model (`Moon`) that has not been projected on our API layer. So let's do that now:
 
    ```diff
+   +++ src/schema.ts
    +app.objectType({
    +  name:'Moon',
    +  definition(t){
@@ -134,6 +131,7 @@ Our Hello World schema doesn't account for information about moons, lets change 
    If you go to your GraphQL Playground now you will see that your GraphQL schema now contains your Moon data shape too. But of course we still need to update `Earth` with data about _its_ moon. To achieve that we're going to expose CRUD actions that clients can use to update `Earth`.
 
    ```diff
+   +++ src/schema.ts
    +app.mutationType({
    +  definition(t){
    +    t.crud.updateOneWorld()
@@ -178,7 +176,7 @@ Our Hello World schema doesn't account for information about moons, lets change 
    }
    ```
 
-3. Deploy to Heroku
+1. Deploy to Heroku
 
    For this step, create an account at [Heroku](https://www.heroku.com/) and [setup the CLI](https://devcenter.heroku.com/articles/heroku-cli).
 
@@ -189,98 +187,84 @@ Our Hello World schema doesn't account for information about moons, lets change 
    1. Initialize the postgres database: `npx graphql-santa db init --connection-url <connection-url>`
    1. Deploy using the git push to master workflow. See your app running in the cloud!
 
-4. Conclusion
+1. Conclusion
 
    Hopefully that gives you a taste of the power under your finger tips. There's a ton more to discover. Happy coding! 🙌
 
-# Guide
-
-## Adding Prisma
-
-### Overview
-
-Prisma Framework is a next-generation developer-centric tool chain focused on making the data layer easy. In turn, `graphql-santa` makes it easy to integrate Prisma Framework into your app. You opt-in by creating a `schema.prisma` file somewhere in your project. Then, the following things automatically happen:
-
-1. graphql-santa CLI workflows are extended: db, dev, build
-   1. On build, Prisma generators are run
-   2. During dev, Prisma generators are run after prisma schema file changes
-   3. `db` command becomes powered by `prisma2 lift`
-2. The `nexus-prisma` Nexus plugin is automatically used. This you get access to `t.model` and `t.crud`.
-3. An instance of the generated Photon.JS client is a added to context under `photon` property
-4. The TypeScript types representing your Prisma models are registered as a Nexus data source. In short this enables proper typing of `parent` parameters in your resolves. They reflect the data of the correspondingly named Prisma model.
-
-### Example
-
-Install the prisma plugin:
-
-```
-npm install graphql-santa-plugin-prisma
-```
-
-Add a schema.prisma file and fill it out with some content
-
-```diff
-mkdir -p prisma
-touch prisma/schema.prisma
-```
-
-```groovy
-// prisma/schema.prisma
-
-datasource db {
-  provider = "sqlite"
-  url      = "file:dev.db"
-}
-
-model User {
-  id   Int    @id
-  name String
-}
-```
-
-Enter dev mode:
-
-```
-npx graphql-santa dev
-```
-
-The following shows an example of transitioning your API codebase to use the extensions brought on
-by the Prisma extension.
-
-Using the model DSL:
-
-```diff
-  objectType({
-    name: 'User',
-    definition(t) {
--     t.id('id)
--     t.string('name')
-+     t.model.id()
-+     t.model.name()
-    },
-  })
-```
-
-Using the photon instance on `ctx`:
-
-```diff
-  queryType({
-    definition(t) {
-      t.list.field('users', {
-        type: 'User',
--       resolve() {
--         return [{ id: '1643', name: 'newton' }]
-+       resolve(_root, _args, ctx) {
-+         return ctx.photon.users.findMany()
-        },
-      })
-    },
-  })
-```
-
 <br>
 
-## Databases
+# Recipes
+
+### Add Prisma
+
+Prisma Framework is a next-generation developer-centric tool chain focused on making the data layer easy. In turn, `graphql-santa` makes it easy to integrate Prisma Framework into your app.
+
+1. Install the prisma plugin
+
+   ```
+   $ npm install graphql-santa-plugin-prisma
+   ```
+
+1. Add a `schema.prisma` file. Add a datasource. Here we're working with SQLite. Add photon.
+
+   ```diff
+   +++ prisma/schema.prisma
+   +
+   +  datasource db {
+   +    provider = "sqlite"
+   +    url      = "file:dev.db"
+   +  }
+   +
+   +  generator photonjs {
+   +    provider = "photonjs"
+   +  }
+   ```
+
+1. Initialize your database
+
+   ```
+   $ npx santa db init
+   ```
+
+1. Done. Now your app has:
+
+   1. Functioning `$ santa db`
+   2. `nexus-prisma` Nexus plugin allowing e.g.:
+
+      ```diff
+      +++ src/schema.ts
+        objectType({
+          name: 'User',
+          definition(t) {
+      -     t.id('id)
+      -     t.string('name')
+      +     t.model.id()
+      +     t.model.name()
+          },
+        })
+      ```
+
+   3. An instance of the generated Photon.JS client is a added to context under `photon` property, allowing e.g.:
+
+      ```diff
+      +++ src/schema.ts
+        queryType({
+          definition(t) {
+            t.list.field('users', {
+              type: 'User',
+      -       resolve() {
+      -         return [{ id: '1643', name: 'newton' }]
+      +       resolve(_root, _args, ctx) {
+      +         return ctx.photon.users.findMany()
+              },
+            })
+          },
+        })
+      ```
+
+   4. The TypeScript types representing your Prisma models are registered as a Nexus data source. In short this enables proper typing of `parent` parameters in your resolves. They reflect the data of the correspondingly named Prisma model.
+
+<br>
 
 ### Setup a local PostgreSQL
 
@@ -302,32 +286,74 @@ If you don't want to use a docker, here are some links to alternative approaches
 
 - [With Homebrew](https://wiki.postgresql.org/wiki/Homebrew)
 
+### Go to proudction
+
+1. Add a build script
+
+   ```diff
+   +++ package.json
+   + "build": "santa build"
+   ```
+
+2. Add a start script
+
+   ```diff
+   +++ package.json
+   + "start": "node node_modules/.build"
+   ```
+
+3. In many cases this will be enough. Many deployment platforms will call into these scripts by default. You can customize where `build` outputs to if your deployment platform requires it. There are built in guides for `zeit` and `heroku` which will check your project is prepared for deployment to those respective platforms. Take advantage of them if applicable:
+
+   ```diff
+   +++ package.json
+   + "build": "santa build --deployment now"
+   ```
+
+   ```diff
+   +++ package.json
+   + "build": "santa build --deployment heroku"
+   ```
+
+### Go to production with Prisma, Heroku, Heroku PostgreSQL
+
+1. Confirm the name of the environment variable that Heroku will inject into your app at runtime for the database connection URL. In a simple setup, with a single attached atabase, it is `DATABASE_URL`.
+1. Update your Prisma Schema file to get the database connection URL from an environment variable of the same name as in step 1. Example:
+
+   ```diff
+   --- prisma/schema.prisma
+   +++ prisma/schema.prisma
+     datasource postgresql {
+       provider = "postgresql"
+   -   url      = "postgresql://<user>:<pass>@localhost:5432/<db-name>"
+   +   url      = env("DATABASE_URL")
+     }
+   ```
+
+1. Update your local development environment to pass the local development database connection URL via an environment variable of the same name as in step 1. Example with [direnv](https://direnv.net/):
+
+   1. Install `direnv`
+
+      ```
+      $ brew install direnv
+      ```
+
+   1. Hook `direnv` into your shell ([instructions](https://direnv.net/docs/hook.html))
+   1. Setup an `.envrc` file inside your project
+
+      ```diff
+      +++ .envrc
+      + DATABASE_URL="postgresql://postgres:postgres@localhost:5432/myapp"
+      ```
+
+   1. Approve the `.envrc` file (one time, every time the envrc file changes).
+      ```
+      $ direnv allow .
+      ```
+   1. Done. Now when you work within your project with a shell, all your commands will be run with access to the environment variables defined in your `.envrc` file. The magic of `direnv` is that these environment variables are automatically exported to and removed from your environment based on you being within your prject directory or not.
+
 <br>
 
-## Going to Proudction
-
-Once you're ready to go to production just build your app and run the start module with node.
-
-```
-$ npx graphql-santa build
-```
-
-```
-$ node node_modules/.build
-```
-
-### Heroku
-
-```json
-  "scripts": {
-    "build": "graphql-santa build",
-    "start": "node node_modules/.build"
-  }
-```
-
-<br>
-
-## Conventions
+# Conventions
 
 ### `schema.ts` | `schema/*`
 
@@ -383,7 +409,7 @@ schema.ts
 Basic
 
 ```
-app/
+src/
   server.ts
   schema.ts
 prisma/
@@ -465,8 +491,9 @@ Start the server. If you don't call this graphql-santa will. Usually you should 
 
 # CLI
 
-- [`graphql-santa build`](#graphql-santa-build)
-- [`graphql-santa dev`](#graphql-santa-dev)
+```
+$ santa --help
+```
 
 # Development
 
