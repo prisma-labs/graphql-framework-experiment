@@ -46,7 +46,7 @@ Tools and libraries used include:
 
 # Tutorial
 
-1. For this tutorial we will use Prisma with PostgreSQL. Install PostgreSQL it if needed and then get its connection URL. Check out [our postgresql setup guide](#setup-a-local-postgresql) if unsure.
+1. For this tutorial we will use Prisma with PostgreSQL. Install PostgreSQL if needed and then get its connection URL. Check out [our postgresql setup guide](#setup-a-local-postgresql) if unsure.
 
 1. Kick off a new project. Say yes (`y`) to the prisma option. Choose `PostgreSQL` for the db option.
 
@@ -180,7 +180,8 @@ Tools and libraries used include:
    1. Attach your project to the app: `heroku git:remote --app <app-name>`
    1. Add a postgres database to it: `heroku addons:create heroku-postgresql --app <app-name>`
    1. Get the postgres database credentials: `heroku pg:credentials:url --app <app-name>`
-   1. Initialize the postgres database: `npx graphql-santa db init --connection-url <connection-url>`
+   1. Export the connection URL into your shell `export DATABASE_URL="<connection-url>"`
+   1. Initialize the postgres database: `npx graphql-santa db init`
    1. Deploy using the git push to master workflow. See your app running in the cloud!
 
 1. Conclusion
