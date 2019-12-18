@@ -265,21 +265,24 @@ async function askForDatabase(): Promise<
     return { database: true, choice: 'SQLite', connectionURI: 'file://dev.db' }
   }
 
-  let { hasURI }: { hasURI: boolean } = await prompts({
-    type: 'confirm',
-    name: 'hasURI',
-    message: `Do you have a connection URI to connect to your ${database} database?`,
-  })
+  // TODO: Removed temporarily until we have a more solid system to validate the uri,
+  // and a textbox where we can the cursor... boohoo prompts
 
-  if (hasURI) {
-    let { connectionURI }: { connectionURI: string } = await prompts({
-      type: 'text',
-      message: `Fill in your connection URI for ${database}`,
-      name: 'connectionURI',
-    })
+  // let { hasURI }: { hasURI: boolean } = await prompts({
+  //   type: 'confirm',
+  //   name: 'hasURI',
+  //   message: `Do you have a connection URI to connect to your ${database} database?`,
+  // })
 
-    return { database: true, choice: database, connectionURI }
-  }
+  // if (hasURI) {
+  //   let { connectionURI }: { connectionURI: string } = await prompts({
+  //     type: 'text',
+  //     message: `Fill in your connection URI for ${database}`,
+  //     name: 'connectionURI',
+  //   })
+
+  //   return { database: true, choice: database, connectionURI }
+  // }
 
   return { database: true, choice: database, connectionURI: undefined }
 }
