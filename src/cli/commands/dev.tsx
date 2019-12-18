@@ -1,7 +1,6 @@
 import { Box, Instance, render } from 'ink'
 import React from 'react'
 import * as readline from 'readline'
-import * as Config from '../../framework/config'
 import * as Layout from '../../framework/layout'
 import * as Plugin from '../../framework/plugin'
 import { createStartModuleContent } from '../../framework/start'
@@ -42,11 +41,7 @@ export class Dev implements Command {
      * Load config before loading plugins which may rely on env vars being defined
      */
     const layout = await Layout.create()
-    const config = Config.loadAndProcessConfig('development') ?? {}
-    const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(
-      layout,
-      config
-    )
+    const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
 
     await findOrScaffoldTsConfig(layout)
 

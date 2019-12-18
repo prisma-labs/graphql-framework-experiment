@@ -6,7 +6,6 @@ import { fatal, pog, run, runSync } from '../utils'
 import { logger } from '../utils/logger'
 import * as PackageManager from '../utils/package-manager'
 import * as Chokidar from '../watcher/chokidar'
-import * as Config from './config'
 import * as Layout from './layout'
 import { NexusConfig } from './nexus'
 
@@ -78,7 +77,6 @@ export type WorkflowDefiner = (
   workflowContext: {
     layout: Layout.Layout
     packageManager: PackageManager.PackageManager
-    config: Config.LoadedConfig
   }
 ) => void
 
@@ -131,10 +129,7 @@ export type Driver = {
   name: string
   extendsWorkflow: boolean
   extendsRuntime: boolean
-  loadWorkflowPlugin: (
-    layout: Layout.Layout,
-    config: Config.LoadedConfig
-  ) => WorkflowHooks
+  loadWorkflowPlugin: (layout: Layout.Layout) => WorkflowHooks
   loadRuntimePlugin: () => undefined | RuntimeContributions
 }
 
@@ -163,7 +158,7 @@ export function create(definer: Definer): DriverCreator {
       name: pluginName,
       extendsWorkflow: maybeWorkflowPlugin !== undefined,
       extendsRuntime: maybeRuntimePlugin !== undefined,
-      loadWorkflowPlugin(layout, config) {
+      loadWorkflowPlugin(layout) {
         const hooks: WorkflowHooks = {
           create: {},
           dev: {
@@ -176,7 +171,6 @@ export function create(definer: Definer): DriverCreator {
         maybeWorkflowPlugin?.(hooks, {
           layout,
           packageManager: layout.packageManager,
-          config,
         })
         return hooks
       },
@@ -323,8 +317,7 @@ export function parsePluginName(packageName: string): null | string {
  * Load all workflow plugins that are installed into the project.
  */
 export async function loadAllWorkflowPluginsFromPackageJson(
-  layout: Layout.Layout,
-  config: Config.LoadedConfig
+  layout: Layout.Layout
 ): Promise<{ name: string; hooks: WorkflowHooks }[]> {
   const plugins = await loadAllFromPackageJson()
   const workflowHooks = plugins
@@ -332,7 +325,7 @@ export async function loadAllWorkflowPluginsFromPackageJson(
     .map(driver => {
       let workflowComponent: WorkflowHooks
       try {
-        workflowComponent = driver.loadWorkflowPlugin(layout, config)
+        workflowComponent = driver.loadWorkflowPlugin(layout)
       } catch (error) {
         fatal(
           stripIndent`

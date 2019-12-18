@@ -1,4 +1,3 @@
-import * as Config from '../../../../framework/config'
 import { fatal, validateAndLoadDBDriver } from '../../../../utils'
 import { Command } from '../../../helpers'
 import { arg, generateHelpForCommand, isError } from '../../../helpers/helpers'
@@ -18,8 +17,7 @@ export class DbRollback implements Command {
       return this.help()
     }
 
-    const config = Config.loadAndProcessConfig(args['--stage']) ?? {}
-    const dbDriver = await validateAndLoadDBDriver(config)
+    const dbDriver = await validateAndLoadDBDriver()
 
     await dbDriver.db?.migrate.rollback.onStart()
   }
