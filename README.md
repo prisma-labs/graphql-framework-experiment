@@ -178,7 +178,18 @@ Our Hello World schema doesn't account for information about moons, lets change 
    }
    ```
 
-3. Conclusion
+3. Deploy to Heroku
+
+   For this step, create an account at [Heroku](https://www.heroku.com/) and [setup the CLI](https://devcenter.heroku.com/articles/heroku-cli).
+
+   1. Create a new app: `heroku apps:create`
+   1. Attach your project to the app: `heroku git:remote --app <app-name>`
+   1. Add a postgres database to it: `heroku addons:create heroku-postgresql --app <app-name>`
+   1. Get the postgres database credentials: `heroku pg:credentials:url --app <app-name>`
+   1. Initialize the postgres database: `yarn -s pumpkins db init --connection-url ${}`
+   1. Deploy using the git push to master workflow. See your app running in the cloud.
+
+4. Conclusion
 
    Hopefully that gives you a taste of the power under your finger tips. There's a ton more to discover. Happy coding! 🙌
 
