@@ -512,8 +512,7 @@ function getPrismaPluginVersion(): string {
     )
     prismaPluginVersion = process.env.GRAPHQL_SANTA_PLUGIN_PRISMA_VERSION
   } else {
-    // TODO @latest
-    prismaPluginVersion = 'master'
+    prismaPluginVersion = 'latest'
   }
   return prismaPluginVersion
 }
