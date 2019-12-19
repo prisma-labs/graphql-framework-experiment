@@ -213,19 +213,7 @@ export async function runBootstrapper(
     // terminate this dev session, they will restart it typically with e.g. `$
     // yarn dev`. This global-graphql-santa-process-wrapping-local-graphql-santa-process
     // is unique to bootstrapping situations.
-    logger.success(stripIndent`
-    ${chalk.bold('Entering dev mode...')}
-        
-    Try this query to get started: 
-
-      query {
-        hello {
-          name
-          population
-        }
-      }
-  `)
-    console.log() // force a newline to give code block breathing room, stripped by template tag above
+    logger.successBold('Entering dev mode ...')
 
     await layout.packageManager
       .runScript('dev', {
@@ -389,7 +377,7 @@ async function helloWorldTemplate(layout: Layout.Layout) {
           args: {
             world: app.stringArg({ required: false })
           },
-          async resolve(_root, args, ctx) {
+          resolve(_root, args, ctx) {
             const worldToFindByName = args.world || "Earth"
             const world = ctx.db.worlds.find(w => w.name === worldToFindByName)
 
@@ -399,7 +387,12 @@ async function helloWorldTemplate(layout: Layout.Layout) {
           }
         })
 
-        t.list.field('world', (_root, _args, ctx) => ctx.db.worlds)
+        t.list.field('worlds', {
+          type: 'World',
+          resolve(_root, _args, ctx) {
+            return ctx.db.worlds
+          } 
+        })
       }
     })
     `
