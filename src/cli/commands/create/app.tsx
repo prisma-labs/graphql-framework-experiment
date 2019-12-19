@@ -115,7 +115,7 @@ export async function runBootstrapper(
   // install additional deps
   //
 
-  const devDeps = ['prettier']
+  const devDeps = ['prettier', 'pretty-quick', 'husky']
   const addDevDepsConfig: PackageManager.AddDepsOptions = {}
   const deps = []
   const addDepsConfig: PackageManager.AddDepsOptions = {}
@@ -161,7 +161,7 @@ export async function runBootstrapper(
   }
 
   //
-  // handoff to local
+  // pass off to local create
   //
 
   await layout.packageManager
@@ -190,6 +190,16 @@ export async function runBootstrapper(
       lerna-debug.log*
     `
   )
+
+  //
+  // return to global create
+  //
+
+  //
+  // format project and setup git
+  //
+
+  await layout.packageManager.runScript('format', { require: true })
 
   // Any disk changes after this point will show up as dirty working directory
   // for the user
@@ -412,6 +422,7 @@ async function scaffoldBaseFiles(layout: Layout.Layout, options: Options) {
         'graphql-santa': options.graphqlSantaVersion,
       },
       scripts: {
+        format: "npx prettier --write './**/*.{ts,md}' '!./prisma/**/*.md'",
         dev: 'santa dev',
         build: 'santa build',
         start: 'node node_modules/.build',
@@ -420,6 +431,11 @@ async function scaffoldBaseFiles(layout: Layout.Layout, options: Options) {
         semi: false,
         singleQuote: true,
         trailingComma: 'all',
+      },
+      husky: {
+        hooks: {
+          'pre-commit': 'pretty-quick --staged',
+        },
       },
     } as PackageJson),
 
