@@ -21,6 +21,7 @@ export type SuccessfulRunResult = {
   error: null | Error // present if optonal (non-throw) mode
 }
 
+// TODO should not use sync options type for async run
 export type RunOptions = Omit<SpawnSyncOptions, 'encoding'> & {
   envAdditions?: Record<string, string | undefined>
   require?: boolean

@@ -90,13 +90,15 @@ export function installDeps(
     : proc.run('yarn install', options)
 }
 
+export type AddDepsOptions = { dev?: boolean } & proc.RunOptions
+
 /**
  * Add a package to the project.
  */
 export function addDeps(
   pmt: PackageManagerType,
   packages: string[],
-  options?: { dev?: boolean } & proc.RunOptions
+  options?: AddDepsOptions
 ): ReturnType<typeof proc.run> {
   return proc.run(renderAddDeps(pmt, packages, { dev: options?.dev }), options)
 }
