@@ -111,39 +111,27 @@ export async function runBootstrapper(
   )
   await layout.packageManager.installDeps({ require: true })
 
-  /**
-   * First class support for Prisma
-   */
+  //
+  // install additional deps
+  //
+
+  const devDeps = ['prettier', 'pretty-quick', 'husky']
+  const addDevDepsConfig: PackageManager.AddDepsOptions = {}
+  const deps = []
+  const addDepsConfig: PackageManager.AddDepsOptions = {}
+
+  logger.successBold(
+    'Installing additional deps... (this will take around ~30 seconds)'
+  )
+
   if (askDatabase.database) {
-    logger.successBold(
-      'Installing Prisma plugin... (this will take around ~30 seconds)'
-    )
-    // Env var used for development
-    let prismaPluginVersion: string
-    if (process.env.GRAPHQL_SANTA_PLUGIN_PRISMA_VERSION) {
-      logger.warn(
-        'found GRAPHQL_SANTA_PLUGIN_PRISMA_VERSION with value %s. This is only expected if you are actively developing on graphql-santa right now',
-        process.env.GRAPHQL_SANTA_PLUGIN_PRISMA_VERSION
-      )
-      prismaPluginVersion = process.env.GRAPHQL_SANTA_PLUGIN_PRISMA_VERSION
-    } else {
-      // TODO @latest
-      prismaPluginVersion = 'master'
-    }
-    await layout.packageManager.addDeps(
-      [`graphql-santa-plugin-prisma@${prismaPluginVersion}`],
-      {
-        // await proc.run('yarn add graphql-santa-plugin-prisma@master', {
-        // This allows installing prisma without a warning being emitted about there
-        // being a missing prisma schema. For more detail refer to
-        // https://prisma-company.slack.com/archives/CEYCG2MCN/p1575480721184700 and
-        // https://github.com/prisma/photonjs/blob/master/packages/photon/scripts/generate.js#L67
-        envAdditions: {
-          SKIP_GENERATE: 'true',
-        },
-        require: true,
-      }
-    )
+    deps.push(`graphql-santa-plugin-prisma@${getPrismaPluginVersion()}`)
+    // This allows installing prisma without a warning being emitted about there
+    // being a missing prisma schema. For more detail refer to
+    // https://prisma-company.slack.com/archives/CEYCG2MCN/p1575480721184700 and
+    // https://github.com/prisma/photonjs/blob/master/packages/photon/scripts/generate.js#L67
+    addDepsConfig.envAdditions = addDepsConfig.envAdditions ?? {}
+    addDepsConfig.envAdditions.SKIP_GENERATE = 'true'
 
     // Pass chosen database to plugin
     saveDataForChildProcess({
@@ -155,6 +143,26 @@ export async function runBootstrapper(
     await helloWorldTemplate(layout)
     saveDataForChildProcess({ layout: layout.data })
   }
+
+  // TODO parallel?
+  if (deps.length) {
+    await layout.packageManager.addDeps(deps, {
+      ...addDepsConfig,
+      require: true,
+    })
+  }
+
+  if (devDeps.length) {
+    await layout.packageManager.addDeps(devDeps, {
+      ...addDevDepsConfig,
+      require: true,
+      dev: true,
+    })
+  }
+
+  //
+  // pass off to local create
+  //
 
   await layout.packageManager
     .runBin('graphql-santa create', {
@@ -183,6 +191,18 @@ export async function runBootstrapper(
     `
   )
 
+  //
+  // return to global create
+  //
+
+  //
+  // format project and setup git
+  //
+
+  await layout.packageManager.runScript('format', { require: true })
+
+  // Any disk changes after this point will show up as dirty working directory
+  // for the user
   await createGitRepository()
 
   // If the user setup a db driver but not the connection URI yet, then do not
@@ -193,19 +213,7 @@ export async function runBootstrapper(
     // terminate this dev session, they will restart it typically with e.g. `$
     // yarn dev`. This global-graphql-santa-process-wrapping-local-graphql-santa-process
     // is unique to bootstrapping situations.
-    logger.success(stripIndent`
-    ${chalk.bold('Entering dev mode...')}
-        
-    Try this query to get started: 
-
-      query {
-        hello {
-          name
-          population
-        }
-      }
-  `)
-    console.log() // force a newline to give code block breathing room, stripped by template tag above
+    logger.successBold('Entering dev mode ...')
 
     await layout.packageManager
       .runScript('dev', {
@@ -342,37 +350,51 @@ async function helloWorldTemplate(layout: Layout.Layout) {
     stripIndent`
     import { app } from "graphql-santa";
 
+    app.addToContext(req => {
+      return {
+        db: {
+          worlds: [
+            { id: "1", population: 6_000_000, name: "Earth" },
+            { id: "2", population: 0, name: "Mars" }
+          ]
+        }
+      }
+    })
+
     app.objectType({
       name: "World",
       definition(t) {
-        t.id("id");
-        t.string("name");
-        t.float("population");
+        t.id("id")
+        t.string("name")
+        t.float("population")
       }
-    });
+    })
 
     app.queryType({
-      definition(t) {
+      definition(t) {        
         t.field("hello", {
           type: "World",
           args: {
             world: app.stringArg({ required: false })
           },
-          async resolve(_root, args, ctx) {
-            const worldToFindByName = args.world || "Earth";
-            const worlds = [
-              { id: "1", population: 6_000_000, name: "Earth" },
-              { id: "2", population: 0, name: "Mars" }
-            ];
-            const world = worlds.find(w => w.name === worldToFindByName);
+          resolve(_root, args, ctx) {
+            const worldToFindByName = args.world || "Earth"
+            const world = ctx.db.worlds.find(w => w.name === worldToFindByName)
 
-            if (!world) throw new Error(\`No such world named "\${args.world}"\`);
+            if (!world) throw new Error(\`No such world named "\${args.world}"\`)
 
-            return world;
+            return world
           }
-        });
+        })
+
+        t.list.field('worlds', {
+          type: 'World',
+          resolve(_root, _args, ctx) {
+            return ctx.db.worlds
+          } 
+        })
       }
-    });
+    })
     `
   )
 }
@@ -393,9 +415,20 @@ async function scaffoldBaseFiles(layout: Layout.Layout, options: Options) {
         'graphql-santa': options.graphqlSantaVersion,
       },
       scripts: {
-        dev: 'graphql-santa dev',
-        build: 'graphql-santa build',
+        format: "npx prettier --write './**/*.{ts,md}' '!./prisma/**/*.md'",
+        dev: 'santa dev',
+        build: 'santa build',
         start: 'node node_modules/.build',
+      },
+      prettier: {
+        semi: false,
+        singleQuote: true,
+        trailingComma: 'all',
+      },
+      husky: {
+        hooks: {
+          'pre-commit': 'pretty-quick --staged',
+        },
       },
     } as PackageJson),
 
@@ -463,4 +496,24 @@ async function loadDataFromParentProcess(): Promise<ParentData> {
 
 function saveDataForChildProcess(data: SerializableParentData): void {
   process.env[ENV_PARENT_DATA] = JSON.stringify(data)
+}
+
+/**
+ * Helper function for fetching the correct veresion of prisma plugin to
+ * install. Useful for development where we can override the version installed
+ * by environment variable GRAPHQL_SANTA_PLUGIN_PRISMA_VERSION.
+ */
+function getPrismaPluginVersion(): string {
+  let prismaPluginVersion: string
+  if (process.env.GRAPHQL_SANTA_PLUGIN_PRISMA_VERSION) {
+    logger.warn(
+      'found GRAPHQL_SANTA_PLUGIN_PRISMA_VERSION with value %s. This is only expected if you are actively developing on graphql-santa right now',
+      process.env.GRAPHQL_SANTA_PLUGIN_PRISMA_VERSION
+    )
+    prismaPluginVersion = process.env.GRAPHQL_SANTA_PLUGIN_PRISMA_VERSION
+  } else {
+    // TODO @latest
+    prismaPluginVersion = 'master'
+  }
+  return prismaPluginVersion
 }
