@@ -107,7 +107,7 @@ export async function runBootstrapper(
   await scaffoldBaseFiles(layout, options)
 
   logger.successBold(
-    `Installing graphql-santa@${options.graphqlSantaVersion}... (this will take around ~20 seconds)`
+    `Installing graphql-santa@${options.graphqlSantaVersion}... (this will take around ~30 seconds)`
   )
   await layout.packageManager.installDeps({ require: true })
 
@@ -116,12 +116,20 @@ export async function runBootstrapper(
    */
   if (askDatabase.database) {
     logger.successBold(
-      'Installing Prisma plugin... (this will take around ~10 seconds)'
+      'Installing Prisma plugin... (this will take around ~30 seconds)'
     )
     // Env var used for development
-    const prismaPluginVersion =
-      process.env.GRAPHQL_SANTA_PLUGIN_PRISMA_VERSION ?? 'master'
-    // TODO @latest
+    let prismaPluginVersion: string
+    if (process.env.GRAPHQL_SANTA_PLUGIN_PRISMA_VERSION) {
+      logger.warn(
+        'found GRAPHQL_SANTA_PLUGIN_PRISMA_VERSION with value %s. This is only expected if you are actively developing on graphql-santa right now',
+        process.env.GRAPHQL_SANTA_PLUGIN_PRISMA_VERSION
+      )
+      prismaPluginVersion = process.env.GRAPHQL_SANTA_PLUGIN_PRISMA_VERSION
+    } else {
+      // TODO @latest
+      prismaPluginVersion = 'master'
+    }
     await layout.packageManager.addDeps(
       [`graphql-santa-plugin-prisma@${prismaPluginVersion}`],
       {
