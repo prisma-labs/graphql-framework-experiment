@@ -96,7 +96,7 @@ export async function runBootstrapper(
     ...optionsGiven,
     projectName: CWDProjectNameOrGenerate(),
     // @ts-ignore
-    graphqlSantaVersion: require('../../../../package.json').version,
+    graphqlSantaVersion: `^${require('../../../../package.json').version}`,
   }
 
   // TODO in the future scan npm registry for graphql-santa plugins, organize by
