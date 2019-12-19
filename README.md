@@ -4,6 +4,8 @@ Please beware that this is a PROTOTYPE. Do NOT use this for serious work. Thanks
 
 # graphql-santa <!-- omit in toc -->
 
+<iframe width="640" height="400" src="https://www.loom.com/embed/fed163245bcc498495e664374ef662f3" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+
 `graphql-santa` is a GraphQL API framework. It takes a code-first approach and brings together a set of tools that provide robust type safety so that if your app compiles, you have a high degree of confidence that it works.
 
 Tools and libraries used include:
