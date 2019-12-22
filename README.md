@@ -21,6 +21,8 @@ Tools and libraries used include:
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 - [Tutorial](#tutorial)
+- [Components](#components)
+  - [Logging](#logging)
 - [Recipes](#recipes)
   - [Add Prisma](#add-prisma)
   - [Setup a local PostgreSQL](#setup-a-local-postgresql)
