@@ -192,6 +192,107 @@ Tools and libraries used include:
 
 <br>
 
+# Components
+
+## Logging
+
+_Why_
+
+Logging is an important part of an application. During development it is a lightweight debugging and general runtime feedback system. Once in production it is critical to your telemetry and monitoring systems, to responding to anomolies, to making sense of runtime activity (e.g. requests by user ID), to responding to outages, and more.
+
+While there are all sorts of specialized tools and libraries for telemetry (InfluxData.com, Segment.io, ...) logs are the common denominator across virtually all apps, and combined with [structured-loggging strategy](https://www.google.com/search?q=structured+logging&rlz=1C5CHFA_enCA865CA865&oq=structured+logging&aqs=chrome..69i57j0l6j69i61.169j0j7&sourceid=chrome&ie=UTF-8) and supporting tools ([ELK](https://www.elastic.co/what-is/elk-stack), ...) tremendous power can be had with just plain logs. You should grow into specialized tooling because you really need it, not because you haven't leveraged what logging can give.
+
+_How_
+
+`graphql-santa` helps in the following ways:
+
+- Enforces structured logging (JSON)
+- Encodes a log schema optimized for downstream filtering, faceting, etc. on your logging platform of choice
+- Pretty mode in development
+- (future) Interactive log filtering in development, the log schema benefits you not just in production
+- (future) Pluggable so that specialized extensions can enhance your logging with zero-effort from you
+- Creates log instances per request to support highly contextual logs, e.g. add the user ID to the log context so that all logged activity by that user is tracked as such.
+- Standardizes six log levels with sane defaults for development and production
+- Pushes you to think about logs as events
+
+_API Example_
+
+```ts
+// A no-scope app-wide logger exists, useful for basic one-off logs like server boot and exit.
+app.log.info('booting')
+
+// Request-scoped log instance available on req object in server middleware. Use the log
+// API to add data to its context which will persist for the duration of the request lifecycle.
+app.server.on.request(async (req, next) => {
+  req.log.addToContext({
+    token: req.token,
+    user: {
+      id: req.token.claims.userId
+    }
+  })
+
+  const res = await next()
+})
+
+objectType({
+  name: 'Foo'
+  definition(t) {
+    t.field('bar', {
+      type: 'String',
+      // Request-scoped log instance available on every resolver context object.
+      // This log has the `token` and `user` context added before in the server middleware.
+      resolve(_parent, _args, ctx) {
+        ctx.log.debug('resolving', { object: 'Foo', field: 'bar' })
+      }
+    })
+  }
+})
+```
+
+_Schema Example_
+
+The above API Example will log the following JSON:
+
+```json
+{
+  "timestamp": "...",
+  "event": "booting",
+  "level": "INFO",
+  "app": {
+    "name": "...",
+    "version": {
+      "semantic": "...",
+      "commit": "...",
+      ...
+    }
+  }
+}
+```
+
+```json
+{
+  "timestamp": "...",
+  "event": "resolving",
+  "level": "DEBUG",
+  "app": {
+    "name": "...",
+    "version": {
+      "semantic": "...",
+      "commit": "...",
+      ...
+    }
+  },
+  "context": {
+    "user": { "id": "..." },
+    "token": { "claims": { "userId": "...", ... }, "sub": "...", ... },
+    "object": "Foo",
+    "field": "bar"
+  }
+}
+```
+
+<br>
+
 # Recipes
 
 ### Add Prisma
