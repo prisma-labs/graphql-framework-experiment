@@ -494,6 +494,18 @@ Start the server. If you don't call this graphql-santa will. Usually you should 
 $ santa --help
 ```
 
+# Links
+
+### Videos
+
+GraphQL Santa Development Series
+
+- [GraphQL Santa #1 - Hello World](https://www.loom.com/share/fed163245bcc498495e664374ef662f3)
+
+Talks
+
+- on 2019/12/10 | by [Flavian Desverne](https://github.com/Weakky) | [GraphQL Berlin Meetup #16: Boosting backend development productivity](https://www.youtube.com/watch?v=AqQEfFXxZKo)
+
 # Development
 
 ### Overview
