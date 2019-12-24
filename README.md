@@ -36,6 +36,8 @@ Tools and libraries used include:
   - [`app.<nexusDefBlock>`](#appnexusdefblock)
   - [`app.server.start`](#appserverstart)
 - [CLI](#cli)
+- [Links](#links)
+  - [Videos](#videos)
 - [Development](#development)
   - [Overview](#overview)
   - [Testing](#testing)
