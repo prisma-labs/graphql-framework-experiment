@@ -1,0 +1,5 @@
+{
+  "typescript": true,
+  "files": "docs/**/*.{md,mdx}",
+  "menu": ["Introduction"]
+}
