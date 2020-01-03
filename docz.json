@@ -1,5 +1,6 @@
 {
   "typescript": true,
+  "dest": "docs",
   "files": "docs/**/*.{md,mdx}",
   "menu": ["Introduction"]
 }
