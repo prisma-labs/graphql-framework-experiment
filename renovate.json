@@ -1,5 +1,17 @@
 {
-  "extends": [
-    "config:base"
+  "extends": ["config:base", "docker:disable"],
+  "packageRules": [
+    {
+      "groupName": "patch & minor dev dependencies",
+      "depTypeList": ["devDependencies"],
+      "packagePatterns": [".*"],
+      "updateTypes": ["patch", "minor"]
+    },
+    {
+      "groupName": "patch prod dependencies",
+      "depTypeList": ["dependencies"],
+      "packagePatterns": [".*"],
+      "updateTypes": ["patch"]
+    }
   ]
 }
