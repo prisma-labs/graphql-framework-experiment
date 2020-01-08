@@ -1,16 +1,15 @@
 import { ApolloServer } from 'apollo-server-express'
+import { stripIndent, stripIndents } from 'common-tags'
 import express from 'express'
 import * as fs from 'fs-jetpack'
+import { Server } from 'http'
 import * as nexus from 'nexus'
-import * as Plugin from './plugin'
-import { requireSchemaModules, pog, findFile } from '../utils'
-import { createNexusSingleton, createNexusConfig } from './nexus'
 import { typegenAutoConfig } from 'nexus/dist/core'
-import { stripIndent, stripIndents } from 'common-tags'
+import { findFile, pog, requireSchemaModules } from '../utils'
 import { sendServerReadySignalToDevModeMaster } from './dev-mode'
+import { createNexusConfig, createNexusSingleton } from './nexus'
+import * as Plugin from './plugin'
 import * as singletonChecks from './singleton-checks'
-
-type RequiredValue<T> = T extends null ? never : T extends void ? never : T
 
 const log = pog.sub(__filename)
 
@@ -68,6 +67,7 @@ export type App = {
   // installGlobally: () => App
   server: {
     start: (config?: ServerOptions) => Promise<void>
+    stop: () => Promise<void>
   }
   queryType: typeof nexus.queryType
   mutationType: typeof nexus.mutationType
@@ -106,6 +106,9 @@ export function createApp(appConfig?: { types?: any }): App {
   plugins.push(...Plugin.loadAllRuntimePluginsFromPackageJsonSync())
 
   const contextContributors: ContextContributor<any>[] = []
+
+  let httpServer: Server | null = null
+  let apolloServer: ApolloServer | null = null
 
   /**
    * Auto-use all runtime plugins that are installed in the project
@@ -263,7 +266,7 @@ export function createApp(appConfig?: { types?: any }): App {
         }
 
         const schema = await makeSchema(nexusConfig)
-        const server = new ApolloServer({
+        apolloServer = new ApolloServer({
           playground: mergedConfig.playground,
           introspection: mergedConfig.introspection,
           // TODO Idea: context that provides an eager object can be hoisted out
@@ -297,15 +300,26 @@ export function createApp(appConfig?: { types?: any }): App {
           schema,
         })
 
-        const app = express()
+        const expressApp = express()
+        apolloServer.applyMiddleware({ app: expressApp })
 
-        server.applyMiddleware({ app })
+        return new Promise(resolve => {
+          const server = expressApp.listen(mergedConfig.port, () => {
+            const startMessage = mergedConfig.startMessage(mergedConfig.port)
 
-        app.listen({ port: mergedConfig.port }, () =>
-          console.log(mergedConfig.startMessage(mergedConfig.port))
-        )
+            if (startMessage.length > 0) {
+              console.log(startMessage)
+            }
 
-        sendServerReadySignalToDevModeMaster()
+            sendServerReadySignalToDevModeMaster()
+            httpServer = server
+            return resolve()
+          })
+        })
+      },
+      async stop() {
+        await apolloServer?.stop()
+        await httpServer?.close()
       },
     },
   }
