@@ -1,0 +1,152 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`.addToContext can be called multiple times, merging deeply 1`] = `
+Array [
+  Object {
+    "context": Object {
+      "user": Object {
+        "id": 1,
+        "name": "Jill",
+      },
+    },
+    "event": "hi",
+    "hostname": "Jasons-Prisma-Machine.local",
+    "level": 30,
+    "pid": 0,
+    "time": 0,
+    "v": 1,
+  },
+]
+`;
+
+exports[`.addToContext gets deeply merged with local context 1`] = `
+Array [
+  Object {
+    "context": Object {
+      "user": Object {
+        "id": 1,
+        "name": "Jill",
+      },
+    },
+    "event": "hi",
+    "hostname": "Jasons-Prisma-Machine.local",
+    "level": 30,
+    "pid": 0,
+    "time": 0,
+    "v": 1,
+  },
+]
+`;
+
+exports[`.addToContext local context takes prescedence over pinned context 1`] = `
+Array [
+  Object {
+    "context": Object {
+      "user": Object {
+        "id": 2,
+      },
+    },
+    "event": "hi",
+    "hostname": "Jasons-Prisma-Machine.local",
+    "level": 30,
+    "pid": 0,
+    "time": 0,
+    "v": 1,
+  },
+]
+`;
+
+exports[`.addToContext pins context for all subsequent logs from the logger 1`] = `
+Array [
+  Object {
+    "context": Object {
+      "user": Object {
+        "id": 1,
+      },
+    },
+    "event": "hi",
+    "hostname": "Jasons-Prisma-Machine.local",
+    "level": 30,
+    "pid": 0,
+    "time": 0,
+    "v": 1,
+  },
+]
+`;
+
+exports[`has a log method for each log level 1`] = `
+Array [
+  Object {
+    "context": Object {},
+    "event": "hi",
+    "hostname": "Jasons-Prisma-Machine.local",
+    "level": 60,
+    "pid": 0,
+    "time": 0,
+    "v": 1,
+  },
+  Object {
+    "context": Object {},
+    "event": "hi",
+    "hostname": "Jasons-Prisma-Machine.local",
+    "level": 50,
+    "pid": 0,
+    "time": 0,
+    "v": 1,
+  },
+  Object {
+    "context": Object {},
+    "event": "hi",
+    "hostname": "Jasons-Prisma-Machine.local",
+    "level": 40,
+    "pid": 0,
+    "time": 0,
+    "v": 1,
+  },
+  Object {
+    "context": Object {},
+    "event": "hi",
+    "hostname": "Jasons-Prisma-Machine.local",
+    "level": 30,
+    "pid": 0,
+    "time": 0,
+    "v": 1,
+  },
+  Object {
+    "context": Object {},
+    "event": "hi",
+    "hostname": "Jasons-Prisma-Machine.local",
+    "level": 20,
+    "pid": 0,
+    "time": 0,
+    "v": 1,
+  },
+  Object {
+    "context": Object {},
+    "event": "hi",
+    "hostname": "Jasons-Prisma-Machine.local",
+    "level": 10,
+    "pid": 0,
+    "time": 0,
+    "v": 1,
+  },
+]
+`;
+
+exports[`log methods accept context 1`] = `
+Array [
+  Object {
+    "context": Object {
+      "user": Object {
+        "id": 1,
+      },
+    },
+    "event": "hi",
+    "hostname": "Jasons-Prisma-Machine.local",
+    "level": 30,
+    "pid": 0,
+    "time": 0,
+    "v": 1,
+  },
+]
+`;
