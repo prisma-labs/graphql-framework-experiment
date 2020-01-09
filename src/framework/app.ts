@@ -304,7 +304,10 @@ export function createApp(appConfig?: { types?: any }): App {
         server.applyMiddleware({ app })
 
         app.listen({ port: mergedConfig.port }, () =>
-          console.log(mergedConfig.startMessage(mergedConfig.port))
+          api.logger.info('server_listening', {
+            host: 'localhost',
+            port: mergedConfig.port,
+          })
         )
 
         sendServerReadySignalToDevModeMaster()

@@ -5,16 +5,53 @@ import * as Lo from 'lodash'
 // TODO JSON instead of unknown type
 type Context = Record<string, unknown>
 
-type Level = 'fatal' | 'error' | 'warn' | 'info' | 'debug' | 'trace'
+export type LogRecord = {
+  path: string[]
+  event: string
+  level: 10 | 20 | 30 | 40 | 50 | 60
+  time: number
+  pid: number
+  hostname: string
+  context: Record<string, unknown>
+  v: number
+}
 
-const LEVELS = {
-  fatal: 'fatal',
-  error: 'error',
-  debug: 'debug',
-  warn: 'warn',
-  trace: 'trace',
-  info: 'info',
-} as const
+export type Level = 'fatal' | 'error' | 'warn' | 'info' | 'debug' | 'trace'
+
+export type LevelNum = 60 | 50 | 40 | 30 | 20 | 10
+
+export const LEVELS: Record<Level, { label: Level; number: LevelNum }> = {
+  fatal: {
+    label: 'fatal',
+    number: 60,
+  },
+  error: {
+    label: 'error',
+    number: 50,
+  },
+  warn: {
+    label: 'warn',
+    number: 40,
+  },
+
+  debug: {
+    label: 'info',
+    number: 30,
+  },
+  info: {
+    label: 'debug',
+    number: 20,
+  },
+  trace: {
+    label: 'trace',
+    number: 10,
+  },
+}
+
+export const LEVELS_BY_NUM = Object.values(LEVELS).reduce(
+  (lookup, entry) => Object.assign(lookup, { [entry.number]: entry }),
+  {}
+) as Record<LevelNum, { label: Level; number: LevelNum }>
 
 type Log = (event: string, context?: Context) => void
 
@@ -37,6 +74,18 @@ export type RootLogger = Logger & {
 export type Options = {
   output?: Output.Output
   level?: Level
+  pretty?: boolean
+}
+
+import * as Prettifier from './prettifier'
+
+/**
+ * The pino typings are poor and, for example, do not account for prettifier or
+ * mixin field. Also see note from Matteo about not using them:
+ * https://github.com/prisma-labs/graphql-santa/pull/244#issuecomment-572573672
+ */
+type ActualPinoOptions = Pino.LoggerOptions & {
+  prettifier: (opts: any) => (logRec: any) => string
 }
 
 /**
@@ -45,20 +94,29 @@ export type Options = {
 export function create(opts?: Options): RootLogger {
   const pino = createPino(
     {
+      prettyPrint:
+        opts?.pretty ??
+        (process.env.LOG_PRETTY === 'true'
+          ? true
+          : process.env.LOG_PRETTY === 'false'
+          ? false
+          : process.stdout.isTTY),
+      prettifier: (_opts: any) => Prettifier.render,
       messageKey: 'event',
-    },
+    } as ActualPinoOptions,
     opts?.output ?? process.stdout
   )
 
   if (opts?.level) {
     pino.level = opts.level
   } else if (process.env.NODE_ENV === 'production') {
-    pino.level = LEVELS.info
+    pino.level = LEVELS.info.label
   } else {
-    pino.level = LEVELS.debug
+    pino.level = LEVELS.debug.label
   }
 
-  const { logger } = createLogger(pino, ['root'], {})
+  // TODO alt path root name is "root"... should this be configurable?
+  const { logger } = createLogger(pino, ['app'], {})
 
   Object.assign(logger, {
     getLevel(): Level {
