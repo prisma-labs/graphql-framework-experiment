@@ -3,7 +3,7 @@ import * as Output from './output'
 
 resetEnvironmentBeforeEachTest()
 
-let logger: Logger.Logger
+let logger: Logger.RootLogger
 let output: MockOutput.MockOutput
 
 beforeEach(() => {
