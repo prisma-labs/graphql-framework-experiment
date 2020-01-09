@@ -54,16 +54,18 @@ const defaultServerOptions: Required<ServerOptions> = {
   playground: true,
 }
 
+type Request = Express.Request & { logger: Logger.Logger }
+
 // TODO plugins could augment the request
 // plugins will be able to use typegen to signal this fact
 // all places in the framework where the req object is referenced should be
 // actually referencing the typegen version, so that it reflects the req +
 // plugin augmentations type
-type ContextContributor<T extends {}> = (req: Express.Request) => T
+type ContextContributor<T extends {}> = (req: Request) => T
 
 export type App = {
   use: (plugin: Plugin.Driver) => App
-  logger: Logger.Logger
+  logger: Logger.RootLogger
   addToContext: <T extends {}>(contextContributor: ContextContributor<T>) => App
   // installGlobally: () => App
   server: {
@@ -271,6 +273,8 @@ export function createApp(appConfig?: { types?: any }): App {
           // TODO Idea: context that provides an eager object can be hoisted out
           // of the func to improve performance.
           context: req => {
+            // TODO HACK
+            ;(req as any).logger = logger.child('request')
             const ctx = {}
 
             // Integrate context from plugins
@@ -291,7 +295,11 @@ export function createApp(appConfig?: { types?: any }): App {
             // TODO good runtime feedback to user if something goes wrong
             //
             for (const contextContributor of contextContributors) {
-              Object.assign(ctx, contextContributor(req))
+              // HACK see req mutation at this func body start
+              Object.assign(ctx, {
+                ...contextContributor((req as unknown) as Request),
+                logger: ((req as unknown) as Request).logger,
+              })
             }
 
             return ctx
