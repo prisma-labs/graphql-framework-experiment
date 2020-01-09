@@ -11,30 +11,68 @@ beforeEach(() => {
   logger = Logger.create({ output })
 })
 
-it('in production the default level is "info"', () => {
-  process.env.NODE_ENV = 'production'
-  expect(Logger.create().level).toEqual('info')
+describe('output', () => {
+  it('defaults to stdout for all levels', () => {
+    const write = process.stdout.write
+    ;(process.stdout.write as any) = output.write
+    Logger.create().fatal('foo')
+    process.stdout.write = write
+    expect(output.writes).toMatchSnapshot()
+  })
 })
 
-it('outside production the default level is "debug"', () => {
-  process.env.NODE_ENV = 'not-production'
-  expect(Logger.create().level).toEqual('debug')
+describe('level', () => {
+  it('defaults to "info" when NODE_ENV=production', () => {
+    process.env.NODE_ENV = 'production'
+    expect(Logger.create().getLevel()).toEqual('info')
+  })
+
+  it('defaults to "debug" when NODE_ENV!=production', () => {
+    process.env.NODE_ENV = 'not-production'
+    expect(Logger.create().getLevel()).toEqual('debug')
+  })
+
+  it('may be configured at construction time', () => {
+    expect(Logger.create({ level: 'trace' }).getLevel()).toEqual('trace')
+  })
+
+  it('may be configured at instnace time', () => {
+    expect(
+      Logger.create({ level: 'trace' })
+        .setLevel('warn')
+        .getLevel()
+    ).toEqual('warn')
+  })
+
+  it('logs below set level are not output', () => {
+    logger.setLevel('warn').info('foo')
+    expect(output.writes).toEqual([])
+  })
 })
 
-it('has a log method for each log level', () => {
-  logger.level = 'trace'
-  logger.fatal('hi')
-  logger.error('hi')
-  logger.warn('hi')
-  logger.info('hi')
-  logger.debug('hi')
-  logger.trace('hi')
-  expect(output.writes).toMatchSnapshot()
+describe('pretty', () => {
+  it.todo('defualts first to process.env.LOG_ENV, then tty presence')
+  it.todo('may be configured at construction time')
+  it.todo('may be configured at instance time')
 })
 
-it('log methods accept context', () => {
-  logger.info('hi', { user: { id: 1 } })
-  expect(output.writes).toMatchSnapshot()
+describe('.<level> log methods', () => {
+  it('accept an event name and optional context', () => {
+    logger.info('hi', { user: { id: 1 } })
+    logger.info('bye')
+    expect(output.writes).toMatchSnapshot()
+  })
+
+  it('one for each log level', () => {
+    logger.setLevel('trace')
+    logger.fatal('hi')
+    logger.error('hi')
+    logger.warn('hi')
+    logger.info('hi')
+    logger.debug('hi')
+    logger.trace('hi')
+    expect(output.writes).toMatchSnapshot()
+  })
 })
 
 describe('.addToContext', () => {
@@ -62,9 +100,88 @@ describe('.addToContext', () => {
     logger.info('hi', { user: { id: 2 } })
     expect(output.writes).toMatchSnapshot()
   })
+})
 
-  it.todo('does not affect parent logger')
-  it.todo('is inherited by child-loggers')
+describe('.child', () => {
+  it('creates a sub logger', () => {
+    logger.child('tim').info('hi')
+    expect(output.writes).toMatchSnapshot()
+  })
+
+  it('log output includes path field showing the logger namespacing', () => {
+    logger
+      .child('b')
+      .child('c')
+      .child('d')
+      .info('foo')
+    expect(output.writes[0].path).toEqual(['root', 'b', 'c', 'd'])
+  })
+
+  it('inherits context from parent', () => {
+    logger
+      .addToContext({ foo: 'bar' })
+      .child('tim')
+      .info('hi')
+    expect(output.writes[0].context).toEqual({ foo: 'bar' })
+  })
+
+  it('at log time reflects the current state of parent context', () => {
+    const b = logger.child('b')
+    logger.addToContext({ foo: 'bar' })
+    b.info('lop')
+    expect(output.writes[0].context).toEqual({ foo: 'bar' })
+  })
+
+  it('at log time reflects the current state of parent context even from further up the chain', () => {
+    const b = logger.child('b')
+    const c = b.child('c')
+    const d = c.child('d')
+    logger.addToContext({ foo: 'bar' })
+    d.info('lop')
+    expect(output.writes[0].context).toEqual({ foo: 'bar' })
+  })
+
+  it('inherits level from parent', () => {
+    expect(logger.getLevel()).toBe('debug')
+    logger
+      .setLevel('trace')
+      .child('tim')
+      .trace('hi')
+    // The fact that we get output for trace log from child means it honored the
+    // setLevel.
+    expect(output.writes).toMatchSnapshot()
+  })
+
+  it('reacts to level changes in root logger', () => {
+    const b = logger.child('b')
+    logger.setLevel('trace')
+    b.trace('foo')
+    // The fact that we get output for trace log from child means it honored the
+    // setLevel.
+    expect(output.writes).toMatchSnapshot()
+  })
+
+  it('is unable to change context of parent', () => {
+    logger.child('b').addToContext({ foo: 'bar' })
+    logger.info('qux')
+    expect(output.writes[0].context).toEqual({})
+  })
+
+  it('is unable to change context of siblings', () => {
+    const b1 = logger.child('b1').addToContext({ from: 'b1' })
+    const b2 = logger.child('b2').addToContext({ from: 'b2' })
+    const b3 = logger.child('b3').addToContext({ from: 'b3' })
+    logger.addToContext({ foo: 'bar' })
+    b1.info('foo')
+    b2.info('foo')
+    b3.info('foo')
+    // All should inherit the root context
+    expect(output.writes).toMatchSnapshot()
+  })
+
+  it('cannot affect level', () => {
+    expect((logger.child('b') as any).setLevel).toBeUndefined()
+  })
 })
 
 //
@@ -77,7 +194,7 @@ describe('.addToContext', () => {
  */
 namespace MockOutput {
   export type MockOutput = Output.Output & {
-    writes: string[]
+    writes: Record<string, any>[]
   }
 
   export function create(): MockOutput {

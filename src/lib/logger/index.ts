@@ -1,1 +1,1 @@
-export { create, Logger } from './main'
+export { create, RootLogger as Logger } from './main'
