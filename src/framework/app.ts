@@ -9,6 +9,7 @@ import { typegenAutoConfig } from 'nexus/dist/core'
 import { stripIndent, stripIndents } from 'common-tags'
 import { sendServerReadySignalToDevModeMaster } from './dev-mode'
 import * as singletonChecks from './singleton-checks'
+import * as Logger from '../lib/logger'
 
 const log = pog.sub(__filename)
 
@@ -62,7 +63,7 @@ type ContextContributor<T extends {}> = (req: Express.Request) => T
 
 export type App = {
   use: (plugin: Plugin.Driver) => App
-  logger: Pino.Logger
+  logger: Logger.Logger
   addToContext: <T extends {}>(contextContributor: ContextContributor<T>) => App
   // installGlobally: () => App
   server: {
@@ -84,7 +85,7 @@ export type App = {
  * TODO extract and improve config type
  */
 export function createApp(appConfig?: { types?: any }): App {
-  const logger = createPino()
+  const logger = Logger.create()
   const {
     queryType,
     mutationType,
