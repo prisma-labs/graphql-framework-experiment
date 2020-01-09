@@ -32,9 +32,25 @@ Tools and libraries used include:
   - [Example Layouts](#example-layouts)
 - [API](#api)
   - [`app`](#app)
-  - [`app.addToContext`](#appaddtocontext)
-  - [`app.<nexusDefBlock>`](#appnexusdefblock)
-  - [`app.server.start`](#appserverstart)
+    - [`app.addToContext`](#appaddtocontext)
+    - [`app.<nexusDefBlock>`](#appnexusdefblock)
+    - [`app.logger`](#applogger)
+    - [`app.server`](#appserver)
+  - [`Server`](#server)
+    - [`server.start`](#serverstart)
+    - [`serve.stop`](#servestop)
+  - [`Logger`](#logger)
+    - [`logger.fatal`](#loggerfatal)
+    - [`logger.error`](#loggererror)
+    - [`logger.warn`](#loggerwarn)
+    - [`logger.info`](#loggerinfo)
+    - [`logger.debug`](#loggerdebug)
+    - [`logger.trace`](#loggertrace)
+    - [`logger.addToContext`](#loggeraddtocontext)
+    - [`logger.child`](#loggerchild)
+  - [`RootLogger`](#rootlogger)
+    - [`rootLogger.setLevel`](#rootloggersetlevel)
+    - [`rootLogger.getLevel`](#rootloggergetlevel)
 - [CLI](#cli)
 - [Links](#links)
   - [Videos](#videos)
@@ -421,7 +437,7 @@ prisma/
 
 # API
 
-### `app`
+## `app`
 
 A singleton graphql-santa app. Use this to build up your GraphQL schema and configure your server.
 
@@ -484,9 +500,71 @@ app.objectType({
 })
 ```
 
-### `app.server.start`
+### `app.logger`
 
-Start the server. If you don't call this graphql-santa will. Usually you should not have to call it. Please share your use-case with us if you do!
+An instance of [`RootLogger`](#rootlogger).
+
+**Example**
+
+```ts
+// app.ts
+
+import { app } from 'graphql-santa'
+
+app.logger.info('boot')
+```
+
+### `app.server`
+
+An instance of [`Server`](#server).
+
+Framework Notes:
+
+- If your app does not call `app.server.start` then `santa` will. It is idiomatic to allow `santa` to take care of this. If you deviate, we would love to learn about your use-case!
+
+<br>
+
+## `Server`
+
+TODO
+
+### `server.start`
+
+### `serve.stop`
+
+<br>
+
+## `Logger`
+
+TODO
+
+### `logger.fatal`
+
+### `logger.error`
+
+### `logger.warn`
+
+### `logger.info`
+
+### `logger.debug`
+
+### `logger.trace`
+
+### `logger.addToContext`
+
+### `logger.child`
+
+<br>
+
+## `RootLogger`
+
+TODO
+
+Extends [`Logger`](#logger)
+
+### `rootLogger.setLevel`
+
+### `rootLogger.getLevel`
 
 <br>
 
