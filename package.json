@@ -16,6 +16,7 @@
     "santa": "dist/cli/index.js"
   },
   "dependencies": {
+    "@types/pino": "^5.15.1",
     "apollo-server-express": "^2.9.11",
     "arg": "^4.1.1",
     "chalk": "^3.0.0",
@@ -27,7 +28,9 @@
     "fs-jetpack": "^2.2.3",
     "graphql": "^14.5.8",
     "ink": "^2.5.0",
+    "lodash": "^4.17.15",
     "nexus": "^0.12.0-rc.5",
+    "pino": "^5.15.0",
     "prompts": "^2.3.0",
     "react": "^16.12.0",
     "simple-git": "^1.126.0",
@@ -42,6 +45,7 @@
     "@types/debug": "4.1.5",
     "@types/dotenv": "8.2.0",
     "@types/jest": "24.0.25",
+    "@types/lodash": "^4.14.149",
     "@types/node": "12.12.24",
     "@types/prompts": "2.0.3",
     "@types/react": "16.9.17",
@@ -75,6 +79,7 @@
     "prepublishOnly": "yarn -s build",
     "test": "jest --verbose --testTimeout 120000",
     "test:dev": "jest --watch --verbose --testTimeout 120000",
+    "dev:test": "jest --watch --verbose --testRegex '.+/src/.+\\.spec\\.ts$'",
     "dev": "tsc -b -w"
   },
   "prettier": {
