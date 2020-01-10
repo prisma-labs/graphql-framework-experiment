@@ -592,6 +592,8 @@ Talks
 
 - on 2019/12/10 | by [Flavian Desverne](https://github.com/Weakky) | [GraphQL Berlin Meetup #16: Boosting backend development productivity](https://www.youtube.com/watch?v=AqQEfFXxZKo)
 
+<br>
+
 # Development
 
 ### Overview
@@ -601,6 +603,41 @@ yarn
 yarn test
 yarn dev
 ```
+
+<br>
+
+### Website
+
+We currently use [docsifyjs/docsify](https://github.com/docsifyjs/docsify). We deploy to `gh-pages`.
+
+#### Getting started
+
+1. Install `docsify-cli`
+
+   There is currently [a bug](https://github.com/docsifyjs/docsify-cli/issues/88) with `docsify-cli` requiring the following manual fix after installation. To make this less painful, install globally so you should only have to do this once.
+
+   ```
+   yarn global add docsify
+   ```
+
+   ```
+   vim /usr/local/bin/docsify
+   :se ff=unix
+   :wq
+   ```
+
+2. Boot docs dev to preview your changes locally
+
+   ```
+   yarn docs:dev
+   ```
+
+#### Notes
+
+- There is no build step
+- Commits to master will trigger deployment (via `gh-pages`, no ci/cd on our part)
+
+<br>
 
 ### Testing
 

@@ -73,7 +73,7 @@
     "publish:pr": "PR=$(hub pr show -f '%I') && yarn publish --tag pr.${PR} --no-git-tag-version --new-version \"0.0.0-pr.${PR}.$(git show -s head --format='%h')\" && git commit -am 'ver' && git push",
     "format": "prettier --write '*/**/*.ts'",
     "build": "yarn -s clean && tsc -b",
-    "build:doc": "doctoc README.md --notitle --maxlevel 3",
+    "docs:build": "doctoc README.md --notitle --maxlevel 3",
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
     "postpublish": "yarn -s clean",
     "prepublishOnly": "yarn -s build",

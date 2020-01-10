@@ -10,14 +10,33 @@
       content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
     />
     <link rel="stylesheet" href="//unpkg.com/docsify/lib/themes/vue.css" />
+    <style>
+      .cover-main {
+        /* Otherwise mobile sidebar is not on top... */
+        z-index: 0 !important;
+      }
+      .cover h3 span {
+        color: white;
+      }
+      .cover h1[id='🎄'] span {
+        font-size: 3em;
+      }
+      .cover h1 span {
+        color: white;
+      }
+    </style>
   </head>
+
   <body>
     <div id="app"></div>
     <script>
       window.$docsify = {
-        name: 'graphql-santa',
+        coverpage: true,
+        name: '🎄 graphql-santa',
         repo: 'prisma-labs/graphql-santa',
+        subMaxLevel: 0,
         loadSidebar: true,
+        autoHeader: true,
       }
     </script>
     <script src="//unpkg.com/docsify/lib/docsify.min.js"></script>
