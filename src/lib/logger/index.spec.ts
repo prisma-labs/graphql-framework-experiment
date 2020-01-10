@@ -1,21 +1,69 @@
+import * as Lo from 'lodash'
 import * as Logger from './'
 import * as Output from './output'
 
-resetEnvironmentBeforeEachTest()
+resetBeforeEachTest(process, 'env')
+resetBeforeEachTest(process.stdout, 'isTTY')
 
 let logger: Logger.RootLogger
 let output: MockOutput.MockOutput
 
 beforeEach(() => {
+  process.env.LOG_PRETTY = 'false'
   output = MockOutput.create()
   logger = Logger.create({ output })
+})
+
+describe('name', () => {
+  it('becomes the first entry in path', () => {
+    Logger.create({ output, name: 'foo' }).info('bar')
+    expect(output.writes[0].path).toEqual(['foo'])
+  })
+  it('defaults to "root"', () => {
+    logger.info('bar')
+    expect(output.writes[0].path).toEqual(['root'])
+  })
+})
+
+describe('pretty', () => {
+  it('defualts first to process.env.LOG_PRETTY, then tty presence', () => {
+    process.env.LOG_PRETTY = 'true'
+    expect(Logger.create().isPretty()).toEqual(true)
+    process.env.LOG_PRETTY = undefined
+    process.stdout.isTTY = true
+    expect(Logger.create().isPretty()).toEqual(true)
+    process.stdout.isTTY = false
+    expect(Logger.create().isPretty()).toEqual(false)
+  })
+
+  it('may be set at construction time', () => {
+    expect(Logger.create({ pretty: true }).isPretty()).toEqual(true)
+  })
+
+  it('manually setting takes precedence over defaults', () => {
+    process.env.LOG_PRETTY = 'true'
+    expect(Logger.create({ pretty: false }).isPretty()).toEqual(false)
+  })
+
+  it('may be set at instance time', () => {
+    const logger = Logger.create()
+    expect(logger.isPretty()).toEqual(false)
+    expect(logger.setPretty(true).isPretty()).toEqual(true)
+  })
+
+  it('controls if logs are rendered pretty or as JSON', () => {
+    logger.info('foo')
+    logger.setPretty(true)
+    logger.info('bar')
+    expect(output.writes).toMatchSnapshot()
+  })
 })
 
 describe('output', () => {
   it('defaults to stdout for all levels', () => {
     const write = process.stdout.write
     ;(process.stdout.write as any) = output.write
-    Logger.create().fatal('foo')
+    Logger.create({ pretty: false }).fatal('foo')
     process.stdout.write = write
     expect(output.writes).toMatchSnapshot()
   })
@@ -48,12 +96,6 @@ describe('level', () => {
     logger.setLevel('warn').info('foo')
     expect(output.writes).toEqual([])
   })
-})
-
-describe('pretty', () => {
-  it.todo('defualts first to process.env.LOG_ENV, then tty presence')
-  it.todo('may be configured at construction time')
-  it.todo('may be configured at instance time')
 })
 
 describe('.<level> log methods', () => {
@@ -201,9 +243,17 @@ namespace MockOutput {
     const output = {
       writes: [],
       write(message: string) {
-        const log: any = JSON.parse(message)
-        log.time = 0
-        log.pid = 0
+        let log: any
+        try {
+          log = JSON.parse(message)
+          log.time = 0
+          log.pid = 0
+        } catch (e) {
+          if (e instanceof SyntaxError) {
+            // assume pretty mode is on
+            log = message
+          }
+        }
         output.writes.push(log)
       },
     } as MockOutput
@@ -213,12 +263,12 @@ namespace MockOutput {
 }
 
 /**
- * Reset the environment before each test, allowing each test to modify it to
- * its needs.
+ * Restore the key on given object before each test. Useful for permiting tests
+ * to modify the environment and so on.
  */
-function resetEnvironmentBeforeEachTest() {
-  const originalEnvironment = Object.assign({}, process.env)
+function resetBeforeEachTest(object: any, key: string) {
+  const orig = Lo.cloneDeep(object[key])
   beforeEach(() => {
-    process.env = Object.assign({}, originalEnvironment)
+    object[key] = orig
   })
 }

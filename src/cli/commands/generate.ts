@@ -22,6 +22,6 @@ export class Generate implements Command {
       })
     )
 
-    logger.successBold('Success!')
+    logger.info('done')
   }
 }

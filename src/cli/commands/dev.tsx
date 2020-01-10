@@ -131,7 +131,7 @@ export class Dev implements Command {
       onEvent: e => {
         if (state.logMode && e.event === 'restart') {
           clearConsole()
-          logger.info('Restarting...', e.file)
+          logger.info('restarting', { changed: e.file })
         }
         if (state.logMode && e.event === 'logging') {
           process.stdout.write(e.data)
