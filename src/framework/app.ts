@@ -88,6 +88,7 @@ export type App = {
  */
 export function createApp(appConfig?: { types?: any }): App {
   const logger = Logger.create({ name: 'app' })
+  const serverLogger = logger.child('server')
   const {
     queryType,
     mutationType,
@@ -265,7 +266,7 @@ export function createApp(appConfig?: { types?: any }): App {
         }
 
         const schema = await makeSchema(nexusConfig)
-        const server = new ApolloServer({
+        const apolloServer = new ApolloServer({
           playground: mergedConfig.playground,
           introspection: mergedConfig.introspection,
           // TODO Idea: context that provides an eager object can be hoisted out
@@ -299,12 +300,12 @@ export function createApp(appConfig?: { types?: any }): App {
           schema,
         })
 
-        const app = express()
+        const expressApp = express()
 
-        server.applyMiddleware({ app })
+        apolloServer.applyMiddleware({ app: expressApp })
 
-        app.listen({ port: mergedConfig.port }, () =>
-          api.logger.info('server_listening', {
+        expressApp.listen({ port: mergedConfig.port }, () =>
+          serverLogger.info('listening', {
             host: 'localhost',
             port: mergedConfig.port,
           })

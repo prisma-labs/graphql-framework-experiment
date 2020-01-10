@@ -10,6 +10,7 @@ import { logger } from '../../utils/logger'
 import { createWatcher } from '../../watcher'
 import { arg, Command, isError } from '../helpers'
 
+const mylogger = logger.child('dev')
 const log = pog.sub('cli:dev')
 
 const DEV_ARGS = {
@@ -116,7 +117,7 @@ export class Dev implements Command {
     }
 
     clearConsole()
-    logger.info('Starting dev server...')
+    mylogger.info('boot')
 
     createWatcher({
       plugins: plugins.map(p => p.hooks),
@@ -131,7 +132,7 @@ export class Dev implements Command {
       onEvent: e => {
         if (state.logMode && e.event === 'restart') {
           clearConsole()
-          logger.info('restarting', { changed: e.file })
+          mylogger.info('restarting', { changed: e.file })
         }
         if (state.logMode && e.event === 'logging') {
           process.stdout.write(e.data)
