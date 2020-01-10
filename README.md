@@ -538,6 +538,8 @@ TODO
 
 TODO
 
+### `.create`
+
 ### `logger.fatal`
 
 ### `logger.error`
@@ -565,6 +567,10 @@ Extends [`Logger`](#logger)
 ### `rootLogger.setLevel`
 
 ### `rootLogger.getLevel`
+
+### `rootLogger.setPretty`
+
+### `rootLogger.isPretty`
 
 <br>
 
