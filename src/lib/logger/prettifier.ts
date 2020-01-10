@@ -1,5 +1,5 @@
 // TODO test
-import chalk from 'chalk'
+import chalk, { Chalk } from 'chalk'
 import * as Logger from './main'
 
 // Helpful unicode pickers:
@@ -49,33 +49,58 @@ const LEVEL_STYLES: Record<
   },
 }
 
+const pathSep = {
+  symbol: ':',
+  color: chalk.gray,
+}
+
+const eventSep = ':'
+
+const contextSep = {
+  symbol: '--',
+  // context = ` ${chalk.gray('⸬')}  ` + context
+  // context = ` ${chalk.gray('•')}  ` + context
+  // context = ` ${chalk.gray('⑊')}  ` + context
+  // context = ` ${chalk.gray('//')}  ` + context
+  // context = ` ${chalk.gray('—')}  ` + context
+  // context = ` ${chalk.gray('~')}  ` + context
+  // context = ` ${chalk.gray('⌀')}  ` + context
+  // context = ` ${chalk.gray('——')}  ` + context
+  // context = ` ${chalk.gray('❯')}  ` + context
+  // context = ` ${chalk.gray('->')}  ` + context
+  // context = ` ${chalk.gray('⌁')}  ` + context
+  // context = ` ${chalk.gray('⋯')}  ` + context
+  // context = ` ${chalk.gray('⌁')}  ` + context
+  // context = ` ${chalk.gray('⟛')}  ` + context
+  color: chalk.gray,
+}
+
+const contextKeyValSep = {
+  symbol: ': ',
+  color: chalk.gray,
+}
+
 export function render(rec: Logger.LogRecord): string {
   const levelLabel = Logger.LEVELS_BY_NUM[rec.level].label
-  const path = rec.path.join('.')
+  const path = rec.path.join(renderEl(pathSep))
   let context = Object.entries(rec.context)
-    .map(e => `${e[0]}${chalk.gray('=')}${e[1]}`)
+    .map(e => `${chalk.gray(e[0])}${renderEl(contextKeyValSep)}${e[1]}`)
     .join('  ')
   if (context) {
-    context = ` ${chalk.gray('--')}  ` + context
-    // context = ` ${chalk.gray('⸬')}  ` + context
-    // context = ` ${chalk.gray('•')}  ` + context
-    // context = ` ${chalk.gray('⑊')}  ` + context
-    // context = ` ${chalk.gray('//')}  ` + context
-    // context = ` ${chalk.gray('—')}  ` + context
-    // context = ` ${chalk.gray('~')}  ` + context
-    // context = ` ${chalk.gray('⌀')}  ` + context
-    // context = ` ${chalk.gray('——')}  ` + context
-    // context = ` ${chalk.gray('❯')}  ` + context
-    // context = ` ${chalk.gray('->')}  ` + context
-    // context = ` ${chalk.gray('⌁')}  ` + context
-    // context = ` ${chalk.gray('⋯')}  ` + context
-    // context = ` ${chalk.gray('⌁')}  ` + context
-    // context = ` ${chalk.gray('⟛')}  ` + context
+    context = ` ${renderEl(contextSep)}  ` + context
   }
   const style = LEVEL_STYLES[levelLabel]
   return `${style.color(
     `${style.badge} ${spaceSuffixSpan5(levelLabel)} ${path}`
-  )}${chalk.gray(':')}${rec.event} ${context}\n`
+  )}${chalk.gray(eventSep)}${rec.event} ${context}\n`
+}
+
+type El = {
+  symbol: string
+  color?: Chalk
+}
+function renderEl(el: El) {
+  return el.color ? el.color(el.symbol) : el.symbol
 }
 
 function spaceSuffixSpan5(content: string): string {

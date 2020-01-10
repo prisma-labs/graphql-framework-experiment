@@ -59,13 +59,13 @@ describe('pretty', () => {
   })
 
   it('makes logs pretty', () => {
-    logger.setPretty(true)
+    logger.setPretty(true).setLevel('trace')
     logger.fatal('foo', { lib: /see/ })
     logger.error('foo', { har: { mar: 'tek' } })
     logger.warn('foo', { bleep: [1, '2', true] })
     logger.info('foo', { qux: true })
     logger.debug('foo', { foo: 'bar' })
-    logger.trace('foo', { a: 1 })
+    logger.trace('foo', { a: 1, b: 2, c: 'three' })
     expect(output.writes).toMatchSnapshot()
   })
 })
