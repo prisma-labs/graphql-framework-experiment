@@ -338,3 +338,18 @@ Array [
 ",
 ]
 `;
+
+exports[`pretty makes logs pretty 1`] = `
+Array [
+  "[31m✕ fatal root[39m[90m:[39mfoo  [90m--[39m  lib[90m=[39m/see/
+",
+  "[31m■ error root[39m[90m:[39mfoo  [90m--[39m  har[90m=[39m[object Object]
+",
+  "[33m▲ warn  root[39m[90m:[39mfoo  [90m--[39m  bleep[90m=[39m1,2,true
+",
+  "[32m● info  root[39m[90m:[39mfoo  [90m--[39m  qux[90m=[39mtrue
+",
+  "[34m○ debug root[39m[90m:[39mfoo  [90m--[39m  foo[90m=[39mbar
+",
+]
+`;

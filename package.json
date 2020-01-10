@@ -79,6 +79,7 @@
     "prepublishOnly": "yarn -s build",
     "test": "jest --verbose --testTimeout 120000",
     "test:dev": "jest --watch --verbose --testTimeout 120000",
+    "test:unit": "jest --verbose --testRegex '.+/src/.+\\.spec\\.ts$'",
     "dev:test": "jest --watch --verbose --testRegex '.+/src/.+\\.spec\\.ts$'",
     "dev": "tsc -b -w"
   },

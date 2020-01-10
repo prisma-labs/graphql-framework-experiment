@@ -57,6 +57,17 @@ describe('pretty', () => {
     logger.info('bar')
     expect(output.writes).toMatchSnapshot()
   })
+
+  it('makes logs pretty', () => {
+    logger.setPretty(true)
+    logger.fatal('foo', { lib: /see/ })
+    logger.error('foo', { har: { mar: 'tek' } })
+    logger.warn('foo', { bleep: [1, '2', true] })
+    logger.info('foo', { qux: true })
+    logger.debug('foo', { foo: 'bar' })
+    logger.trace('foo', { a: 1 })
+    expect(output.writes).toMatchSnapshot()
+  })
 })
 
 describe('output', () => {
