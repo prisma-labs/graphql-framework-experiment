@@ -1,3 +1,4 @@
+import * as Prettifier from './prettifier'
 import createPino, * as Pino from 'pino'
 import * as Output from './output'
 import * as Lo from 'lodash'
@@ -33,12 +34,11 @@ export const LEVELS: Record<Level, { label: Level; number: LevelNum }> = {
     label: 'warn',
     number: 40,
   },
-
-  debug: {
+  info: {
     label: 'info',
     number: 30,
   },
-  info: {
+  debug: {
     label: 'debug',
     number: 20,
   },
@@ -63,67 +63,68 @@ export type Logger = {
   debug: Log
   trace: Log
   addToContext: (context: Context) => Logger // fluent
-  child: (name: string) => Logger
+  child: (name: string) => Logger // fluent
 }
 
 export type RootLogger = Logger & {
-  setLevel: (level: Level) => RootLogger
+  setLevel: (level: Level) => RootLogger // fluent
   getLevel: () => Level
+  setPretty: (pretty: boolean) => RootLogger // fluent
+  isPretty: () => boolean
 }
 
+// TODO jsDoc for each option
 export type Options = {
   output?: Output.Output
   level?: Level
   pretty?: boolean
-}
-
-import * as Prettifier from './prettifier'
-
-/**
- * The pino typings are poor and, for example, do not account for prettifier or
- * mixin field. Also see note from Matteo about not using them:
- * https://github.com/prisma-labs/graphql-santa/pull/244#issuecomment-572573672
- */
-type ActualPinoOptions = Pino.LoggerOptions & {
-  prettifier: (opts: any) => (logRec: any) => string
+  name?: string
 }
 
 /**
  * Create a root logger.
  */
 export function create(opts?: Options): RootLogger {
-  const pino = createPino(
-    {
-      prettyPrint:
+  const state = {
+    settings: {
+      pretty:
         opts?.pretty ??
         (process.env.LOG_PRETTY === 'true'
           ? true
           : process.env.LOG_PRETTY === 'false'
           ? false
           : process.stdout.isTTY),
-      prettifier: (_opts: any) => Prettifier.render,
-      messageKey: 'event',
-    } as ActualPinoOptions,
-    opts?.output ?? process.stdout
-  )
+      level:
+        opts?.level ??
+        (process.env.NODE_ENV === 'production'
+          ? LEVELS.info.label
+          : LEVELS.debug.label),
 
-  if (opts?.level) {
-    pino.level = opts.level
-  } else if (process.env.NODE_ENV === 'production') {
-    pino.level = LEVELS.info.label
-  } else {
-    pino.level = LEVELS.debug.label
-  }
+      output: opts?.output ?? process.stdout,
+    },
+  } as RootLoggerState
 
-  // TODO alt path root name is "root"... should this be configurable?
-  const { logger } = createLogger(pino, ['app'], {})
+  state.pino = doCreatePino(state.settings)
+
+  const { logger } = createLogger(state, [opts?.name ?? 'root'], {})
 
   Object.assign(logger, {
     getLevel(): Level {
-      return pino.level as Level
+      return state.settings.level
+      // return state.pino.level as Level
     },
     setLevel(level: Level): Logger {
-      pino.level = level
+      state.settings.level = level
+      state.pino.level = level
+      return logger
+    },
+    isPretty(): boolean {
+      return state.settings.pretty
+    },
+    setPretty(pretty: boolean): Logger {
+      state.settings.pretty = pretty
+      // Pino does not support updating pretty setting, so we have to recreate it
+      state.pino = doCreatePino(state.settings)
       return logger
     },
   })
@@ -131,15 +132,24 @@ export function create(opts?: Options): RootLogger {
   return logger as RootLogger
 }
 
+type RootLoggerState = {
+  settings: {
+    pretty: boolean
+    level: Level
+    output: Output.Output
+  }
+  pino: Pino.Logger
+}
+
 /**
  * Create a logger.
  */
 export function createLogger(
-  pino: Pino.Logger,
+  rootState: RootLoggerState,
   path: string[],
   parentContext: Context
 ): { logger: Logger; link: Link } {
-  const state: State = {
+  const state: LoggerState = {
     // Copy as addToContext will mutate it
     pinnedAndParentContext: Lo.cloneDeep(parentContext),
     children: [],
@@ -162,7 +172,7 @@ export function createLogger(
       ? Lo.merge({}, state.pinnedAndParentContext, localContext)
       : state.pinnedAndParentContext
 
-    pino[level]({ path, context }, event)
+    rootState.pino[level]({ path, context }, event)
   }
 
   const link: Link = {
@@ -205,7 +215,7 @@ export function createLogger(
     },
     child: (name: string): Logger => {
       const { logger: child, link } = createLogger(
-        pino,
+        rootState,
         path.concat([name]),
         state.pinnedAndParentContext
       )
@@ -224,7 +234,34 @@ type Link = {
   onNewParentContext: (newContext: Context) => void
 }
 
-type State = {
+type LoggerState = {
   pinnedAndParentContext: Context
   children: Link[]
+}
+
+/**
+ * The pino typings are poor and, for example, do not account for prettifier or
+ * mixin field. Also see note from Matteo about not using them:
+ * https://github.com/prisma-labs/graphql-santa/pull/244#issuecomment-572573672
+ */
+type ActualPinoOptions = Pino.LoggerOptions & {
+  prettifier: (opts: any) => (logRec: any) => string
+}
+
+/**
+ * Helper to create pino instance. Aside from encapsulating some hardcoded
+ * settings this is also useful because we call it from multiple places.
+ * Currently when changing in/out of pretty mode and construction time.
+ */
+function doCreatePino(settings: RootLoggerState['settings']) {
+  const pino = createPino(
+    {
+      prettyPrint: settings.pretty,
+      prettifier: (_opts: any) => Prettifier.render,
+      messageKey: 'event',
+    } as ActualPinoOptions,
+    settings.output
+  )
+  pino.level = settings.level
+  return pino
 }

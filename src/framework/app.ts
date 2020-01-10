@@ -87,7 +87,7 @@ export type App = {
  * TODO extract and improve config type
  */
 export function createApp(appConfig?: { types?: any }): App {
-  const logger = Logger.create()
+  const logger = Logger.create({ name: 'app' })
   const {
     queryType,
     mutationType,

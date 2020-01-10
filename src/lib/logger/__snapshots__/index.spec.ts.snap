@@ -319,3 +319,22 @@ Array [
   },
 ]
 `;
+
+exports[`pretty controls if logs are rendered pretty or as JSON 1`] = `
+Array [
+  Object {
+    "context": Object {},
+    "event": "foo",
+    "hostname": "Jasons-Prisma-Machine.local",
+    "level": 30,
+    "path": Array [
+      "root",
+    ],
+    "pid": 0,
+    "time": 0,
+    "v": 1,
+  },
+  "[32m● info  root[39m[90m:[39mbar 
+",
+]
+`;

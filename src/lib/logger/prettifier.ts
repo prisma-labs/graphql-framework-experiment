@@ -1,21 +1,23 @@
+// TODO test
 import chalk from 'chalk'
 import * as Logger from './main'
 
 // Helpful unicode pickers:
 // - https://jrgraphix.net/r/Unicode/2600-26FF
-// - http://www.btitze.net/ucp/
-// - https://apps.timwhitlock.info/emoji/tables/unicode
+// - https://graphemica.com/
 
 const LEVEL_STYLES: Record<
   Logger.Level,
   { badge: string; color: chalk.Chalk }
 > = {
   fatal: {
-    badge: '☠',
+    // badge: '⚰',
+    // badge: '☠',
+    badge: '✕',
     color: chalk.red,
   },
   error: {
-    badge: '✕',
+    badge: '■',
     color: chalk.red,
   },
   warn: {
@@ -23,15 +25,26 @@ const LEVEL_STYLES: Record<
     color: chalk.yellow,
   },
   info: {
-    badge: '↣',
+    // badge: '↣',
+    badge: '●',
     color: chalk.green,
   },
   debug: {
-    badge: '⌁',
+    // badge: '◒',
+    badge: '○',
+
+    // badge: '⚒',
+    // badge: '↺',
+    // badge: '↯',
+    // badge: '⟐',
     color: chalk.blue,
   },
   trace: {
-    badge: '⎌',
+    badge: '—',
+    // badge: '~',
+    // badge: '⟣',
+    // badge: '⟛',
+    // badge: '⠿',
     color: chalk.magenta,
   },
 }
@@ -44,6 +57,20 @@ export function render(rec: Logger.LogRecord): string {
     .join('  ')
   if (context) {
     context = ` ${chalk.gray('--')}  ` + context
+    // context = ` ${chalk.gray('⸬')}  ` + context
+    // context = ` ${chalk.gray('•')}  ` + context
+    // context = ` ${chalk.gray('⑊')}  ` + context
+    // context = ` ${chalk.gray('//')}  ` + context
+    // context = ` ${chalk.gray('—')}  ` + context
+    // context = ` ${chalk.gray('~')}  ` + context
+    // context = ` ${chalk.gray('⌀')}  ` + context
+    // context = ` ${chalk.gray('——')}  ` + context
+    // context = ` ${chalk.gray('❯')}  ` + context
+    // context = ` ${chalk.gray('->')}  ` + context
+    // context = ` ${chalk.gray('⌁')}  ` + context
+    // context = ` ${chalk.gray('⋯')}  ` + context
+    // context = ` ${chalk.gray('⌁')}  ` + context
+    // context = ` ${chalk.gray('⟛')}  ` + context
   }
   const style = LEVEL_STYLES[levelLabel]
   return `${style.color(
