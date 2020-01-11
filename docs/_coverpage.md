@@ -7,9 +7,8 @@
 <br>
 <br>
 
-[API](/references/api)
-[Recipes](/recipes/introduction)
-[Guide](/guides/introduction)
+[Github](https://github.com/prisma-labs/graphql-santa)
+[Docs](/README)
 
 <!-- background color -->
 

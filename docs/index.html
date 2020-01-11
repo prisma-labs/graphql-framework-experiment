@@ -24,6 +24,17 @@
       .cover h1 span {
         color: white;
       }
+      .sidebar {
+        width: 13rem;
+        padding-top: 1rem;
+      }
+      .sidebar .app-name {
+        font-size: 2rem;
+      }
+      .markdown-section h1 code {
+        color: inherit;
+        font-size: inherit;
+      }
     </style>
   </head>
 
@@ -32,13 +43,20 @@
     <script>
       window.$docsify = {
         coverpage: true,
-        name: '🎄 graphql-santa',
+        onlyCover: true,
+        name: '🎄',
         repo: 'prisma-labs/graphql-santa',
         subMaxLevel: 0,
         loadSidebar: true,
         autoHeader: true,
+        pagination: {
+          crossChapter: true,
+          crossChapterText: true,
+        },
       }
     </script>
+
     <script src="//unpkg.com/docsify/lib/docsify.min.js"></script>
+    <!-- <script src="//unpkg.com/docsify-pagination/dist/docsify-pagination.min.js"></script> -->
   </body>
 </html>

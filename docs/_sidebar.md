@@ -1,9 +1,9 @@
+- [Introduction](README)
 - Guide
-  - [Introduction](guides/introduction.md)
-  - [Databases](guides/databases.md)
-  - [Deploying](guides/deploying.md)
-  - [Logging](guides/logging.md)
+  - [Databases](guides/databases)
+  - [Deploying](guides/deploying)
+  - [Logging](guides/logging)
 - References
-  - [API](references/api.md)
+  - [API](references/api)
 - Recipes
-  - [Introduction](recipes/introduction.md)
+  - [Introduction](recipes/introduction)
