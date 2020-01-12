@@ -83,8 +83,6 @@ Framework Notes:
 
 - If your app does not call `app.server.start` then `santa` will. It is idiomatic to allow `santa` to take care of this. If you deviate, we would love to learn about your use-case!
 
-<br>
-
 ## `Server`
 
 TODO
@@ -92,8 +90,6 @@ TODO
 ### `server.start`
 
 ### `serve.stop`
-
-<br>
 
 ## `Logger`
 
@@ -117,8 +113,6 @@ TODO
 
 ### `logger.child`
 
-<br>
-
 ## `RootLogger`
 
 TODO
@@ -132,5 +126,3 @@ Extends [`Logger`](#logger)
 ### `rootLogger.setPretty`
 
 ### `rootLogger.isPretty`
-
-<br>

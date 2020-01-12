@@ -1,4 +1,6 @@
-## Logging
+## Logger
+
+[`issues`](https://github.com/prisma-labs/graphql-santa/labels/scope%2Flogger) ([`feature`](https://github.com/prisma-labs/graphql-santa/issues?q=is%3Aopen+label%3Ascope%2Flogger+label%3Atype%2Ffeature), [`bug`](https://github.com/prisma-labs/graphql-santa/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Flogger+label%3Atype%2Fbug+))
 
 Logging is an important part of most any app. It helps developers debug their apps and is often a primary means for knowing what is going on at runtime, what data is flowing through, and how so. While there are all sorts of specialized tools that can replace vanilla logging for their respective use-cases, that shouldn't discount the value of having great logs and maximizing their benefit.
 

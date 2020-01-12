@@ -11,7 +11,9 @@ Here are some of the things `santa` cares about:
 - Runtime performance
 - Integration Testing
 
-Here is what hello world looks like:
+## Hello World Example
+
+Here is what a hello world looks like:
 
 ```ts
 import { app } from 'graphql-santa'
@@ -39,32 +41,44 @@ app.objectType({
 })
 ```
 
+## Components Overview
+
 Here is a brief overview of some of the components that `santa` is made up of:
 
 - **HTTP Server**  
+  [`issues`](https://github.com/prisma-labs/graphql-santa/labels/scope%2Fserver) ([`feature`](https://github.com/prisma-labs/graphql-santa/issues?q=is%3Aopen+label%3Ascope%2Fserver+label%3Atype%2Ffeature), [`bug`](https://github.com/prisma-labs/graphql-santa/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fserver+label%3Atype%2Fbug+))
+
   This component handles recieving requests and sending responses to your clients. It is the transport layer, which GraphQL itself is actually agnostic about. `santa` has features that make it so most apps won't need to deal with this component directly.
 
   We currently use [Express](https://github.com/expressjs/express) and [Apollo Server](https://github.com/apollographql/apollo-server) but note there is an [open issue](https://github.com/prisma-labs/graphql-santa/issues/231) about adopting [`fastify-gql`](https://github.com/mcollina/fastify-gql) instead.
 
 - **GraphQL Schema**  
+  [`issues`](https://github.com/prisma-labs/graphql-santa/labels/scope%2Fgql) ([`feature`](https://github.com/prisma-labs/graphql-santa/issues?q=is%3Aopen+label%3Ascope%2Fgql+label%3Atype%2Ffeature), [`bug`](https://github.com/prisma-labs/graphql-santa/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fgql+label%3Atype%2Fbug+))
+
   This is where you model your domain, all the data that your API will accept and return, and all the various objects in the domain relate to one another (the graph part of "GraphQL").
 
   We use (and contribute to) [nexus](https://github.com/prisma-labs/nexus).
 
 - **Logger**  
+  [`issues`](https://github.com/prisma-labs/graphql-santa/labels/scope%2Flogger) ([`feature`](https://github.com/prisma-labs/graphql-santa/issues?q=is%3Aopen+label%3Ascope%2Flogger+label%3Atype%2Ffeature), [`bug`](https://github.com/prisma-labs/graphql-santa/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Flogger+label%3Atype%2Fbug+))
+
   One of the primary means for knowing what is going on at runtime, what data is flowing through, and how so. Also a workhorse of debugging and providing feedback during development.
 
   We have our own logger but write to [`pino`](https://github.com/pinojs/pino) under the hood for its performance.
 
 - **CLI**  
+  [`issues`](https://github.com/prisma-labs/graphql-santa/labels/scope%2Fcli) ([`feature`](https://github.com/prisma-labs/graphql-santa/issues?q=is%3Aopen+label%3Ascope%2Fcli+label%3Atype%2Ffeature), [`bug`](https://github.com/prisma-labs/graphql-santa/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fcli+label%3Atype%2Fbug+))
+
   Your entrypoint for running dev mode, builds, linting, and more.
 
 - **Builder**  
+  [`issues`](https://github.com/prisma-labs/graphql-santa/labels/scope%2Fbuilder) ([`feature`](https://github.com/prisma-labs/graphql-santa/issues?q=is%3Aopen+label%3Ascope%2Fbuilder+label%3Atype%2Ffeature), [`bug`](https://github.com/prisma-labs/graphql-santa/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fbuilder+label%3Atype%2Fbug+))
+
   The part where you build your app into something ready for deployment to production.
 
   We use [TypeScript](https://github.com/microsoft/TypeScript). We [plan](https://github.com/prisma-labs/graphql-santa/issues/119) to introduce a bundle step as well.
 
-### Videos
+## Videos
 
 _Development Series_
 
