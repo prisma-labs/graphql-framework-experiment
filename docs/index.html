@@ -11,6 +11,14 @@
     />
     <link rel="stylesheet" href="//unpkg.com/docsify/lib/themes/vue.css" />
     <style>
+      :root {
+        --theme-color: #42b983;
+        --secondary: #7851e2;
+      }
+      body {
+        font-size: 18px;
+        line-height: 2rem;
+      }
       .cover-main {
         /* Otherwise mobile sidebar is not on top... */
         z-index: 0 !important;
@@ -24,16 +32,65 @@
       .cover h1 span {
         color: white;
       }
+      .content {
+        left: 15rem;
+      }
+
       .sidebar {
-        width: 13rem;
+        width: 15rem;
         padding-top: 1rem;
       }
       .sidebar .app-name {
         font-size: 2rem;
       }
+      .sidebar {
+        font-weight: bold;
+      }
+      .sidebar ul li a {
+        margin: 0;
+        font-size: 15px;
+        font-weight: bold;
+      }
+      .sidebar ul li a:hover {
+        text-decoration: none;
+        /* border-right: 1px solid var(--theme-color); */
+        color: var(--theme-color);
+      }
+      .app-sub-sidebar {
+        margin-top: -0.5rem !important;
+      }
+      .app-sub-sidebar li a {
+        line-height: 1.2;
+        font-size: 0.9rem !important;
+        font-weight: bold !important;
+      }
+      .app-sub-sidebar li:before {
+        content: '⌁';
+        font-family: monospace;
+        line-height: 0.8;
+      }
+
       .markdown-section h1 code {
         color: inherit;
         font-size: inherit;
+      }
+      .markdown-section pre code {
+        font-size: 0.9rem;
+      }
+      .markdown-section a code {
+        color: var(--theme-color);
+      }
+      .markdown-section li:not(:first-child) {
+        padding-top: 0.3rem;
+      }
+
+      .token.number {
+        color: var(--theme-color);
+      }
+      .token.keyword,
+      .token.function,
+      .markdown-section code {
+        color: var(--secondary);
       }
     </style>
   </head>
@@ -46,7 +103,7 @@
         onlyCover: true,
         name: '🎄',
         repo: 'prisma-labs/graphql-santa',
-        subMaxLevel: 0,
+        subMaxLevel: 3,
         loadSidebar: true,
         autoHeader: true,
         pagination: {
@@ -57,6 +114,7 @@
     </script>
 
     <script src="//unpkg.com/docsify/lib/docsify.min.js"></script>
+    <script src="//unpkg.com/prismjs/components/prism-typescript.min.js"></script>
     <!-- <script src="//unpkg.com/docsify-pagination/dist/docsify-pagination.min.js"></script> -->
   </body>
 </html>

@@ -1,9 +1,9 @@
 - [Introduction](README)
+- [Tutorial](tutorial)
+- [Recipes](recipes)
 - Guide
   - [Databases](guides/databases)
   - [Deploying](guides/deploying)
   - [Logging](guides/logging)
 - References
   - [API](references/api)
-- Recipes
-  - [Introduction](recipes/introduction)
