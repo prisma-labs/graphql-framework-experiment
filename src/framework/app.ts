@@ -5,7 +5,7 @@ import * as fs from 'fs-jetpack'
 import { Server } from 'http'
 import * as nexus from 'nexus'
 import { typegenAutoConfig } from 'nexus/dist/core'
-import { findFile, pog, requireSchemaModules } from '../utils'
+import { findFile, logger, pog, requireSchemaModules } from '../utils'
 import { sendServerReadySignalToDevModeMaster } from './dev-mode'
 import { createNexusConfig, createNexusSingleton } from './nexus'
 import * as Plugin from './plugin'
@@ -109,6 +109,7 @@ export function createApp(appConfig?: { types?: any }): App {
 
   let httpServer: Server | null = null
   let apolloServer: ApolloServer | null = null
+  let serverRunning = false
 
   /**
    * Auto-use all runtime plugins that are installed in the project
@@ -149,6 +150,12 @@ export function createApp(appConfig?: { types?: any }): App {
        * for you. You should not normally need to call this function yourself.
        */
       async start(config: ServerOptions = {}): Promise<void> {
+        if (serverRunning) {
+          return logger.error(
+            'server.start invoked but server is already currently running'
+          )
+        }
+
         // Track the start call so that we can know in entrypoint whether to run
         // or not start for the user.
         singletonChecks.state.is_was_server_start_called = true
@@ -311,15 +318,22 @@ export function createApp(appConfig?: { types?: any }): App {
               console.log(startMessage)
             }
 
-            sendServerReadySignalToDevModeMaster()
+            serverRunning = true
             httpServer = server
+            sendServerReadySignalToDevModeMaster()
+
             return resolve()
           })
         })
       },
       async stop() {
+        if (!serverRunning) {
+          return logger.warn('server.stop invoked but not currently running')
+        }
+
         await apolloServer?.stop()
         await httpServer?.close()
+        serverRunning = false
       },
     },
   }
