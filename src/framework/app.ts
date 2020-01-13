@@ -1,25 +1,27 @@
 import { ApolloServer } from 'apollo-server-express'
+import { stripIndent, stripIndents } from 'common-tags'
 import express from 'express'
 import * as fs from 'fs-jetpack'
+import { Server } from 'http'
 import * as nexus from 'nexus'
-import * as Plugin from './plugin'
-import { requireSchemaModules, pog, findFile } from '../utils'
-import { createNexusSingleton, createNexusConfig } from './nexus'
 import { typegenAutoConfig } from 'nexus/dist/core'
-import { stripIndent, stripIndents } from 'common-tags'
+import * as Logger from '../lib/logger'
+import { pog, requireSchemaModules } from '../utils'
 import { sendServerReadySignalToDevModeMaster } from './dev-mode'
+import { createNexusConfig, createNexusSingleton } from './nexus'
+import * as Plugin from './plugin'
 import * as singletonChecks from './singleton-checks'
 
-type RequiredValue<T> = T extends null ? never : T extends void ? never : T
-
 const log = pog.sub(__filename)
+const logger = Logger.create({ name: 'app' })
+const serverLogger = logger.child('server')
 
 /**
  * The available server options to configure how your app runs its server.
  */
 type ServerOptions = {
   port?: number
-  startMessage?: (port: number) => string
+  startMessage?: (port: number) => void
   playground?: boolean
   introspection?: boolean
 }
@@ -28,12 +30,11 @@ type ServerOptions = {
  * Create a message suitable for printing to the terminal about the server
  * having been booted.
  */
-const serverStartMessage = (port: number): string => {
-  return stripIndent`
-    Your GraphQL API is now ready
-
-    GraphQL Playground: http://localhost:${port}/graphql
-  `
+const serverStartMessage = (port: number): void => {
+  serverLogger.info('listening', {
+    host: 'localhost',
+    port,
+  })
 }
 
 /**
@@ -55,19 +56,23 @@ const defaultServerOptions: Required<ServerOptions> = {
   playground: true,
 }
 
+type Request = Express.Request & { logger: Logger.Logger }
+
 // TODO plugins could augment the request
 // plugins will be able to use typegen to signal this fact
 // all places in the framework where the req object is referenced should be
 // actually referencing the typegen version, so that it reflects the req +
 // plugin augmentations type
-type ContextContributor<T extends {}> = (req: Express.Request) => T
+type ContextContributor<T extends {}> = (req: Request) => T
 
 export type App = {
   use: (plugin: Plugin.Driver) => App
+  logger: Logger.RootLogger
   addToContext: <T extends {}>(contextContributor: ContextContributor<T>) => App
   // installGlobally: () => App
   server: {
     start: (config?: ServerOptions) => Promise<void>
+    stop: () => Promise<void>
   }
   queryType: typeof nexus.queryType
   mutationType: typeof nexus.mutationType
@@ -107,11 +112,16 @@ export function createApp(appConfig?: { types?: any }): App {
 
   const contextContributors: ContextContributor<any>[] = []
 
+  let httpServer: Server | null = null
+  let apolloServer: ApolloServer | null = null
+  let serverRunning = false
+
   /**
    * Auto-use all runtime plugins that are installed in the project
    */
 
   const api: App = {
+    logger,
     // TODO bring this back pending future discussion
     // installGlobally() {
     //   installGlobally(api)
@@ -146,6 +156,12 @@ export function createApp(appConfig?: { types?: any }): App {
        * for you. You should not normally need to call this function yourself.
        */
       async start(config: ServerOptions = {}): Promise<void> {
+        if (serverRunning) {
+          return serverLogger.error(
+            'server.start invoked but server is already currently running'
+          )
+        }
+
         // Track the start call so that we can know in entrypoint whether to run
         // or not start for the user.
         singletonChecks.state.is_was_server_start_called = true
@@ -174,24 +190,23 @@ export function createApp(appConfig?: { types?: any }): App {
         // Create the Nexus config
         const nexusConfig = createNexusConfig()
 
-        // Get the context module for the app.
-        // User can provide a context module at a conventional path.
-        // Otherwise we will provide a default context module.
-        //
-        // TODO context module should have flexible contract
-        //      currently MUST return a createContext function
-        const contextPath = findFile('context.ts')
-
-        if (contextPath) {
-          nexusConfig.typegenAutoConfig!.contextType = 'Context.Context'
-          nexusConfig.typegenAutoConfig!.sources.push({
-            source: contextPath,
-            alias: 'Context',
-          })
-        }
-
         const typegenAutoConfigObject = nexusConfig.typegenAutoConfig!
         nexusConfig.typegenAutoConfig = undefined
+
+        function contextTypeContribSpecToCode(
+          ctxTypeContribSpec: Record<string, string>
+        ): string {
+          return stripIndents`
+              interface Context {
+                ${Object.entries(ctxTypeContribSpec)
+                  .map(([name, type]) => {
+                    // Quote key name to handle case of identifier-incompatible key names
+                    return `'${name}': ${type}`
+                  })
+                  .join('\n')}
+              }
+            `
+        }
 
         // Our use-case of multiple context sources seems to require a custom
         // handling of typegenConfig. Opened an issue about maybe making our
@@ -205,13 +220,13 @@ export function createApp(appConfig?: { types?: any }): App {
           config.imports.push('interface Context {}')
           config.contextType = 'Context'
 
-          // Integrate the addToContext calls
+          // Integrate user's app calls to app.addToContext
           const addToContextCallResults: string[] = process.env
             .GRAPHQL_SANTA_TYPEGEN_ADD_CONTEXT_RESULTS
             ? JSON.parse(process.env.GRAPHQL_SANTA_TYPEGEN_ADD_CONTEXT_RESULTS)
             : []
 
-          const typeDec = addToContextCallResults
+          const addToContextInterfaces = addToContextCallResults
             .map(result => {
               return stripIndents`
                 interface Context ${result}
@@ -219,7 +234,7 @@ export function createApp(appConfig?: { types?: any }): App {
             })
             .join('\n\n')
 
-          config.imports.push(typeDec)
+          config.imports.push(addToContextInterfaces)
 
           // Integrate plugin context contributions
           for (const p of plugins) {
@@ -233,18 +248,17 @@ export function createApp(appConfig?: { types?: any }): App {
               )
             }
 
-            const typeDec = stripIndents`
-              interface Context {
-                ${Object.entries(p.context.typeGen.fields)
-                  .map(([name, type]) => {
-                    return `${name}: ${type}`
-                  })
-                  .join('\n')}
-              }
-            `
-
-            config.imports.push(typeDec)
+            config.imports.push(
+              contextTypeContribSpecToCode(p.context.typeGen.fields)
+            )
           }
+
+          config.imports.push(
+            "import * as Logger from 'graphql-santa/dist/lib/logger'",
+            contextTypeContribSpecToCode({
+              logger: 'Logger.Logger',
+            })
+          )
 
           pog('built up Nexus typegenConfig: %O', config)
           return config
@@ -263,12 +277,14 @@ export function createApp(appConfig?: { types?: any }): App {
         }
 
         const schema = await makeSchema(nexusConfig)
-        const server = new ApolloServer({
+        apolloServer = new ApolloServer({
           playground: mergedConfig.playground,
           introspection: mergedConfig.introspection,
           // TODO Idea: context that provides an eager object can be hoisted out
           // of the func to improve performance.
           context: req => {
+            // TODO HACK
+            ;(req as any).logger = logger.child('request')
             const ctx = {}
 
             // Integrate context from plugins
@@ -278,18 +294,16 @@ export function createApp(appConfig?: { types?: any }): App {
               Object.assign(ctx, contextContribution)
             }
 
-            // Integrate context from app
-            if (contextPath) {
-              // TODO good feedback to user if something goes wrong
-              Object.assign(ctx, require(contextPath).createContext(req))
-            }
-
             // Integrate context from app context api
             // TODO support async; probably always supported by apollo server
             // TODO good runtime feedback to user if something goes wrong
             //
             for (const contextContributor of contextContributors) {
-              Object.assign(ctx, contextContributor(req))
+              // HACK see req mutation at this func body start
+              Object.assign(ctx, {
+                ...contextContributor((req as unknown) as Request),
+                logger: ((req as unknown) as Request).logger,
+              })
             }
 
             return ctx
@@ -297,15 +311,31 @@ export function createApp(appConfig?: { types?: any }): App {
           schema,
         })
 
-        const app = express()
+        const expressApp = express()
+        apolloServer.applyMiddleware({ app: expressApp })
 
-        server.applyMiddleware({ app })
+        return new Promise(resolve => {
+          const server = expressApp.listen(mergedConfig.port, () => {
+            mergedConfig.startMessage(mergedConfig.port)
 
-        app.listen({ port: mergedConfig.port }, () =>
-          console.log(mergedConfig.startMessage(mergedConfig.port))
-        )
+            serverRunning = true
+            httpServer = server
+            sendServerReadySignalToDevModeMaster()
 
-        sendServerReadySignalToDevModeMaster()
+            return resolve()
+          })
+        })
+      },
+      async stop() {
+        if (!serverRunning) {
+          return serverLogger.warn(
+            'server.stop invoked but not currently running'
+          )
+        }
+
+        await apolloServer?.stop()
+        await httpServer?.close()
+        serverRunning = false
       },
     },
   }
