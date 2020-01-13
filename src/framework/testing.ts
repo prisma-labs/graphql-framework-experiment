@@ -49,7 +49,7 @@ export type TestContext = {
  * })
  * ```
  */
-export async function setupTest(): Promise<TestContext> {
+export async function createTestContext(): Promise<TestContext> {
   // Guarantee that development mode features are on
   process.env.GRAPHQL_SANTA_STAGE = 'dev'
 

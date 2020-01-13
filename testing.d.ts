@@ -1,1 +1,1 @@
-export { setupTest, TestContext } from './src/framework/testing'
+export { createTestContext, TestContext } from './src/framework/testing'
