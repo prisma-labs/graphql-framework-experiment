@@ -103,10 +103,10 @@ export async function runBootstrapper(
   // github stars, and so on.
   const askDatabase = await askForDatabase()
 
-  logger.successBold('Scaffolding base project files...')
+  logger.info('Scaffolding base project files...')
   await scaffoldBaseFiles(layout, options)
 
-  logger.successBold(
+  logger.info(
     `Installing graphql-santa@${options.graphqlSantaVersion}... (this will take around ~30 seconds)`
   )
   await layout.packageManager.installDeps({ require: true })
@@ -120,7 +120,7 @@ export async function runBootstrapper(
   const deps = []
   const addDepsConfig: PackageManager.AddDepsOptions = {}
 
-  logger.successBold(
+  logger.info(
     'Installing additional deps... (this will take around ~30 seconds)'
   )
 
@@ -213,7 +213,7 @@ export async function runBootstrapper(
     // terminate this dev session, they will restart it typically with e.g. `$
     // yarn dev`. This global-graphql-santa-process-wrapping-local-graphql-santa-process
     // is unique to bootstrapping situations.
-    logger.successBold('Entering dev mode ...')
+    logger.info('Entering dev mode ...')
 
     await layout.packageManager
       .runScript('dev', {
@@ -507,8 +507,11 @@ function getPrismaPluginVersion(): string {
   let prismaPluginVersion: string
   if (process.env.GRAPHQL_SANTA_PLUGIN_PRISMA_VERSION) {
     logger.warn(
-      'found GRAPHQL_SANTA_PLUGIN_PRISMA_VERSION with value %s. This is only expected if you are actively developing on graphql-santa right now',
-      process.env.GRAPHQL_SANTA_PLUGIN_PRISMA_VERSION
+      'found GRAPHQL_SANTA_PLUGIN_PRISMA_VERSION defined. This is only expected if you are actively developing on graphql-santa right now',
+      {
+        GRAPHQL_SANTA_PLUGIN_PRISMA_VERSION:
+          process.env.GRAPHQL_SANTA_PLUGIN_PRISMA_VERSION,
+      }
     )
     prismaPluginVersion = process.env.GRAPHQL_SANTA_PLUGIN_PRISMA_VERSION
   } else {

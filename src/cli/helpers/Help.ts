@@ -5,7 +5,7 @@ import chalk from 'chalk'
  */
 export function unknownCommand(helpTemplate: string, cmd: string): HelpError {
   return new HelpError(
-    `\n${chalk.bold.red(`!`)} Unknown command "${cmd}"\n${helpTemplate}`,
+    `\n${chalk.bold.red(`!`)} Unknown command "${cmd}"\n${helpTemplate}`
   )
 }
 

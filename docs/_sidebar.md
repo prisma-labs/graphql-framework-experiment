@@ -1,7 +1,14 @@
-- [Introduction](/)
-- Guides
-  - [Databases](guides/databases.md)
-  - [Deploying](guides/deploying.md)
-  - [Logging](guides/logging.md)
+- [Introduction](README)
+- [Tutorial](tutorial)
+- [Recipes](recipes)
+  <!-- - Guide
+    - [Databases](guides/databases)
+    - [Deploying](guides/deploying)
+    - [Logging](guides/logging) -->
 - References
-  - [API](references/api.md)
+  - [API](references/api)
+  - [CLI](references/cli)
+  - [Conventions](references/conventions)
+  - [Components](references/components)
+- Ecosystem
+  - [Plugins](plugins)
