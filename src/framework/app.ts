@@ -5,21 +5,23 @@ import * as fs from 'fs-jetpack'
 import { Server } from 'http'
 import * as nexus from 'nexus'
 import { typegenAutoConfig } from 'nexus/dist/core'
-import { findFile, logger, pog, requireSchemaModules } from '../utils'
+import * as Logger from '../lib/logger'
+import { pog, requireSchemaModules } from '../utils'
 import { sendServerReadySignalToDevModeMaster } from './dev-mode'
 import { createNexusConfig, createNexusSingleton } from './nexus'
 import * as Plugin from './plugin'
 import * as singletonChecks from './singleton-checks'
-import * as Logger from '../lib/logger'
 
 const log = pog.sub(__filename)
+const logger = Logger.create({ name: 'app' })
+const serverLogger = logger.child('server')
 
 /**
  * The available server options to configure how your app runs its server.
  */
 type ServerOptions = {
   port?: number
-  startMessage?: (port: number) => string
+  startMessage?: (port: number) => void
   playground?: boolean
   introspection?: boolean
 }
@@ -28,12 +30,11 @@ type ServerOptions = {
  * Create a message suitable for printing to the terminal about the server
  * having been booted.
  */
-const serverStartMessage = (port: number): string => {
-  return stripIndent`
-    Your GraphQL API is now ready
-
-    GraphQL Playground: http://localhost:${port}/graphql
-  `
+const serverStartMessage = (port: number): void => {
+  serverLogger.info('listening', {
+    host: 'localhost',
+    port,
+  })
 }
 
 /**
@@ -89,8 +90,6 @@ export type App = {
  * TODO extract and improve config type
  */
 export function createApp(appConfig?: { types?: any }): App {
-  const logger = Logger.create({ name: 'app' })
-  const serverLogger = logger.child('server')
   const {
     queryType,
     mutationType,
@@ -158,7 +157,7 @@ export function createApp(appConfig?: { types?: any }): App {
        */
       async start(config: ServerOptions = {}): Promise<void> {
         if (serverRunning) {
-          return logger.error(
+          return serverLogger.error(
             'server.start invoked but server is already currently running'
           )
         }
@@ -317,16 +316,7 @@ export function createApp(appConfig?: { types?: any }): App {
 
         return new Promise(resolve => {
           const server = expressApp.listen(mergedConfig.port, () => {
-            serverLogger.info('listening', {
-              host: 'localhost',
-              port: mergedConfig.port,
-            })
-
-            const startMessage = mergedConfig.startMessage(mergedConfig.port)
-
-            if (startMessage.length > 0) {
-              console.log(startMessage)
-            }
+            mergedConfig.startMessage(mergedConfig.port)
 
             serverRunning = true
             httpServer = server
@@ -338,7 +328,9 @@ export function createApp(appConfig?: { types?: any }): App {
       },
       async stop() {
         if (!serverRunning) {
-          return logger.warn('server.stop invoked but not currently running')
+          return serverLogger.warn(
+            'server.stop invoked but not currently running'
+          )
         }
 
         await apolloServer?.stop()
