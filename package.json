@@ -31,7 +31,6 @@
     "get-port": "^5.1.0",
     "graphql": "^14.5.8",
     "graphql-request": "^1.8.2",
-    "ink": "^2.5.0",
     "lodash": "^4.17.15",
     "nexus": "^0.12.0-rc.5",
     "pino": "^5.15.0",
