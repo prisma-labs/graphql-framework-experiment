@@ -1,14 +1,12 @@
 - [Introduction](README)
-- [Tutorial](tutorial)
-- [Recipes](recipes)
-  <!-- - Guide
-    - [Databases](guides/databases)
-    - [Deploying](guides/deploying)
-    - [Logging](guides/logging) -->
+- Learn
+  - [By Example](learn/by-example)
+  - [By Component](learn/by-component)
+  - [Authoring Plugins](learn/authoring-plugins)
 - References
   - [API](references/api)
   - [CLI](references/cli)
   - [Conventions](references/conventions)
-  - [Components](references/components)
+  - [Recipes](references/recipes)
 - Ecosystem
-  - [Plugins](plugins)
+  - [Plugins](ecosystem/plugins)

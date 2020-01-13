@@ -74,15 +74,18 @@
 
       /* Improvements to content (markdown) */
 
-      /* [1] Keep nice left alignment of text  */
       .markdown-section code {
         font-family: Fira Code, Monaco, courier, monospace !important;
+      }
+      /* [1] Keep nice left alignment of code-text  */
+      .markdown-section h3 code:first-child {
+        margin-left: -6px;
       }
       .markdown-section br + a > code,
       .markdown-section br + code,
       .markdown-section p > a:first-child > code,
       .markdown-section p > code:first-child {
-        margin-left: -5px;
+        margin-left: -4px;
       }
       .markdown-section h1 code,
       .markdown-section h2 code,
