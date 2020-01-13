@@ -53,7 +53,6 @@
       }
       .sidebar ul li a:hover {
         text-decoration: none;
-        /* border-right: 1px solid var(--theme-color); */
         color: var(--theme-color);
       }
       .app-sub-sidebar {
@@ -73,15 +72,32 @@
         line-height: 0.8;
       }
 
-      .markdown-section h1 code {
+      /* Improvements to content (markdown) */
+
+      /* [1] Keep nice left alignment of text  */
+      .markdown-section code {
+        font-family: Fira Code, Monaco, courier, monospace !important;
+      }
+      .markdown-section br + a > code,
+      .markdown-section br + code,
+      .markdown-section p > a:first-child > code,
+      .markdown-section p > code:first-child {
+        margin-left: -5px;
+      }
+      .markdown-section h1 code,
+      .markdown-section h2 code,
+      .markdown-section h3 code {
         color: inherit;
         font-size: inherit;
       }
       .markdown-section pre code {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
+      }
+      .markdown-section p a:hover {
+        opacity: 0.8;
       }
       .markdown-section a code {
-        color: var(--theme-color);
+        color: inherit;
       }
       .markdown-section li:not(:first-child) {
         padding-top: 0.3rem;
@@ -89,6 +105,17 @@
       .markdown-section h2 {
         margin-top: 2.5em !important;
       }
+      .markdown-section p {
+        line-height: 1.6;
+      }
+      .markdown-section strong > em {
+        color: inherit;
+      }
+      .markdown-section p:first-child {
+        margin-top: 0;
+      }
+
+      /* Improvements to code blocks */
 
       .token.number {
         color: var(--theme-color);
@@ -103,6 +130,11 @@
 
   <body>
     <div id="app"></div>
+    <script
+      src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+      integrity="sha256-pasqAKBDmFT4eHoN2ndd6lN370kFiGUFyTiUHWhU7k8="
+      crossorigin="anonymous"
+    ></script>
     <script>
       window.$docsify = {
         coverpage: true,
@@ -116,9 +148,32 @@
           crossChapter: true,
           crossChapterText: true,
         },
+        markdown: {
+          renderer: {
+            // wrap text nodes inside spans otherwise they prevent
+            // first-child guard in [1] from working in all cases.
+            paragraph: x => {
+              return (
+                '<p>' +
+                $.parseHTML(x)
+                  .map(el => {
+                    return el.nodeType === 3
+                      ? $.parseHTML(`<span>${$(el).text()}</span>`)[0]
+                      : el
+                  })
+                  .map(el => {
+                    var tmp = document.createElement('div')
+                    tmp.appendChild(el)
+                    return tmp.innerHTML
+                  })
+                  .join('') +
+                '</p>'
+              )
+            },
+          },
+        },
       }
     </script>
-
     <script src="//unpkg.com/docsify/lib/docsify.min.js"></script>
     <script src="//unpkg.com/prismjs/components/prism-typescript.min.js"></script>
     <!-- <script src="//unpkg.com/docsify-pagination/dist/docsify-pagination.min.js"></script> -->

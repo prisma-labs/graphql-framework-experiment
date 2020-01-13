@@ -1,7 +1,5 @@
 ## Add Prisma
 
-Prisma Framework is a next-generation developer-centric tool chain focused on making the data layer easy. In turn, `graphql-santa` makes it easy to integrate Prisma Framework into your app.
-
 1. Install the prisma plugin
 
    ```

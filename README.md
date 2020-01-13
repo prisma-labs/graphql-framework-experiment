@@ -46,6 +46,8 @@ We currently use [docsifyjs/docsify](https://github.com/docsifyjs/docsify). We d
 
 - There is no build step
 - Commits to master will trigger deployment (via `gh-pages`, no ci/cd on our part)
+- Navigation is manually managed in `_sidebar.md`
+- Cover page is managed in `_coverpage.md`
 
 <br>
 

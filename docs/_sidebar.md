@@ -10,3 +10,5 @@
   - [CLI](references/cli)
   - [Conventions](references/conventions)
   - [Components](references/components)
+- Ecosystem
+  - [Plugins](plugins)
