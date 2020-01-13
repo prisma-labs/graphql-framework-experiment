@@ -8,8 +8,6 @@ import * as Layout from '../framework/layout'
 import { stripIndent } from 'common-tags'
 import * as PackageManager from '../utils/package-manager'
 
-const log = pog.sub('cli')
-
 process.on('uncaughtException', e => {
   console.error(e)
 })
@@ -43,7 +41,7 @@ async function guardNotGlobalCLIWithLocalProject(
         Please use the graphql-santa CLI for this project:
 
             ${packageManager.renderRunBin(
-              'graphql-santa ' + process.argv.slice(2)
+              'graphql-santa ' + process.argv.slice(2).join(' ')
             )}
       `)
   }
