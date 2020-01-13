@@ -1,24 +1,27 @@
 import { ApolloServer } from 'apollo-server-express'
+import { stripIndent, stripIndents } from 'common-tags'
 import express from 'express'
 import * as fs from 'fs-jetpack'
+import { Server } from 'http'
 import * as nexus from 'nexus'
-import * as Plugin from './plugin'
-import { requireSchemaModules, pog, findFile } from '../utils'
-import { createNexusSingleton, createNexusConfig } from './nexus'
 import { typegenAutoConfig } from 'nexus/dist/core'
-import { stripIndent, stripIndents } from 'common-tags'
-import { sendServerReadySignalToDevModeMaster } from './dev-mode'
-import * as singletonChecks from './singleton-checks'
 import * as Logger from '../lib/logger'
+import { pog, requireSchemaModules } from '../utils'
+import { sendServerReadySignalToDevModeMaster } from './dev-mode'
+import { createNexusConfig, createNexusSingleton } from './nexus'
+import * as Plugin from './plugin'
+import * as singletonChecks from './singleton-checks'
 
 const log = pog.sub(__filename)
+const logger = Logger.create({ name: 'app' })
+const serverLogger = logger.child('server')
 
 /**
  * The available server options to configure how your app runs its server.
  */
 type ServerOptions = {
   port?: number
-  startMessage?: (port: number) => string
+  startMessage?: (port: number) => void
   playground?: boolean
   introspection?: boolean
 }
@@ -27,12 +30,11 @@ type ServerOptions = {
  * Create a message suitable for printing to the terminal about the server
  * having been booted.
  */
-const serverStartMessage = (port: number): string => {
-  return stripIndent`
-    Your GraphQL API is now ready
-
-    GraphQL Playground: http://localhost:${port}/graphql
-  `
+const serverStartMessage = (port: number): void => {
+  serverLogger.info('listening', {
+    host: 'localhost',
+    port,
+  })
 }
 
 /**
@@ -70,6 +72,7 @@ export type App = {
   // installGlobally: () => App
   server: {
     start: (config?: ServerOptions) => Promise<void>
+    stop: () => Promise<void>
   }
   queryType: typeof nexus.queryType
   mutationType: typeof nexus.mutationType
@@ -87,8 +90,6 @@ export type App = {
  * TODO extract and improve config type
  */
 export function createApp(appConfig?: { types?: any }): App {
-  const logger = Logger.create({ name: 'app' })
-  const serverLogger = logger.child('server')
   const {
     queryType,
     mutationType,
@@ -110,6 +111,10 @@ export function createApp(appConfig?: { types?: any }): App {
   plugins.push(...Plugin.loadAllRuntimePluginsFromPackageJsonSync())
 
   const contextContributors: ContextContributor<any>[] = []
+
+  let httpServer: Server | null = null
+  let apolloServer: ApolloServer | null = null
+  let serverRunning = false
 
   /**
    * Auto-use all runtime plugins that are installed in the project
@@ -151,6 +156,12 @@ export function createApp(appConfig?: { types?: any }): App {
        * for you. You should not normally need to call this function yourself.
        */
       async start(config: ServerOptions = {}): Promise<void> {
+        if (serverRunning) {
+          return serverLogger.error(
+            'server.start invoked but server is already currently running'
+          )
+        }
+
         // Track the start call so that we can know in entrypoint whether to run
         // or not start for the user.
         singletonChecks.state.is_was_server_start_called = true
@@ -266,7 +277,7 @@ export function createApp(appConfig?: { types?: any }): App {
         }
 
         const schema = await makeSchema(nexusConfig)
-        const apolloServer = new ApolloServer({
+        apolloServer = new ApolloServer({
           playground: mergedConfig.playground,
           introspection: mergedConfig.introspection,
           // TODO Idea: context that provides an eager object can be hoisted out
@@ -301,17 +312,30 @@ export function createApp(appConfig?: { types?: any }): App {
         })
 
         const expressApp = express()
-
         apolloServer.applyMiddleware({ app: expressApp })
 
-        expressApp.listen({ port: mergedConfig.port }, () =>
-          serverLogger.info('listening', {
-            host: 'localhost',
-            port: mergedConfig.port,
-          })
-        )
+        return new Promise(resolve => {
+          const server = expressApp.listen(mergedConfig.port, () => {
+            mergedConfig.startMessage(mergedConfig.port)
 
-        sendServerReadySignalToDevModeMaster()
+            serverRunning = true
+            httpServer = server
+            sendServerReadySignalToDevModeMaster()
+
+            return resolve()
+          })
+        })
+      },
+      async stop() {
+        if (!serverRunning) {
+          return serverLogger.warn(
+            'server.stop invoked but not currently running'
+          )
+        }
+
+        await apolloServer?.stop()
+        await httpServer?.close()
+        serverRunning = false
       },
     },
   }
