@@ -27,6 +27,8 @@ export function createWorkspace(config: Options): Workspace {
     // In case of a cache hit where we manually debugged the directory or
     // somehow else it changed.
     await gitReset(ws.git)
+    // HACK without this the santa bin is missing because its a diff undone by the reset
+    ws.run('yarn --force', { require: true })
   })
 
   afterEach(async () => {
@@ -109,7 +111,7 @@ async function doCreateWorkspace(config: Options): Promise<Workspace> {
       ),
     ])
 
-    run('yarn')
+    run('yarn', { require: true })
     await gitRepo(git)
   }
 

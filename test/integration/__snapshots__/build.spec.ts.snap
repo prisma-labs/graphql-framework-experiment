@@ -181,3 +181,36 @@ Object {
   "type": "dir",
 }
 `;
+
+exports[`exits 1 if app does not type check 1`] = `
+Object {
+  "command": "yarn -s santa build",
+  "error": [Error: The following command failed to complete successfully:
+
+    yarn -s santa build
+
+It ended with this exit code:
+
+    1
+
+This underlying error occured (null = none occured):
+
+    null
+
+It received signal (null = no signal received):
+
+    null
+
+It output on stderr (null = not spawned in pipe mode):
+
+    error Command "santa" not found.
+
+
+It output on stdout (null = not spawned in pipe mode):],
+  "exitCode": 1,
+  "signal": null,
+  "stderr": "error Command \\"santa\\" not found.
+",
+  "stdout": "",
+}
+`;

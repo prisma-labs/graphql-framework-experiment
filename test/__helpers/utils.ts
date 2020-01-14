@@ -1,6 +1,6 @@
 import { SimpleGit } from 'simple-git/promise'
 import stripAnsi from 'strip-ansi'
-import { RunResult } from '../../src/utils'
+import { SuccessfulRunResult } from '../../src/utils'
 
 export async function gitReset(git: SimpleGit) {
   await Promise.all([
@@ -15,10 +15,13 @@ export async function gitRepo(git: SimpleGit) {
   await git.raw(['commit', '--allow-empty', '--message', 'initial commit'])
 }
 
-export function withoutColors(result: RunResult): RunResult {
+export function withoutColors(
+  result: SuccessfulRunResult
+): SuccessfulRunResult {
   return {
-    status: result.status,
-    stdout: stripAnsi(result.stdout),
-    stderr: stripAnsi(result.stderr),
+    ...result,
+    exitCode: result.exitCode,
+    stdout: stripAnsi(result.stdout!),
+    stderr: stripAnsi(result.stderr!),
   }
 }
