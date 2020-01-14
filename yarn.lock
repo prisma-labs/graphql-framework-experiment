@@ -1988,7 +1988,7 @@ dotenv@*, dotenv@^8.2.0:
   resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-8.2.0.tgz#97e619259ada750eea3e4ea3e26bceea5424b16a"
   integrity sha512-8sJ78ElpbDJBHNeBzUbUVLsqKdccaa/BXF1uPTw3GrvQTBgrQrtObr2mUrE38vzYd8cEv+m/JBfDLioYcfXoaw==
 
-dripip@^0.2.9:
+dripip@0.2.9:
   version "0.2.9"
   resolved "https://registry.yarnpkg.com/dripip/-/dripip-0.2.9.tgz#946ece69be338438f5ca2d20fb0c7feb89fa5c7a"
   integrity sha512-TW54RDceb7x58j0AyeDGVqtucW3sjSPW+8aaMpzvsrScZ0VFdy+M3YIhGHBIcEkMPgLrP6cJ7HH+KGC63lRK2w==
