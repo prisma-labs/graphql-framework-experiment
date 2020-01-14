@@ -19,14 +19,16 @@ export type FileWatcher = chokidar.FSWatcher & {
 export type FileWatcherEventCallback = (
   eventName: 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir',
   path: string,
+  restart: any,
   stats?: fs.Stats
 ) => void
 
-type FileWatcherOptions = chokidar.WatchOptions & {
-  onAll?: FileWatcherEventCallback
-}
+type FileWatcherOptions = chokidar.WatchOptions
+const SILENT_EVENTS = ['add', 'addDir'] as const
 
-const SILENT_EVENTS = ['add', 'addDir']
+function isSilentEvent(event: any): event is typeof SILENT_EVENTS[number] {
+  return SILENT_EVENTS.includes(event)
+}
 
 export function watch(
   paths: string | ReadonlyArray<string>,
@@ -41,20 +43,40 @@ export function watch(
     watcher.add(path)
   }
 
-  if (options && options.onAll) {
-    watcher.on('all', (event, file, stats) => {
-      if (
-        programmaticallyWatchedFiles.includes(file) &&
-        SILENT_EVENTS.includes(event)
-      ) {
-        log('ignoring file addition because was added silently %s', file)
-        return
-      } else {
-        log('file watcher event "%s" originating from file/dir %s', event, file)
-      }
+  const originalOnListener = watcher.on
 
-      options.onAll!(event, file, stats)
-    })
+  const raiseIfNotIgnored = (
+    event: string,
+    file: string,
+    cb: (...args: any[]) => any
+  ) => {
+    if (programmaticallyWatchedFiles.includes(file) && isSilentEvent(event)) {
+      log('ignoring file addition because was added silently %s', file)
+      return
+    } else {
+      log('file watcher event "%s" originating from file/dir %s', event, file)
+      cb()
+    }
+  }
+
+  watcher.on = (event: string, listener: (...args: any[]) => void) => {
+    if (event === 'all') {
+      originalOnListener(event, (eventName, path, stats) => {
+        raiseIfNotIgnored(eventName, path, () => {
+          listener(eventName, path, stats)
+        })
+      })
+    } else if (isSilentEvent(event)) {
+      originalOnListener(event, (path, stats) => {
+        raiseIfNotIgnored(event, path, () => {
+          listener(path, stats)
+        })
+      })
+    } else {
+      originalOnListener(event, listener)
+    }
+
+    return watcher
   }
 
   return watcher

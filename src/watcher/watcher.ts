@@ -53,13 +53,15 @@ export function createWatcher(opts: Opts) {
   const watcher = watch([opts.layout.sourceRoot, ...pluginWatchContributions], {
     ignored: ['./node_modules', './.*', ...pluginIgnoreContributions],
     ignoreInitial: true,
-    onAll(event, file) {
-      for (const p of opts.plugins) {
-        p.dev.onFileWatcherEvent?.(event, file)
-      }
-      restartRunner(file)
-    },
     cwd: process.cwd(), // prevent globbed files and required files from being watched twice
+  })
+
+  watcher.on('all', (event, file) => {
+    for (const p of opts.plugins) {
+      p.dev.onFileWatcherEvent?.(event, file, restartRunner)
+    }
+
+    restartRunner(file)
   })
 
   watcher.on('error', error => {
