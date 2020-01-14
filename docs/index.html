@@ -19,6 +19,9 @@
         font-size: 18px;
         line-height: 2rem;
       }
+
+      /* Cover page */
+
       .cover-main {
         /* Otherwise mobile sidebar is not on top... */
         z-index: 0 !important;
@@ -32,9 +35,20 @@
       .cover h1 span {
         color: white;
       }
+      .cover pre {
+        background-color: hsla(100, 100%, 0%, 0.2);
+        max-width: 275px;
+        text-align: center;
+        color: white;
+        border-radius: 10px;
+        padding: 0.5em;
+        margin: 0 auto;
+      }
       .content {
         left: 15rem;
       }
+
+      /* Sidebar */
 
       .sidebar {
         width: 15rem;
@@ -71,6 +85,7 @@
         font-family: monospace;
         line-height: 0.8;
       }
+      .sidebar-nav
 
       /* Improvements to content (markdown) */
 
@@ -128,6 +143,9 @@
       .markdown-section code {
         color: var(--secondary);
       }
+      .cli-prompt {
+        user-select: none;
+      }
     </style>
   </head>
 
@@ -140,9 +158,23 @@
     ></script>
     <script>
       window.$docsify = {
+        plugins: [
+          function(hook) {
+            hook.doneEach(() => {
+              document.querySelector('.app-name-link').href = '#/README'
+              document
+                .querySelectorAll("pre[data-lang='cli'] code")
+                .forEach(el => {
+                  el.innerHTML =
+                    '<span class="cli-prompt">$ </span>' +
+                    el.textContent.replace('$ ', '')
+                })
+            })
+          },
+        ],
         auto2top: true,
         coverpage: true,
-        onlyCover: true,
+        // onlyCover: true,
         name: '🎄',
         repo: 'prisma-labs/graphql-santa',
         subMaxLevel: 3,
@@ -180,6 +212,5 @@
     </script>
     <script src="//unpkg.com/docsify/lib/docsify.min.js"></script>
     <script src="//unpkg.com/prismjs/components/prism-typescript.min.js"></script>
-    <!-- <script src="//unpkg.com/docsify-pagination/dist/docsify-pagination.min.js"></script> -->
   </body>
 </html>
