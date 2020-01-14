@@ -81,8 +81,14 @@ export type App = {
   enumType: typeof nexus.enumType
   scalarType: typeof nexus.scalarType
   unionType: typeof nexus.unionType
+  interfaceType: typeof nexus.interfaceType
   intArg: typeof nexus.intArg
   stringArg: typeof nexus.stringArg
+  booleanArg: typeof nexus.booleanArg
+  floatArg: typeof nexus.floatArg
+  idArg: typeof nexus.idArg
+  extendType: typeof nexus.extendType
+  extendInputType: typeof nexus.extendInputType
 }
 
 /**
@@ -98,8 +104,14 @@ export function createApp(appConfig?: { types?: any }): App {
     enumType,
     scalarType,
     unionType,
+    interfaceType,
     intArg,
     stringArg,
+    booleanArg,
+    floatArg,
+    idArg,
+    extendType,
+    extendInputType,
     makeSchema,
   } = createNexusSingleton()
 
@@ -148,8 +160,14 @@ export function createApp(appConfig?: { types?: any }): App {
     enumType,
     scalarType,
     unionType,
+    interfaceType,
     intArg,
     stringArg,
+    booleanArg,
+    floatArg,
+    idArg,
+    extendType,
+    extendInputType,
     server: {
       /**
        * Start the server. If you do not call this explicitly then graphql-santa will
