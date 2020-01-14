@@ -15,6 +15,7 @@ https://prisma-labs.github.io/graphql-santa
 
 - [Code Architecture](#code-architecture)
 - [Testing](#testing)
+- [Releasing](#releasing)
 - [Website](#website)
 - [Workflow Tips](#workflow-tips)
 
@@ -93,6 +94,17 @@ Integration tests rely on `npm link`. This means those integration tests cannot 
 The reason we do not use `yarn link` is that yarn [does not symlink the bin into local node_modules](https://github.com/yarnpkg/yarn/issues/5713).
 
 <br>
+
+### Releasing
+
+We use [`dripip`](https://github.com/prisma-labs/dripip) to make releases. There is currently a bug preventing the yarn release scripts from working. So `yarn release:preview` etc. will fail. The issue is being tracked as upstream [here](https://github.com/prisma-labs/dripip/issues/23). For now, you need to run from `node_modules/.bin` manually:
+
+```
+$ node_modules/.bin/dripip preview
+$ node_modules/.bin/dripip stable
+```
+
+CI/CD preview releases are not setup yet.
 
 ### Website
 
