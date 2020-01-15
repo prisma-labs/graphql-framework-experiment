@@ -100,7 +100,9 @@ class PrismaTestEnvironment extends NodeEnvironment {
 module.exports = PrismaTestEnvironment
 ```
 
-3. Create a `jest.config.ts` file in the root of your project directory and add the following content
+3. Edit the `connectionString` if needed to your own postgres testing instance
+
+4. Create a `jest.config.ts` file in the root of your project directory and add the following content
 
 ```js
 const { join } = require('path')
@@ -111,8 +113,6 @@ module.exports = {
   testEnvironment: join(__dirname, 'prisma-test-environment.js'),
 }
 ```
-
-4. Edit the `connectionString` if needed to your own postgres testing instance
 
 5. Edit your `schema.prisma` file to use an environment variable
 
