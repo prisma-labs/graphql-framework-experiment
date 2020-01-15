@@ -52,7 +52,7 @@
     "@types/prompts": "2.0.3",
     "doctoc": "1.4.0",
     "dripip": "0.2.9",
-    "husky": "4.0.9",
+    "husky": "4.0.10",
     "jest": "24.9.0",
     "prettier": "1.19.1",
     "pretty-quick": "2.0.1",
