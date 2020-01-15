@@ -201,3 +201,25 @@ Compiling ...
 ",
 }
 `;
+
+exports[`exits 1 if typegen errors out 1`] = `
+Object {
+  "command": "yarn -s santa build",
+  "exitCode": 1,
+  "signal": null,
+  "stderr": "Error: 
+      Nexus artifact generation failed with exit code \\"1\\". The following stderr was captured:
+
+          app.ts(1,12): error TS1110: Type expected.
+app.ts(1,14): error TS1134: Variable declaration expected.
+
+
+    
+    at Object.generateArtifacts (/Users/jasonkuhrt/projects/prisma-labs/graphql-santa/dist/utils/artifact-generation.js:21:23)
+    at parse (/Users/jasonkuhrt/projects/prisma-labs/graphql-santa/dist/cli/commands/build.js:55:23)
+    at async main (/Users/jasonkuhrt/projects/prisma-labs/graphql-santa/dist/cli/index.js:77:20)
+",
+  "stdout": "Generating Nexus artifacts ...
+",
+}
+`;

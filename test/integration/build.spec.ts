@@ -7,6 +7,13 @@ const ws = createWorkspace({
   name: 'build',
 })
 
+it('exits 1 if typegen errors out', () => {
+  ws.fs.write('app.ts', `const foo :: "bar"`)
+  const result = ws.run('yarn -s santa build')
+  delete result.error
+  expect(result).toMatchSnapshot()
+})
+
 it('exits 1 if app does not type check', () => {
   ws.fs.write('app.ts', `const foo: number =  "bar"`)
   const result = ws.run('yarn -s santa build')
