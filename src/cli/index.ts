@@ -93,7 +93,9 @@ async function main(): Promise<number> {
     console.error(result)
     return 1
   } else {
-    console.log(result)
+    if (result !== undefined) {
+      console.log(result)
+    }
     return 0
   }
 }
