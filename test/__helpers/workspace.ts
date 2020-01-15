@@ -27,10 +27,8 @@ export function createWorkspace(config: Options): Workspace {
     // In case of a cache hit where we manually debugged the directory or
     // somehow else it changed.
     await gitReset(ws.git)
-  })
-
-  afterEach(async () => {
-    await gitReset(ws.git)
+    // HACK without this the santa bin is missing because its a diff undone by the reset
+    ws.run('yarn --force', { require: true })
   })
 
   return ws
@@ -50,7 +48,7 @@ async function doCreateWorkspace(config: Options): Promise<Workspace> {
   const yarnLockHash = jetpack.inspect('yarn.lock', {
     checksum: 'md5',
   })!.md5
-  const ver = '5'
+  const ver = '6'
   const testVer = config.cacheVersion ?? '1'
   const currentGitBranch = (
     await createGit().raw(['rev-parse', '--abbrev-ref', 'HEAD'])
@@ -109,7 +107,7 @@ async function doCreateWorkspace(config: Options): Promise<Workspace> {
       ),
     ])
 
-    run('yarn')
+    run('yarn', { require: true })
     await gitRepo(git)
   }
 

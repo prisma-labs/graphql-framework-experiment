@@ -1,4 +1,20 @@
-1. For this tutorial we will use Prisma with PostgreSQL. Install PostgreSQL if needed and then get its connection URL. Check out [our postgresql setup guide](#setup-a-local-postgresql) if unsure.
+<!-- ## 1. Start a New Project
+
+## 2. Create API Objects
+
+## 3. Add Tests
+
+## 4. Persist Data
+
+## 5. secure Data
+
+## 6. Add Integration Tests
+
+## 7. Deploy to Production
+
+## 8. ... -->
+
+For this tutorial we will use Prisma with PostgreSQL. Install PostgreSQL if needed and then get its connection URL. Check out [our postgresql setup guide](references/recipes?id=local-postgresql) if unsure.
 
 1. Kick off a new project. Say yes (`y`) to the prisma option. Choose `PostgreSQL` for the db option.
 

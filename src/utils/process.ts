@@ -58,7 +58,7 @@ export function runSync(
       })
     : null
 
-  if (options?.require === true) {
+  if (error && options?.require === true) {
     throw error
   } else {
     return { command: commandRaw, stderr, stdout, exitCode, signal, error }
@@ -177,6 +177,7 @@ export const createRunner = (cwd: string): typeof runSync => {
     return runSync(cmd, { ...opts, cwd })
   }
 }
+
 function createCommandError({
   command,
   signal,

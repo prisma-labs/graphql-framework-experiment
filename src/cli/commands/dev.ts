@@ -48,7 +48,7 @@ export class Dev implements Command {
     clearConsole()
     mylogger.info('boot')
 
-    createWatcher({
+    await createWatcher({
       plugins: plugins.map(p => p.hooks),
       layout,
       transpileOnly: true,

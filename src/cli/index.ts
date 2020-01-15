@@ -16,6 +16,10 @@ process.on('unhandledRejection', e => {
   console.error(e)
 })
 
+main().then(exitCode => {
+  process.exit(exitCode)
+})
+
 /**
  * Check that this graphql-santa process is being run from a locally installed
  * veresion unless there is local project or the local project does not have
@@ -88,16 +92,10 @@ async function main(): Promise<number> {
   } else if (isError(result)) {
     console.error(result)
     return 1
+  } else {
+    if (result !== undefined) {
+      console.log(result)
+    }
+    return 0
   }
-
-  if (result) {
-    console.log(result)
-  }
-
-  return 0
 }
-
-/**
- * Run our program
- */
-main()

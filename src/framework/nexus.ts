@@ -30,42 +30,38 @@ export function createNexusSingleton() {
     return schema
   }
 
-  function objectType<TypeName extends string>(
-    config: nexus.core.NexusObjectTypeConfig<TypeName>
-  ): nexus.core.NexusObjectTypeDef<TypeName> {
+  const objectType: typeof nexus.objectType = config => {
     const typeDef = nexus.objectType(config)
     __types.push(typeDef)
     return typeDef
   }
 
-  function inputObjectType<TypeName extends string>(
-    config: nexus.core.NexusInputObjectTypeConfig<TypeName>
-  ): nexus.core.NexusInputObjectTypeDef<TypeName> {
+  const inputObjectType: typeof nexus.inputObjectType = config => {
     const typeDef = nexus.inputObjectType(config)
     __types.push(typeDef)
     return typeDef
   }
 
-  function scalarType<TypeName extends string>(
-    options: nexus.core.NexusScalarTypeConfig<TypeName>
-  ): nexus.core.NexusScalarTypeDef<TypeName> {
-    const typeDef = nexus.scalarType(options)
+  const scalarType: typeof nexus.scalarType = config => {
+    const typeDef = nexus.scalarType(config)
     __types.push(typeDef)
     return typeDef
   }
 
-  function enumType<TypeName extends string>(
-    config: nexus.core.EnumTypeConfig<TypeName>
-  ): nexus.core.NexusEnumTypeDef<TypeName> {
+  const enumType: typeof nexus.enumType = config => {
     const typeDef = nexus.enumType(config)
     __types.push(typeDef)
     return typeDef
   }
 
-  function unionType<TypeName extends string>(
-    config: nexus.core.NexusUnionTypeConfig<TypeName>
-  ): nexus.core.NexusUnionTypeDef<TypeName> {
+  const unionType: typeof nexus.unionType = config => {
     const typeDef = nexus.unionType(config)
+    __types.push(typeDef)
+    return typeDef
+  }
+
+  const interfaceType: typeof nexus.interfaceType = config => {
+    const typeDef = nexus.interfaceType(config)
     __types.push(typeDef)
     return typeDef
   }
@@ -82,8 +78,23 @@ export function createNexusSingleton() {
     return typeDef
   }
 
+  const extendType: typeof nexus.extendType = config => {
+    const typeDef = nexus.extendType(config)
+    __types.push(typeDef)
+    return typeDef
+  }
+
+  const extendInputType: typeof nexus.extendInputType = config => {
+    const typeDef = nexus.extendInputType(config)
+    __types.push(typeDef)
+    return typeDef
+  }
+
   const intArg = nexus.intArg
   const stringArg = nexus.stringArg
+  const idArg = nexus.idArg
+  const floatArg = nexus.floatArg
+  const booleanArg = nexus.booleanArg
 
   return {
     queryType,
@@ -91,10 +102,16 @@ export function createNexusSingleton() {
     objectType,
     inputObjectType,
     unionType,
+    interfaceType,
     enumType,
     scalarType,
     intArg,
     stringArg,
+    idArg,
+    floatArg,
+    booleanArg,
+    extendType,
+    extendInputType,
     makeSchema,
   }
 }
