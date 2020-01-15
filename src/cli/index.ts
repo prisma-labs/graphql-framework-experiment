@@ -17,6 +17,7 @@ process.on('unhandledRejection', e => {
 })
 
 main().then(exitCode => {
+  console.log(1)
   process.exit(exitCode)
 })
 
