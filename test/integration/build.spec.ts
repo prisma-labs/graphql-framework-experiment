@@ -7,7 +7,7 @@ const ws = createWorkspace({
   name: 'build',
 })
 
-it.only('exits 1 if app does not type check', () => {
+it('exits 1 if app does not type check', () => {
   ws.fs.write('app.ts', `const foo: number =  "bar"`)
   const result = ws.run('yarn -s santa build')
   delete result.error
