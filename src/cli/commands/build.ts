@@ -38,7 +38,7 @@ const BUILD_ARGS = {
 }
 
 export class Build implements Command {
-  async parse(argv: string[]) {
+  async run(argv: string[]) {
     const args = arg(argv, BUILD_ARGS)
 
     if (isError(args)) {

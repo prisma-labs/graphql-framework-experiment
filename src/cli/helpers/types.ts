@@ -2,7 +2,7 @@
  * Command interface
  */
 export interface Command {
-  parse(argv: string[]): Promise<void | string | Error>
+  run(argv: string[]): Promise<void | string | Error>
 }
 
 /**

@@ -8,14 +8,10 @@ const ws = createWorkspace({
 })
 
 it.only('exits 1 if app does not type check', () => {
-  ws.fs.write(
-    'app.ts',
-    `
-      const foo: number =  "bar"
-    `
-  )
+  ws.fs.write('app.ts', `const foo: number =  "bar"`)
   const result = ws.run('yarn -s santa build')
-  expect(result).toMatchSnapshot()
+  expect(result.exitCode).toEqual(1)
+  expect(result.stdout).toMatchSnapshot()
 })
 
 it('can build with just a schema module', () => {

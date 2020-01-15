@@ -5,7 +5,7 @@ export class Version implements Command {
     return new Version()
   }
   private constructor() {}
-  async parse(argv: string[]) {
+  async run(argv: string[]) {
     const packageJson = require('../../../package.json')
 
     return `${packageJson.name}@${packageJson.version}`

@@ -5,7 +5,7 @@ import { generateArtifacts, logger } from '../../utils'
 import { Command } from '../helpers'
 
 export class Generate implements Command {
-  async parse() {
+  async run() {
     const layout = await Layout.create()
     const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
 

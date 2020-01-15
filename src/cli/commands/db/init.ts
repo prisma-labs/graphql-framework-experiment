@@ -3,7 +3,7 @@ import { arg, Command, isError } from '../../helpers'
 import { generateHelpForCommand } from '../../helpers/helpers'
 
 export class DbInit implements Command {
-  async parse(argv: string[]) {
+  async run(argv: string[]) {
     const args = arg(argv, {
       '--stage': String,
       '--help': Boolean,

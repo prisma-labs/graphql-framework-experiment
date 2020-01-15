@@ -18,7 +18,7 @@ import { Command } from '../../helpers'
 const log = pog.sub('cli:create:app')
 
 export default class App implements Command {
-  async parse() {
+  async run() {
     await run()
   }
 }

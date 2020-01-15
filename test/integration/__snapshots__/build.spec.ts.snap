@@ -183,34 +183,15 @@ Object {
 `;
 
 exports[`exits 1 if app does not type check 1`] = `
-Object {
-  "command": "yarn -s santa build",
-  "error": [Error: The following command failed to complete successfully:
+"Generating Nexus artifacts ...
+Compiling ...
+Error: [96mapp.ts[0m:[93m1[0m:[93m7[0m - [91merror[0m[90m TS2322: [0mType '\\"bar\\"' is not assignable to type 'number'.
 
-    yarn -s santa build
+[7m1[0m const foo: number =  \\"bar\\"
+[7m [0m [91m      ~~~[0m
 
-It ended with this exit code:
-
-    1
-
-This underlying error occured (null = none occured):
-
-    null
-
-It received signal (null = no signal received):
-
-    null
-
-It output on stderr (null = not spawned in pipe mode):
-
-    error Command "santa" not found.
-
-
-It output on stdout (null = not spawned in pipe mode):],
-  "exitCode": 1,
-  "signal": null,
-  "stderr": "error Command \\"santa\\" not found.
-",
-  "stdout": "",
-}
+    at Object.compile (/Users/jasonkuhrt/projects/prisma-labs/graphql-santa/dist/utils/tsc.js:107:15)
+    at run (/Users/jasonkuhrt/projects/prisma-labs/graphql-santa/dist/cli/commands/build.js:66:17)
+    at async main (/Users/jasonkuhrt/projects/prisma-labs/graphql-santa/dist/cli/index.js:77:20)
+"
 `;

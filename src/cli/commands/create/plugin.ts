@@ -13,7 +13,7 @@ import { Command } from '../../helpers'
 const log = pog.sub('cli:create:plugin')
 
 export default class Plugin implements Command {
-  async parse() {
+  async run() {
     logger.info('Scaffolding a graphql-santa plugin')
 
     const pluginName = await askUserPluginName()

@@ -73,7 +73,7 @@ function buildCommandsEntry(
     // Easy workaround for now is to keep all reference nodes at the bottom of
     // their respective namespace...!
     return createCommandRef(cmd, parent)
-  } else if (typeof cmd.parse === 'function') {
+  } else if (typeof cmd.run === 'function') {
     return createConcreteCommand(cmd as Command, parent)
   } else if (typeof cmd === 'object') {
     return buildCommandsSubTree(cmd as CommandsLayout, parent)
@@ -101,7 +101,7 @@ export class CLI implements Command {
 
   // TODO setup stop at positional option, have each sub-command parse in turn
   // https://github.com/zeit/arg#stopatpositional
-  async parse(argv: string[]) {
+  async run(argv: string[]) {
     const args = arg(argv, {
       '--help': Boolean,
       '-h': '--help',
@@ -114,7 +114,7 @@ export class CLI implements Command {
     }
 
     if (args['--version']) {
-      return Version.new().parse(argv)
+      return Version.new().run(argv)
     }
 
     if (args['--help']) {
@@ -140,32 +140,34 @@ export class CLI implements Command {
       targettedCommand = nextCommandNode
     }
 
-    // resolve and run the invocation path
-
+    // Resolve the runner
+    let run: null | Function = null
     switch (targettedCommand.type) {
       case 'concrete_command':
-        return targettedCommand.value.parse(args._)
+        run = targettedCommand.value.run
+        break
       case 'command_reference':
-        return targettedCommand.value.commandPointer.value.parse(args._)
+        run = targettedCommand.value.commandPointer.value.run
+        break
       case 'command_namespace':
         const nsDefault = lookupCommand('__default', targettedCommand)
         // When no sub-command given display help or the default sub-command if
         // registered
-        if (nsDefault !== undefined) {
-          if (nsDefault.type === 'concrete_command') {
-            return nsDefault.value.parse(args._)
-          }
-          if (nsDefault.type === 'command_reference') {
-            return nsDefault.value.commandPointer.value.parse(args._)
-          }
+        if (nsDefault === undefined) {
+          // TODO should return command help, rather than assuming root help
+          return this.help()
+        } else if (nsDefault.type === 'concrete_command') {
+          run = nsDefault.value.run
+        } else if (nsDefault.type === 'command_reference') {
+          run = nsDefault.value.commandPointer.value.run
+        } else {
           throw new Error(
             `Attempt to run namespace default failed because was not a command or reference to a command. Was: ${nsDefault}`
           )
-        } else {
-          // TODO should return ns help, rather than assuming root help
-          return this.help()
         }
     }
+
+    return run(args._).catch((e: Error) => e) // treat error like Either type
   }
 
   // help function
