@@ -49,7 +49,7 @@ export function createWatcher(opts: Opts): Promise<void> {
     const pluginIgnoreContributions = opts.plugins.reduce(
       (patterns, p) =>
         patterns.concat(
-          p.dev.addToWatcherSettings.core?.ignoreFilePatterns ?? []
+          p.dev.addToWatcherSettings.listeners?.app?.ignoreFilePatterns ?? []
         ),
       [] as string[]
     )
@@ -85,8 +85,10 @@ export function createWatcher(opts: Opts): Promise<void> {
     for (const p of opts.plugins) {
       if (p.dev.onFileWatcherEvent) {
         const isMatchedByPluginListener = createPathMatcher({
-          toMatch: p.dev.addToWatcherSettings.plugin?.allowFilePatterns,
-          toIgnore: p.dev.addToWatcherSettings.plugin?.ignoreFilePatterns,
+          toMatch:
+            p.dev.addToWatcherSettings.listeners?.plugin?.allowFilePatterns,
+          toIgnore:
+            p.dev.addToWatcherSettings.listeners?.plugin?.ignoreFilePatterns,
         })
 
         watcher.on('all', (event, file, stats) => {
