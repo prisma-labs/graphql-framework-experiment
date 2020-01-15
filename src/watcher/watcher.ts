@@ -14,171 +14,176 @@ const log = pog.sub('cli:dev:watcher')
 /**
  * Entrypoint into the watcher system.
  */
-export function createWatcher(opts: Opts) {
-  const cfg = cfgFactory(opts)
+export function createWatcher(opts: Opts): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const cfg = cfgFactory(opts)
 
-  compiler.init(opts)
-  compiler.stop = stopRunner
+    compiler.init(opts)
+    compiler.stop = stopRunner
 
-  // Run ./dedupe.js as preload script
-  if (cfg.dedupe) process.env.NODE_DEV_PRELOAD = __dirname + '/dedupe'
+    // Run ./dedupe.js as preload script
+    if (cfg.dedupe) process.env.NODE_DEV_PRELOAD = __dirname + '/dedupe'
 
-  //
-  // Setup State
-  //
+    //
+    // Setup State
+    //
 
-  // Create a file watcher
+    // Create a file watcher
 
-  // TODO watch for changes to tsconfig and take correct action
-  // TODO watch for changes to package json and take correct action (imagine
-  // there could be graphql-santa config in there)
-  // TODO restart should take place following npm install/remove yarn
-  // add/remove/install etc.
-  // TODO need a way to test file matching given patterns. Hard to get right,
-  // right now, and feedback loop sucks. For instance allow to find prisma
-  // schema anywhere except in migrations ignore it, that is hard right now.
+    // TODO watch for changes to tsconfig and take correct action
+    // TODO watch for changes to package json and take correct action (imagine
+    // there could be graphql-santa config in there)
+    // TODO restart should take place following npm install/remove yarn
+    // add/remove/install etc.
+    // TODO need a way to test file matching given patterns. Hard to get right,
+    // right now, and feedback loop sucks. For instance allow to find prisma
+    // schema anywhere except in migrations ignore it, that is hard right now.
 
-  const pluginWatchContributions = opts.plugins.reduce(
-    (patterns, p) =>
-      patterns.concat(p.dev.addToSettings.watchFilePatterns || []),
-    [] as string[]
-  )
+    const pluginWatchContributions = opts.plugins.reduce(
+      (patterns, p) =>
+        patterns.concat(p.dev.addToSettings.watchFilePatterns || []),
+      [] as string[]
+    )
 
-  const pluginIgnoreContributions = opts.plugins.reduce(
-    (patterns, p) =>
-      patterns.concat(p.dev.addToSettings.ignoreFilePatterns || []),
-    [] as string[]
-  )
+    const pluginIgnoreContributions = opts.plugins.reduce(
+      (patterns, p) =>
+        patterns.concat(p.dev.addToSettings.ignoreFilePatterns || []),
+      [] as string[]
+    )
 
-  const watcher = watch([opts.layout.sourceRoot, ...pluginWatchContributions], {
-    ignored: ['./node_modules', './.*', ...pluginIgnoreContributions],
-    ignoreInitial: true,
-    onAll(event, file) {
-      for (const p of opts.plugins) {
-        p.dev.onFileWatcherEvent?.(event, file)
+    const watcher = watch(
+      [opts.layout.sourceRoot, ...pluginWatchContributions],
+      {
+        ignored: ['./node_modules', './.*', ...pluginIgnoreContributions],
+        ignoreInitial: true,
+        onAll(event, file) {
+          for (const p of opts.plugins) {
+            p.dev.onFileWatcherEvent?.(event, file)
+          }
+          restartRunner(file)
+        },
+        cwd: process.cwd(), // prevent globbed files and required files from being watched twice
       }
-      restartRunner(file)
-    },
-    cwd: process.cwd(), // prevent globbed files and required files from being watched twice
-  })
+    )
 
-  watcher.on('error', error => {
-    console.error('file watcher encountered an error: %j', error)
-  })
-
-  watcher.on('ready', () => {
-    log('file watcher is ready')
-  })
-
-  // Create a mutable runner
-  let runner = startRunnerDo()
-
-  // Create some state to dedupe restarts. For example a rapid succession of
-  // file changes will not trigger restart multiple times while the first
-  // invocation was still running to completion.
-  let runnerRestarting = false
-
-  // Relay SIGTERM & SIGINT to the runner process tree
-  //
-  process.on('SIGTERM', () => {
-    log('process got SIGTERM')
-    stopRunnerOnBeforeExit().then(() => {
-      process.exit()
+    watcher.on('error', error => {
+      console.error('file watcher encountered an error: %j', error)
     })
-  })
 
-  process.on('SIGINT', () => {
-    log('process got SIGINT')
-    stopRunnerOnBeforeExit().then(() => {
-      process.exit()
+    watcher.on('ready', () => {
+      log('file watcher is ready')
     })
-  })
 
-  function startRunnerDo(): Process {
-    return startRunner(opts, cfg, watcher, {
-      onError: willTerminate => {
-        stopRunner(runner, willTerminate)
-      },
-    })
-  }
+    // Create a mutable runner
+    let runner = startRunnerDo()
 
-  function stopRunnerOnBeforeExit() {
-    if (runner.exited) return Promise.resolve()
+    // Create some state to dedupe restarts. For example a rapid succession of
+    // file changes will not trigger restart multiple times while the first
+    // invocation was still running to completion.
+    let runnerRestarting = false
 
-    // TODO maybe we should be a timeout here so that child process hanging
-    // will never prevent graphql-santa dev from exiting nicely.
-    return sendSigterm(runner)
-      .then(() => {
-        log('sigterm to runner process tree completed')
+    // Relay SIGTERM & SIGINT to the runner process tree
+    //
+    process.on('SIGTERM', () => {
+      log('process got SIGTERM')
+      stopRunnerOnBeforeExit().then(() => {
+        resolve()
       })
-      .catch(error => {
-        console.warn(
-          'attempt to sigterm the runner process tree ended with error: %O',
-          error
-        )
-      })
-  }
+    })
 
-  function stopRunner(child: Process, willTerminate?: boolean) {
-    if (child.exited || child.stopping) {
-      return
+    process.on('SIGINT', () => {
+      log('process got SIGINT')
+      stopRunnerOnBeforeExit().then(() => {
+        resolve()
+      })
+    })
+
+    function startRunnerDo(): Process {
+      return startRunner(opts, cfg, watcher, {
+        onError: willTerminate => {
+          stopRunner(runner, willTerminate)
+        },
+      })
     }
-    child.stopping = true
-    child.respawn = true
-    if (child.connected === undefined || child.connected === true) {
-      child.disconnect()
-      if (willTerminate) {
-        log(
-          'Disconnecting from child. willTerminate === true so NOT sending sigterm to force runner end, assuming it will end itself.'
-        )
+
+    function stopRunnerOnBeforeExit() {
+      if (runner.exited) return Promise.resolve()
+
+      // TODO maybe we should be a timeout here so that child process hanging
+      // will never prevent graphql-santa dev from exiting nicely.
+      return sendSigterm(runner)
+        .then(() => {
+          log('sigterm to runner process tree completed')
+        })
+        .catch(error => {
+          console.warn(
+            'attempt to sigterm the runner process tree ended with error: %O',
+            error
+          )
+        })
+    }
+
+    function stopRunner(child: Process, willTerminate?: boolean) {
+      if (child.exited || child.stopping) {
+        return
+      }
+      child.stopping = true
+      child.respawn = true
+      if (child.connected === undefined || child.connected === true) {
+        child.disconnect()
+        if (willTerminate) {
+          log(
+            'Disconnecting from child. willTerminate === true so NOT sending sigterm to force runner end, assuming it will end itself.'
+          )
+        } else {
+          log(
+            'Disconnecting from child. willTerminate === false so sending sigterm to force runner end'
+          )
+          sendSigterm(child)
+            .then(() => {
+              log('sigterm to runner process tree completed')
+            })
+            .catch(error => {
+              console.warn(
+                'attempt to sigterm the runner process tree ended with error: %O',
+                error
+              )
+            })
+        }
+      }
+    }
+
+    function restartRunner(file: string) {
+      if (file === compiler.tsConfigPath) {
+        log('reinitializing TS compilation')
+        compiler.init(opts)
+      }
+
+      /* eslint-disable no-octal-escape */
+      if (cfg.clear) process.stdout.write('\\033[2J\\033[H')
+
+      compiler.compileChanged(file, opts.onEvent)
+
+      if (runnerRestarting) {
+        log('already starting')
+        return
+      }
+
+      runnerRestarting = true
+      if (!runner.exited) {
+        log('runner is still executing, will restart upon its exit')
+        runner.on('exit', () => {
+          runner = startRunnerDo()
+          runnerRestarting = false
+        })
+        stopRunner(runner)
       } else {
-        log(
-          'Disconnecting from child. willTerminate === false so sending sigterm to force runner end'
-        )
-        sendSigterm(child)
-          .then(() => {
-            log('sigterm to runner process tree completed')
-          })
-          .catch(error => {
-            console.warn(
-              'attempt to sigterm the runner process tree ended with error: %O',
-              error
-            )
-          })
-      }
-    }
-  }
-
-  function restartRunner(file: string) {
-    if (file === compiler.tsConfigPath) {
-      log('reinitializing TS compilation')
-      compiler.init(opts)
-    }
-
-    /* eslint-disable no-octal-escape */
-    if (cfg.clear) process.stdout.write('\\033[2J\\033[H')
-
-    compiler.compileChanged(file, opts.onEvent)
-
-    if (runnerRestarting) {
-      log('already starting')
-      return
-    }
-
-    runnerRestarting = true
-    if (!runner.exited) {
-      log('runner is still executing, will restart upon its exit')
-      runner.on('exit', () => {
+        log('runner already exited, probably due to a previous error')
         runner = startRunnerDo()
         runnerRestarting = false
-      })
-      stopRunner(runner)
-    } else {
-      log('runner already exited, probably due to a previous error')
-      runner = startRunnerDo()
-      runnerRestarting = false
+      }
     }
-  }
+  })
 }
 
 /**

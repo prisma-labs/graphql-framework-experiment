@@ -130,7 +130,7 @@ export function createTSProgram(
 }
 
 /**
- * compile a program
+ * compile a program. Throws an error if the program does not type check.
  */
 export function compile(
   program: ts.EmitAndSemanticDiagnosticsBuilderProgram,

@@ -89,9 +89,7 @@ We co-locate unit tests with their respective modules. These can be run via `yar
 yarn test:integration
 ```
 
-Integration tests rely on `npm link`. This means those integration tests cannot work on a machine that has not done `npm link` inside the root of the cloned repo.
-
-The reason we do not use `yarn link` is that yarn [does not symlink the bin into local node_modules](https://github.com/yarnpkg/yarn/issues/5713).
+Integration tests rely on `yarn link`. This means those integration tests cannot work on a machine that has not done `yarn link` inside the root of the cloned repo.
 
 <br>
 
