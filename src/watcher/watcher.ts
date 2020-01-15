@@ -1,13 +1,14 @@
+import anymatch from 'anymatch'
 import { fork } from 'child_process'
+import { SERVER_READY_SIGNAL } from '../framework/dev-mode'
+import { saveDataForChildProcess } from '../framework/layout'
+import { pog } from '../utils'
+import cfgFactory from './cfg'
+import { FileWatcher, watch } from './chokidar'
 import { compiler } from './compiler'
 import * as ipc from './ipc'
 import { Opts, Process } from './types'
-import cfgFactory from './cfg'
-import { pog } from '../utils'
 import { sendSigterm } from './utils'
-import { watch, FileWatcher } from './chokidar'
-import { SERVER_READY_SIGNAL } from '../framework/dev-mode'
-import { saveDataForChildProcess } from '../framework/layout'
 
 const log = pog.sub('cli:dev:watcher')
 
@@ -40,29 +41,61 @@ export function createWatcher(opts: Opts) {
 
   const pluginWatchContributions = opts.plugins.reduce(
     (patterns, p) =>
-      patterns.concat(p.dev.addToSettings.watchFilePatterns || []),
+      patterns.concat(p.dev.addToWatcherSettings.watchFilePatterns ?? []),
     [] as string[]
   )
 
   const pluginIgnoreContributions = opts.plugins.reduce(
     (patterns, p) =>
-      patterns.concat(p.dev.addToSettings.ignoreFilePatterns || []),
+      patterns.concat(
+        p.dev.addToWatcherSettings.core?.ignoreFilePatterns ?? []
+      ),
     [] as string[]
   )
+  const isIgnoredByCoreListener = createPathMatcher({
+    toMatch: pluginIgnoreContributions,
+  })
 
   const watcher = watch([opts.layout.sourceRoot, ...pluginWatchContributions], {
-    ignored: ['./node_modules', './.*', ...pluginIgnoreContributions],
+    ignored: ['./node_modules', './.*'],
     ignoreInitial: true,
     cwd: process.cwd(), // prevent globbed files and required files from being watched twice
   })
 
-  watcher.on('all', (event, file) => {
-    for (const p of opts.plugins) {
-      p.dev.onFileWatcherEvent?.(event, file, restartRunner)
+  /**
+   * Core watcher listener
+   */
+  watcher.on('all', (_event, file) => {
+    if (isIgnoredByCoreListener(file)) {
+      return log('global watcher - DID NOT match file: %s', file)
     }
 
+    log('global watcher - matched file: %s', file)
     restartRunner(file)
   })
+
+  /**
+   * Plugins watcher listeners
+   */
+  for (const p of opts.plugins) {
+    if (p.dev.onFileWatcherEvent) {
+      const isMatchedByPluginListener = createPathMatcher({
+        toMatch: p.dev.addToWatcherSettings.plugin?.allowFilePatterns,
+        toIgnore: p.dev.addToWatcherSettings.plugin?.ignoreFilePatterns,
+      })
+
+      watcher.on('all', (event, file, stats) => {
+        if (isMatchedByPluginListener(file)) {
+          log('plugin watcher - matched file: %s', file)
+          p.dev.onFileWatcherEvent!(event, file, stats, {
+            restart: restartRunner,
+          })
+        } else {
+          log('plugin watcher - DID NOT match file: %s', file)
+        }
+      })
+    }
+  }
 
   watcher.on('error', error => {
     console.error('file watcher encountered an error: %j', error)
@@ -371,4 +404,15 @@ function startRunner(
   compiler.writeReadyFile()
 
   return child
+}
+
+function createPathMatcher(params: {
+  toMatch?: string[]
+  toIgnore?: string[]
+}): (files: string | string[]) => boolean {
+  const toAllow = params?.toMatch ?? []
+  const toIgnore = params?.toIgnore?.map(pattern => '!' + pattern) ?? []
+  const matchers = [...toAllow, ...toIgnore]
+
+  return anymatch(matchers)
 }

@@ -19,8 +19,10 @@ export type FileWatcher = chokidar.FSWatcher & {
 export type FileWatcherEventCallback = (
   eventName: 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir',
   path: string,
-  restart: any,
-  stats?: fs.Stats
+  stats: fs.Stats | undefined,
+  runner: {
+    restart: (file: string) => void /* stop: () => void, start: () => void */
+  } //TODO: add stop and start methods
 ) => void
 
 type FileWatcherOptions = chokidar.WatchOptions
@@ -38,45 +40,43 @@ export function watch(
   const watcher = chokidar.watch(paths, options) as FileWatcher
   const programmaticallyWatchedFiles: string[] = []
 
+  const isFileIgnored = (event: string, file: string) => {
+    if (programmaticallyWatchedFiles.includes(file) && isSilentEvent(event)) {
+      log('ignoring file addition because was added silently %s', file)
+      return true
+    }
+
+    log('file watcher event "%s" originating from file/dir %s', event, file)
+    return false
+  }
+
+  // @ts-ignore
+  const originalOnListener = watcher.on
+
   watcher.addSilently = path => {
     programmaticallyWatchedFiles.push(path)
     watcher.add(path)
   }
 
-  const originalOnListener = watcher.on
-
-  const raiseIfNotIgnored = (
-    event: string,
-    file: string,
-    cb: (...args: any[]) => any
-  ) => {
-    if (programmaticallyWatchedFiles.includes(file) && isSilentEvent(event)) {
-      log('ignoring file addition because was added silently %s', file)
-      return
-    } else {
-      log('file watcher event "%s" originating from file/dir %s', event, file)
-      cb()
-    }
-  }
-
-  watcher.on = (event: string, listener: (...args: any[]) => void) => {
+  // Use `function` to bind originalOnListener to the right context
+  watcher.on = function(event: string, listener: (...args: any[]) => void) {
     if (event === 'all') {
-      originalOnListener(event, (eventName, path, stats) => {
-        raiseIfNotIgnored(eventName, path, () => {
+      return originalOnListener.call(this, event, (eventName, path, stats) => {
+        if (isFileIgnored(eventName, path) === false) {
           listener(eventName, path, stats)
-        })
+        }
       })
-    } else if (isSilentEvent(event)) {
-      originalOnListener(event, (path, stats) => {
-        raiseIfNotIgnored(event, path, () => {
-          listener(path, stats)
-        })
-      })
-    } else {
-      originalOnListener(event, listener)
     }
 
-    return watcher
+    if (isSilentEvent(event)) {
+      return originalOnListener.call(this, event, (path, stats) => {
+        if (isFileIgnored(event, path) === false) {
+          listener(path, stats)
+        }
+      })
+    }
+
+    return originalOnListener.call(this, event, listener)
   }
 
   return watcher
