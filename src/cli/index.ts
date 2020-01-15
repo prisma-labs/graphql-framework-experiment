@@ -1,12 +1,16 @@
 #!/usr/bin/env node
-import { CLI } from './helpers/CLI'
+import { stripIndent } from 'common-tags'
+import * as dotenv from 'dotenv'
+import { isError } from 'util'
+import * as Layout from '../framework/layout'
+import { fatal, isProcessFromProjectBin } from '../utils'
+import * as PackageManager from '../utils/package-manager'
 import * as Commands from './commands'
 import { HelpError } from './helpers'
-import { isError } from 'util'
-import { pog, fatal, isProcessFromProjectBin } from '../utils'
-import * as Layout from '../framework/layout'
-import { stripIndent } from 'common-tags'
-import * as PackageManager from '../utils/package-manager'
+import { CLI } from './helpers/CLI'
+
+// Loads env variable from .env file
+dotenv.config()
 
 process.on('uncaughtException', e => {
   console.error(e)
