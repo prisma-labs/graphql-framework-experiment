@@ -87,6 +87,7 @@ async function main(): Promise<number> {
   const result = await cli.parse(process.argv.slice(2))
 
   if (result instanceof HelpError) {
+    console.error(result.message)
     return 1
   } else if (isError(result)) {
     console.error(result)
