@@ -89,7 +89,7 @@ async function main(): Promise<number> {
   if (result instanceof HelpError) {
     return 1
   } else if (isError(result)) {
-    console.log(result)
+    console.error(result)
     return 1
   } else {
     console.log(result)
