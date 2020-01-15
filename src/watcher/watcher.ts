@@ -69,13 +69,14 @@ export function createWatcher(opts: Opts): Promise<void> {
     /**
      * Core watcher listener
      */
+    // TODO: plugin listeners can probably be merged into the core listener
     watcher.on('all', (_event, file) => {
       if (isIgnoredByCoreListener(file)) {
         return log('global watcher - DID NOT match file: %s', file)
+      } else {
+        log('global watcher - matched file: %s', file)
+        restartRunner(file)
       }
-
-      log('global watcher - matched file: %s', file)
-      restartRunner(file)
     })
 
     /**
