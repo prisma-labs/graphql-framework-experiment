@@ -26,10 +26,12 @@ export type FileWatcherEventCallback = (
 ) => void
 
 type FileWatcherOptions = chokidar.WatchOptions
-const SILENT_EVENTS = ['add', 'addDir'] as const
+const SILENTABLE_EVENTS = ['add', 'addDir'] as const
 
-function isSilentEvent(event: any): event is typeof SILENT_EVENTS[number] {
-  return SILENT_EVENTS.includes(event)
+function isSilentableEvent(
+  event: any
+): event is typeof SILENTABLE_EVENTS[number] {
+  return SILENTABLE_EVENTS.includes(event)
 }
 
 export function watch(
@@ -40,8 +42,11 @@ export function watch(
   const watcher = chokidar.watch(paths, options) as FileWatcher
   const programmaticallyWatchedFiles: string[] = []
 
-  const isFileIgnored = (event: string, file: string) => {
-    if (programmaticallyWatchedFiles.includes(file) && isSilentEvent(event)) {
+  const wasFileAddedSilently = (event: string, file: string) => {
+    if (
+      programmaticallyWatchedFiles.includes(file) &&
+      isSilentableEvent(event)
+    ) {
       log('ignoring file addition because was added silently %s', file)
       return true
     }
@@ -62,15 +67,15 @@ export function watch(
   watcher.on = function(event: string, listener: (...args: any[]) => void) {
     if (event === 'all') {
       return originalOnListener.call(this, event, (eventName, path, stats) => {
-        if (isFileIgnored(eventName, path) === false) {
+        if (wasFileAddedSilently(eventName, path) === false) {
           listener(eventName, path, stats)
         }
       })
     }
 
-    if (isSilentEvent(event)) {
+    if (isSilentableEvent(event)) {
       return originalOnListener.call(this, event, (path, stats) => {
-        if (isFileIgnored(event, path) === false) {
+        if (wasFileAddedSilently(event, path) === false) {
           listener(path, stats)
         }
       })
