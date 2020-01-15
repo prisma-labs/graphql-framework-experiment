@@ -91,8 +91,6 @@ yarn test:integration
 
 Integration tests rely on `yarn link`. This means those integration tests cannot work on a machine that has not done `yarn link` inside the root of the cloned repo.
 
-If `yarn` fails to symlink the bin, one solution can be to do `yarn build` (or `yarn dev`) in this project. Then, try to run the test(s) again.
-
 <br>
 
 ### Releasing
