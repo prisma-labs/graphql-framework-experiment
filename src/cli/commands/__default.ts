@@ -9,7 +9,7 @@ import { stripIndent } from 'common-tags'
 const log = pog.sub('cli:entrypoint')
 
 export class __Default implements Command {
-  async run() {
+  async parse() {
     log('starting')
     const projectType = await Layout.scanProjectType()
 
@@ -25,7 +25,7 @@ export class __Default implements Command {
         log(
           'detected CWD is within a graphql-santa project, delegating to dev mode'
         )
-        await new Dev().run([])
+        await new Dev().parse([])
         break
       case 'node_project':
         log(

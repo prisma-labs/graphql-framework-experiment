@@ -3,7 +3,7 @@ import { Command } from '../../../helpers'
 import { arg, generateHelpForCommand, isError } from '../../../helpers/helpers'
 
 export class DbRollback implements Command {
-  async run(argv: string[]) {
+  async parse(argv: string[]) {
     const args = arg(argv, {
       '--stage': String,
       '--help': String,

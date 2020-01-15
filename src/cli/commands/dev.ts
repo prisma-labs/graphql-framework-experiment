@@ -14,7 +14,7 @@ const DEV_ARGS = {
 }
 
 export class Dev implements Command {
-  async run(argv: string[]) {
+  async parse(argv: string[]) {
     const args = arg(argv, DEV_ARGS)
 
     if (isError(args)) {

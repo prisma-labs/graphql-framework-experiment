@@ -3,7 +3,7 @@ import { arg, Command, isError } from '../../../helpers'
 import { generateHelpForCommand } from '../../../helpers/helpers'
 
 export class DbApply implements Command {
-  async run(argv: string[]) {
+  async parse(argv: string[]) {
     const args = arg(argv, {
       '--force': Boolean,
       '-f': '--force',

@@ -4,7 +4,7 @@ import { findOrScaffoldTsConfig } from '../../utils'
 import { Command } from '../helpers'
 
 export class Doctor implements Command {
-  async run() {
+  async parse() {
     await tsconfig()
   }
 }

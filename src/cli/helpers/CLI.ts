@@ -73,7 +73,7 @@ function buildCommandsEntry(
     // Easy workaround for now is to keep all reference nodes at the bottom of
     // their respective namespace...!
     return createCommandRef(cmd, parent)
-  } else if (typeof cmd.run === 'function') {
+  } else if (typeof cmd.parse === 'function') {
     return createConcreteCommand(cmd as Command, parent)
   } else if (typeof cmd === 'object') {
     return buildCommandsSubTree(cmd as CommandsLayout, parent)
@@ -101,7 +101,7 @@ export class CLI implements Command {
 
   // TODO setup stop at positional option, have each sub-command parse in turn
   // https://github.com/zeit/arg#stopatpositional
-  async run(argv: string[]) {
+  async parse(argv: string[]) {
     const args = arg(argv, {
       '--help': Boolean,
       '-h': '--help',
@@ -114,7 +114,7 @@ export class CLI implements Command {
     }
 
     if (args['--version']) {
-      return Version.new().run(argv)
+      return Version.new().parse(argv)
     }
 
     if (args['--help']) {
@@ -144,10 +144,10 @@ export class CLI implements Command {
     let run: null | Function = null
     switch (targettedCommand.type) {
       case 'concrete_command':
-        run = targettedCommand.value.run
+        run = targettedCommand.value.parse
         break
       case 'command_reference':
-        run = targettedCommand.value.commandPointer.value.run
+        run = targettedCommand.value.commandPointer.value.parse
         break
       case 'command_namespace':
         const nsDefault = lookupCommand('__default', targettedCommand)
@@ -157,9 +157,9 @@ export class CLI implements Command {
           // TODO should return command help, rather than assuming root help
           return this.help()
         } else if (nsDefault.type === 'concrete_command') {
-          run = nsDefault.value.run
+          run = nsDefault.value.parse
         } else if (nsDefault.type === 'command_reference') {
-          run = nsDefault.value.commandPointer.value.run
+          run = nsDefault.value.commandPointer.value.parse
         } else {
           throw new Error(
             `Attempt to run namespace default failed because was not a command or reference to a command. Was: ${nsDefault}`

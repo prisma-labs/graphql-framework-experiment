@@ -3,7 +3,7 @@ import { arg, Command, isError } from '../../../helpers'
 import { generateHelpForCommand } from '../../../helpers/helpers'
 
 export class DbPlan implements Command {
-  async run(argv: string[]) {
+  async parse(argv: string[]) {
     const args = arg(argv, {
       '--name': String,
       '--stage': String,

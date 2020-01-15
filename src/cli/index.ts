@@ -84,7 +84,7 @@ async function main(): Promise<number> {
   })
 
   // parse the arguments
-  const result = await cli.run(process.argv.slice(2))
+  const result = await cli.parse(process.argv.slice(2))
 
   if (result instanceof HelpError) {
     return 1

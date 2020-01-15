@@ -2,7 +2,7 @@ import { Command } from '../../../helpers'
 import { generateHelpForCommandIndex } from '../../../helpers/helpers'
 
 export class DbDefault implements Command {
-  async run(argv: string[]) {
+  async parse(argv: string[]) {
     // TODO: ! Unknown command "--help" when running graphql-santa db migrate --help
     return this.help()
   }

@@ -2,7 +2,7 @@ import { Command } from '../../helpers'
 import { generateHelpForCommandIndex } from '../../helpers/helpers'
 
 export class DbDefault implements Command {
-  async run() {
+  async parse() {
     return this.help()
   }
 
