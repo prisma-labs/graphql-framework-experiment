@@ -40,6 +40,19 @@ We use [TypeScript](https://github.com/microsoft/TypeScript). We [plan](https://
 
 TODO
 
+## Database
+
+[`issues`](https://github.com/prisma-labs/graphql-santa/labels/scope%2Fdatabase) ([`feature`](https://github.com/prisma-labs/graphql-santa/issues?q=is%3Aopen+label%3Ascope%2Fdatabase+label%3Atype%2Ffeature), [`bug`](https://github.com/prisma-labs/graphql-santa/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fdatabase+label%3Atype%2Fbug+))
+
+### About {docsify-ignore}
+
+Many applications need to persist data, but doing so often brings on more complexity. Deployments are harder, accurate local development environments are more involved, integration tests become more complex to write and slower, ... and so on. `santa` tackles this complexity by standardizing a database driver system that makes it possible to integrate database workflows seamlessly into your project.
+
+### Features {docsify-ignore}
+
+- CLI workflows TODO
+- TestContext integration TODO
+
 ## Logger
 
 [`issues`](https://github.com/prisma-labs/graphql-santa/labels/scope%2Flogger) ([`feature`](https://github.com/prisma-labs/graphql-santa/issues?q=is%3Aopen+label%3Ascope%2Flogger+label%3Atype%2Ffeature), [`bug`](https://github.com/prisma-labs/graphql-santa/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Flogger+label%3Atype%2Fbug+))
