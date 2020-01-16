@@ -2,8 +2,8 @@
 
 1. Install the prisma plugin
 
-   ```
-   $ npm install graphql-santa-plugin-prisma
+   ```cli
+   npm install graphql-santa-plugin-prisma
    ```
 
 1. Add a `schema.prisma` file. Add a datasource. Here we're working with SQLite. Add photon.
@@ -23,14 +23,19 @@
 
 1. Initialize your database
 
-   ```
-   $ npx santa db init
+   ```cli
+   npx santa db init
    ```
 
 1. Done. Now your app has:
 
-   1. Functioning `$ santa db`
-   2. `nexus-prisma` Nexus plugin allowing e.g.:
+   1. Functioning `db` command
+
+      ```cli
+      santa db
+      ```
+
+   1. `nexus-prisma` Nexus plugin allowing e.g.:
 
       ```diff
       +++ src/schema.ts
@@ -45,7 +50,7 @@
         })
       ```
 
-   3. An instance of the generated Photon.JS client is a added to context under `photon` property, allowing e.g.:
+   1. An instance of the generated Photon.JS client is a added to context under `photon` property, allowing e.g.:
 
       ```diff
       +++ src/schema.ts
@@ -63,7 +68,7 @@
         })
       ```
 
-   4. The TypeScript types representing your Prisma models are registered as a Nexus data source. In short this enables proper typing of `parent` parameters in your resolves. They reflect the data of the correspondingly named Prisma model.
+   1. The TypeScript types representing your Prisma models are registered as a Nexus data source. In short this enables proper typing of `parent` parameters in your resolves. They reflect the data of the correspondingly named Prisma model.
 
 <br>
 
@@ -73,7 +78,7 @@ The reccommended way to run postgres locally is with docker, because it is easy 
 
 1. Start a postgres server for your app:
 
-   ```
+   ```cli
    docker run --detach --publish 5432:5432 --name 'postgres' postgres
    ```
 
@@ -138,8 +143,8 @@ If you don't want to use a docker, here are some links to alternative approaches
 
    1. Install `direnv`
 
-      ```
-      $ brew install direnv
+      ```cli
+      brew install direnv
       ```
 
    1. Hook `direnv` into your shell ([instructions](https://direnv.net/docs/hook.html))
@@ -151,7 +156,7 @@ If you don't want to use a docker, here are some links to alternative approaches
       ```
 
    1. Approve the `.envrc` file (one time, every time the envrc file changes).
-      ```
-      $ direnv allow .
+      ```cli
+      direnv allow .
       ```
    1. Done. Now when you work within your project with a shell, all your commands will be run with access to the environment variables defined in your `.envrc` file. The magic of `direnv` is that these environment variables are automatically exported to and removed from your environment based on you being within your prject directory or not.

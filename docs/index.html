@@ -13,7 +13,7 @@
     <style>
       :root {
         --theme-color: #42b983;
-        --secondary: #7851e2;
+        --theme-color-secondary: rgb(167, 94, 255);
       }
       body {
         font-size: 18px;
@@ -85,10 +85,12 @@
         font-family: monospace;
         line-height: 0.8;
       }
-      .sidebar-nav
 
       /* Improvements to content (markdown) */
 
+      .markdown-section {
+        width: 700px;
+      }
       .markdown-section code {
         font-family: Fira Code, Monaco, courier, monospace !important;
       }
@@ -154,13 +156,15 @@
       .token.number {
         color: var(--theme-color);
       }
+      .token.property,
       .token.keyword,
       .token.function,
       .markdown-section code {
-        color: var(--secondary);
+        color: var(--theme-color-secondary);
       }
       .cli-prompt {
         user-select: none;
+        color: var(--theme-color-secondary);
       }
     </style>
   </head>
@@ -182,7 +186,7 @@
                 .querySelectorAll("pre[data-lang='cli'] code")
                 .forEach(el => {
                   el.innerHTML =
-                    '<span class="cli-prompt">$ </span>' +
+                    '<span class="cli-prompt">❯ </span>' +
                     el.textContent.replace('$ ', '')
                 })
             })
