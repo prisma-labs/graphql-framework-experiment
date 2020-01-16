@@ -109,7 +109,7 @@ For this tutorial we will use Prisma with PostgreSQL. Install PostgreSQL if need
 
    Now, let's give `Earth` its moon!
 
-   ```gql
+   ```graphql
    mutation addMoonToEarth {
      updateOneWorld(
        where: { name: "Earth" }

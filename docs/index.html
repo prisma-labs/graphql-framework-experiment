@@ -135,6 +135,22 @@
 
       /* Improvements to code blocks */
 
+      .token.coord {
+        color: rgb(167, 167, 167);
+      }
+      .token.deleted {
+        background-color: rgba(255, 153, 153, 0.3);
+        color: rgb(218, 62, 0);
+        outline: 2px solid rgba(255, 153, 153, 0.3);
+        text-decoration: none;
+        /* color: white; */
+      }
+      .token.inserted {
+        background-color: rgba(96, 248, 190, 0.2);
+        color: rgba(0, 158, 97, 1);
+        outline: 2px solid rgba(56, 255, 179, 0.2);
+        border: none;
+      }
       .token.number {
         color: var(--theme-color);
       }
@@ -212,5 +228,8 @@
     </script>
     <script src="//unpkg.com/docsify/lib/docsify.min.js"></script>
     <script src="//unpkg.com/prismjs/components/prism-typescript.min.js"></script>
+    <script src="//unpkg.com/prismjs/components/prism-diff.min.js"></script>
+    <script src="//unpkg.com/prismjs/components/prism-graphql.min.js"></script>
+    <script src="//unpkg.com/prismjs/components/prism-json.min.js"></script>
   </body>
 </html>
