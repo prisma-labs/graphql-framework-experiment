@@ -12,7 +12,6 @@ import {
   fatal,
   findOrScaffoldTsConfig,
   generateArtifacts,
-  pog,
   transpileModule,
 } from '../../utils'
 import {
@@ -22,10 +21,10 @@ import {
   normalizeTarget,
   validateTarget,
 } from '../../utils/deploy-target'
-import { logger } from '../../utils/logger'
+import { rootLogger } from '../../utils/logger'
 import { arg, Command, isError } from '../helpers'
 
-const log = pog.sub('cli:build')
+const logger = rootLogger.child('builder')
 
 const BUILD_ARGS = {
   '--output': String,
@@ -78,8 +77,8 @@ export class Build implements Command {
       contextFieldTypes
     )
 
-    log('running typegen')
-    console.log('Generating Nexus artifacts ...')
+    logger.trace('running_typegen')
+    logger.info('Generating Nexus artifacts ...')
     await generateArtifacts(
       createStartModuleContent({
         internalStage: 'dev',
@@ -88,8 +87,7 @@ export class Build implements Command {
       })
     )
 
-    log('compiling app...')
-    console.log('Compiling ...')
+    logger.info('Compiling ...')
     // Recreate our program instance so that it picks up the typegen. We use
     // incremental builder type of program so that the cache from the previous
     // run of TypeScript should make re-building up this one cheap.
@@ -98,10 +96,9 @@ export class Build implements Command {
 
     await writeStartModule(args['--stage'] ?? 'production', layout, tsProgram)
 
-    console.log(
-      'graphql-santa app successfully compiled at %s',
-      layout.buildOutput
-    )
+    logger.info('graphql-santa app successfully compiled', {
+      buildOutput: layout.buildOutput,
+    })
     if (deploymentTarget) {
       logTargetPostBuildMessage(deploymentTarget)
     }
@@ -143,7 +140,7 @@ async function writeStartModule(
     `)
   }
 
-  log('transpiling start module...')
+  logger.trace('transpiling start module...')
   const startModule = transpileModule(
     createStartModuleContent({
       internalStage: 'build',
@@ -153,12 +150,12 @@ async function writeStartModule(
     }),
     tsProgram.getCompilerOptions()
   )
-  log('done')
+  logger.trace('done')
 
-  log('writing start module to disk...')
+  logger.trace('writing start module to disk...')
   await fs.writeAsync(
     fs.path(`${layout.buildOutput}/${START_MODULE_NAME}.js`),
     startModule
   )
-  log('done')
+  logger.trace('done')
 }
