@@ -1,13 +1,14 @@
 // TODO test
 import chalk, { Chalk } from 'chalk'
-import * as Logger from './main'
+import * as Logger from './logger'
+import * as Level from './level'
 
 // Helpful unicode pickers:
 // - https://jrgraphix.net/r/Unicode/2600-26FF
 // - https://graphemica.com/
 
 const LEVEL_STYLES: Record<
-  Logger.Level,
+  Level.Level,
   { badge: string; color: chalk.Chalk }
 > = {
   fatal: {
@@ -81,7 +82,7 @@ const contextKeyValSep = {
 }
 
 export function render(rec: Logger.LogRecord): string {
-  const levelLabel = Logger.LEVELS_BY_NUM[rec.level].label
+  const levelLabel = Level.LEVELS_BY_NUM[rec.level].label
   const path = rec.path.join(renderEl(pathSep))
   let context = Object.entries(rec.context)
     .map(e => `${chalk.gray(e[0])}${renderEl(contextKeyValSep)}${e[1]}`)
