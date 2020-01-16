@@ -96,7 +96,7 @@ export class Build implements Command {
 
     await writeStartModule(args['--stage'] ?? 'production', layout, tsProgram)
 
-    logger.info('graphql-santa app successfully compiled', {
+    logger.info('success', {
       buildOutput: layout.buildOutput,
     })
     if (deploymentTarget) {

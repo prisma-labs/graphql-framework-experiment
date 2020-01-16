@@ -82,19 +82,24 @@ it('makes sure a user was registered', async () => {
 })
 ```
 
-## With a database (via Prisma)
+## With a Database
 
-> Note: This assumes you have [setup a PostgreSQL database](references/recipes?id=local-postgresql). You could use any database supported by Prisma though.
+Integration testing with a databsae can add a lot of complexity to your test suite. But `santa` is in a good position to help since it knows about both test and database domains of your app. The following assumes you are using a [database-driver](/guides/databases?id=driver-system). It is _not_ about database testing _in general_.
 
-1. Install the following dev dependencies.
+Integration between `santa`'s test and database systems is young and still missing many features. Below we will cover some utilities and patterns that you can copy into your project meanwhile.
+
+> Note: This assumes you have [setup a PostgreSQL database running locally](references/recipes?id=local-postgresql). You could use any database supported by Prisma though.
+
+1. Install new development dependencies for upcoming test utilities.
 
    ```cli
-   npm install --save-dev nanoid pg jest-environment-node jest ts-jest
+   npm install --save-dev nanoid pg jest-environment-node
    ```
 
-1. Copy & paste the following jest environment into a file called `prisma-test-environment.js` at the root of your project directory.
+1. Create a specialized "jest environment" that will manage a real database for your tests to run against.
 
    ```ts
+   // santa-test-environment.js
    const { Client } = require('pg')
    const NodeEnvironment = require('jest-environment-node')
    const nanoid = require('nanoid')
@@ -143,17 +148,16 @@ it('makes sure a user was registered', async () => {
    module.exports = PrismaTestEnvironment
    ```
 
-1. Edit the `connectionString` if needed to your own postgres testing instance.
+1. Update your jest config to use your new test environment.
 
-1. Create a `jest.config.ts` file in the root of your project directory and add the following content.
-
-   ```ts
+   ```diff
+   +++ jest.config.ts
    const { join } = require('path')
 
    module.exports = {
      preset: 'ts-jest',
      rootDir: 'tests',
-     testEnvironment: join(__dirname, 'prisma-test-environment.js'),
+   + testEnvironment: join(__dirname, 'santa-test-environment.js'),
    }
    ```
 
@@ -174,7 +178,27 @@ it('makes sure a user was registered', async () => {
    POSTGRES_URL="<your-development-postgres-url>"
    ```
 
-1. Create your test.
+1. `santa` db drivers augment `TestContext['app']` with a `db` property. This can be used for example to seed your database with data at the beginning of a test suite:
+
+   ```ts
+   beforeAll(async () => {
+     await ctx.app.db.users.createOne({ ... })
+   })
+   ```
+
+1. For now, just update the `createTestContext` wrapper to integrate your app's db client:
+
+   ```diff
+   +++ santa-test-environment.js
+   afterAll(async () => {
+     await ctx.app.server.stop()
+   + await ctx.app.db.client.disconnect()
+   })
+   ```
+
+1. That's it. Despite adding a database to your integration tests, they are essentially no more complex than without a databse, which is great. Of course they will run a bit slower now.
+
+   We will cover seeding your test database with data in in the future iteration of this guide.
 
    ```ts
    // tests/user.test.ts
@@ -198,10 +222,4 @@ it('makes sure a user was registered', async () => {
      const createdUsers = await ctx.app.query(`{ users { id } }`)
      expect(createdUsers).toMatchSnapshot()
    })
-   ```
-
-1. Run it
-
-   ```cli
-   yarn jest
    ```
