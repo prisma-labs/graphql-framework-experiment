@@ -1,3 +1,3 @@
-```
-$ santa --help
+```cli
+santa --help
 ```

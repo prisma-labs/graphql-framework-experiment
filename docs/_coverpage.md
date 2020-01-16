@@ -7,7 +7,7 @@
 <br>
 
 ```cli
-$ npx graphql-santa
+npx graphql-santa
 ```
 
 <br>

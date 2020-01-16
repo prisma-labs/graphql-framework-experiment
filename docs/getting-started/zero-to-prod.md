@@ -18,8 +18,8 @@ For this tutorial we will use Prisma with PostgreSQL. Install PostgreSQL if need
 
 1. Kick off a new project. Say yes (`y`) to the prisma option. Choose `PostgreSQL` for the db option.
 
-   ```
-   $ npx graphql-santa
+   ```cli
+   npx graphql-santa
    ```
 
 1. Our Hello World schema doesn't account for information about moons, lets change that.
@@ -109,7 +109,7 @@ For this tutorial we will use Prisma with PostgreSQL. Install PostgreSQL if need
 
    Now, let's give `Earth` its moon!
 
-   ```gql
+   ```graphql
    mutation addMoonToEarth {
      updateOneWorld(
        where: { name: "Earth" }
