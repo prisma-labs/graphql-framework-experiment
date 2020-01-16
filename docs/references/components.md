@@ -53,6 +53,21 @@ Many applications need to persist data, but doing so often brings on more comple
 - CLI workflows TODO
 - TestContext integration TODO
 
+## Dev
+
+[`issues`](https://github.com/prisma-labs/graphql-santa/labels/scope%2Fdev) ([`feature`](https://github.com/prisma-labs/graphql-santa/issues?q=is%3Aopen+label%3Ascope%2Fdev+label%3Atype%2Ffeature), [`bug`](https://github.com/prisma-labs/graphql-santa/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fdev+label%3Atype%2Fbug+))
+
+### About {docsify-ignore}
+
+In development you want a variety of features that make it easy to work on and try ideas. An easy way to boot your app, perhaps useful debug features enabled, pretty logs, quick server restarts on source changes, maybe a local database, and so on.
+
+### Features {docsify-ignore}
+
+- Pluggable
+- Reboot server on source change
+- Handles TypeScript compilation
+- Handles Nexus typegen
+
 ## Logger
 
 [`issues`](https://github.com/prisma-labs/graphql-santa/labels/scope%2Flogger) ([`feature`](https://github.com/prisma-labs/graphql-santa/issues?q=is%3Aopen+label%3Ascope%2Flogger+label%3Atype%2Ffeature), [`bug`](https://github.com/prisma-labs/graphql-santa/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Flogger+label%3Atype%2Fbug+))
