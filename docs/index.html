@@ -16,7 +16,7 @@
         --theme-color-secondary: rgb(167, 94, 255);
       }
       body {
-        font-size: 18px;
+        font-size: 16px;
         line-height: 2rem;
       }
 
@@ -62,7 +62,7 @@
       }
       .sidebar ul li a {
         margin: 0;
-        font-size: 15px;
+        font-size: 0.9rem;
         font-weight: bold;
       }
       .sidebar ul li a:hover {
@@ -88,6 +88,9 @@
 
       /* Improvements to content (markdown) */
 
+      .markdown-section h5 {
+        margin-top: 3em;
+      }
       .markdown-section {
         width: 700px;
       }
@@ -95,8 +98,9 @@
         font-family: Fira Code, Monaco, courier, monospace !important;
       }
       /* [1] Keep nice left alignment of code-text  */
+      .markdown-section h2 code:first-child,
       .markdown-section h3 code:first-child {
-        margin-left: -6px;
+        margin-left: -0.2em;
       }
       .markdown-section br + a > code,
       .markdown-section br + code,

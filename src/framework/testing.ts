@@ -18,15 +18,21 @@ export function createAppClient(apiUrl: string): AppClient {
   }
 }
 
-export type TestContext = {
-  app: {
+declare global {
+  interface GraphQLSantaTestContextApp {
     query: AppClient['query']
     server: {
       start: () => Promise<void>
       stop: () => Promise<void>
     }
   }
+
+  interface GraphQLSantaTestContextRoot {
+    app: GraphQLSantaTestContextApp
+  }
 }
+
+export type TestContext = GraphQLSantaTestContextRoot
 
 /**
  * Setup a test context providing utilities to query against your GraphQL API
