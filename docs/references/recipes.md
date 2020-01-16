@@ -160,3 +160,50 @@ If you don't want to use a docker, here are some links to alternative approaches
       direnv allow .
       ```
    1. Done. Now when you work within your project with a shell, all your commands will be run with access to the environment variables defined in your `.envrc` file. The magic of `direnv` is that these environment variables are automatically exported to and removed from your environment based on you being within your prject directory or not.
+
+<br>
+
+## Integrate `createTestContext` with `jest`
+
+1. Wrap `createTestContext` so that it is integrated with the `jest` test suite lifecycle hooks:
+
+   ```ts
+   // tests/__helpers.ts
+   import { createTestContext, TestContext } from 'graphql-santa/testing'
+
+   export function createTestContext(): TestContext {
+     let ctx: TestContext
+
+     beforeAll(async () => {
+       ctx = await createTestContext()
+       await ctx.app.server.start()
+     })
+
+     afterAll(async () => {
+       await ctx.app.server.stop()
+     })
+
+     return ctx
+   }
+   ```
+
+1. Import your wrapped version into all test suites needing it:
+
+   ```ts
+   // tests/foo.spec.ts
+   import { createTestContext } from './__helpers'
+
+   const ctx = createTestContext()
+
+   it('foo', () => {
+     // use `ctx` in here
+   })
+   ```
+
+   Note that `ctx` is not usable outside of `jest` blocks (`it` `before` `after` `...`). If you try to you'll find it to be `undefined`.
+
+   ```ts
+   import { createTestContext } from './__helpers'
+
+   const { app } = createTestContext() // Error!
+   ```
