@@ -1,4 +1,4 @@
-## Add Prisma
+## Use Prisma
 
 1. Install the prisma plugin
 
@@ -70,7 +70,19 @@
 
    1. The TypeScript types representing your Prisma models are registered as a Nexus data source. In short this enables proper typing of `parent` parameters in your resolves. They reflect the data of the correspondingly named Prisma model.
 
-<br>
+## Create a Consumable Plugin
+
+1. Scaffold Your plugin project
+
+   ```cli
+   npx santa create plugin
+   ```
+
+2. Publish it
+
+   ```cli
+   yarn publish
+   ```
 
 ## Local PostgreSQL
 
@@ -91,8 +103,6 @@ The reccommended way to run postgres locally is with docker, because it is easy 
 If you don't want to use a docker, here are some links to alternative approaches:
 
 - [With Homebrew](https://wiki.postgresql.org/wiki/Homebrew)
-
-<br>
 
 ## Go to proudction
 
@@ -121,8 +131,6 @@ If you don't want to use a docker, here are some links to alternative approaches
    +++ package.json
    + "build": "santa build --deployment heroku"
    ```
-
-<br>
 
 ## Prisma + Heroku + PostgreSQL
 
@@ -160,8 +168,6 @@ If you don't want to use a docker, here are some links to alternative approaches
       direnv allow .
       ```
    1. Done. Now when you work within your project with a shell, all your commands will be run with access to the environment variables defined in your `.envrc` file. The magic of `direnv` is that these environment variables are automatically exported to and removed from your environment based on you being within your prject directory or not.
-
-<br>
 
 ## Integrate `createTestContext` with `jest`
 
