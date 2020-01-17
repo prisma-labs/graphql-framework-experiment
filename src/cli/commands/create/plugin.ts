@@ -4,7 +4,7 @@
  */
 import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
-import prompts from 'prompts'
+import * as prompts from 'prompts'
 import { pog, createGitRepository } from '../../../utils'
 import { logger } from '../../../utils/logger'
 import * as proc from '../../../utils/process'
@@ -213,7 +213,7 @@ async function askUserPluginName(): Promise<string> {
   // TODO check the npm registry to see if the name is already taken before
   // continuing.
   //
-  const { pluginName }: { pluginName: string } = await prompts({
+  const { pluginName }: { pluginName: string } = await prompts.default({
     type: 'text',
     name: 'pluginName',
     message: 'What is the name of your plugin?',

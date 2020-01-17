@@ -1,7 +1,7 @@
 import { stripIndent } from 'common-tags'
 import { Debugger } from 'debug'
 import * as fs from 'fs-jetpack'
-import prompts from 'prompts'
+import * as prompts from 'prompts'
 import { fatal, pog, run, runSync } from '../utils'
 import { logger } from '../utils/logger'
 import * as PackageManager from '../utils/package-manager'
@@ -153,7 +153,7 @@ export type Lens = {
     /**
      * Check out https://github.com/terkelg/prompts for documentation
      */
-    prompt: typeof prompts
+    prompt: typeof prompts.default
   }
 }
 
@@ -196,7 +196,7 @@ export function create(definer: Definer): DriverCreator {
         run,
         runSync,
         debug: pog.sub(`plugin:${pluginName}`),
-        prompt: prompts,
+        prompt: prompts.default,
       },
     })
 

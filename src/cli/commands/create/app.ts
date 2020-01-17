@@ -1,6 +1,6 @@
 import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
-import prompts from 'prompts'
+import * as prompts from 'prompts'
 import { PackageJson } from 'type-fest'
 import * as Layout from '../../../framework/layout'
 import * as Plugin from '../../../framework/plugin'
@@ -241,7 +241,7 @@ async function askForDatabase(): Promise<
     usePrisma,
   }: {
     usePrisma: boolean
-  } = await prompts({
+  } = await prompts.default({
     type: 'confirm',
     name: 'usePrisma',
     message: 'Do you want to use a database? (https://prisma.io)',
@@ -251,7 +251,7 @@ async function askForDatabase(): Promise<
     return { database: false }
   }
   // TODO the supported databases should come from the plugin driver...
-  let { database }: { database: Database } = await prompts({
+  let { database }: { database: Database } = await prompts.default({
     type: 'select',
     name: 'database',
     message: 'Choose a database',
@@ -282,14 +282,14 @@ async function askForDatabase(): Promise<
   // TODO: Removed temporarily until we have a more solid system to validate the uri,
   // and a textbox where we can the cursor... boohoo prompts
 
-  // let { hasURI }: { hasURI: boolean } = await prompts({
+  // let { hasURI }: { hasURI: boolean } = await prompts.default({
   //   type: 'confirm',
   //   name: 'hasURI',
   //   message: `Do you have a connection URI to connect to your ${database} database?`,
   // })
 
   // if (hasURI) {
-  //   let { connectionURI }: { connectionURI: string } = await prompts({
+  //   let { connectionURI }: { connectionURI: string } = await prompts.default({
   //     type: 'text',
   //     message: `Fill in your connection URI for ${database}`,
   //     name: 'connectionURI',
@@ -319,7 +319,7 @@ async function askForPackageManager(): Promise<
 
   type Result = { packageManagerType: PackageManager.PackageManagerType }
 
-  const result: Result = await prompts({
+  const result: Result = await prompts.default({
     name: 'packageManagerType',
     type: 'select',
     message: 'Please select which package manager you would like to use',
