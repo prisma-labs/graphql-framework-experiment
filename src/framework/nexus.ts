@@ -7,7 +7,7 @@ export function createNexusSingleton() {
   const __types: any[] = []
 
   /**
-   * Create the Nexus GraohQL Schema. If GRAPHQL_SANTA_SHOULD_AWAIT_TYPEGEN=true then the typegen
+   * Create the Nexus GraphQL Schema. If GRAPHQL_SANTA_SHOULD_AWAIT_TYPEGEN=true then the typegen
    * disk write is awaited upon.
    */
   async function makeSchema(
