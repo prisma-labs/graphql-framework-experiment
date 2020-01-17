@@ -1,7 +1,7 @@
-import createDebugger from 'debug'
-import { parse } from 'path'
+import * as Debug from 'debug'
+import * as Path from 'path'
 
-const doLog = createDebugger('graphql-santa')
+const doLog = Debug.debug('graphql-santa')
 
 export function pog(
   formatter: unknown,
@@ -24,7 +24,7 @@ export namespace pog {
    * @param component The name of this logger. Can be a file path like `__filename`.
    */
   export const sub = (component: string) => {
-    const parsed = parse(component)
-    return createDebugger(`graphql-santa:${parsed.name}`)
+    const parsed = Path.parse(component)
+    return Debug.debug(`graphql-santa:${parsed.name}`)
   }
 }

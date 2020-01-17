@@ -1,5 +1,5 @@
 import { stripIndent } from 'common-tags'
-import { Debugger } from 'debug'
+import * as Debug from 'debug'
 import * as fs from 'fs-jetpack'
 import * as prompts from 'prompts'
 import { fatal, pog, run, runSync } from '../utils'
@@ -149,7 +149,7 @@ export type Lens = {
     log: typeof logger
     runSync: typeof runSync
     run: typeof run
-    debug: Debugger
+    debug: Debug.Debugger
     /**
      * Check out https://github.com/terkelg/prompts for documentation
      */
