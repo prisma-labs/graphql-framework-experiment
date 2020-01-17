@@ -8,6 +8,7 @@ import * as PackageManager from '../utils/package-manager'
 import * as Chokidar from '../watcher/chokidar'
 import * as Layout from './layout'
 import { NexusConfig } from './nexus'
+import { TestContext } from './testing'
 
 const log = pog.sub('plugin-manager')
 
@@ -132,9 +133,18 @@ export type RuntimeContributions<C extends {} = any> = {
 
 type RuntimePlugin = () => RuntimeContributions
 
+type DeepPartial<T extends Record<string, any>> = {
+  [P in keyof T]?: T[P] extends Record<string, any> ? DeepPartial<T[P]> : T[P]
+} & { [x: string]: any }
+
+export type TestingContributions = DeepPartial<TestContext>
+
+type TestingPlugin = () => TestingContributions
+
 export type Lens = {
   runtime: CallbackRegistrer<RuntimePlugin>
   workflow: CallbackRegistrer<WorkflowDefiner>
+  testing: CallbackRegistrer<TestingPlugin>
   utils: {
     log: typeof logger
     runSync: typeof runSync
@@ -159,13 +169,16 @@ export type Driver = {
   name: string
   extendsWorkflow: boolean
   extendsRuntime: boolean
+  extendsTesting: boolean
   loadWorkflowPlugin: (layout: Layout.Layout) => WorkflowHooks
   loadRuntimePlugin: () => undefined | RuntimeContributions
+  loadTestingPlugin: () => undefined | TestingContributions
 }
 
 export function create(definer: Definer): DriverCreator {
   let maybeWorkflowPlugin: undefined | WorkflowDefiner
   let maybeRuntimePlugin: undefined | RuntimePlugin
+  let maybeTestingPlugin: undefined | TestingPlugin
 
   return pluginName => {
     definer({
@@ -174,6 +187,9 @@ export function create(definer: Definer): DriverCreator {
       },
       workflow(f) {
         maybeWorkflowPlugin = f
+      },
+      testing(f) {
+        maybeTestingPlugin = f
       },
       utils: {
         log: logger,
@@ -188,6 +204,7 @@ export function create(definer: Definer): DriverCreator {
       name: pluginName,
       extendsWorkflow: maybeWorkflowPlugin !== undefined,
       extendsRuntime: maybeRuntimePlugin !== undefined,
+      extendsTesting: maybeTestingPlugin !== undefined,
       loadWorkflowPlugin(layout) {
         const hooks: WorkflowHooks = {
           create: {},
@@ -205,7 +222,12 @@ export function create(definer: Definer): DriverCreator {
         return hooks
       },
       loadRuntimePlugin() {
+        log('loading runtime of plugin %s', pluginName)
         return maybeRuntimePlugin?.()
+      },
+      loadTestingPlugin() {
+        log('loading testing of plugin %s', pluginName)
+        return maybeTestingPlugin?.()
       },
     }
   }
@@ -389,13 +411,39 @@ export function loadAllRuntimePluginsFromPackageJsonSync(): RuntimeContributions
   return __doLoadAllRuntimePluginsFromPackageJson(plugins)
 }
 
+export async function loadAllTestingPluginsFromPackageJson(): Promise<
+  TestingContributions[]
+> {
+  const plugins = await loadAllFromPackageJson()
+
+  const testingPlugins = plugins
+    .filter(driver => driver.extendsTesting)
+    .map(driver => {
+      let testingContributions: TestingContributions
+      try {
+        testingContributions = driver.loadTestingPlugin()! // guaranteed by above filter
+      } catch (error) {
+        fatal(
+          stripIndent`
+          Error while trying to load the testing component of plugin "${driver.name}":
+          
+          ${error}
+        `
+        )
+      }
+      return testingContributions
+    })
+
+  return testingPlugins
+}
+
 /**
  * Logic shared between sync/async variants.
  */
-export function __doLoadAllRuntimePluginsFromPackageJson(
+function __doLoadAllRuntimePluginsFromPackageJson(
   plugins: Driver[]
 ): RuntimeContributions[] {
-  const workflowHooks = plugins
+  const runtimePlugins = plugins
     .filter(driver => driver.extendsRuntime)
     .map(driver => {
       let runtimeContributions: RuntimeContributions
@@ -414,5 +462,5 @@ export function __doLoadAllRuntimePluginsFromPackageJson(
       return runtimeContributions
     })
 
-  return workflowHooks
+  return runtimePlugins
 }
