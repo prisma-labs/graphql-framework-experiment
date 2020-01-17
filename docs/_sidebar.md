@@ -1,7 +1,6 @@
 - Getting Started
 
-  - [Hello World](getting-started/hello-world)
-  - [Zero to Prod](getting-started/zero-to-prod)
+  - [Tutorial](getting-started/tutorial)
 
 - Guides
 

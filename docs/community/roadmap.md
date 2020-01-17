@@ -1,1 +1,3 @@
-## TODO
+We would like to put many things here in the future, like most active issues, top-voted, current sprint info, ...
+
+For now, you can get a rough glimpse into the roadmap via the team's [backlog kanban](https://github.com/orgs/prisma-labs/projects/1).

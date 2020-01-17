@@ -2,7 +2,7 @@
 
 [`github`](https://github.com/prisma-labs/graphql-santa-plugin-prisma) [`issues`](https://github.com/prisma-labs/graphql-santa-plugin-prisma/issues)
 
-```
+```cli
 npm install graphql-santa-plugin-prisma
 ```
 
