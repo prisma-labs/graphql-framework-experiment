@@ -1,6 +1,6 @@
 import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
-import * as prompts from 'prompts'
+import prompts from 'prompts'
 import { PackageJson } from 'type-fest'
 import * as Layout from '../../../framework/layout'
 import * as Plugin from '../../../framework/plugin'
@@ -241,7 +241,7 @@ async function askForDatabase(): Promise<
     usePrisma,
   }: {
     usePrisma: boolean
-  } = await prompts.default({
+  } = await prompts({
     type: 'confirm',
     name: 'usePrisma',
     message: 'Do you want to use a database? (https://prisma.io)',
@@ -251,7 +251,7 @@ async function askForDatabase(): Promise<
     return { database: false }
   }
   // TODO the supported databases should come from the plugin driver...
-  let { database }: { database: Database } = await prompts.default({
+  let { database }: { database: Database } = await prompts({
     type: 'select',
     name: 'database',
     message: 'Choose a database',
@@ -319,7 +319,7 @@ async function askForPackageManager(): Promise<
 
   type Result = { packageManagerType: PackageManager.PackageManagerType }
 
-  const result: Result = await prompts.default({
+  const result: Result = await prompts({
     name: 'packageManagerType',
     type: 'select',
     message: 'Please select which package manager you would like to use',

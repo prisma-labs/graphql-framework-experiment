@@ -1,7 +1,7 @@
 import { stripIndent } from 'common-tags'
 import * as Debug from 'debug'
 import * as fs from 'fs-jetpack'
-import * as prompts from 'prompts'
+import prompts from 'prompts'
 import { fatal, pog, run, runSync } from '../utils'
 import { logger } from '../utils/logger'
 import * as PackageManager from '../utils/package-manager'
@@ -9,6 +9,16 @@ import * as Chokidar from '../watcher/chokidar'
 import * as Layout from './layout'
 import { NexusConfig } from './nexus'
 import { TestContext } from './testing'
+
+// We want to expose the prompts type in the plugin interface but, because we are
+// importing prompts with esModuleInterop, it would mean forcing the consumer to
+// also turn on esModuleInterop, which we do not want.
+//
+import * as Prompts from 'prompts'
+type PromptsConstructor = <T extends string = string>(
+  questions: Prompts.PromptObject<T> | Array<Prompts.PromptObject<T>>,
+  options?: Prompts.Options
+) => Promise<Prompts.Answers<T>>
 
 const log = pog.sub('plugin-manager')
 
@@ -153,7 +163,7 @@ export type Lens = {
     /**
      * Check out https://github.com/terkelg/prompts for documentation
      */
-    prompt: typeof prompts.default
+    prompt: PromptsConstructor
   }
 }
 
@@ -196,7 +206,7 @@ export function create(definer: Definer): DriverCreator {
         run,
         runSync,
         debug: pog.sub(`plugin:${pluginName}`),
-        prompt: prompts.default,
+        prompt: prompts,
       },
     })
 
