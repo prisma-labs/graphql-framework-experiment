@@ -149,3 +149,15 @@ Your entrypoint for running dev mode, builds, linting, and more.
 ### Features {docsify-ignore}
 
 TODO
+
+## Plugins
+
+[`issues`](https://github.com/prisma-labs/graphql-santa/labels/scope%2Fplugins) ([`feature`](https://github.com/prisma-labs/graphql-santa/issues?q=is%3Aopen+label%3Ascope%2Fplugins+label%3Atype%2Ffeature), [`bug`](https://github.com/prisma-labs/graphql-santa/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fplugins+label%3Atype%2Fbug+))
+
+### About {docsify-ignore}
+
+TODO
+
+### Features {docsify-ignore}
+
+TODO
