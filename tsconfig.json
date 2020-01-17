@@ -5,8 +5,7 @@
     "outDir": "dist",
     "rootDir": "src",
     "allowJs": true,
-    "resolveJsonModule": true,
-    "skipLibCheck": true
+    "resolveJsonModule": true
   },
   "include": ["src"]
 }
