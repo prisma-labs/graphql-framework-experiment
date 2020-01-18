@@ -95,14 +95,12 @@ Integration tests rely on `yarn link`. This means those integration tests cannot
 
 ### Releasing
 
-We use [`dripip`](https://github.com/prisma-labs/dripip) to make releases. There is currently a bug preventing the yarn release scripts from working. So `yarn release:preview` etc. will fail. The issue is being tracked as upstream [here](https://github.com/prisma-labs/dripip/issues/23). For now, you need to run from `node_modules/.bin` manually:
+We use [`dripip`](https://github.com/prisma-labs/dripip) to make releases. CI/CD preview releases are not setup yet.
 
 ```
-$ node_modules/.bin/dripip preview
-$ node_modules/.bin/dripip stable
+yarn -s release:preview
+yarn -s release:stable
 ```
-
-CI/CD preview releases are not setup yet.
 
 ### Website
 
