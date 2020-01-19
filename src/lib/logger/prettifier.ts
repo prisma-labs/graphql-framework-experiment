@@ -1,7 +1,7 @@
-// TODO test
 import chalk, { Chalk } from 'chalk'
 import * as Logger from './logger'
 import * as Level from './level'
+import * as utils from '../utils'
 
 // Helpful unicode pickers:
 // - https://jrgraphix.net/r/Unicode/2600-26FF
@@ -92,7 +92,7 @@ export function render(rec: Logger.LogRecord): string {
   }
   const style = LEVEL_STYLES[levelLabel]
   return `${style.color(
-    `${style.badge} ${spaceSuffixSpan5(levelLabel)} ${path}`
+    `${style.badge} ${utils.spanSpace(5, levelLabel)} ${path}`
   )}${chalk.gray(eventSep)}${rec.event} ${context}\n`
 }
 
@@ -100,31 +100,7 @@ type El = {
   symbol: string
   color?: Chalk
 }
+
 function renderEl(el: El) {
   return el.color ? el.color(el.symbol) : el.symbol
-}
-
-function spaceSuffixSpan5(content: string): string {
-  return span('padAfter', ' ', 5, content)
-}
-
-function span(
-  padSide: 'padBefore' | 'padAfter',
-  padChar: string,
-  target: number,
-  content: string
-): string {
-  if (content.length > target) {
-    return content.slice(0, target)
-  }
-  let toPadSize = target - content.length
-  while (toPadSize > 0) {
-    if (padSide === 'padAfter') {
-      content = content + padChar
-    } else if (padSide === 'padBefore') {
-      content = padChar + content
-    }
-    toPadSize--
-  }
-  return content
 }

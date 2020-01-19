@@ -48,26 +48,32 @@ https://prisma-labs.github.io/graphql-santa
 #### Layout Overview
 
 ```
-/docs         The website
-/test         Integration tests
+/docs         -- The website
+/test         -- Integration tests
 /src
-  /cli        CLI codebase
-  /framework  Runtime codebase
-  /utils      Non-discrete modules (may have state, tight coupling)
-  /lib        Discrete modules
+  /cli        -- CLI codebase
+  /framework  -- Runtime codebase
+  /utils      -- Non-discrete modules (may have state, tight coupling)
+  /lib        -- Discrete modules
 ```
 
-#### `lib/<module>` Layout
+#### `lib`
+
+The layout of a typical lib module looks like so:
 
 ```
-/index.ts        Export-only module, the public interface
-
-/index.spec.ts   Tests against the public interface. Integration in the sense
-                 that it is agnostic to the unit or units making up the lib.
-
-/*.ts            The modules making up the lib
-/*.spec.ts       Optional tests. Please prioritize `index.spec.ts`
+/lib
+  /<module-name>
+    /index.ts        -- Export-only module, the public interface
+    /index.spec.ts   -- Tests against the public interface. Integration in the sense
+                        that it is agnostic to the unit or units making up the lib.
+    /*.ts            -- The modules making up the lib
+    /*.spec.ts       -- Optional tests. Please prioritize `index.spec.ts`
 ```
+
+Be careful about lib modules depending upon one another excessively. The more complex the dependency graph the harder it _can_ become to reason about the modules. But if there is non-trivial re-use to be had and/or just a simple/clean and logical dependency then go for it.
+
+The built-in exception to this heuristic is `lib/utils` which can be thought of as a bespoke `lodash` for our lib components. Use it for small utilities, which might be shared, are very generic, and are not numerous enough to justify their own dedicated lib module. For example there is a utility to make text span a given length using given pad character.
 
 <br>
 
