@@ -66,7 +66,10 @@ register({
 
   // Listen SIGTERM and exit unless there is another listener
   process.on('SIGTERM', function() {
-    if (process.listeners('SIGTERM').length === 1) process.exit(0)
+    if (process.listeners('SIGTERM').length === 1) {
+      log('Child got SIGTERM, exiting')
+      process.exit(0)
+    }
   })
 
   if (cfg.fork) {
