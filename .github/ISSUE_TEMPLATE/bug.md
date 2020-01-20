@@ -6,10 +6,11 @@ labels: type/bug
 assignees: ''
 ---
 
-|                 |           |
-| --------------- | --------- |
-| `node` version  | `10 | 12` |
-| `santa` version | `...`     |
+|                    |           |
+| ------------------ | --------- |
+| `node` version     | `10 | 12` |
+| `santa` version    | `...`     |
+| OS and its version | `...`     |
 
 #### Description
 
