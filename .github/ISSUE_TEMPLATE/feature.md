@@ -1,10 +1,9 @@
 ---
-name: Feature request
-about: Suggest an idea for this project
+name: Feature
+about: You have an idea for a new capability or a refinement to an existing one
 title: ''
 labels: type/feature
 assignees: ''
-
 ---
 
 **Is your feature request related to a problem? Please describe.**
