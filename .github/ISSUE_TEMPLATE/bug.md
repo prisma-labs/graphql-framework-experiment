@@ -10,18 +10,13 @@ assignees: ''
 
 A one/two-liner about what the issue is.
 
-#### Versions
+#### My Environment
 
-- `node`: xxx
-- `santa`: xxx
+- `node` version:
+- `santa` version:
 
 #### Steps To Reproduce
 
-1. do this
-2. then that
-3. then that
-
-#### Workaround(s)
-
-1. Can do this for now ...
-2. Or this ...
+1. ...
+2. ...
+3. ...
