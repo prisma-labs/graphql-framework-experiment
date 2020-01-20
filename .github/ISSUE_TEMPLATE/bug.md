@@ -13,7 +13,7 @@ assignees: ''
 |                    |                      |
 | ------------------ | -------------------- |
 | repro              | [link](https://todo) |
-| `node` version     | `10 | 12`            |
+| `node` version     | `...`                |
 | `santa` version    | `...`                |
 | OS and its version | `...`                |
 
