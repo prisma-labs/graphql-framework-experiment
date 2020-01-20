@@ -6,17 +6,35 @@ labels: type/bug
 assignees: ''
 ---
 
+|                 |           |
+| --------------- | --------- |
+| `node` version  | `10 | 12` |
+| `santa` version | `...`     |
+
 #### Description
 
 A one/two-liner about what the issue is.
 
-#### My Environment
+#### Repro
 
-- `node` version:
-- `santa` version:
+I've created a repro you can checkout [here](https://todo).
 
-#### Steps To Reproduce
+The steps to repro the issue are:
 
 1. ...
 2. ...
 3. ...
+
+#### Context
+
+##### How This Issue Impacts Me
+
+...
+
+##### How I am Working Around This Issue
+
+...
+
+##### Other Details
+
+...
