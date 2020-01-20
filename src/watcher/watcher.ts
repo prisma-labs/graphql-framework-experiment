@@ -72,9 +72,9 @@ export function createWatcher(opts: Opts): Promise<void> {
     // TODO: plugin listeners can probably be merged into the core listener
     watcher.on('all', (_event, file) => {
       if (isIgnoredByCoreListener(file)) {
-        return log('global watcher - DID NOT match file: %s', file)
+        return log('global listener - DID NOT match file: %s', file)
       } else {
-        log('global watcher - matched file: %s', file)
+        log('global listener - matched file: %s', file)
         restartRunner(file)
       }
     })
@@ -93,12 +93,12 @@ export function createWatcher(opts: Opts): Promise<void> {
 
         watcher.on('all', (event, file, stats) => {
           if (isMatchedByPluginListener(file)) {
-            log('plugin watcher - matched file: %s', file)
+            log('plugin listener - matched file: %s', file)
             p.dev.onFileWatcherEvent!(event, file, stats, {
               restart: restartRunner,
             })
           } else {
-            log('plugin watcher - DID NOT match file: %s', file)
+            log('plugin listener - DID NOT match file: %s', file)
           }
         })
       }
@@ -140,6 +140,7 @@ export function createWatcher(opts: Opts): Promise<void> {
       return startRunner(opts, cfg, watcher, {
         onError: willTerminate => {
           stopRunner(runner, willTerminate)
+          watcher.resume()
         },
       })
     }
@@ -169,6 +170,7 @@ export function createWatcher(opts: Opts): Promise<void> {
       child.respawn = true
       if (child.connected === undefined || child.connected === true) {
         child.disconnect()
+
         if (willTerminate) {
           log(
             'Disconnecting from child. willTerminate === true so NOT sending sigterm to force runner end, assuming it will end itself.'
@@ -192,13 +194,16 @@ export function createWatcher(opts: Opts): Promise<void> {
     }
 
     function restartRunner(file: string) {
+      /**
+       * Watcher is paused until the runner has stopped and properly restarted
+       * We wait for the child process to send the watcher a message saying it's ready to be restarted
+       * This prevents the runner to be run several times thus leading to an EPIPE error
+       */
+      watcher.pause()
       if (file === compiler.tsConfigPath) {
         log('reinitializing TS compilation')
         compiler.init(opts)
       }
-
-      /* eslint-disable no-octal-escape */
-      if (cfg.clear) process.stdout.write('\\033[2J\\033[H')
 
       compiler.compileChanged(file, opts.onEvent)
 
@@ -404,8 +409,14 @@ function startRunner(
     callbacks?.onError?.(m.willTerminate)
   })
 
-  ipc.on(child, SERVER_READY_SIGNAL, message => {
+  // TODO: Resuming watcher on this signal can lead to performance issues
+  ipc.on(child, SERVER_READY_SIGNAL, () => {
     log('got runner signal "%s"', SERVER_READY_SIGNAL)
+    /**
+     * Watcher is resumed once the child sent a message saying it's ready to be restarted
+     * This prevents the runner to be run several times thus leading to an EPIPE error
+     */
+    watcher.resume()
     opts.onEvent({ event: SERVER_READY_SIGNAL })
   })
 

@@ -14,6 +14,8 @@ export type FileWatcher = chokidar.FSWatcher & {
    * Adds a file to be watched without triggering the 'add' events
    */
   addSilently(path: string): void
+  pause(): void
+  resume(): void
 }
 
 export type FileWatcherEventCallback = (
@@ -41,8 +43,10 @@ export function watch(
   log('starting', { paths, ...options })
   const watcher = chokidar.watch(paths, options) as FileWatcher
   const programmaticallyWatchedFiles: string[] = []
+  let watcherPaused = false
+  let lastPendingExecution: null | (() => void) = null
 
-  const wasFileAddedSilently = (event: string, file: string) => {
+  const wasFileAddedSilently = (event: string, file: string): boolean => {
     if (
       programmaticallyWatchedFiles.includes(file) &&
       isSilentableEvent(event)
@@ -55,33 +59,61 @@ export function watch(
     return false
   }
 
-  // @ts-ignore
-  const originalOnListener = watcher.on
+  /** Execute watcher listener when watcher is not paused, and save last pending execution to be run when watcher.resume() is called */
+  const simpleDebounce = (
+    fn: (...args: any[]) => void
+  ): ((...args: any[]) => void) => {
+    const decoratedFn = (...args: any[]) => {
+      if (watcherPaused) {
+        lastPendingExecution = () => {
+          fn(...args)
+        }
+        return
+      }
+
+      fn(...args)
+    }
+
+    return decoratedFn
+  }
+
+  const originalOnListener = watcher.on.bind(watcher)
+
+  // Use `function` to bind originalOnListener to the right context
+  watcher.on = function(event: string, listener: (...args: any[]) => void) {
+    const debouncedListener = simpleDebounce(listener)
+
+    if (event === 'all') {
+      return originalOnListener(event, (eventName, path, stats) => {
+        if (wasFileAddedSilently(eventName, path) === false) {
+          debouncedListener(eventName, path, stats)
+        }
+      })
+    }
+
+    return originalOnListener(event, (path, stats) => {
+      if (wasFileAddedSilently(event, path) === false) {
+        debouncedListener(path, stats)
+      }
+    })
+  }
 
   watcher.addSilently = path => {
     programmaticallyWatchedFiles.push(path)
     watcher.add(path)
   }
 
-  // Use `function` to bind originalOnListener to the right context
-  watcher.on = function(event: string, listener: (...args: any[]) => void) {
-    if (event === 'all') {
-      return originalOnListener.call(this, event, (eventName, path, stats) => {
-        if (wasFileAddedSilently(eventName, path) === false) {
-          listener(eventName, path, stats)
-        }
-      })
-    }
+  watcher.pause = () => {
+    watcherPaused = true
+  }
 
-    if (isSilentableEvent(event)) {
-      return originalOnListener.call(this, event, (path, stats) => {
-        if (wasFileAddedSilently(event, path) === false) {
-          listener(path, stats)
-        }
-      })
-    }
+  watcher.resume = () => {
+    watcherPaused = false
 
-    return originalOnListener.call(this, event, listener)
+    if (lastPendingExecution) {
+      lastPendingExecution()
+      lastPendingExecution = null
+    }
   }
 
   return watcher
