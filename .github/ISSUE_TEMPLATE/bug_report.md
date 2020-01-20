@@ -2,7 +2,7 @@
 name: Bug report
 about: Create a report to help us improve
 title: ''
-labels: ''
+labels: bug
 assignees: ''
 
 ---
@@ -26,8 +26,8 @@ If applicable, add screenshots to help explain your problem.
 
 **Versions (please complete the following information):**
 
-- OS: [e.g. `Windows 10`, `OS X High Sierra`, `Ubuntu 16.04`]
-- `santa` CLI: [e.g. `santa/0.0.1 (darwin-x64) node-v12.13.1`]
+- OS: [e.g. `Windows 10`, `macOS Catalina`, `Ubuntu 16.04`]
+- `santa` CLI: [e.g. `0.0.1`]
 
 **Additional context**
 Add any other context about the problem here.
