@@ -19,7 +19,7 @@ assignees: ''
 
 #### Description
 
-A one/two-liner about what the issue is.
+A one/two-liner and/or screenshot(s).
 
 #### Repro
 
