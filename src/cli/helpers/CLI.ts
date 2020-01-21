@@ -1,15 +1,17 @@
 import chalk from 'chalk'
-import { arg, isError, format } from './helpers'
-import { Version } from './Version'
-import { unknownCommand, HelpError, Command } from '.'
+import { logger } from '../../utils'
+import { HelpError, unknownCommand } from './Help'
+import { arg, format, isError } from './helpers'
 import {
+  Command,
   CommandNamespace,
   CommandNode,
   CommandRef,
-  ConcreteCommand,
   CommandsLayout,
   CommandsLayoutEntry,
+  ConcreteCommand,
 } from './types'
+import { Version } from './Version'
 
 function createCommandRef(value: string, parent: CommandNamespace): CommandRef {
   const referencedCommand = parent.value[value] as undefined | CommandNode
@@ -93,6 +95,10 @@ function lookupCommand(
   return namespace.value[name]
 }
 
+function isFlag(arg: string | undefined) {
+  return arg && (arg.startsWith('-') || arg.startsWith('--'))
+}
+
 /**
  * CLI command
  */
@@ -122,7 +128,6 @@ export class CLI implements Command {
     }
 
     // parse the invocation path
-
     let targettedCommand = buildCommandsTree(this.cmds)
     while (true) {
       if (targettedCommand.type !== 'command_namespace') break
@@ -130,6 +135,12 @@ export class CLI implements Command {
       const nextArg = args._.shift()
 
       if (nextArg === undefined) break
+
+      // If it's a flag, enqueue back the flag and break
+      if (isFlag(nextArg)) {
+        args._ = [nextArg, ...args._]
+        break
+      }
 
       const nextCommandNode = lookupCommand(nextArg, targettedCommand)
 
@@ -140,14 +151,27 @@ export class CLI implements Command {
       targettedCommand = nextCommandNode
     }
 
+    // Check if
+    for (const nextArg of args._) {
+      if (targettedCommand.type !== 'command_namespace') break
+      if (nextArg === undefined) break
+
+      if (lookupCommand(nextArg, targettedCommand)) {
+        logger.fatal('Flags always needs to be in the last position')
+        process.exit(1)
+      }
+    }
+
     // Resolve the runner
     let run: null | Function = null
     switch (targettedCommand.type) {
       case 'concrete_command':
-        run = targettedCommand.value.parse
+        run = targettedCommand.value.parse.bind(targettedCommand.value)
         break
       case 'command_reference':
-        run = targettedCommand.value.commandPointer.value.parse
+        run = targettedCommand.value.commandPointer.value.parse.bind(
+          targettedCommand.value.commandPointer.value
+        )
         break
       case 'command_namespace':
         const nsDefault = lookupCommand('__default', targettedCommand)
@@ -157,9 +181,11 @@ export class CLI implements Command {
           // TODO should return command help, rather than assuming root help
           return this.help()
         } else if (nsDefault.type === 'concrete_command') {
-          run = nsDefault.value.parse
+          run = nsDefault.value.parse.bind(nsDefault.value)
         } else if (nsDefault.type === 'command_reference') {
-          run = nsDefault.value.commandPointer.value.parse
+          run = nsDefault.value.commandPointer.value.parse.bind(
+            nsDefault.value.commandPointer.value
+          )
         } else {
           throw new Error(
             `Attempt to run namespace default failed because was not a command or reference to a command. Was: ${nsDefault}`
