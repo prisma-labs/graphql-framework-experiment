@@ -1,12 +1,12 @@
 import Arg from 'arg'
 import chalk from 'chalk'
-import { stripIndents } from 'common-tags'
+import { stripIndent } from 'common-tags'
 
 /**
  * format
  */
 export function format(input: string = ''): string {
-  return stripIndents(input).trimRight() + '\n'
+  return stripIndent(input).trimRight() + '\n'
 }
 
 /**
@@ -34,6 +34,10 @@ export function generateHelpForCommandIndex(
   commandName: string,
   subCommands: { name: string; description: string }[]
 ): string {
+  const maxSubCommandNameLength = Math.max(
+    ...subCommands.map(s => s.name.length)
+  )
+
   return `
 ${chalk.bold('Usage:')}
     
@@ -43,7 +47,9 @@ ${chalk.gray('$')} graphql-santa ${commandName} [${subCommands
 
 ${chalk.bold('Commands:')}
 
-${subCommands.map(c => `  ${c.name}   ${c.description}`).join('\n')}
+${subCommands
+  .map(c => `  ${c.name.padEnd(maxSubCommandNameLength)}  ${c.description}`)
+  .join('\n')}
   `
 }
 
