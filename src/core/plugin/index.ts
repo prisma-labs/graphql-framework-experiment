@@ -8,6 +8,7 @@ import * as Layout from '../../framework/layout'
 import { NexusConfig } from '../../framework/nexus'
 import { TestContext } from '../../framework/testing'
 import * as Logger from '../../lib/logger'
+import * as Path from 'path'
 
 const pluginSystemLogger = Logger.create({ name: 'plugin' })
 
@@ -163,9 +164,7 @@ export type Lens = {
   }
 }
 
-type PluginPackage = {
-  create: DriverCreator
-}
+type PluginPackage = DriverCreator
 
 type Definer = (lens: Lens) => void
 
@@ -322,7 +321,22 @@ function __doLoadAllFromPackageJson(
 
     let SomePlugin: PluginPackage
     try {
-      SomePlugin = require(depName)
+      if (process.env.LINK) {
+        SomePlugin = require(Path.join(
+          process.cwd(),
+          '/node_modules/',
+          depName
+        ))
+      } else {
+        SomePlugin = require(depName)
+      }
+      // The plugin dist code may have been compiled from a TS source and then
+      // may have a .default property.
+      // @ts-ignore
+      if (SomePlugin.default) {
+        // @ts-ignore
+        SomePlugin = SomePlugin.default
+      }
     } catch (error) {
       fatal(
         stripIndent`
@@ -333,10 +347,10 @@ function __doLoadAllFromPackageJson(
       )
     }
 
-    if (typeof SomePlugin.create !== 'function') {
+    if (typeof SomePlugin !== 'function') {
       // TODO add link to issue tracker extracted from plugin's package.json
       fatal(
-        `The plugin "${pluginName}" you are attempting to use does not export a "create" value.`
+        `The plugin "${pluginName}" you are attempting to use did not expose itself on the default export.`
       )
     }
 
@@ -344,7 +358,7 @@ function __doLoadAllFromPackageJson(
 
     let instantiatedPlugin: Driver
     try {
-      instantiatedPlugin = SomePlugin.create(pluginName)
+      instantiatedPlugin = SomePlugin(pluginName)
     } catch (error) {
       fatal(
         stripIndent`
