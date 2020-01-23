@@ -1,5 +1,4 @@
 import { stripIndent } from 'common-tags'
-import * as Debug from 'debug'
 import * as fs from 'fs-jetpack'
 import prompts from 'prompts'
 import { fatal, pog, run, runSync } from '../../utils'
@@ -10,7 +9,7 @@ import { NexusConfig } from '../../framework/nexus'
 import { TestContext } from '../../framework/testing'
 import * as Logger from '../../lib/logger'
 
-const logger = Logger.create({ name: 'plugin' })
+const pluginSystemLogger = Logger.create({ name: 'plugin' })
 
 // We want to expose the prompts type in the plugin interface but, because we are
 // importing prompts with esModuleInterop, it would mean forcing the consumer to
@@ -157,7 +156,6 @@ export type Lens = {
     log: Logger.Logger
     runSync: typeof runSync
     run: typeof run
-    debug: Debug.Debugger
     /**
      * Check out https://github.com/terkelg/prompts for documentation
      */
@@ -203,10 +201,9 @@ export function create(definer: Definer): DriverCreator {
         maybeTestingPlugin = f
       },
       utils: {
-        log: logger.child(pluginName),
+        log: pluginSystemLogger.child(pluginName),
         run,
         runSync,
-        debug: pog.sub(`plugin:${pluginName}`),
         prompt: prompts,
       },
     })
