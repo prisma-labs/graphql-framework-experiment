@@ -11,6 +11,8 @@ import { sendServerReadySignalToDevModeMaster } from './dev-mode'
 import { createNexusConfig, createNexusSingleton } from './nexus'
 import * as Plugin from './plugin'
 import * as singletonChecks from './singleton-checks'
+import * as HTTP from 'http'
+import * as Net from 'net'
 
 const log = pog.sub(__filename)
 const logger = Logger.create({ name: 'app' })
@@ -21,20 +23,9 @@ const serverLogger = logger.child('server')
  */
 type ServerOptions = {
   port?: number
-  startMessage?: (port: number) => void
+  startMessage?: (address: { port: number; host: string; ip: string }) => void
   playground?: boolean
   introspection?: boolean
-}
-
-/**
- * Create a message suitable for printing to the terminal about the server
- * having been booted.
- */
-const serverStartMessage = (port: number): void => {
-  serverLogger.info('listening', {
-    host: 'localhost',
-    port,
-  })
 }
 
 /**
@@ -51,7 +42,15 @@ const defaultServerOptions: Required<ServerOptions> = {
       : process.env.NODE_ENV === 'production'
       ? 80
       : 4000,
-  startMessage: serverStartMessage,
+  /**
+   * Create a message suitable for printing to the terminal about the server
+   * having been booted.
+   */
+  startMessage: ({ port, host }): void => {
+    serverLogger.info('listening', {
+      url: `http://${host}:${port}`,
+    })
+  },
   introspection: true,
   playground: true,
 }
@@ -124,7 +123,11 @@ export function createApp(appConfig?: { types?: any }): App {
 
   const contextContributors: ContextContributor<any>[] = []
 
-  let httpServer: Server | null = null
+  const httpServer = HTTP.createServer()
+
+  const expressApp = express()
+  httpServer.on('request', expressApp)
+
   let apolloServer: ApolloServer | null = null
   let serverRunning = false
 
@@ -329,19 +332,31 @@ export function createApp(appConfig?: { types?: any }): App {
           schema,
         })
 
-        const expressApp = express()
         apolloServer.applyMiddleware({ app: expressApp })
 
-        return new Promise(resolve => {
-          const server = expressApp.listen(mergedConfig.port, () => {
-            mergedConfig.startMessage(mergedConfig.port)
+        return new Promise(res => {
+          httpServer.listen(
+            { port: mergedConfig.port, host: '127.0.0.1' },
+            () => {
+              if (!httpServer) return
 
-            serverRunning = true
-            httpServer = server
-            sendServerReadySignalToDevModeMaster()
+              // - We do not support listening on unix domain sockets so string
+              //   value will never be present here.
+              // - We are working within the listen callback so address will not be null
+              const address = httpServer.address()! as Net.AddressInfo
+              const host = address.address === '127.0.0.1' ? 'localhost' : ''
 
-            return resolve()
-          })
+              mergedConfig.startMessage({
+                port: mergedConfig.port,
+                host,
+                ip: address.address,
+              })
+
+              serverRunning = true
+              sendServerReadySignalToDevModeMaster()
+              res()
+            }
+          )
         })
       },
       async stop() {
@@ -351,8 +366,20 @@ export function createApp(appConfig?: { types?: any }): App {
           )
         }
 
-        await apolloServer?.stop()
-        await httpServer?.close()
+        if (apolloServer) {
+          await apolloServer.stop()
+        }
+
+        await new Promise((res, rej) => {
+          httpServer.close(err => {
+            if (err) {
+              rej(err)
+            } else {
+              res()
+            }
+          })
+        })
+
         serverRunning = false
       },
     },
