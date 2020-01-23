@@ -1,6 +1,6 @@
 import { ChildProcess, ForkOptions } from 'child_process'
 import { Layout } from '../framework/layout'
-import * as Plugin from '../framework/plugin'
+import * as Plugin from '../core/plugin'
 
 type EventRestart = {
   event: 'restart'

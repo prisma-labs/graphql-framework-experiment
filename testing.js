@@ -1,5 +1,1 @@
-const { createTestContext } = require('./dist/framework/testing')
-
-module.exports = {
-  createTestContext,
-}
+module.exports = require('./dist/testing')

@@ -3,7 +3,7 @@ import * as fs from 'fs-jetpack'
 import prompts from 'prompts'
 import { PackageJson } from 'type-fest'
 import * as Layout from '../../../framework/layout'
-import * as Plugin from '../../../framework/plugin'
+import * as Plugin from '../../../core/plugin'
 import {
   createGitRepository,
   createTSConfigContents,

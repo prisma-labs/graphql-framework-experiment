@@ -2,20 +2,22 @@ import { stripIndent } from 'common-tags'
 import * as Debug from 'debug'
 import * as fs from 'fs-jetpack'
 import prompts from 'prompts'
-import { fatal, pog, run, runSync } from '../utils'
-import { logger } from '../utils/logger'
-import * as PackageManager from '../utils/package-manager'
-import * as Chokidar from '../watcher/chokidar'
-import * as Layout from './layout'
-import { NexusConfig } from './nexus'
-import { TestContext } from './testing'
+import { fatal, pog, run, runSync } from '../../utils'
+import * as PackageManager from '../../utils/package-manager'
+import * as Chokidar from '../../watcher/chokidar'
+import * as Layout from '../../framework/layout'
+import { NexusConfig } from '../../framework/nexus'
+import { TestContext } from '../../framework/testing'
+import * as Logger from '../../lib/logger'
+
+const logger = Logger.create({ name: 'plugin' })
 
 // We want to expose the prompts type in the plugin interface but, because we are
 // importing prompts with esModuleInterop, it would mean forcing the consumer to
 // also turn on esModuleInterop, which we do not want.
 //
 import * as Prompts from 'prompts'
-import { SideEffector, MaybePromise, CallbackRegistrer } from '../lib/utils'
+import { SideEffector, MaybePromise, CallbackRegistrer } from '../../lib/utils'
 type PromptsConstructor = <T extends string = string>(
   questions: Prompts.PromptObject<T> | Array<Prompts.PromptObject<T>>,
   options?: Prompts.Options
@@ -152,7 +154,7 @@ export type Lens = {
   workflow: CallbackRegistrer<WorkflowDefiner>
   testing: CallbackRegistrer<TestingPlugin>
   utils: {
-    log: typeof logger
+    log: Logger.Logger
     runSync: typeof runSync
     run: typeof run
     debug: Debug.Debugger
@@ -181,6 +183,9 @@ export type Driver = {
   loadTestingPlugin: () => undefined | TestingContributions
 }
 
+/**
+ * Create a plugin.
+ */
 export function create(definer: Definer): DriverCreator {
   let maybeWorkflowPlugin: undefined | WorkflowDefiner
   let maybeRuntimePlugin: undefined | RuntimePlugin
@@ -198,7 +203,7 @@ export function create(definer: Definer): DriverCreator {
         maybeTestingPlugin = f
       },
       utils: {
-        log: logger,
+        log: logger.child(pluginName),
         run,
         runSync,
         debug: pog.sub(`plugin:${pluginName}`),
