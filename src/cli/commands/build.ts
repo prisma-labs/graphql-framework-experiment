@@ -3,7 +3,7 @@ import * as fs from 'fs-jetpack'
 import ts from 'typescript'
 import { START_MODULE_NAME } from '../../constants'
 import * as Layout from '../../framework/layout'
-import * as Plugin from '../../framework/plugin'
+import * as Plugin from '../../core/plugin'
 import { createStartModuleContent } from '../../framework/start'
 import {
   compile,

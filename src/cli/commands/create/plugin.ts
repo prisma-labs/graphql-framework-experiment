@@ -143,16 +143,16 @@ export default class Plugin implements Command {
       fs.writeAsync(
         'src/index.ts',
         stripIndent`
-          import * as GraphQLSantaPlugin from 'graphql-santa/dist/framework/plugin'
+          import * as SantaPlugin from 'graphql-santa/plugin'
 
-          export const create = GraphQLSantaPlugin.create(gqlSanta => {
-            gqlSanta.workflow((hooks, _context) => {
+          export const create = SantaPlugin.create(santa => {
+            santa.workflow((hooks, _context) => {
               hooks.build.onStart = async () => {
-                gqlSanta.utils.log.info('Hello from ${pluginName}!')
+                santa.utils.log.info('Hello from ${pluginName}!')
               }
             })
 
-            gqlSanta.runtime(() => {
+            santa.runtime(() => {
               return {
                 context: {
                   create: _req => {

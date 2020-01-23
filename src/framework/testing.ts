@@ -3,7 +3,7 @@ import { GraphQLClient } from 'graphql-request'
 import * as Lo from 'lodash'
 import { app } from './index'
 import * as Layout from './layout'
-import * as Plugin from './plugin'
+import * as Plugin from '../core/plugin'
 import * as singletonChecks from './singleton-checks'
 
 type AppClient = {

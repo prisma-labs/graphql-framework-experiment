@@ -1,5 +1,5 @@
 import * as Layout from '../../framework/layout'
-import * as Plugin from '../../framework/plugin'
+import * as Plugin from '../../core/plugin'
 import { createStartModuleContent } from '../../framework/start'
 import { generateArtifacts, logger } from '../../utils'
 import { Command } from '../helpers'
