@@ -15,7 +15,7 @@
   ```cli
   npx santa create plugin
   ```
-- To write a plugin you import from the plugin module ([todo](https://github.com/prisma-labs/graphql-santa/issues/293))
+- To write a plugin you import from the plugin module
   ```ts
   import * as SantaPlugin from 'graphql-santa/plugin'
   ```
