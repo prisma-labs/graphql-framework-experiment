@@ -15,17 +15,13 @@ import { TestContext } from './testing'
 // also turn on esModuleInterop, which we do not want.
 //
 import * as Prompts from 'prompts'
+import { SideEffector, MaybePromise, CallbackRegistrer } from '../lib/utils'
 type PromptsConstructor = <T extends string = string>(
   questions: Prompts.PromptObject<T> | Array<Prompts.PromptObject<T>>,
   options?: Prompts.Options
 ) => Promise<Prompts.Answers<T>>
 
 const log = pog.sub('plugin-manager')
-
-// TODO move to utils module
-type MaybePromise<T = void> = T | Promise<T>
-type CallbackRegistrer<F> = (f: F) => void
-type SideEffector = () => MaybePromise
 
 export type OnAfterBaseSetupLens = {
   database: 'SQLite' | 'MySQL' | 'PostgreSQL' | undefined

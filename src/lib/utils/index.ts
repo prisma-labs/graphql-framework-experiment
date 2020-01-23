@@ -1,3 +1,9 @@
+export type MaybePromise<T = void> = T | Promise<T>
+
+export type CallbackRegistrer<F> = (f: F) => void
+
+export type SideEffector = () => MaybePromise
+
 /**
  * Guarantee the length of a given string, padding before or after with the
  * given character. If the given string is longer than  the span target, then it
