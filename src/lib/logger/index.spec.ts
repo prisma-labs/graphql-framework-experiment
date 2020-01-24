@@ -81,31 +81,59 @@ describe('output', () => {
 })
 
 describe('level', () => {
-  it('defaults to "info" when NODE_ENV=production', () => {
-    process.env.NODE_ENV = 'production'
-    expect(Logger.create().getLevel()).toEqual('info')
-  })
+  describe('precedence', () => {
+    it('considers instance time config first', () => {
+      process.env.NODE_ENV = 'production'
+      process.env.LOG_LEVEL = 'fatal'
+      const logger = Logger.create({ level: 'fatal' })
+      logger.setLevel('trace')
+      expect(logger.getLevel()).toEqual('trace')
+    })
 
-  it('defaults to "debug" when NODE_ENV!=production', () => {
-    process.env.NODE_ENV = 'not-production'
-    expect(Logger.create().getLevel()).toEqual('debug')
-  })
+    it('then considers construction time config', () => {
+      process.env.NODE_ENV = 'production'
+      process.env.LOG_LEVEL = 'fatal'
+      const logger = Logger.create({ level: 'trace' })
+      expect(logger.getLevel()).toEqual('trace')
+    })
 
-  it('may be configured at construction time', () => {
-    expect(Logger.create({ level: 'trace' }).getLevel()).toEqual('trace')
-  })
+    it('then considers LOG_LEVEL env var', () => {
+      process.env.NODE_ENV = 'production'
+      process.env.LOG_LEVEL = 'trace'
+      const logger = Logger.create()
+      expect(logger.getLevel()).toEqual('trace')
+    })
 
-  it('may be configured at instnace time', () => {
-    expect(
-      Logger.create({ level: 'trace' })
-        .setLevel('warn')
-        .getLevel()
-    ).toEqual('warn')
+    it('then considers NODE_ENV=production', () => {
+      process.env.NODE_ENV = 'production'
+      const logger = Logger.create()
+      console.log(process.env.LOG_LEVEL)
+      expect(logger.getLevel()).toEqual('info')
+    })
+
+    it('then defaults to debug', () => {
+      const logger = Logger.create()
+      expect(logger.getLevel()).toEqual('debug')
+    })
   })
 
   it('logs below set level are not output', () => {
     logger.setLevel('warn').info('foo')
     expect(output.writes).toEqual([])
+  })
+
+  it('LOG_LEVEL env var config is treated case insensitive', () => {
+    process.env.NODE_ENV = 'production'
+    process.env.LOG_LEVEL = 'TRACE'
+    const logger = Logger.create()
+    expect(logger.getLevel()).toEqual('trace')
+  })
+
+  it('LOG_LEVEL env var config when invalid triggers thrown readable error', () => {
+    process.env.LOG_LEVEL = 'ttrace'
+    expect(() => Logger.create()).toThrowErrorMatchingInlineSnapshot(
+      `"Could not parse environment variable LOG_LEVEL into LogLevel. The environment variable was: ttrace. A valid environment variable must be like: fatal, error, warn, info, debug, trace"`
+    )
   })
 })
 
@@ -278,8 +306,8 @@ namespace MockOutput {
  * to modify the environment and so on.
  */
 function resetBeforeEachTest(object: any, key: string) {
-  const orig = Lo.cloneDeep(object[key])
+  const orig = object[key]
   beforeEach(() => {
-    object[key] = orig
+    object[key] = Lo.cloneDeep(orig)
   })
 }
