@@ -5,7 +5,7 @@ import { fatal, findOrScaffoldTsConfig, pog } from '../../utils'
 import { clearConsole } from '../../utils/console'
 import { logger } from '../../utils/logger'
 import { createWatcher } from '../../watcher'
-import { arg, Command, isError } from '../helpers'
+import { arg, Command, isError } from '../../lib/cli'
 
 const mylogger = logger.child('dev')
 

@@ -8,7 +8,7 @@ import prompts from 'prompts'
 import { pog, createGitRepository } from '../../../utils'
 import { logger } from '../../../utils/logger'
 import * as proc from '../../../utils/process'
-import { Command } from '../../helpers'
+import { Command } from '../../../lib/cli'
 
 const log = pog.sub('cli:create:plugin')
 

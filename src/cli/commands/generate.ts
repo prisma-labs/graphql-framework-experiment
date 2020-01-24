@@ -2,7 +2,7 @@ import * as Layout from '../../framework/layout'
 import * as Plugin from '../../core/plugin'
 import { createStartModuleContent } from '../../framework/start'
 import { generateArtifacts, logger } from '../../utils'
-import { Command } from '../helpers'
+import { Command } from '../../lib/cli'
 
 export class Generate implements Command {
   async parse() {

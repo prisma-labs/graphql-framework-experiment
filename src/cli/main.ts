@@ -6,8 +6,7 @@ import * as Layout from '../framework/layout'
 import { fatal, isProcessFromProjectBin } from '../utils'
 import * as PackageManager from '../utils/package-manager'
 import * as Commands from './commands'
-import { HelpError } from './helpers'
-import { CLI } from './helpers/CLI'
+import { HelpError, CLI } from '../lib/cli'
 
 // Loads env variable from .env file
 dotenv.config()

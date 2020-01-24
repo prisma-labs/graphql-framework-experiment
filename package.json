@@ -14,8 +14,8 @@
     "testing.js"
   ],
   "bin": {
-    "graphql-santa": "dist/cli/index.js",
-    "santa": "dist/cli/index.js"
+    "graphql-santa": "dist/cli/main.js",
+    "santa": "dist/cli/main.js"
   },
   "dependencies": {
     "@types/debug": "^4.1.5",

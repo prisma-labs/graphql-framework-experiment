@@ -1,4 +1,4 @@
-import { Command } from '../helpers'
+import { Command } from '../../lib/cli'
 import * as Layout from '../../framework/layout'
 import { pog, generateProjectName, CWDProjectNameOrGenerate } from '../../utils'
 import { run } from './create/app'

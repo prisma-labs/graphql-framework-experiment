@@ -13,7 +13,7 @@ import {
 } from '../../../utils'
 import * as PackageManager from '../../../utils/package-manager'
 import * as proc from '../../../utils/process'
-import { Command } from '../../helpers'
+import { Command } from '../../../lib/cli'
 
 const log = pog.sub('cli:create:app')
 

@@ -1,5 +1,4 @@
-import { Command } from '../../helpers'
-import { generateHelpForCommandIndex } from '../../helpers/helpers'
+import { Command, generateHelpForCommandIndex } from '../../../lib/cli'
 
 export class DbDefault implements Command {
   async parse() {

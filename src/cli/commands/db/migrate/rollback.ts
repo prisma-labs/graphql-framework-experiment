@@ -1,6 +1,10 @@
 import { fatal, validateAndLoadDBDriver } from '../../../../utils'
-import { Command } from '../../../helpers'
-import { arg, generateHelpForCommand, isError } from '../../../helpers/helpers'
+import {
+  Command,
+  arg,
+  generateHelpForCommand,
+  isError,
+} from '../../../../lib/cli'
 
 export class DbRollback implements Command {
   async parse(argv: string[]) {

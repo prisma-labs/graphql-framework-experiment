@@ -1,6 +1,10 @@
 import { fatal, validateAndLoadDBDriver } from '../../../../utils'
-import { arg, Command, isError } from '../../../helpers'
-import { generateHelpForCommand } from '../../../helpers/helpers'
+import {
+  generateHelpForCommand,
+  arg,
+  Command,
+  isError,
+} from '../../../../lib/cli'
 
 export class DbPlan implements Command {
   async parse(argv: string[]) {
