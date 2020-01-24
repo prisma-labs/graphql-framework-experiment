@@ -33,3 +33,18 @@ export const LEVELS_BY_NUM = Object.values(LEVELS).reduce(
   (lookup, entry) => Object.assign(lookup, { [entry.number]: entry }),
   {}
 ) as Record<LevelNum, { label: Level; number: LevelNum }>
+
+/**
+ * Parser for log level. The given value is treated case insensitive.
+ */
+export const parser = {
+  info: {
+    typeName: 'LogLevel',
+    valid: Object.entries(LEVELS)
+      .map(([label]) => label)
+      .join(', '),
+  },
+  run: (raw: string) => {
+    return (LEVELS as any)[raw.toLowerCase()]?.label ?? null
+  },
+}
