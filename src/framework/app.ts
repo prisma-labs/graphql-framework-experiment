@@ -13,6 +13,7 @@ import * as Plugin from '../core/plugin'
 import * as singletonChecks from './singleton-checks'
 import * as HTTP from 'http'
 import * as Net from 'net'
+import * as Lo from 'lodash'
 
 const log = pog.sub(__filename)
 const logger = Logger.create({ name: 'app' })
@@ -211,7 +212,19 @@ export function createApp(appConfig?: { types?: any }): App {
         // Create the Nexus config
         const nexusConfig = createNexusConfig()
 
-        const typegenAutoConfigObject = nexusConfig.typegenAutoConfig!
+        // Integrate plugin typegenAutoConfig contributions
+        const typegenAutoConfigFromPlugins = {}
+        for (const p of plugins) {
+          if (p.nexus?.typegenAutoConfig) {
+            Lo.merge(typegenAutoConfigFromPlugins, p.nexus.typegenAutoConfig)
+          }
+        }
+
+        const typegenAutoConfigObject = Lo.merge(
+          {},
+          typegenAutoConfigFromPlugins,
+          nexusConfig.typegenAutoConfig!
+        )
         nexusConfig.typegenAutoConfig = undefined
 
         function contextTypeContribSpecToCode(
@@ -281,7 +294,7 @@ export function createApp(appConfig?: { types?: any }): App {
             })
           )
 
-          pog('built up Nexus typegenConfig: %O', config)
+          api.logger.trace('built up Nexus typegenConfig', { config })
           return config
         }
 

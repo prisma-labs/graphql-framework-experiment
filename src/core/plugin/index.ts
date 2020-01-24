@@ -135,7 +135,8 @@ export type RuntimeContributions<C extends {} = any> = {
     create: (req: Express.Request) => C
   }
   nexus?: {
-    plugins: NexusConfig['plugins']
+    typegenAutoConfig?: NexusConfig['typegenAutoConfig']
+    plugins?: NexusConfig['plugins']
   }
 }
 
@@ -399,6 +400,10 @@ export async function loadAllWorkflowPluginsFromPackageJson(
     .map(driver => {
       let workflowComponent: WorkflowHooks
       try {
+        pluginSystemLogger.trace('load', {
+          part: 'workflow',
+          plugin: driver.name,
+        })
         workflowComponent = driver.loadWorkflowPlugin(layout)
       } catch (error) {
         fatal(
@@ -443,6 +448,10 @@ export async function loadAllTestingPluginsFromPackageJson(): Promise<
     .map(driver => {
       let testingContributions: TestingContributions
       try {
+        pluginSystemLogger.trace('load', {
+          part: 'testing',
+          plugin: driver.name,
+        })
         testingContributions = driver.loadTestingPlugin()! // guaranteed by above filter
       } catch (error) {
         fatal(
@@ -470,7 +479,10 @@ function __doLoadAllRuntimePluginsFromPackageJson(
     .map(driver => {
       let runtimeContributions: RuntimeContributions
       try {
-        log('loading runtime of plugin %s', driver.name)
+        pluginSystemLogger.trace('load', {
+          part: 'runtime',
+          plugin: driver.name,
+        })
         runtimeContributions = driver.loadRuntimePlugin()! // guaranteed by above filter
       } catch (error) {
         fatal(
