@@ -4,9 +4,9 @@
 
 ### About {docsify-ignore}
 
-This component handles recieving requests and sending responses to your clients. It is the transport layer, which GraphQL itself is actually agnostic about. `santa` has features that make it so most apps won't need to deal with this component directly.
+This component handles recieving requests and sending responses to your clients. It is the transport layer, which GraphQL itself is actually agnostic about. Simple apps will not need to deal with this component directly as `santa` automatically runs it by default.
 
-We currently use [Express](https://github.com/expressjs/express) and [Apollo Server](https://github.com/apollographql/apollo-server) but note there is an [open issue](https://github.com/prisma-labs/graphql-santa/issues/231) about adopting [`fastify-gql`](https://github.com/mcollina/fastify-gql) instead.
+We currently use [`express-graphql`](https://github.com/graphql/express-graphql). There is an [open issue](https://github.com/prisma-labs/graphql-santa/issues/231) about adopting [`fastify-gql`](https://github.com/mcollina/fastify-gql) instead.
 
 ### Features {docsify-ignore}
 

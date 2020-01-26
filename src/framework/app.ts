@@ -1,61 +1,27 @@
-import { ApolloServer } from 'apollo-server-express'
 import { stripIndent, stripIndents } from 'common-tags'
-import express from 'express'
 import * as fs from 'fs-jetpack'
 import * as nexus from 'nexus'
 import { typegenAutoConfig } from 'nexus/dist/core'
 import * as Logger from '../lib/logger'
 import { pog, requireSchemaModules } from '../utils'
-import { sendServerReadySignalToDevModeMaster } from './dev-mode'
 import { createNexusConfig, createNexusSingleton } from './nexus'
 import * as Plugin from '../core/plugin'
 import * as singletonChecks from './singleton-checks'
 import * as HTTP from 'http'
-import * as Net from 'net'
 import * as Lo from 'lodash'
+import * as Server from './server'
 
 const log = pog.sub(__filename)
 const logger = Logger.create({ name: 'app' })
-const serverLogger = logger.child('server')
 
 /**
  * The available server options to configure how your app runs its server.
  */
-type ServerOptions = {
-  port?: number
-  startMessage?: (address: { port: number; host: string; ip: string }) => void
-  playground?: boolean
-  introspection?: boolean
-}
+type ServerOptions = Partial<
+  Pick<Server.Options, 'port' | 'playground' | 'startMessage'>
+>
 
-/**
- * The default server options. These are merged with whatever you provide. Your
- * settings take precedence over these.
- */
-const defaultServerOptions: Required<ServerOptions> = {
-  port:
-    typeof process.env.GRAPHQL_SANTA_PORT === 'string'
-      ? parseInt(process.env.GRAPHQL_SANTA_PORT, 10)
-      : typeof process.env.PORT === 'string'
-      ? // e.g. Heroku convention https://stackoverflow.com/questions/28706180/setting-the-port-for-node-js-server-on-heroku
-        parseInt(process.env.PORT, 10)
-      : process.env.NODE_ENV === 'production'
-      ? 80
-      : 4000,
-  /**
-   * Create a message suitable for printing to the terminal about the server
-   * having been booted.
-   */
-  startMessage: ({ port, host }): void => {
-    serverLogger.info('listening', {
-      url: `http://${host}:${port}`,
-    })
-  },
-  introspection: true,
-  playground: true,
-}
-
-type Request = Express.Request & { logger: Logger.Logger }
+type Request = HTTP.IncomingMessage & { logger: Logger.Logger }
 
 // TODO plugins could augment the request
 // plugins will be able to use typegen to signal this fact
@@ -123,18 +89,11 @@ export function createApp(appConfig?: { types?: any }): App {
 
   const contextContributors: ContextContributor<any>[] = []
 
-  const httpServer = HTTP.createServer()
-
-  const expressApp = express()
-  httpServer.on('request', expressApp)
-
-  let apolloServer: ApolloServer | null = null
-  let serverRunning = false
-
   /**
    * Auto-use all runtime plugins that are installed in the project
    */
 
+  let server: Server.Server
   const api: App = {
     logger,
     // TODO bring this back pending future discussion
@@ -176,13 +135,7 @@ export function createApp(appConfig?: { types?: any }): App {
        * Start the server. If you do not call this explicitly then graphql-santa will
        * for you. You should not normally need to call this function yourself.
        */
-      async start(config: ServerOptions = {}): Promise<void> {
-        if (serverRunning) {
-          return serverLogger.error(
-            'server.start invoked but server is already currently running'
-          )
-        }
-
+      async start(opts: ServerOptions = {}): Promise<void> {
         // Track the start call so that we can know in entrypoint whether to run
         // or not start for the user.
         singletonChecks.state.is_was_server_start_called = true
@@ -201,11 +154,6 @@ export function createApp(appConfig?: { types?: any }): App {
         // This code MUST run after user/system has had chance to run global installation
         if (process.env.GRAPHQL_SANTA_STAGE === 'dev') {
           requireSchemaModules()
-        }
-
-        const mergedConfig: Required<ServerOptions> = {
-          ...defaultServerOptions,
-          ...config,
         }
 
         // Create the Nexus config
@@ -309,90 +257,15 @@ export function createApp(appConfig?: { types?: any }): App {
           nexusConfig.types.push(...appConfig.types)
         }
 
-        const schema = await makeSchema(nexusConfig)
-        apolloServer = new ApolloServer({
-          playground: mergedConfig.playground,
-          introspection: mergedConfig.introspection,
-          // TODO Idea: context that provides an eager object can be hoisted out
-          // of the func to improve performance.
-          context: req => {
-            // TODO HACK
-            ;(req as any).logger = logger.child('request')
-            const ctx = {}
-
-            // Integrate context from plugins
-            for (const plugin of plugins) {
-              if (!plugin.context) continue
-              const contextContribution = plugin.context.create(req)
-              Object.assign(ctx, contextContribution)
-            }
-
-            // Integrate context from app context api
-            // TODO support async; probably always supported by apollo server
-            // TODO good runtime feedback to user if something goes wrong
-            //
-            for (const contextContributor of contextContributors) {
-              // HACK see req mutation at this func body start
-              Object.assign(ctx, {
-                ...contextContributor((req as unknown) as Request),
-                logger: ((req as unknown) as Request).logger,
-              })
-            }
-
-            return ctx
-          },
-          schema,
-        })
-
-        apolloServer.applyMiddleware({ app: expressApp })
-
-        return new Promise(res => {
-          httpServer.listen(
-            { port: mergedConfig.port, host: '127.0.0.1' },
-            () => {
-              if (!httpServer) return
-
-              // - We do not support listening on unix domain sockets so string
-              //   value will never be present here.
-              // - We are working within the listen callback so address will not be null
-              const address = httpServer.address()! as Net.AddressInfo
-              const host = address.address === '127.0.0.1' ? 'localhost' : ''
-
-              mergedConfig.startMessage({
-                port: mergedConfig.port,
-                host,
-                ip: address.address,
-              })
-
-              serverRunning = true
-              sendServerReadySignalToDevModeMaster()
-              res()
-            }
-          )
-        })
+        return Server.create({
+          schema: await makeSchema(nexusConfig),
+          plugins,
+          contextContributors,
+          ...opts,
+        }).start()
       },
       async stop() {
-        if (!serverRunning) {
-          return serverLogger.warn(
-            'server.stop invoked but not currently running'
-          )
-        }
-
-        if (apolloServer) {
-          await apolloServer.stop()
-        }
-
-        await new Promise((res, rej) => {
-          httpServer.close(err => {
-            if (err) {
-              rej(err)
-            } else {
-              res()
-            }
-          })
-        })
-
-        serverRunning = false
+        server?.stop
       },
     },
   }

@@ -77,7 +77,6 @@ export async function createTestContext(): Promise<TestContext> {
       await oldServerStart({
         port,
         playground: false,
-        introspection: false,
         startMessage: () => '',
       })
     } else {
