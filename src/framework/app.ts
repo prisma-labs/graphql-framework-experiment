@@ -397,19 +397,6 @@ export function createApp(appConfig?: { types?: any }): App {
     },
   }
 
-  // // TODO find different heurisitc for this, prisma will be formally extracted
-  // // from  core...
-  // if (fs.find('prisma', { matching: 'schema.prisma' })) {
-  //   log(
-  //     'enabling prisma plugin because detected prisma framework is being used on this project'
-  //   )
-  //   api.use(PrismaPlugin.create)
-  // } else {
-  //   log(
-  //     'disabling prisma plugin because detected prisma framework not being used on this project'
-  //   )
-  // }
-
   return api
 }
 
