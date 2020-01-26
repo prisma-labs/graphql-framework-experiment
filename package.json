@@ -62,7 +62,7 @@
     "prettier": "1.19.1",
     "pretty-quick": "2.0.1",
     "strip-ansi": "6.0.0",
-    "ts-jest": "24.3.0",
+    "ts-jest": "25.0.0",
     "type-fest": "0.8.1"
   },
   "engines": {
