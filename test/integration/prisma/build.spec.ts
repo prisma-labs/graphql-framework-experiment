@@ -1,5 +1,5 @@
-import { createWorkspace } from '../../__helpers'
 import { DEFAULT_BUILD_FOLDER_NAME } from '../../../src/framework/layout'
+import { createWorkspace } from '../../__helpers'
 
 const ws = createWorkspace({
   name: 'prisma-build',
@@ -26,7 +26,7 @@ it('can build a prisma framework project', () => {
   ws.fs.write(
     'schema.ts',
     `
-      import { app } from 'graphql-santa'
+      import { app } from 'nexus-future'
 
       app.objectType({
         name: 'User',
@@ -38,7 +38,7 @@ it('can build a prisma framework project', () => {
     `
   )
 
-  const result = ws.run('yarn -s graphql-santa build')
+  const result = ws.run('yarn -s nexus-future build')
   expect(result).toMatchSnapshot()
   expect(ws.fs.inspectTree(DEFAULT_BUILD_FOLDER_NAME)).toMatchSnapshot()
 })

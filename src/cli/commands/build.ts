@@ -2,9 +2,10 @@ import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import ts from 'typescript'
 import { START_MODULE_NAME } from '../../constants'
-import * as Layout from '../../framework/layout'
 import * as Plugin from '../../core/plugin'
+import * as Layout from '../../framework/layout'
 import { createStartModuleContent } from '../../framework/start'
+import { arg, Command, isError } from '../../lib/cli'
 import {
   compile,
   createTSProgram,
@@ -22,7 +23,6 @@ import {
   validateTarget,
 } from '../../utils/deploy-target'
 import { rootLogger } from '../../utils/logger'
-import { arg, Command, isError } from '../../lib/cli'
 
 const logger = rootLogger.child('builder')
 
@@ -73,7 +73,7 @@ export class Build implements Command {
 
     const tsProgram = createTSProgram(layout)
     const contextFieldTypes = extractContextTypes(tsProgram)
-    process.env.GRAPHQL_SANTA_TYPEGEN_ADD_CONTEXT_RESULTS = JSON.stringify(
+    process.env.NEXUS_FUTURE_TYPEGEN_ADD_CONTEXT_RESULTS = JSON.stringify(
       contextFieldTypes
     )
 
@@ -106,9 +106,9 @@ export class Build implements Command {
 
   help() {
     return stripIndent`
-      Usage: graphql-santa build [flags]
+      Usage: nexus-future build [flags]
 
-      Build a production-ready graphql-santa server
+      Build a production-ready nexus-future server
 
       Flags:
         -o,     --output    Relative path to output directory
@@ -120,7 +120,7 @@ export class Build implements Command {
 
 /**
  * Output to disk in the build the start module that will be used to boot the
- * graphql-santa app.
+ * nexus-future app.
  */
 async function writeStartModule(
   buildStage: string,
@@ -133,10 +133,10 @@ async function writeStartModule(
   // their module index.ts.
   if (fs.exists(`${layout.buildOutput}/${START_MODULE_NAME}.js`)) {
     fatal(stripIndent`
-      graphql-santa reserves the source root module name ${START_MODULE_NAME}.js for its own use.
+      nexus-future reserves the source root module name ${START_MODULE_NAME}.js for its own use.
       Please change your app layout to not have this module.
       This is a temporary limitation that we intend to remove in the future. 
-      For more details please see this GitHub issue: https://github.com/prisma-labs/graphql-santa/issues/139
+      For more details please see this GitHub issue: https://github.com/graphql-nexus/nexus-future/issues/139
     `)
   }
 

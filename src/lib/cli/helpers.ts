@@ -41,7 +41,7 @@ export function generateHelpForCommandIndex(
   return `
 ${chalk.bold('Usage:')}
     
-${chalk.gray('$')} graphql-santa ${commandName} [${subCommands
+${chalk.gray('$')} nexus-future ${commandName} [${subCommands
     .map(c => c.name)
     .join('|')}]
 
@@ -68,7 +68,7 @@ ${description}
 
 ${chalk.bold('Usage:')}
     
-${chalk.gray('$')} graphql-santa ${commandName} [options]
+${chalk.gray('$')} nexus-future ${commandName} [options]
 
 ${chalk.bold('Options:')}
 

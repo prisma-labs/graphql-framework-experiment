@@ -29,21 +29,21 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   if (config.internalStage === 'build') {
     output += stripIndent`
       // Guarantee that development mode features will not accidentally run
-      process.env.GRAPHQL_SANTA_SHOULD_GENERATE_ARTIFACTS = 'false'
+      process.env.NEXUS_FUTURE_SHOULD_GENERATE_ARTIFACTS = 'false'
 
     `
   } else if (config.internalStage === 'dev') {
     output += stripIndent`
       // Guarantee that development mode features are on
-      process.env.GRAPHQL_SANTA_SHOULD_GENERATE_ARTIFACTS = 'true'
-      process.env.GRAPHQL_SANTA_STAGE = 'dev'
+      process.env.NEXUS_FUTURE_SHOULD_GENERATE_ARTIFACTS = 'true'
+      process.env.NEXUS_FUTURE_STAGE = 'dev'
     `
   }
 
   output += '\n\n\n'
   output += stripIndent`
     // Guarantee the side-effect features like singleton global do run
-    require("graphql-santa")
+    require("nexus-future")
   `
 
   if (config.internalStage === 'build') {
@@ -52,14 +52,14 @@ export function createStartModuleContent(config: StartModuleConfig): string {
       output += '\n\n\n'
       output += stripIndent`
         // Import the user's schema modules
-        // This MUST come after graphql-santa package has been imported for its side-effects
+        // This MUST come after nexus-future package has been imported for its side-effects
         ${staticImports}
       `
     }
   }
 
   // TODO Despite the comment below there are still sometimes reasons to do so
-  // https://github.com/prisma-labs/graphql-santa/issues/141
+  // https://github.com/graphql-nexus/nexus-future/issues/141
   output += '\n\n\n'
   output += config.appPath
     ? stripIndent`
@@ -74,8 +74,8 @@ export function createStartModuleContent(config: StartModuleConfig): string {
         // Users should normally not boot the server manually as doing so does not
         // bring value to the user's codebase.
 
-        const { app } = require('graphql-santa')
-        const singletonChecks = require('graphql-santa/dist/framework/singleton-checks')
+        const { app } = require('nexus-future')
+        const singletonChecks = require('nexus-future/dist/framework/singleton-checks')
 
         if (singletonChecks.state.is_was_server_start_called === false) {
           app.server.start()
@@ -83,7 +83,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
         `
     : stripIndent`
         // Start the server
-        const { app } = require('graphql-santa')
+        const { app } = require('nexus-future')
         app.server.start()
       `
 

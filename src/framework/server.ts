@@ -1,10 +1,10 @@
-import { sendServerReadySignalToDevModeMaster } from './dev-mode'
-import * as HTTP from 'http'
-import createExpressGraphql from 'express-graphql'
 import createExpress from 'express'
+import createExpressGraphql from 'express-graphql'
+import * as HTTP from 'http'
+import * as Net from 'net'
 import * as Plugin from '../core/plugin'
 import * as Logger from '../lib/logger'
-import * as Net from 'net'
+import { sendServerReadySignalToDevModeMaster } from './dev-mode'
 
 type Request = HTTP.IncomingMessage & { logger: Logger.Logger }
 type ContextContributor<T extends {}> = (req: Request) => T
@@ -17,8 +17,8 @@ const logger = Logger.create({ name: 'server' })
  */
 const optDefaults: Required<ExtraOptions> = {
   port:
-    typeof process.env.GRAPHQL_SANTA_PORT === 'string'
-      ? parseInt(process.env.GRAPHQL_SANTA_PORT, 10)
+    typeof process.env.NEXUS_FUTURE_PORT === 'string'
+      ? parseInt(process.env.NEXUS_FUTURE_PORT, 10)
       : typeof process.env.PORT === 'string'
       ? // e.g. Heroku convention https://stackoverflow.com/questions/28706180/setting-the-port-for-node-js-server-on-heroku
         parseInt(process.env.PORT, 10)

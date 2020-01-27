@@ -1,6 +1,6 @@
 import { stripIndent } from 'common-tags'
-import * as Layout from '../framework/layout'
 import * as Plugin from '../core/plugin'
+import * as Layout from '../framework/layout'
 import { fatal } from './process'
 
 export async function validateAndLoadDBDriver(): Promise<Plugin.WorkflowHooks> {
@@ -11,7 +11,7 @@ export async function validateAndLoadDBDriver(): Promise<Plugin.WorkflowHooks> {
   if (dbDrivers.length === 0) {
     fatal(
       stripIndent`
-        You have no database driver installed. Official drivers: "graphql-santa-plugin-prisma".
+        You have no database driver installed. Official drivers: "nexus-plugin-prisma".
         Run ${layout.packageManager.renderAddDeps([
           '<db-driver>',
         ])} to install one.

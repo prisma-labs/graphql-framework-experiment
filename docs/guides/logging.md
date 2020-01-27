@@ -1,13 +1,13 @@
-[`issues`](https://github.com/prisma-labs/graphql-santa/labels/scope%2Flogger) ([`feature`](https://github.com/prisma-labs/graphql-santa/issues?q=is%3Aopen+label%3Ascope%2Flogger+label%3Atype%2Ffeature), [`bug`](https://github.com/prisma-labs/graphql-santa/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Flogger+label%3Atype%2Fbug+))
+[`issues`](https://github.com/graphql-nexus/nexus-future/labels/scope%2Flogger) ([`feature`](https://github.com/graphql-nexus/nexus-future/issues?q=is%3Aopen+label%3Ascope%2Flogger+label%3Atype%2Ffeature), [`bug`](https://github.com/graphql-nexus/nexus-future/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Flogger+label%3Atype%2Fbug+))
 
-Logging is one of the primary means for knowing what is going on at runtime, what data is flowing through, and how so. A classic workhorse of debugging and development time feedback. There are a wealth of specialized tools but a great logging strategy can take you far. `santa` gives you a logging system built for a modern cloud native environment.
+Logging is one of the primary means for knowing what is going on at runtime, what data is flowing through, and how so. A classic workhorse of debugging and development time feedback. There are a wealth of specialized tools but a great logging strategy can take you far. `nexus-future` gives you a logging system built for a modern cloud native environment.
 
-It is recommended that your app only sends to stdout via the santa logging system. This ensures that you maintain log level control and are always working with JSON. We work hard to make the logger so good that you'll to use it.
+It is recommended that your app only sends to stdout via the nexus-future logging system. This ensures that you maintain log level control and are always working with JSON. We work hard to make the logger so good that you'll to use it.
 
 - Applications can get a reference to a logger singleton at `app.logger`.
 
   ```ts
-  import { app } from 'graphql-santa'
+  import { app } from 'nexus-future'
 
   app.logger.info('hello')
   ```
@@ -71,7 +71,7 @@ It is recommended that your app only sends to stdout via the santa logging syste
 - Pretty mode looks something like this:
 
   ```
-  ● info  santa:dev:boot
+  ● info  nexus-future:dev:boot
   ● info  app:boot
 
   ------------
@@ -94,7 +94,7 @@ You can create child loggers recursively starting from the root logger. A child 
 
 Child loggers are useful when you want to pass a logger to something that should be tracked as its own subsystem and/or may add context that you want isolated from the rest of the system. For example a classic use-case is the logger-instance-per-request pattern where a request-scoped logger is used for all logs in a request-response code path. This makes it much easier in production to group logs in your logging platform by request-response lifecycles.
 
-All runtime logs in your app (including from plugins ([bug #300](https://github.com/prisma-labs/graphql-santa/issues/300))) come from either the `app.logger` itself or descendents thereof. This means if you wish absolutely every log being emitted by your app to contain some additional context you can do so simply by adding context to the root logger:
+All runtime logs in your app (including from plugins ([bug #300](https://github.com/graphql-nexus/nexus-future/issues/300))) come from either the `app.logger` itself or descendents thereof. This means if you wish absolutely every log being emitted by your app to contain some additional context you can do so simply by adding context to the root logger:
 
 ```ts
 app.logger.addToContext({ user: 'Toto' })
@@ -108,4 +108,4 @@ app.logger
 
 ## debug Tool Integration
 
-You may be a user of [`debug`](https://github.com/visionmedia/debug) or install libraries into your app that are. We (_will ↣_ [#265](https://github.com/prisma-labs/graphql-santa/issues/265)) have special case support for `debug` so that it seamlessly integrates into the santa logging system. The gist is that all `debug` logs are routed through the `santa` logger at `trace` level.
+You may be a user of [`debug`](https://github.com/visionmedia/debug) or install libraries into your app that are. We (_will ↣_ [#265](https://github.com/graphql-nexus/nexus-future/issues/265)) have special case support for `debug` so that it seamlessly integrates into the nexus-future logging system. The gist is that all `debug` logs are routed through the `nexus-future` logger at `trace` level.

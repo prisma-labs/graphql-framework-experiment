@@ -3,8 +3,8 @@ import * as fs from 'fs-jetpack'
 import * as path from 'path'
 import * as ts from 'typescript'
 import { Layout } from '../framework/layout'
-import { pog } from './pog'
 import { logger } from './logger'
+import { pog } from './pog'
 
 const log = pog.sub('compiler')
 
@@ -46,8 +46,8 @@ export function findConfigFile(fileName: string, opts: { required: boolean }) {
 }
 
 /**
- * Fetch the tsconfig file for graphql-santa, handling special post-processing for
- * graphql-santa projects etc.
+ * Fetch the tsconfig file for nexus-future, handling special post-processing for
+ * nexus-future projects etc.
  */
 export function readTsConfig(layout: Layout): ts.ParsedCommandLine {
   const tsConfigPath = findConfigFile('tsconfig.json', { required: true })
@@ -88,7 +88,7 @@ export function readTsConfig(layout: Layout): ts.ParsedCommandLine {
   )
 
   /**
-   * Force tsconfig settings in ways that align with graphql-santa projects.
+   * Force tsconfig settings in ways that align with nexus-future projects.
    */
 
   // Target ES5 output by default (instead of ES3).
@@ -122,7 +122,7 @@ export function createTSProgram(
     rootNames: tsConfig.fileNames,
     options: {
       incremental: true,
-      tsBuildInfoFile: './node_modules/.graphql-santa/cache.tsbuildinfo',
+      tsBuildInfoFile: './node_modules/.nexus-future/cache.tsbuildinfo',
       ...tsConfig.options,
     },
   })
@@ -289,19 +289,19 @@ export function createTSConfigContents(layout: Layout): string {
         "module": "commonjs",
         "lib": ["esnext"],
         "strict": true,
-        // [1] graphql-santa managed
+        // [1] nexus-future managed
         // "rootDir": "${layout.sourceRootRelative}",
         // "outDir": "${layout.buildOutput}",
       },
-      // [1] graphql-santa managed
+      // [1] nexus-future managed
       // "include": "${layout.sourceRootRelative}"
     }
 
-    // [1] graphql-santa managed
+    // [1] nexus-future managed
     //
-    // These settings are managed by graphql-santa.
+    // These settings are managed by nexus-future.
     // Do not edit these manually. Please refer to
-    // https://github.com/prisma-labs/graphql-santa/issues/82
+    // https://github.com/graphql-nexus/nexus-future/issues/82
     // Contribute feedback/use-cases if you feel strongly
     // about controlling these settings manually.
   `

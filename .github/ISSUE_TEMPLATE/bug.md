@@ -10,12 +10,12 @@ assignees: ''
 <!-- 1. Remove sections/details you do not complete -->
 <!-- 2. Add sections/details useful to you -->
 
-|                    |                      |
-| ------------------ | -------------------- |
-| repro              | [link](https://todo) |
-| `node` version     | `...`                |
-| `santa` version    | `...`                |
-| OS and its version | `...`                |
+|                        |                      |
+| ---------------------- | -------------------- |
+| repro                  | [link](https://todo) |
+| `node` version         | `...`                |
+| `nexus-future` version | `...`                |
+| OS and its version     | `...`                |
 
 #### Description
 

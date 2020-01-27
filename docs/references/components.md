@@ -1,12 +1,12 @@
 ## HTTP Server
 
-[`issues`](https://github.com/prisma-labs/graphql-santa/labels/scope%2Fserver) ([`feature`](https://github.com/prisma-labs/graphql-santa/issues?q=is%3Aopen+label%3Ascope%2Fserver+label%3Atype%2Ffeature), [`bug`](https://github.com/prisma-labs/graphql-santa/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fserver+label%3Atype%2Fbug+))
+[`issues`](https://github.com/graphql-nexus/nexus-future/labels/scope%2Fserver) ([`feature`](https://github.com/graphql-nexus/nexus-future/issues?q=is%3Aopen+label%3Ascope%2Fserver+label%3Atype%2Ffeature), [`bug`](https://github.com/graphql-nexus/nexus-future/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fserver+label%3Atype%2Fbug+))
 
 ### About {docsify-ignore}
 
-This component handles recieving requests and sending responses to your clients. It is the transport layer, which GraphQL itself is actually agnostic about. Simple apps will not need to deal with this component directly as `santa` automatically runs it by default.
+This component handles recieving requests and sending responses to your clients. It is the transport layer, which GraphQL itself is actually agnostic about. Simple apps will not need to deal with this component directly as `nexus-future` automatically runs it by default.
 
-We currently use [`express-graphql`](https://github.com/graphql/express-graphql). There is an [open issue](https://github.com/prisma-labs/graphql-santa/issues/231) about adopting [`fastify-gql`](https://github.com/mcollina/fastify-gql) instead.
+We currently use [`express-graphql`](https://github.com/graphql/express-graphql). There is an [open issue](https://github.com/graphql-nexus/nexus-future/issues/231) about adopting [`fastify-gql`](https://github.com/mcollina/fastify-gql) instead.
 
 ### Features {docsify-ignore}
 
@@ -14,7 +14,7 @@ TODO
 
 ## GraphQL Schema
 
-[`issues`](https://github.com/prisma-labs/graphql-santa/labels/scope%2Fgql) ([`feature`](https://github.com/prisma-labs/graphql-santa/issues?q=is%3Aopen+label%3Ascope%2Fgql+label%3Atype%2Ffeature), [`bug`](https://github.com/prisma-labs/graphql-santa/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fgql+label%3Atype%2Fbug+))
+[`issues`](https://github.com/graphql-nexus/nexus-future/labels/scope%2Fgql) ([`feature`](https://github.com/graphql-nexus/nexus-future/issues?q=is%3Aopen+label%3Ascope%2Fgql+label%3Atype%2Ffeature), [`bug`](https://github.com/graphql-nexus/nexus-future/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fgql+label%3Atype%2Fbug+))
 
 ### About {docsify-ignore}
 
@@ -28,13 +28,13 @@ TODO
 
 ## Builder
 
-[`issues`](https://github.com/prisma-labs/graphql-santa/labels/scope%2Fbuilder) ([`feature`](https://github.com/prisma-labs/graphql-santa/issues?q=is%3Aopen+label%3Ascope%2Fbuilder+label%3Atype%2Ffeature), [`bug`](https://github.com/prisma-labs/graphql-santa/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fbuilder+label%3Atype%2Fbug+))
+[`issues`](https://github.com/graphql-nexus/nexus-future/labels/scope%2Fbuilder) ([`feature`](https://github.com/graphql-nexus/nexus-future/issues?q=is%3Aopen+label%3Ascope%2Fbuilder+label%3Atype%2Ffeature), [`bug`](https://github.com/graphql-nexus/nexus-future/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fbuilder+label%3Atype%2Fbug+))
 
 ### About {docsify-ignore}
 
 The part where you build your app into something ready for deployment to production.
 
-We use [TypeScript](https://github.com/microsoft/TypeScript). We [plan](https://github.com/prisma-labs/graphql-santa/issues/119) to introduce a bundle step as well.
+We use [TypeScript](https://github.com/microsoft/TypeScript). We [plan](https://github.com/graphql-nexus/nexus-future/issues/119) to introduce a bundle step as well.
 
 ### Features {docsify-ignore}
 
@@ -42,11 +42,11 @@ TODO
 
 ## Database
 
-[`issues`](https://github.com/prisma-labs/graphql-santa/labels/scope%2Fdatabase) ([`feature`](https://github.com/prisma-labs/graphql-santa/issues?q=is%3Aopen+label%3Ascope%2Fdatabase+label%3Atype%2Ffeature), [`bug`](https://github.com/prisma-labs/graphql-santa/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fdatabase+label%3Atype%2Fbug+))
+[`issues`](https://github.com/graphql-nexus/nexus-future/labels/scope%2Fdatabase) ([`feature`](https://github.com/graphql-nexus/nexus-future/issues?q=is%3Aopen+label%3Ascope%2Fdatabase+label%3Atype%2Ffeature), [`bug`](https://github.com/graphql-nexus/nexus-future/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fdatabase+label%3Atype%2Fbug+))
 
 ### About {docsify-ignore}
 
-Many applications need to persist data, but doing so often brings on more complexity. Deployments are harder, accurate local development environments are more involved, integration tests become more complex to write and slower, ... and so on. `santa` tackles this complexity by standardizing a database driver system that makes it possible to integrate database workflows seamlessly into your project.
+Many applications need to persist data, but doing so often brings on more complexity. Deployments are harder, accurate local development environments are more involved, integration tests become more complex to write and slower, ... and so on. `nexus-future` tackles this complexity by standardizing a database driver system that makes it possible to integrate database workflows seamlessly into your project.
 
 ### Features {docsify-ignore}
 
@@ -55,7 +55,7 @@ Many applications need to persist data, but doing so often brings on more comple
 
 ## Dev
 
-[`issues`](https://github.com/prisma-labs/graphql-santa/labels/scope%2Fdev) ([`feature`](https://github.com/prisma-labs/graphql-santa/issues?q=is%3Aopen+label%3Ascope%2Fdev+label%3Atype%2Ffeature), [`bug`](https://github.com/prisma-labs/graphql-santa/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fdev+label%3Atype%2Fbug+))
+[`issues`](https://github.com/graphql-nexus/nexus-future/labels/scope%2Fdev) ([`feature`](https://github.com/graphql-nexus/nexus-future/issues?q=is%3Aopen+label%3Ascope%2Fdev+label%3Atype%2Ffeature), [`bug`](https://github.com/graphql-nexus/nexus-future/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fdev+label%3Atype%2Fbug+))
 
 ### About {docsify-ignore}
 
@@ -70,11 +70,11 @@ In development you want a variety of features that make it easy to work on and t
 
 ## Logger
 
-[`issues`](https://github.com/prisma-labs/graphql-santa/labels/scope%2Flogger) ([`feature`](https://github.com/prisma-labs/graphql-santa/issues?q=is%3Aopen+label%3Ascope%2Flogger+label%3Atype%2Ffeature), [`bug`](https://github.com/prisma-labs/graphql-santa/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Flogger+label%3Atype%2Fbug+))
+[`issues`](https://github.com/graphql-nexus/nexus-future/labels/scope%2Flogger) ([`feature`](https://github.com/graphql-nexus/nexus-future/issues?q=is%3Aopen+label%3Ascope%2Flogger+label%3Atype%2Ffeature), [`bug`](https://github.com/graphql-nexus/nexus-future/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Flogger+label%3Atype%2Fbug+))
 
 ### About {docsify-ignore}
 
-One of the primary means for knowing what is going on at runtime, what data is flowing through, and how so. A classic workhorse of debugging and development time feedback. There are a wealth of specialized tools but a great logging strategy can take you far. `santa` gives you a logging system built for a modern cloud native environment.
+One of the primary means for knowing what is going on at runtime, what data is flowing through, and how so. A classic workhorse of debugging and development time feedback. There are a wealth of specialized tools but a great logging strategy can take you far. `nexus-future` gives you a logging system built for a modern cloud native environment.
 
 We have our own logger but write to [`pino`](https://github.com/pinojs/pino) under the hood for its performance.
 
@@ -86,7 +86,7 @@ We have our own logger but write to [`pino`](https://github.com/pinojs/pino) und
   **_example_**
 
   ```
-  ● info  santa:dev:boot
+  ● info  nexus-future:dev:boot
   ● info  app:boot
 
   ------------
@@ -109,7 +109,7 @@ We have our own logger but write to [`pino`](https://github.com/pinojs/pino) und
   **_example_**
 
   ```
-  {"level":30,"time":1578887817230,"pid":30997,"hostname":"Jasons-Prisma-Machine.local","path":["santa","dev"],"context":{},"event":"boot","v":1}
+  {"level":30,"time":1578887817230,"pid":30997,"hostname":"Jasons-Prisma-Machine.local","path":["nexus-future","dev"],"context":{},"event":"boot","v":1}
   {"level":30,"time":1578887819619,"pid":30998,"hostname":"Jasons-Prisma-Machine.local","path":["app"],"context":{},"event":"boot","v":1}
   {"level":60,"time":1578887819621,"pid":30998,"hostname":"Jasons-Prisma-Machine.local","path":["app"],"context":{"lib":{}},"event":"foo","v":1}
   {"level":50,"time":1578887819621,"pid":30998,"hostname":"Jasons-Prisma-Machine.local","path":["app"],"context":{"har":{"mar":"tek"}},"event":"foo","v":1}
@@ -129,18 +129,18 @@ We have our own logger but write to [`pino`](https://github.com/pinojs/pino) und
 * Standardizes six log levels: `fatal` `error` `warn` `info` `debug` `trace`  
   **_why_** Give logs more meaning/semantics, helps enable alerting policies, enables keeping production logs lean whilst maintaining higher resolution for development in development.
 
-* (_will ↣_ [#263](https://github.com/prisma-labs/graphql-santa/issues/263)) Exposes the pretty renderer as a CLI  
+* (_will ↣_ [#263](https://github.com/graphql-nexus/nexus-future/issues/263)) Exposes the pretty renderer as a CLI  
   **_why_** Allows you to pipe JSON logs from a remote location thus maintaining the human-readable experience you get in development.
 
-* (_will ↣_ [#265](https://github.com/prisma-labs/graphql-santa/issues/265)) Integrates logs from [`debug`](https://github.com/visionmedia/debug)  
+* (_will ↣_ [#265](https://github.com/graphql-nexus/nexus-future/issues/265)) Integrates logs from [`debug`](https://github.com/visionmedia/debug)  
   **_why_** We make it possible to continue benefiting from the widespread use of this tool in the node community in our structured system.
 
-* (_will ↣_ [#264](https://github.com/prisma-labs/graphql-santa/issues/264)) Interactive filtering on the command line  
+* (_will ↣_ [#264](https://github.com/graphql-nexus/nexus-future/issues/264)) Interactive filtering on the command line  
   **_why_** Keep yourself in the flow by focusing on the logs most relevant to your current development loop; Enjoy `trace` level without an overwhelming firehose; Enjoy isolating your or someone else's plugin logs.
 
 ## CLI
 
-[`issues`](https://github.com/prisma-labs/graphql-santa/labels/scope%2Fcli) ([`feature`](https://github.com/prisma-labs/graphql-santa/issues?q=is%3Aopen+label%3Ascope%2Fcli+label%3Atype%2Ffeature), [`bug`](https://github.com/prisma-labs/graphql-santa/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fcli+label%3Atype%2Fbug+))
+[`issues`](https://github.com/graphql-nexus/nexus-future/labels/scope%2Fcli) ([`feature`](https://github.com/graphql-nexus/nexus-future/issues?q=is%3Aopen+label%3Ascope%2Fcli+label%3Atype%2Ffeature), [`bug`](https://github.com/graphql-nexus/nexus-future/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fcli+label%3Atype%2Fbug+))
 
 ### About {docsify-ignore}
 
@@ -152,7 +152,7 @@ TODO
 
 ## Plugins
 
-[`issues`](https://github.com/prisma-labs/graphql-santa/labels/scope%2Fplugins) ([`feature`](https://github.com/prisma-labs/graphql-santa/issues?q=is%3Aopen+label%3Ascope%2Fplugins+label%3Atype%2Ffeature), [`bug`](https://github.com/prisma-labs/graphql-santa/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fplugins+label%3Atype%2Fbug+))
+[`issues`](https://github.com/graphql-nexus/nexus-future/labels/scope%2Fplugins) ([`feature`](https://github.com/graphql-nexus/nexus-future/issues?q=is%3Aopen+label%3Ascope%2Fplugins+label%3Atype%2Ffeature), [`bug`](https://github.com/graphql-nexus/nexus-future/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fplugins+label%3Atype%2Fbug+))
 
 ### About {docsify-ignore}
 

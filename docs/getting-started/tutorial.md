@@ -21,7 +21,7 @@
 Kick off a new project. Say yes (`y`) to the prisma option. Choose `PostgreSQL` for the db option.
 
 ```cli
-npx graphql-santa
+npx nexus-future
 ```
 
 ## Change the Data Layer
@@ -46,7 +46,7 @@ Start by updating our data layer to model information about moons. We don't want
 + }
 ```
 
-`graphql-santa` reacts to changes in your Prisma schema. By saving the above, your dev database will be automatically migrated and photon regenerated. You literally now just move on to updating your GraphQL API.
+`nexus-future` reacts to changes in your Prisma schema. By saving the above, your dev database will be automatically migrated and photon regenerated. You literally now just move on to updating your GraphQL API.
 
 ## Change the API Layer
 
@@ -159,7 +159,7 @@ For this step, create an account at [Heroku](https://www.heroku.com/) and [setup
 1.  Add a postgres database to it: `heroku addons:create heroku-postgresql --app <app-name>`
 1.  Get the postgres database credentials: `heroku pg:credentials:url --app <app-name>`
 1.  Export the connection URL into your shell `export DATABASE_URL="<connection-url>"`
-1.  Initialize the postgres database: `npx graphql-santa db init`
+1.  Initialize the postgres database: `npx nexus-future db init`
 1.  Deploy using the git push to master workflow. See your app running in the cloud!
 
 ## Next Steps

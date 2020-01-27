@@ -1,14 +1,13 @@
 # Introduction
 
-`graphql-santa` (henceforth referred to as `santa`) is a framework for building GraphQL APIs in Node.
+`nexus-future` is a framework for building GraphQL APIs in Node.
 
-Here are some of the things `santa` cares about:
+Here are some of the things `nexus-future` cares about:
 
 - Delightful developer experience
 - A CLI supporting devlopment lifecycle workflows
 - A deep plugin system for both runtime and CLI
 - Type-Safety across your entire codebase
-- Runtime performance
 - Integration Testing
 
 ## Hello World Example {docsify-ignore}
@@ -16,7 +15,7 @@ Here are some of the things `santa` cares about:
 Here is what a hello world looks like:
 
 ```ts
-import { app } from 'graphql-santa'
+import { app } from 'nexus-future'
 
 app.queryType({
   definition(t) {

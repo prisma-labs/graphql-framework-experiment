@@ -3,10 +3,10 @@ import { stripIndent } from 'common-tags'
 import * as dotenv from 'dotenv'
 import { isError } from 'util'
 import * as Layout from '../framework/layout'
+import { CLI, HelpError } from '../lib/cli'
 import { fatal, isProcessFromProjectBin } from '../utils'
 import * as PackageManager from '../utils/package-manager'
 import * as Commands from './commands'
-import { HelpError, CLI } from '../lib/cli'
 
 // Loads env variable from .env file
 dotenv.config()
@@ -24,9 +24,9 @@ main().then(exitCode => {
 })
 
 /**
- * Check that this graphql-santa process is being run from a locally installed
+ * Check that this nexus-future process is being run from a locally installed
  * veresion unless there is local project or the local project does not have
- * graphql-santa installed.
+ * nexus-future installed.
  */
 async function guardNotGlobalCLIWithLocalProject(
   packageManager: PackageManager.PackageManager
@@ -34,21 +34,21 @@ async function guardNotGlobalCLIWithLocalProject(
   // TODO data is attainable from layout scan calculated later on... not optimal to call this twice...
   const projectType = await Layout.scanProjectType()
   if (
-    projectType.type === 'graphql_santa_project' &&
+    projectType.type === 'NEXUS_FUTURE_project' &&
     isProcessFromProjectBin(projectType.packageJsonPath)
   ) {
     // TODO make npm aware
     fatal(stripIndent`
-        You are using the graphql-santa cli from a location other than this project.
+        You are using the nexus-future cli from a location other than this project.
 
-        Location of the graphql-santa CLI you executed:      ${process.argv[1]}
-        Location of the graphql-santa CLI for this project:  ${projectType.packageJsonPath +
-          '/node_modules/.bin/graphql-santa'}
+        Location of the nexus-future CLI you executed:      ${process.argv[1]}
+        Location of the nexus-future CLI for this project:  ${projectType.packageJsonPath +
+          '/node_modules/.bin/nexus-future'}
         
-        Please use the graphql-santa CLI for this project:
+        Please use the nexus-future CLI for this project:
 
             ${packageManager.renderRunBin(
-              'graphql-santa ' + process.argv.slice(2).join(' ')
+              'nexus-future ' + process.argv.slice(2).join(' ')
             )}
       `)
   }

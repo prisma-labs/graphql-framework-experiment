@@ -1,5 +1,5 @@
 ## TODO
 
 ```cli
-santa --help
+nexus-future --help
 ```

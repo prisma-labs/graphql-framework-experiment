@@ -216,14 +216,14 @@ function findPackageJsonPath(): string | null {
 }
 
 /**
- * Detect whether or not CWD is inside a graphql-santa project. graphql-santa project is
- * defined as there being a package.json in or above CWD with graphql-santa as a
+ * Detect whether or not CWD is inside a nexus-future project. nexus-future project is
+ * defined as there being a package.json in or above CWD with nexus-future as a
  * direct dependency.
  */
 export async function scanProjectType(): Promise<
   | { type: 'unknown' | 'new' }
   | {
-      type: 'graphql_santa_project' | 'node_project'
+      type: 'NEXUS_FUTURE_project' | 'node_project'
       packageJson: {}
       packageJsonPath: string
     }
@@ -238,8 +238,8 @@ export async function scanProjectType(): Promise<
   }
 
   const packageJson = fs.read(packageJsonPath, 'json')
-  if (packageJson?.dependencies?.['graphql-santa']) {
-    return { type: 'graphql_santa_project', packageJson, packageJsonPath }
+  if (packageJson?.dependencies?.['nexus-future']) {
+    return { type: 'NEXUS_FUTURE_project', packageJson, packageJsonPath }
   }
 
   return { type: 'node_project', packageJson, packageJsonPath }
@@ -254,11 +254,11 @@ async function isEmptyCWD(): Promise<boolean> {
   return contents === undefined || contents.length === 0
 }
 
-const ENV_VAR_DATA_NAME = 'GRAPHQL_SANTA_LAYOUT'
+const ENV_VAR_DATA_NAME = 'NEXUS_FUTURE_LAYOUT'
 
 export function saveDataForChildProcess(
   layout: Layout
-): { GRAPHQL_SANTA_LAYOUT: string } {
+): { NEXUS_FUTURE_LAYOUT: string } {
   return {
     [ENV_VAR_DATA_NAME]: JSON.stringify(layout.data),
   }
