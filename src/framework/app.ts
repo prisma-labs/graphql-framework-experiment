@@ -1,9 +1,9 @@
+import * as nexus from '@nexus/schema'
+import { typegenAutoConfig } from '@nexus/schema/dist/core'
 import { stripIndent, stripIndents } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import * as HTTP from 'http'
 import * as Lo from 'lodash'
-import * as nexus from 'nexus'
-import { typegenAutoConfig } from 'nexus/dist/core'
 import * as Plugin from '../core/plugin'
 import * as Logger from '../lib/logger'
 import { pog, requireSchemaModules } from '../utils'
@@ -312,7 +312,7 @@ const installGlobally = (app: App): App => {
   fs.write(
     nexusFutureTypeGenPath,
     stripIndent`
-      import * as nexus from 'nexus'
+      import * as nexus from '@nexus/schema'
       import * as NexusFuture from 'nexus-future'
 
       type QueryType = typeof nexus.core.queryType
