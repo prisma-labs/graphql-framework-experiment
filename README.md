@@ -1,10 +1,10 @@
-# graphql-santa <!-- omit in toc -->
+# nexus-future <!-- omit in toc -->
 
 <br>
 
 ## Documentation <!-- omit in toc -->
 
-https://prisma-labs.github.io/graphql-santa
+https://graphql-nexus.github.io/nexus-future
 
 <br>
 
