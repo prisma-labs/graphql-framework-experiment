@@ -11,7 +11,9 @@
     "/dist",
     "/src",
     "testing.d.ts",
-    "testing.js"
+    "testing.js",
+    "plugin.d.ts",
+    "plugin.js"
   ],
   "bin": {
     "graphql-santa": "dist/cli/main.js",
