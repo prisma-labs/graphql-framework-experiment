@@ -207,15 +207,15 @@ export class CLI implements Command {
   // TODO generate this from cli tree
   // static help template
   private static help = format(`
-    graphql-santa - GraphQL APIs without the hassle
+    nexus-future - GraphQL APIs without the hassle
 
     ${chalk.bold('Usage')}
 
-      ${chalk.dim(`$`)} graphql-santa [command]
+      ${chalk.dim(`$`)} nexus-future [command]
 
     ${chalk.bold('Commands')}
 
-        create   Setup a ready-to-use graphql-santa
+        create   Setup a ready-to-use nexus-future
            dev   Develop your application in watch mode
          build   Build a production-ready server
       generate   Generate the artifacts
@@ -224,13 +224,13 @@ export class CLI implements Command {
 
     ${chalk.bold('Examples')}
 
-      Initialize files for a new graphql-santa project
-      ${chalk.dim(`$`)} graphql-santa create
+      Initialize files for a new nexus-future project
+      ${chalk.dim(`$`)} nexus-future create
 
       Start developing and watch your changes locally
-      ${chalk.dim(`$`)} graphql-santa dev
+      ${chalk.dim(`$`)} nexus-future dev
 
       Build a production-ready server
-      ${chalk.dim(`$`)} graphql-santa build
+      ${chalk.dim(`$`)} nexus-future build
   `)
 }

@@ -184,7 +184,7 @@ Object {
 
 exports[`exits 1 if app does not type check 1`] = `
 Object {
-  "command": "yarn -s santa build",
+  "command": "yarn -s nexus-future build",
   "exitCode": 1,
   "signal": null,
   "stderr": "Error: [96mapp.ts[0m:[93m1[0m:[93m7[0m - [91merror[0m[90m TS2322: [0mType '\\"bar\\"' is not assignable to type 'number'.
@@ -192,9 +192,9 @@ Object {
 [7m1[0m const foo: number =  \\"bar\\"
 [7m [0m [91m      ~~~[0m
 
-    at Object.compile (/Users/jasonkuhrt/projects/prisma-labs/graphql-santa/dist/utils/tsc.js:107:15)
-    at parse (/Users/jasonkuhrt/projects/prisma-labs/graphql-santa/dist/cli/commands/build.js:66:17)
-    at async main (/Users/jasonkuhrt/projects/prisma-labs/graphql-santa/dist/cli/index.js:77:20)
+    at Object.compile (/Users/jasonkuhrt/projects/graphql-nexus/nexus-future/dist/utils/tsc.js:107:15)
+    at parse (/Users/jasonkuhrt/projects/graphql-nexus/nexus-future/dist/cli/commands/build.js:66:17)
+    at async main (/Users/jasonkuhrt/projects/graphql-nexus/nexus-future/dist/cli/index.js:77:20)
 ",
   "stdout": "Generating Nexus artifacts ...
 Compiling ...
@@ -204,7 +204,7 @@ Compiling ...
 
 exports[`exits 1 if typegen errors out 1`] = `
 Object {
-  "command": "yarn -s santa build",
+  "command": "yarn -s nexus-future build",
   "exitCode": 1,
   "signal": null,
   "stderr": "Error: 
@@ -215,9 +215,9 @@ app.ts(1,14): error TS1134: Variable declaration expected.
 
 
     
-    at Object.generateArtifacts (/Users/jasonkuhrt/projects/prisma-labs/graphql-santa/dist/utils/artifact-generation.js:21:23)
-    at parse (/Users/jasonkuhrt/projects/prisma-labs/graphql-santa/dist/cli/commands/build.js:55:23)
-    at async main (/Users/jasonkuhrt/projects/prisma-labs/graphql-santa/dist/cli/index.js:77:20)
+    at Object.generateArtifacts (/Users/jasonkuhrt/projects/graphql-nexus/nexus-future/dist/utils/artifact-generation.js:21:23)
+    at parse (/Users/jasonkuhrt/projects/graphql-nexus/nexus-future/dist/cli/commands/build.js:55:23)
+    at async main (/Users/jasonkuhrt/projects/graphql-nexus/nexus-future/dist/cli/index.js:77:20)
 ",
   "stdout": "Generating Nexus artifacts ...
 ",

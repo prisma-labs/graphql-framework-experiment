@@ -35,11 +35,11 @@ register({
     rootNames: tsConfig.fileNames,
     options: {
       incremental: true,
-      tsBuildInfoFile: './node_modules/.graphql-santa/cache.tsbuildinfo',
+      tsBuildInfoFile: './node_modules/.nexus-future/cache.tsbuildinfo',
       ...tsConfig.options,
     },
   })
-  process.env.GRAPHQL_SANTA_TYPEGEN_ADD_CONTEXT_RESULTS = JSON.stringify(
+  process.env.NEXUS_FUTURE_TYPEGEN_ADD_CONTEXT_RESULTS = JSON.stringify(
     extractContextTypes(program)
   )
   log('finished context type extraction')
@@ -48,7 +48,7 @@ register({
   process.argv.splice(1, 1)
 
   // A signal that the framework can use to make integrity checks with
-  process.env.GRAPHQL_SANTA_DEV_MODE = 'true'
+  process.env.NEXUS_FUTURE_DEV_MODE = 'true'
 
   if (process.env.DEBUG_RUNNER) {
     process.env.DEBUG = process.env.DEBUG_RUNNER
@@ -143,14 +143,14 @@ register({
     ipc.send({ required: file })
   })
 
-  if (!process.env.GRAPHQL_SANTA_EVAL) {
-    throw new Error('process.env.GRAPHQL_SANTA_EVAL is required')
+  if (!process.env.NEXUS_FUTURE_EVAL) {
+    throw new Error('process.env.NEXUS_FUTURE_EVAL is required')
   }
 
-  evalScript(process.env.GRAPHQL_SANTA_EVAL)
+  evalScript(process.env.NEXUS_FUTURE_EVAL)
 
   function evalScript(script: string) {
-    const EVAL_FILENAME = process.env.GRAPHQL_SANTA_EVAL_FILENAME!
+    const EVAL_FILENAME = process.env.NEXUS_FUTURE_EVAL_FILENAME!
     const module = new Module(EVAL_FILENAME)
     module.filename = EVAL_FILENAME
     module.paths = (Module as any)._nodeModulePaths(cwd)

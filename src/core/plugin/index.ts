@@ -1,23 +1,18 @@
 import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
-import prompts from 'prompts'
-import { fatal, pog, run, runSync } from '../../utils'
-import * as PackageManager from '../../utils/package-manager'
-import * as Chokidar from '../../watcher/chokidar'
+import * as Path from 'path'
+import prompts, * as Prompts from 'prompts'
 import * as Layout from '../../framework/layout'
 import { NexusConfig } from '../../framework/nexus'
 import { TestContext } from '../../framework/testing'
 import * as Logger from '../../lib/logger'
-import * as Path from 'path'
+import { CallbackRegistrer, MaybePromise, SideEffector } from '../../lib/utils'
+import { fatal, pog, run, runSync } from '../../utils'
+import * as PackageManager from '../../utils/package-manager'
+import * as Chokidar from '../../watcher/chokidar'
 
 const pluginSystemLogger = Logger.create({ name: 'plugin' })
 
-// We want to expose the prompts type in the plugin interface but, because we are
-// importing prompts with esModuleInterop, it would mean forcing the consumer to
-// also turn on esModuleInterop, which we do not want.
-//
-import * as Prompts from 'prompts'
-import { SideEffector, MaybePromise, CallbackRegistrer } from '../../lib/utils'
 type PromptsConstructor = <T extends string = string>(
   questions: Prompts.PromptObject<T> | Array<Prompts.PromptObject<T>>,
   options?: Prompts.Options
@@ -278,7 +273,7 @@ export function create(definer: Definer): DriverCreator {
 // }
 
 /**
- * Load all graphql-santa plugins installed into the project
+ * Load all nexus-future plugins installed into the project
  */
 export async function loadAllFromPackageJson(): Promise<Driver[]> {
   const packageJson: undefined | Record<string, any> = await fs.readAsync(
@@ -289,7 +284,7 @@ export async function loadAllFromPackageJson(): Promise<Driver[]> {
 }
 
 /**
- * Load all graphql-santa plugins installed into the project
+ * Load all nexus-future plugins installed into the project
  */
 export function loadAllFromPackageJsonSync(): Driver[] {
   const packageJson: undefined | Record<string, any> = fs.read(
@@ -313,7 +308,7 @@ function __doLoadAllFromPackageJson(
   if (depNames.length === 0) return []
 
   const pluginDepNames = depNames.filter(depName =>
-    depName.match(/^graphql-santa-plugin-.+/)
+    depName.match(/^nexus-plugin-.+/)
   )
   if (pluginDepNames.length === 0) return []
 
@@ -376,10 +371,10 @@ function __doLoadAllFromPackageJson(
 }
 
 /**
- * Parse a graphql-santa plugin package name to just the plugin name.
+ * Parse a nexus-future plugin package name to just the plugin name.
  */
 export function parsePluginName(packageName: string): null | string {
-  const matchResult = packageName.match(/^graphql-santa-plugin-(.+)/)
+  const matchResult = packageName.match(/^nexus-plugin-(.+)/)
 
   if (matchResult === null) return null
 

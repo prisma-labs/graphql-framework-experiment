@@ -1,18 +1,18 @@
 # 🎄
 
-# `graphql-santa`
+# `nexus-future`
 
 ### Delightful GraphQL Application Framework for TypeScript Node
 
 <br>
 
 ```cli
-npx graphql-santa
+npx nexus-future
 ```
 
 <br>
 
-[Github](https://github.com/prisma-labs/graphql-santa)
+[Github](https://github.com/graphql-nexus/nexus-future)
 [Docs](/README)
 
 <!-- background color -->

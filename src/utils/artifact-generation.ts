@@ -9,10 +9,10 @@ export async function generateArtifacts(startScript: string): Promise<void> {
     encoding: 'utf8',
     env: {
       ...process.env,
-      GRAPHQL_SANTA_STAGE: 'dev',
-      GRAPHQL_SANTA_SHOULD_AWAIT_TYPEGEN: 'true',
-      GRAPHQL_SANTA_SHOULD_GENERATE_ARTIFACTS: 'true',
-      GRAPHQL_SANTA_SHOULD_EXIT_AFTER_GENERATE_ARTIFACTS: 'true',
+      NEXUS_FUTURE_STAGE: 'dev',
+      NEXUS_FUTURE_SHOULD_AWAIT_TYPEGEN: 'true',
+      NEXUS_FUTURE_SHOULD_GENERATE_ARTIFACTS: 'true',
+      NEXUS_FUTURE_SHOULD_EXIT_AFTER_GENERATE_ARTIFACTS: 'true',
       TS_NODE_TRANSPILE_ONLY: 'true',
     },
   })

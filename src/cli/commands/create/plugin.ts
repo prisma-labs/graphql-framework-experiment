@@ -1,23 +1,23 @@
 /**
- * CLI command to help accelerate building a graphql-santa plugin. The scaffolding is
+ * CLI command to help accelerate building a nexus-future plugin. The scaffolding is
  * based on the result that `$ tsdx init` produces.
  */
 import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import prompts from 'prompts'
-import { pog, createGitRepository } from '../../../utils'
+import { Command } from '../../../lib/cli'
+import { createGitRepository, pog } from '../../../utils'
 import { logger } from '../../../utils/logger'
 import * as proc from '../../../utils/process'
-import { Command } from '../../../lib/cli'
 
 const log = pog.sub('cli:create:plugin')
 
 export default class Plugin implements Command {
   async parse() {
-    logger.info('Scaffolding a graphql-santa plugin')
+    logger.info('Scaffolding a nexus-future plugin')
 
     const pluginName = await askUserPluginName()
-    const pluginPackageName = 'graphql-santa-plugin-' + pluginName
+    const pluginPackageName = 'nexus-plugin-' + pluginName
     logger.info(`Creating directory ${pluginPackageName}...`)
     const projectPath = fs.path(pluginPackageName)
     await fs.dirAsync(projectPath)
@@ -86,7 +86,7 @@ export default class Plugin implements Command {
           prepack: 'yarn -s build',
         },
         peerDependencies: {
-          'graphql-santa': 'master',
+          'nexus-future': 'master',
         },
         husky: {
           hooks: {
@@ -143,16 +143,16 @@ export default class Plugin implements Command {
       fs.writeAsync(
         'src/index.ts',
         stripIndent`
-          import * as SantaPlugin from 'graphql-santa/plugin'
+          import * as NexusFuturePlugin from 'nexus-future/plugin'
 
-          export const create = SantaPlugin.create(santa => {
-            santa.workflow((hooks, _context) => {
+          export const create = NexusFuturePlugin.create(nexusFuture => {
+            nexusFuture.workflow((hooks, _context) => {
               hooks.build.onStart = async () => {
-                santa.utils.log.info('Hello from ${pluginName}!')
+                nexusFuture.utils.log.info('Hello from ${pluginName}!')
               }
             })
 
-            santa.runtime(() => {
+            nexusFuture.runtime(() => {
               return {
                 context: {
                   create: _req => {
@@ -182,7 +182,7 @@ export default class Plugin implements Command {
           '@babel/plugin-proposal-optional-chaining',
           '@types/jest',
           'husky',
-          'graphql-santa@master',
+          'nexus-future@master',
           'tsdx',
           'tslib',
           'typescript',
@@ -205,9 +205,9 @@ export default class Plugin implements Command {
  * Promp the user to give the plugin they are about to work on a name.
  */
 async function askUserPluginName(): Promise<string> {
-  // TODO prompt with "graphql-santa-plugin-" text faded gray e.g.
+  // TODO prompt with "nexus-plugin-" text faded gray e.g.
   //
-  // > graphql-santa-plugin-|
+  // > nexus-plugin-|
   //
   //
   // TODO check the npm registry to see if the name is already taken before
@@ -218,9 +218,6 @@ async function askUserPluginName(): Promise<string> {
     name: 'pluginName',
     message: 'What is the name of your plugin?',
   })
-  const pluginNameNormalized = pluginName.replace(
-    /^graphql-santa-plugin-(.+)/,
-    '$1'
-  )
+  const pluginNameNormalized = pluginName.replace(/^nexus-plugin-(.+)/, '$1')
   return pluginNameNormalized
 }

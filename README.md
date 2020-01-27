@@ -145,12 +145,12 @@ yarn -s release:stable
 
 #### Working With Example Apps via Linking
 
-Refer to https://github.com/prisma-labs/graphql-santa-examples
+Refer to https://github.com/graphql-nexus/nexus-future-examples
 
 #### Working with create command
 
 In any example you can use this workflow:
 
 ```
-rm -rf test-create && mcd test-create && ../node_modules/.bin/graphql-santa create
+rm -rf test-create && mcd test-create && ../node_modules/.bin/nexus-future create
 ```

@@ -3,7 +3,7 @@
 1. Install the prisma plugin
 
    ```cli
-   npm install graphql-santa-plugin-prisma
+   npm install nexus-plugin-prisma
    ```
 
 1. Add a `schema.prisma` file. Add a datasource. Here we're working with SQLite. Add photon.
@@ -24,7 +24,7 @@
 1. Initialize your database
 
    ```cli
-   npx santa db init
+   npx nexus-future db init
    ```
 
 1. Done. Now your app has:
@@ -32,7 +32,7 @@
    1. Functioning `db` command
 
       ```cli
-      santa db
+      nexus-future db
       ```
 
    1. `nexus-prisma` Nexus plugin allowing e.g.:
@@ -75,7 +75,7 @@
 1. Scaffold Your plugin project
 
    ```cli
-   npx santa create plugin
+   npx nexus-future create plugin
    ```
 
 2. Publish it
@@ -110,7 +110,7 @@ If you don't want to use a docker, here are some links to alternative approaches
 
    ```diff
    +++ package.json
-   + "build": "santa build"
+   + "build": "nexus-future build"
    ```
 
 2. Add a start script
@@ -124,12 +124,12 @@ If you don't want to use a docker, here are some links to alternative approaches
 
    ```diff
    +++ package.json
-   + "build": "santa build --deployment now"
+   + "build": "nexus-future build --deployment now"
    ```
 
    ```diff
    +++ package.json
-   + "build": "santa build --deployment heroku"
+   + "build": "nexus-future build --deployment heroku"
    ```
 
 ## Prisma + Heroku + PostgreSQL
@@ -175,7 +175,7 @@ If you don't want to use a docker, here are some links to alternative approaches
 
    ```ts
    // tests/__helpers.ts
-   import { createTestContext, TestContext } from 'graphql-santa/testing'
+   import { createTestContext, TestContext } from 'nexus-future/testing'
 
    export function createTestContext(): TestContext {
      let ctx: TestContext

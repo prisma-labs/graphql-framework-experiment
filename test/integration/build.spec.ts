@@ -1,7 +1,7 @@
 // TODO boot and query to take integration test confidence even further
 
-import { createWorkspace } from '../__helpers'
 import { DEFAULT_BUILD_FOLDER_NAME } from '../../src/framework/layout'
+import { createWorkspace } from '../__helpers'
 
 const ws = createWorkspace({
   name: 'build',
@@ -9,14 +9,14 @@ const ws = createWorkspace({
 
 it('exits 1 if typegen errors out', () => {
   ws.fs.write('app.ts', `const foo :: "bar"`)
-  const result = ws.run('yarn -s santa build')
+  const result = ws.run('yarn -s nexus-future build')
   delete result.error
   expect(result).toMatchSnapshot()
 })
 
 it('exits 1 if app does not type check', () => {
   ws.fs.write('app.ts', `const foo: number =  "bar"`)
-  const result = ws.run('yarn -s santa build')
+  const result = ws.run('yarn -s nexus-future build')
   delete result.error
   expect(result).toMatchSnapshot()
 })
@@ -25,7 +25,7 @@ it('can build with just a schema module', () => {
   ws.fs.write(
     'schema.ts',
     `
-      import { app } from 'graphql-santa'
+      import { app } from 'nexus-future'
 
       app.objectType({
         name: 'A',
@@ -36,7 +36,7 @@ it('can build with just a schema module', () => {
     `
   )
 
-  const result = ws.run('yarn -s graphql-santa build')
+  const result = ws.run('yarn -s nexus-future build')
   expect(result).toMatchSnapshot()
   expect(ws.fs.inspectTree(DEFAULT_BUILD_FOLDER_NAME)).toMatchSnapshot()
 })
@@ -45,7 +45,7 @@ it('can build with just a schema folder of modules', () => {
   ws.fs.write(
     'schema/a.ts',
     `
-      import { app } from 'graphql-santa'
+      import { app } from 'nexus-future'
 
       app.objectType({
         name: 'A',
@@ -56,7 +56,7 @@ it('can build with just a schema folder of modules', () => {
     `
   )
 
-  const result = ws.run('yarn -s graphql-santa build')
+  const result = ws.run('yarn -s nexus-future build')
   expect(result).toMatchSnapshot()
   expect(ws.fs.inspectTree(DEFAULT_BUILD_FOLDER_NAME)).toMatchSnapshot()
 })
@@ -65,7 +65,7 @@ it('can build with schema + app modules', () => {
   ws.fs.write(
     'schema.ts',
     `
-      import { app } from 'graphql-santa'
+      import { app } from 'nexus-future'
 
       app.objectType({
         name: 'A',
@@ -79,12 +79,12 @@ it('can build with schema + app modules', () => {
   ws.fs.write(
     'app.ts',
     `
-      import { app } from 'graphql-santa'
+      import { app } from 'nexus-future'
       app.server.start()
     `
   )
 
-  const result = ws.run('yarn -s graphql-santa build')
+  const result = ws.run('yarn -s nexus-future build')
   expect(result).toMatchSnapshot()
   expect(ws.fs.inspectTree(DEFAULT_BUILD_FOLDER_NAME)).toMatchSnapshot()
 })
@@ -93,7 +93,7 @@ it('can nest modules', () => {
   ws.fs.write(
     'graphql/schema.ts',
     `
-      import { app } from 'graphql-santa'
+      import { app } from 'nexus-future'
 
       app.objectType({
         name: 'A',
@@ -107,12 +107,12 @@ it('can nest modules', () => {
   ws.fs.write(
     'graphql/app.ts',
     `
-      import { app } from 'graphql-santa'
+      import { app } from 'nexus-future'
       app.server.start()
     `
   )
 
-  const result = ws.run('yarn -s graphql-santa build')
+  const result = ws.run('yarn -s nexus-future build')
   expect(result).toMatchSnapshot()
   expect(ws.fs.inspectTree(DEFAULT_BUILD_FOLDER_NAME)).toMatchSnapshot()
 })
@@ -121,7 +121,7 @@ it('can build a plugin', () => {
   ws.fs.write(
     'myplugin.ts',
     `	
-      import { Plugin } from 'graphql-santa'	
+      import { Plugin } from 'nexus-future'	
 
       export type Context = {	
         a: 1	
@@ -148,7 +148,7 @@ it('can build a plugin', () => {
   ws.fs.write(
     'schema.ts',
     `
-      import { app } from 'graphql-santa'
+      import { app } from 'nexus-future'
 
       app.queryType({	
         definition(t) {	
@@ -176,14 +176,14 @@ it('can build a plugin', () => {
   ws.fs.write(
     'app.ts',
     `	
-      import { app } from 'graphql-santa'
+      import { app } from 'nexus-future'
       import myplugin from './myplugin'	
 
       app.use(myplugin).server.start()	
     `
   )
 
-  const result = ws.run('yarn -s graphql-santa build')
+  const result = ws.run('yarn -s nexus-future build')
   expect(result).toMatchSnapshot()
   expect(ws.fs.inspectTree(DEFAULT_BUILD_FOLDER_NAME)).toMatchSnapshot()
 })

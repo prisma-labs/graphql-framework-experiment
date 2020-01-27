@@ -1,9 +1,9 @@
 import getPort from 'get-port'
 import { GraphQLClient } from 'graphql-request'
 import * as Lo from 'lodash'
+import * as Plugin from '../core/plugin'
 import { app } from './index'
 import * as Layout from './layout'
-import * as Plugin from '../core/plugin'
 import * as singletonChecks from './singleton-checks'
 
 type AppClient = {
@@ -21,7 +21,7 @@ export function createAppClient(apiUrl: string): AppClient {
 }
 
 declare global {
-  interface GraphQLSantaTestContextApp {
+  interface nexusFutureTestContextApp {
     query: AppClient['query']
     server: {
       start: () => Promise<void>
@@ -29,12 +29,12 @@ declare global {
     }
   }
 
-  interface GraphQLSantaTestContextRoot {
-    app: GraphQLSantaTestContextApp
+  interface nexusFutureTestContextRoot {
+    app: nexusFutureTestContextApp
   }
 }
 
-export type TestContext = GraphQLSantaTestContextRoot
+export type TestContext = nexusFutureTestContextRoot
 
 /**
  * Setup a test context providing utilities to query against your GraphQL API
@@ -43,7 +43,7 @@ export type TestContext = GraphQLSantaTestContextRoot
  *
  * With jest
  * ```
- * import { setupTest, TestContext } from 'graphql-santa/testing'
+ * import { setupTest, TestContext } from 'nexus-future/testing'
  *
  * let testCtx: TestContext
  *
@@ -59,7 +59,7 @@ export type TestContext = GraphQLSantaTestContextRoot
  */
 export async function createTestContext(): Promise<TestContext> {
   // Guarantee that development mode features are on
-  process.env.GRAPHQL_SANTA_STAGE = 'dev'
+  process.env.NEXUS_FUTURE_STAGE = 'dev'
 
   const port = await getPort({ port: getPort.makeRange(4000, 6000) })
   const apiUrl = `http://localhost:${port}/graphql`

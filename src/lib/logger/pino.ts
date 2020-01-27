@@ -8,7 +8,7 @@ export { Logger } from 'pino'
 /**
  * The pino typings are poor and, for example, do not account for prettifier or
  * mixin field. Also see note from Matteo about not using them:
- * https://github.com/prisma-labs/graphql-santa/pull/244#issuecomment-572573672
+ * https://github.com/graphql-nexus/nexus-future/pull/244#issuecomment-572573672
  */
 type ActualPinoOptions = Pino.LoggerOptions & {
   prettifier: (opts: any) => (logRec: any) => string

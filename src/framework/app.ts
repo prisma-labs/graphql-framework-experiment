@@ -1,15 +1,15 @@
 import { stripIndent, stripIndents } from 'common-tags'
 import * as fs from 'fs-jetpack'
+import * as HTTP from 'http'
+import * as Lo from 'lodash'
 import * as nexus from 'nexus'
 import { typegenAutoConfig } from 'nexus/dist/core'
+import * as Plugin from '../core/plugin'
 import * as Logger from '../lib/logger'
 import { pog, requireSchemaModules } from '../utils'
 import { createNexusConfig, createNexusSingleton } from './nexus'
-import * as Plugin from '../core/plugin'
-import * as singletonChecks from './singleton-checks'
-import * as HTTP from 'http'
-import * as Lo from 'lodash'
 import * as Server from './server'
+import * as singletonChecks from './singleton-checks'
 
 const log = pog.sub(__filename)
 const logger = Logger.create({ name: 'app' })
@@ -132,7 +132,7 @@ export function createApp(appConfig?: { types?: any }): App {
     extendInputType,
     server: {
       /**
-       * Start the server. If you do not call this explicitly then graphql-santa will
+       * Start the server. If you do not call this explicitly then nexus-future will
        * for you. You should not normally need to call this function yourself.
        */
       async start(opts: ServerOptions = {}): Promise<void> {
@@ -152,7 +152,7 @@ export function createApp(appConfig?: { types?: any }): App {
         // During dev mode we will dynamically require the user's schema modules.
         // At build time we inline static imports.
         // This code MUST run after user/system has had chance to run global installation
-        if (process.env.GRAPHQL_SANTA_STAGE === 'dev') {
+        if (process.env.NEXUS_FUTURE_STAGE === 'dev') {
           requireSchemaModules()
         }
 
@@ -203,8 +203,8 @@ export function createApp(appConfig?: { types?: any }): App {
 
           // Integrate user's app calls to app.addToContext
           const addToContextCallResults: string[] = process.env
-            .GRAPHQL_SANTA_TYPEGEN_ADD_CONTEXT_RESULTS
-            ? JSON.parse(process.env.GRAPHQL_SANTA_TYPEGEN_ADD_CONTEXT_RESULTS)
+            .NEXUS_FUTURE_TYPEGEN_ADD_CONTEXT_RESULTS
+            ? JSON.parse(process.env.NEXUS_FUTURE_TYPEGEN_ADD_CONTEXT_RESULTS)
             : []
 
           const addToContextInterfaces = addToContextCallResults
@@ -235,7 +235,7 @@ export function createApp(appConfig?: { types?: any }): App {
           }
 
           config.imports.push(
-            "import * as Logger from 'graphql-santa/dist/lib/logger'",
+            "import * as Logger from 'nexus-future/dist/lib/logger'",
             contextTypeContribSpecToCode({
               logger: 'Logger.Logger',
             })
@@ -305,15 +305,15 @@ const installGlobally = (app: App): App => {
     stringArg,
   })
 
-  const graphqlSantaTypeGenPath =
-    'node_modules/@types/typegen-graphql-santa/index.d.ts'
-  log('generating app global singleton typegen to %s', graphqlSantaTypeGenPath)
+  const nexusFutureTypeGenPath =
+    'node_modules/@types/typegen-nexus-future/index.d.ts'
+  log('generating app global singleton typegen to %s', nexusFutureTypeGenPath)
 
   fs.write(
-    graphqlSantaTypeGenPath,
+    nexusFutureTypeGenPath,
     stripIndent`
       import * as nexus from 'nexus'
-      import * as GQLSanta from 'graphql-santa'
+      import * as NexusFuture from 'nexus-future'
 
       type QueryType = typeof nexus.core.queryType
       type MutationType = typeof nexus.core.mutationType
@@ -326,7 +326,7 @@ const installGlobally = (app: App): App => {
       type StringArg = typeof nexus.stringArg
       
       declare global {
-        var app: GQLSanta.App
+        var app: NexusFuture.App
         var queryType: QueryType
         var mutationType: MutationType
         var objectType: ObjectType
@@ -337,11 +337,11 @@ const installGlobally = (app: App): App => {
         var intArg: IntArg
         var stringArg: StringArg
 
-        interface GQLSantaSingletonApp extends GQLSanta.App {}
+        interface NexusFutureSingletonApp extends NexusFuture.App {}
       
         namespace NodeJS {
           interface Global {
-            app: GQLSanta.App
+            app: NexusFuture.App
             queryType: QueryType
             mutationType: MutationType
             objectType: ObjectType
@@ -362,5 +362,5 @@ const installGlobally = (app: App): App => {
 
 export const isGlobalSingletonEnabled = (): boolean => {
   const packageJson = fs.read('package.json', 'json')
-  return packageJson?.['graphql-santa']?.singleton !== false
+  return packageJson?.['nexus-future']?.singleton !== false
 }
