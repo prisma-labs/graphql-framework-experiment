@@ -91,7 +91,7 @@ export async function createTestContext(): Promise<TestContext> {
   }
 
   const appClient = createAppClient(apiUrl)
-  const testContext: TestContextCore = {
+  const testContextCore: TestContextCore = {
     app: {
       query: appClient.query,
       server: {
@@ -100,9 +100,12 @@ export async function createTestContext(): Promise<TestContext> {
       },
     },
   }
-  const testingContributions = await Plugin.loadAllTestingPluginsFromPackageJson()
 
-  return testingContributions.reduce<TestContext>((acc, contribution) => {
-    return Lo.merge(acc, contribution)
-  }, testContext)
+  const testContextContributions = await Plugin.loadAllTestingPluginsFromPackageJson()
+
+  for (const testContextContribution of testContextContributions) {
+    Lo.merge(testContextCore, testContextContribution)
+  }
+
+  return testContextCore as TestContext
 }
