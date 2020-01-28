@@ -1,10 +1,18 @@
-import * as Pino from './pino'
-import * as Output from './output'
+import * as Lo from 'lodash'
+import { format } from 'util'
 import * as Level from './level'
 import * as Logger from './logger'
-import { format } from 'util'
+import * as Output from './output'
+import * as Pino from './pino'
 
-export type RootLogger = Logger.Logger & {
+// todo jsdoc
+export type SettingsData = {
+  readonly level: Level.Level
+  readonly pretty: boolean
+  readonly output: Output.Output
+}
+
+export type SettingsInput = {
   /**
    * Set the level of this and all descedent loggers. This level setting has
    * highest precedence of all logger level configuration tiers.
@@ -17,29 +25,25 @@ export type RootLogger = Logger.Logger & {
    *  3. NODE_ENV=production -> info
    *  4. otherwise -> debug
    */
-  setLevel: (level: Level.Level) => RootLogger // fluent
-  getLevel: () => Level.Level
-  setPretty: (pretty: boolean) => RootLogger // fluent
-  isPretty: () => boolean
+  level?: Level.Level
+  pretty?: boolean
+}
+
+type Settings = SettingsData & {
+  (newSettings: SettingsInput): RootLogger
 }
 
 // TODO jsDoc for each option
-export type Options = {
+export type Options = SettingsInput & {
   output?: Output.Output
-  /**
-   * foobar
-   */
-  level?: Level.Level
-  pretty?: boolean
   name?: string
 }
 
+export type RootLogger = Logger.Logger & {
+  settings: Settings
+}
+
 export type State = {
-  settings: {
-    pretty: boolean
-    level: Level.Level
-    output: Output.Output
-  }
   pino: Pino.Logger
 }
 
@@ -48,7 +52,7 @@ export type State = {
  */
 export function create(opts?: Options): RootLogger {
   let level = opts?.level
-  if (!level) {
+  if (level === undefined) {
     if (process.env.LOG_LEVEL) {
       level = parseFromEnvironment<Level.Level>('LOG_LEVEL', Level.parser)
     } else {
@@ -58,48 +62,42 @@ export function create(opts?: Options): RootLogger {
           : Level.LEVELS.debug.label
     }
   }
+  const pretty =
+    opts?.pretty ??
+    (process.env.LOG_PRETTY === 'true'
+      ? true
+      : process.env.LOG_PRETTY === 'false'
+      ? false
+      : process.stdout.isTTY)
 
-  const state = {
-    settings: {
-      pretty:
-        opts?.pretty ??
-        (process.env.LOG_PRETTY === 'true'
-          ? true
-          : process.env.LOG_PRETTY === 'false'
-          ? false
-          : process.stdout.isTTY),
-      level,
+  const state = {} as State
+  const loggerLink = Logger.create(state, [opts?.name ?? 'root'], {})
+  const logger = loggerLink.logger as RootLogger
 
-      output: opts?.output ?? process.stdout,
-    },
-  } as State
+  logger.settings = ((newSettings: SettingsInput) => {
+    Lo.merge(logger.settings, newSettings)
 
-  state.pino = Pino.create(state.settings)
-
-  const { logger } = Logger.create(state, [opts?.name ?? 'root'], {})
-
-  Object.assign(logger, {
-    getLevel(): Level.Level {
-      return state.settings.level
-      // return state.pino.level as Level
-    },
-    setLevel(level: Level.Level): Logger.Logger {
-      state.settings.level = level
-      state.pino.level = level
-      return logger
-    },
-    isPretty(): boolean {
-      return state.settings.pretty
-    },
-    setPretty(pretty: boolean): Logger.Logger {
-      state.settings.pretty = pretty
+    if (newSettings.pretty !== undefined) {
       // Pino does not support updating pretty setting, so we have to recreate it
-      state.pino = Pino.create(state.settings)
-      return logger
-    },
+      state.pino = Pino.create(logger.settings)
+    }
+
+    if (newSettings.level !== undefined) {
+      state.pino.level = newSettings.level
+    }
+
+    return logger
+  }) as Settings
+
+  Object.assign(logger.settings, {
+    pretty,
+    level,
+    output: opts?.output ?? process.stdout,
   })
 
-  return logger as RootLogger
+  state.pino = Pino.create(logger.settings)
+
+  return logger
 }
 
 /**

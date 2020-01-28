@@ -119,10 +119,4 @@ TODO
 
 Extends [`Logger`](#logger)
 
-### `rootLogger.setLevel`
-
-### `rootLogger.getLevel`
-
-### `rootLogger.setPretty`
-
-### `rootLogger.isPretty`
+### `rootLogger.settings`
