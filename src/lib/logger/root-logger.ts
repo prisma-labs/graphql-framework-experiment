@@ -27,7 +27,6 @@ export type SettingsInput = {
    */
   level?: Level.Level
   pretty?: boolean
-  output?: Output.Output
 }
 
 type Settings = SettingsData & {
@@ -36,17 +35,11 @@ type Settings = SettingsData & {
 
 // TODO jsDoc for each option
 export type Options = SettingsInput & {
-  /**
-   * foobar
-   */
+  output?: Output.Output
   name?: string
 }
 
 export type RootLogger = Logger.Logger & {
-  // setLevel: (level: Level.Level) => RootLogger // fluent
-  // getLevel: () => Level.Level
-  // setPretty: (pretty: boolean) => RootLogger // fluent
-  // isPretty: () => boolean
   settings: Settings
 }
 
