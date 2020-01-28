@@ -4,7 +4,7 @@
 
 ## Documentation <!-- omit in toc -->
 
-https://graphql-nexus.github.io/nexus-future
+https://nexus-future.now.sh
 
 <br>
 
