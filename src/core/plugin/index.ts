@@ -4,9 +4,14 @@ import * as Path from 'path'
 import prompts, * as Prompts from 'prompts'
 import * as Layout from '../../framework/layout'
 import { NexusConfig } from '../../framework/nexus'
-import { TestContext } from '../../framework/testing'
+import { TestContextCore } from '../../framework/testing'
 import * as Logger from '../../lib/logger'
-import { CallbackRegistrer, MaybePromise, SideEffector } from '../../lib/utils'
+import {
+  CallbackRegistrer,
+  DeepPartial,
+  MaybePromise,
+  SideEffector,
+} from '../../lib/utils'
 import { fatal, pog, run, runSync } from '../../utils'
 import * as PackageManager from '../../utils/package-manager'
 import * as Chokidar from '../../watcher/chokidar'
@@ -137,11 +142,7 @@ export type RuntimeContributions<C extends {} = any> = {
 
 type RuntimePlugin = () => RuntimeContributions
 
-type DeepPartial<T extends Record<string, any>> = {
-  [P in keyof T]?: T[P] extends Record<string, any> ? DeepPartial<T[P]> : T[P]
-} & { [x: string]: any }
-
-export type TestingContributions = DeepPartial<TestContext>
+export type TestingContributions = DeepPartial<TestContextCore>
 
 type TestingPlugin = () => TestingContributions
 

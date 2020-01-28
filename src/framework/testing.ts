@@ -20,7 +20,7 @@ export function createAppClient(apiUrl: string): AppClient {
   }
 }
 
-interface TestContextAppCore {
+export interface TestContextAppCore {
   query: AppClient['query']
   server: {
     start: () => Promise<void>
@@ -28,7 +28,7 @@ interface TestContextAppCore {
   }
 }
 
-interface TestContextCore {
+export interface TestContextCore {
   app: TestContextAppCore
 }
 
