@@ -73,7 +73,7 @@ export default class Plugin implements Command {
         typings: 'dist/index.d.ts',
         files: ['dist'],
         scripts: {
-          dev: 'tsdx watch',
+          dev: 'tsdx watch --entry src/index.ts',
           'build:doc': 'doctoc README.md --notitle',
           'build:ts': 'tsdx build',
           build: 'yarn -s build:ts && yarn -s build:doc',
@@ -98,12 +98,6 @@ export default class Plugin implements Command {
           singleQuote: true,
           trailingComma: 'es5',
         },
-        babel: {
-          plugins: [
-            '@babel/plugin-proposal-optional-chaining',
-            '@babel/plugin-proposal-nullish-coalescing-operator',
-          ],
-        },
       }),
       fs.writeAsync('tsconfig.json', {
         include: ['src', 'types', 'test'],
@@ -120,9 +114,6 @@ export default class Plugin implements Command {
           noFallthroughCasesInSwitch: true,
           moduleResolution: 'node',
           baseUrl: './',
-          paths: {
-            '*': ['src/*', 'node_modules/*'],
-          },
           esModuleInterop: true,
         },
       }),
@@ -177,9 +168,6 @@ export default class Plugin implements Command {
     await proc.run(
       'yarn add --dev ' +
         [
-          '@babel/core',
-          '@babel/plugin-proposal-nullish-coalescing-operator',
-          '@babel/plugin-proposal-optional-chaining',
           '@types/jest',
           'husky',
           'nexus-future@latest',
