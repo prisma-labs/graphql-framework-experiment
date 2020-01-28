@@ -28,38 +28,39 @@ describe('name', () => {
 describe('pretty', () => {
   it('defualts first to process.env.LOG_PRETTY, then tty presence', () => {
     process.env.LOG_PRETTY = 'true'
-    expect(Logger.create().isPretty()).toEqual(true)
+    expect(Logger.create().settings.pretty).toEqual(true)
     process.env.LOG_PRETTY = undefined
     process.stdout.isTTY = true
-    expect(Logger.create().isPretty()).toEqual(true)
+    expect(Logger.create().settings.pretty).toEqual(true)
     process.stdout.isTTY = false
-    expect(Logger.create().isPretty()).toEqual(false)
+    expect(Logger.create().settings.pretty).toEqual(false)
   })
 
   it('may be set at construction time', () => {
-    expect(Logger.create({ pretty: true }).isPretty()).toEqual(true)
+    expect(Logger.create({ pretty: true }).settings.pretty).toEqual(true)
   })
 
   it('manually setting takes precedence over defaults', () => {
+    logger.settings({})
     process.env.LOG_PRETTY = 'true'
-    expect(Logger.create({ pretty: false }).isPretty()).toEqual(false)
+    expect(Logger.create({ pretty: false }).settings.pretty).toEqual(false)
   })
 
   it('may be set at instance time', () => {
     const logger = Logger.create()
-    expect(logger.isPretty()).toEqual(false)
-    expect(logger.setPretty(true).isPretty()).toEqual(true)
+    expect(logger.settings.pretty).toEqual(false)
+    expect(logger.settings({ pretty: true }).settings.pretty).toEqual(true)
   })
 
   it('controls if logs are rendered pretty or as JSON', () => {
     logger.info('foo')
-    logger.setPretty(true)
+    logger.settings({ pretty: true })
     logger.info('bar')
     expect(output.writes).toMatchSnapshot()
   })
 
   it('makes logs pretty', () => {
-    logger.setPretty(true).setLevel('trace')
+    logger.settings({ pretty: true, level: 'trace' })
     logger.fatal('foo', { lib: /see/ })
     logger.error('foo', { har: { mar: 'tek' } })
     logger.warn('foo', { bleep: [1, '2', true] })
@@ -86,39 +87,39 @@ describe('level', () => {
       process.env.NODE_ENV = 'production'
       process.env.LOG_LEVEL = 'fatal'
       const logger = Logger.create({ level: 'fatal' })
-      logger.setLevel('trace')
-      expect(logger.getLevel()).toEqual('trace')
+      logger.settings({ level: 'trace' })
+      expect(logger.settings.level).toEqual('trace')
     })
 
     it('then considers construction time config', () => {
       process.env.NODE_ENV = 'production'
       process.env.LOG_LEVEL = 'fatal'
       const logger = Logger.create({ level: 'trace' })
-      expect(logger.getLevel()).toEqual('trace')
+      expect(logger.settings.level).toEqual('trace')
     })
 
     it('then considers LOG_LEVEL env var', () => {
       process.env.NODE_ENV = 'production'
       process.env.LOG_LEVEL = 'trace'
       const logger = Logger.create()
-      expect(logger.getLevel()).toEqual('trace')
+      expect(logger.settings.level).toEqual('trace')
     })
 
     it('then considers NODE_ENV=production', () => {
       process.env.NODE_ENV = 'production'
       const logger = Logger.create()
       console.log(process.env.LOG_LEVEL)
-      expect(logger.getLevel()).toEqual('info')
+      expect(logger.settings.level).toEqual('info')
     })
 
     it('then defaults to debug', () => {
       const logger = Logger.create()
-      expect(logger.getLevel()).toEqual('debug')
+      expect(logger.settings.level).toEqual('debug')
     })
   })
 
   it('logs below set level are not output', () => {
-    logger.setLevel('warn').info('foo')
+    logger.settings({ level: 'warn' }).info('foo')
     expect(output.writes).toEqual([])
   })
 
@@ -126,7 +127,7 @@ describe('level', () => {
     process.env.NODE_ENV = 'production'
     process.env.LOG_LEVEL = 'TRACE'
     const logger = Logger.create()
-    expect(logger.getLevel()).toEqual('trace')
+    expect(logger.settings.level).toEqual('trace')
   })
 
   it('LOG_LEVEL env var config when invalid triggers thrown readable error', () => {
@@ -145,7 +146,7 @@ describe('.<level> log methods', () => {
   })
 
   it('one for each log level', () => {
-    logger.setLevel('trace')
+    logger.settings({ level: 'trace' })
     logger.fatal('hi')
     logger.error('hi')
     logger.warn('hi')
@@ -223,9 +224,9 @@ describe('.child', () => {
   })
 
   it('inherits level from parent', () => {
-    expect(logger.getLevel()).toBe('debug')
+    expect(logger.settings.level).toBe('debug')
     logger
-      .setLevel('trace')
+      .settings({ level: 'trace' })
       .child('tim')
       .trace('hi')
     // The fact that we get output for trace log from child means it honored the
@@ -235,7 +236,7 @@ describe('.child', () => {
 
   it('reacts to level changes in root logger', () => {
     const b = logger.child('b')
-    logger.setLevel('trace')
+    logger.settings({ level: 'trace' })
     b.trace('foo')
     // The fact that we get output for trace log from child means it honored the
     // setLevel.
