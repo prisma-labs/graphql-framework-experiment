@@ -1,23 +1,26 @@
-import * as Lo from 'lodash'
 import { format } from 'util'
+import { casesHandled } from '../utils'
 import * as Level from './level'
 import * as Logger from './logger'
 import * as Output from './output'
 import * as Pino from './pino'
 
 // todo jsdoc
-export type SettingsData = {
-  readonly level: Level.Level
-  readonly pretty: boolean
-  readonly output: Output.Output
-}
+export type SettingsData = Readonly<{
+  level: Level.Level
+  pretty: Readonly<{
+    enabled: boolean
+    color: boolean
+  }>
+  output: Output.Output
+}>
 
 export type SettingsInput = {
   /**
    * Set the level of this and all descedent loggers. This level setting has
    * highest precedence of all logger level configuration tiers.
    *
-   * The level config takes the first value found, searching tiers follows:
+   * The level config takes the first value found, searching tiers as follows:
    *
    *  1. logger instance setting
    *  2. logger constructor setting
@@ -26,7 +29,22 @@ export type SettingsInput = {
    *  4. otherwise -> debug
    */
   level?: Level.Level
-  pretty?: boolean
+  /**
+   * Control pretty mode.
+   *
+   * Shorthands:
+   *
+   *  - `true` is shorthand for `{ enabled: true }`
+   *  - `false` is shorthand for `{ enabled: false }`
+   *
+   * The pretty config takes the first value found, searching tiers as follows:
+   *
+   *  1. logger instance settings
+   *  2. logger construction settings
+   *  3. LOG_PRETTY environment variable
+   *  4. otherwise -> process.stdout.isTTY
+   */
+  pretty?: boolean | { enabled: boolean; color?: boolean }
 }
 
 type Settings = SettingsData & {
@@ -62,7 +80,7 @@ export function create(opts?: Options): RootLogger {
           : Level.LEVELS.debug.label
     }
   }
-  const pretty =
+  const isPrettyEnabled =
     opts?.pretty ??
     (process.env.LOG_PRETTY === 'true'
       ? true
@@ -75,22 +93,35 @@ export function create(opts?: Options): RootLogger {
   const logger = loggerLink.logger as RootLogger
 
   logger.settings = ((newSettings: SettingsInput) => {
-    Lo.merge(logger.settings, newSettings)
+    if ('pretty' in newSettings) {
+      // @ts-ignore
+      logger.settings.pretty = processSettingInputPretty(
+        newSettings.pretty,
+        logger.settings.pretty
+      )
+    }
 
-    if (newSettings.pretty !== undefined) {
+    if ('level' in newSettings) {
+      // @ts-ignore
+      logger.settings.level = newSettings.level
+    }
+
+    // sync pino
+
+    if ('pretty' in newSettings) {
       // Pino does not support updating pretty setting, so we have to recreate it
       state.pino = Pino.create(logger.settings)
     }
 
-    if (newSettings.level !== undefined) {
-      state.pino.level = newSettings.level
+    if ('level' in newSettings) {
+      state.pino.level = logger.settings.level
     }
 
     return logger
   }) as Settings
 
   Object.assign(logger.settings, {
-    pretty,
+    pretty: processSettingInputPretty(opts?.pretty, null),
     level,
     output: opts?.output ?? process.stdout,
   })
@@ -125,4 +156,43 @@ function parseFromEnvironment<T>(
   }
 
   return result
+}
+
+/**
+ * Process pretty setting input.
+ */
+function processSettingInputPretty(
+  pretty: SettingsInput['pretty'],
+  previous: null | SettingsData['pretty']
+): SettingsData['pretty'] {
+  const color = previous?.color ?? true
+
+  if (pretty === undefined) {
+    return {
+      enabled:
+        process.env.LOG_PRETTY === 'true'
+          ? true
+          : process.env.LOG_PRETTY === 'false'
+          ? false
+          : process.stdout.isTTY,
+      color,
+    }
+  }
+
+  if (pretty === true) {
+    return { enabled: true, color }
+  }
+
+  if (pretty === false) {
+    return { enabled: false, color }
+  }
+
+  if (typeof pretty === 'object') {
+    return {
+      enabled: pretty.enabled,
+      color,
+    }
+  }
+
+  casesHandled(pretty)
 }

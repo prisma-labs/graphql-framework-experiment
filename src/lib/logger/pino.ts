@@ -1,7 +1,9 @@
+import * as Lo from 'lodash'
 import originalCreatePino, * as Pino from 'pino'
-import * as Prettifier from './prettifier'
-import * as Output from './output'
+import stripAnsi from 'strip-ansi'
 import { Level } from './level'
+import * as Output from './output'
+import * as Prettifier from './prettifier'
 
 export { Logger } from 'pino'
 
@@ -15,7 +17,10 @@ type ActualPinoOptions = Pino.LoggerOptions & {
 }
 
 type Options = {
-  pretty: boolean
+  pretty: {
+    enabled: boolean
+    color: boolean
+  }
   level: Level
   output: Output.Output
 }
@@ -28,8 +33,11 @@ type Options = {
 export function create(opts: Options): Pino.Logger {
   const pino = originalCreatePino(
     {
-      prettyPrint: opts.pretty,
-      prettifier: (_opts: any) => Prettifier.render,
+      prettyPrint: opts.pretty.enabled,
+      prettifier: (_opts: any) =>
+        opts.pretty.color
+          ? Prettifier.render
+          : Lo.flow(Prettifier.render, stripAnsi),
       messageKey: 'event',
     } as ActualPinoOptions,
     opts.output

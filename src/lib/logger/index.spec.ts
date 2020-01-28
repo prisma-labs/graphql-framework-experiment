@@ -25,49 +25,89 @@ describe('name', () => {
   })
 })
 
-describe('pretty', () => {
-  it('defualts first to process.env.LOG_PRETTY, then tty presence', () => {
-    process.env.LOG_PRETTY = 'true'
-    expect(Logger.create().settings.pretty).toEqual(true)
-    process.env.LOG_PRETTY = undefined
-    process.stdout.isTTY = true
-    expect(Logger.create().settings.pretty).toEqual(true)
-    process.stdout.isTTY = false
-    expect(Logger.create().settings.pretty).toEqual(false)
-  })
+describe('settings', () => {
+  describe('pretty', () => {
+    describe('enabled precedence', () => {
+      it('instnace config', () => {
+        process.stdout.isTTY = false
+        process.env.LOG_PRETTY = 'false'
+        const logger = Logger.create({ pretty: false })
+        logger.settings({ pretty: true })
+        expect(logger.settings.pretty.enabled).toEqual(true)
+      })
+      it('contructor config', () => {
+        process.stdout.isTTY = false
+        process.env.LOG_PRETTY = 'false'
+        const logger = Logger.create({ pretty: true })
+        expect(logger.settings.pretty.enabled).toEqual(true)
+      })
+      it('LOG_PRETTY', () => {
+        process.stdout.isTTY = false
+        process.env.LOG_PRETTY = 'true'
+        const logger = Logger.create()
+        expect(logger.settings.pretty.enabled).toEqual(true)
+      })
+      it('process.stdout.isTTY', () => {
+        delete process.env.LOG_PRETTY // pre-test logic forces false otherwise
+        process.stdout.isTTY = true
+        const logger = Logger.create()
+        expect(logger.settings.pretty.enabled).toEqual(true)
+      })
+    })
 
-  it('may be set at construction time', () => {
-    expect(Logger.create({ pretty: true }).settings.pretty).toEqual(true)
-  })
+    describe('enabling/disabling', () => {
+      it('defualts first to process.env.LOG_PRETTY, then tty presence', () => {
+        process.env.LOG_PRETTY = 'true'
+        expect(Logger.create().settings.pretty.enabled).toEqual(true)
+        process.env.LOG_PRETTY = undefined
+        process.stdout.isTTY = true
+        expect(Logger.create().settings.pretty.enabled).toEqual(true)
+        process.stdout.isTTY = false
+        expect(Logger.create().settings.pretty.enabled).toEqual(false)
+      })
 
-  it('manually setting takes precedence over defaults', () => {
-    logger.settings({})
-    process.env.LOG_PRETTY = 'true'
-    expect(Logger.create({ pretty: false }).settings.pretty).toEqual(false)
-  })
+      it('may be set at construction time', () => {
+        expect(Logger.create({ pretty: true }).settings.pretty.enabled).toEqual(
+          true
+        )
+      })
 
-  it('may be set at instance time', () => {
-    const logger = Logger.create()
-    expect(logger.settings.pretty).toEqual(false)
-    expect(logger.settings({ pretty: true }).settings.pretty).toEqual(true)
-  })
+      it('may be set at instance time', () => {
+        const logger = Logger.create()
+        expect(logger.settings.pretty.enabled).toEqual(false)
+        expect(
+          logger.settings({ pretty: true }).settings.pretty.enabled
+        ).toEqual(true)
+      })
 
-  it('controls if logs are rendered pretty or as JSON', () => {
-    logger.info('foo')
-    logger.settings({ pretty: true })
-    logger.info('bar')
-    expect(output.writes).toMatchSnapshot()
-  })
+      it('manually setting takes precedence over defaults', () => {
+        logger.settings({})
+        process.env.LOG_PRETTY = 'true'
+        expect(
+          Logger.create({ pretty: false }).settings.pretty.enabled
+        ).toEqual(false)
+      })
+    })
 
-  it('makes logs pretty', () => {
-    logger.settings({ pretty: true, level: 'trace' })
-    logger.fatal('foo', { lib: /see/ })
-    logger.error('foo', { har: { mar: 'tek' } })
-    logger.warn('foo', { bleep: [1, '2', true] })
-    logger.info('foo', { qux: true })
-    logger.debug('foo', { foo: 'bar' })
-    logger.trace('foo', { a: 1, b: 2, c: 'three' })
-    expect(output.writes).toMatchSnapshot()
+    describe('effect', () => {
+      it('controls if logs are rendered pretty or as JSON', () => {
+        logger.info('foo')
+        logger.settings({ pretty: true })
+        logger.info('bar')
+        expect(output.writes).toMatchSnapshot()
+      })
+
+      it('makes logs pretty', () => {
+        logger.settings({ pretty: true, level: 'trace' })
+        logger.fatal('foo', { lib: /see/ })
+        logger.error('foo', { har: { mar: 'tek' } })
+        logger.warn('foo', { bleep: [1, '2', true] })
+        logger.info('foo', { qux: true })
+        logger.debug('foo', { foo: 'bar' })
+        logger.trace('foo', { a: 1, b: 2, c: 'three' })
+        expect(output.writes).toMatchSnapshot()
+      })
+    })
   })
 })
 
