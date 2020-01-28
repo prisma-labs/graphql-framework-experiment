@@ -4,6 +4,10 @@ export type CallbackRegistrer<F> = (f: F) => void
 
 export type SideEffector = () => MaybePromise
 
+export type DeepPartial<T extends Record<string, any>> = {
+  [P in keyof T]?: T[P] extends Record<string, any> ? DeepPartial<T[P]> : T[P]
+} & { [x: string]: any }
+
 /**
  * Guarantee the length of a given string, padding before or after with the
  * given character. If the given string is longer than  the span target, then it
