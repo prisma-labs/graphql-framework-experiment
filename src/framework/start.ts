@@ -29,14 +29,14 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   if (config.internalStage === 'build') {
     output += stripIndent`
       // Guarantee that development mode features will not accidentally run
-      process.env.NEXUS_FUTURE_SHOULD_GENERATE_ARTIFACTS = 'false'
+      process.env.NEXUS_SHOULD_GENERATE_ARTIFACTS = 'false'
 
     `
   } else if (config.internalStage === 'dev') {
     output += stripIndent`
       // Guarantee that development mode features are on
-      process.env.NEXUS_FUTURE_SHOULD_GENERATE_ARTIFACTS = 'true'
-      process.env.NEXUS_FUTURE_STAGE = 'dev'
+      process.env.NEXUS_SHOULD_GENERATE_ARTIFACTS = 'true'
+      process.env.NEXUS_STAGE = 'dev'
     `
   }
 

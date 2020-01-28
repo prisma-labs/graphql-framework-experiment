@@ -65,7 +65,7 @@ export type TestContext = nexusFutureTestContextRoot
  */
 export async function createTestContext(): Promise<TestContext> {
   // Guarantee that development mode features are on
-  process.env.NEXUS_FUTURE_STAGE = 'dev'
+  process.env.NEXUS_STAGE = 'dev'
 
   const port = await getPort({ port: getPort.makeRange(4000, 6000) })
   const apiUrl = `http://localhost:${port}/graphql`

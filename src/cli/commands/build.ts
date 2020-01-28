@@ -73,7 +73,7 @@ export class Build implements Command {
 
     const tsProgram = createTSProgram(layout)
     const contextFieldTypes = extractContextTypes(tsProgram)
-    process.env.NEXUS_FUTURE_TYPEGEN_ADD_CONTEXT_RESULTS = JSON.stringify(
+    process.env.NEXUS_TYPEGEN_ADD_CONTEXT_RESULTS = JSON.stringify(
       contextFieldTypes
     )
 
@@ -106,9 +106,9 @@ export class Build implements Command {
 
   help() {
     return stripIndent`
-      Usage: nexus-future build [flags]
+      Usage: nexus build [flags]
 
-      Build a production-ready nexus-future server
+      Build a production-ready nexus server
 
       Flags:
         -o,     --output    Relative path to output directory
@@ -120,7 +120,7 @@ export class Build implements Command {
 
 /**
  * Output to disk in the build the start module that will be used to boot the
- * nexus-future app.
+ * nexus app.
  */
 async function writeStartModule(
   buildStage: string,
@@ -133,7 +133,7 @@ async function writeStartModule(
   // their module index.ts.
   if (fs.exists(`${layout.buildOutput}/${START_MODULE_NAME}.js`)) {
     fatal(stripIndent`
-      nexus-future reserves the source root module name ${START_MODULE_NAME}.js for its own use.
+      nexus reserves the source root module name ${START_MODULE_NAME}.js for its own use.
       Please change your app layout to not have this module.
       This is a temporary limitation that we intend to remove in the future. 
       For more details please see this GitHub issue: https://github.com/graphql-nexus/nexus-future/issues/139

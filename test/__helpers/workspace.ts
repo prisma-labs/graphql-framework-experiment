@@ -27,7 +27,7 @@ export function createWorkspace(config: Options): Workspace {
     // In case of a cache hit where we manually debugged the directory or
     // somehow else it changed.
     await gitReset(ws.git)
-    // HACK without this the nexus-future bin is missing because its a diff undone by the reset
+    // HACK without this the nexus bin is missing because its a diff undone by the reset
     ws.run('yarn --force', { require: true })
   })
 
@@ -55,7 +55,7 @@ async function doCreateWorkspace(config: Options): Promise<Workspace> {
   ).trim()
   const cacheKey = `v${ver}-yarnlock-${yarnLockHash}-gitbranch-${currentGitBranch}-testv${testVer}`
 
-  dir.path = `/tmp/nexus-future-integration-test-project-bases/${config.name}-${cacheKey}`
+  dir.path = `/tmp/nexus-integration-test-project-bases/${config.name}-${cacheKey}`
 
   dir.pathRelativeTonexusFuture =
     '../' + path.relative(dir.path, path.join(__dirname, '../..'))
@@ -85,11 +85,10 @@ async function doCreateWorkspace(config: Options): Promise<Workspace> {
         name: 'test-app',
         license: 'MIT',
         dependencies: {
-          'nexus-future': dir.pathRelativeTonexusFuture,
+          nexus: dir.pathRelativeTonexusFuture,
         },
         scripts: {
-          postinstall:
-            'yarn -s link nexus-future && chmod +x node_modules/.bin/nexus-future',
+          postinstall: 'yarn -s link nexus && chmod +x node_modules/.bin/nexus',
         },
       }),
       fs.writeAsync(

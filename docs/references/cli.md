@@ -1,5 +1,5 @@
 ## TODO
 
 ```cli
-nexus-future --help
+nexus --help
 ```

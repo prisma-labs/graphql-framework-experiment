@@ -1,4 +1,4 @@
-# nexus-future <!-- omit in toc -->
+# nexus <!-- omit in toc -->
 
 <br>
 
@@ -152,5 +152,5 @@ Refer to https://github.com/graphql-nexus/nexus-future-examples
 In any example you can use this workflow:
 
 ```
-rm -rf test-create && mcd test-create && ../node_modules/.bin/nexus-future create
+rm -rf test-create && mcd test-create && ../node_modules/.bin/nexus create
 ```

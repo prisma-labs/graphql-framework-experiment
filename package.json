@@ -17,7 +17,7 @@
     "plugin.js"
   ],
   "bin": {
-    "nexus-future": "dist/cli/main.js"
+    "nexus": "dist/cli/main.js"
   },
   "dependencies": {
     "@nexus/schema": "^0.12.0-rc.9",

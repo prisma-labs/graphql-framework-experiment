@@ -46,8 +46,8 @@ export function findConfigFile(fileName: string, opts: { required: boolean }) {
 }
 
 /**
- * Fetch the tsconfig file for nexus-future, handling special post-processing for
- * nexus-future projects etc.
+ * Fetch the tsconfig file for nexus, handling special post-processing for
+ * nexus projects etc.
  */
 export function readTsConfig(layout: Layout): ts.ParsedCommandLine {
   const tsConfigPath = findConfigFile('tsconfig.json', { required: true })
@@ -88,7 +88,7 @@ export function readTsConfig(layout: Layout): ts.ParsedCommandLine {
   )
 
   /**
-   * Force tsconfig settings in ways that align with nexus-future projects.
+   * Force tsconfig settings in ways that align with nexus projects.
    */
 
   // Target ES5 output by default (instead of ES3).
@@ -122,7 +122,7 @@ export function createTSProgram(
     rootNames: tsConfig.fileNames,
     options: {
       incremental: true,
-      tsBuildInfoFile: './node_modules/.nexus-future/cache.tsbuildinfo',
+      tsBuildInfoFile: './node_modules/.nexus/cache.tsbuildinfo',
       ...tsConfig.options,
     },
   })
@@ -289,17 +289,17 @@ export function createTSConfigContents(layout: Layout): string {
         "module": "commonjs",
         "lib": ["esnext"],
         "strict": true,
-        // [1] nexus-future managed
+        // [1] nexus managed
         // "rootDir": "${layout.sourceRootRelative}",
         // "outDir": "${layout.buildOutput}",
       },
-      // [1] nexus-future managed
+      // [1] nexus managed
       // "include": "${layout.sourceRootRelative}"
     }
 
-    // [1] nexus-future managed
+    // [1] nexus managed
     //
-    // These settings are managed by nexus-future.
+    // These settings are managed by nexus.
     // Do not edit these manually. Please refer to
     // https://github.com/graphql-nexus/nexus-future/issues/82
     // Contribute feedback/use-cases if you feel strongly

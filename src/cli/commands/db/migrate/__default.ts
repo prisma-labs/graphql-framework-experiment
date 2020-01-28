@@ -2,7 +2,7 @@ import { Command, generateHelpForCommandIndex } from '../../../../lib/cli'
 
 export class DbDefault implements Command {
   async parse(argv: string[]) {
-    // TODO: ! Unknown command "--help" when running nexus-future db migrate --help
+    // TODO: ! Unknown command "--help" when running nexus db migrate --help
     return this.help()
   }
 

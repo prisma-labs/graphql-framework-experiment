@@ -1,19 +1,19 @@
-Testing is a first-class concern of `nexus-future`. So far we ship a few primitives to help you run integration tests, but you can expect integrated higher level testing features in the future.
+Testing is a first-class concern of `nexus`. So far we ship a few primitives to help you run integration tests, but you can expect integrated higher level testing features in the future.
 
 > Note: This guide is written using [`jest`](https://jestjs.io/) because it is what we use internally and thus can speak to best. But you should be able to use your test framework of choice.
 
 ## Meet the Module
 
-`nexus-future` comes with a special testing module that you can import from `nexus-future/testing`. Its primary utility is the `createTestContext` function. It is designed for running _integration_ tests. When run it will in turn boot your app (in the same process) and expose an interface for your tests to interact with it.
+`nexus` comes with a special testing module that you can import from `nexus-future/testing`. Its primary utility is the `createTestContext` function. It is designed for running _integration_ tests. When run it will in turn boot your app (in the same process) and expose an interface for your tests to interact with it.
 
 <!-- TODO would be nice to have the TS type shown here. Use doc extraction system to do this. -->
 
 > For the curious...  
-> Since `jest` runs test suites in parallel it means multiple instances of your `app` will be run in parallel too. The testing module takes care of abstracting the mechanics of making this work from you. For example it assigns random ports to each app to run its server and makes sure each test suite's app client is configured to be talking with its respective app instance. You should _never_ have to think about these kinds of details though, and if it turns out you do please open a GitHub issue so we can try to seal the leak you've found in `nexus-future`'s abstraction!
+> Since `jest` runs test suites in parallel it means multiple instances of your `app` will be run in parallel too. The testing module takes care of abstracting the mechanics of making this work from you. For example it assigns random ports to each app to run its server and makes sure each test suite's app client is configured to be talking with its respective app instance. You should _never_ have to think about these kinds of details though, and if it turns out you do please open a GitHub issue so we can try to seal the leak you've found in `nexus`'s abstraction!
 
 ##### A Little Helper {docsify-ignore}
 
-Before jumping into test suites we will wrap the `createTestContext` with a pattern that more tightly integrates it into `jest`. `nexus-future` will probably ship something like as follows or better in the future, but for now you can copy this into your projects:
+Before jumping into test suites we will wrap the `createTestContext` with a pattern that more tightly integrates it into `jest`. `nexus` will probably ship something like as follows or better in the future, but for now you can copy this into your projects:
 
 ```ts
 // tests/__helpers.ts
@@ -66,7 +66,7 @@ import { createTestContext } from './__helpers'
 const ctx = createTestContext()
 
 it('makes sure a user was registered', async () => {
-  // ctx.app.query sends requests to your locally running nexus-future server
+  // ctx.app.query sends requests to your locally running nexus server
   const result = await ctx.app.query(`
     mutation {
       signupUser(data: { email: "person@email.com", password: "123456" })
@@ -84,9 +84,9 @@ it('makes sure a user was registered', async () => {
 
 ## With a Database
 
-Integration testing with a databsae can add a lot of complexity to your test suite. But `nexus-future` is in a good position to help since it knows about both test and database domains of your app. The following assumes you are using a [db driver](/guides/databases?id=driver-system). It is _not_ about database testing _in general_.
+Integration testing with a databsae can add a lot of complexity to your test suite. But `nexus` is in a good position to help since it knows about both test and database domains of your app. The following assumes you are using a [db driver](/guides/databases?id=driver-system). It is _not_ about database testing _in general_.
 
-Integration between `nexus-future`'s test and database systems is young and still missing many features. Below we will cover some utilities and patterns that you can copy into your project meanwhile.
+Integration between `nexus`'s test and database systems is young and still missing many features. Below we will cover some utilities and patterns that you can copy into your project meanwhile.
 
 > Note: This assumes you have [setup a PostgreSQL database running locally](references/recipes?id=local-postgresql). You could use any database supported by Prisma though.
 
@@ -99,17 +99,17 @@ Integration between `nexus-future`'s test and database systems is young and stil
 1. Create a specialized "jest environment" that will manage a real database for your tests to run against.
 
    ```ts
-   // nexus-future-test-environment.js
+   // nexus-test-environment.js
    const { Client } = require('pg')
    const NodeEnvironment = require('jest-environment-node')
    const nanoid = require('nanoid')
    const util = require('util')
    const exec = util.promisify(require('child_process').exec)
 
-   const nexus-futureBinary = './node_modules/.bin/nexus-future'
+   const nexusBinary = './node_modules/.bin/nexus'
 
    /**
-    * Custom test environment for nexus-future and Postgres
+    * Custom test environment for nexus and Postgres
     */
    class PrismaTestEnvironment extends NodeEnvironment {
      constructor(config) {
@@ -129,7 +129,7 @@ Integration between `nexus-future`'s test and database systems is young and stil
        this.global.process.env.POSTGRES_URL = this.connectionString
 
        // Run the migrations to ensure our schema has the required structure
-       await exec(`${nexus-futureBinary} db migrate apply -f`)
+       await exec(`${nexusBinary} db migrate apply -f`)
 
        return super.setup()
      }
@@ -157,7 +157,7 @@ Integration between `nexus-future`'s test and database systems is young and stil
    module.exports = {
      preset: 'ts-jest',
      rootDir: 'tests',
-   + testEnvironment: join(__dirname, 'nexus-future-test-environment.js'),
+   + testEnvironment: join(__dirname, 'nexus-test-environment.js'),
    }
    ```
 
@@ -178,7 +178,7 @@ Integration between `nexus-future`'s test and database systems is young and stil
    POSTGRES_URL="<your-development-postgres-url>"
    ```
 
-1. `nexus-future` db drivers augment `TestContext['app']` with a `db` property. This can be used for example to seed your database with data at the beginning of a test suite:
+1. `nexus` db drivers augment `TestContext['app']` with a `db` property. This can be used for example to seed your database with data at the beginning of a test suite:
 
    ```ts
    beforeAll(async () => {
@@ -189,7 +189,7 @@ Integration between `nexus-future`'s test and database systems is young and stil
 1. For now, just update the `createTestContext` wrapper to integrate your app's db client:
 
    ```diff
-   +++ nexus-future-test-environment.js
+   +++ nexus-test-environment.js
    afterAll(async () => {
      await ctx.app.server.stop()
    + await ctx.app.db.client.disconnect()
@@ -208,7 +208,7 @@ Integration between `nexus-future`'s test and database systems is young and stil
    const ctx = createTestContext()
 
    it('makes sure a user was registered', async () => {
-     // ctx.app.query sends requests to your locally running nexus-future server
+     // ctx.app.query sends requests to your locally running nexus server
      const result = await ctx.app.query(`
        mutation {
          signupUser(data: { email: "person@email.com", password: "123456" })

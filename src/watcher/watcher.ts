@@ -33,7 +33,7 @@ export function createWatcher(opts: Opts): Promise<void> {
 
     // TODO watch for changes to tsconfig and take correct action
     // TODO watch for changes to package json and take correct action (imagine
-    // there could be nexus-future config in there)
+    // there could be nexus config in there)
     // TODO restart should take place following npm install/remove yarn
     // add/remove/install etc.
     // TODO need a way to test file matching given patterns. Hard to get right,
@@ -149,7 +149,7 @@ export function createWatcher(opts: Opts): Promise<void> {
       if (runner.exited) return Promise.resolve()
 
       // TODO maybe we should be a timeout here so that child process hanging
-      // will never prevent nexus-future dev from exiting nicely.
+      // will never prevent nexus dev from exiting nicely.
       return sendSigterm(runner)
         .then(() => {
           log('sigterm to runner process tree completed')
@@ -292,8 +292,8 @@ function startRunner(
     silent: true,
     env: {
       ...process.env,
-      NEXUS_FUTURE_EVAL: opts.eval.code,
-      NEXUS_FUTURE_EVAL_FILENAME: opts.eval.fileName,
+      NEXUS_EVAL: opts.eval.code,
+      NEXUS_EVAL_FILENAME: opts.eval.fileName,
       ...saveDataForChildProcess(opts.layout),
     },
   }) as Process

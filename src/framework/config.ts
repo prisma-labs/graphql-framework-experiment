@@ -31,11 +31,11 @@ type EnvironmentWithSecretLoader =
   | undefined
 
 interface Environment {
-  NEXUS_FUTURE_DATABASE_URL?: string
+  NEXUS_DATABASE_URL?: string
   [env_key: string]: string | undefined
 }
 
-export const DATABASE_URL_ENV_NAME = 'NEXUS_FUTURE_DATABASE_URL'
+export const DATABASE_URL_ENV_NAME = 'NEXUS_DATABASE_URL'
 
 function tryReadConfig(configPath: string): object | null {
   const { unregister } = registerTsExt()
@@ -45,11 +45,7 @@ function tryReadConfig(configPath: string): object | null {
     unregister()
     return config
   } catch (e) {
-    log(
-      'we could not load nexus-future config file at %s. reason: %O',
-      configPath,
-      e
-    )
+    log('we could not load nexus config file at %s. reason: %O', configPath, e)
     return null
   }
 }
@@ -62,7 +58,7 @@ function validateConfig(config: any): Config | null {
 
   if (!config.default) {
     fatal(
-      'Your config in `nexus-future.config.ts` needs to be default exported. `export default createConfig({ ... })`'
+      'Your config in `nexus.config.ts` needs to be default exported. `export default createConfig({ ... })`'
     )
   }
 
@@ -70,7 +66,7 @@ function validateConfig(config: any): Config | null {
 }
 
 export function readConfig(): Config | null {
-  const config = tryReadConfig(fs.path('nexus-future.config.ts'))
+  const config = tryReadConfig(fs.path('nexus.config.ts'))
   const validatedConfig = validateConfig(config)
 
   if (!validateConfig(config)) {
@@ -398,14 +394,14 @@ export function loadEnvironmentFromConfig(
 }
 
 /**
- * Helper method to configure nexus-future. **Must be default exported in a `nexus-future.config.ts` file**
+ * Helper method to configure nexus. **Must be default exported in a `nexus.config.ts` file**
  *
  * @example
  *
  * export default createConfig({
  *   environments: {
  *     development: {
- *       NEXUS_FUTURE_DATABASE_URL: "<database_connection_url>"
+ *       NEXUS_DATABASE_URL: "<database_connection_url>"
  *     }
  *   }
  * })

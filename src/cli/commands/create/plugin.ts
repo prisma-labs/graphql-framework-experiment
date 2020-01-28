@@ -1,5 +1,5 @@
 /**
- * CLI command to help accelerate building a nexus-future plugin. The scaffolding is
+ * CLI command to help accelerate building a nexus plugin. The scaffolding is
  * based on the result that `$ tsdx init` produces.
  */
 import { stripIndent } from 'common-tags'
@@ -14,7 +14,7 @@ const log = pog.sub('cli:create:plugin')
 
 export default class Plugin implements Command {
   async parse() {
-    logger.info('Scaffolding a nexus-future plugin')
+    logger.info('Scaffolding a nexus plugin')
 
     const pluginName = await askUserPluginName()
     const pluginPackageName = 'nexus-plugin-' + pluginName
@@ -86,7 +86,7 @@ export default class Plugin implements Command {
           prepack: 'yarn -s build',
         },
         peerDependencies: {
-          'nexus-future': 'master',
+          'nexus-future': 'latest',
         },
         husky: {
           hooks: {
@@ -143,9 +143,9 @@ export default class Plugin implements Command {
       fs.writeAsync(
         'src/index.ts',
         stripIndent`
-          import * as NexusFuturePlugin from 'nexus-future/plugin'
+          import * as NexusPlugin from 'nexus-future/plugin'
 
-          export const create = NexusFuturePlugin.create(nexusFuture => {
+          export const create = NexusPlugin.create(nexusFuture => {
             nexusFuture.workflow((hooks, _context) => {
               hooks.build.onStart = async () => {
                 nexusFuture.utils.log.info('Hello from ${pluginName}!')
@@ -182,7 +182,7 @@ export default class Plugin implements Command {
           '@babel/plugin-proposal-optional-chaining',
           '@types/jest',
           'husky',
-          'nexus-future@master',
+          'nexus-future@latest',
           'tsdx',
           'tslib',
           'typescript',

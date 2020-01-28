@@ -7,7 +7,7 @@ const ws = createWorkspace({
 it('warns and scaffold if there is no tsconfig', () => {
   ws.fs.remove('tsconfig.json')
 
-  expect(ws.run('yarn -s nexus-future doctor')).toMatchInlineSnapshot(`
+  expect(ws.run('yarn -s nexus doctor')).toMatchInlineSnapshot(`
     Object {
       "status": 0,
       "stderr": "",
@@ -23,12 +23,12 @@ it('errors if tsconfig is not in the project dir', () => {
   ws.fs.remove('tsconfig.json')
   ws.fs.write('../tsconfig.json', '')
 
-  expect(ws.run('yarn -s nexus-future doctor', { require: false }))
+  expect(ws.run('yarn -s nexus doctor', { require: false }))
     .toMatchInlineSnapshot(`
     Object {
       "status": 0,
       "stderr": "[31mERROR:[39m Your tsconfig.json file needs to be in your project root directory
-    [31mERROR:[39m Found /private/tmp/nexus-future-integration-test-project-bases/tsconfig.json, expected /private/tmp/nexus-future-integration-test-project-bases/doctor-v5-yarnlock-201221dbef7978122d753bdd99660770-gitbranch-master-testv1/tsconfig.json
+    [31mERROR:[39m Found /private/tmp/nexus-integration-test-project-bases/tsconfig.json, expected /private/tmp/nexus-integration-test-project-bases/doctor-v5-yarnlock-201221dbef7978122d753bdd99660770-gitbranch-master-testv1/tsconfig.json
     ",
       "stdout": "[1m-- tsconfig.json --[22m
     ",
@@ -39,9 +39,9 @@ it('errors if tsconfig is not in the project dir', () => {
 })
 
 it('validates that there is a tsconfig.json file', () => {
-  ws.fs.write('.gitignore', '.nexus-future')
+  ws.fs.write('.gitignore', '.nexus')
 
-  expect(ws.run('yarn -s nexus-future doctor')).toMatchInlineSnapshot(`
+  expect(ws.run('yarn -s nexus doctor')).toMatchInlineSnapshot(`
     Object {
       "status": 0,
       "stderr": "",

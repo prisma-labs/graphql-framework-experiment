@@ -24,7 +24,7 @@
 1. Initialize your database
 
    ```cli
-   npx nexus-future db init
+   npx nexus db init
    ```
 
 1. Done. Now your app has:
@@ -32,7 +32,7 @@
    1. Functioning `db` command
 
       ```cli
-      nexus-future db
+      nexus db
       ```
 
    1. `nexus-prisma` Nexus plugin allowing e.g.:
@@ -110,7 +110,7 @@ If you don't want to use a docker, here are some links to alternative approaches
 
    ```diff
    +++ package.json
-   + "build": "nexus-future build"
+   + "build": "nexus build"
    ```
 
 2. Add a start script
@@ -124,12 +124,12 @@ If you don't want to use a docker, here are some links to alternative approaches
 
    ```diff
    +++ package.json
-   + "build": "nexus-future build --deployment now"
+   + "build": "nexus build --deployment now"
    ```
 
    ```diff
    +++ package.json
-   + "build": "nexus-future build --deployment heroku"
+   + "build": "nexus build --deployment heroku"
    ```
 
 ## Prisma + Heroku + PostgreSQL

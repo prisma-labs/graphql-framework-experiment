@@ -4,7 +4,7 @@
 
 ### About {docsify-ignore}
 
-This component handles recieving requests and sending responses to your clients. It is the transport layer, which GraphQL itself is actually agnostic about. Simple apps will not need to deal with this component directly as `nexus-future` automatically runs it by default.
+This component handles recieving requests and sending responses to your clients. It is the transport layer, which GraphQL itself is actually agnostic about. Simple apps will not need to deal with this component directly as `nexus` automatically runs it by default.
 
 We currently use [`express-graphql`](https://github.com/graphql/express-graphql). There is an [open issue](https://github.com/graphql-nexus/nexus-future/issues/231) about adopting [`fastify-gql`](https://github.com/mcollina/fastify-gql) instead.
 
@@ -46,7 +46,7 @@ TODO
 
 ### About {docsify-ignore}
 
-Many applications need to persist data, but doing so often brings on more complexity. Deployments are harder, accurate local development environments are more involved, integration tests become more complex to write and slower, ... and so on. `nexus-future` tackles this complexity by standardizing a database driver system that makes it possible to integrate database workflows seamlessly into your project.
+Many applications need to persist data, but doing so often brings on more complexity. Deployments are harder, accurate local development environments are more involved, integration tests become more complex to write and slower, ... and so on. `nexus` tackles this complexity by standardizing a database driver system that makes it possible to integrate database workflows seamlessly into your project.
 
 ### Features {docsify-ignore}
 
@@ -74,7 +74,7 @@ In development you want a variety of features that make it easy to work on and t
 
 ### About {docsify-ignore}
 
-One of the primary means for knowing what is going on at runtime, what data is flowing through, and how so. A classic workhorse of debugging and development time feedback. There are a wealth of specialized tools but a great logging strategy can take you far. `nexus-future` gives you a logging system built for a modern cloud native environment.
+One of the primary means for knowing what is going on at runtime, what data is flowing through, and how so. A classic workhorse of debugging and development time feedback. There are a wealth of specialized tools but a great logging strategy can take you far. `nexus` gives you a logging system built for a modern cloud native environment.
 
 We have our own logger but write to [`pino`](https://github.com/pinojs/pino) under the hood for its performance.
 
@@ -86,7 +86,7 @@ We have our own logger but write to [`pino`](https://github.com/pinojs/pino) und
   **_example_**
 
   ```
-  ● info  nexus-future:dev:boot
+  ● info  nexus:dev:boot
   ● info  app:boot
 
   ------------
@@ -109,7 +109,7 @@ We have our own logger but write to [`pino`](https://github.com/pinojs/pino) und
   **_example_**
 
   ```
-  {"level":30,"time":1578887817230,"pid":30997,"hostname":"Jasons-Prisma-Machine.local","path":["nexus-future","dev"],"context":{},"event":"boot","v":1}
+  {"level":30,"time":1578887817230,"pid":30997,"hostname":"Jasons-Prisma-Machine.local","path":["nexus","dev"],"context":{},"event":"boot","v":1}
   {"level":30,"time":1578887819619,"pid":30998,"hostname":"Jasons-Prisma-Machine.local","path":["app"],"context":{},"event":"boot","v":1}
   {"level":60,"time":1578887819621,"pid":30998,"hostname":"Jasons-Prisma-Machine.local","path":["app"],"context":{"lib":{}},"event":"foo","v":1}
   {"level":50,"time":1578887819621,"pid":30998,"hostname":"Jasons-Prisma-Machine.local","path":["app"],"context":{"har":{"mar":"tek"}},"event":"foo","v":1}

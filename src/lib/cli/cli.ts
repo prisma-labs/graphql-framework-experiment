@@ -207,15 +207,15 @@ export class CLI implements Command {
   // TODO generate this from cli tree
   // static help template
   private static help = format(`
-    nexus-future - GraphQL APIs without the hassle
+    nexus - GraphQL APIs without the hassle
 
     ${chalk.bold('Usage')}
 
-      ${chalk.dim(`$`)} nexus-future [command]
+      ${chalk.dim(`$`)} nexus [command]
 
     ${chalk.bold('Commands')}
 
-        create   Setup a ready-to-use nexus-future
+        create   Setup a ready-to-use nexus
            dev   Develop your application in watch mode
          build   Build a production-ready server
       generate   Generate the artifacts
@@ -224,13 +224,13 @@ export class CLI implements Command {
 
     ${chalk.bold('Examples')}
 
-      Initialize files for a new nexus-future project
-      ${chalk.dim(`$`)} nexus-future create
+      Initialize files for a new nexus project
+      ${chalk.dim(`$`)} nexus create
 
       Start developing and watch your changes locally
-      ${chalk.dim(`$`)} nexus-future dev
+      ${chalk.dim(`$`)} nexus dev
 
       Build a production-ready server
-      ${chalk.dim(`$`)} nexus-future build
+      ${chalk.dim(`$`)} nexus build
   `)
 }

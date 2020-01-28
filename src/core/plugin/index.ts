@@ -274,7 +274,7 @@ export function create(definer: Definer): DriverCreator {
 // }
 
 /**
- * Load all nexus-future plugins installed into the project
+ * Load all nexus plugins installed into the project
  */
 export async function loadAllFromPackageJson(): Promise<Driver[]> {
   const packageJson: undefined | Record<string, any> = await fs.readAsync(
@@ -285,7 +285,7 @@ export async function loadAllFromPackageJson(): Promise<Driver[]> {
 }
 
 /**
- * Load all nexus-future plugins installed into the project
+ * Load all nexus plugins installed into the project
  */
 export function loadAllFromPackageJsonSync(): Driver[] {
   const packageJson: undefined | Record<string, any> = fs.read(
@@ -372,7 +372,7 @@ function __doLoadAllFromPackageJson(
 }
 
 /**
- * Parse a nexus-future plugin package name to just the plugin name.
+ * Parse a nexus plugin package name to just the plugin name.
  */
 export function parsePluginName(packageName: string): null | string {
   const matchResult = packageName.match(/^nexus-plugin-(.+)/)

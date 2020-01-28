@@ -17,8 +17,8 @@ const logger = Logger.create({ name: 'server' })
  */
 const optDefaults: Required<ExtraOptions> = {
   port:
-    typeof process.env.NEXUS_FUTURE_PORT === 'string'
-      ? parseInt(process.env.NEXUS_FUTURE_PORT, 10)
+    typeof process.env.NEXUS_PORT === 'string'
+      ? parseInt(process.env.NEXUS_PORT, 10)
       : typeof process.env.PORT === 'string'
       ? // e.g. Heroku convention https://stackoverflow.com/questions/28706180/setting-the-port-for-node-js-server-on-heroku
         parseInt(process.env.PORT, 10)

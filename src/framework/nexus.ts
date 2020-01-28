@@ -6,7 +6,7 @@ export function createNexusSingleton() {
   const __types: any[] = []
 
   /**
-   * Create the Nexus GraphQL Schema. If NEXUS_FUTURE_SHOULD_AWAIT_TYPEGEN=true then the typegen
+   * Create the Nexus GraphQL Schema. If NEXUS_SHOULD_AWAIT_TYPEGEN=true then the typegen
    * disk write is awaited upon.
    */
   async function makeSchema(
@@ -15,14 +15,13 @@ export function createNexusSingleton() {
     config.types.push(...__types)
 
     // https://github.com/graphql-nexus/nexus-future/issues/33
-    const schema = await (process.env.NEXUS_FUTURE_SHOULD_AWAIT_TYPEGEN ===
-    'true'
+    const schema = await (process.env.NEXUS_SHOULD_AWAIT_TYPEGEN === 'true'
       ? generateSchema(config)
       : Promise.resolve(Nexus.makeSchema(config)))
 
     // HACK `generateSchema` in Nexus does not support this logic yet
     // TODO move this logic into Nexus
-    if (process.env.NEXUS_FUTURE_SHOULD_EXIT_AFTER_GENERATE_ARTIFACTS) {
+    if (process.env.NEXUS_SHOULD_EXIT_AFTER_GENERATE_ARTIFACTS) {
       process.exit(0)
     }
 
@@ -137,13 +136,13 @@ export function createNexusConfig(): NexusConfig {
 }
 
 export const shouldGenerateArtifacts = (): boolean =>
-  process.env.NEXUS_FUTURE_SHOULD_GENERATE_ARTIFACTS === 'true'
+  process.env.NEXUS_SHOULD_GENERATE_ARTIFACTS === 'true'
     ? true
-    : process.env.NEXUS_FUTURE_SHOULD_GENERATE_ARTIFACTS === 'false'
+    : process.env.NEXUS_SHOULD_GENERATE_ARTIFACTS === 'false'
     ? false
     : Boolean(!process.env.NODE_ENV || process.env.NODE_ENV === 'development')
 
 export const shouldExitAfterGenerateArtifacts = (): boolean =>
-  process.env.NEXUS_FUTURE_SHOULD_EXIT_AFTER_GENERATE_ARTIFACTS === 'true'
+  process.env.NEXUS_SHOULD_EXIT_AFTER_GENERATE_ARTIFACTS === 'true'
     ? true
     : false

@@ -1,8 +1,8 @@
 [`issues`](https://github.com/graphql-nexus/nexus-future/labels/scope%2Flogger) ([`feature`](https://github.com/graphql-nexus/nexus-future/issues?q=is%3Aopen+label%3Ascope%2Flogger+label%3Atype%2Ffeature), [`bug`](https://github.com/graphql-nexus/nexus-future/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Flogger+label%3Atype%2Fbug+))
 
-Logging is one of the primary means for knowing what is going on at runtime, what data is flowing through, and how so. A classic workhorse of debugging and development time feedback. There are a wealth of specialized tools but a great logging strategy can take you far. `nexus-future` gives you a logging system built for a modern cloud native environment.
+Logging is one of the primary means for knowing what is going on at runtime, what data is flowing through, and how so. A classic workhorse of debugging and development time feedback. There are a wealth of specialized tools but a great logging strategy can take you far. `nexus` gives you a logging system built for a modern cloud native environment.
 
-It is recommended that your app only sends to stdout via the nexus-future logging system. This ensures that you maintain log level control and are always working with JSON. We work hard to make the logger so good that you'll to use it.
+It is recommended that your app only sends to stdout via the `nexus` logging system. This ensures that you maintain log level control and are always working with JSON. We work hard to make the logger so good that you'll to use it.
 
 - Applications can get a reference to a logger singleton at `app.logger`.
 
@@ -71,7 +71,7 @@ It is recommended that your app only sends to stdout via the nexus-future loggin
 - Pretty mode looks something like this:
 
   ```
-  ● info  nexus-future:dev:boot
+  ● info  nexus:dev:boot
   ● info  app:boot
 
   ------------
@@ -108,4 +108,4 @@ app.logger
 
 ## debug Tool Integration
 
-You may be a user of [`debug`](https://github.com/visionmedia/debug) or install libraries into your app that are. We (_will ↣_ [#265](https://github.com/graphql-nexus/nexus-future/issues/265)) have special case support for `debug` so that it seamlessly integrates into the nexus-future logging system. The gist is that all `debug` logs are routed through the `nexus-future` logger at `trace` level.
+You may be a user of [`debug`](https://github.com/visionmedia/debug) or install libraries into your app that are. We (_will ↣_ [#265](https://github.com/graphql-nexus/nexus-future/issues/265)) have special case support for `debug` so that it seamlessly integrates into the `nexus` logging system. The gist is that all `debug` logs are routed through the `nexus` logger at `trace` level.

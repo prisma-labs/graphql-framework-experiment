@@ -1,8 +1,8 @@
 # Introduction
 
-`nexus-future` is a framework for building GraphQL APIs in Node.
+`nexus` is a framework for building GraphQL APIs in Node.
 
-Here are some of the things `nexus-future` cares about:
+Here are some of the things `nexus` cares about:
 
 - Delightful developer experience
 - A CLI supporting devlopment lifecycle workflows

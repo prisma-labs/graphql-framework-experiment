@@ -132,7 +132,7 @@ export function createApp(appConfig?: { types?: any }): App {
     extendInputType,
     server: {
       /**
-       * Start the server. If you do not call this explicitly then nexus-future will
+       * Start the server. If you do not call this explicitly then nexus will
        * for you. You should not normally need to call this function yourself.
        */
       async start(opts: ServerOptions = {}): Promise<void> {
@@ -152,7 +152,7 @@ export function createApp(appConfig?: { types?: any }): App {
         // During dev mode we will dynamically require the user's schema modules.
         // At build time we inline static imports.
         // This code MUST run after user/system has had chance to run global installation
-        if (process.env.NEXUS_FUTURE_STAGE === 'dev') {
+        if (process.env.NEXUS_STAGE === 'dev') {
           requireSchemaModules()
         }
 
@@ -203,8 +203,8 @@ export function createApp(appConfig?: { types?: any }): App {
 
           // Integrate user's app calls to app.addToContext
           const addToContextCallResults: string[] = process.env
-            .NEXUS_FUTURE_TYPEGEN_ADD_CONTEXT_RESULTS
-            ? JSON.parse(process.env.NEXUS_FUTURE_TYPEGEN_ADD_CONTEXT_RESULTS)
+            .NEXUS_TYPEGEN_ADD_CONTEXT_RESULTS
+            ? JSON.parse(process.env.NEXUS_TYPEGEN_ADD_CONTEXT_RESULTS)
             : []
 
           const addToContextInterfaces = addToContextCallResults
@@ -305,8 +305,7 @@ const installGlobally = (app: App): App => {
     stringArg,
   })
 
-  const nexusFutureTypeGenPath =
-    'node_modules/@types/typegen-nexus-future/index.d.ts'
+  const nexusFutureTypeGenPath = 'node_modules/@types/typegen-nexus/index.d.ts'
   log('generating app global singleton typegen to %s', nexusFutureTypeGenPath)
 
   fs.write(
@@ -362,5 +361,5 @@ const installGlobally = (app: App): App => {
 
 export const isGlobalSingletonEnabled = (): boolean => {
   const packageJson = fs.read('package.json', 'json')
-  return packageJson?.['nexus-future']?.singleton !== false
+  return packageJson?.['nexus']?.singleton !== false
 }

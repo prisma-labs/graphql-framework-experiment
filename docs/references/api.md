@@ -1,6 +1,6 @@
 ## `app`
 
-A singleton nexus-future app. Use this to build up your GraphQL schema and configure your server.
+A singleton `nexus` app. Use this to build up your GraphQL schema and configure your server.
 
 **Example**
 
@@ -81,7 +81,7 @@ An instance of [`Server`](#server).
 
 Framework Notes:
 
-- If your app does not call `app.server.start` then `nexus-future` will. It is idiomatic to allow `nexus-future` to take care of this. If you deviate, we would love to learn about your use-case!
+- If your app does not call `app.server.start` then `nexus` will. It is idiomatic to allow `nexus` to take care of this. If you deviate, we would love to learn about your use-case!
 
 ## `Server`
 

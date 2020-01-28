@@ -15,7 +15,7 @@ import { fatal } from '../utils/process'
 /**
  * Data
  */
-const DEV_MODE_ENV_VAR_NAME = 'NEXUS_FUTURE_DEV_MODE'
+const DEV_MODE_ENV_VAR_NAME = 'NEXUS_DEV_MODE'
 
 /**
  * Eager integrity check.
@@ -62,7 +62,7 @@ function parseIsDevMode(): boolean {
 }
 /**
  * This function checks that dev mode and IPC are algined. IPC should only be
- * enabled when dev mode master is running nexus-future app within its runner
+ * enabled when dev mode master is running nexus app within its runner
  * process. Dev mode being on or off is signified via a special environment
  * variable. If the environment variable is ever present but IPC not then this
  * means something is deeply wrong, and explicitly or subtlely not going to work.
@@ -72,7 +72,7 @@ function parseIsDevMode(): boolean {
  *      actually fork... ?
  *
  * We DO allow for IPC to be enabled while dev-mode is not, since we cannot
- * control all the cases where nexus-future code might be forked and thus have IPC.
+ * control all the cases where nexus code might be forked and thus have IPC.
  * For example typegen which uses ts-node under the hood does a spawn, but
  * ts-node does a fork, and thus creates an IPC link.
  */

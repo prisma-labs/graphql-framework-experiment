@@ -1,6 +1,6 @@
 # 🎄
 
-# `nexus-future`
+# `nexus`
 
 ### Delightful GraphQL Application Framework for TypeScript Node
 

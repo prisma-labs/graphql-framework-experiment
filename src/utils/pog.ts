@@ -1,7 +1,7 @@
 import * as Debug from 'debug'
 import * as Path from 'path'
 
-const doLog = Debug.debug('nexus-future')
+const doLog = Debug.debug('nexus')
 
 export function pog(
   formatter: unknown,
@@ -12,7 +12,7 @@ export function pog(
 
 export namespace pog {
   /**
-   * Create a debug logger prefixed with nexus-future log namesapce.
+   * Create a debug logger prefixed with nexus log namesapce.
    * The given component name can be a path and the dir path and extension will
    * be automatically stripped. This allows the following pattern from the
    * caller side.
@@ -25,6 +25,6 @@ export namespace pog {
    */
   export const sub = (component: string) => {
     const parsed = Path.parse(component)
-    return Debug.debug(`nexus-future:${parsed.name}`)
+    return Debug.debug(`nexus:${parsed.name}`)
   }
 }

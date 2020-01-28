@@ -9,14 +9,14 @@ const ws = createWorkspace({
 
 it('exits 1 if typegen errors out', () => {
   ws.fs.write('app.ts', `const foo :: "bar"`)
-  const result = ws.run('yarn -s nexus-future build')
+  const result = ws.run('yarn -s nexus build')
   delete result.error
   expect(result).toMatchSnapshot()
 })
 
 it('exits 1 if app does not type check', () => {
   ws.fs.write('app.ts', `const foo: number =  "bar"`)
-  const result = ws.run('yarn -s nexus-future build')
+  const result = ws.run('yarn -s nexus build')
   delete result.error
   expect(result).toMatchSnapshot()
 })
@@ -36,7 +36,7 @@ it('can build with just a schema module', () => {
     `
   )
 
-  const result = ws.run('yarn -s nexus-future build')
+  const result = ws.run('yarn -s nexus build')
   expect(result).toMatchSnapshot()
   expect(ws.fs.inspectTree(DEFAULT_BUILD_FOLDER_NAME)).toMatchSnapshot()
 })
@@ -56,7 +56,7 @@ it('can build with just a schema folder of modules', () => {
     `
   )
 
-  const result = ws.run('yarn -s nexus-future build')
+  const result = ws.run('yarn -s nexus build')
   expect(result).toMatchSnapshot()
   expect(ws.fs.inspectTree(DEFAULT_BUILD_FOLDER_NAME)).toMatchSnapshot()
 })
@@ -84,7 +84,7 @@ it('can build with schema + app modules', () => {
     `
   )
 
-  const result = ws.run('yarn -s nexus-future build')
+  const result = ws.run('yarn -s nexus build')
   expect(result).toMatchSnapshot()
   expect(ws.fs.inspectTree(DEFAULT_BUILD_FOLDER_NAME)).toMatchSnapshot()
 })
@@ -112,7 +112,7 @@ it('can nest modules', () => {
     `
   )
 
-  const result = ws.run('yarn -s nexus-future build')
+  const result = ws.run('yarn -s nexus build')
   expect(result).toMatchSnapshot()
   expect(ws.fs.inspectTree(DEFAULT_BUILD_FOLDER_NAME)).toMatchSnapshot()
 })
@@ -183,7 +183,7 @@ it('can build a plugin', () => {
     `
   )
 
-  const result = ws.run('yarn -s nexus-future build')
+  const result = ws.run('yarn -s nexus build')
   expect(result).toMatchSnapshot()
   expect(ws.fs.inspectTree(DEFAULT_BUILD_FOLDER_NAME)).toMatchSnapshot()
 })

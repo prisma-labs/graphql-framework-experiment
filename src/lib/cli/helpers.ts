@@ -41,7 +41,7 @@ export function generateHelpForCommandIndex(
   return `
 ${chalk.bold('Usage:')}
     
-${chalk.gray('$')} nexus-future ${commandName} [${subCommands
+${chalk.gray('$')} nexus ${commandName} [${subCommands
     .map(c => c.name)
     .join('|')}]
 
@@ -68,7 +68,7 @@ ${description}
 
 ${chalk.bold('Usage:')}
     
-${chalk.gray('$')} nexus-future ${commandName} [options]
+${chalk.gray('$')} nexus ${commandName} [options]
 
 ${chalk.bold('Options:')}
 

@@ -38,7 +38,7 @@ it('can build a prisma framework project', () => {
     `
   )
 
-  const result = ws.run('yarn -s nexus-future build')
+  const result = ws.run('yarn -s nexus build')
   expect(result).toMatchSnapshot()
   expect(ws.fs.inspectTree(DEFAULT_BUILD_FOLDER_NAME)).toMatchSnapshot()
 })

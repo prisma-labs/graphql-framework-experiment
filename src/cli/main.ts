@@ -24,9 +24,9 @@ main().then(exitCode => {
 })
 
 /**
- * Check that this nexus-future process is being run from a locally installed
+ * Check that this nexus process is being run from a locally installed
  * veresion unless there is local project or the local project does not have
- * nexus-future installed.
+ * nexus installed.
  */
 async function guardNotGlobalCLIWithLocalProject(
   packageManager: PackageManager.PackageManager
@@ -34,21 +34,21 @@ async function guardNotGlobalCLIWithLocalProject(
   // TODO data is attainable from layout scan calculated later on... not optimal to call this twice...
   const projectType = await Layout.scanProjectType()
   if (
-    projectType.type === 'NEXUS_FUTURE_project' &&
+    projectType.type === 'NEXUS_project' &&
     isProcessFromProjectBin(projectType.packageJsonPath)
   ) {
     // TODO make npm aware
     fatal(stripIndent`
-        You are using the nexus-future cli from a location other than this project.
+        You are using the nexus cli from a location other than this project.
 
-        Location of the nexus-future CLI you executed:      ${process.argv[1]}
-        Location of the nexus-future CLI for this project:  ${projectType.packageJsonPath +
-          '/node_modules/.bin/nexus-future'}
+        Location of the nexus CLI you executed:      ${process.argv[1]}
+        Location of the nexus CLI for this project:  ${projectType.packageJsonPath +
+          '/node_modules/.bin/nexus'}
         
-        Please use the nexus-future CLI for this project:
+        Please use the nexus CLI for this project:
 
             ${packageManager.renderRunBin(
-              'nexus-future ' + process.argv.slice(2).join(' ')
+              'nexus ' + process.argv.slice(2).join(' ')
             )}
       `)
   }

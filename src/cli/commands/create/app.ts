@@ -32,7 +32,7 @@ type Options = {
  * TODO
  */
 export async function run(optionsGiven?: Partial<Options>): Promise<void> {
-  if (process.env.NEXUS_FUTURE_CREATE_HANDOFF === 'true') {
+  if (process.env.NEXUS_CREATE_HANDOFF === 'true') {
     await runLocalHandOff(optionsGiven)
   } else {
     await runBootstrapper(optionsGiven)
@@ -98,7 +98,7 @@ export async function runBootstrapper(
     nexusFutureVersion: `^${require('../../../../package.json').version}`,
   }
 
-  // TODO in the future scan npm registry for nexus-future plugins, organize by
+  // TODO in the future scan npm registry for nexus plugins, organize by
   // github stars, and so on.
   const askDatabase = await askForDatabase()
 
@@ -164,9 +164,9 @@ export async function runBootstrapper(
   //
 
   await layout.packageManager
-    .runBin('nexus-future create', {
+    .runBin('nexus create', {
       stdio: 'inherit',
-      envAdditions: { NEXUS_FUTURE_CREATE_HANDOFF: 'true' },
+      envAdditions: { NEXUS_CREATE_HANDOFF: 'true' },
       require: true,
     })
     .catch(error => {
@@ -177,7 +177,7 @@ export async function runBootstrapper(
   // An exhaustive .gitignore tailored for Node can be found here:
   // https://github.com/github/gitignore/blob/master/Node.gitignore
   // We intentionally stay minimal here, as we want the default ignore file
-  // to be as meaningful for nexus-future users as possible.
+  // to be as meaningful for nexus users as possible.
   await fs.write(
     '.gitignore',
     stripIndent`
@@ -207,17 +207,17 @@ export async function runBootstrapper(
   // If the user setup a db driver but not the connection URI yet, then do not
   // enter dev mode yet. Dev mode will result in a runtime-crashing app.
   if (!(askDatabase.database && !askDatabase.connectionURI)) {
-    // We will enter dev mode with the local version of nexus-future. This is a kind
+    // We will enter dev mode with the local version of nexus. This is a kind
     // of cheat, but what we want users to have as their mental model. When they
     // terminate this dev session, they will restart it typically with e.g. `$
-    // yarn dev`. This global-nexus-future-process-wrapping-local-nexus-future-process
+    // yarn dev`. This global-nexus-process-wrapping-local-nexus-process
     // is unique to bootstrapping situations.
     logger.info('Entering dev mode ...')
 
     await layout.packageManager
       .runScript('dev', {
         stdio: 'inherit',
-        envAdditions: { NEXUS_FUTURE_CREATE_HANDOFF: 'true' },
+        envAdditions: { NEXUS_CREATE_HANDOFF: 'true' },
         require: true,
       })
       .catch(error => {
@@ -330,14 +330,14 @@ async function askForPackageManager(): Promise<
 }
 
 /**
- * Check that the cwd is a suitable place to start a new nexus-future project.
+ * Check that the cwd is a suitable place to start a new nexus project.
  */
 async function assertIsCleanSlate() {
   const contents = await fs.listAsync()
 
   if (contents !== undefined && contents.length > 0) {
     proc.fatal(
-      'Cannot create a new nexus-future project here because the directory is not empty:\n %s',
+      'Cannot create a new nexus project here because the directory is not empty:\n %s',
       contents
     )
   }
@@ -399,7 +399,7 @@ async function helloWorldTemplate(layout: Layout.Layout) {
 }
 
 /**
- * Scaffold a new nexus-future project from scratch
+ * Scaffold a new nexus project from scratch
  */
 async function scaffoldBaseFiles(layout: Layout.Layout, options: Options) {
   // TODO Template selector?
@@ -415,8 +415,8 @@ async function scaffoldBaseFiles(layout: Layout.Layout, options: Options) {
       },
       scripts: {
         format: "npx prettier --write './**/*.{ts,md}' '!./prisma/**/*.md'",
-        dev: 'nexus-future dev',
-        build: 'nexus-future build',
+        dev: 'nexus dev',
+        build: 'nexus build',
         start: 'node node_modules/.build',
       },
       prettier: {
@@ -443,9 +443,9 @@ async function scaffoldBaseFiles(layout: Layout.Layout, options: Options) {
             {
               "type": "node",
               "request": "launch",
-              "name": "Debug nexus-future App",
+              "name": "Debug nexus App",
               "protocol": "inspector",
-              "runtimeExecutable": "\${workspaceRoot}/node_modules/.bin/nexus-future",
+              "runtimeExecutable": "\${workspaceRoot}/node_modules/.bin/nexus",
               "runtimeArgs": ["dev"],
               "args": ["${layout.projectRelative(appEntrypointPath)}"],
               "sourceMaps": true,
@@ -458,7 +458,7 @@ async function scaffoldBaseFiles(layout: Layout.Layout, options: Options) {
   ])
 }
 
-const ENV_PARENT_DATA = 'NEXUS_FUTURE_CREATE_DATA'
+const ENV_PARENT_DATA = 'NEXUS_CREATE_DATA'
 
 type SerializableParentData = {
   layout: Layout.Layout['data']
@@ -473,7 +473,7 @@ type ParentData = Omit<SerializableParentData, 'layout'> & {
 async function loadDataFromParentProcess(): Promise<ParentData> {
   if (!process.env[ENV_PARENT_DATA]) {
     logger.warn(
-      'We could not retrieve neccessary data from nexus-future. Falling back to SQLite database.'
+      'We could not retrieve neccessary data from nexus. Falling back to SQLite database.'
     )
 
     return {
@@ -500,19 +500,18 @@ function saveDataForChildProcess(data: SerializableParentData): void {
 /**
  * Helper function for fetching the correct veresion of prisma plugin to
  * install. Useful for development where we can override the version installed
- * by environment variable NEXUS_FUTURE_PLUGIN_PRISMA_VERSION.
+ * by environment variable NEXUS_PLUGIN_PRISMA_VERSION.
  */
 function getPrismaPluginVersion(): string {
   let prismaPluginVersion: string
-  if (process.env.NEXUS_FUTURE_PLUGIN_PRISMA_VERSION) {
+  if (process.env.NEXUS_PLUGIN_PRISMA_VERSION) {
     logger.warn(
-      'found NEXUS_FUTURE_PLUGIN_PRISMA_VERSION defined. This is only expected if you are actively developing on nexus-future right now',
+      'found NEXUS_PLUGIN_PRISMA_VERSION defined. This is only expected if you are actively developing on nexus right now',
       {
-        NEXUS_FUTURE_PLUGIN_PRISMA_VERSION:
-          process.env.NEXUS_FUTURE_PLUGIN_PRISMA_VERSION,
+        NEXUS_PLUGIN_PRISMA_VERSION: process.env.NEXUS_PLUGIN_PRISMA_VERSION,
       }
     )
-    prismaPluginVersion = process.env.NEXUS_FUTURE_PLUGIN_PRISMA_VERSION
+    prismaPluginVersion = process.env.NEXUS_PLUGIN_PRISMA_VERSION
   } else {
     prismaPluginVersion = 'latest'
   }
