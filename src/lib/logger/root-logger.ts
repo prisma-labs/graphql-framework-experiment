@@ -7,9 +7,9 @@ import * as Pino from './pino'
 
 // todo jsdoc
 export type SettingsData = {
-  level: Level.Level
-  pretty: boolean
-  output: Output.Output
+  readonly level: Level.Level
+  readonly pretty: boolean
+  readonly output: Output.Output
 }
 
 export type SettingsInput = {
