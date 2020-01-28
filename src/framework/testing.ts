@@ -20,14 +20,20 @@ export function createAppClient(apiUrl: string): AppClient {
   }
 }
 
-declare global {
-  interface nexusFutureTestContextApp {
-    query: AppClient['query']
-    server: {
-      start: () => Promise<void>
-      stop: () => Promise<void>
-    }
+interface TestContextAppCore {
+  query: AppClient['query']
+  server: {
+    start: () => Promise<void>
+    stop: () => Promise<void>
   }
+}
+
+interface TestContextCore {
+  app: TestContextAppCore
+}
+
+declare global {
+  interface nexusFutureTestContextApp extends TestContextAppCore {}
 
   interface nexusFutureTestContextRoot {
     app: nexusFutureTestContextApp
@@ -85,7 +91,7 @@ export async function createTestContext(): Promise<TestContext> {
   }
 
   const appClient = createAppClient(apiUrl)
-  const testContext: TestContext = {
+  const testContext: TestContextCore = {
     app: {
       query: appClient.query,
       server: {
