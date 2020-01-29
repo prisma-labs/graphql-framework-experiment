@@ -78,6 +78,7 @@ export function createApp(appConfig?: { types?: any }): App {
     extendType,
     extendInputType,
     makeSchema,
+    _getNexusTypesFromSingleton,
   } = createNexusSingleton()
 
   const plugins: Plugin.RuntimeContributions[] = []
@@ -255,6 +256,12 @@ export function createApp(appConfig?: { types?: any }): App {
 
         if (appConfig?.types && appConfig.types.length !== 0) {
           nexusConfig.types.push(...appConfig.types)
+        }
+
+        if (_getNexusTypesFromSingleton().length === 0) {
+          logger.warn(
+            'Your GraphQL schema is empty. Make sure your GraphQL schema lives in a `schema.ts` file or some `schema/` directories'
+          )
         }
 
         return Server.create({
