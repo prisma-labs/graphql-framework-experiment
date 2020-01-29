@@ -25,49 +25,116 @@ describe('name', () => {
   })
 })
 
-describe('pretty', () => {
-  it('defualts first to process.env.LOG_PRETTY, then tty presence', () => {
-    process.env.LOG_PRETTY = 'true'
-    expect(Logger.create().settings.pretty).toEqual(true)
-    process.env.LOG_PRETTY = undefined
-    process.stdout.isTTY = true
-    expect(Logger.create().settings.pretty).toEqual(true)
-    process.stdout.isTTY = false
-    expect(Logger.create().settings.pretty).toEqual(false)
-  })
+describe('settings', () => {
+  describe('pretty', () => {
+    describe('.enabled', () => {
+      it('can be disabled', () => {
+        expect(
+          Logger.create({ pretty: { enabled: false } }).settings.pretty.enabled
+        ).toEqual(false)
+      })
+      it('persists across peer field changes', () => {
+        const l = Logger.create({ pretty: { enabled: false } })
+        l.settings({ pretty: { color: false } })
+        expect(l.settings.pretty).toEqual({
+          enabled: false,
+          color: false,
+        })
+      })
+      it('controls if logs are rendered pretty or as JSON', () => {
+        logger.info('foo')
+        logger.settings({ pretty: true })
+        logger.settings({ pretty: true, level: 'trace' })
+        logger.fatal('foo', { lib: /see/ })
+        logger.error('foo', { har: { mar: 'tek' } })
+        logger.warn('foo', { bleep: [1, '2', true] })
+        logger.info('foo', { qux: true })
+        logger.debug('foo', { foo: 'bar' })
+        logger.trace('foo', { a: 1, b: 2, c: 'three' })
+        expect(output.writes).toMatchSnapshot()
+      })
+      describe('precedence', () => {
+        it('considers instnace time config first', () => {
+          process.stdout.isTTY = false
+          process.env.LOG_PRETTY = 'false'
+          const l = Logger.create({ pretty: false })
+          l.settings({ pretty: true })
+          expect(l.settings.pretty.enabled).toEqual(true)
+        })
+        it('then considers contruction time config', () => {
+          process.stdout.isTTY = false
+          process.env.LOG_PRETTY = 'false'
+          const l = Logger.create({ pretty: true })
+          expect(l.settings.pretty.enabled).toEqual(true)
+        })
+        it('then considers LOG_PRETTY env var true|false (case insensitive)', () => {
+          process.stdout.isTTY = false
+          process.env.LOG_PRETTY = 'tRuE'
+          const l = Logger.create()
+          expect(l.settings.pretty.enabled).toEqual(true)
+        })
+        it('then defaults to process.stdout.isTTY', () => {
+          delete process.env.LOG_PRETTY // pre-test logic forces false otherwise
+          process.stdout.isTTY = true
+          const l = Logger.create()
+          expect(l.settings.pretty.enabled).toEqual(true)
+        })
+      })
+    })
 
-  it('may be set at construction time', () => {
-    expect(Logger.create({ pretty: true }).settings.pretty).toEqual(true)
-  })
+    describe('.color', () => {
+      it('controls if pretty logs have color or not', () => {
+        logger.settings({ pretty: { enabled: true, color: false } })
+        logger.info('foo', { qux: true })
+        expect(output.writes).toMatchSnapshot()
+      })
+      it('can be disabled', () => {
+        expect(
+          Logger.create({ pretty: { enabled: false, color: false } }).settings
+            .pretty.color
+        ).toEqual(false)
+      })
+      it('is true by default', () => {
+        expect(
+          Logger.create({ pretty: { enabled: true } }).settings.pretty
+        ).toEqual({
+          enabled: true,
+          color: true,
+        })
+        expect(
+          Logger.create({ pretty: { enabled: false } }).settings.pretty
+        ).toEqual({
+          enabled: false,
+          color: true,
+        })
+      })
+      it('persists across peer field changes', () => {
+        const logger = Logger.create({
+          pretty: { enabled: false, color: false },
+        })
+        logger.settings({ pretty: { enabled: true } })
+        expect(logger.settings.pretty).toEqual({
+          enabled: true,
+          color: false,
+        })
+      })
+    })
 
-  it('manually setting takes precedence over defaults', () => {
-    logger.settings({})
-    process.env.LOG_PRETTY = 'true'
-    expect(Logger.create({ pretty: false }).settings.pretty).toEqual(false)
-  })
+    describe('shorthands', () => {
+      it('true means enabled true', () => {
+        expect(Logger.create({ pretty: true }).settings.pretty).toEqual({
+          enabled: true,
+          color: true,
+        })
+      })
 
-  it('may be set at instance time', () => {
-    const logger = Logger.create()
-    expect(logger.settings.pretty).toEqual(false)
-    expect(logger.settings({ pretty: true }).settings.pretty).toEqual(true)
-  })
-
-  it('controls if logs are rendered pretty or as JSON', () => {
-    logger.info('foo')
-    logger.settings({ pretty: true })
-    logger.info('bar')
-    expect(output.writes).toMatchSnapshot()
-  })
-
-  it('makes logs pretty', () => {
-    logger.settings({ pretty: true, level: 'trace' })
-    logger.fatal('foo', { lib: /see/ })
-    logger.error('foo', { har: { mar: 'tek' } })
-    logger.warn('foo', { bleep: [1, '2', true] })
-    logger.info('foo', { qux: true })
-    logger.debug('foo', { foo: 'bar' })
-    logger.trace('foo', { a: 1, b: 2, c: 'three' })
-    expect(output.writes).toMatchSnapshot()
+      it('false means enabled false', () => {
+        expect(Logger.create({ pretty: false }).settings.pretty).toEqual({
+          enabled: false,
+          color: true,
+        })
+      })
+    })
   })
 })
 

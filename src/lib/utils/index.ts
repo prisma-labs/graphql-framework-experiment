@@ -45,3 +45,11 @@ export const spanSpace = span.bind(null, 'padAfter', ' ')
  * is aligned right and if exceeds span target length to begin with gets cropped.
  */
 export const spanSpaceRight = span.bind(null, 'padBefore', ' ')
+
+/**
+ * Use this to make assertion at end of if-else chain that all members of a
+ * union have been accounted for.
+ */
+export function casesHandled(x: never): never {
+  throw new Error(`A case was not handled for value: ${x}`)
+}
