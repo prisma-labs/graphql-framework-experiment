@@ -37,7 +37,11 @@ export function create(opts: Options): Pino.Logger {
       prettifier: (_opts: any) =>
         opts.pretty.color
           ? Prettifier.render
-          : Lo.flow(Prettifier.render, stripAnsi),
+          : // todo more performant way to do this would be give task to de-colour
+            // to render function. Then it can just use some cheap if conditions.
+            // Presumably strip-ansi is doing WAY more work as it has to
+            // traverse EVERY string logged...
+            Lo.flow(Prettifier.render, stripAnsi),
       messageKey: 'event',
     } as ActualPinoOptions,
     opts.output
