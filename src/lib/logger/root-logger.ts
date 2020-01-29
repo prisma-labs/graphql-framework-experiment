@@ -37,14 +37,23 @@ export type SettingsInput = {
    *  - `true` is shorthand for `{ enabled: true }`
    *  - `false` is shorthand for `{ enabled: false }`
    *
-   * The pretty config takes the first value found, searching tiers as follows:
+   * When `undefined` pretty takes the first value found, in order:
    *
-   *  1. logger instance settings
-   *  2. logger construction settings
-   *  3. LOG_PRETTY environment variable
-   *  4. otherwise -> process.stdout.isTTY
+   *  1. `process.env.LOG_PRETTY` (admits case insensitive: `true` | `false`)
+   *  2. `process.stdout.isTTY`
    */
-  pretty?: boolean | { enabled: boolean; color?: boolean }
+  pretty?:
+    | boolean
+    | {
+        /**
+         * Disable or enable pretty mode.
+         */
+        enabled?: boolean
+        /**
+         * Disable ANSI coloring of pretty output.
+         */
+        color?: boolean
+      }
 }
 
 type Settings = SettingsData & {
@@ -80,13 +89,6 @@ export function create(opts?: Options): RootLogger {
           : Level.LEVELS.debug.label
     }
   }
-  const isPrettyEnabled =
-    opts?.pretty ??
-    (process.env.LOG_PRETTY === 'true'
-      ? true
-      : process.env.LOG_PRETTY === 'false'
-      ? false
-      : process.stdout.isTTY)
 
   const state = {} as State
   const loggerLink = Logger.create(state, [opts?.name ?? 'root'], {})
@@ -165,18 +167,25 @@ function processSettingInputPretty(
   pretty: SettingsInput['pretty'],
   previous: null | SettingsData['pretty']
 ): SettingsData['pretty'] {
-  const color = previous?.color ?? true
+  // todo no semantic to "unset back to default"
+  // consider using `null` for that purpose...
+  const color =
+    (typeof pretty === 'object' ? pretty.color : undefined) ??
+    previous?.color ??
+    true
+
+  const enabled =
+    (typeof pretty === 'object' ? pretty.enabled : undefined) ??
+    previous?.enabled ??
+    // todo nice is-defined-but-parse-error feedback
+    (process.env.LOG_PRETTY?.toLowerCase() === 'true'
+      ? true
+      : process.env.LOG_PRETTY?.toLowerCase() === 'false'
+      ? false
+      : process.stdout.isTTY)
 
   if (pretty === undefined) {
-    return {
-      enabled:
-        process.env.LOG_PRETTY === 'true'
-          ? true
-          : process.env.LOG_PRETTY === 'false'
-          ? false
-          : process.stdout.isTTY,
-      color,
-    }
+    return { enabled, color }
   }
 
   if (pretty === true) {
@@ -188,10 +197,7 @@ function processSettingInputPretty(
   }
 
   if (typeof pretty === 'object') {
-    return {
-      enabled: pretty.enabled,
-      color,
-    }
+    return { enabled, color }
   }
 
   casesHandled(pretty)

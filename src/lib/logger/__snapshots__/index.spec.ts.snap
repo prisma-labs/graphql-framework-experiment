@@ -320,7 +320,14 @@ Array [
 ]
 `;
 
-exports[`settings pretty effect controls if logs are rendered pretty or as JSON 1`] = `
+exports[`settings pretty .color controls if pretty logs have color or not 1`] = `
+Array [
+  "● info  root:foo  --  qux: true
+",
+]
+`;
+
+exports[`settings pretty .enabled controls if logs are rendered pretty or as JSON 1`] = `
 Array [
   Object {
     "context": Object {},
@@ -334,13 +341,6 @@ Array [
     "time": 0,
     "v": 1,
   },
-  "[32m● info  root[39m[90m:[39mbar 
-",
-]
-`;
-
-exports[`settings pretty effect makes logs pretty 1`] = `
-Array [
   "[31m✕ fatal root[39m[90m:[39mfoo  [90m--[39m  [90mlib[39m[90m: [39m/see/
 ",
   "[31m■ error root[39m[90m:[39mfoo  [90m--[39m  [90mhar[39m[90m: [39m[object Object]
