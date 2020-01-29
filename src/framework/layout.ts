@@ -7,6 +7,7 @@ import {
   findSchemaDirOrModules,
   pog,
   stripExt,
+  logger,
 } from '../utils'
 import * as PackageManager from '../utils/package-manager'
 
@@ -159,6 +160,16 @@ export const scan = async (): Promise<ScanResult> => {
     sourceRootRelative: Path.relative(projectRoot, sourceRoot) || './',
     project: readProjectInfo(),
     packageManagerType,
+  }
+
+  if (result.app.exists === false && result.schemaModules.length === 0) {
+    logger.error(
+      'We could not find any schema modules or entrypoint for your app'
+    )
+    logger.error(
+      'Please, either create a `schema.ts` file or `schema/` directory'
+    )
+    process.exit(1)
   }
 
   log('...completed scan with result: %O', result)
