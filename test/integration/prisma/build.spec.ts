@@ -28,7 +28,7 @@ it('can build a prisma framework project', () => {
     `
       import { app } from 'nexus-future'
 
-      app.objectType({
+      app.schema.objectType({
         name: 'User',
         definition(t) {
           t.model.id()
