@@ -351,7 +351,7 @@ async function helloWorldTemplate(layout: Layout.Layout) {
     stripIndent`
     import { app } from "nexus-future";
 
-    app.addToContext(req => {
+    app.schema.addToContext(req => {
       return {
         db: {
           worlds: [
@@ -362,7 +362,7 @@ async function helloWorldTemplate(layout: Layout.Layout) {
       }
     })
 
-    app.objectType({
+    app.schema.objectType({
       name: "World",
       definition(t) {
         t.id("id")
@@ -371,7 +371,7 @@ async function helloWorldTemplate(layout: Layout.Layout) {
       }
     })
 
-    app.queryType({
+    app.schema.queryType({
       definition(t) {        
         t.field("hello", {
           type: "World",
