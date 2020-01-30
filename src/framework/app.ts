@@ -31,29 +31,49 @@ type Request = HTTP.IncomingMessage & { logger: Logger.Logger }
 type ContextContributor<T extends {}> = (req: Request) => T
 
 export type App = {
-  use: (plugin: Plugin.Driver) => App
-  logger: Logger.RootLogger
-  addToContext: <T extends {}>(contextContributor: ContextContributor<T>) => App
   // installGlobally: () => App
+  use: (plugin: Plugin.Driver) => App
+  /**
+   * [API Reference](https://nexus-future.now.sh/#/references/api?id=logger)  ⌁  [Guide](https://nexus-future.now.sh/#/guides/logging)
+   *
+   * ### todo
+   */
+  logger: Logger.RootLogger
+  /**
+   * [API Reference](https://nexus-future.now.sh/#/references/api?id=server)  ⌁  [Guide](todo)
+   *
+   * ### todo
+   *
+   */
   server: {
     start: (config?: ServerOptions) => Promise<void>
     stop: () => Promise<void>
   }
-  queryType: typeof nexus.queryType
-  mutationType: typeof nexus.mutationType
-  objectType: typeof nexus.objectType
-  inputObjectType: typeof nexus.inputObjectType
-  enumType: typeof nexus.enumType
-  scalarType: typeof nexus.scalarType
-  unionType: typeof nexus.unionType
-  interfaceType: typeof nexus.interfaceType
-  intArg: typeof nexus.intArg
-  stringArg: typeof nexus.stringArg
-  booleanArg: typeof nexus.booleanArg
-  floatArg: typeof nexus.floatArg
-  idArg: typeof nexus.idArg
-  extendType: typeof nexus.extendType
-  extendInputType: typeof nexus.extendInputType
+  /**
+   * [API Reference](https://nexus-future.now.sh/#/references/api?id=appschema) // [Guide](todo)
+   *
+   * ### todo
+   */
+  schema: {
+    addToContext: <T extends {}>(
+      contextContributor: ContextContributor<T>
+    ) => App
+    queryType: typeof nexus.queryType
+    mutationType: typeof nexus.mutationType
+    objectType: typeof nexus.objectType
+    inputObjectType: typeof nexus.inputObjectType
+    enumType: typeof nexus.enumType
+    scalarType: typeof nexus.scalarType
+    unionType: typeof nexus.unionType
+    interfaceType: typeof nexus.interfaceType
+    intArg: typeof nexus.intArg
+    stringArg: typeof nexus.stringArg
+    booleanArg: typeof nexus.booleanArg
+    floatArg: typeof nexus.floatArg
+    idArg: typeof nexus.idArg
+    extendType: typeof nexus.extendType
+    extendInputType: typeof nexus.extendInputType
+  }
 }
 
 /**
@@ -112,25 +132,27 @@ export function createApp(appConfig?: { types?: any }): App {
       }
       return api
     },
-    addToContext(contextContributor) {
-      contextContributors.push(contextContributor)
-      return api
+    schema: {
+      addToContext(contextContributor) {
+        contextContributors.push(contextContributor)
+        return api
+      },
+      queryType,
+      mutationType,
+      objectType,
+      inputObjectType,
+      enumType,
+      scalarType,
+      unionType,
+      interfaceType,
+      intArg,
+      stringArg,
+      booleanArg,
+      floatArg,
+      idArg,
+      extendType,
+      extendInputType,
     },
-    queryType,
-    mutationType,
-    objectType,
-    inputObjectType,
-    enumType,
-    scalarType,
-    unionType,
-    interfaceType,
-    intArg,
-    stringArg,
-    booleanArg,
-    floatArg,
-    idArg,
-    extendType,
-    extendInputType,
     server: {
       /**
        * Start the server. If you do not call this explicitly then nexus will
@@ -297,7 +319,7 @@ const installGlobally = (app: App): App => {
     intArg,
     stringArg,
     //TODO rest of the statics...
-  } = app
+  } = app.schema
 
   Object.assign(global, {
     app,

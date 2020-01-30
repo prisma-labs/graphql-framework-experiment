@@ -27,7 +27,7 @@ it('can build with just a schema module', () => {
     `
       import { app } from 'nexus-future'
 
-      app.objectType({
+      app.schema.objectType({
         name: 'A',
         definition(t) {
           t.string('a')
@@ -47,7 +47,7 @@ it('can build with just a schema folder of modules', () => {
     `
       import { app } from 'nexus-future'
 
-      app.objectType({
+      app.schema.objectType({
         name: 'A',
         definition(t) {
           t.string('a')
@@ -67,7 +67,7 @@ it('can build with schema + app modules', () => {
     `
       import { app } from 'nexus-future'
 
-      app.objectType({
+      app.schema.objectType({
         name: 'A',
         definition(t) {
           t.string('a')
@@ -95,7 +95,7 @@ it('can nest modules', () => {
     `
       import { app } from 'nexus-future'
 
-      app.objectType({
+      app.schema.objectType({
         name: 'A',
         definition(t) {
           t.string('a')
@@ -164,7 +164,7 @@ it('can build a plugin', () => {
         }	
       })	
 
-      app.objectType({	
+      app.schema.objectType({	
         name: 'Foo',	
         definition(t) {	
           t.string('bar')	

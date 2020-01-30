@@ -56,7 +56,7 @@ We're going to need to expose the `moons` world field to clients
 
 ```diff
 +++ src/schema.ts
-  app.objectType({
+  app.schema.objectType({
     name: "World",
     definition(t) {
       t.model.id()
@@ -84,7 +84,7 @@ The feedback is pretty clear already but to restate: The problem is that we're p
 
 ```diff
 +++ src/schema.ts
-+app.objectType({
++app.schema.objectType({
 +  name:'Moon',
 +  definition(t){
 +    t.model.id()
@@ -104,7 +104,7 @@ If you go to your GraphQL Playground now you will see that your GraphQL schema n
 
 ```diff
 +++ src/schema.ts
-+app.mutationType({
++app.schema.mutationType({
 +  definition(t){
 +    t.crud.updateOneWorld()
 +  }
