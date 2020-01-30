@@ -1,9 +1,9 @@
 import * as fs from 'fs-jetpack'
-import { pog, flatMap, baseIgnores, stripExt } from '../utils'
+import { baseIgnores, flatMap, rootLogger, stripExt } from '../utils'
 import { Layout, relativeTranspiledImportPath } from './layout'
 // import { stripIndents } from 'common-tags'
 
-const log = pog.sub(__filename)
+const logger = rootLogger.child('schema')
 
 export function findSchemaDirOrModules(): string[] {
   // TODO async
@@ -28,11 +28,11 @@ function findSchemaModules(): {
   expandedModules: string[]
   dirsOrModules: string[]
 } {
-  log('finding modules...')
+  logger.trace('finding modules...')
 
   const dirsOrModules = findSchemaDirOrModules()
 
-  log('...found %O', dirsOrModules)
+  logger.trace('...found', { dirsOrModules })
 
   const expandedModules = flatMap(dirsOrModules, fileOrDir => {
     const absolutePath = fs.path(fileOrDir)
@@ -51,7 +51,7 @@ function findSchemaModules(): {
     return [absolutePath]
   })
 
-  log('... found final set (with dirs traversed) %O', expandedModules)
+  logger.trace('... found final set (with dirs traversed)', { expandedModules })
 
   return { expandedModules, dirsOrModules }
 }

@@ -1,10 +1,10 @@
 import { spawnSync } from 'child_process'
-import { pog } from './pog'
+import { rootLogger } from './logger'
 
-const log = pog.sub('typegen')
+const log = rootLogger.child('typegen')
 
 export async function generateArtifacts(startScript: string): Promise<void> {
-  log('starting typegen...')
+  log.trace('start')
   const result = spawnSync('npx', ['ts-node', '--eval', startScript], {
     encoding: 'utf8',
     env: {
@@ -18,20 +18,14 @@ export async function generateArtifacts(startScript: string): Promise<void> {
   })
 
   if (result.error) {
-    log('...had error trying to start the typegen process')
+    log.trace('...had error trying to start the typegen process')
     throw result.error
   }
 
-  log(
-    '...artifact generation run (pid %s) completed with exit code %s',
-    result.pid,
-    result.status
-  )
-  log('...captured: stdout:\n  %O', result.stdout)
-  log('...captured: stderr:\n  %O', result.stderr)
+  log.trace('done', result as any)
 
   if (result.status !== 0) {
-    log('...had error while running the typegen process')
+    log.trace('...had error while running the typegen process')
     const error = new Error(`
       Nexus artifact generation failed with exit code "${result.status}". The following stderr was captured:
 

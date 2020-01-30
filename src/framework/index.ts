@@ -6,7 +6,6 @@ import { createApp } from './app'
 // }
 //
 // if (isGlobalSingletonEnabled()) {
-//   pog('creating app singleton')
 //   app = createApp()
 //   ;(app as any).installGlobally()
 // }

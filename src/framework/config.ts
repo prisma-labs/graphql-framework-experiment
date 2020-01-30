@@ -4,10 +4,10 @@ import * as fs from 'fs-jetpack'
 import * as path from 'path'
 import { LiteralUnion } from 'type-fest'
 import { ScriptTarget } from 'typescript'
-import { fatal, pog, transpileModule } from '../utils'
-import { logger } from '../utils/logger'
+import { fatal, transpileModule } from '../utils'
+import { rootLogger } from '../utils/logger'
 
-const log = pog.sub(__filename)
+const logger = rootLogger.child('config')
 
 type StageNames = LiteralUnion<'development' | 'production', string>
 
@@ -45,7 +45,10 @@ function tryReadConfig(configPath: string): object | null {
     unregister()
     return config
   } catch (e) {
-    log('we could not load nexus config file at %s. reason: %O', configPath, e)
+    logger.trace('could not load nexus config file', {
+      configPath,
+      reason: e,
+    })
     return null
   }
 }
@@ -117,19 +120,18 @@ function processEnvFromConfig(
   const loadedEnv = loadedConfig.environment
 
   if (!loadedEnv) {
-    log('No environment to load from config with NODE_ENV=%s', stage)
+    logger.trace('No environment to load from config with', { NODE_ENV: stage })
     return
   }
 
   for (const envName in loadedEnv) {
     if (!process.env[envName]) {
-      log('setting env var %s=%s', envName, loadedEnv[envName])
+      logger.trace('setting env var', { envName, envValue: loadedEnv[envName] })
       process.env[envName] = loadedEnv[envName]
     } else {
-      log(
-        'env var %s is not loaded from config as its already set to value %s',
-        envName,
-        process.env[envName]
+      logger.trace(
+        'env var is not loaded from config as its already set to value',
+        { envName, envValue: process.env[envName] }
       )
     }
   }
@@ -158,32 +160,27 @@ function processEnvMappingFromConfig(loadedConfig: LoadedConfig): void {
     }
 
     if (targetEnvName) {
-      log(
-        'env var "%s" is not mapped to env var "%s" because "%s" is already set to "%s"',
+      logger.trace('env var not mapped because target is already set', {
         sourceEnvName,
         targetEnvName,
-        targetEnvName,
-        loadedConfig.environment_mapping[targetEnvName]
-      )
+        targetEnvValue: loadedConfig.environment_mapping[targetEnvName],
+      })
       return
     }
 
     if (!process.env[sourceEnvName]) {
-      log(
-        'could not map env var "%s" to "%s" because "%s" is not set',
-        sourceEnvName,
-        targetEnvName,
-        sourceEnvName
+      logger.trace(
+        'could not map env var source to target beause source not set',
+        { sourceEnvName, targetEnvName }
       )
       return
     }
 
-    log(
-      'mapped env var "%s" to env var "%s" with value "%s"',
+    logger.trace('mapped source env var to target', {
       sourceEnvName,
       targetEnvName,
-      process.env[sourceEnvName]
-    )
+      value: process.env[sourceEnvName],
+    })
     process.env[targetEnvName] = process.env[sourceEnvName]
   }
 }

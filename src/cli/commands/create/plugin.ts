@@ -6,11 +6,14 @@ import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import prompts from 'prompts'
 import { Command } from '../../../lib/cli'
-import { createGitRepository, pog } from '../../../utils'
-import { logger } from '../../../utils/logger'
+import { createGitRepository } from '../../../utils'
+import { rootLogger } from '../../../utils/logger'
 import * as proc from '../../../utils/process'
 
-const log = pog.sub('cli:create:plugin')
+const logger = rootLogger
+  .child('cli')
+  .child('create')
+  .child('plugin')
 
 export default class Plugin implements Command {
   async parse() {

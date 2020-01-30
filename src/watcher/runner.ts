@@ -14,21 +14,24 @@ import { register } from 'ts-node'
 import * as ts from 'typescript'
 import { Script } from 'vm'
 import * as Layout from '../framework/layout'
-import { extractContextTypes, pog, readTsConfig } from '../utils'
+import { extractContextTypes, readTsConfig, rootLogger } from '../utils'
 import cfgFactory from './cfg'
 import hook from './hook'
 import * as ipc from './ipc'
 const childProcess = require('child_process')
 import Module = require('module')
 
-const log = pog.sub('cli:dev:runner')
+const logger = rootLogger
+  .child('cli')
+  .child('dev')
+  .child('runner')
 
 // TODO HACK, big one, like running ts-node twice?
 register({
   transpileOnly: true,
 })
 ;(async function() {
-  log('starting context type extraction')
+  logger.trace('starting context type extraction')
   const layout = await Layout.loadDataFromParentProcess()
   const tsConfig = readTsConfig(layout)
   const program = ts.createIncrementalProgram({
@@ -42,7 +45,7 @@ register({
   process.env.NEXUS_TYPEGEN_ADD_CONTEXT_RESULTS = JSON.stringify(
     extractContextTypes(program)
   )
-  log('finished context type extraction')
+  logger.trace('finished context type extraction')
 
   // Remove app-runner.js from the argv array
   process.argv.splice(1, 1)
@@ -67,7 +70,7 @@ register({
   // Listen SIGTERM and exit unless there is another listener
   process.on('SIGTERM', function() {
     if (process.listeners('SIGTERM').length === 1) {
-      log('Child got SIGTERM, exiting')
+      logger.trace('Child got SIGTERM, exiting')
       process.exit(0)
     }
   })
@@ -105,7 +108,7 @@ register({
       stack: err.stack,
       willTerminate: hasCustomHandler,
     }
-    log('uncaughtException %O', errorMessage)
+    logger.trace('uncaughtException ', { errorMessage })
     ipc.send(errorMessage)
   })
 
@@ -134,7 +137,7 @@ register({
       stack,
       willTerminate: hasCustomHandler,
     }
-    log('unhandledRejection %O', errorMessage)
+    logger.trace('unhandledRejection', { errorMessage })
     ipc.send(errorMessage)
   })
 

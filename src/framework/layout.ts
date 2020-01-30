@@ -5,15 +5,14 @@ import {
   findConfigFile,
   findFile,
   findSchemaDirOrModules,
-  pog,
+  rootLogger,
   stripExt,
-  logger,
 } from '../utils'
 import * as PackageManager from '../utils/package-manager'
 
 export const DEFAULT_BUILD_FOLDER_NAME = 'node_modules/.build'
 
-const log = pog.sub('layout')
+const logger = rootLogger.child('layout')
 
 /**
  * The part of layout data resulting from the dynamic file/folder inspection.
@@ -126,7 +125,7 @@ export function createFromData(layoutData: Data): Layout {
  * and where key modules exist.
  */
 export const scan = async (): Promise<ScanResult> => {
-  log('starting scan...')
+  logger.trace('starting scan...')
   const packageManagerType = await PackageManager.detectProjectPackageManager()
   const maybeAppModule = await findAppModule()
   const maybeSchemaModules = findSchemaDirOrModules()
@@ -172,7 +171,7 @@ export const scan = async (): Promise<ScanResult> => {
     process.exit(1)
   }
 
-  log('...completed scan with result: %O', result)
+  logger.trace('...completed scan', { result })
 
   return result
 }
@@ -278,7 +277,7 @@ export function saveDataForChildProcess(
 export async function loadDataFromParentProcess(): Promise<Layout> {
   const savedData: undefined | string = process.env[ENV_VAR_DATA_NAME]
   if (!savedData) {
-    log(
+    logger.trace(
       'WARNING an attempt to load saved layout data was made but no serialized data was found in the environment. This may represent a bug. Layout is being re-calculated as a fallback solution. This should result in the same layout data (if not, another probably bug, compounding confusion) but at least adds latentency to user experience.'
     )
     return create({}) // todo no build output...

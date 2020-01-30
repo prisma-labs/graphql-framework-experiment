@@ -3,10 +3,9 @@ import * as fs from 'fs-jetpack'
 import * as path from 'path'
 import * as ts from 'typescript'
 import { Layout } from '../framework/layout'
-import { logger } from './logger'
-import { pog } from './pog'
+import { rootLogger } from './logger'
 
-const log = pog.sub('compiler')
+const logger = rootLogger.child('compiler')
 
 const diagnosticHost: ts.FormatDiagnosticsHost = {
   getNewLine: () => ts.sys.newLine,
@@ -136,12 +135,12 @@ export function compile(
   program: ts.EmitAndSemanticDiagnosticsBuilderProgram,
   layout: Layout
 ): void {
-  log('remove previous build folder if present...')
+  logger.trace('remove previous build folder if present...')
   fs.remove(layout.buildOutput)
-  log('done')
-  log('emit transpiled modules to disk...')
+  logger.trace('done')
+  logger.trace('emit transpiled modules to disk...')
   const emitResult = program.emit()
-  log('done - %s files emitted', emitResult.emittedFiles?.length ?? 0)
+  logger.trace('done', { filesEmitted: emitResult.emittedFiles?.length ?? 0 })
   const allDiagnostics = ts
     .getPreEmitDiagnostics(program.getProgram())
     .concat(emitResult.diagnostics)
@@ -165,7 +164,7 @@ export function extractContextTypes(
 
   program.getSourceFiles().forEach(visit)
 
-  log('finished compiler extension processing with results %O', {
+  logger.trace('finished compiler extension processing', {
     contextTypeContributions,
   })
 
@@ -183,36 +182,38 @@ export function extractContextTypes(
         // TODO use id.unescapedText
         lastToken.escapedText === 'addToContext'
       ) {
-        log('found addToContext call %o', lastToken.getFullText())
+        logger.trace('found addToContext call', {
+          call: lastToken.getFullText(),
+        })
 
         // Get the argument passed too addToContext so we can extract its type
         const args = n.arguments
         if (args.length === 0) {
-          log(
+          logger.trace(
             'no arguments passed to addToContext, this is wrong, stopping context type extraction'
           )
           return
         }
         if (args.length > 1) {
-          log(
+          logger.trace(
             'multiple arguments passed to addToContext, this is wrong, stopping context type extraction'
           )
           return
         }
         const arg = args[0]
-        log('found addToContext arg %o', arg.getFullText())
+        logger.trace('found addToContext arg', { arg: arg.getFullText() })
 
         // Get the signature of the argument so we can extract its return type
         const argType = checker.getTypeAtLocation(arg)
         const argSigs = argType.getCallSignatures()
         if (argSigs.length === 0) {
-          log(
+          logger.trace(
             'argument passed to addToContext had no signatures, this is wrong, stopping context type extraction'
           )
           return
         }
         if (argSigs.length > 1) {
-          log(
+          logger.trace(
             'argument passed to addToContext has more than one signature, this might be wrong, stopping context type extraction'
           )
           return

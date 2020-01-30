@@ -1,13 +1,13 @@
-import * as Layout from '../../framework/layout'
 import * as Plugin from '../../core/plugin'
+import * as Layout from '../../framework/layout'
 import { createStartModuleContent } from '../../framework/start'
-import { fatal, findOrScaffoldTsConfig, pog } from '../../utils'
-import { clearConsole } from '../../utils/console'
-import { logger } from '../../utils/logger'
-import { createWatcher } from '../../watcher'
 import { arg, Command, isError } from '../../lib/cli'
+import { fatal, findOrScaffoldTsConfig } from '../../utils'
+import { clearConsole } from '../../utils/console'
+import { rootLogger } from '../../utils/logger'
+import { createWatcher } from '../../watcher'
 
-const mylogger = logger.child('dev')
+const logger = rootLogger.child('dev')
 
 const DEV_ARGS = {
   '--inspect-brk': Number,
@@ -46,7 +46,7 @@ export class Dev implements Command {
     }
 
     clearConsole()
-    mylogger.info('boot')
+    logger.info('boot')
 
     await createWatcher({
       plugins: plugins.map(p => p.hooks),
@@ -61,7 +61,7 @@ export class Dev implements Command {
       onEvent: e => {
         if (e.event === 'restart') {
           clearConsole()
-          mylogger.info('restarting', { changed: e.file })
+          logger.info('restarting', { changed: e.file })
         }
         if (e.event === 'logging') {
           process.stdout.write(e.data)

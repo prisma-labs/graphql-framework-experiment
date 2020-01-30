@@ -1,7 +1,8 @@
 import * as fs from 'fs-jetpack'
+import { logger } from './logger'
 import { findFile, writeCachedFile } from './path'
-import { pog } from './pog'
 
+// todo unused... delete?
 export async function findOrScaffold({
   fileNames,
   fallbackPath,
@@ -11,22 +12,22 @@ export async function findOrScaffold({
   fallbackPath: string
   fallbackContent: string
 }) {
-  pog('find or scaffold %s', fileNames)
+  logger.trace('find or scaffold', { fileNames })
   const optionalFile = findFile(fileNames)
 
   if (optionalFile) {
-    pog('found %s', optionalFile)
+    logger.trace('found', { optionalFile })
     if (fs.exists(fallbackPath)) {
-      pog(
-        'there is prior scaffolding (fallback file) already present on disk somehow, removing it now: %s',
-        fallbackPath
+      logger.trace(
+        'there is prior scaffolding (fallback file) already present on disk somehow, removing it now',
+        { fallbackPath }
       )
       fs.remove(fallbackPath)
     }
     return optionalFile
   }
 
-  pog('did not find')
+  logger.trace('did not find')
   await writeCachedFile(fallbackPath, fallbackContent)
 
   return fallbackPath

@@ -1,8 +1,8 @@
 import treeKill = require('tree-kill')
-import { pog } from '../utils'
+import { rootLogger } from '../utils'
 import { Process } from './types'
 
-const log = pog.sub('watcher')
+const logger = rootLogger.child('watcher')
 
 /**
  * Promisification of the tree-kill package.
@@ -21,17 +21,16 @@ function treeKillAsync(pid: number, signal: string = 'SIGTERM'): Promise<void> {
  */
 export function sendSigterm(child: Process): Promise<void> {
   if (child.exited) {
-    log(
-      'logic asked to SIGTERM child %s but it has already exited, doing nothing',
-      child.pid
+    logger.trace(
+      'logic asked to SIGTERM child but it has already exited, doing nothing',
+      { childPID: child.pid }
     )
     return Promise.resolve()
   }
 
-  log(
-    'sending SIGTERM to child %s and any of its descendent processes',
-    child.pid
-  )
+  logger.trace('sending SIGTERM to child and any of its descendent processes', {
+    childPID: child.pid,
+  })
 
   return treeKillAsync(child.pid)
 }

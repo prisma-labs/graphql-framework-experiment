@@ -12,10 +12,11 @@ import {
   MaybePromise,
   SideEffector,
 } from '../../lib/utils'
-import { fatal, pog, run, runSync } from '../../utils'
+import { fatal, rootLogger, run, runSync } from '../../utils'
 import * as PackageManager from '../../utils/package-manager'
 import * as Chokidar from '../../watcher/chokidar'
 
+//todo two loggers here...
 const pluginSystemLogger = Logger.create({ name: 'plugin' })
 
 type PromptsConstructor = <T extends string = string>(
@@ -23,7 +24,7 @@ type PromptsConstructor = <T extends string = string>(
   options?: Prompts.Options
 ) => Promise<Prompts.Answers<T>>
 
-const log = pog.sub('plugin-manager')
+const logger = rootLogger.child('plugin-manager')
 
 export type OnAfterBaseSetupLens = {
   database: 'SQLite' | 'MySQL' | 'PostgreSQL' | undefined
@@ -218,7 +219,7 @@ export function create(definer: Definer): DriverCreator {
           build: {},
           generate: {},
         }
-        log('loading workflow of plugin %s', pluginName)
+        logger.trace('loading workflow of plugin', { pluginName })
         maybeWorkflowPlugin?.(hooks, {
           layout,
           packageManager: layout.packageManager,
@@ -226,11 +227,11 @@ export function create(definer: Definer): DriverCreator {
         return hooks
       },
       loadRuntimePlugin() {
-        log('loading runtime of plugin %s', pluginName)
+        logger.trace('loading runtime of plugin', { pluginName })
         return maybeRuntimePlugin?.()
       },
       loadTestingPlugin() {
-        log('loading testing of plugin %s', pluginName)
+        logger.trace('loading testing of plugin', { pluginName })
         return maybeTestingPlugin?.()
       },
     }

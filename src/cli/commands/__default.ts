@@ -2,41 +2,49 @@ import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import * as Layout from '../../framework/layout'
 import { Command } from '../../lib/cli'
-import { CWDProjectNameOrGenerate, generateProjectName, pog } from '../../utils'
+import {
+  CWDProjectNameOrGenerate,
+  generateProjectName,
+  rootLogger,
+} from '../../utils'
 import { run } from './create/app'
 import { Dev } from './dev'
 
-const log = pog.sub('cli:entrypoint')
+const logger = rootLogger.child('cli').child('entrypoint')
 
 export class __Default implements Command {
   async parse() {
-    log('starting')
+    logger.trace('start')
     const projectType = await Layout.scanProjectType()
 
     switch (projectType.type) {
       case 'new':
-        log(
+        logger.trace(
           'detected CWD is empty and not within an existing nexus project, delegating to create sub-command'
         )
         console.log('Creating a new nexus project')
         await run({ projectName: CWDProjectNameOrGenerate() })
         break
       case 'NEXUS_project':
-        log('detected CWD is within a nexus project, delegating to dev mode')
+        logger.trace(
+          'detected CWD is within a nexus project, delegating to dev mode'
+        )
         await new Dev().parse([])
         break
       case 'node_project':
-        log('detected CWD is within a node but not nexus project, aborting')
+        logger.trace(
+          'detected CWD is within a node but not nexus project, aborting'
+        )
         console.log(
           "Looks like you are inside a node but not nexus project. Please either add nexus to this project's dependencies and re-run this command or navigate to a new empty folder that does not have a package.json file present in an anecestor directory."
         )
         break
       case 'unknown':
-        log('detected CWD is not empty nor a nexus project, aborting')
+        logger.trace('detected CWD is not empty nor a nexus project, aborting')
         // We can get the user on the happy path by asking them for a project
         // name and then changing into that directory.
         const projectName = generateProjectName()
-        console.log(
+        logger.info(
           `creating ./${projectName} where all subsequent work will occur`
         )
         await fs.dirAsync(projectName)

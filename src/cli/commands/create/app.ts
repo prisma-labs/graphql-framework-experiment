@@ -9,13 +9,15 @@ import {
   createGitRepository,
   createTSConfigContents,
   CWDProjectNameOrGenerate,
-  logger,
-  pog,
+  rootLogger,
 } from '../../../utils'
 import * as PackageManager from '../../../utils/package-manager'
 import * as proc from '../../../utils/process'
 
-const log = pog.sub('cli:create:app')
+const logger = rootLogger
+  .child('cli')
+  .child('create')
+  .child('app')
 
 export default class App implements Command {
   async parse() {
@@ -45,11 +47,11 @@ export async function run(optionsGiven?: Partial<Options>): Promise<void> {
 export async function runLocalHandOff(
   optionsGiven?: Partial<Options>
 ): Promise<void> {
-  log('start local handoff')
+  logger.trace('start local handoff')
 
   const { layout, connectionURI, database } = await loadDataFromParentProcess()
   const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
-  log('plugins %O', plugins)
+  logger.trace('plugins', { plugins })
 
   // TODO select a template
 
@@ -64,9 +66,9 @@ export async function runLocalHandOff(
 export async function runBootstrapper(
   optionsGiven?: Partial<Options>
 ): Promise<void> {
-  log('start bootstrapper')
+  logger.trace('start bootstrapper')
 
-  log('checking folder is in a clean state...')
+  logger.trace('checking folder is in a clean state...')
   await assertIsCleanSlate()
 
   const packageManagerType = await askForPackageManager()

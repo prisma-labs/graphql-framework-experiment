@@ -6,12 +6,12 @@ import * as HTTP from 'http'
 import * as Lo from 'lodash'
 import * as Plugin from '../core/plugin'
 import * as Logger from '../lib/logger'
-import { pog, requireSchemaModules } from '../utils'
+import { requireSchemaModules } from '../utils'
 import { createNexusConfig, createNexusSingleton } from './nexus'
 import * as Server from './server'
 import * as singletonChecks from './singleton-checks'
 
-const log = pog.sub(__filename)
+// const log = rootLogger.child('app')
 const logger = Logger.create({ name: 'app' })
 
 /**
@@ -246,7 +246,7 @@ export function createApp(appConfig?: { types?: any }): App {
           return config
         }
 
-        pog('built up Nexus config: %O', nexusConfig)
+        logger.trace('built up Nexus config', { nexusConfig })
 
         // Merge the plugin nexus plugins
         nexusConfig.plugins = nexusConfig.plugins ?? []
@@ -284,7 +284,7 @@ export function createApp(appConfig?: { types?: any }): App {
  * Augment global scope with a given app singleton.
  */
 const installGlobally = (app: App): App => {
-  log('exposing app global')
+  logger.trace('exposing app global')
 
   const {
     queryType,
@@ -313,7 +313,9 @@ const installGlobally = (app: App): App => {
   })
 
   const nexusFutureTypeGenPath = 'node_modules/@types/typegen-nexus/index.d.ts'
-  log('generating app global singleton typegen to %s', nexusFutureTypeGenPath)
+  logger.trace('generating app global singleton typegen', {
+    to: nexusFutureTypeGenPath,
+  })
 
   fs.write(
     nexusFutureTypeGenPath,

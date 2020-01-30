@@ -3,14 +3,13 @@ import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import * as path from 'path'
 import { PackageJson } from 'type-fest'
-import { pog } from '.'
 import { START_MODULE_NAME } from '../constants'
 import { DEFAULT_BUILD_FOLDER_NAME, Layout } from '../framework/layout'
-import { logger } from './logger'
+import { rootLogger } from './logger'
 import { fatal } from './process'
 import { findConfigFile } from './tsc'
 
-const log = pog.sub(__filename)
+const logger = rootLogger.child(__filename)
 
 /**
  * If you add a new deploy target, please start by adding a new item to the `SUPPORTED_DEPLOY_TARGETS`
@@ -92,7 +91,7 @@ function validateNow(layout: Layout): ValidatorResult {
 
   // Make sure there's a now.json file
   if (!maybeNowJsonPath) {
-    log('creating now.json because none exists yet')
+    logger.trace('creating now.json because none exists yet')
     const packageJson = fs.read('package.json', 'json')
     const projectName = packageJson?.name ?? 'now_rename_me'
 

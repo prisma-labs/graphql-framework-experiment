@@ -4,11 +4,14 @@ import * as os from 'os'
 import * as path from 'path'
 import { register, RegisterOptions } from 'ts-node'
 import { resolveSync } from 'tsconfig'
+import { rootLogger } from '../utils'
 import { Compiler, Opts } from './types'
-import { pog } from '../utils'
 const getCompiledPath = require('./get-compiled-path').default
 
-const log = pog.sub('cli:dev:compiler')
+const logger = rootLogger
+  .child('cli')
+  .child('dev')
+  .child('compiler')
 
 let sourceMapSupportPath = require
   .resolve('source-map-support')
@@ -113,7 +116,7 @@ export const compiler: Compiler = {
     fsJetPack.write(compiler.getChildHookPath(), fileData)
   },
   init: function(options) {
-    log('init')
+    logger.trace('init')
     const project = options['project']
     compiler.tsConfigPath =
       resolveSync(cwd, typeof project === 'string' ? project : undefined) || ''
@@ -171,7 +174,7 @@ export const compiler: Compiler = {
     }
 
     try {
-      log('applying ts-node register')
+      logger.trace('applying ts-node register')
       register(tsNodeOptions)
     } catch (e) {
       console.log(e)
@@ -211,7 +214,7 @@ export const compiler: Compiler = {
     }
   },
   compile: function(params) {
-    log('compile start %s', params.compile)
+    logger.trace('compile start', { compile: params.compile })
     const fileName = params.compile
     let code = fsJetPack.read(fileName)!
     const compiledPath = params.compiledPath
@@ -230,7 +233,7 @@ export const compiler: Compiler = {
     tsHandler(m, fileName)
     try {
       m._compile(code, fileName)
-      log('compile finish %s', fileName)
+      logger.trace('compile finish', { fileName })
       params.onEvent({ event: 'compiled', file: fileName })
     } catch (e) {
       code = 'throw ' + 'new Error(' + JSON.stringify(e.message) + ')' + ';'

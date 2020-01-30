@@ -2,7 +2,7 @@ import anymatch from 'anymatch'
 import { fork } from 'child_process'
 import { SERVER_READY_SIGNAL } from '../framework/dev-mode'
 import { saveDataForChildProcess } from '../framework/layout'
-import { pog } from '../utils'
+import { rootLogger } from '../utils'
 import cfgFactory from './cfg'
 import { FileWatcher, watch } from './chokidar'
 import { compiler } from './compiler'
@@ -10,7 +10,10 @@ import * as ipc from './ipc'
 import { Opts, Process } from './types'
 import { sendSigterm } from './utils'
 
-const log = pog.sub('cli:dev:watcher')
+const logger = rootLogger
+  .child('cli')
+  .child('dev')
+  .child('watcher')
 
 /**
  * Entrypoint into the watcher system.
@@ -72,9 +75,9 @@ export function createWatcher(opts: Opts): Promise<void> {
     // TODO: plugin listeners can probably be merged into the core listener
     watcher.on('all', (_event, file) => {
       if (isIgnoredByCoreListener(file)) {
-        return log('global listener - DID NOT match file: %s', file)
+        return logger.trace('global listener - DID NOT match file', { file })
       } else {
-        log('global listener - matched file: %s', file)
+        logger.trace('global listener - matched file', { file })
         restartRunner(file)
       }
     })
@@ -93,23 +96,23 @@ export function createWatcher(opts: Opts): Promise<void> {
 
         watcher.on('all', (event, file, stats) => {
           if (isMatchedByPluginListener(file)) {
-            log('plugin listener - matched file: %s', file)
+            logger.trace('plugin listener - matched file', { file })
             p.dev.onFileWatcherEvent!(event, file, stats, {
               restart: restartRunner,
             })
           } else {
-            log('plugin listener - DID NOT match file: %s', file)
+            logger.trace('plugin listener - DID NOT match file', { file })
           }
         })
       }
     }
 
     watcher.on('error', error => {
-      console.error('file watcher encountered an error: %j', error)
+      logger.error('file watcher encountered an error', { error })
     })
 
     watcher.on('ready', () => {
-      log('file watcher is ready')
+      logger.trace('ready')
     })
 
     // Create a mutable runner
@@ -123,14 +126,14 @@ export function createWatcher(opts: Opts): Promise<void> {
     // Relay SIGTERM & SIGINT to the runner process tree
     //
     process.on('SIGTERM', () => {
-      log('process got SIGTERM')
+      logger.trace('process got SIGTERM')
       stopRunnerOnBeforeExit().then(() => {
         resolve()
       })
     })
 
     process.on('SIGINT', () => {
-      log('process got SIGINT')
+      logger.trace('process got SIGINT')
       stopRunnerOnBeforeExit().then(() => {
         resolve()
       })
@@ -152,12 +155,12 @@ export function createWatcher(opts: Opts): Promise<void> {
       // will never prevent nexus dev from exiting nicely.
       return sendSigterm(runner)
         .then(() => {
-          log('sigterm to runner process tree completed')
+          logger.trace('sigterm to runner process tree completed')
         })
         .catch(error => {
-          console.warn(
-            'attempt to sigterm the runner process tree ended with error: %O',
-            error
+          logger.warn(
+            'attempt to sigterm the runner process tree ended with error',
+            { error }
           )
         })
     }
@@ -172,21 +175,21 @@ export function createWatcher(opts: Opts): Promise<void> {
         child.disconnect()
 
         if (willTerminate) {
-          log(
+          logger.trace(
             'Disconnecting from child. willTerminate === true so NOT sending sigterm to force runner end, assuming it will end itself.'
           )
         } else {
-          log(
+          logger.trace(
             'Disconnecting from child. willTerminate === false so sending sigterm to force runner end'
           )
           sendSigterm(child)
             .then(() => {
-              log('sigterm to runner process tree completed')
+              logger.trace('sigterm to runner process tree completed')
             })
             .catch(error => {
-              console.warn(
-                'attempt to sigterm the runner process tree ended with error: %O',
-                error
+              logger.warn(
+                'attempt to sigterm the runner process tree ended with error',
+                { error }
               )
             })
         }
@@ -201,27 +204,27 @@ export function createWatcher(opts: Opts): Promise<void> {
        */
       watcher.pause()
       if (file === compiler.tsConfigPath) {
-        log('reinitializing TS compilation')
+        logger.trace('reinitializing TS compilation')
         compiler.init(opts)
       }
 
       compiler.compileChanged(file, opts.onEvent)
 
       if (runnerRestarting) {
-        log('already starting')
+        logger.trace('already starting')
         return
       }
 
       runnerRestarting = true
       if (!runner.exited) {
-        log('runner is still executing, will restart upon its exit')
+        logger.trace('runner is still executing, will restart upon its exit')
         runner.on('exit', () => {
           runner = startRunnerDo()
           runnerRestarting = false
         })
         stopRunner(runner)
       } else {
-        log('runner already exited, probably due to a previous error')
+        logger.trace('runner already exited, probably due to a previous error')
         runner = startRunnerDo()
         runnerRestarting = false
       }
@@ -273,13 +276,12 @@ function startRunner(
   watcher: FileWatcher,
   callbacks?: { onError?: (willTerminate: any) => void }
 ): Process {
-  log('will spawn runner')
+  logger.trace('will spawn runner')
 
   const runnerModulePath = require.resolve('./runner')
   const childHookPath = compiler.getChildHookPath()
 
-  log('using runner module at %s', runnerModulePath)
-  log('using child-hook-path module at %s', childHookPath)
+  logger.trace('start runner module paths', { runnerModulePath, childHookPath })
 
   // TODO: childHook is no longer used at all
   // const child = fork('-r' [runnerModulePath, childHookPath], {
@@ -339,17 +341,17 @@ function startRunner(
   // })
 
   child.on('exit', (code, signal) => {
-    log('runner exiting')
+    logger.trace('runner exiting')
     if (code === null) {
-      log('runner did not exit on its own accord')
+      logger.trace('runner did not exit on its own accord')
     } else {
-      log('runner exited on its own accord with exit code %s', code)
+      logger.trace('runner exited on its own accord with exit code', { code })
     }
 
     if (signal === null) {
-      log('runner did NOT receive a signal causing this exit')
+      logger.trace('runner did NOT receive a signal causing this exit')
     } else {
-      log('runner received signal "%s" which caused this exit', signal)
+      logger.trace('runner received signal which caused this exit', { signal })
     }
 
     // TODO is it possible for multiple exit event triggers?
@@ -411,7 +413,7 @@ function startRunner(
 
   // TODO: Resuming watcher on this signal can lead to performance issues
   ipc.on(child, SERVER_READY_SIGNAL, () => {
-    log('got runner signal "%s"', SERVER_READY_SIGNAL)
+    logger.trace('got runner signal', { SERVER_READY_SIGNAL })
     /**
      * Watcher is resumed once the child sent a message saying it's ready to be restarted
      * This prevents the runner to be run several times thus leading to an EPIPE error
