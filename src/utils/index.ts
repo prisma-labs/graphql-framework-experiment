@@ -1,4 +1,3 @@
-export * from '../framework/schema'
 export * from './array'
 export * from './artifact-generation'
 export * from './console'

@@ -1,14 +1,9 @@
 import * as fs from 'fs-jetpack'
 import * as Path from 'path'
 import { PackageJson } from 'type-fest'
-import {
-  findConfigFile,
-  findFile,
-  findSchemaDirOrModules,
-  rootLogger,
-  stripExt,
-} from '../utils'
+import { findConfigFile, findFile, rootLogger, stripExt } from '../utils'
 import * as PackageManager from '../utils/package-manager'
+import { findSchemaDirOrModules } from './schema'
 
 export const DEFAULT_BUILD_FOLDER_NAME = 'node_modules/.build'
 

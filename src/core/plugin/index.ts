@@ -12,7 +12,8 @@ import {
   MaybePromise,
   SideEffector,
 } from '../../lib/utils'
-import { fatal, rootLogger, run, runSync } from '../../utils'
+import { fatal, run, runSync } from '../../utils'
+import { rootLogger } from '../../utils/logger'
 import * as PackageManager from '../../utils/package-manager'
 import * as Chokidar from '../../watcher/chokidar'
 
