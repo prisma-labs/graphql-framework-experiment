@@ -1,8 +1,9 @@
-import * as Layout from '../../framework/layout'
 import * as Plugin from '../../core/plugin'
+import * as Layout from '../../framework/layout'
 import { createStartModuleContent } from '../../framework/start'
-import { generateArtifacts, logger } from '../../utils'
 import { Command } from '../../lib/cli'
+import { generateArtifacts } from '../../utils'
+import { logger } from '../../utils/logger'
 
 export class Generate implements Command {
   async parse() {

@@ -9,8 +9,8 @@ import {
   createGitRepository,
   createTSConfigContents,
   CWDProjectNameOrGenerate,
-  rootLogger,
 } from '../../../utils'
+import { rootLogger } from '../../../utils/logger'
 import * as PackageManager from '../../../utils/package-manager'
 import * as proc from '../../../utils/process'
 

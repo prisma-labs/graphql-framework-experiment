@@ -2,11 +2,8 @@ import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import * as Layout from '../../framework/layout'
 import { Command } from '../../lib/cli'
-import {
-  CWDProjectNameOrGenerate,
-  generateProjectName,
-  rootLogger,
-} from '../../utils'
+import { CWDProjectNameOrGenerate, generateProjectName } from '../../utils'
+import { rootLogger } from '../../utils/logger'
 import { run } from './create/app'
 import { Dev } from './dev'
 

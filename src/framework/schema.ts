@@ -1,5 +1,6 @@
 import * as fs from 'fs-jetpack'
-import { baseIgnores, flatMap, rootLogger, stripExt } from '../utils'
+import { baseIgnores, flatMap, stripExt } from '../utils'
+import { rootLogger } from '../utils/logger'
 import { Layout, relativeTranspiledImportPath } from './layout'
 
 const logger = rootLogger.child('schema')

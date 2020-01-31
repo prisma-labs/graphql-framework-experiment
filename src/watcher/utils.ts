@@ -1,5 +1,5 @@
 import treeKill = require('tree-kill')
-import { rootLogger } from '../utils'
+import { rootLogger } from '../utils/logger'
 import { Process } from './types'
 
 const logger = rootLogger.child('watcher')

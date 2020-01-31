@@ -1,5 +1,4 @@
 import chalk from 'chalk'
-import { logger } from '../../utils'
 import { HelpError, unknownCommand } from './help'
 import { arg, format, isError } from './helpers'
 import {
@@ -12,6 +11,7 @@ import {
   ConcreteCommand,
 } from './types'
 import { Version } from './version'
+import { logger } from '../../utils/logger'
 
 function createCommandRef(value: string, parent: CommandNamespace): CommandRef {
   const referencedCommand = parent.value[value] as undefined | CommandNode

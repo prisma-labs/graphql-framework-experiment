@@ -5,7 +5,7 @@
  */
 import * as chokidar from 'chokidar'
 import * as fs from 'fs'
-import { rootLogger } from '../utils'
+import { rootLogger } from '../utils/logger'
 
 const logger = rootLogger.child('file-watcher')
 
