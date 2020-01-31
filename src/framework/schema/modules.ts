@@ -1,9 +1,7 @@
 import * as fs from 'fs-jetpack'
-import { baseIgnores, flatMap, stripExt } from '../utils'
-import { rootLogger } from '../utils/logger'
-import { Layout, relativeTranspiledImportPath } from './layout'
-
-const logger = rootLogger.child('schema')
+import { baseIgnores, flatMap, stripExt } from '../../utils'
+import { Layout, relativeTranspiledImportPath } from '../layout'
+import { logger } from './logger'
 
 /**
  * Find all the schema.ts modules or modules within a schema/ folder.
@@ -15,13 +13,13 @@ const logger = rootLogger.child('schema')
  * 2. `schemaDirsOrModules` is all occurances of the modules called schema or
  *    directories called schema. It does NOT include the modules _inside_ schema directory.
  */
-function findSchemaModules(): {
+function findModules(): {
   modules: string[]
   schemaDirsOrModules: string[]
 } {
   logger.trace('finding modules...')
 
-  const schemaDirsOrModules = findSchemaDirOrModules()
+  const schemaDirsOrModules = findDirOrModules()
 
   logger.trace('...found', { dirsOrModules: schemaDirsOrModules })
 
@@ -52,7 +50,7 @@ function findSchemaModules(): {
 /**
  * Find all modules called schema.ts or directories called schema.
  */
-export function findSchemaDirOrModules(): string[] {
+export function findDirOrModules(): string[] {
   // TODO async
   return fs
     .find({
@@ -76,8 +74,8 @@ export function findSchemaDirOrModules(): string[] {
  *
  * There is an IO cost here to go find all modules dynamically, so do not use in production.
  */
-export function importSchemaModules(): void {
-  findSchemaModules().modules.forEach(modulePath => {
+export function importModules(): void {
+  findModules().modules.forEach(modulePath => {
     require(stripExt(modulePath))
   })
 }
@@ -90,8 +88,8 @@ export function importSchemaModules(): void {
  * Note that it is assumed the module these imports will run in will be located
  * in the source/build root.
  */
-export function printStaticSchemaImports(layout: Layout): string {
-  return findSchemaModules().modules.reduce((script, modulePath) => {
+export function printStaticImports(layout: Layout): string {
+  return findModules().modules.reduce((script, modulePath) => {
     const relPath = relativeTranspiledImportPath(layout, modulePath)
     return `${script}\n${printSideEffectsImport(relPath)}`
   }, '')

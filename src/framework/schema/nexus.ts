@@ -28,13 +28,6 @@ export function createNexusSingleton() {
     return schema
   }
 
-  /**
-   * Internal function, do not expose to the surface API
-   */
-  const _getNexusTypesFromSingleton = () => {
-    return __types
-  }
-
   const objectType: typeof Nexus.objectType = config => {
     const typeDef = Nexus.objectType(config)
     __types.push(typeDef)
@@ -118,13 +111,13 @@ export function createNexusSingleton() {
     extendType,
     extendInputType,
     makeSchema,
-    _getNexusTypesFromSingleton,
+    __types,
   }
 }
 
 export type NexusConfig = Nexus.core.SchemaConfig
 
-export function createNexusConfig(): NexusConfig {
+export function createInternalConfig(): NexusConfig {
   const defaultTypesPath = fs.path(
     'node_modules/@types/typegen-nexus/index.d.ts'
   )
