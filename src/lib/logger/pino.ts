@@ -20,6 +20,7 @@ type Options = {
   pretty: {
     enabled: boolean
     color: boolean
+    levelLabel: boolean
   }
   level: Level
   output: Output.Output
@@ -36,12 +37,12 @@ export function create(opts: Options): Pino.Logger {
       prettyPrint: opts.pretty.enabled,
       prettifier: (_opts: any) =>
         opts.pretty.color
-          ? Prettifier.render
+          ? Prettifier.create(opts.pretty)
           : // todo more performant way to do this would be give task to de-colour
             // to render function. Then it can just use some cheap if conditions.
             // Presumably strip-ansi is doing WAY more work as it has to
             // traverse EVERY string logged...
-            Lo.flow(Prettifier.render, stripAnsi),
+            Lo.flow(Prettifier.create(opts.pretty), stripAnsi),
       messageKey: 'event',
     } as ActualPinoOptions,
     opts.output

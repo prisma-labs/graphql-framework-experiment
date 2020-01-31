@@ -11,6 +11,7 @@ export type SettingsData = Readonly<{
   pretty: Readonly<{
     enabled: boolean
     color: boolean
+    levelLabel: boolean
   }>
   output: Output.Output
 }>
@@ -47,12 +48,33 @@ export type SettingsInput = {
     | {
         /**
          * Disable or enable pretty mode.
+         *
+         * When `undefined` pretty takes the first value found, in order:
+         *
+         *  1. `process.env.LOG_PRETTY` (admits case insensitive: `true` | `false`)
+         *  2. `process.stdout.isTTY`
          */
         enabled?: boolean
         /**
-         * Disable ANSI coloring of pretty output.
+         * Should logs be colored?
+         *
+         * @default `true`
+         *
+         * Disabling can be useful when pretty logs are going to a destination that
+         * does not support rendering ANSI color codes (consequence being very
+         * difficult to read content).
          */
         color?: boolean
+        /**
+         * Should logs include the level label?
+         *
+         * @default `false`
+         *
+         * Enable this if understanding the level of a log is important to you
+         * and the icon+color system is insufficient for you to do so. Can be
+         * helpful for newcomers or a matter of taste for some.
+         */
+        levelLabel?: boolean
       }
 }
 
@@ -184,20 +206,25 @@ function processSettingInputPretty(
       ? false
       : process.stdout.isTTY)
 
+  const levelLabel =
+    (typeof pretty === 'object' ? pretty.levelLabel : undefined) ??
+    previous?.levelLabel ??
+    false
+
   if (pretty === undefined) {
-    return { enabled, color }
+    return { enabled, color, levelLabel }
   }
 
   if (pretty === true) {
-    return { enabled: true, color }
+    return { enabled: true, color, levelLabel }
   }
 
   if (pretty === false) {
-    return { enabled: false, color }
+    return { enabled: false, color, levelLabel }
   }
 
   if (typeof pretty === 'object') {
-    return { enabled, color }
+    return { enabled, color, levelLabel }
   }
 
   casesHandled(pretty)

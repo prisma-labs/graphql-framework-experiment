@@ -322,7 +322,7 @@ Array [
 
 exports[`settings pretty .color controls if pretty logs have color or not 1`] = `
 Array [
-  "● info  root:foo  --  qux: true
+  "● root:foo  --  qux: true
 ",
 ]
 `;
@@ -341,17 +341,32 @@ Array [
     "time": 0,
     "v": 1,
   },
-  "[31m✕ fatal root[39m[90m:[39mfoo  [90m--[39m  [90mlib[39m[90m: [39m/see/
+  "[31m✕ root[39m[90m:[39mfoo  [90m--[39m  [90mlib[39m[90m: [39m/see/
 ",
-  "[31m■ error root[39m[90m:[39mfoo  [90m--[39m  [90mhar[39m[90m: [39m[object Object]
+  "[31m■ root[39m[90m:[39mfoo  [90m--[39m  [90mhar[39m[90m: [39m[object Object]
 ",
-  "[33m▲ warn  root[39m[90m:[39mfoo  [90m--[39m  [90mbleep[39m[90m: [39m1,2,true
+  "[33m▲ root[39m[90m:[39mfoo  [90m--[39m  [90mbleep[39m[90m: [39m1,2,true
 ",
-  "[32m● info  root[39m[90m:[39mfoo  [90m--[39m  [90mqux[39m[90m: [39mtrue
+  "[32m● root[39m[90m:[39mfoo  [90m--[39m  [90mqux[39m[90m: [39mtrue
 ",
-  "[34m○ debug root[39m[90m:[39mfoo  [90m--[39m  [90mfoo[39m[90m: [39mbar
+  "[34m○ root[39m[90m:[39mfoo  [90m--[39m  [90mfoo[39m[90m: [39mbar
 ",
-  "[35m— trace root[39m[90m:[39mfoo  [90m--[39m  [90ma[39m[90m: [39m1  [90mb[39m[90m: [39m2  [90mc[39m[90m: [39mthree
+  "[35m— root[39m[90m:[39mfoo  [90m--[39m  [90ma[39m[90m: [39m1  [90mb[39m[90m: [39m2  [90mc[39m[90m: [39mthree
+",
+]
+`;
+
+exports[`settings pretty .levelLabel controls if label is spelt out or not 1`] = `
+Array [
+  "✕ fatal root:foo 
+",
+  "■ error root:foo 
+",
+  "▲ warn  root:foo 
+",
+  "● info  root:foo 
+",
+  "○ debug root:foo 
 ",
 ]
 `;

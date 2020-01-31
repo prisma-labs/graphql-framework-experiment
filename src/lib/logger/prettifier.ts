@@ -1,7 +1,7 @@
 import chalk, { Chalk } from 'chalk'
-import * as Logger from './logger'
-import * as Level from './level'
 import * as utils from '../utils'
+import * as Level from './level'
+import * as Logger from './logger'
 
 // Helpful unicode pickers:
 // - https://jrgraphix.net/r/Unicode/2600-26FF
@@ -81,8 +81,19 @@ const contextKeyValSep = {
   color: chalk.gray,
 }
 
-export function render(rec: Logger.LogRecord): string {
+type Options = {
+  levelLabel: boolean
+}
+
+export function create(options: Options) {
+  return render.bind(null, options)
+}
+
+export function render(options: Options, rec: Logger.LogRecord): string {
   const levelLabel = Level.LEVELS_BY_NUM[rec.level].label
+  const levelLabelRendered = options.levelLabel
+    ? ' ' + utils.spanSpace(5, levelLabel) + ' '
+    : ' '
   const path = rec.path.join(renderEl(pathSep))
   let context = Object.entries(rec.context)
     .map(e => `${chalk.gray(e[0])}${renderEl(contextKeyValSep)}${e[1]}`)
@@ -92,7 +103,7 @@ export function render(rec: Logger.LogRecord): string {
   }
   const style = LEVEL_STYLES[levelLabel]
   return `${style.color(
-    `${style.badge} ${utils.spanSpace(5, levelLabel)} ${path}`
+    `${style.badge}${levelLabelRendered}${path}`
   )}${chalk.gray(eventSep)}${rec.event} ${context}\n`
 }
 

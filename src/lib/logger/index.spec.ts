@@ -39,6 +39,7 @@ describe('settings', () => {
         expect(l.settings.pretty).toEqual({
           enabled: false,
           color: false,
+          levelLabel: false,
         })
       })
       it('controls if logs are rendered pretty or as JSON', () => {
@@ -100,23 +101,58 @@ describe('settings', () => {
         ).toEqual({
           enabled: true,
           color: true,
+          levelLabel: false,
         })
         expect(
           Logger.create({ pretty: { enabled: false } }).settings.pretty
         ).toEqual({
           enabled: false,
           color: true,
+          levelLabel: false,
         })
       })
       it('persists across peer field changes', () => {
-        const logger = Logger.create({
+        const l = Logger.create({
           pretty: { enabled: false, color: false },
         })
-        logger.settings({ pretty: { enabled: true } })
-        expect(logger.settings.pretty).toEqual({
+        l.settings({ pretty: { enabled: true } })
+        expect(l.settings.pretty).toEqual({
           enabled: true,
           color: false,
+          levelLabel: false,
         })
+      })
+    })
+    describe('.levelLabel', () => {
+      it('is false by default', () => {
+        expect(Logger.create().settings.pretty.levelLabel).toEqual(false)
+      })
+      it('can be enabled', () => {
+        expect(
+          Logger.create({ pretty: { levelLabel: true } }).settings.pretty
+            .levelLabel
+        ).toEqual(true)
+        expect(
+          Logger.create().settings({ pretty: { levelLabel: true } }).settings
+            .pretty.levelLabel
+        ).toEqual(true)
+      })
+      it('persists across peer field changes', () => {
+        const l = Logger.create({ pretty: { levelLabel: true } })
+        l.settings({ pretty: false })
+        expect(l.settings.pretty.levelLabel).toBe(true)
+      })
+      it('controls if label is spelt out or not', () => {
+        logger.settings({
+          pretty: { enabled: true, levelLabel: true, color: false },
+        })
+        logger.fatal('foo')
+        logger.error('foo')
+        logger.warn('foo')
+        logger.info('foo')
+        logger.debug('foo')
+        logger.trace('foo')
+        expect(output.writes).toMatchSnapshot()
       })
     })
 
@@ -125,6 +161,7 @@ describe('settings', () => {
         expect(Logger.create({ pretty: true }).settings.pretty).toEqual({
           enabled: true,
           color: true,
+          levelLabel: false,
         })
       })
 
@@ -132,6 +169,7 @@ describe('settings', () => {
         expect(Logger.create({ pretty: false }).settings.pretty).toEqual({
           enabled: false,
           color: true,
+          levelLabel: false,
         })
       })
     })
