@@ -124,7 +124,6 @@ export const scan = async (): Promise<ScanResult> => {
   logger.trace('starting scan...')
   const packageManagerType = await PackageManager.detectProjectPackageManager()
   const maybeAppModule = await findAppModule()
-  console.log(Schema)
   const maybeSchemaModules = Schema.findDirOrModules()
 
   // TODO do not assume app module is at source root?
