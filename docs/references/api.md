@@ -86,7 +86,15 @@ TODO
 
 ### `server.start`
 
-### `serve.stop`
+### `server.stop`
+
+## `RootLogger`
+
+TODO
+
+Extends [`Logger`](#logger)
+
+### `rootLogger.settings`
 
 ## `Logger`
 
@@ -109,11 +117,3 @@ TODO
 ### `logger.addToContext`
 
 ### `logger.child`
-
-## `RootLogger`
-
-TODO
-
-Extends [`Logger`](#logger)
-
-### `rootLogger.settings`
