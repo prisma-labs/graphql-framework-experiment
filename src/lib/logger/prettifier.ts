@@ -104,10 +104,7 @@ export function render(options: Options, rec: Logger.LogRecord): string {
       e =>
         `${chalk.gray(e[0])}${renderEl(contextKeyValSep)}${util.inspect(e[1], {
           colors: true,
-          // breakLength: Infinity,
-          // compact: false,
           getters: true,
-          showHidden: true,
           depth: 20,
         })}`
     )
