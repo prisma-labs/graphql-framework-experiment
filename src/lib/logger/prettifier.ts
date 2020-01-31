@@ -1,4 +1,5 @@
 import chalk, { Chalk } from 'chalk'
+import * as util from 'util'
 import * as utils from '../utils'
 import * as Level from './level'
 import * as Logger from './logger'
@@ -95,16 +96,31 @@ export function render(options: Options, rec: Logger.LogRecord): string {
     ? ' ' + utils.spanSpace(5, levelLabel) + ' '
     : ' '
   const path = rec.path.join(renderEl(pathSep))
-  let context = Object.entries(rec.context)
-    .map(e => `${chalk.gray(e[0])}${renderEl(contextKeyValSep)}${e[1]}`)
+
+  // render context
+
+  let contextRendered = Object.entries(rec.context)
+    .map(
+      e =>
+        `${chalk.gray(e[0])}${renderEl(contextKeyValSep)}${util.inspect(e[1], {
+          colors: true,
+          getters: true,
+          depth: 20,
+        })}`
+    )
     .join('  ')
-  if (context) {
-    context = ` ${renderEl(contextSep)}  ` + context
+
+  if (contextRendered) {
+    contextRendered = ` ${renderEl(contextSep)}  ` + contextRendered
   }
+
   const style = LEVEL_STYLES[levelLabel]
+
+  // put it together
+
   return `${style.color(
     `${style.badge}${levelLabelRendered}${path}`
-  )}${chalk.gray(eventSep)}${rec.event} ${context}\n`
+  )}${chalk.gray(eventSep)}${rec.event} ${contextRendered}\n`
 }
 
 type El = {
