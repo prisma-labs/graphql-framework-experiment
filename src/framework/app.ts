@@ -7,7 +7,7 @@ import * as Lo from 'lodash'
 import * as Plugin from '../core/plugin'
 import * as Logger from '../lib/logger'
 import { createNexusConfig, createNexusSingleton } from './nexus'
-import { requireSchemaModules } from './schema'
+import { importSchemaModules } from './schema'
 import * as Server from './server'
 import * as singletonChecks from './singleton-checks'
 
@@ -176,7 +176,7 @@ export function createApp(appConfig?: { types?: any }): App {
         // At build time we inline static imports.
         // This code MUST run after user/system has had chance to run global installation
         if (process.env.NEXUS_STAGE === 'dev') {
-          requireSchemaModules()
+          importSchemaModules()
         }
 
         // Create the Nexus config
