@@ -1,11 +1,11 @@
 import * as RootLogger from './root-logger'
 
-export function demo() {
+export function demo(logger?: RootLogger.RootLogger) {
   console.log()
   console.log('-----------')
   console.log('LOGGER DEMO')
   console.log('-----------')
-  const logger = RootLogger.create()
+  logger = logger ?? RootLogger.create()
   const origLevel = logger.settings.level
   logger.settings({ level: 'trace' })
   logger.fatal('foo', { lib: /see/ })

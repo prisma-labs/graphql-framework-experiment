@@ -4,6 +4,7 @@ import * as Output from './output'
 
 resetBeforeEachTest(process, 'env')
 resetBeforeEachTest(process.stdout, 'isTTY')
+resetBeforeEachTest(console, 'log')
 
 let logger: Logger.RootLogger
 let output: MockOutput.MockOutput
@@ -174,6 +175,16 @@ describe('settings', () => {
       })
     })
   })
+})
+
+describe('demo', () => {
+  it('runs a demo', () => {
+    console.log = output.write
+    logger.settings({ pretty: { enabled: true, color: false } })
+    Logger.demo(logger)
+    expect(output.writes).toMatchSnapshot()
+  })
+  it.todo('runs automatically when LOG_DEMO=true')
 })
 
 describe('output', () => {
@@ -414,6 +425,10 @@ namespace MockOutput {
 function resetBeforeEachTest(object: any, key: string) {
   const orig = object[key]
   beforeEach(() => {
-    object[key] = Lo.cloneDeep(orig)
+    if (typeof orig === 'object') {
+      object[key] = Lo.cloneDeep(orig)
+    } else {
+      object[key] = orig
+    }
   })
 }

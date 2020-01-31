@@ -303,6 +303,51 @@ Array [
 ]
 `;
 
+exports[`demo runs a demo 1`] = `
+Array [
+  undefined,
+  "-----------",
+  "LOGGER DEMO",
+  "-----------",
+  "✕ root:foo  --  lib: /see/
+",
+  "■ root:foo  --  har: { mar: 'tek' }  jar: [
+  1, 2, 3, 4, 4, 5, 6,
+  6, 7, 9, 1, 2, 4, 5,
+  6, 7, 3, 6, 5, 4
+]  kio: [Object: null prototype] [foo] {}
+",
+  "▲ root:foo  --  bleep: [ 1, '2', true ]
+",
+  "● root:foo 
+",
+  "○ root:foo  --  results: [
+  { userId: 1, id: 1, title: 'delectus aut autem', completed: false },
+  {
+    userId: 1,
+    id: 2,
+    title: 'quis ut nam facilis et officia qui',
+    completed: false
+  },
+  { userId: 1, id: 3, title: 'fugiat veniam minus', completed: false },
+  { userId: 1, id: 4, title: 'et porro tempora', completed: true },
+  {
+    userId: 1,
+    id: 5,
+    title: 'laboriosam mollitia et enim quasi adipisci quia provident illum',
+    completed: false
+  }
+]  tri: 'wiz'  on: false
+",
+  "○ root:foo  --  foo: 'bar'
+",
+  "— root:foo  --  a: 1  b: 2  c: 'three'
+",
+  "-----------",
+  undefined,
+]
+`;
+
 exports[`output defaults to stdout for all levels 1`] = `
 Array [
   Object {
