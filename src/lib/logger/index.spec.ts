@@ -178,9 +178,13 @@ describe('settings', () => {
 })
 
 describe('demo', () => {
-  it('runs a demo', () => {
+  it('runs a demo with fake data and all levels active', () => {
     console.log = output.write
     logger.settings({ pretty: { enabled: true, color: false } })
+    Logger.demo(logger)
+    expect(output.writes).toMatchSnapshot()
+    output.writes.length = 0
+    logger.settings({ pretty: false })
     Logger.demo(logger)
     expect(output.writes).toMatchSnapshot()
   })

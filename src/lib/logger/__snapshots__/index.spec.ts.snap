@@ -303,7 +303,7 @@ Array [
 ]
 `;
 
-exports[`demo runs a demo 1`] = `
+exports[`demo runs a demo with fake data and all levels active 1`] = `
 Array [
   undefined,
   "-----------",
@@ -343,6 +343,177 @@ Array [
 ",
   "— root:foo  --  a: 1  b: 2  c: 'three'
 ",
+  "-----------",
+  undefined,
+]
+`;
+
+exports[`demo runs a demo with fake data and all levels active 2`] = `
+Array [
+  undefined,
+  "-----------",
+  "LOGGER DEMO",
+  "-----------",
+  Object {
+    "context": Object {
+      "lib": Object {},
+    },
+    "event": "foo",
+    "hostname": "Jasons-Prisma-Machine.local",
+    "level": 60,
+    "path": Array [
+      "root",
+    ],
+    "pid": 0,
+    "time": 0,
+    "v": 1,
+  },
+  Object {
+    "context": Object {
+      "har": Object {
+        "mar": "tek",
+      },
+      "jar": Array [
+        1,
+        2,
+        3,
+        4,
+        4,
+        5,
+        6,
+        6,
+        7,
+        9,
+        1,
+        2,
+        4,
+        5,
+        6,
+        7,
+        3,
+        6,
+        5,
+        4,
+      ],
+      "kio": Object {},
+    },
+    "event": "foo",
+    "hostname": "Jasons-Prisma-Machine.local",
+    "level": 50,
+    "path": Array [
+      "root",
+    ],
+    "pid": 0,
+    "time": 0,
+    "v": 1,
+  },
+  Object {
+    "context": Object {
+      "bleep": Array [
+        1,
+        "2",
+        true,
+      ],
+    },
+    "event": "foo",
+    "hostname": "Jasons-Prisma-Machine.local",
+    "level": 40,
+    "path": Array [
+      "root",
+    ],
+    "pid": 0,
+    "time": 0,
+    "v": 1,
+  },
+  Object {
+    "context": Object {},
+    "event": "foo",
+    "hostname": "Jasons-Prisma-Machine.local",
+    "level": 30,
+    "path": Array [
+      "root",
+    ],
+    "pid": 0,
+    "time": 0,
+    "v": 1,
+  },
+  Object {
+    "context": Object {
+      "on": false,
+      "results": Array [
+        Object {
+          "completed": false,
+          "id": 1,
+          "title": "delectus aut autem",
+          "userId": 1,
+        },
+        Object {
+          "completed": false,
+          "id": 2,
+          "title": "quis ut nam facilis et officia qui",
+          "userId": 1,
+        },
+        Object {
+          "completed": false,
+          "id": 3,
+          "title": "fugiat veniam minus",
+          "userId": 1,
+        },
+        Object {
+          "completed": true,
+          "id": 4,
+          "title": "et porro tempora",
+          "userId": 1,
+        },
+        Object {
+          "completed": false,
+          "id": 5,
+          "title": "laboriosam mollitia et enim quasi adipisci quia provident illum",
+          "userId": 1,
+        },
+      ],
+      "tri": "wiz",
+    },
+    "event": "foo",
+    "hostname": "Jasons-Prisma-Machine.local",
+    "level": 20,
+    "path": Array [
+      "root",
+    ],
+    "pid": 0,
+    "time": 0,
+    "v": 1,
+  },
+  Object {
+    "context": Object {
+      "foo": "bar",
+    },
+    "event": "foo",
+    "hostname": "Jasons-Prisma-Machine.local",
+    "level": 20,
+    "path": Array [
+      "root",
+    ],
+    "pid": 0,
+    "time": 0,
+    "v": 1,
+  },
+  Object {
+    "context": Object {
+      "a": 1,
+      "b": 2,
+      "c": "three",
+    },
+    "event": "foo",
+    "hostname": "Jasons-Prisma-Machine.local",
+    "level": 10,
+    "path": Array [
+      "root",
+    ],
+    "pid": 0,
+    "time": 0,
+    "v": 1,
+  },
   "-----------",
   undefined,
 ]
