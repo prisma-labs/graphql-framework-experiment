@@ -1,9 +1,9 @@
+import * as NexusSchema from '@nexus/schema'
 import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import * as Path from 'path'
 import prompts, * as Prompts from 'prompts'
 import * as Layout from '../../framework/layout'
-import { NexusConfig } from '../../framework/nexus'
 import { TestContextCore } from '../../framework/testing'
 import * as Logger from '../../lib/logger'
 import {
@@ -136,9 +136,10 @@ export type RuntimeContributions<C extends {} = any> = {
     }
     create: (req: Express.Request) => C
   }
+  // todo schema property name
   nexus?: {
-    typegenAutoConfig?: NexusConfig['typegenAutoConfig']
-    plugins?: NexusConfig['plugins']
+    typegenAutoConfig?: NexusSchema.core.SchemaConfig['typegenAutoConfig']
+    plugins?: NexusSchema.core.SchemaConfig['plugins']
   }
 }
 
@@ -263,16 +264,6 @@ export function create(definer: Definer): DriverCreator {
 //   onGenerateStart?: () => MaybePromise<void>
 //   onCreateAfterScaffold?: (socket: Socket) => MaybePromise<void>
 //   onCreateAfterDepInstall?: (socket: Socket) => MaybePromise<void>
-// }
-
-/**
- * Cutely named, this is just the handle that plugins get access to aid
- * integration. Includes utilities for logging, and access to project layout data.
- */
-// export type Socket = {
-//   // TODO something richer
-//   log: typeof console.log
-//   layout: Layout.Layout
 // }
 
 /**

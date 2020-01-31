@@ -1,4 +1,3 @@
-import * as nexus from '@nexus/schema'
 import { typegenAutoConfig } from '@nexus/schema/dist/core'
 import { stripIndent, stripIndents } from 'common-tags'
 import * as fs from 'fs-jetpack'
@@ -6,8 +5,7 @@ import * as HTTP from 'http'
 import * as Lo from 'lodash'
 import * as Plugin from '../core/plugin'
 import * as Logger from '../lib/logger'
-import { createNexusConfig, createNexusSingleton } from './nexus'
-import { importSchemaModules } from './schema'
+import * as Schema from './schema'
 import * as Server from './server'
 import * as singletonChecks from './singleton-checks'
 
@@ -54,25 +52,16 @@ export type App = {
    *
    * ### todo
    */
-  schema: {
+  schema: Schema.Schema & {
+    // addToContext is a bridge between two components, schema and server, so
+    // its not in schema currently...
+
+    /**
+     * todo
+     */
     addToContext: <T extends {}>(
       contextContributor: ContextContributor<T>
-    ) => App
-    queryType: typeof nexus.queryType
-    mutationType: typeof nexus.mutationType
-    objectType: typeof nexus.objectType
-    inputObjectType: typeof nexus.inputObjectType
-    enumType: typeof nexus.enumType
-    scalarType: typeof nexus.scalarType
-    unionType: typeof nexus.unionType
-    interfaceType: typeof nexus.interfaceType
-    intArg: typeof nexus.intArg
-    stringArg: typeof nexus.stringArg
-    booleanArg: typeof nexus.booleanArg
-    floatArg: typeof nexus.floatArg
-    idArg: typeof nexus.idArg
-    extendType: typeof nexus.extendType
-    extendInputType: typeof nexus.extendInputType
+    ) => void
   }
 }
 
@@ -81,26 +70,6 @@ export type App = {
  * TODO extract and improve config type
  */
 export function createApp(appConfig?: { types?: any }): App {
-  const {
-    queryType,
-    mutationType,
-    objectType,
-    inputObjectType,
-    enumType,
-    scalarType,
-    unionType,
-    interfaceType,
-    intArg,
-    stringArg,
-    booleanArg,
-    floatArg,
-    idArg,
-    extendType,
-    extendInputType,
-    makeSchema,
-    _getNexusTypesFromSingleton,
-  } = createNexusSingleton()
-
   const plugins: Plugin.RuntimeContributions[] = []
 
   // Automatically use all installed plugins
@@ -115,6 +84,7 @@ export function createApp(appConfig?: { types?: any }): App {
    */
 
   let server: Server.Server
+  const schema = Schema.create()
   const api: App = {
     logger,
     // TODO bring this back pending future discussion
@@ -137,21 +107,7 @@ export function createApp(appConfig?: { types?: any }): App {
         contextContributors.push(contextContributor)
         return api
       },
-      queryType,
-      mutationType,
-      objectType,
-      inputObjectType,
-      enumType,
-      scalarType,
-      unionType,
-      interfaceType,
-      intArg,
-      stringArg,
-      booleanArg,
-      floatArg,
-      idArg,
-      extendType,
-      extendInputType,
+      ...schema.external,
     },
     server: {
       /**
@@ -176,11 +132,15 @@ export function createApp(appConfig?: { types?: any }): App {
         // At build time we inline static imports.
         // This code MUST run after user/system has had chance to run global installation
         if (process.env.NEXUS_STAGE === 'dev') {
-          importSchemaModules()
+          Schema.importModules()
         }
 
-        // Create the Nexus config
-        const nexusConfig = createNexusConfig()
+        // todo refactor; this is from before when nexus and framework were
+        // different (e.g. santa). Encapsulate component schema config
+        // into framework schema module.
+        //
+        // Create the NexusSchema config
+        const nexusConfig = Schema.createInternalConfig()
 
         // Integrate plugin typegenAutoConfig contributions
         const typegenAutoConfigFromPlugins = {}
@@ -268,7 +228,7 @@ export function createApp(appConfig?: { types?: any }): App {
           return config
         }
 
-        logger.trace('built up Nexus config', { nexusConfig })
+        logger.trace('built up schema config', { nexusConfig })
 
         // Merge the plugin nexus plugins
         nexusConfig.plugins = nexusConfig.plugins ?? []
@@ -280,14 +240,14 @@ export function createApp(appConfig?: { types?: any }): App {
           nexusConfig.types.push(...appConfig.types)
         }
 
-        if (_getNexusTypesFromSingleton().length === 0) {
+        if (schema.internal.types.length === 0) {
           logger.warn(
             'Your GraphQL schema is empty. Make sure your GraphQL schema lives in a `schema.ts` file or some `schema/` directories'
           )
         }
 
         return Server.create({
-          schema: await makeSchema(nexusConfig),
+          schema: await schema.internal.compile(nexusConfig),
           plugins,
           contextContributors,
           ...opts,

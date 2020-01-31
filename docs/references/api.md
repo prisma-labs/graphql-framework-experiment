@@ -47,6 +47,10 @@ Framework Notes:
 
 ## `Schema`
 
+### `schema.settings`
+
+todo
+
 ### `schema.addToContext`
 
 Add context to your graphql resolver functions. The objects returned by your context contributor callbacks will be shallow-merged into `ctx`. The `ctx` type will also accurately reflect the types you return from callbacks passed to `addToContext`.
@@ -74,7 +78,7 @@ app.schema.objectType({
 
 ### `schema.<nexusDefBlock>`
 
-Add types to your GraphQL Schema. The available nexus definition block functions include `objectType` `inputObjectType` `enumType` and so on. Refer to the [official Nexus API documentation](https://nexus.js.org/docs/api-objecttype) for more information about these functions.
+Add types to your GraphQL Schema. The available nexus definition block functions include `objectType` `inputObjectType` `enumType` and so on. Refer to the [official Nexus Schema API documentation](https://nexus.js.org/docs/api-objecttype) for more information about these functions.
 
 ## `Server`
 

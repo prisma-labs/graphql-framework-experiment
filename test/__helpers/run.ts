@@ -1,5 +1,5 @@
-import { RunOptions, run } from '../../src/utils'
 import * as path from 'path'
+import { run, RunOptions } from '../../src/utils'
 
 export const createCLIRunner = (optionsBase?: RunOptions) => (
   command: string,
@@ -15,7 +15,6 @@ export const createCLIRunner = (optionsBase?: RunOptions) => (
       (mergedOptions as any)['cwd'] || '.',
       path.join(__dirname, '../..')
     )
-  // console.log(pathToProject)
   return run(
     `${pathToProject}/node_modules/.bin/ts-node --project ${pathToProject}/tsconfig.json ${pathToProject}/${entrypint} ${command}`,
     mergedOptions

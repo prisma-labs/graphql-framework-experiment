@@ -4,7 +4,7 @@ import { PackageJson } from 'type-fest'
 import { findConfigFile, findFile, stripExt } from '../utils'
 import { rootLogger } from '../utils/logger'
 import * as PackageManager from '../utils/package-manager'
-import { findSchemaDirOrModules } from './schema'
+import * as Schema from './schema'
 
 export const DEFAULT_BUILD_FOLDER_NAME = 'node_modules/.build'
 
@@ -124,7 +124,8 @@ export const scan = async (): Promise<ScanResult> => {
   logger.trace('starting scan...')
   const packageManagerType = await PackageManager.detectProjectPackageManager()
   const maybeAppModule = await findAppModule()
-  const maybeSchemaModules = findSchemaDirOrModules()
+  console.log(Schema)
+  const maybeSchemaModules = Schema.findDirOrModules()
 
   // TODO do not assume app module is at source root?
   let sourceRoot: string

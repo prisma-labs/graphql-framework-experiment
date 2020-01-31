@@ -1,6 +1,6 @@
 import { stripIndent } from 'common-tags'
 import { Layout, relativeTranspiledImportPath } from './layout'
-import { printStaticSchemaImports } from './schema'
+import { printStaticImports } from './schema'
 
 type StartModuleConfig =
   | {
@@ -47,7 +47,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   `
 
   if (config.internalStage === 'build') {
-    const staticImports = printStaticSchemaImports(config.layout)
+    const staticImports = printStaticImports(config.layout)
     if (staticImports !== '') {
       output += '\n\n\n'
       output += stripIndent`
