@@ -1,6 +1,7 @@
-import { ChildProcess, ForkOptions } from 'child_process'
-import { Layout } from '../framework/layout'
+import { ForkOptions } from 'child_process'
+import * as PTY from 'node-pty'
 import * as Plugin from '../core/plugin'
+import { Layout } from '../framework/layout'
 
 type EventRestart = {
   event: 'restart'
@@ -96,7 +97,7 @@ export interface Opts extends BooleanOpts, StringOpts {
   plugins: Plugin.WorkflowHooks[]
 }
 
-export interface Process extends ChildProcess {
+export interface Process extends PTY.IPty {
   respawn?: boolean
   stopping?: boolean
   exited: undefined | true

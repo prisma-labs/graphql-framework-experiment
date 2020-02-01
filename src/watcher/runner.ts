@@ -1,15 +1,4 @@
-// HACK force the process to think it has a tty. We know it will not becuse of
-// the way runner is run by watcher, wherein fork is run so that child object in
-// parent process has programatic stream control over stdin/out/err. This is to support
-// co-existence with dev mode UI where we want the user to be able to toggle
-// bewteen viewing their logs and the UI. It is assumed that watcher will always
-// be running with a tty but it would be a matter of invoking runner with some
-// additional special args if this constant ever becomes variable.
-require('tty').isatty = () => true
-process.stdout.isTTY = true
-process.stderr.isTTY = true
-
-import { fork } from 'child_process'
+import * as ipc2 from 'node-ipc'
 import { register } from 'ts-node'
 import * as ts from 'typescript'
 import { Script } from 'vm'
@@ -19,7 +8,6 @@ import { rootLogger } from '../utils/logger'
 import cfgFactory from './cfg'
 import hook from './hook'
 import * as ipc from './ipc'
-const childProcess = require('child_process')
 import Module = require('module')
 
 const logger = rootLogger
@@ -27,11 +15,26 @@ const logger = rootLogger
   .child('dev')
   .child('runner')
 
+logger.trace('boot')
+
 // TODO HACK, big one, like running ts-node twice?
 register({
   transpileOnly: true,
 })
 ;(async function() {
+  ipc2.config.id = 'node_dev_runner'
+  ipc2.config.logger = logger.trace
+  ipc2.config.silent = true
+  await new Promise(res => {
+    ipc2.connectTo('nexus_dev_watcher', () => {
+      logger.trace('ipc socket created')
+      ipc2.of.nexus_dev_watcher.on('connect', () => {
+        logger.trace('ipc connection to watcher established')
+        res()
+      })
+    })
+  })
+
   logger.trace('starting context type extraction')
   const layout = await Layout.loadDataFromParentProcess()
   const tsConfig = readTsConfig(layout)
@@ -76,15 +79,13 @@ register({
     }
   })
 
-  if (cfg.fork) {
-    // Overwrite child_process.fork() so that we can hook into forked processes
-    // too. We also need to relay messages about required files to the parent.
-    childProcess.fork = function(modulePath: string, args: any, options: any) {
-      const child = fork(__filename, [modulePath].concat(args), options)
-      ipc.relay(child)
-      return child
-    }
-  }
+  // Overwrite child_process.fork() so that we can hook into forked processes
+  // too. We also need to relay messages about required files to the parent.
+  // childProcess.fork = function(modulePath: string, args: any, options: any) {
+  //   const child = fork(__filename, [modulePath].concat(args), options)
+  //   // ipc.relay(child)
+  //   return child
+  // }
 
   // TODO perhaps we should move these unhandled error/rejections
   // to start module because we probably want them just as much from production as
@@ -110,7 +111,7 @@ register({
       willTerminate: hasCustomHandler,
     }
     logger.trace('uncaughtException ', { errorMessage })
-    ipc.send(errorMessage)
+    ipc.send(errorMessage, ipc2.of.nexus_dev_watcher)
   })
 
   // unhandled rejection will get whatever value the user rejected with, which
@@ -139,12 +140,12 @@ register({
       willTerminate: hasCustomHandler,
     }
     logger.trace('unhandledRejection', { errorMessage })
-    ipc.send(errorMessage)
+    ipc.send(errorMessage, ipc2.of.nexus_dev_watcher)
   })
 
   // Hook into require() and notify the parent process about required files
   hook(cfg, module, file => {
-    ipc.send({ required: file })
+    ipc.send({ required: file }, ipc2.of.nexus_dev_watcher)
   })
 
   if (!process.env.NEXUS_EVAL) {

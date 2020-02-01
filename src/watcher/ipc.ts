@@ -1,4 +1,7 @@
-import { ChildProcess } from 'child_process'
+import * as Net from 'net'
+import * as ipc2 from 'node-ipc'
+
+type NodeIPCServer = typeof ipc2.server
 
 /**
  * Checks if the given message is an internal node-dev message.
@@ -10,32 +13,29 @@ function isNodeDevMessage(m: any) {
 /**
  * Sends a message to the given process.
  */
-export function send(msg: any, dest?: NodeJS.Process) {
+export function send(msg: any, dest: Net.Socket) {
   msg.cmd = 'NODE_DEV'
-  if (!dest) {
-    dest = process
-  }
-  if (dest.send) dest.send(msg)
+  dest.emit('message', msg)
 }
 
 export function on(
-  proc: ChildProcess,
-  type: string,
+  server: NodeIPCServer,
+  eventType: string,
   callback: (m: any) => void
 ) {
   function handleMessage(m: any) {
-    if (isNodeDevMessage(m) && type in m) callback(m)
+    if (isNodeDevMessage(m) && eventType in m) callback(m)
   }
 
-  proc.on('internalMessage', handleMessage)
-  proc.on('message', handleMessage)
+  server.on('internalMessage', handleMessage)
+  server.on('message', handleMessage)
 }
 
-export function relay(src: ChildProcess, dest?: any) {
-  if (!dest) dest = process
-  function relayMessage(m: any) {
-    if (isNodeDevMessage(m)) dest.send(m)
-  }
-  src.on('internalMessage', relayMessage)
-  src.on('message', relayMessage)
-}
+// export function relay(src: PTY.IPty, dest?: any) {
+//   if (!dest) dest = process
+//   function relayMessage(m: any) {
+//     if (isNodeDevMessage(m)) dest.send(m)
+//   }
+//   // src.on('internalMessage', relayMessage)
+//   // src.on('message', relayMessage)
+// }

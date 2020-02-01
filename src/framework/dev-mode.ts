@@ -1,3 +1,4 @@
+import * as ipc2 from 'node-ipc'
 import { fatal } from '../utils/process'
 
 /**
@@ -35,14 +36,14 @@ export const SERVER_READY_SIGNAL = 'ready'
 export function sendServerReadySignalToDevModeMaster(): void {
   sendSignalToDevModeMaster(SERVER_READY_SIGNAL)
 }
-
 /**
  * Send a message to the dev mode master process.
  */
 function sendSignalToDevModeMaster(signal: string) {
   if (!IS_DEV_MODE) return
 
-  process.send!({ [signal]: true, cmd: 'NODE_DEV' })
+  // process.send!({ [signal]: true, cmd: 'NODE_DEV' })
+  ipc2.of.nexus_dev_watcher.emit('message', { [signal]: true, cmd: 'NODE_DEV' })
 }
 
 /**
@@ -101,11 +102,11 @@ function devModeIPCIntegrityCheck():
  * Check that dev-mode <> IPC integrity is intact else halt the program.
  */
 function assertDevModeIPCIntegrityCheck(): void {
-  const status = devModeIPCIntegrityCheck()
-  if (!status.ok) {
-    fatal(
-      'dev-mode <> IPC integrity check has failed with the follow reason: %s',
-      status.reason
-    )
-  }
+  // const status = devModeIPCIntegrityCheck()
+  // if (!status.ok) {
+  //   fatal(
+  //     'dev-mode <> IPC integrity check has failed with the follow reason: %s',
+  //     status.reason
+  //   )
+  // }
 }

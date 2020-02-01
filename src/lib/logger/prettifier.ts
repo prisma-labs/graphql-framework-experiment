@@ -82,6 +82,8 @@ const contextKeyValSep = {
   color: chalk.gray,
 }
 
+const contextEntrySep = '  '
+
 type Options = {
   levelLabel: boolean
 }
@@ -100,15 +102,17 @@ export function render(options: Options, rec: Logger.LogRecord): string {
   // render context
 
   let contextRendered = Object.entries(rec.context)
-    .map(
-      e =>
-        `${chalk.gray(e[0])}${renderEl(contextKeyValSep)}${util.inspect(e[1], {
+    .map(([key, value]) => {
+      return `${chalk.gray(key)}${renderEl(contextKeyValSep)}${util.inspect(
+        value,
+        {
           colors: true,
           getters: true,
           depth: 20,
-        })}`
-    )
-    .join('  ')
+        }
+      )}`
+    })
+    .join(contextEntrySep)
 
   if (contextRendered) {
     contextRendered = ` ${renderEl(contextSep)}  ` + contextRendered

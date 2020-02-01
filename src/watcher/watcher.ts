@@ -1,5 +1,6 @@
 import anymatch from 'anymatch'
-import { fork } from 'child_process'
+import * as ipc2 from 'node-ipc'
+import * as PTY from 'node-pty'
 import { SERVER_READY_SIGNAL } from '../framework/dev-mode'
 import { saveDataForChildProcess } from '../framework/layout'
 import { rootLogger } from '../utils/logger'
@@ -19,7 +20,7 @@ const logger = rootLogger
  * Entrypoint into the watcher system.
  */
 export function createWatcher(opts: Opts): Promise<void> {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     const cfg = cfgFactory(opts)
 
     compiler.init(opts)
@@ -82,6 +83,44 @@ export function createWatcher(opts: Opts): Promise<void> {
       }
     })
 
+    ipc2.config.id = 'nexus_dev_watcher'
+    ipc2.config.logger = logger.trace
+    ipc2.config.silent = true
+    ipc2.serve()
+    ipc2.server.start()
+    await new Promise((res, rej) => {
+      ipc2.server.on('error', rej)
+      ipc2.server.on('start', () => {
+        logger.trace('ipc server started')
+        res()
+      })
+    })
+    ipc2.server.on('error', reject)
+    ipc2.server.on('connect', _socket => {
+      logger.trace('ipc socket connected')
+    })
+    ipc2.server.on('disconnect', (...args) => {
+      logger.trace('ipc socket disconnected (client sent)', { args })
+    })
+    ipc2.server.on('destroy', (...args) => {
+      logger.trace('ipc socket destroyed (gone for good, no more retries)', {
+        args,
+      })
+    })
+    ipc2.server.on('socket.disconnected', (_socket, destroyedSocketId) => {
+      logger.trace('ipc socket disconnected (server sent)', {
+        destroyedSocketId,
+      })
+    })
+    ipc2.server.on('internalMessage', data => {
+      logger.trace('ipc internalMessage message received', data)
+    })
+    ipc2.server.on('message', data => {
+      if (!data.required) {
+        logger.trace('ipc message message received', data)
+      }
+    })
+
     /**
      * Plugins watcher listeners
      */
@@ -127,6 +166,7 @@ export function createWatcher(opts: Opts): Promise<void> {
     //
     process.on('SIGTERM', () => {
       logger.trace('process got SIGTERM')
+      ipc2.server.stop()
       stopRunnerOnBeforeExit().then(() => {
         resolve()
       })
@@ -134,6 +174,7 @@ export function createWatcher(opts: Opts): Promise<void> {
 
     process.on('SIGINT', () => {
       logger.trace('process got SIGINT')
+      ipc2.server.stop()
       stopRunnerOnBeforeExit().then(() => {
         resolve()
       })
@@ -166,34 +207,35 @@ export function createWatcher(opts: Opts): Promise<void> {
     }
 
     function stopRunner(child: Process, willTerminate?: boolean) {
-      if (child.exited || child.stopping) {
-        return
-      }
-      child.stopping = true
-      child.respawn = true
-      if (child.connected === undefined || child.connected === true) {
-        child.disconnect()
+      child.kill()
+      // if (child.exited || child.stopping) {
+      //   return
+      // }
+      // child.stopping = true
+      // child.respawn = true
+      // if (child.connected === undefined || child.connected === true) {
+      //   child.disconnect()
 
-        if (willTerminate) {
-          logger.trace(
-            'Disconnecting from child. willTerminate === true so NOT sending sigterm to force runner end, assuming it will end itself.'
-          )
-        } else {
-          logger.trace(
-            'Disconnecting from child. willTerminate === false so sending sigterm to force runner end'
-          )
-          sendSigterm(child)
-            .then(() => {
-              logger.trace('sigterm to runner process tree completed')
-            })
-            .catch(error => {
-              logger.warn(
-                'attempt to sigterm the runner process tree ended with error',
-                { error }
-              )
-            })
-        }
-      }
+      //   if (willTerminate) {
+      //     logger.trace(
+      //       'Disconnecting from child. willTerminate === true so NOT sending sigterm to force runner end, assuming it will end itself.'
+      //     )
+      //   } else {
+      //     logger.trace(
+      //       'Disconnecting from child. willTerminate === false so sending sigterm to force runner end'
+      //     )
+      //     sendSigterm(child)
+      //       .then(() => {
+      //         logger.trace('sigterm to runner process tree completed')
+      //       })
+      //       .catch(error => {
+      //         logger.warn(
+      //           'attempt to sigterm the runner process tree ended with error',
+      //           { error }
+      //         )
+      //       })
+      //   }
+      // }
     }
 
     function restartRunner(file: string) {
@@ -279,19 +321,22 @@ function startRunner(
   logger.trace('will spawn runner')
 
   const runnerModulePath = require.resolve('./runner')
-  const childHookPath = compiler.getChildHookPath()
+  // const childHookPath = compiler.getChildHookPath()
 
-  logger.trace('start runner module paths', { runnerModulePath, childHookPath })
+  // logger.trace('start runner', { runnerModulePath, childHookPath })
 
   // TODO: childHook is no longer used at all
   // const child = fork('-r' [runnerModulePath, childHookPath], {
   //
   // We are leaving this as a future fix, refer to:
   // https://github.com/graphql-nexus/nexus-future/issues/76
-  const cmd = [...(opts.nodeArgs || []), runnerModulePath]
-  const child = fork(cmd[0], cmd.slice(1), {
+  // const cmd = [...(opts.nodeArgs ?? []), runnerModulePath]
+  // const cmd = [...(opts.nodeArgs ?? []), runnerModulePath]
+  const args = opts.nodeArgs ?? []
+  const child = PTY.spawn('node', [runnerModulePath, ...args], {
     cwd: process.cwd(),
-    silent: true,
+    cols: process.stdout.columns,
+    rows: process.stdout.rows,
     env: {
       ...process.env,
       NEXUS_EVAL: opts.eval.code,
@@ -299,17 +344,23 @@ function startRunner(
       ...saveDataForChildProcess(opts.layout),
     },
   }) as Process
+  logger.trace('after')
+
+  process.stdout.on('resize', () => {
+    const { columns, rows } = process.stdout
+    child.resize(columns, rows)
+  })
 
   // stdout & stderr are guaranteed becuase we do not permit fork stdio to be
   // configured with anything else than `pipe`.
   //
-  child.stdout!.on('data', chunk => {
+  child.onData(chunk => {
     opts.onEvent({ event: 'logging', data: chunk.toString() })
   })
 
-  child.stderr!.on('data', chunk => {
-    opts.onEvent?.({ event: 'logging', data: chunk.toString() })
-  })
+  // child.stderr!.on('data', chunk => {
+  //   opts.onEvent?.({ event: 'logging', data: chunk.toString() })
+  // })
 
   // TODO We have removed this code since switching to chokidar. What is the
   // tradeoff exactly that we are making by no longer using this logic?
@@ -389,7 +440,7 @@ function startRunner(
   // )
 
   // Listen for `required` messages and watch the required file.
-  ipc.on(child, 'required', function(message) {
+  ipc.on(ipc2.server, 'required', function(message) {
     // This log is commented out because it is very noisey if e.g. node_modules
     // are being watched––and not very interesting
     // log('got runner message "required" %s', message)
@@ -406,13 +457,14 @@ function startRunner(
   })
 
   // Upon errors, display a notification and tell the child to exit.
-  ipc.on(child, 'error', function(m: any) {
-    console.error(m.stack)
-    callbacks?.onError?.(m.willTerminate)
+  ipc.on(ipc2.server, 'error', function(error: any) {
+    // todo: logger feature: first class support for error
+    logger.error('ipc server error', { error })
+    callbacks?.onError?.(error.willTerminate)
   })
 
-  // TODO: Resuming watcher on this signal can lead to performance issues
-  ipc.on(child, SERVER_READY_SIGNAL, () => {
+  // todo: Resuming watcher on this signal can lead to performance issues
+  ipc.on(ipc2.server, SERVER_READY_SIGNAL, () => {
     logger.trace('got runner signal', { SERVER_READY_SIGNAL })
     /**
      * Watcher is resumed once the child sent a message saying it's ready to be restarted
