@@ -1,4 +1,5 @@
 import chalk, { Chalk } from 'chalk'
+import stripAnsi from 'strip-ansi'
 import * as util from 'util'
 import * as utils from '../utils'
 import * as Level from './level'
@@ -59,27 +60,45 @@ const pathSep = {
 const eventSep = ':'
 
 const contextSep = {
-  symbol: '--',
-  // context = ` ${chalk.gray('⸬')}  ` + context
-  // context = ` ${chalk.gray('•')}  ` + context
-  // context = ` ${chalk.gray('⑊')}  ` + context
-  // context = ` ${chalk.gray('//')}  ` + context
-  // context = ` ${chalk.gray('—')}  ` + context
-  // context = ` ${chalk.gray('~')}  ` + context
-  // context = ` ${chalk.gray('⌀')}  ` + context
-  // context = ` ${chalk.gray('——')}  ` + context
-  // context = ` ${chalk.gray('❯')}  ` + context
-  // context = ` ${chalk.gray('->')}  ` + context
-  // context = ` ${chalk.gray('⌁')}  ` + context
-  // context = ` ${chalk.gray('⋯')}  ` + context
-  // context = ` ${chalk.gray('⌁')}  ` + context
-  // context = ` ${chalk.gray('⟛')}  ` + context
-  color: chalk.gray,
+  singleLine: {
+    symbol: ' --  ',
+    // context = ` ${chalk.gray('⸬')}  ` + context
+    // context = ` ${chalk.gray('•')}  ` + context
+    // context = ` ${chalk.gray('⑊')}  ` + context
+    // context = ` ${chalk.gray('//')}  ` + context
+    // context = ` ${chalk.gray('—')}  ` + context
+    // context = ` ${chalk.gray('~')}  ` + context
+    // context = ` ${chalk.gray('⌀')}  ` + context
+    // context = ` ${chalk.gray('——')}  ` + context
+    // context = ` ${chalk.gray('❯')}  ` + context
+    // context = ` ${chalk.gray('->')}  ` + context
+    // context = ` ${chalk.gray('⌁')}  ` + context
+    // context = ` ${chalk.gray('⋯')}  ` + context
+    // context = ` ${chalk.gray('⌁')}  ` + context
+    // context = ` ${chalk.gray('⟛')}  ` + context
+    color: chalk.gray,
+  },
+  multiline: {
+    symbol: '',
+  },
 }
 
 const contextKeyValSep = {
-  symbol: ': ',
-  color: chalk.gray,
+  singleLine: {
+    symbol: ': ',
+    color: chalk.gray,
+  },
+  multiline: {
+    symbol: '  ',
+  },
+}
+
+const contextEntrySep = {
+  singleLine: '  ',
+  multiline: {
+    symbol: `\n  | `,
+    color: chalk.gray,
+  },
 }
 
 type Options = {
@@ -92,35 +111,89 @@ export function create(options: Options) {
 
 export function render(options: Options, rec: Logger.LogRecord): string {
   const levelLabel = Level.LEVELS_BY_NUM[rec.level].label
+  const style = LEVEL_STYLES[levelLabel]
+
+  // render pre-context
+
   const levelLabelRendered = options.levelLabel
     ? ' ' + utils.spanSpace(5, levelLabel) + ' '
     : ' '
   const path = rec.path.join(renderEl(pathSep))
 
+  const renderedPreContext = `${style.color(
+    `${style.badge}${levelLabelRendered}${path}`
+  )}${chalk.gray(eventSep)}${rec.event}`
+
   // render context
 
-  let contextRendered = Object.entries(rec.context)
-    .map(
-      e =>
-        `${chalk.gray(e[0])}${renderEl(contextKeyValSep)}${util.inspect(e[1], {
-          colors: true,
-          getters: true,
-          depth: 20,
-        })}`
-    )
-    .join('  ')
+  const availableContextColumns =
+    process.stdout.columns - stripAnsi(renderedPreContext).length
+  let contextColumnsConsumed = 0
 
-  if (contextRendered) {
-    contextRendered = ` ${renderEl(contextSep)}  ` + contextRendered
+  const contextEntries = Object.entries(rec.context)
+  let widestKey = 0
+
+  const contextEntriesRendered = contextEntries.map(([key, value]) => {
+    contextColumnsConsumed +=
+      key.length + contextKeyValSep.singleLine.symbol.length
+    if (key.length > widestKey) widestKey = key.length
+
+    const valueRendered = `${util.inspect(value, {
+      breakLength: availableContextColumns,
+      colors: true,
+      getters: true,
+      depth: 20,
+    })}`
+
+    contextColumnsConsumed += stripAnsi(valueRendered).length
+
+    return [key, valueRendered]
+  })
+
+  const contextFitsSingleLine =
+    contextColumnsConsumed <= availableContextColumns
+
+  let contextRendered = ''
+  if (contextEntries.length > 0) {
+    if (contextFitsSingleLine) {
+      contextRendered =
+        renderEl(contextSep.singleLine) +
+        contextEntriesRendered
+          .map(
+            ([key, value]) =>
+              `${chalk.gray(key)}${renderEl(
+                contextKeyValSep.singleLine
+              )}${value}`
+          )
+          .join(contextEntrySep.singleLine)
+    } else {
+      contextRendered =
+        renderEl(contextSep.multiline) +
+        renderEl(contextEntrySep.multiline) +
+        contextEntriesRendered
+          .map(
+            ([key, value]) =>
+              `${chalk.gray(utils.spanSpace(widestKey, key))}${renderEl(
+                contextKeyValSep.multiline
+              )}${formatBlock(
+                {
+                  leftSpineSymbol: { color: chalk.gray, symbol: '  | ' }, // todo unify with el def above,
+                  excludeFirstLine: true,
+                  indent:
+                    widestKey +
+                    contextKeyValSep.multiline.symbol.length +
+                    contextEntrySep.multiline.symbol.length,
+                },
+                value
+              )}`
+          )
+          .join(renderEl(contextEntrySep.multiline))
+    }
   }
-
-  const style = LEVEL_STYLES[levelLabel]
 
   // put it together
 
-  return `${style.color(
-    `${style.badge}${levelLabelRendered}${path}`
-  )}${chalk.gray(eventSep)}${rec.event} ${contextRendered}\n`
+  return `${renderedPreContext} ${contextRendered}\n`
 }
 
 type El = {
@@ -130,4 +203,32 @@ type El = {
 
 function renderEl(el: El) {
   return el.color ? el.color(el.symbol) : el.symbol
+}
+
+function formatBlock(
+  opts: {
+    indent?: number
+    excludeFirstLine?: boolean
+    leftSpineSymbol?: El
+  },
+  block: string
+): string {
+  const [first, ...rest] = block.split('\n')
+  if (rest.length === 0) return first
+  const linesToProcess =
+    opts.excludeFirstLine === true ? rest : (rest.unshift(first), rest)
+  const prefix = opts.leftSpineSymbol?.symbol ?? ''
+  const indent =
+    opts.indent !== undefined
+      ? utils
+          .range(opts.indent - prefix.length)
+          .map(utils.constant(' '))
+          .join('')
+      : ''
+  const linesProcessed = opts.excludeFirstLine === true ? [first] : []
+  for (const line of linesToProcess) {
+    const prefixRendered = opts.leftSpineSymbol?.color?.(prefix) ?? prefix
+    linesProcessed.push(prefixRendered + indent + line)
+  }
+  return linesProcessed.join('\n')
 }

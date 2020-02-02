@@ -57,3 +57,23 @@ export const spanSpaceRight = span.bind(null, 'padBefore', ' ')
 export function casesHandled(x: never): never {
   throw new Error(`A case was not handled for value: ${x}`)
 }
+
+/**
+ * Create a function that will only ever return the given value when called.
+ */
+export function constant<T>(x: T): () => T {
+  return function() {
+    return x
+  }
+}
+
+/**
+ * Create a range of integers.
+ */
+export function range(times: number): number[] {
+  const list: number[] = []
+  while (list.length < times) {
+    list.push(list.length + 1)
+  }
+  return list
+}
