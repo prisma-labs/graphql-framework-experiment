@@ -27,7 +27,7 @@ const IS_DEV_MODE = parseIsDevMode()
 /**
  * Constant for the server ready signal
  */
-export const SERVER_READY_SIGNAL = 'ready'
+export const SERVER_READY_SIGNAL = 'runner:app_server_listening'
 
 /**
  * Send a signal that lets dev-mode master know that server is booted and thus

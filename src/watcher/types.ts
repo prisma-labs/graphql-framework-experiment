@@ -1,5 +1,4 @@
 import { ForkOptions } from 'child_process'
-import * as PTY from 'node-pty'
 import * as Plugin from '../core/plugin'
 import { Layout } from '../framework/layout'
 
@@ -18,11 +17,7 @@ type EventLogging = {
   data: string
 }
 
-type EventReady = {
-  event: 'ready'
-}
-
-type Events = EventRestart | EventCompiled | EventLogging | EventReady
+type Events = EventRestart | EventCompiled | EventLogging
 
 type OnEvent = (e: Events) => void
 
@@ -95,10 +90,4 @@ export interface Opts extends BooleanOpts, StringOpts {
     fileName: string
   }
   plugins: Plugin.WorkflowHooks[]
-}
-
-export interface Process extends PTY.IPty {
-  respawn?: boolean
-  stopping?: boolean
-  exited: undefined | true
 }

@@ -4,7 +4,9 @@ export type CallbackRegistrer<F> = (f: F) => void
 
 export type SideEffector = () => MaybePromise
 
-export type Param1<F> = F extends (p: infer P) => any ? P : never
+export type Param1<F> = F extends (p: infer P, ...args: any[]) => any
+  ? P
+  : never
 
 export type DeepPartial<T extends Record<string, any>> = {
   [P in keyof T]?: T[P] extends Record<string, any> ? DeepPartial<T[P]> : T[P]

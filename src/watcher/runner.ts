@@ -111,7 +111,7 @@ register({
       willTerminate: hasCustomHandler,
     }
     logger.trace('uncaughtException ', { errorMessage })
-    ipc.send(errorMessage, ipc2.of.nexus_dev_watcher)
+    ipc.client.senders.error(errorMessage)
   })
 
   // unhandled rejection will get whatever value the user rejected with, which
@@ -134,18 +134,18 @@ register({
     if (!hasCustomHandler && !isTsError) {
       console.error(stack || err)
     }
-    const errorMessage = {
+    const errorData = {
       error: isTsError ? '' : name,
       stack,
       willTerminate: hasCustomHandler,
     }
-    logger.trace('unhandledRejection', { errorMessage })
-    ipc.send(errorMessage, ipc2.of.nexus_dev_watcher)
+    logger.trace('unhandledRejection', { errorData })
+    ipc.client.senders.error(errorData)
   })
 
   // Hook into require() and notify the parent process about required files
-  hook(cfg, module, file => {
-    ipc.send({ required: file }, ipc2.of.nexus_dev_watcher)
+  hook(cfg, module, filePath => {
+    ipc.client.senders.moduleImported({ filePath })
   })
 
   if (!process.env.NEXUS_EVAL) {
