@@ -21,11 +21,11 @@ beforeEach(() => {
 describe('name', () => {
   it('becomes the first entry in path', () => {
     Logger.create({ output, name: 'foo' }).info('bar')
-    expect(output.writes[0].path).toEqual(['foo'])
+    expect(output.memory.json[0].path).toEqual(['foo'])
   })
   it('defaults to "root"', () => {
     logger.info('bar')
-    expect(output.writes[0].path).toEqual(['root'])
+    expect(output.memory.json[0].path).toEqual(['root'])
   })
 })
 
@@ -51,10 +51,10 @@ describe('settings', () => {
           logger.info('foo', {
             ...stringValueEntryWithin('key', terminalContextWidth),
           })
-          expect(output.writes[0]).toMatchSnapshot()
-          expect(output.writes[0].trim().length).toBeLessThanOrEqual(
-            terminalWidth
-          )
+          expect(output.memory.jsonOrRaw).toMatchSnapshot()
+          expect(
+            trimTrailingNewline(output.memory.raw[0]).length
+          ).toBeLessThanOrEqual(terminalWidth)
         })
         it('used if context does fit singleline (multiple key-values)', () => {
           logger.info('foo', {
@@ -65,13 +65,14 @@ describe('settings', () => {
                 Prettifier.seps.contextEntry.singleLine.length
             ),
           })
-          const logLine = output.writes[0].trim()
-          expect(logLine).toMatchSnapshot()
-          expect(logLine.length).toBeLessThanOrEqual(terminalWidth)
+          expect(output.memory.jsonOrRaw).toMatchSnapshot()
+          expect(
+            trimTrailingNewline(output.memory.raw[0]).length
+          ).toBeLessThanOrEqual(terminalWidth)
         })
         it('objects are formatted by util.inspect compact: yes', () => {
           logger.info('foo', { ke1: { a: { b: { c: true } } } })
-          expect(output.writes[0]).toMatchSnapshot()
+          expect(output.memory.jsonOrRaw).toMatchSnapshot()
         })
       })
 
@@ -83,7 +84,7 @@ describe('settings', () => {
               terminalContextWidth + 1 /* force multi */
             ),
           })
-          expect(output.writes[0]).toMatchSnapshot()
+          expect(output.memory.jsonOrRaw).toMatchSnapshot()
         })
         it('used if context does fit singleline (multiple key-values)', () => {
           logger.info('foo', {
@@ -95,7 +96,7 @@ describe('settings', () => {
                 1 /* force multi */
             ),
           })
-          expect(output.writes[0]).toMatchSnapshot()
+          expect(output.memory.jsonOrRaw).toMatchSnapshot()
         })
         it('objects are formatted by util.inspect compact: yes', () => {
           logger.info('foo', {
@@ -108,7 +109,7 @@ describe('settings', () => {
               },
             },
           })
-          expect(output.writes[0]).toMatchSnapshot()
+          expect(output.memory.jsonOrRaw).toMatchSnapshot()
         })
       })
     })
@@ -129,10 +130,10 @@ describe('settings', () => {
         })
       })
       it('controls if logs are rendered pretty or as JSON', () => {
-        console.log = output.write
+        output.captureConsoleLog()
         logger.info('foo')
         Logger.demo(logger)
-        expect(output.writes).toMatchSnapshot()
+        expect(output.memory.jsonOrRaw).toMatchSnapshot()
       })
       describe('precedence', () => {
         it('considers instnace time config first', () => {
@@ -167,7 +168,7 @@ describe('settings', () => {
       it('controls if pretty logs have color or not', () => {
         logger.settings({ pretty: { enabled: true, color: false } })
         logger.info('foo', { qux: true })
-        expect(output.writes).toMatchSnapshot()
+        expect(output.memory.jsonOrRaw).toMatchSnapshot()
       })
       it('can be disabled', () => {
         expect(
@@ -232,7 +233,7 @@ describe('settings', () => {
         logger.info('foo')
         logger.debug('foo')
         logger.trace('foo')
-        expect(output.writes).toMatchSnapshot()
+        expect(output.memory.jsonOrRaw).toMatchSnapshot()
       })
     })
 
@@ -258,11 +259,10 @@ describe('settings', () => {
 
 describe('demo', () => {
   it('runs a demo with fake data, pretty, all levels active', () => {
-    console.log = output.write
+    output.captureConsoleLog()
     logger.settings({ pretty: { color: false } })
     Logger.demo(logger)
-    expect(output.writes).toMatchSnapshot()
-    output.writes.length = 0
+    expect(output.memory.jsonOrRaw).toMatchSnapshot()
   })
   it.todo('runs automatically when LOG_DEMO=true')
 })
@@ -273,7 +273,7 @@ describe('output', () => {
     ;(process.stdout.write as any) = output.write
     Logger.create({ pretty: false }).fatal('foo')
     process.stdout.write = write
-    expect(output.writes).toMatchSnapshot()
+    expect(output.memory.jsonOrRaw).toMatchSnapshot()
   })
 })
 
@@ -316,7 +316,7 @@ describe('level', () => {
 
   it('logs below set level are not output', () => {
     logger.settings({ level: 'warn' }).info('foo')
-    expect(output.writes).toEqual([])
+    expect(output.memory.jsonOrRaw).toEqual([])
   })
 
   it('LOG_LEVEL env var config is treated case insensitive', () => {
@@ -338,7 +338,7 @@ describe('.<level> log methods', () => {
   it('accept an event name and optional context', () => {
     logger.info('hi', { user: { id: 1 } })
     logger.info('bye')
-    expect(output.writes).toMatchSnapshot()
+    expect(output.memory.jsonOrRaw).toMatchSnapshot()
   })
 
   it('one for each log level', () => {
@@ -349,7 +349,7 @@ describe('.<level> log methods', () => {
     logger.info('hi')
     logger.debug('hi')
     logger.trace('hi')
-    expect(output.writes).toMatchSnapshot()
+    expect(output.memory.jsonOrRaw).toMatchSnapshot()
   })
 })
 
@@ -357,33 +357,33 @@ describe('.addToContext', () => {
   it('pins context for all subsequent logs from the logger', () => {
     logger.addToContext({ user: { id: 1 } })
     logger.info('hi')
-    expect(output.writes).toMatchSnapshot()
+    expect(output.memory.jsonOrRaw).toMatchSnapshot()
   })
 
   it('can be called multiple times, merging deeply', () => {
     logger.addToContext({ user: { id: 1 } })
     logger.addToContext({ user: { name: 'Jill' } })
     logger.info('hi')
-    expect(output.writes).toMatchSnapshot()
+    expect(output.memory.jsonOrRaw).toMatchSnapshot()
   })
 
   it('gets deeply merged with local context', () => {
     logger.addToContext({ user: { id: 1 } })
     logger.info('hi', { user: { name: 'Jill' } })
-    expect(output.writes).toMatchSnapshot()
+    expect(output.memory.jsonOrRaw).toMatchSnapshot()
   })
 
   it('local context takes prescedence over pinned context', () => {
     logger.addToContext({ user: { id: 1 } })
     logger.info('hi', { user: { id: 2 } })
-    expect(output.writes).toMatchSnapshot()
+    expect(output.memory.jsonOrRaw).toMatchSnapshot()
   })
 })
 
 describe('.child', () => {
   it('creates a sub logger', () => {
     logger.child('tim').info('hi')
-    expect(output.writes).toMatchSnapshot()
+    expect(output.memory.jsonOrRaw).toMatchSnapshot()
   })
 
   it('log output includes path field showing the logger namespacing', () => {
@@ -392,7 +392,7 @@ describe('.child', () => {
       .child('c')
       .child('d')
       .info('foo')
-    expect(output.writes[0].path).toEqual(['root', 'b', 'c', 'd'])
+    expect(output.memory.json[0].path).toEqual(['root', 'b', 'c', 'd'])
   })
 
   it('inherits context from parent', () => {
@@ -400,14 +400,14 @@ describe('.child', () => {
       .addToContext({ foo: 'bar' })
       .child('tim')
       .info('hi')
-    expect(output.writes[0].context).toEqual({ foo: 'bar' })
+    expect(output.memory.json[0].context).toEqual({ foo: 'bar' })
   })
 
   it('at log time reflects the current state of parent context', () => {
     const b = logger.child('b')
     logger.addToContext({ foo: 'bar' })
     b.info('lop')
-    expect(output.writes[0].context).toEqual({ foo: 'bar' })
+    expect(output.memory.json[0].context).toEqual({ foo: 'bar' })
   })
 
   it('at log time reflects the current state of parent context even from further up the chain', () => {
@@ -416,7 +416,7 @@ describe('.child', () => {
     const d = c.child('d')
     logger.addToContext({ foo: 'bar' })
     d.info('lop')
-    expect(output.writes[0].context).toEqual({ foo: 'bar' })
+    expect(output.memory.json[0].context).toEqual({ foo: 'bar' })
   })
 
   it('inherits level from parent', () => {
@@ -427,7 +427,7 @@ describe('.child', () => {
       .trace('hi')
     // The fact that we get output for trace log from child means it honored the
     // setLevel.
-    expect(output.writes).toMatchSnapshot()
+    expect(output.memory.jsonOrRaw).toMatchSnapshot()
   })
 
   it('reacts to level changes in root logger', () => {
@@ -436,13 +436,13 @@ describe('.child', () => {
     b.trace('foo')
     // The fact that we get output for trace log from child means it honored the
     // setLevel.
-    expect(output.writes).toMatchSnapshot()
+    expect(output.memory.jsonOrRaw).toMatchSnapshot()
   })
 
   it('is unable to change context of parent', () => {
     logger.child('b').addToContext({ foo: 'bar' })
     logger.info('qux')
-    expect(output.writes[0].context).toEqual({})
+    expect(output.memory.json[0].context).toEqual({})
   })
 
   it('is unable to change context of siblings', () => {
@@ -454,7 +454,7 @@ describe('.child', () => {
     b2.info('foo')
     b3.info('foo')
     // All should inherit the root context
-    expect(output.writes).toMatchSnapshot()
+    expect(output.memory.jsonOrRaw).toMatchSnapshot()
   })
 
   it('cannot affect level', () => {
@@ -472,25 +472,40 @@ describe('.child', () => {
  */
 namespace MockOutput {
   export type MockOutput = Output.Output & {
-    writes: Record<string, any>[]
+    memory: {
+      jsonOrRaw: Array<Record<string, any> | string>
+      raw: string[]
+      json: Record<string, any>[]
+    }
+    captureConsoleLog(): void
   }
 
   export function create(): MockOutput {
     const output = {
-      writes: [],
+      memory: {
+        jsonOrRaw: [],
+        raw: [],
+        json: [],
+      },
+
+      captureConsoleLog() {
+        console.log = output.write
+      },
       write(message: string) {
+        output.memory.raw.push(message)
         let log: any
         try {
           log = JSON.parse(message)
           log.time = 0
           log.pid = 0
+          output.memory.json.push(log)
         } catch (e) {
           if (e instanceof SyntaxError) {
             // assume pretty mode is on
             log = message
           }
         }
-        output.writes.push(log)
+        output.memory.jsonOrRaw.push(log)
       },
     } as MockOutput
 
@@ -530,4 +545,11 @@ function stringValueEntryWithin(
   return {
     [keyName]: stringValueWithin(size - KeyWidth),
   }
+}
+
+/**
+ * Remove traiing newline. Strict alternative to .trim().
+ */
+function trimTrailingNewline(s: string): string {
+  return s.replace(/\n$/, '')
 }

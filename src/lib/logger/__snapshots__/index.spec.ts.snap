@@ -431,36 +431,51 @@ Array [
 `;
 
 exports[`settings pretty context formatting multiline objects are formatted by util.inspect compact: yes 1`] = `
-"● root:foo
+Array [
+  "● root:foo
   | ke1  {
   |         a: {
   |           b: { c: true, d: 'looooooooooooooooooooooooooooooooooooooooooooooooong' }
   |         }
   |       }
-"
+",
+]
 `;
 
 exports[`settings pretty context formatting multiline used if context does fit singleline (multiple key-values) 1`] = `
-"● root:foo
+Array [
+  "● root:foo
   | ke1  'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
   | ke2  'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-"
+",
+]
 `;
 
 exports[`settings pretty context formatting multiline used if context does not fit singleline 1`] = `
-"● root:foo
+Array [
+  "● root:foo
   | key  'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-"
+",
+]
 `;
 
 exports[`settings pretty context formatting singleline objects are formatted by util.inspect compact: yes 1`] = `
-"● root:foo  --  ke1: { a: { b: { c: true } } }
-"
+Array [
+  "● root:foo  --  ke1: { a: { b: { c: true } } }
+",
+]
 `;
 
-exports[`settings pretty context formatting singleline used if context does fit singleline (multiple key-values) 1`] = `"● root:foo  --  ke1: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'  ke2: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'"`;
+exports[`settings pretty context formatting singleline used if context does fit singleline (multiple key-values) 1`] = `
+Array [
+  "● root:foo  --  ke1: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'  ke2: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+",
+]
+`;
 
 exports[`settings pretty context formatting singleline used if context does fit singleline 1`] = `
-"● root:foo  --  key: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-"
+Array [
+  "● root:foo  --  key: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+",
+]
 `;
