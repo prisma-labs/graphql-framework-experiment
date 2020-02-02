@@ -1,14 +1,13 @@
 import * as RootLogger from './root-logger'
 
 export function demo(logger?: RootLogger.RootLogger) {
-  console.log(process.stdout.columns, process.stdout)
-  console.log()
+  console.log('')
   console.log('-----------')
   console.log('LOGGER DEMO')
   console.log('-----------')
   logger = logger ?? RootLogger.create()
   const origLevel = logger.settings.level
-  logger.settings({ level: 'trace' })
+  logger.settings({ level: 'trace', pretty: true })
   logger.fatal('foo', { lib: /see/ })
   logger.error('foo', {
     har: { mar: 'tek' },
@@ -58,7 +57,7 @@ export function demo(logger?: RootLogger.RootLogger) {
   logger.trace('foo', { a: 1, b: 2, c: 'three' })
   logger.settings({ level: origLevel })
   console.log('-----------')
-  console.log()
+  console.log('')
 }
 
 if (process.env.LOG_DEMO) {

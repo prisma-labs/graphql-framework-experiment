@@ -45,6 +45,15 @@ export function span(
 export const spanSpace = span.bind(null, 'padAfter', ' ')
 
 /**
+ * Create a string of the given length and character
+ */
+export function spanChar(num: number, char: string): string {
+  return range(num)
+    .map(constant(char))
+    .join('')
+}
+
+/**
  * Guarantee the length of a given string, padding with space as needed. Content
  * is aligned right and if exceeds span target length to begin with gets cropped.
  */
@@ -56,4 +65,24 @@ export const spanSpaceRight = span.bind(null, 'padBefore', ' ')
  */
 export function casesHandled(x: never): never {
   throw new Error(`A case was not handled for value: ${x}`)
+}
+
+/**
+ * Create a function that will only ever return the given value when called.
+ */
+export function constant<T>(x: T): () => T {
+  return function() {
+    return x
+  }
+}
+
+/**
+ * Create a range of integers.
+ */
+export function range(times: number): number[] {
+  const list: number[] = []
+  while (list.length < times) {
+    list.push(list.length + 1)
+  }
+  return list
 }
