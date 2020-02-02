@@ -321,23 +321,16 @@ Array [
 ",
   "● root:foo 
 ",
-  "○ root:foo  --  results: [
-  { userId: 1, id: 1, title: 'delectus aut autem', completed: false },
-  {
-    userId: 1,
-    id: 2,
-    title: 'quis ut nam facilis et officia qui',
-    completed: false
-  },
-  { userId: 1, id: 3, title: 'fugiat veniam minus', completed: false },
-  { userId: 1, id: 4, title: 'et porro tempora', completed: true },
-  {
-    userId: 1,
-    id: 5,
-    title: 'laboriosam mollitia et enim quasi adipisci quia provident illum',
-    completed: false
-  }
-]  tri: 'wiz'  on: false
+  "○ root:foo 
+  | results  [
+  |             { userId: 1, id: 1, title: 'delectus aut autem', completed: false },
+  |             { userId: 1, id: 2, title: 'quis ut nam facilis et officia qui', completed: false },
+  |             { userId: 1, id: 3, title: 'fugiat veniam minus', completed: false },
+  |             { userId: 1, id: 4, title: 'et porro tempora', completed: true },
+  |             { userId: 1, id: 5, title: 'laboriosam mollitia et enim quasi adipisci quia provident illum', completed: false }
+  |           ]
+  | tri      'wiz'
+  | on       false
 ",
   "○ root:foo  --  foo: 'bar'
 ",
@@ -557,17 +550,17 @@ Array [
     "time": 0,
     "v": 1,
   },
-  "[31m✕ root[39m[90m:[39mfoo  [90m--[39m  [90mlib[39m[90m: [39m[31m/see/[39m
+  "[31m✕ root[39m[90m:[39mfoo [90m --  [39m[90mlib[39m[90m: [39m[31m/see/[39m
 ",
-  "[31m■ root[39m[90m:[39mfoo  [90m--[39m  [90mhar[39m[90m: [39m{ mar: [32m'tek'[39m }
+  "[31m■ root[39m[90m:[39mfoo [90m --  [39m[90mhar[39m[90m: [39m{ mar: [32m'tek'[39m }
 ",
-  "[33m▲ root[39m[90m:[39mfoo  [90m--[39m  [90mbleep[39m[90m: [39m[ [33m1[39m, [32m'2'[39m, [33mtrue[39m ]
+  "[33m▲ root[39m[90m:[39mfoo [90m --  [39m[90mbleep[39m[90m: [39m[ [33m1[39m, [32m'2'[39m, [33mtrue[39m ]
 ",
-  "[32m● root[39m[90m:[39mfoo  [90m--[39m  [90mqux[39m[90m: [39m[33mtrue[39m
+  "[32m● root[39m[90m:[39mfoo [90m --  [39m[90mqux[39m[90m: [39m[33mtrue[39m
 ",
-  "[34m○ root[39m[90m:[39mfoo  [90m--[39m  [90mfoo[39m[90m: [39m[32m'bar'[39m
+  "[34m○ root[39m[90m:[39mfoo [90m --  [39m[90mfoo[39m[90m: [39m[32m'bar'[39m
 ",
-  "[35m— root[39m[90m:[39mfoo  [90m--[39m  [90ma[39m[90m: [39m[33m1[39m  [90mb[39m[90m: [39m[33m2[39m  [90mc[39m[90m: [39m[32m'three'[39m
+  "[35m— root[39m[90m:[39mfoo [90m --  [39m[90ma[39m[90m: [39m[33m1[39m  [90mb[39m[90m: [39m[33m2[39m  [90mc[39m[90m: [39m[32m'three'[39m
 ",
 ]
 `;

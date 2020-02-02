@@ -13,6 +13,7 @@ beforeEach(() => {
   process.env.LOG_PRETTY = 'false'
   output = MockOutput.create()
   logger = Logger.create({ output })
+  process.stdout.columns = 200
 })
 
 describe('name', () => {
