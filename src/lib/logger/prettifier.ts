@@ -52,52 +52,53 @@ const LEVEL_STYLES: Record<
   },
 }
 
-const pathSep = {
-  symbol: ':',
-  color: chalk.gray,
-}
-
-const eventSep = ':'
-
-const headersContextSep = {
-  singleLine: {
-    symbol: '  --  ',
-    // context = ` ${chalk.gray('⸬')}  ` + context
-    // context = ` ${chalk.gray('•')}  ` + context
-    // context = ` ${chalk.gray('⑊')}  ` + context
-    // context = ` ${chalk.gray('//')}  ` + context
-    // context = ` ${chalk.gray('—')}  ` + context
-    // context = ` ${chalk.gray('~')}  ` + context
-    // context = ` ${chalk.gray('⌀')}  ` + context
-    // context = ` ${chalk.gray('——')}  ` + context
-    // context = ` ${chalk.gray('❯')}  ` + context
-    // context = ` ${chalk.gray('->')}  ` + context
-    // context = ` ${chalk.gray('⌁')}  ` + context
-    // context = ` ${chalk.gray('⋯')}  ` + context
-    // context = ` ${chalk.gray('⌁')}  ` + context
-    // context = ` ${chalk.gray('⟛')}  ` + context
+export const seps = {
+  path: {
+    symbol: ':',
     color: chalk.gray,
   },
-  multiline: {
-    symbol: '',
-  },
-}
-
-const contextKeyValSep = {
-  singleLine: {
-    symbol: ': ',
+  event: {
+    symbol: ':',
     color: chalk.gray,
   },
-  multiline: {
-    symbol: '  ',
+  context: {
+    singleLine: {
+      symbol: '  --  ',
+      // context = ` ${chalk.gray('⸬')}  ` + context
+      // context = ` ${chalk.gray('•')}  ` + context
+      // context = ` ${chalk.gray('⑊')}  ` + context
+      // context = ` ${chalk.gray('//')}  ` + context
+      // context = ` ${chalk.gray('—')}  ` + context
+      // context = ` ${chalk.gray('~')}  ` + context
+      // context = ` ${chalk.gray('⌀')}  ` + context
+      // context = ` ${chalk.gray('——')}  ` + context
+      // context = ` ${chalk.gray('❯')}  ` + context
+      // context = ` ${chalk.gray('->')}  ` + context
+      // context = ` ${chalk.gray('⌁')}  ` + context
+      // context = ` ${chalk.gray('⋯')}  ` + context
+      // context = ` ${chalk.gray('⌁')}  ` + context
+      // context = ` ${chalk.gray('⟛')}  ` + context
+      color: chalk.gray,
+    },
+    multiline: {
+      symbol: '',
+    },
   },
-}
-
-const contextEntrySep = {
-  singleLine: '  ',
-  multiline: {
-    symbol: `\n  | `,
-    color: chalk.gray,
+  contextKeyVal: {
+    singleLine: {
+      symbol: ': ',
+      color: chalk.gray,
+    },
+    multiline: {
+      symbol: '  ',
+    },
+  },
+  contextEntry: {
+    singleLine: '  ',
+    multiline: {
+      symbol: `\n  | `,
+      color: chalk.gray,
+    },
   },
 }
 
@@ -118,11 +119,11 @@ export function render(options: Options, rec: Logger.LogRecord): string {
   const levelLabelRendered = options.levelLabel
     ? ' ' + utils.spanSpace(5, levelLabel) + ' '
     : ' '
-  const path = rec.path.join(renderEl(pathSep))
+  const path = rec.path.join(renderEl(seps.path))
 
   const renderedPreContext = `${style.color(
     `${style.badge}${levelLabelRendered}${path}`
-  )}${chalk.gray(eventSep)}${rec.event}`
+  )}${renderEl(seps.event)}${rec.event}`
 
   // render context
 
@@ -132,7 +133,7 @@ export function render(options: Options, rec: Logger.LogRecord): string {
   const availableSinglelineContextColumns =
     process.stdout.columns -
     stripAnsi(renderedPreContext).length -
-    headersContextSep.singleLine.symbol.length
+    seps.context.singleLine.symbol.length
   let contextColumnsConsumed = 0
 
   const contextEntries = Object.entries(rec.context)
@@ -141,14 +142,14 @@ export function render(options: Options, rec: Logger.LogRecord): string {
 
   const contextEntriesRendered = contextEntries.map(([key, value]) => {
     // Track context space consumption of entry separators
-    if (!first) contextColumnsConsumed += contextEntrySep.singleLine.length
+    if (!first) contextColumnsConsumed += seps.contextEntry.singleLine.length
     else first = false
 
     // Track widest key optimistically for use in multiline layout later
     if (key.length > widestKey) widestKey = key.length
 
     contextColumnsConsumed +=
-      key.length + contextKeyValSep.singleLine.symbol.length
+      key.length + seps.contextKeyVal.singleLine.symbol.length
 
     const valueRendered = `${util.inspect(value, {
       breakLength: availableSinglelineContextColumns,
@@ -169,37 +170,37 @@ export function render(options: Options, rec: Logger.LogRecord): string {
   if (contextEntries.length > 0) {
     if (contextFitsSingleLine) {
       contextRendered =
-        renderEl(headersContextSep.singleLine) +
+        renderEl(seps.context.singleLine) +
         contextEntriesRendered
           .map(
             ([key, value]) =>
               `${chalk.gray(key)}${renderEl(
-                contextKeyValSep.singleLine
+                seps.contextKeyVal.singleLine
               )}${value}`
           )
-          .join(contextEntrySep.singleLine)
+          .join(seps.contextEntry.singleLine)
     } else {
       contextRendered =
-        renderEl(headersContextSep.multiline) +
-        renderEl(contextEntrySep.multiline) +
+        renderEl(seps.context.multiline) +
+        renderEl(seps.contextEntry.multiline) +
         contextEntriesRendered
           .map(
             ([key, value]) =>
               `${chalk.gray(utils.spanSpace(widestKey, key))}${renderEl(
-                contextKeyValSep.multiline
+                seps.contextKeyVal.multiline
               )}${formatBlock(
                 {
                   leftSpineSymbol: { color: chalk.gray, symbol: '  | ' }, // todo unify with el def above,
                   excludeFirstLine: true,
                   indent:
                     widestKey +
-                    contextKeyValSep.multiline.symbol.length +
-                    contextEntrySep.multiline.symbol.length,
+                    seps.contextKeyVal.multiline.symbol.length +
+                    seps.contextEntry.multiline.symbol.length,
                 },
                 value
               )}`
           )
-          .join(renderEl(contextEntrySep.multiline))
+          .join(renderEl(seps.contextEntry.multiline))
     }
   }
 
