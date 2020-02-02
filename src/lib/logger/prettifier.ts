@@ -175,10 +175,15 @@ export function render(options: Options, rec: Logger.LogRecord): string {
             ([key, value]) =>
               `${chalk.gray(utils.spanSpace(widestKey, key))}${renderEl(
                 contextKeyValSep.multiline
-              )}${indentBlockTail(
-                widestKey +
-                  contextKeyValSep.multiline.symbol.length +
-                  contextEntrySep.multiline.symbol.length,
+              )}${formatBlock(
+                {
+                  leftSpineSymbol: { color: chalk.gray, symbol: '  | ' }, // todo unify with el def above,
+                  excludeFirstLine: true,
+                  indent:
+                    widestKey +
+                    contextKeyValSep.multiline.symbol.length +
+                    contextEntrySep.multiline.symbol.length,
+                },
                 value
               )}`
           )
@@ -200,30 +205,57 @@ function renderEl(el: El) {
   return el.color ? el.color(el.symbol) : el.symbol
 }
 
-/**
- * Indent a string that spans multiple lines except for the first line.
- */
-function indentBlockTail(size: number, block: string): string {
-  // TODO optimize!!!!!
+function formatBlock(
+  opts: {
+    indent?: number
+    excludeFirstLine?: boolean
+    leftSpineSymbol?: El
+  },
+  block: string
+): string {
   const [first, ...rest] = block.split('\n')
   if (rest.length === 0) return first
-  return first + '\n' + indentBlock(size, rest.join('\n'))
+  const linesToProcess =
+    opts.excludeFirstLine === true ? rest : (rest.unshift(first), rest)
+  const prefix = opts.leftSpineSymbol?.symbol ?? ''
+  const indent =
+    opts.indent !== undefined
+      ? range(opts.indent - prefix.length)
+          .map(constant(' '))
+          .join('')
+      : ''
+  const linesProcessed = opts.excludeFirstLine === true ? [first] : []
+  for (const line of linesToProcess) {
+    const prefixRendered = opts.leftSpineSymbol?.color?.(prefix) ?? prefix
+    linesProcessed.push(prefixRendered + indent + line)
+  }
+  return linesProcessed.join('\n')
 }
 
-/**
- * Indent a string that spans multiple lines.
- */
-function indentBlock(size: number, block: string): string {
-  return block
-    .split('\n')
-    .map(
-      line =>
-        range(size)
-          .map(constant(' '))
-          .join('') + line
-    )
-    .join('\n')
-}
+// /**
+//  * Indent a string that spans multiple lines except for the first line.
+//  */
+// function indentBlockTail(size: number, block: string): string {
+//   // TODO optimize!!!!!
+//   const [first, ...rest] = block.split('\n')
+//   if (rest.length === 0) return first
+//   return first + '\n' + indentBlock(size, rest.join('\n'))
+// }
+
+// /**
+//  * Indent a string that spans multiple lines.
+//  */
+// function indentBlock(size: number, block: string): string {
+//   return block
+//     .split('\n')
+//     .map(
+//       line =>
+//         range(size)
+//           .map(constant(' '))
+//           .join('') + line
+//     )
+//     .join('\n')
+// }
 
 /**
  * Create a function that will only ever return the given value when called.
