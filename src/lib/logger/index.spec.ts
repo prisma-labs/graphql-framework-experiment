@@ -45,15 +45,9 @@ describe('settings', () => {
         })
       })
       it('controls if logs are rendered pretty or as JSON', () => {
+        console.log = output.write
         logger.info('foo')
-        logger.settings({ pretty: true })
-        logger.settings({ pretty: true, level: 'trace' })
-        logger.fatal('foo', { lib: /see/ })
-        logger.error('foo', { har: { mar: 'tek' } })
-        logger.warn('foo', { bleep: [1, '2', true] })
-        logger.info('foo', { qux: true })
-        logger.debug('foo', { foo: 'bar' })
-        logger.trace('foo', { a: 1, b: 2, c: 'three' })
+        Logger.demo(logger)
         expect(output.writes).toMatchSnapshot()
       })
       describe('precedence', () => {
@@ -179,15 +173,12 @@ describe('settings', () => {
 })
 
 describe('demo', () => {
-  it('runs a demo with fake data and all levels active', () => {
+  it('runs a demo with fake data, pretty, all levels active', () => {
     console.log = output.write
-    logger.settings({ pretty: { enabled: true, color: false } })
+    logger.settings({ pretty: { color: false } })
     Logger.demo(logger)
     expect(output.writes).toMatchSnapshot()
     output.writes.length = 0
-    logger.settings({ pretty: false })
-    Logger.demo(logger)
-    expect(output.writes).toMatchSnapshot()
   })
   it.todo('runs automatically when LOG_DEMO=true')
 })
