@@ -1,41 +1,182 @@
-import { ChildProcess } from 'child_process'
+import * as Net from 'net'
+import * as ipc2 from 'node-ipc'
+import { rootLogger } from '../utils/logger'
 
-/**
- * Checks if the given message is an internal node-dev message.
- */
-function isNodeDevMessage(m: any) {
-  return m.cmd === 'NODE_DEV'
+export type NodeIPCServer = typeof ipc2.server
+
+const serverLogger = rootLogger.child('watcher:ipc:server')
+
+type MessageType = 'module_imported' | 'error' | 'app_server_listening'
+
+type MessageStruct<
+  Type extends MessageType,
+  Data extends Record<string, unknown>
+> = {
+  type: Type
+  data: Data
 }
 
 /**
- * Sends a message to the given process.
+ * This event is sent by the runner when booting up the app.
+ *
+ * This permits the server to know which files are part of the program. A
+ * classic use-case is for the server to watch only files actually part of the
+ * program.
  */
-export function send(msg: any, dest?: NodeJS.Process) {
-  msg.cmd = 'NODE_DEV'
-  if (!dest) {
-    dest = process
+type ModuleRequiredMessage = MessageStruct<
+  'module_imported',
+  {
+    filePath: string
   }
-  if (dest.send) dest.send(msg)
+>
+
+/**
+ * This event is sent by the runner when an uncaught error has occured. This
+ * error could be from anywhere in the runner process: the user's project code
+ * or the runner framework code, etc.
+ */
+type ErrorMessage = MessageStruct<
+  'error',
+  {
+    error: string
+    stack: string | undefined
+    /**
+     * todo
+     */
+    willTerminate: boolean
+  }
+>
+
+type Message = ModuleRequiredMessage | ErrorMessage | AppServerListeningMessage
+
+type AppServerListeningMessage = MessageStruct<'app_server_listening', {}>
+
+export type Server = ReturnType<typeof create>
+
+type EventType =
+  | 'connect'
+  | 'error'
+  | 'socket.disconnected'
+  | 'disconnect'
+  | 'destroy'
+  | 'message'
+
+type EventsLookup = {
+  connect: [Net.Socket]
+  error: []
+  'socket.disconnected': [Net.Socket, false | number]
+  disconnect: []
+  destroy: []
+  message: [Message]
 }
 
-export function on(
-  proc: ChildProcess,
-  type: string,
-  callback: (m: any) => void
-) {
-  function handleMessage(m: any) {
-    if (isNodeDevMessage(m) && type in m) callback(m)
+export function create() {
+  ipc2.config.id = 'nexus_dev_watcher'
+  // ipc2.config.logger = serverLogger.trace
+  ipc2.config.silent = true
+  ipc2.serve()
+  ipc2.server.start()
+  ipc2.server.on('connect', _socket => {
+    serverLogger.trace('socket connected')
+  })
+  ipc2.server.on('disconnect', (...args) => {
+    serverLogger.trace('socket disconnected (client sent)', { args })
+  })
+  ipc2.server.on('destroy', (...args) => {
+    serverLogger.trace('socket destroyed (gone for good, no more retries)', {
+      args,
+    })
+  })
+  ipc2.server.on('socket.disconnected', (_socket, destroyedSocketId) => {
+    serverLogger.trace('socket disconnected (server sent)', {
+      destroyedSocketId,
+    })
+  })
+
+  const api = {
+    on: <E extends EventType>(
+      eventType: E,
+      observer: (...args: EventsLookup[E]) => void
+    ): void => {
+      ipc2.server.on(eventType, observer as any)
+    },
+    stop(): void {
+      ipc2.server.stop()
+    },
+    async start(): Promise<void> {
+      return new Promise((res, rej) => {
+        ipc2.server.on('error', rej)
+        ipc2.server.on('start', () => {
+          serverLogger.trace('started')
+          res()
+        })
+      })
+    },
   }
 
-  proc.on('internalMessage', handleMessage)
-  proc.on('message', handleMessage)
+  api.on('message', message => {
+    if (message.type === 'module_imported') return // too noisy...
+    serverLogger.trace('inbound message', message)
+  })
+
+  return api
 }
 
-export function relay(src: ChildProcess, dest?: any) {
-  if (!dest) dest = process
-  function relayMessage(m: any) {
-    if (isNodeDevMessage(m)) dest.send(m)
+// client
+
+const clientLogger = rootLogger.child('watcher:ipc:server')
+
+export const client = createClient()
+
+function createClient() {
+  const state = {
+    connected: false,
   }
-  src.on('internalMessage', relayMessage)
-  src.on('message', relayMessage)
+
+  ipc2.config.id = 'nexus_dev_runner'
+  ipc2.config.logger = clientLogger.trace
+  ipc2.config.silent = true
+
+  return {
+    senders: {
+      moduleImported(data: ModuleRequiredMessage['data']): void {
+        const msg: ModuleRequiredMessage = {
+          type: 'module_imported',
+          data,
+        }
+        ipc2.of.nexus_dev_watcher.emit('message', msg)
+      },
+      error(data: ErrorMessage['data']): void {
+        const msg: ErrorMessage = {
+          type: 'error',
+          data,
+        }
+        ipc2.of.nexus_dev_watcher.emit('message', msg)
+      },
+      /**
+       * Send a signal that lets dev-mode master know that server is booted and thus
+       * ready to receive requests.
+       */
+      serverListening(): void {
+        const msg: Message = {
+          type: 'app_server_listening',
+          data: {},
+        }
+        ipc2.of.nexus_dev_watcher.emit('message', msg)
+      },
+    },
+    connect(): Promise<void> {
+      if (state.connected) return Promise.resolve()
+      state.connected = true
+      return new Promise(res => {
+        ipc2.connectTo('nexus_dev_watcher', () => {
+          clientLogger.trace('socket created')
+          ipc2.of.nexus_dev_watcher.on('connect', () => {
+            clientLogger.trace('connection to watcher established')
+            res()
+          })
+        })
+      })
+    },
+  }
 }

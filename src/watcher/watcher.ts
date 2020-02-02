@@ -1,14 +1,13 @@
 import anymatch from 'anymatch'
-import { fork } from 'child_process'
-import { SERVER_READY_SIGNAL } from '../framework/dev-mode'
 import { saveDataForChildProcess } from '../framework/layout'
 import { rootLogger } from '../utils/logger'
 import cfgFactory from './cfg'
+import * as CP from './child-process'
 import { FileWatcher, watch } from './chokidar'
 import { compiler } from './compiler'
-import * as ipc from './ipc'
-import { Opts, Process } from './types'
-import { sendSigterm } from './utils'
+import * as IPC from './ipc'
+import { Opts } from './types'
+import { isPrefixOf, isRegExpMatch } from './utils'
 
 const logger = rootLogger
   .child('cli')
@@ -19,7 +18,7 @@ const logger = rootLogger
  * Entrypoint into the watcher system.
  */
 export function createWatcher(opts: Opts): Promise<void> {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     const cfg = cfgFactory(opts)
 
     compiler.init(opts)
@@ -82,6 +81,10 @@ export function createWatcher(opts: Opts): Promise<void> {
       }
     })
 
+    const server = IPC.create()
+    await server.start()
+    server.on('error', reject)
+
     /**
      * Plugins watcher listeners
      */
@@ -127,6 +130,7 @@ export function createWatcher(opts: Opts): Promise<void> {
     //
     process.on('SIGTERM', () => {
       logger.trace('process got SIGTERM')
+      server.stop()
       stopRunnerOnBeforeExit().then(() => {
         resolve()
       })
@@ -134,13 +138,14 @@ export function createWatcher(opts: Opts): Promise<void> {
 
     process.on('SIGINT', () => {
       logger.trace('process got SIGINT')
+      server.stop()
       stopRunnerOnBeforeExit().then(() => {
         resolve()
       })
     })
 
-    function startRunnerDo(): Process {
-      return startRunner(opts, cfg, watcher, {
+    function startRunnerDo(): CP.Process {
+      return startRunner(server, opts, cfg, watcher, {
         onError: willTerminate => {
           stopRunner(runner, willTerminate)
           watcher.resume()
@@ -153,7 +158,8 @@ export function createWatcher(opts: Opts): Promise<void> {
 
       // TODO maybe we should be a timeout here so that child process hanging
       // will never prevent nexus dev from exiting nicely.
-      return sendSigterm(runner)
+      return runner
+        .sigterm()
         .then(() => {
           logger.trace('sigterm to runner process tree completed')
         })
@@ -165,34 +171,31 @@ export function createWatcher(opts: Opts): Promise<void> {
         })
     }
 
-    function stopRunner(child: Process, willTerminate?: boolean) {
+    function stopRunner(child: CP.Process, willTerminate?: boolean) {
       if (child.exited || child.stopping) {
         return
       }
       child.stopping = true
-      child.respawn = true
-      if (child.connected === undefined || child.connected === true) {
-        child.disconnect()
 
-        if (willTerminate) {
-          logger.trace(
-            'Disconnecting from child. willTerminate === true so NOT sending sigterm to force runner end, assuming it will end itself.'
-          )
-        } else {
-          logger.trace(
-            'Disconnecting from child. willTerminate === false so sending sigterm to force runner end'
-          )
-          sendSigterm(child)
-            .then(() => {
-              logger.trace('sigterm to runner process tree completed')
-            })
-            .catch(error => {
-              logger.warn(
-                'attempt to sigterm the runner process tree ended with error',
-                { error }
-              )
-            })
-        }
+      if (willTerminate) {
+        logger.trace(
+          'Disconnecting from child. willTerminate === true so NOT sending sigterm to force runner end, assuming it will end itself.'
+        )
+      } else {
+        logger.trace(
+          'Disconnecting from child. willTerminate === false so sending sigterm to force runner end'
+        )
+        child
+          .sigterm()
+          .then(() => {
+            logger.trace('sigterm to runner process tree completed')
+          })
+          .catch(error => {
+            logger.warn(
+              'attempt to sigterm the runner process tree ended with error',
+              { error }
+            )
+          })
       }
     }
 
@@ -254,61 +257,41 @@ function getPrefix(mod: string) {
   return ~i ? mod.slice(0, i + n.length) : ''
 }
 
-function isPrefixOf(value: string) {
-  return function(prefix: string) {
-    return value.indexOf(prefix) === 0
-  }
-}
-
-function isRegExpMatch(value: string) {
-  return function(regExp: string) {
-    return new RegExp(regExp).test(value)
-  }
-}
-
 /**
  * Start the App Runner. This occurs once on boot and then on every subsequent
  * file change in the users's project.
  */
 function startRunner(
+  server: IPC.Server,
   opts: Opts,
   cfg: ReturnType<typeof cfgFactory>,
   watcher: FileWatcher,
   callbacks?: { onError?: (willTerminate: any) => void }
-): Process {
+): CP.Process {
   logger.trace('will spawn runner')
 
   const runnerModulePath = require.resolve('./runner')
-  const childHookPath = compiler.getChildHookPath()
+  // const childHookPath = compiler.getChildHookPath()
 
-  logger.trace('start runner module paths', { runnerModulePath, childHookPath })
+  // logger.trace('start runner', { runnerModulePath, childHookPath })
 
   // TODO: childHook is no longer used at all
   // const child = fork('-r' [runnerModulePath, childHookPath], {
   //
   // We are leaving this as a future fix, refer to:
   // https://github.com/graphql-nexus/nexus-future/issues/76
-  const cmd = [...(opts.nodeArgs || []), runnerModulePath]
-  const child = fork(cmd[0], cmd.slice(1), {
-    cwd: process.cwd(),
-    silent: true,
-    env: {
-      ...process.env,
+  const child = CP.create({
+    modulePath: runnerModulePath,
+    nodeArgs: opts.nodeArgs ?? [],
+    envAdditions: {
       NEXUS_EVAL: opts.eval.code,
       NEXUS_EVAL_FILENAME: opts.eval.fileName,
       ...saveDataForChildProcess(opts.layout),
     },
-  }) as Process
-
-  // stdout & stderr are guaranteed becuase we do not permit fork stdio to be
-  // configured with anything else than `pipe`.
-  //
-  child.stdout!.on('data', chunk => {
-    opts.onEvent({ event: 'logging', data: chunk.toString() })
   })
 
-  child.stderr!.on('data', chunk => {
-    opts.onEvent?.({ event: 'logging', data: chunk.toString() })
+  child.onData(chunk => {
+    opts.onEvent({ event: 'logging', data: chunk.toString() })
   })
 
   // TODO We have removed this code since switching to chokidar. What is the
@@ -340,12 +323,14 @@ function startRunner(
   //   })
   // })
 
-  child.on('exit', (code, signal) => {
+  child.onExit(({ exitCode, signal }) => {
     logger.trace('runner exiting')
-    if (code === null) {
+    if (exitCode === null) {
       logger.trace('runner did not exit on its own accord')
     } else {
-      logger.trace('runner exited on its own accord with exit code', { code })
+      logger.trace('runner exited on its own accord with exit code', {
+        code: exitCode,
+      })
     }
 
     if (signal === null) {
@@ -356,15 +341,8 @@ function startRunner(
 
     // TODO is it possible for multiple exit event triggers?
     if (child.exited) return
-    if (!child.respawn) {
-      process.exit(code ?? 1)
-    }
     child.exited = true
   })
-
-  if (cfg.respawn) {
-    child.respawn = true
-  }
 
   if (compiler.tsConfigPath) {
     watcher.addSilently(compiler.tsConfigPath)
@@ -388,38 +366,30 @@ function startRunner(
   //   }
   // )
 
-  // Listen for `required` messages and watch the required file.
-  ipc.on(child, 'required', function(message) {
-    // This log is commented out because it is very noisey if e.g. node_modules
-    // are being watched––and not very interesting
-    // log('got runner message "required" %s', message)
-    const isIgnored =
-      cfg.ignore.some(isPrefixOf(message.required)) ||
-      cfg.ignore.some(isRegExpMatch(message.required))
+  server.on('message', function(msg) {
+    if (msg.type === 'module_imported') {
+      // Listen for `required` messages and watch the required file.
+      const isIgnored =
+        cfg.ignore.some(isPrefixOf(msg.data.filePath)) ||
+        cfg.ignore.some(isRegExpMatch(msg.data.filePath))
 
-    if (
-      !isIgnored &&
-      (cfg.deps === -1 || getLevel(message.required) <= cfg.deps)
-    ) {
-      watcher.addSilently(message.required)
+      if (
+        !isIgnored &&
+        (cfg.deps === -1 || getLevel(msg.data.filePath) <= cfg.deps)
+      ) {
+        watcher.addSilently(msg.data.filePath)
+      }
+    } else if (msg.type === 'error') {
+      // Upon errors, display a notification and tell the child to exit.
+      callbacks?.onError?.(msg.data.willTerminate)
+    } else if (msg.type === 'app_server_listening') {
+      // todo: Resuming watcher on this signal can lead to performance issues
+      /**
+       * Watcher is resumed once the child sent a message saying it's ready to be restarted
+       * This prevents the runner to be run several times thus leading to an EPIPE error
+       */
+      watcher.resume()
     }
-  })
-
-  // Upon errors, display a notification and tell the child to exit.
-  ipc.on(child, 'error', function(m: any) {
-    console.error(m.stack)
-    callbacks?.onError?.(m.willTerminate)
-  })
-
-  // TODO: Resuming watcher on this signal can lead to performance issues
-  ipc.on(child, SERVER_READY_SIGNAL, () => {
-    logger.trace('got runner signal', { SERVER_READY_SIGNAL })
-    /**
-     * Watcher is resumed once the child sent a message saying it's ready to be restarted
-     * This prevents the runner to be run several times thus leading to an EPIPE error
-     */
-    watcher.resume()
-    opts.onEvent({ event: SERVER_READY_SIGNAL })
   })
 
   compiler.writeReadyFile()

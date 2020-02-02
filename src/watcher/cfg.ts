@@ -26,7 +26,6 @@ export default function(opts?: Omit<Opts, 'eval'>) {
 
   return {
     vm: c.vm !== false,
-    fork: c.fork !== false,
     deps: c.deps,
     timestamp: c.timestamp || (c.timestamp !== false && 'HH:MM:ss'),
     clear: !!c.clear,

@@ -1,3 +1,4 @@
+import * as ipc2 from 'node-ipc'
 import { fatal } from '../utils/process'
 
 /**
@@ -20,13 +21,13 @@ const DEV_MODE_ENV_VAR_NAME = 'NEXUS_DEV_MODE'
 /**
  * Eager integrity check.
  */
-assertDevModeIPCIntegrityCheck()
+// assertDevModeIPCIntegrityCheck()
 const IS_DEV_MODE = parseIsDevMode()
 
 /**
  * Constant for the server ready signal
  */
-export const SERVER_READY_SIGNAL = 'ready'
+export const SERVER_READY_SIGNAL = 'app_server_listening'
 
 /**
  * Send a signal that lets dev-mode master know that server is booted and thus
@@ -35,14 +36,13 @@ export const SERVER_READY_SIGNAL = 'ready'
 export function sendServerReadySignalToDevModeMaster(): void {
   sendSignalToDevModeMaster(SERVER_READY_SIGNAL)
 }
-
 /**
  * Send a message to the dev mode master process.
  */
 function sendSignalToDevModeMaster(signal: string) {
   if (!IS_DEV_MODE) return
 
-  process.send!({ [signal]: true, cmd: 'NODE_DEV' })
+  ipc2.of.nexus_dev_watcher.emit('message', { type: signal, data: {} })
 }
 
 /**
@@ -76,36 +76,36 @@ function parseIsDevMode(): boolean {
  * For example typegen which uses ts-node under the hood does a spawn, but
  * ts-node does a fork, and thus creates an IPC link.
  */
-function devModeIPCIntegrityCheck():
-  | { ok: true; reason: null }
-  | { ok: false; reason: null | 'env_but_no_ipc' } {
-  const isDevModeEnabled: boolean = parseIsDevMode()
-  const isIPCEnabled: boolean = typeof process.send === 'function'
+// function devModeIPCIntegrityCheck():
+//   | { ok: true; reason: null }
+//   | { ok: false; reason: null | 'env_but_no_ipc' } {
+//   const isDevModeEnabled: boolean = parseIsDevMode()
+//   const isIPCEnabled: boolean = typeof process.send === 'function'
 
-  if (!isDevModeEnabled) {
-    return { ok: true, reason: null }
-  }
+//   if (!isDevModeEnabled) {
+//     return { ok: true, reason: null }
+//   }
 
-  if (isDevModeEnabled && isIPCEnabled) {
-    return { ok: true, reason: null }
-  }
+//   if (isDevModeEnabled && isIPCEnabled) {
+//     return { ok: true, reason: null }
+//   }
 
-  if (isDevModeEnabled && !isIPCEnabled) {
-    return { ok: false, reason: 'env_but_no_ipc' }
-  }
+//   if (isDevModeEnabled && !isIPCEnabled) {
+//     return { ok: false, reason: 'env_but_no_ipc' }
+//   }
 
-  return undefined as never
-}
+//   return undefined as never
+// }
 
 /**
  * Check that dev-mode <> IPC integrity is intact else halt the program.
  */
-function assertDevModeIPCIntegrityCheck(): void {
-  const status = devModeIPCIntegrityCheck()
-  if (!status.ok) {
-    fatal(
-      'dev-mode <> IPC integrity check has failed with the follow reason: %s',
-      status.reason
-    )
-  }
-}
+// function assertDevModeIPCIntegrityCheck(): void {
+//   // const status = devModeIPCIntegrityCheck()
+//   // if (!status.ok) {
+//   //   fatal(
+//   //     'dev-mode <> IPC integrity check has failed with the follow reason: %s',
+//   //     status.reason
+//   //   )
+//   // }
+// }

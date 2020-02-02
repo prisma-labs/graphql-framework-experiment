@@ -1,6 +1,7 @@
 import * as RootLogger from './root-logger'
 
 export function demo(logger?: RootLogger.RootLogger) {
+  console.log(process.stdout.columns, process.stdout)
   console.log()
   console.log('-----------')
   console.log('LOGGER DEMO')
