@@ -32,67 +32,49 @@ describe('name', () => {
 describe('settings', () => {
   describe('pretty', () => {
     describe('context formatting', () => {
+      // assumes always logging info "foo" event
+      let logHeadersWidth = (
+        '● root:foo' + Prettifier.seps.context.singleLine.symbol
+      ).length
       let terminalWidth = 0
-      let logHeadersWidth = '● root:foo  --  '.length
       let terminalContextWidth = 0
-      function stringValueWithin(size: number): string {
-        const actualSize = size - 2 // -2 for quote rendering
-        const value = spanChar(actualSize, 'x')
-        return value
-      }
-      function stringValueEntryWithin(
-        keyName: string,
-        size: number
-      ): Record<any, any> {
-        const KeyWidth =
-          keyName.length +
-          Prettifier.seps.contextKeyVal.singleLine.symbol.length
 
-        return {
-          [keyName]: stringValueWithin(size - KeyWidth),
-        }
-      }
       beforeEach(() => {
         process.stdout.columns = 100
         terminalWidth = 100
         terminalContextWidth = terminalWidth - logHeadersWidth
         logger.settings({ pretty: { enabled: true, color: false } })
       })
+
       describe('singleline', () => {
         it('used if context does fit singleline', () => {
           logger.info('foo', {
             ...stringValueEntryWithin('key', terminalContextWidth),
           })
-          const logLine = output.writes[0].trim()
-          expect(logLine).toMatchInlineSnapshot(
-            `"● root:foo  --  key: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'"`
+          expect(output.writes[0]).toMatchSnapshot()
+          expect(output.writes[0].trim().length).toBeLessThanOrEqual(
+            terminalWidth
           )
-          expect(logLine.includes('\n')).toEqual(false)
-          expect(logLine.length).toBeLessThanOrEqual(terminalWidth)
         })
         it('used if context does fit singleline (multiple key-values)', () => {
           logger.info('foo', {
             ...stringValueEntryWithin('ke1', terminalContextWidth / 2),
             ...stringValueEntryWithin(
               'ke2',
-              terminalContextWidth / 2 - 2 /* entry sep */
+              terminalContextWidth / 2 -
+                Prettifier.seps.contextEntry.singleLine.length
             ),
           })
           const logLine = output.writes[0].trim()
-          expect(logLine).toMatchInlineSnapshot(
-            `"● root:foo  --  ke1: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'  ke2: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'"`
-          )
-          expect(logLine.includes('\n')).toEqual(false)
+          expect(logLine).toMatchSnapshot()
           expect(logLine.length).toBeLessThanOrEqual(terminalWidth)
         })
         it('objects are formatted by util.inspect compact: yes', () => {
           logger.info('foo', { ke1: { a: { b: { c: true } } } })
-          expect(output.writes[0]).toMatchInlineSnapshot(`
-"● root:foo  --  ke1: { a: { b: { c: true } } }
-"
-`)
+          expect(output.writes[0]).toMatchSnapshot()
         })
       })
+
       describe('multiline', () => {
         it('used if context does not fit singleline', () => {
           logger.info('foo', {
@@ -101,26 +83,19 @@ describe('settings', () => {
               terminalContextWidth + 1 /* force multi */
             ),
           })
-          expect(output.writes[0]).toMatchInlineSnapshot(`
-"● root:foo
-  | key  'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-"
-`)
+          expect(output.writes[0]).toMatchSnapshot()
         })
         it('used if context does fit singleline (multiple key-values)', () => {
           logger.info('foo', {
             ...stringValueEntryWithin('ke1', terminalContextWidth / 2),
             ...stringValueEntryWithin(
               'ke2',
-              terminalContextWidth / 2 - 2 /* entry sep */ + 1 /* force multi */
+              terminalContextWidth / 2 -
+                Prettifier.seps.contextEntry.singleLine.length +
+                1 /* force multi */
             ),
           })
-          const logLine = output.writes[0].trim()
-          expect(logLine).toMatchInlineSnapshot(`
-"● root:foo
-  | ke1  'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-  | ke2  'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'"
-`)
+          expect(output.writes[0]).toMatchSnapshot()
         })
         it('objects are formatted by util.inspect compact: yes', () => {
           logger.info('foo', {
@@ -133,15 +108,7 @@ describe('settings', () => {
               },
             },
           })
-          expect(output.writes[0]).toMatchInlineSnapshot(`
-"● root:foo
-  | ke1  {
-  |         a: {
-  |           b: { c: true, d: 'looooooooooooooooooooooooooooooooooooooooooooooooong' }
-  |         }
-  |       }
-"
-`)
+          expect(output.writes[0]).toMatchSnapshot()
         })
       })
     })
@@ -544,4 +511,23 @@ function resetBeforeEachTest(object: any, key: string) {
       object[key] = orig
     }
   })
+}
+
+// helpers for building content for tests against log formatting
+
+function stringValueWithin(size: number): string {
+  const actualSize = size - 2 // -2 for quote rendering "'...'"
+  const value = spanChar(actualSize, 'x')
+  return value
+}
+
+function stringValueEntryWithin(
+  keyName: string,
+  size: number
+): Record<any, any> {
+  const KeyWidth =
+    keyName.length + Prettifier.seps.contextKeyVal.singleLine.symbol.length
+  return {
+    [keyName]: stringValueWithin(size - KeyWidth),
+  }
 }
