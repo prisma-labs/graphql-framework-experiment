@@ -1,4 +1,5 @@
 import * as Lo from 'lodash'
+import { spanChar } from '../utils'
 import * as Logger from './'
 import * as Output from './output'
 
@@ -29,6 +30,122 @@ describe('name', () => {
 
 describe('settings', () => {
   describe('pretty', () => {
+    describe('context formatting', () => {
+      let width = 0
+      let columnsPrefix = '● root:foo  --  '.length
+      let contextWidth = 0
+      function stringValueWithin(size: number): string {
+        const actualSize = size - 2 // -2 for quote rendering
+        const value = spanChar(actualSize, 'x')
+        return value
+      }
+      beforeEach(() => {
+        process.stdout.columns = 100
+        width = 100
+        contextWidth = width - columnsPrefix
+        logger.settings({ pretty: { enabled: true, color: false } })
+      })
+      describe('singleline', () => {
+        it('used if context does fit singleline', () => {
+          const keyName = 'key'
+          const KeyWidth = keyName.length + 2 // todo calc from prettifier module...
+          logger.info('foo', {
+            [keyName]: stringValueWithin(contextWidth - KeyWidth),
+          })
+          const logLine = output.writes[0].trim()
+          expect(logLine).toMatchInlineSnapshot(
+            `"● root:foo  --  key: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'"`
+          )
+          expect(logLine.includes('\n')).toEqual(false)
+          expect(logLine.length).toBeLessThanOrEqual(width)
+        })
+        it('used if context does fit singleline (multiple key-values)', () => {
+          const keyName1 = 'ke1'
+          const keyName2 = 'ke2'
+          const Key1Width = keyName1.length + 2 // todo calc from prettifier module...
+          const Key2Width = keyName2.length + 2 // todo calc from prettifier module...
+          logger.info('foo', {
+            [keyName1]: stringValueWithin(contextWidth / 2 - Key1Width),
+            [keyName2]: stringValueWithin(
+              contextWidth / 2 - Key2Width - 2 /* entry sep */
+            ),
+          })
+          const logLine = output.writes[0].trim()
+          expect(logLine).toMatchInlineSnapshot(
+            `"● root:foo  --  ke1: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'  ke2: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'"`
+          )
+          expect(logLine.includes('\n')).toEqual(false)
+          expect(logLine.length).toBeLessThanOrEqual(width)
+        })
+        it('objects are formatted by util.inspect compact: yes', () => {
+          logger.info('foo', { ke1: { a: { b: { c: true } } } })
+          expect(output.writes[0]).toMatchInlineSnapshot(`
+"● root:foo  --  ke1: { a: { b: { c: true } } }
+"
+`)
+        })
+      })
+      describe('multiline', () => {
+        it('used if context does not fit singleline', () => {
+          const keyName = 'key'
+          const columnsKey = keyName.length + 2 // todo calc from prettifier module...
+          logger.info('foo', {
+            [keyName]: stringValueWithin(
+              contextWidth - columnsKey + 1 /* +1 force multiline */
+            ),
+          })
+          const logLine = output.writes[0].trim()
+          expect(logLine).toMatchInlineSnapshot(`
+"● root:foo
+  | key  'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'"
+`)
+          expect(logLine.includes('\n')).toEqual(true)
+        })
+        it('used if context does fit singleline (multiple key-values)', () => {
+          const keyName1 = 'ke1'
+          const keyName2 = 'ke2'
+          const Key1Width = keyName1.length + 2 // todo calc from prettifier module...
+          const Key2Width = keyName2.length + 2 // todo calc from prettifier module...
+          logger.info('foo', {
+            [keyName1]: stringValueWithin(contextWidth / 2 - Key1Width),
+            [keyName2]: stringValueWithin(
+              contextWidth / 2 -
+              Key2Width -
+              2 /* entry sep */ +
+                1 /* force multiline */
+            ),
+          })
+          const logLine = output.writes[0].trim()
+          expect(logLine).toMatchInlineSnapshot(`
+"● root:foo
+  | ke1  'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+  | ke2  'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'"
+`)
+        })
+        it('objects are formatted by util.inspect compact: yes', () => {
+          logger.info('foo', {
+            ke1: {
+              a: {
+                b: {
+                  c: true,
+                  d: 'looooooooooooooooooooooooooooooooooooooooooooooooong',
+                },
+              },
+            },
+          })
+          expect(output.writes[0]).toMatchInlineSnapshot(`
+"● root:foo
+  | ke1  {
+  |         a: {
+  |           b: { c: true, d: 'looooooooooooooooooooooooooooooooooooooooooooooooong' }
+  |         }
+  |       }
+"
+`)
+        })
+      })
+    })
+
     describe('.enabled', () => {
       it('can be disabled', () => {
         expect(

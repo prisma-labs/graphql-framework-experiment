@@ -59,9 +59,9 @@ const pathSep = {
 
 const eventSep = ':'
 
-const contextSep = {
+const headersContextSep = {
   singleLine: {
-    symbol: ' --  ',
+    symbol: '  --  ',
     // context = ` ${chalk.gray('⸬')}  ` + context
     // context = ` ${chalk.gray('•')}  ` + context
     // context = ` ${chalk.gray('⑊')}  ` + context
@@ -126,20 +126,32 @@ export function render(options: Options, rec: Logger.LogRecord): string {
 
   // render context
 
-  const availableContextColumns =
-    process.stdout.columns - stripAnsi(renderedPreContext).length
+  // Factor in:
+  // 1. the headers section
+  // 2. the headers/context separator
+  const availableSinglelineContextColumns =
+    process.stdout.columns -
+    stripAnsi(renderedPreContext).length -
+    headersContextSep.singleLine.symbol.length
   let contextColumnsConsumed = 0
 
   const contextEntries = Object.entries(rec.context)
   let widestKey = 0
+  let first = true
 
   const contextEntriesRendered = contextEntries.map(([key, value]) => {
-    contextColumnsConsumed +=
-      key.length + contextKeyValSep.singleLine.symbol.length
+    // Track context space consumption of entry separators
+    if (!first) contextColumnsConsumed += contextEntrySep.singleLine.length
+    else first = false
+
+    // Track widest key optimistically for use in multiline layout later
     if (key.length > widestKey) widestKey = key.length
 
+    contextColumnsConsumed +=
+      key.length + contextKeyValSep.singleLine.symbol.length
+
     const valueRendered = `${util.inspect(value, {
-      breakLength: availableContextColumns,
+      breakLength: availableSinglelineContextColumns,
       colors: true,
       getters: true,
       depth: 20,
@@ -151,13 +163,13 @@ export function render(options: Options, rec: Logger.LogRecord): string {
   })
 
   const contextFitsSingleLine =
-    contextColumnsConsumed <= availableContextColumns
+    contextColumnsConsumed <= availableSinglelineContextColumns
 
   let contextRendered = ''
   if (contextEntries.length > 0) {
     if (contextFitsSingleLine) {
       contextRendered =
-        renderEl(contextSep.singleLine) +
+        renderEl(headersContextSep.singleLine) +
         contextEntriesRendered
           .map(
             ([key, value]) =>
@@ -168,7 +180,7 @@ export function render(options: Options, rec: Logger.LogRecord): string {
           .join(contextEntrySep.singleLine)
     } else {
       contextRendered =
-        renderEl(contextSep.multiline) +
+        renderEl(headersContextSep.multiline) +
         renderEl(contextEntrySep.multiline) +
         contextEntriesRendered
           .map(
@@ -193,7 +205,7 @@ export function render(options: Options, rec: Logger.LogRecord): string {
 
   // put it together
 
-  return `${renderedPreContext} ${contextRendered}\n`
+  return `${renderedPreContext}${contextRendered}\n`
 }
 
 type El = {
@@ -205,6 +217,12 @@ function renderEl(el: El) {
   return el.color ? el.color(el.symbol) : el.symbol
 }
 
+/**
+ * Given a multiline string, run a single pass over each line carrying out the
+ * given transformations configured in given options.
+ *
+ * If singleline given, returned as-is.
+ */
 function formatBlock(
   opts: {
     indent?: number

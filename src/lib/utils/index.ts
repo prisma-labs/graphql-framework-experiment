@@ -45,6 +45,15 @@ export function span(
 export const spanSpace = span.bind(null, 'padAfter', ' ')
 
 /**
+ * Create a string of the given length and character
+ */
+export function spanChar(num: number, char: string): string {
+  return range(num)
+    .map(constant(char))
+    .join('')
+}
+
+/**
  * Guarantee the length of a given string, padding with space as needed. Content
  * is aligned right and if exceeds span target length to begin with gets cropped.
  */
