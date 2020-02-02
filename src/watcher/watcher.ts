@@ -367,7 +367,7 @@ function startRunner(
   // )
 
   server.on('message', function(msg) {
-    if (msg.type === 'runner:module_required') {
+    if (msg.type === 'module_imported') {
       // Listen for `required` messages and watch the required file.
       const isIgnored =
         cfg.ignore.some(isPrefixOf(msg.data.filePath)) ||
@@ -379,10 +379,10 @@ function startRunner(
       ) {
         watcher.addSilently(msg.data.filePath)
       }
-    } else if (msg.type === 'runner:error') {
+    } else if (msg.type === 'error') {
       // Upon errors, display a notification and tell the child to exit.
       callbacks?.onError?.(msg.data.willTerminate)
-    } else if (msg.type === 'runner:app_server_listening') {
+    } else if (msg.type === 'app_server_listening') {
       // todo: Resuming watcher on this signal can lead to performance issues
       /**
        * Watcher is resumed once the child sent a message saying it's ready to be restarted

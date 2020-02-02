@@ -1,4 +1,3 @@
-import * as ipc2 from 'node-ipc'
 import { register } from 'ts-node'
 import * as ts from 'typescript'
 import { Script } from 'vm'
@@ -7,7 +6,7 @@ import { extractContextTypes, readTsConfig } from '../utils'
 import { rootLogger } from '../utils/logger'
 import cfgFactory from './cfg'
 import hook from './hook'
-import * as ipc from './ipc'
+import * as IPC from './ipc'
 import Module = require('module')
 
 const logger = rootLogger
@@ -22,19 +21,7 @@ register({
   transpileOnly: true,
 })
 ;(async function() {
-  ipc2.config.id = 'node_dev_runner'
-  ipc2.config.logger = logger.trace
-  ipc2.config.silent = true
-  await new Promise(res => {
-    ipc2.connectTo('nexus_dev_watcher', () => {
-      logger.trace('ipc socket created')
-      ipc2.of.nexus_dev_watcher.on('connect', () => {
-        logger.trace('ipc connection to watcher established')
-        res()
-      })
-    })
-  })
-
+  await IPC.client.connect()
   logger.trace('starting context type extraction')
   const layout = await Layout.loadDataFromParentProcess()
   const tsConfig = readTsConfig(layout)
@@ -111,7 +98,7 @@ register({
       willTerminate: hasCustomHandler,
     }
     logger.trace('uncaughtException ', { errorMessage })
-    ipc.client.senders.error(errorMessage)
+    IPC.client.senders.error(errorMessage)
   })
 
   // unhandled rejection will get whatever value the user rejected with, which
@@ -140,12 +127,12 @@ register({
       willTerminate: hasCustomHandler,
     }
     logger.trace('unhandledRejection', { errorData })
-    ipc.client.senders.error(errorData)
+    IPC.client.senders.error(errorData)
   })
 
   // Hook into require() and notify the parent process about required files
   hook(cfg, module, filePath => {
-    ipc.client.senders.moduleImported({ filePath })
+    IPC.client.senders.moduleImported({ filePath })
   })
 
   if (!process.env.NEXUS_EVAL) {

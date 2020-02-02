@@ -6,10 +6,7 @@ export type NodeIPCServer = typeof ipc2.server
 
 const serverLogger = rootLogger.child('watcher:ipc:server')
 
-type MessageType =
-  | 'runner:module_required'
-  | 'runner:error'
-  | 'runner:app_server_listening'
+type MessageType = 'module_imported' | 'error' | 'app_server_listening'
 
 type MessageStruct<
   Type extends MessageType,
@@ -27,7 +24,7 @@ type MessageStruct<
  * program.
  */
 type ModuleRequiredMessage = MessageStruct<
-  'runner:module_required',
+  'module_imported',
   {
     filePath: string
   }
@@ -39,7 +36,7 @@ type ModuleRequiredMessage = MessageStruct<
  * or the runner framework code, etc.
  */
 type ErrorMessage = MessageStruct<
-  'runner:error',
+  'error',
   {
     error: string
     stack: string | undefined
@@ -52,26 +49,7 @@ type ErrorMessage = MessageStruct<
 
 type Message = ModuleRequiredMessage | ErrorMessage | AppServerListeningMessage
 
-type AppServerListeningMessage = MessageStruct<
-  'runner:app_server_listening',
-  {}
->
-
-export namespace client {
-  export namespace senders {
-    export function moduleImported(data: ModuleRequiredMessage['data']): void {
-      const msg: ModuleRequiredMessage = {
-        type: 'runner:module_required',
-        data,
-      }
-      ipc2.of.nexus_dev_watcher.emit('message', msg)
-    }
-    export function error(data: ErrorMessage['data']): void {
-      const msg: ErrorMessage = { type: 'runner:error', data }
-      ipc2.of.nexus_dev_watcher.emit('message', msg)
-    }
-  }
-}
+type AppServerListeningMessage = MessageStruct<'app_server_listening', {}>
 
 export type Server = ReturnType<typeof create>
 
@@ -115,22 +93,13 @@ export function create() {
     })
   })
 
-  return {
+  const api = {
     on: <E extends EventType>(
       eventType: E,
       observer: (...args: EventsLookup[E]) => void
-    ) => {
-      ipc2.server.on(eventType, (...args) => {
-        serverLogger.trace('inbound event for subscriber', {
-          type: eventType,
-          args,
-        })
-        observer(...(args as any))
-      })
+    ): void => {
+      ipc2.server.on(eventType, observer as any)
     },
-    // on(event: any, cb: any) {
-    //   ipc2.server.on(event, cb)
-    // },
     stop(): void {
       ipc2.server.stop()
     },
@@ -144,26 +113,70 @@ export function create() {
       })
     },
   }
+
+  api.on('message', message => {
+    if (message.type === 'module_imported') return // too noisy...
+    serverLogger.trace('inbound message', message)
+  })
+
+  return api
 }
 
-// export function on(
-//   server: NodeIPCServer,
-//   eventType: string,
-//   callback: (m: any) => void
-// ) {
-//   function handleMessage(m: any) {
-//     if (isNodeDevMessage(m) && eventType in m) callback(m)
-//   }
+// client
 
-//   server.on('internalMessage', handleMessage)
-//   server.on('message', handleMessage)
-// }
+const clientLogger = rootLogger.child('watcher:ipc:server')
 
-// export function relay(src: PTY.IPty, dest?: any) {
-//   if (!dest) dest = process
-//   function relayMessage(m: any) {
-//     if (isNodeDevMessage(m)) dest.send(m)
-//   }
-//   // src.on('internalMessage', relayMessage)
-//   // src.on('message', relayMessage)
-// }
+export const client = createClient()
+
+function createClient() {
+  const state = {
+    connected: false,
+  }
+
+  ipc2.config.id = 'nexus_dev_runner'
+  ipc2.config.logger = clientLogger.trace
+  ipc2.config.silent = true
+
+  return {
+    senders: {
+      moduleImported(data: ModuleRequiredMessage['data']): void {
+        const msg: ModuleRequiredMessage = {
+          type: 'module_imported',
+          data,
+        }
+        ipc2.of.nexus_dev_watcher.emit('message', msg)
+      },
+      error(data: ErrorMessage['data']): void {
+        const msg: ErrorMessage = {
+          type: 'error',
+          data,
+        }
+        ipc2.of.nexus_dev_watcher.emit('message', msg)
+      },
+      /**
+       * Send a signal that lets dev-mode master know that server is booted and thus
+       * ready to receive requests.
+       */
+      serverListening(): void {
+        const msg: Message = {
+          type: 'app_server_listening',
+          data: {},
+        }
+        ipc2.of.nexus_dev_watcher.emit('message', msg)
+      },
+    },
+    connect(): Promise<void> {
+      if (state.connected) return Promise.resolve()
+      state.connected = true
+      return new Promise(res => {
+        ipc2.connectTo('nexus_dev_watcher', () => {
+          clientLogger.trace('socket created')
+          ipc2.of.nexus_dev_watcher.on('connect', () => {
+            clientLogger.trace('connection to watcher established')
+            res()
+          })
+        })
+      })
+    },
+  }
+}
