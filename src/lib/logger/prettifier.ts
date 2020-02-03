@@ -5,6 +5,8 @@ import * as utils from '../utils'
 import * as Level from './level'
 import * as Logger from './logger'
 
+const stopWatch = createStopWatch()
+
 // Helpful unicode pickers:
 // - https://jrgraphix.net/r/Unicode/2600-26FF
 // - https://graphemica.com/
@@ -95,10 +97,10 @@ export const seps = {
   },
   contextEntry: {
     singleLine: '  ',
-    multiline: {
-      symbol: `\n  | `,
+    multiline: (gutterSpace: string) => ({
+      symbol: gutterSpace + `| `,
       color: chalk.gray,
-    },
+    }),
   },
 }
 
@@ -114,16 +116,60 @@ export function render(options: Options, rec: Logger.LogRecord): string {
   const levelLabel = Level.LEVELS_BY_NUM[rec.level].label
   const style = LEVEL_STYLES[levelLabel]
 
+  // render elapsed time
+
+  let elapsed = stopWatch.lap()
+  let unit: 'ms' | 's' | 'm' | 'h' | 'd' | 'max'
+  // <10s
+  if (elapsed < 1000 * 10) {
+    unit = 'ms'
+    // 10s-100s (exclusive)
+  } else if (elapsed >= 1000 * 10 && elapsed < 1000 * 100) {
+    elapsed = Math.round(elapsed / 1000)
+    unit = 's'
+    // 100s-60m (exclusive)
+  } else if (elapsed >= 1000 * 100 && elapsed < 1000 * 60 * 60) {
+    elapsed = Math.round(elapsed / 1000 / 60)
+    unit = 'm'
+    // 1h-24h (exclusive)
+  } else if (elapsed >= 1000 * 60 * 60 && elapsed < 1000 * 60 * 60 * 24) {
+    elapsed = Math.round(elapsed / 1000 / 60 / 60)
+    unit = 'h'
+    // 1d-999d (exclusive)
+  } else if (elapsed >= 1000 * 60 * 60 && elapsed < 1000 * 60 * 60 * 24) {
+    elapsed = Math.round(elapsed / 1000 / 60 / 60 / 24)
+    unit = 'd'
+  } else {
+    unit = 'max'
+  }
+
+  let elapsedRendered
+  if (unit === 'ms') {
+    elapsedRendered = `${utils.spanSpaceRight(4, String(elapsed))} `
+  } else if (unit === 'max') {
+    elapsedRendered = ' ∞ '
+  } else {
+    elapsedRendered = `${unit} ${utils.spanSpaceRight(2, String(elapsed))} `
+  }
+
+  // render gutter
+
+  const levelLabelSized = options.levelLabel
+    ? ' ' + utils.clampSpace(5, levelLabel) + ' '
+    : ' '
+
+  const gutterRendered = `${chalk.gray(elapsedRendered)}${style.color(
+    `${style.badge}${levelLabelSized}`
+  )}`
+  // pre-emptyive measurement for potential multiline context indentation later on
+  const gutterWidth =
+    elapsedRendered.length + style.badge.length + levelLabelSized.length
+
   // render pre-context
 
-  const levelLabelRendered = options.levelLabel
-    ? ' ' + utils.spanSpace(5, levelLabel) + ' '
-    : ' '
   const path = rec.path.join(renderEl(seps.path))
-
-  const renderedPreContext = `${style.color(
-    `${style.badge}${levelLabelRendered}${path}`
-  )}${renderEl(seps.event)}${rec.event}`
+  const preContextRendered =
+    style.color(path) + renderEl(seps.event) + rec.event
 
   // render context
 
@@ -132,7 +178,7 @@ export function render(options: Options, rec: Logger.LogRecord): string {
   // 2. the headers/context separator
   const availableSinglelineContextColumns =
     process.stdout.columns -
-    stripAnsi(renderedPreContext).length -
+    stripAnsi(preContextRendered).length -
     seps.context.singleLine.symbol.length
   let contextColumnsConsumed = 0
 
@@ -180,33 +226,31 @@ export function render(options: Options, rec: Logger.LogRecord): string {
           )
           .join(seps.contextEntry.singleLine)
     } else {
+      const spineRendered = renderEl(
+        seps.contextEntry.multiline(utils.spanSpace(gutterWidth))
+      )
       contextRendered =
         renderEl(seps.context.multiline) +
-        renderEl(seps.contextEntry.multiline) +
+        '\n' +
+        spineRendered +
         contextEntriesRendered
           .map(
             ([key, value]) =>
-              `${chalk.gray(utils.spanSpace(widestKey, key))}${renderEl(
+              `${chalk.gray(utils.clampSpace(widestKey, key))}${renderEl(
                 seps.contextKeyVal.multiline
-              )}${formatBlock(
-                {
-                  leftSpineSymbol: { color: chalk.gray, symbol: '  | ' }, // todo unify with el def above,
-                  excludeFirstLine: true,
-                  indent:
-                    widestKey +
-                    seps.contextKeyVal.multiline.symbol.length +
-                    seps.contextEntry.multiline.symbol.length,
-                },
-                value
-              )}`
+              )}${formatBlock(value, {
+                leftSpineSymbol: spineRendered,
+                excludeFirstLine: true,
+                indent: widestKey + seps.contextKeyVal.multiline.symbol.length,
+              })}`
           )
-          .join(renderEl(seps.contextEntry.multiline))
+          .join('\n' + spineRendered)
     }
   }
 
   // put it together
 
-  return `${renderedPreContext}${contextRendered}\n`
+  return `${gutterRendered}${preContextRendered}${contextRendered}\n`
 }
 
 type El = {
@@ -225,29 +269,45 @@ function renderEl(el: El) {
  * If singleline given, returned as-is.
  */
 function formatBlock(
+  block: string,
   opts: {
     indent?: number
     excludeFirstLine?: boolean
-    leftSpineSymbol?: El
-  },
-  block: string
+    leftSpineSymbol?: string | El
+  }
 ): string {
   const [first, ...rest] = block.split('\n')
   if (rest.length === 0) return first
   const linesToProcess =
     opts.excludeFirstLine === true ? rest : (rest.unshift(first), rest)
-  const prefix = opts.leftSpineSymbol?.symbol ?? ''
-  const indent =
-    opts.indent !== undefined
-      ? utils
-          .range(opts.indent - prefix.length)
-          .map(utils.constant(' '))
-          .join('')
-      : ''
+  const prefix =
+    typeof opts.leftSpineSymbol === 'string'
+      ? opts.leftSpineSymbol
+      : opts.leftSpineSymbol?.symbol ?? ''
+  const indent = opts.indent !== undefined ? utils.spanSpace(opts.indent) : ''
   const linesProcessed = opts.excludeFirstLine === true ? [first] : []
   for (const line of linesToProcess) {
-    const prefixRendered = opts.leftSpineSymbol?.color?.(prefix) ?? prefix
+    const prefixRendered =
+      typeof opts.leftSpineSymbol === 'object'
+        ? opts.leftSpineSymbol?.color?.(prefix) ?? prefix
+        : prefix
     linesProcessed.push(prefixRendered + indent + line)
   }
   return linesProcessed.join('\n')
+}
+
+/**
+ * Create a stop watch. Makes it simple to calculate elapsed time on every
+ * invocation of `lap`.
+ */
+function createStopWatch() {
+  let prev = Date.now()
+  return {
+    lap(): number {
+      const curr = Date.now()
+      const elapsed = curr - prev
+      prev = curr
+      return elapsed
+    },
+  }
 }
