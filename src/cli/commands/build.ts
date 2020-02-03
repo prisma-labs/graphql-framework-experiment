@@ -24,7 +24,7 @@ import {
 } from '../../utils/deploy-target'
 import { rootLogger } from '../../utils/logger'
 
-const logger = rootLogger.child('builder')
+const log = rootLogger.child('builder')
 
 const BUILD_ARGS = {
   '--output': String,
@@ -41,7 +41,7 @@ export class Build implements Command {
     const args = arg(argv, BUILD_ARGS)
 
     if (isError(args)) {
-      logger.error(args.stack ?? args.message)
+      log.error(args.stack ?? args.message)
       return this.help()
     }
 
@@ -77,8 +77,8 @@ export class Build implements Command {
       contextFieldTypes
     )
 
-    logger.trace('running_typegen')
-    logger.info('Generating Nexus artifacts ...')
+    log.trace('running_typegen')
+    log.info('Generating Nexus artifacts ...')
     await generateArtifacts(
       createStartModuleContent({
         internalStage: 'dev',
@@ -87,7 +87,7 @@ export class Build implements Command {
       })
     )
 
-    logger.info('Compiling ...')
+    log.info('Compiling ...')
     // Recreate our program instance so that it picks up the typegen. We use
     // incremental builder type of program so that the cache from the previous
     // run of TypeScript should make re-building up this one cheap.
@@ -96,7 +96,7 @@ export class Build implements Command {
 
     await writeStartModule(args['--stage'] ?? 'production', layout, tsProgram)
 
-    logger.info('success', {
+    log.info('success', {
       buildOutput: layout.buildOutput,
     })
     if (deploymentTarget) {
@@ -140,7 +140,7 @@ async function writeStartModule(
     `)
   }
 
-  logger.trace('transpiling start module...')
+  log.trace('transpiling start module...')
   const startModule = transpileModule(
     createStartModuleContent({
       internalStage: 'build',
@@ -150,12 +150,12 @@ async function writeStartModule(
     }),
     tsProgram.getCompilerOptions()
   )
-  logger.trace('done')
+  log.trace('done')
 
-  logger.trace('writing start module to disk...')
+  log.trace('writing start module to disk...')
   await fs.writeAsync(
     fs.path(`${layout.buildOutput}/${START_MODULE_NAME}.js`),
     startModule
   )
-  logger.trace('done')
+  log.trace('done')
 }

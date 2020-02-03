@@ -21,7 +21,7 @@ schema.objectType({
 })
 ```
 
-#### `logger`
+#### `log`
 
 An instance of [`RootLogger`](#rootlogger).
 
@@ -30,7 +30,7 @@ An instance of [`RootLogger`](#rootlogger).
 ```ts
 import { logger } from 'nexus-future'
 
-logger.info('boot')
+log.info('boot')
 ```
 
 #### `server`

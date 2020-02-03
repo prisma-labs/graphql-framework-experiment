@@ -8,7 +8,7 @@ import * as Schema from './schema'
 import * as Server from './server'
 import * as singletonChecks from './singleton-checks'
 
-const logger = Logger.create({ name: 'app' })
+const log = Logger.create({ name: 'app' })
 
 /**
  * The available server options to configure how your app runs its server.
@@ -17,7 +17,7 @@ type ServerOptions = Partial<
   Pick<Server.Options, 'port' | 'playground' | 'startMessage'>
 >
 
-type Request = HTTP.IncomingMessage & { logger: Logger.Logger }
+type Request = HTTP.IncomingMessage & { log: Logger.Logger }
 
 // TODO plugins could augment the request
 // plugins will be able to use typegen to signal this fact
@@ -33,7 +33,7 @@ export type App = {
    *
    * ### todo
    */
-  logger: Logger.RootLogger
+  log: Logger.RootLogger
   /**
    * [API Reference](https://nexus-future.now.sh/#/references/api?id=server)  ⌁  [Guide](todo)
    *
@@ -83,7 +83,7 @@ export function create(appConfig?: { types?: any }): App {
   let server: Server.Server
   const schema = Schema.create()
   const api: App = {
-    logger,
+    log,
     // TODO bring this back pending future discussion
     // installGlobally() {
     //   installGlobally(api)
@@ -217,15 +217,15 @@ export function create(appConfig?: { types?: any }): App {
           config.imports.push(
             "import * as Logger from 'nexus-future/dist/lib/logger'",
             contextTypeContribSpecToCode({
-              logger: 'Logger.Logger',
+              log: 'Logger.Logger',
             })
           )
 
-          api.logger.trace('built up Nexus typegenConfig', { config })
+          api.log.trace('built up Nexus typegenConfig', { config })
           return config
         }
 
-        logger.trace('built up schema config', { nexusConfig })
+        log.trace('built up schema config', { nexusConfig })
 
         // Merge the plugin nexus plugins
         nexusConfig.plugins = nexusConfig.plugins ?? []
@@ -238,7 +238,7 @@ export function create(appConfig?: { types?: any }): App {
         }
 
         if (schema.internal.types.length === 0) {
-          logger.warn(
+          log.warn(
             'Your GraphQL schema is empty. Make sure your GraphQL schema lives in a `schema.ts` file or some `schema/` directories'
           )
         }

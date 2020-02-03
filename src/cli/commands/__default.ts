@@ -7,29 +7,29 @@ import { rootLogger } from '../../utils/logger'
 import { run } from './create/app'
 import { Dev } from './dev'
 
-const logger = rootLogger.child('cli').child('entrypoint')
+const log = rootLogger.child('cli').child('entrypoint')
 
 export class __Default implements Command {
   async parse() {
-    logger.trace('start')
+    log.trace('start')
     const projectType = await Layout.scanProjectType()
 
     switch (projectType.type) {
       case 'new':
-        logger.trace(
+        log.trace(
           'detected CWD is empty and not within an existing nexus project, delegating to create sub-command'
         )
         console.log('Creating a new nexus project')
         await run({ projectName: CWDProjectNameOrGenerate() })
         break
       case 'NEXUS_project':
-        logger.trace(
+        log.trace(
           'detected CWD is within a nexus project, delegating to dev mode'
         )
         await new Dev().parse([])
         break
       case 'node_project':
-        logger.trace(
+        log.trace(
           'detected CWD is within a node but not nexus project, aborting'
         )
         console.log(
@@ -37,11 +37,11 @@ export class __Default implements Command {
         )
         break
       case 'unknown':
-        logger.trace('detected CWD is not empty nor a nexus project, aborting')
+        log.trace('detected CWD is not empty nor a nexus project, aborting')
         // We can get the user on the happy path by asking them for a project
         // name and then changing into that directory.
         const projectName = generateProjectName()
-        logger.info(
+        log.info(
           `creating ./${projectName} where all subsequent work will occur`
         )
         await fs.dirAsync(projectName)

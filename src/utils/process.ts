@@ -1,15 +1,15 @@
-import { spawnSync, SpawnSyncOptions, spawn } from 'child_process'
-import { logger } from './logger'
+import { spawn, spawnSync, SpawnSyncOptions } from 'child_process'
 import { stripIndent } from 'common-tags'
 import * as Path from 'path'
 import { format } from 'util'
+import { log } from './logger'
 
 /**
  * Log a meaningful semantic error message sans stack track and then crash
  * the program with exit code 1. Parameters are a passthrough to `console.error`.
  */
 export function fatal(template: string, ...vars: unknown[]): never {
-  logger.error(format(template, ...vars))
+  log.error(format(template, ...vars))
   process.exit(1)
 }
 

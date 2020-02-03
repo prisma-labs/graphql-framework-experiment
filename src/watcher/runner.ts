@@ -9,12 +9,12 @@ import hook from './hook'
 import * as IPC from './ipc'
 import Module = require('module')
 
-const logger = rootLogger
+const log = rootLogger
   .child('cli')
   .child('dev')
   .child('runner')
 
-logger.trace('boot')
+log.trace('boot')
 
 // TODO HACK, big one, like running ts-node twice?
 register({
@@ -22,7 +22,7 @@ register({
 })
 ;(async function() {
   await IPC.client.connect()
-  logger.trace('starting context type extraction')
+  log.trace('starting context type extraction')
   const layout = await Layout.loadDataFromParentProcess()
   const tsConfig = readTsConfig(layout)
   const program = ts.createIncrementalProgram({
@@ -36,7 +36,7 @@ register({
   process.env.NEXUS_TYPEGEN_ADD_CONTEXT_RESULTS = JSON.stringify(
     extractContextTypes(program)
   )
-  logger.trace('finished context type extraction')
+  log.trace('finished context type extraction')
 
   // Remove app-runner.js from the argv array
   process.argv.splice(1, 1)
@@ -61,7 +61,7 @@ register({
   // Listen SIGTERM and exit unless there is another listener
   process.on('SIGTERM', function() {
     if (process.listeners('SIGTERM').length === 1) {
-      logger.trace('Child got SIGTERM, exiting')
+      log.trace('Child got SIGTERM, exiting')
       process.exit(0)
     }
   })
@@ -97,7 +97,7 @@ register({
       stack: err.stack,
       willTerminate: hasCustomHandler,
     }
-    logger.trace('uncaughtException ', { errorMessage })
+    log.trace('uncaughtException ', { errorMessage })
     IPC.client.senders.error(errorMessage)
   })
 
@@ -126,7 +126,7 @@ register({
       stack,
       willTerminate: hasCustomHandler,
     }
-    logger.trace('unhandledRejection', { errorData })
+    log.trace('unhandledRejection', { errorData })
     IPC.client.senders.error(errorData)
   })
 

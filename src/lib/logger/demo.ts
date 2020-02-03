@@ -1,22 +1,22 @@
 import * as RootLogger from './root-logger'
 
-export function demo(logger?: RootLogger.RootLogger) {
+export function demo(log?: RootLogger.RootLogger) {
   console.log('')
   console.log('-----------')
   console.log('LOGGER DEMO')
   console.log('-----------')
-  logger = logger ?? RootLogger.create()
-  const origLevel = logger.settings.level
-  logger.settings({ level: 'trace', pretty: true })
-  logger.fatal('foo', { lib: /see/ })
-  logger.error('foo', {
+  log = log ?? RootLogger.create()
+  const origLevel = log.settings.level
+  log.settings({ level: 'trace', pretty: true })
+  log.fatal('foo', { lib: /see/ })
+  log.error('foo', {
     har: { mar: 'tek' },
     jar: [1, 2, 3, 4, 4, 5, 6, 6, 7, 9, 1, 2, 4, 5, 6, 7, 3, 6, 5, 4],
     kio: Object.create(null, { [Symbol.toStringTag]: { value: 'foo' } }),
   })
-  logger.warn('foo', { bleep: [1, '2', true] })
-  logger.info('foo')
-  logger.debug('foo', {
+  log.warn('foo', { bleep: [1, '2', true] })
+  log.info('foo')
+  log.debug('foo', {
     results: [
       {
         userId: 1,
@@ -53,9 +53,9 @@ export function demo(logger?: RootLogger.RootLogger) {
     tri: 'wiz',
     on: false,
   })
-  logger.debug('foo', { foo: 'bar' })
-  logger.trace('foo', { a: 1, b: 2, c: 'three' })
-  logger.settings({ level: origLevel })
+  log.debug('foo', { foo: 'bar' })
+  log.trace('foo', { a: 1, b: 2, c: 'three' })
+  log.settings({ level: origLevel })
   console.log('-----------')
   console.log('')
 }

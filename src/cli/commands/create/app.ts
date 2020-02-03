@@ -14,7 +14,7 @@ import { rootLogger } from '../../../utils/logger'
 import * as PackageManager from '../../../utils/package-manager'
 import * as proc from '../../../utils/process'
 
-const logger = rootLogger
+const log = rootLogger
   .child('cli')
   .child('create')
   .child('app')
@@ -47,11 +47,11 @@ export async function run(optionsGiven?: Partial<Options>): Promise<void> {
 export async function runLocalHandOff(
   optionsGiven?: Partial<Options>
 ): Promise<void> {
-  logger.trace('start local handoff')
+  log.trace('start local handoff')
 
   const { layout, connectionURI, database } = await loadDataFromParentProcess()
   const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
-  logger.trace('plugins', { plugins })
+  log.trace('plugins', { plugins })
 
   // TODO select a template
 
@@ -66,9 +66,9 @@ export async function runLocalHandOff(
 export async function runBootstrapper(
   optionsGiven?: Partial<Options>
 ): Promise<void> {
-  logger.trace('start bootstrapper')
+  log.trace('start bootstrapper')
 
-  logger.trace('checking folder is in a clean state...')
+  log.trace('checking folder is in a clean state...')
   await assertIsCleanSlate()
 
   const packageManagerType = await askForPackageManager()
@@ -104,10 +104,10 @@ export async function runBootstrapper(
   // github stars, and so on.
   const askDatabase = await askForDatabase()
 
-  logger.info('Scaffolding base project files...')
+  log.info('Scaffolding base project files...')
   await scaffoldBaseFiles(layout, options)
 
-  logger.info(
+  log.info(
     `Installing nexus-future@${options.nexusFutureVersion}... (this will take around ~30 seconds)`
   )
   await layout.packageManager.installDeps({ require: true })
@@ -121,9 +121,7 @@ export async function runBootstrapper(
   const deps = []
   const addDepsConfig: PackageManager.AddDepsOptions = {}
 
-  logger.info(
-    'Installing additional deps... (this will take around ~30 seconds)'
-  )
+  log.info('Installing additional deps... (this will take around ~30 seconds)')
 
   if (askDatabase.database) {
     deps.push(`nexus-plugin-prisma@${getPrismaPluginVersion()}`)
@@ -214,7 +212,7 @@ export async function runBootstrapper(
     // terminate this dev session, they will restart it typically with e.g. `$
     // yarn dev`. This global-nexus-process-wrapping-local-nexus-process
     // is unique to bootstrapping situations.
-    logger.info('Entering dev mode ...')
+    log.info('Entering dev mode ...')
 
     await layout.packageManager
       .runScript('dev', {
@@ -474,7 +472,7 @@ type ParentData = Omit<SerializableParentData, 'layout'> & {
 
 async function loadDataFromParentProcess(): Promise<ParentData> {
   if (!process.env[ENV_PARENT_DATA]) {
-    logger.warn(
+    log.warn(
       'We could not retrieve neccessary data from nexus. Falling back to SQLite database.'
     )
 
@@ -507,7 +505,7 @@ function saveDataForChildProcess(data: SerializableParentData): void {
 function getPrismaPluginVersion(): string {
   let prismaPluginVersion: string
   if (process.env.NEXUS_PLUGIN_PRISMA_VERSION) {
-    logger.warn(
+    log.warn(
       'found NEXUS_PLUGIN_PRISMA_VERSION defined. This is only expected if you are actively developing on nexus right now',
       {
         NEXUS_PLUGIN_PRISMA_VERSION: process.env.NEXUS_PLUGIN_PRISMA_VERSION,

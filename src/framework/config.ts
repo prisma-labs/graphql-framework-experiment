@@ -7,7 +7,7 @@ import { ScriptTarget } from 'typescript'
 import { fatal, transpileModule } from '../utils'
 import { rootLogger } from '../utils/logger'
 
-const logger = rootLogger.child('config')
+const log = rootLogger.child('config')
 
 type StageNames = LiteralUnion<'development' | 'production', string>
 
@@ -45,7 +45,7 @@ function tryReadConfig(configPath: string): object | null {
     unregister()
     return config
   } catch (e) {
-    logger.trace('could not load nexus config file', {
+    log.trace('could not load nexus config file', {
       configPath,
       reason: e,
     })
@@ -120,16 +120,16 @@ function processEnvFromConfig(
   const loadedEnv = loadedConfig.environment
 
   if (!loadedEnv) {
-    logger.trace('No environment to load from config with', { NODE_ENV: stage })
+    log.trace('No environment to load from config with', { NODE_ENV: stage })
     return
   }
 
   for (const envName in loadedEnv) {
     if (!process.env[envName]) {
-      logger.trace('setting env var', { envName, envValue: loadedEnv[envName] })
+      log.trace('setting env var', { envName, envValue: loadedEnv[envName] })
       process.env[envName] = loadedEnv[envName]
     } else {
-      logger.trace(
+      log.trace(
         'env var is not loaded from config as its already set to value',
         { envName, envValue: process.env[envName] }
       )
@@ -160,7 +160,7 @@ function processEnvMappingFromConfig(loadedConfig: LoadedConfig): void {
     }
 
     if (targetEnvName) {
-      logger.trace('env var not mapped because target is already set', {
+      log.trace('env var not mapped because target is already set', {
         sourceEnvName,
         targetEnvName,
         targetEnvValue: loadedConfig.environment_mapping[targetEnvName],
@@ -169,14 +169,14 @@ function processEnvMappingFromConfig(loadedConfig: LoadedConfig): void {
     }
 
     if (!process.env[sourceEnvName]) {
-      logger.trace(
+      log.trace(
         'could not map env var source to target beause source not set',
         { sourceEnvName, targetEnvName }
       )
       return
     }
 
-    logger.trace('mapped source env var to target', {
+    log.trace('mapped source env var to target', {
       sourceEnvName,
       targetEnvName,
       value: process.env[sourceEnvName],
@@ -300,10 +300,8 @@ function createSecretLoader(stage: string): SecretLoader {
       : tryLoadSecrets(stage)
 
     if (!result) {
-      logger.warn(
-        `We could not load your secret(s) for environment \`${stage}\``
-      )
-      logger.warn(`A file \`${stage}.env\` or .secrets/${stage}.env must exist`)
+      log.warn(`We could not load your secret(s) for environment \`${stage}\``)
+      log.warn(`A file \`${stage}.env\` or .secrets/${stage}.env must exist`)
       return null
     }
 
@@ -315,10 +313,10 @@ function createSecretLoader(stage: string): SecretLoader {
       const loadedSecrets = loadSecrets()
 
       if (!loadedSecrets?.secrets[secretName]) {
-        logger.warn(
+        log.warn(
           `We could not load your secret \`${secretName}\` for environment \`${stage}\``
         )
-        logger.warn(
+        log.warn(
           `${loadedSecrets?.file} does not export any secret called \`${secretName}\``
         )
         return undefined
@@ -343,10 +341,10 @@ function createSecretLoader(stage: string): SecretLoader {
         if (secretsNames.includes(secretName)) {
           acc[secretName] = secretValue
         } else {
-          logger.warn(
+          log.warn(
             `We could not load your secret \`${secretName}\` for environment \`${stage}\``
           )
-          logger.warn(
+          log.warn(
             `${loadedSecrets?.file} does not export any secret called \`${secretName}\``
           )
         }

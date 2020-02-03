@@ -8,7 +8,7 @@ import { rootLogger } from '../utils/logger'
 import { Compiler, Opts } from './types'
 const getCompiledPath = require('./get-compiled-path').default
 
-const logger = rootLogger
+const log = rootLogger
   .child('cli')
   .child('dev')
   .child('compiler')
@@ -116,7 +116,7 @@ export const compiler: Compiler = {
     fsJetPack.write(compiler.getChildHookPath(), fileData)
   },
   init: function(options) {
-    logger.trace('init')
+    log.trace('init')
     const project = options['project']
     compiler.tsConfigPath =
       resolveSync(cwd, typeof project === 'string' ? project : undefined) || ''
@@ -174,7 +174,7 @@ export const compiler: Compiler = {
     }
 
     try {
-      logger.trace('applying ts-node register')
+      log.trace('applying ts-node register')
       register(tsNodeOptions)
     } catch (e) {
       console.log(e)
@@ -214,7 +214,7 @@ export const compiler: Compiler = {
     }
   },
   compile: function(params) {
-    logger.trace('compile start', { compile: params.compile })
+    log.trace('compile start', { compile: params.compile })
     const fileName = params.compile
     let code = fsJetPack.read(fileName)!
     const compiledPath = params.compiledPath
@@ -233,7 +233,7 @@ export const compiler: Compiler = {
     tsHandler(m, fileName)
     try {
       m._compile(code, fileName)
-      logger.trace('compile finish', { fileName })
+      log.trace('compile finish', { fileName })
       params.onEvent({ event: 'compiled', file: fileName })
     } catch (e) {
       code = 'throw ' + 'new Error(' + JSON.stringify(e.message) + ')' + ';'

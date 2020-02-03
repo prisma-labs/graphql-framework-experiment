@@ -1,7 +1,7 @@
 import * as fs from 'fs-jetpack'
 import { baseIgnores, flatMap, stripExt } from '../../utils'
 import { Layout, relativeTranspiledImportPath } from '../layout'
-import { logger } from './logger'
+import { log } from './logger'
 
 /**
  * Find all the schema.ts modules or modules within a schema/ folder.
@@ -17,11 +17,11 @@ function findModules(): {
   modules: string[]
   schemaDirsOrModules: string[]
 } {
-  logger.trace('finding modules...')
+  log.trace('finding modules...')
 
   const schemaDirsOrModules = findDirOrModules()
 
-  logger.trace('...found', { dirsOrModules: schemaDirsOrModules })
+  log.trace('...found', { dirsOrModules: schemaDirsOrModules })
 
   const modules = flatMap(schemaDirsOrModules, fileOrDir => {
     const absolutePath = fs.path(fileOrDir)
@@ -40,7 +40,7 @@ function findModules(): {
     return [absolutePath]
   })
 
-  logger.trace('... found final set (with dirs traversed)', {
+  log.trace('... found final set (with dirs traversed)', {
     expandedModules: modules,
   })
 

@@ -7,7 +7,7 @@ import { clearConsole } from '../../utils/console'
 import { rootLogger } from '../../utils/logger'
 import { createWatcher } from '../../watcher'
 
-const logger = rootLogger.child('dev')
+const log = rootLogger.child('dev')
 
 const DEV_ARGS = {
   '--inspect-brk': Number,
@@ -46,7 +46,7 @@ export class Dev implements Command {
     }
 
     clearConsole()
-    logger.info('boot')
+    log.info('boot')
 
     await createWatcher({
       plugins: plugins.map(p => p.hooks),
@@ -61,7 +61,7 @@ export class Dev implements Command {
       onEvent: e => {
         if (e.event === 'restart') {
           clearConsole()
-          logger.info('restarting', { changed: e.file })
+          log.info('restarting', { changed: e.file })
         }
         if (e.event === 'logging') {
           process.stdout.write(e.data)
