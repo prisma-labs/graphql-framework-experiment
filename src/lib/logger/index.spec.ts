@@ -240,6 +240,40 @@ describe('settings', () => {
         expect(output.memory.jsonOrRaw).toMatchSnapshot()
       })
     })
+    describe('.timeDiff', () => {
+      it('is true by default', () => {
+        expect(Logger.create().settings.pretty.timeDiff).toEqual(true)
+      })
+      it('can be disabled', () => {
+        const l1 = Logger.create({ pretty: { timeDiff: false } })
+        expect(l1.settings.pretty.timeDiff).toEqual(false)
+        const l2 = Logger.create()
+        l2.settings({ pretty: { timeDiff: false } })
+        expect(l2.settings.pretty.levelLabel).toEqual(false)
+      })
+      it('persists across peer field changes', () => {
+        const l = Logger.create({ pretty: { timeDiff: false } })
+        l.settings({ pretty: false })
+        expect(l.settings.pretty.timeDiff).toBe(false)
+      })
+      it('controls presence of time deltas in gutter', () => {
+        logger.settings({
+          pretty: { enabled: true, color: false, timeDiff: true },
+        })
+        logger.info('a') // prep the next delta, this too unreliable to test
+        logger.info('b')
+        logger.info('c')
+        expect(output.memory.jsonOrRaw[1]).toMatch(/^   \d.*/)
+        expect(output.memory.jsonOrRaw[2]).toMatch(/^   \d.*/)
+      })
+      // todo these tests as unit level to some pure logic functions would be
+      // easy... e.g. prettifier.spec.ts ... But then we run the risk of sliding
+      // toward testing internals too much :\
+      it.todo('renders as secodns if >= 10s')
+      it.todo('renders as minutes if >= 100s')
+      it.todo('renders as hours if >= 60m')
+      it.todo('renders as days if >= 24h')
+    })
 
     describe('shorthands', () => {
       it('true means enabled true', () => {
