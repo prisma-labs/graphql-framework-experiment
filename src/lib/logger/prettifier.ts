@@ -106,79 +106,102 @@ export const seps = {
 
 type Options = {
   levelLabel: boolean
+  timeDiff: boolean
 }
 
 export function create(options: Options) {
   return render.bind(null, options)
 }
 
-export function render(options: Options, rec: Logger.LogRecord): string {
+export function render(opts: Options, rec: Logger.LogRecord): string {
   const levelLabel = Level.LEVELS_BY_NUM[rec.level].label
   const style = LEVEL_STYLES[levelLabel]
 
-  // render elapsed time
+  //
+  // render time diff
+  //
 
-  let elapsed = stopWatch.lap()
-  let unit: 'ms' | 's' | 'm' | 'h' | 'd' | 'max'
-  // <10s
-  if (elapsed < 1000 * 10) {
-    unit = 'ms'
-    // 10s-100s (exclusive)
-  } else if (elapsed >= 1000 * 10 && elapsed < 1000 * 100) {
-    elapsed = Math.round(elapsed / 1000)
-    unit = 's'
-    // 100s-60m (exclusive)
-  } else if (elapsed >= 1000 * 100 && elapsed < 1000 * 60 * 60) {
-    elapsed = Math.round(elapsed / 1000 / 60)
-    unit = 'm'
-    // 1h-24h (exclusive)
-  } else if (elapsed >= 1000 * 60 * 60 && elapsed < 1000 * 60 * 60 * 24) {
-    elapsed = Math.round(elapsed / 1000 / 60 / 60)
-    unit = 'h'
-    // 1d-999d (exclusive)
-  } else if (elapsed >= 1000 * 60 * 60 && elapsed < 1000 * 60 * 60 * 24) {
-    elapsed = Math.round(elapsed / 1000 / 60 / 60 / 24)
-    unit = 'd'
-  } else {
-    unit = 'max'
+  let timeDiff = ''
+  let timeDiffRendered = ''
+  if (opts.timeDiff) {
+    let elapsedTime = stopWatch.lap()
+    let unit: 'ms' | 's' | 'm' | 'h' | 'd' | 'max'
+    // <10s
+    if (elapsedTime < 1000 * 10) {
+      unit = 'ms'
+      // 10s-100s (exclusive)
+    } else if (elapsedTime >= 1000 * 10 && elapsedTime < 1000 * 100) {
+      elapsedTime = Math.round(elapsedTime / 1000)
+      unit = 's'
+      // 100s-60m (exclusive)
+    } else if (elapsedTime >= 1000 * 100 && elapsedTime < 1000 * 60 * 60) {
+      elapsedTime = Math.round(elapsedTime / 1000 / 60)
+      unit = 'm'
+      // 1h-24h (exclusive)
+    } else if (
+      elapsedTime >= 1000 * 60 * 60 &&
+      elapsedTime < 1000 * 60 * 60 * 24
+    ) {
+      elapsedTime = Math.round(elapsedTime / 1000 / 60 / 60)
+      unit = 'h'
+      // 1d-999d (exclusive)
+    } else if (
+      elapsedTime >= 1000 * 60 * 60 &&
+      elapsedTime < 1000 * 60 * 60 * 24
+    ) {
+      elapsedTime = Math.round(elapsedTime / 1000 / 60 / 60 / 24)
+      unit = 'd'
+    } else {
+      unit = 'max'
+    }
+
+    if (unit === 'ms') {
+      timeDiff = `${utils.spanSpaceRight(4, String(elapsedTime))} `
+    } else if (unit === 'max') {
+      timeDiff = ' ∞ '
+    } else {
+      timeDiff = `${unit} ${utils.spanSpaceRight(2, String(elapsedTime))} `
+    }
+    timeDiffRendered = chalk.gray(timeDiff)
   }
 
-  let elapsedRendered
-  if (unit === 'ms') {
-    elapsedRendered = `${utils.spanSpaceRight(4, String(elapsed))} `
-  } else if (unit === 'max') {
-    elapsedRendered = ' ∞ '
-  } else {
-    elapsedRendered = `${unit} ${utils.spanSpaceRight(2, String(elapsed))} `
-  }
-
+  //
   // render gutter
+  //
 
-  const levelLabelSized = options.levelLabel
+  const levelLabelSized = opts.levelLabel
     ? ' ' + utils.clampSpace(5, levelLabel) + ' '
     : ' '
 
-  const gutterRendered = `${chalk.gray(elapsedRendered)}${style.color(
+  const gutterRendered = `${timeDiffRendered}${style.color(
     `${style.badge}${levelLabelSized}`
   )}`
+
   // pre-emptyive measurement for potential multiline context indentation later on
   const gutterWidth =
-    elapsedRendered.length + style.badge.length + levelLabelSized.length
+    timeDiff.length + style.badge.length + levelLabelSized.length
 
+  //
   // render pre-context
+  //
 
   const path = rec.path.join(renderEl(seps.path))
+  const preContextWidth =
+    path.length + seps.event.symbol.length + rec.event.length
   const preContextRendered =
     style.color(path) + renderEl(seps.event) + rec.event
 
+  //
   // render context
+  //
 
   // Factor in:
   // 1. the headers section
   // 2. the headers/context separator
   const availableSinglelineContextColumns =
     process.stdout.columns -
-    stripAnsi(preContextRendered).length -
+    gutterWidth -
+    preContextWidth -
     seps.context.singleLine.symbol.length
   let contextColumnsConsumed = 0
 
@@ -248,7 +271,9 @@ export function render(options: Options, rec: Logger.LogRecord): string {
     }
   }
 
+  //
   // put it together
+  //
 
   return `${gutterRendered}${preContextRendered}${contextRendered}\n`
 }
