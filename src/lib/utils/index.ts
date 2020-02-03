@@ -42,7 +42,14 @@ export function span(
  * Guarantee the length of a given string, padding with space as needed. Content
  * is aligned left and if exceeds span target length to begin with gets cropped.
  */
-export const spanSpace = span.bind(null, 'padAfter', ' ')
+export const clampSpace = span.bind(null, 'padAfter', ' ')
+
+/**
+ * Create a string of space of the given length.
+ */
+export function spanSpace(num: number): string {
+  return spanChar(num, ' ')
+}
 
 /**
  * Create a string of the given length and character

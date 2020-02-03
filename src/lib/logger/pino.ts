@@ -21,6 +21,7 @@ type Options = {
     enabled: boolean
     color: boolean
     levelLabel: boolean
+    timeDiff: boolean
   }
   level: Level
   output: Output.Output

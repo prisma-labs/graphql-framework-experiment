@@ -12,6 +12,7 @@ export type SettingsData = Readonly<{
     enabled: boolean
     color: boolean
     levelLabel: boolean
+    timeDiff: boolean
   }>
   output: Output.Output
 }>
@@ -75,6 +76,12 @@ export type SettingsInput = {
          * helpful for newcomers or a matter of taste for some.
          */
         levelLabel?: boolean
+        /**
+         * Should the logs include the time between it and previous log?
+         *
+         * @default `true`
+         */
+        timeDiff?: boolean
       }
 }
 
@@ -211,20 +218,25 @@ function processSettingInputPretty(
     previous?.levelLabel ??
     false
 
+  const timeDiff =
+    (typeof pretty === 'object' ? pretty.timeDiff : undefined) ??
+    previous?.timeDiff ??
+    true
+
   if (pretty === undefined) {
-    return { enabled, color, levelLabel }
+    return { enabled, color, levelLabel, timeDiff }
   }
 
   if (pretty === true) {
-    return { enabled: true, color, levelLabel }
+    return { enabled: true, color, levelLabel, timeDiff }
   }
 
   if (pretty === false) {
-    return { enabled: false, color, levelLabel }
+    return { enabled: false, color, levelLabel, timeDiff }
   }
 
   if (typeof pretty === 'object') {
-    return { enabled, color, levelLabel }
+    return { enabled, color, levelLabel, timeDiff }
   }
 
   casesHandled(pretty)
