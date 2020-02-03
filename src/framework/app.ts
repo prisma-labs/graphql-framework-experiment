@@ -1,6 +1,5 @@
 import { typegenAutoConfig } from '@nexus/schema/dist/core'
-import { stripIndent, stripIndents } from 'common-tags'
-import * as fs from 'fs-jetpack'
+import { stripIndents } from 'common-tags'
 import * as HTTP from 'http'
 import * as Lo from 'lodash'
 import * as Plugin from '../core/plugin'
@@ -9,7 +8,6 @@ import * as Schema from './schema'
 import * as Server from './server'
 import * as singletonChecks from './singleton-checks'
 
-// const log = rootLogger.child('app')
 const logger = Logger.create({ name: 'app' })
 
 /**
@@ -29,7 +27,6 @@ type Request = HTTP.IncomingMessage & { logger: Logger.Logger }
 type ContextContributor<T extends {}> = (req: Request) => T
 
 export type App = {
-  // installGlobally: () => App
   use: (plugin: Plugin.Driver) => App
   /**
    * [API Reference](https://nexus-future.now.sh/#/references/api?id=logger)  ⌁  [Guide](https://nexus-future.now.sh/#/guides/logging)
@@ -69,7 +66,7 @@ export type App = {
  * Crate an app instance
  * TODO extract and improve config type
  */
-export function createApp(appConfig?: { types?: any }): App {
+export function create(appConfig?: { types?: any }): App {
   const plugins: Plugin.RuntimeContributions[] = []
 
   // Automatically use all installed plugins
@@ -260,97 +257,4 @@ export function createApp(appConfig?: { types?: any }): App {
   }
 
   return api
-}
-
-/**
- * Augment global scope with a given app singleton.
- */
-const installGlobally = (app: App): App => {
-  logger.trace('exposing app global')
-
-  const {
-    queryType,
-    mutationType,
-    objectType,
-    inputObjectType,
-    enumType,
-    scalarType,
-    unionType,
-    intArg,
-    stringArg,
-    //TODO rest of the statics...
-  } = app.schema
-
-  Object.assign(global, {
-    app,
-    queryType,
-    mutationType,
-    objectType,
-    inputObjectType,
-    enumType,
-    scalarType,
-    unionType,
-    intArg,
-    stringArg,
-  })
-
-  const nexusFutureTypeGenPath = 'node_modules/@types/typegen-nexus/index.d.ts'
-  logger.trace('generating app global singleton typegen', {
-    to: nexusFutureTypeGenPath,
-  })
-
-  fs.write(
-    nexusFutureTypeGenPath,
-    stripIndent`
-      import * as nexus from '@nexus/schema'
-      import * as NexusFuture from 'nexus-future'
-
-      type QueryType = typeof nexus.core.queryType
-      type MutationType = typeof nexus.core.mutationType
-      type ObjectType = typeof nexus.objectType
-      type InputObjectType = typeof nexus.inputObjectType
-      type EnumType = typeof nexus.enumType
-      type ScalarType = typeof nexus.scalarType
-      type UnionType = typeof nexus.unionType
-      type IntArg = typeof nexus.intArg
-      type StringArg = typeof nexus.stringArg
-      
-      declare global {
-        var app: NexusFuture.App
-        var queryType: QueryType
-        var mutationType: MutationType
-        var objectType: ObjectType
-        var inputObjectType: InputObjectType
-        var enumType: EnumType
-        var scalarType: ScalarType
-        var unionType: UnionType
-        var intArg: IntArg
-        var stringArg: StringArg
-
-        interface NexusFutureSingletonApp extends NexusFuture.App {}
-      
-        namespace NodeJS {
-          interface Global {
-            app: NexusFuture.App
-            queryType: QueryType
-            mutationType: MutationType
-            objectType: ObjectType
-            inputObjectType: InputObjectType
-            enumType: EnumType
-            scalarType: ScalarType
-            unionType: UnionType
-            intArg: IntArg
-            stringArg: StringArg
-          }
-        }
-      }
-    `
-  )
-
-  return app
-}
-
-export const isGlobalSingletonEnabled = (): boolean => {
-  const packageJson = fs.read('package.json', 'json')
-  return packageJson?.['nexus']?.singleton !== false
 }

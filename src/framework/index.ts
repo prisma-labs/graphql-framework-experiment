@@ -1,13 +1,7 @@
-import { createApp } from './app'
+import * as App from './app'
 
-// TODO Pending future discussion
-// declare global {
-//   interface PumpkinsSingletonApp {}
-// }
-//
-// if (isGlobalSingletonEnabled()) {
-//   app = createApp()
-//   ;(app as any).installGlobally()
-// }
+const app = App.create()
+const { logger, schema, server } = app
 
-export const app = createApp()
+export default app
+export { logger, schema, server }
