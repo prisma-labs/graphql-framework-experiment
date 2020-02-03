@@ -1,6 +1,6 @@
 import * as fs from 'fs-jetpack'
 import * as path from 'path'
-import { logger } from './logger'
+import { log } from './logger'
 
 export const writeCachedFile = async (
   filePath: string,
@@ -9,18 +9,18 @@ export const writeCachedFile = async (
   const alreadyExistingFallbackFileContents = fs.read(filePath)
 
   if (alreadyExistingFallbackFileContents === undefined) {
-    logger.trace('writing file', { filePath })
+    log.trace('writing file', { filePath })
     await fs.writeAsync(filePath, fileContent)
   } else if (alreadyExistingFallbackFileContents !== fileContent) {
-    logger.trace(
+    log.trace(
       'there is a file already present on disk but its content does not match, replacing old with new %s',
       { filePath }
     )
-    logger.trace(alreadyExistingFallbackFileContents)
-    logger.trace(fileContent)
+    log.trace(alreadyExistingFallbackFileContents)
+    log.trace(fileContent)
     await fs.writeAsync(filePath, fileContent)
   } else {
-    logger.trace(
+    log.trace(
       'there is a file already present on disk and its content matches, therefore doing nothing'
     )
   }

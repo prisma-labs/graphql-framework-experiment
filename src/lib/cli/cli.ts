@@ -1,4 +1,5 @@
 import chalk from 'chalk'
+import { logger as log } from '../../utils/logger'
 import { HelpError, unknownCommand } from './help'
 import { arg, format, isError } from './helpers'
 import {
@@ -11,7 +12,6 @@ import {
   ConcreteCommand,
 } from './types'
 import { Version } from './version'
-import { logger } from '../../utils/logger'
 
 function createCommandRef(value: string, parent: CommandNamespace): CommandRef {
   const referencedCommand = parent.value[value] as undefined | CommandNode
@@ -157,7 +157,7 @@ export class CLI implements Command {
       if (nextArg === undefined) break
 
       if (lookupCommand(nextArg, targettedCommand)) {
-        logger.fatal('Flags always needs to be in the last position')
+        log.fatal('Flags always needs to be in the last position')
         process.exit(1)
       }
     }

@@ -8,13 +8,13 @@ resetBeforeEachTest(process, 'env')
 resetBeforeEachTest(process.stdout, 'isTTY')
 resetBeforeEachTest(console, 'log')
 
-let logger: Logger.RootLogger
+let log: Logger.RootLogger
 let output: MockOutput.MockOutput
 
 beforeEach(() => {
   process.env.LOG_PRETTY = 'false'
   output = MockOutput.create()
-  logger = Logger.create({ output, pretty: { timeDiff: false } })
+  log = Logger.create({ output, pretty: { timeDiff: false } })
   process.stdout.columns = 200
 })
 
@@ -24,7 +24,7 @@ describe('name', () => {
     expect(output.memory.json[0].path).toEqual(['foo'])
   })
   it('defaults to "root"', () => {
-    logger.info('bar')
+    log.info('bar')
     expect(output.memory.json[0].path).toEqual(['root'])
   })
 })
@@ -43,12 +43,12 @@ describe('settings', () => {
         process.stdout.columns = 100
         terminalWidth = 100
         terminalContextWidth = terminalWidth - logHeadersWidth
-        logger.settings({ pretty: { enabled: true, color: false } })
+        log.settings({ pretty: { enabled: true, color: false } })
       })
 
       describe('singleline', () => {
         it('used if context does fit singleline', () => {
-          logger.info('foo', {
+          log.info('foo', {
             ...stringValueEntryWithin('key', terminalContextWidth),
           })
           expect(output.memory.jsonOrRaw).toMatchSnapshot()
@@ -57,7 +57,7 @@ describe('settings', () => {
           ).toBeLessThanOrEqual(terminalWidth)
         })
         it('used if context does fit singleline (multiple key-values)', () => {
-          logger.info('foo', {
+          log.info('foo', {
             ...stringValueEntryWithin('ke1', terminalContextWidth / 2),
             ...stringValueEntryWithin(
               'ke2',
@@ -71,14 +71,14 @@ describe('settings', () => {
           ).toBeLessThanOrEqual(terminalWidth)
         })
         it('objects are formatted by util.inspect compact: yes', () => {
-          logger.info('foo', { ke1: { a: { b: { c: true } } } })
+          log.info('foo', { ke1: { a: { b: { c: true } } } })
           expect(output.memory.jsonOrRaw).toMatchSnapshot()
         })
       })
 
       describe('multiline', () => {
         it('used if context does not fit singleline', () => {
-          logger.info('foo', {
+          log.info('foo', {
             ...stringValueEntryWithin(
               'key',
               terminalContextWidth + 1 /* force multi */
@@ -87,7 +87,7 @@ describe('settings', () => {
           expect(output.memory.jsonOrRaw).toMatchSnapshot()
         })
         it('used if context does fit singleline (multiple key-values)', () => {
-          logger.info('foo', {
+          log.info('foo', {
             ...stringValueEntryWithin('ke1', terminalContextWidth / 2),
             ...stringValueEntryWithin(
               'ke2',
@@ -99,7 +99,7 @@ describe('settings', () => {
           expect(output.memory.jsonOrRaw).toMatchSnapshot()
         })
         it('objects are formatted by util.inspect compact: yes', () => {
-          logger.info('foo', {
+          log.info('foo', {
             ke1: {
               a: {
                 b: {
@@ -132,8 +132,8 @@ describe('settings', () => {
       })
       it('controls if logs are rendered pretty or as JSON', () => {
         output.captureConsoleLog()
-        logger.info('foo')
-        Logger.demo(logger)
+        log.info('foo')
+        Logger.demo(log)
         expect(output.memory.jsonOrRaw).toMatchSnapshot()
       })
       describe('precedence', () => {
@@ -167,8 +167,8 @@ describe('settings', () => {
 
     describe('.color', () => {
       it('controls if pretty logs have color or not', () => {
-        logger.settings({ pretty: { enabled: true, color: false } })
-        logger.info('foo', { qux: true })
+        log.settings({ pretty: { enabled: true, color: false } })
+        log.info('foo', { qux: true })
         expect(output.memory.jsonOrRaw).toMatchSnapshot()
       })
       it('can be disabled', () => {
@@ -228,15 +228,15 @@ describe('settings', () => {
         expect(l.settings.pretty.levelLabel).toBe(true)
       })
       it('controls if label is spelt out or not', () => {
-        logger.settings({
+        log.settings({
           pretty: { enabled: true, levelLabel: true, color: false },
         })
-        logger.fatal('foo')
-        logger.error('foo')
-        logger.warn('foo')
-        logger.info('foo')
-        logger.debug('foo')
-        logger.trace('foo')
+        log.fatal('foo')
+        log.error('foo')
+        log.warn('foo')
+        log.info('foo')
+        log.debug('foo')
+        log.trace('foo')
         expect(output.memory.jsonOrRaw).toMatchSnapshot()
       })
     })
@@ -257,12 +257,12 @@ describe('settings', () => {
         expect(l.settings.pretty.timeDiff).toBe(false)
       })
       it('controls presence of time deltas in gutter', () => {
-        logger.settings({
+        log.settings({
           pretty: { enabled: true, color: false, timeDiff: true },
         })
-        logger.info('a') // prep the next delta, this too unreliable to test
-        logger.info('b')
-        logger.info('c')
+        log.info('a') // prep the next delta, this too unreliable to test
+        log.info('b')
+        log.info('c')
         expect(output.memory.jsonOrRaw[1]).toMatch(/^   \d.*/)
         expect(output.memory.jsonOrRaw[2]).toMatch(/^   \d.*/)
       })
@@ -300,8 +300,8 @@ describe('settings', () => {
 describe('demo', () => {
   it('runs a demo with fake data, pretty, all levels active', () => {
     output.captureConsoleLog()
-    logger.settings({ pretty: { color: false } })
-    Logger.demo(logger)
+    log.settings({ pretty: { color: false } })
+    Logger.demo(log)
     expect(output.memory.jsonOrRaw).toMatchSnapshot()
   })
   it.todo('runs automatically when LOG_DEMO=true')
@@ -322,47 +322,47 @@ describe('level', () => {
     it('considers instance time config first', () => {
       process.env.NODE_ENV = 'production'
       process.env.LOG_LEVEL = 'fatal'
-      const logger = Logger.create({ level: 'fatal' })
-      logger.settings({ level: 'trace' })
-      expect(logger.settings.level).toEqual('trace')
+      const l = Logger.create({ level: 'fatal' })
+      l.settings({ level: 'trace' })
+      expect(l.settings.level).toEqual('trace')
     })
 
     it('then considers construction time config', () => {
       process.env.NODE_ENV = 'production'
       process.env.LOG_LEVEL = 'fatal'
-      const logger = Logger.create({ level: 'trace' })
-      expect(logger.settings.level).toEqual('trace')
+      const l = Logger.create({ level: 'trace' })
+      expect(l.settings.level).toEqual('trace')
     })
 
     it('then considers LOG_LEVEL env var', () => {
       process.env.NODE_ENV = 'production'
       process.env.LOG_LEVEL = 'trace'
-      const logger = Logger.create()
-      expect(logger.settings.level).toEqual('trace')
+      const l = Logger.create()
+      expect(l.settings.level).toEqual('trace')
     })
 
     it('then considers NODE_ENV=production', () => {
       process.env.NODE_ENV = 'production'
-      const logger = Logger.create()
-      expect(logger.settings.level).toEqual('info')
+      const l = Logger.create()
+      expect(l.settings.level).toEqual('info')
     })
 
     it('then defaults to debug', () => {
-      const logger = Logger.create()
-      expect(logger.settings.level).toEqual('debug')
+      const l = Logger.create()
+      expect(l.settings.level).toEqual('debug')
     })
   })
 
   it('logs below set level are not output', () => {
-    logger.settings({ level: 'warn' }).info('foo')
+    log.settings({ level: 'warn' }).info('foo')
     expect(output.memory.jsonOrRaw).toEqual([])
   })
 
   it('LOG_LEVEL env var config is treated case insensitive', () => {
     process.env.NODE_ENV = 'production'
     process.env.LOG_LEVEL = 'TRACE'
-    const logger = Logger.create()
-    expect(logger.settings.level).toEqual('trace')
+    const l = Logger.create()
+    expect(l.settings.level).toEqual('trace')
   })
 
   it('LOG_LEVEL env var config when invalid triggers thrown readable error', () => {
@@ -375,58 +375,58 @@ describe('level', () => {
 
 describe('.<level> log methods', () => {
   it('accept an event name and optional context', () => {
-    logger.info('hi', { user: { id: 1 } })
-    logger.info('bye')
+    log.info('hi', { user: { id: 1 } })
+    log.info('bye')
     expect(output.memory.jsonOrRaw).toMatchSnapshot()
   })
 
   it('one for each log level', () => {
-    logger.settings({ level: 'trace' })
-    logger.fatal('hi')
-    logger.error('hi')
-    logger.warn('hi')
-    logger.info('hi')
-    logger.debug('hi')
-    logger.trace('hi')
+    log.settings({ level: 'trace' })
+    log.fatal('hi')
+    log.error('hi')
+    log.warn('hi')
+    log.info('hi')
+    log.debug('hi')
+    log.trace('hi')
     expect(output.memory.jsonOrRaw).toMatchSnapshot()
   })
 })
 
 describe('.addToContext', () => {
   it('pins context for all subsequent logs from the logger', () => {
-    logger.addToContext({ user: { id: 1 } })
-    logger.info('hi')
+    log.addToContext({ user: { id: 1 } })
+    log.info('hi')
     expect(output.memory.jsonOrRaw).toMatchSnapshot()
   })
 
   it('can be called multiple times, merging deeply', () => {
-    logger.addToContext({ user: { id: 1 } })
-    logger.addToContext({ user: { name: 'Jill' } })
-    logger.info('hi')
+    log.addToContext({ user: { id: 1 } })
+    log.addToContext({ user: { name: 'Jill' } })
+    log.info('hi')
     expect(output.memory.jsonOrRaw).toMatchSnapshot()
   })
 
   it('gets deeply merged with local context', () => {
-    logger.addToContext({ user: { id: 1 } })
-    logger.info('hi', { user: { name: 'Jill' } })
+    log.addToContext({ user: { id: 1 } })
+    log.info('hi', { user: { name: 'Jill' } })
     expect(output.memory.jsonOrRaw).toMatchSnapshot()
   })
 
   it('local context takes prescedence over pinned context', () => {
-    logger.addToContext({ user: { id: 1 } })
-    logger.info('hi', { user: { id: 2 } })
+    log.addToContext({ user: { id: 1 } })
+    log.info('hi', { user: { id: 2 } })
     expect(output.memory.jsonOrRaw).toMatchSnapshot()
   })
 })
 
 describe('.child', () => {
   it('creates a sub logger', () => {
-    logger.child('tim').info('hi')
+    log.child('tim').info('hi')
     expect(output.memory.jsonOrRaw).toMatchSnapshot()
   })
 
   it('log output includes path field showing the logger namespacing', () => {
-    logger
+    log
       .child('b')
       .child('c')
       .child('d')
@@ -435,7 +435,7 @@ describe('.child', () => {
   })
 
   it('inherits context from parent', () => {
-    logger
+    log
       .addToContext({ foo: 'bar' })
       .child('tim')
       .info('hi')
@@ -443,24 +443,24 @@ describe('.child', () => {
   })
 
   it('at log time reflects the current state of parent context', () => {
-    const b = logger.child('b')
-    logger.addToContext({ foo: 'bar' })
+    const b = log.child('b')
+    log.addToContext({ foo: 'bar' })
     b.info('lop')
     expect(output.memory.json[0].context).toEqual({ foo: 'bar' })
   })
 
   it('at log time reflects the current state of parent context even from further up the chain', () => {
-    const b = logger.child('b')
+    const b = log.child('b')
     const c = b.child('c')
     const d = c.child('d')
-    logger.addToContext({ foo: 'bar' })
+    log.addToContext({ foo: 'bar' })
     d.info('lop')
     expect(output.memory.json[0].context).toEqual({ foo: 'bar' })
   })
 
   it('inherits level from parent', () => {
-    expect(logger.settings.level).toBe('debug')
-    logger
+    expect(log.settings.level).toBe('debug')
+    log
       .settings({ level: 'trace' })
       .child('tim')
       .trace('hi')
@@ -470,8 +470,8 @@ describe('.child', () => {
   })
 
   it('reacts to level changes in root logger', () => {
-    const b = logger.child('b')
-    logger.settings({ level: 'trace' })
+    const b = log.child('b')
+    log.settings({ level: 'trace' })
     b.trace('foo')
     // The fact that we get output for trace log from child means it honored the
     // setLevel.
@@ -479,16 +479,16 @@ describe('.child', () => {
   })
 
   it('is unable to change context of parent', () => {
-    logger.child('b').addToContext({ foo: 'bar' })
-    logger.info('qux')
+    log.child('b').addToContext({ foo: 'bar' })
+    log.info('qux')
     expect(output.memory.json[0].context).toEqual({})
   })
 
   it('is unable to change context of siblings', () => {
-    const b1 = logger.child('b1').addToContext({ from: 'b1' })
-    const b2 = logger.child('b2').addToContext({ from: 'b2' })
-    const b3 = logger.child('b3').addToContext({ from: 'b3' })
-    logger.addToContext({ foo: 'bar' })
+    const b1 = log.child('b1').addToContext({ from: 'b1' })
+    const b2 = log.child('b2').addToContext({ from: 'b2' })
+    const b3 = log.child('b3').addToContext({ from: 'b3' })
+    log.addToContext({ foo: 'bar' })
     b1.info('foo')
     b2.info('foo')
     b3.info('foo')
@@ -497,7 +497,7 @@ describe('.child', () => {
   })
 
   it('cannot affect level', () => {
-    expect((logger.child('b') as any).setLevel).toBeUndefined()
+    expect((log.child('b') as any).setLevel).toBeUndefined()
   })
 })
 

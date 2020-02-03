@@ -9,7 +9,7 @@ import * as IPC from './ipc'
 import { Opts } from './types'
 import { isPrefixOf, isRegExpMatch } from './utils'
 
-const logger = rootLogger
+const log = rootLogger
   .child('cli')
   .child('dev')
   .child('watcher')
@@ -74,9 +74,9 @@ export function createWatcher(opts: Opts): Promise<void> {
     // TODO: plugin listeners can probably be merged into the core listener
     watcher.on('all', (_event, file) => {
       if (isIgnoredByCoreListener(file)) {
-        return logger.trace('global listener - DID NOT match file', { file })
+        return log.trace('global listener - DID NOT match file', { file })
       } else {
-        logger.trace('global listener - matched file', { file })
+        log.trace('global listener - matched file', { file })
         restartRunner(file)
       }
     })
@@ -99,23 +99,23 @@ export function createWatcher(opts: Opts): Promise<void> {
 
         watcher.on('all', (event, file, stats) => {
           if (isMatchedByPluginListener(file)) {
-            logger.trace('plugin listener - matched file', { file })
+            log.trace('plugin listener - matched file', { file })
             p.dev.onFileWatcherEvent!(event, file, stats, {
               restart: restartRunner,
             })
           } else {
-            logger.trace('plugin listener - DID NOT match file', { file })
+            log.trace('plugin listener - DID NOT match file', { file })
           }
         })
       }
     }
 
     watcher.on('error', error => {
-      logger.error('file watcher encountered an error', { error })
+      log.error('file watcher encountered an error', { error })
     })
 
     watcher.on('ready', () => {
-      logger.trace('ready')
+      log.trace('ready')
     })
 
     // Create a mutable runner
@@ -129,7 +129,7 @@ export function createWatcher(opts: Opts): Promise<void> {
     // Relay SIGTERM & SIGINT to the runner process tree
     //
     process.on('SIGTERM', () => {
-      logger.trace('process got SIGTERM')
+      log.trace('process got SIGTERM')
       server.stop()
       stopRunnerOnBeforeExit().then(() => {
         resolve()
@@ -137,7 +137,7 @@ export function createWatcher(opts: Opts): Promise<void> {
     })
 
     process.on('SIGINT', () => {
-      logger.trace('process got SIGINT')
+      log.trace('process got SIGINT')
       server.stop()
       stopRunnerOnBeforeExit().then(() => {
         resolve()
@@ -161,10 +161,10 @@ export function createWatcher(opts: Opts): Promise<void> {
       return runner
         .sigterm()
         .then(() => {
-          logger.trace('sigterm to runner process tree completed')
+          log.trace('sigterm to runner process tree completed')
         })
         .catch(error => {
-          logger.warn(
+          log.warn(
             'attempt to sigterm the runner process tree ended with error',
             { error }
           )
@@ -178,20 +178,20 @@ export function createWatcher(opts: Opts): Promise<void> {
       child.stopping = true
 
       if (willTerminate) {
-        logger.trace(
+        log.trace(
           'Disconnecting from child. willTerminate === true so NOT sending sigterm to force runner end, assuming it will end itself.'
         )
       } else {
-        logger.trace(
+        log.trace(
           'Disconnecting from child. willTerminate === false so sending sigterm to force runner end'
         )
         child
           .sigterm()
           .then(() => {
-            logger.trace('sigterm to runner process tree completed')
+            log.trace('sigterm to runner process tree completed')
           })
           .catch(error => {
-            logger.warn(
+            log.warn(
               'attempt to sigterm the runner process tree ended with error',
               { error }
             )
@@ -207,27 +207,27 @@ export function createWatcher(opts: Opts): Promise<void> {
        */
       watcher.pause()
       if (file === compiler.tsConfigPath) {
-        logger.trace('reinitializing TS compilation')
+        log.trace('reinitializing TS compilation')
         compiler.init(opts)
       }
 
       compiler.compileChanged(file, opts.onEvent)
 
       if (runnerRestarting) {
-        logger.trace('already starting')
+        log.trace('already starting')
         return
       }
 
       runnerRestarting = true
       if (!runner.exited) {
-        logger.trace('runner is still executing, will restart upon its exit')
+        log.trace('runner is still executing, will restart upon its exit')
         runner.on('exit', () => {
           runner = startRunnerDo()
           runnerRestarting = false
         })
         stopRunner(runner)
       } else {
-        logger.trace('runner already exited, probably due to a previous error')
+        log.trace('runner already exited, probably due to a previous error')
         runner = startRunnerDo()
         runnerRestarting = false
       }
@@ -268,12 +268,10 @@ function startRunner(
   watcher: FileWatcher,
   callbacks?: { onError?: (willTerminate: any) => void }
 ): CP.Process {
-  logger.trace('will spawn runner')
+  log.trace('will spawn runner')
 
   const runnerModulePath = require.resolve('./runner')
   // const childHookPath = compiler.getChildHookPath()
-
-  // logger.trace('start runner', { runnerModulePath, childHookPath })
 
   // TODO: childHook is no longer used at all
   // const child = fork('-r' [runnerModulePath, childHookPath], {
@@ -324,19 +322,19 @@ function startRunner(
   // })
 
   child.onExit(({ exitCode, signal }) => {
-    logger.trace('runner exiting')
+    log.trace('runner exiting')
     if (exitCode === null) {
-      logger.trace('runner did not exit on its own accord')
+      log.trace('runner did not exit on its own accord')
     } else {
-      logger.trace('runner exited on its own accord with exit code', {
+      log.trace('runner exited on its own accord with exit code', {
         code: exitCode,
       })
     }
 
     if (signal === null) {
-      logger.trace('runner did NOT receive a signal causing this exit')
+      log.trace('runner did NOT receive a signal causing this exit')
     } else {
-      logger.trace('runner received signal which caused this exit', { signal })
+      log.trace('runner received signal which caused this exit', { signal })
     }
 
     // TODO is it possible for multiple exit event triggers?

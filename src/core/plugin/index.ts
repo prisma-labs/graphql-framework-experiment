@@ -25,7 +25,7 @@ type PromptsConstructor = <T extends string = string>(
   options?: Prompts.Options
 ) => Promise<Prompts.Answers<T>>
 
-const logger = rootLogger.child('plugin-manager')
+const log = rootLogger.child('plugin-manager')
 
 export type OnAfterBaseSetupLens = {
   database: 'SQLite' | 'MySQL' | 'PostgreSQL' | undefined
@@ -221,7 +221,7 @@ export function create(definer: Definer): DriverCreator {
           build: {},
           generate: {},
         }
-        logger.trace('loading workflow of plugin', { pluginName })
+        log.trace('loading workflow of plugin', { pluginName })
         maybeWorkflowPlugin?.(hooks, {
           layout,
           packageManager: layout.packageManager,
@@ -229,11 +229,11 @@ export function create(definer: Definer): DriverCreator {
         return hooks
       },
       loadRuntimePlugin() {
-        logger.trace('loading runtime of plugin', { pluginName })
+        log.trace('loading runtime of plugin', { pluginName })
         return maybeRuntimePlugin?.()
       },
       loadTestingPlugin() {
-        logger.trace('loading testing of plugin', { pluginName })
+        log.trace('loading testing of plugin', { pluginName })
         return maybeTestingPlugin?.()
       },
     }

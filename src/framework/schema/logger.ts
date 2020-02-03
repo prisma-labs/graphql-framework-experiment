@@ -1,2 +1,2 @@
 import { rootLogger } from '../../utils/logger'
-export const logger = rootLogger.child('schema')
+export const log = rootLogger.child('schema')

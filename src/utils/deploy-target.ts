@@ -9,7 +9,7 @@ import { rootLogger } from './logger'
 import { fatal } from './process'
 import { findConfigFile } from './tsc'
 
-const logger = rootLogger.child(__filename)
+const log = rootLogger.child(__filename)
 
 /**
  * If you add a new deploy target, please start by adding a new item to the `SUPPORTED_DEPLOY_TARGETS`
@@ -91,7 +91,7 @@ function validateNow(layout: Layout): ValidatorResult {
 
   // Make sure there's a now.json file
   if (!maybeNowJsonPath) {
-    logger.trace('creating now.json because none exists yet')
+    log.trace('creating now.json because none exists yet')
     const packageJson = fs.read('package.json', 'json')
     const projectName = packageJson?.name ?? 'now_rename_me'
 
@@ -110,7 +110,7 @@ function validateNow(layout: Layout): ValidatorResult {
     `
     const nowJsonPath = path.join(layout.projectRoot, 'now.json')
     fs.write(nowJsonPath, nowJsonContent)
-    logger.warn(
+    log.warn(
       `No \`now.json\` file were found. We scaffolded one for you in ${nowJsonPath}`
     )
   } else {
@@ -124,11 +124,9 @@ function validateNow(layout: Layout): ValidatorResult {
           build.src === startModulePath && build.use === '@now/node-server'
       )
     ) {
-      logger.error(
-        `We could not find a proper builder in your \`now.json\` file`
-      )
-      logger.error(`Found: "builds": ${JSON.stringify(nowJson.builds)}`)
-      logger.error(
+      log.error(`We could not find a proper builder in your \`now.json\` file`)
+      log.error(`Found: "builds": ${JSON.stringify(nowJson.builds)}`)
+      log.error(
         `Expected: "builds": [{ src: "${startModulePath}", use: '@now/node-server' }, ...]`
       )
       console.log('\n')
@@ -137,10 +135,10 @@ function validateNow(layout: Layout): ValidatorResult {
 
     // Make sure the now.json file has a `routes` property
     if (!nowJson.routes) {
-      logger.error(
+      log.error(
         `We could not find a \`routes\` property in your \`now.json\` file.`
       )
-      logger.error(
+      log.error(
         `Expected: "routes": [{ "src": "/.*", "dest": "${startModulePath}" }]`
       )
       console.log('\n')
@@ -149,11 +147,11 @@ function validateNow(layout: Layout): ValidatorResult {
 
     // Make sure the now.json file has the right `routes` values
     if (!nowJson.routes?.find(route => route.dest === startModulePath)) {
-      logger.error(
+      log.error(
         `We could not find a route property that redirects to your api in your \`now.json\` file.`
       )
-      logger.error(`Found: "routes": ${JSON.stringify(nowJson.routes)}`)
-      logger.error(
+      log.error(`Found: "routes": ${JSON.stringify(nowJson.routes)}`)
+      log.error(
         `Expected: "routes": [{ src: '/.*', dest: "${startModulePath}" }, ...]`
       )
       console.log('\n')
@@ -171,7 +169,7 @@ function validateHeroku(layout: Layout): ValidatorResult {
 
   // Make sure there's a package.json file
   if (!packageJsonPath) {
-    logger.error('We could not find a `package.json` file.')
+    log.error('We could not find a `package.json` file.')
     console.log()
     isValid = false
   } else {
@@ -180,10 +178,8 @@ function validateHeroku(layout: Layout): ValidatorResult {
     // Make sure there's an engine: { node: <version> } property set
     // TODO: scaffold the `engines` property automatically
     if (!packageJsonContent.engines?.node) {
-      logger.error(
-        'An `engines` property is needed in your `package.json` file.'
-      )
-      logger.error(
+      log.error('An `engines` property is needed in your `package.json` file.')
+      log.error(
         `Please add the following to your \`package.json\` file: "engines": { "node": "${nodeMajorVersion}.x" }`
       )
       console.log()
@@ -196,10 +192,10 @@ function validateHeroku(layout: Layout): ValidatorResult {
         packageJsonContent.engines.node.split('.')[0]
       )
       if (packageJsonNodeVersion !== nodeMajorVersion) {
-        logger.warn(
+        log.warn(
           `Your local node version is different than the one that will be used by heroku (defined in your \`package.json\` file in the "engines" property).`
         )
-        logger.warn(
+        log.warn(
           `Local version: ${nodeMajorVersion}. Heroku version: ${packageJsonNodeVersion}`
         )
         console.log()
@@ -208,8 +204,8 @@ function validateHeroku(layout: Layout): ValidatorResult {
 
     // Make sure there's a build script
     if (!packageJsonContent.scripts?.build) {
-      logger.error('A `build` script is needed in your `package.json` file.')
-      logger.error(
+      log.error('A `build` script is needed in your `package.json` file.')
+      log.error(
         `Please add the following to your \`package.json\` file: "scripts": { "build": "nexus build -d heroku" }`
       )
       console.log()
@@ -221,7 +217,7 @@ function validateHeroku(layout: Layout): ValidatorResult {
       packageJsonContent.scripts?.build &&
       !packageJsonContent.scripts.build.includes('nexus build')
     ) {
-      logger.error(
+      log.error(
         'Please make sure your `build` script in your `package.json` file runs the command `nexus build -d heroku`'
       )
       console.log()
@@ -230,7 +226,7 @@ function validateHeroku(layout: Layout): ValidatorResult {
 
     // Make sure there's a start script
     if (!packageJsonContent.scripts?.start) {
-      logger.error(
+      log.error(
         `Please add the following to your \`package.json\` file: "scripts": { "start": "node ${layout.buildOutput}" }`
       )
       console.log()
@@ -241,11 +237,11 @@ function validateHeroku(layout: Layout): ValidatorResult {
     if (
       !packageJsonContent.scripts?.start?.includes(`node ${layout.buildOutput}`)
     ) {
-      logger.error(
+      log.error(
         `Please make sure your \`start\` script points to your built server`
       )
-      logger.error(`Found: "${packageJsonContent.scripts?.start}"`)
-      logger.error(`Expected: "node ${layout.buildOutput}"`)
+      log.error(`Found: "${packageJsonContent.scripts?.start}"`)
+      log.error(`Expected: "node ${layout.buildOutput}"`)
       console.log()
       isValid = false
     }
@@ -281,5 +277,5 @@ ${chalk.gray(`\
 }
 
 export function logTargetPostBuildMessage(target: SupportedTargets): void {
-  logger.info(TARGET_TO_POST_BUILD_MESSAGE[target])
+  log.info(TARGET_TO_POST_BUILD_MESSAGE[target])
 }

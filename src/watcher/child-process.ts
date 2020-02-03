@@ -2,7 +2,7 @@ import * as PTY from 'node-pty'
 import { rootLogger } from '../utils/logger'
 import treeKill = require('tree-kill')
 
-const logger = rootLogger.child('watcher:process')
+const log = rootLogger.child('watcher:process')
 
 export interface Process extends PTY.IPty {
   stopping?: boolean
@@ -55,14 +55,14 @@ function treeKillAsync(pid: number, signal: string = 'SIGTERM'): Promise<void> {
  */
 export function sendSigterm(child: Process): Promise<void> {
   if (child.exited) {
-    logger.trace(
+    log.trace(
       'logic asked to SIGTERM child but it has already exited, doing nothing',
       { childPID: child.pid }
     )
     return Promise.resolve()
   }
 
-  logger.trace('sending SIGTERM to child and any of its descendent processes', {
+  log.trace('sending SIGTERM to child and any of its descendent processes', {
     childPID: child.pid,
   })
 

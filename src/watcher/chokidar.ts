@@ -7,7 +7,7 @@ import * as chokidar from 'chokidar'
 import * as fs from 'fs'
 import { rootLogger } from '../utils/logger'
 
-const logger = rootLogger.child('file-watcher')
+const log = rootLogger.child('file-watcher')
 
 export type FileWatcher = chokidar.FSWatcher & {
   /**
@@ -40,7 +40,7 @@ export function watch(
   paths: string | ReadonlyArray<string>,
   options?: FileWatcherOptions
 ): FileWatcher {
-  logger.trace('starting', { paths, ...options })
+  log.trace('starting', { paths, ...options })
   const watcher = chokidar.watch(paths, options) as FileWatcher
   const programmaticallyWatchedFiles: string[] = []
   let watcherPaused = false
@@ -51,13 +51,13 @@ export function watch(
       programmaticallyWatchedFiles.includes(file) &&
       isSilentableEvent(event)
     ) {
-      logger.trace('ignoring file addition because was added silently', {
+      log.trace('ignoring file addition because was added silently', {
         file,
       })
       return true
     }
 
-    logger.trace('file watcher event', { event, origin: file })
+    log.trace('file watcher event', { event, origin: file })
     return false
   }
 

@@ -52,7 +52,7 @@
 
   ```ts
   export default nexusPlugin.create(project => {
-    project.utils.logger.trace('hello')
+    project.utils.log.trace('hello')
   })
   ```
 
@@ -110,7 +110,7 @@
   export default nexusPlugin.create(project => {
     project.worktime(hooks => {
       hooks.db.plan.onStart = async hctx => {
-        project.logger.info(hctx.migrationName)
+        project.log.info(hctx.migrationName)
       }
     })
   })

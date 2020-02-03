@@ -3,7 +3,7 @@ import * as Layout from '../../framework/layout'
 import { createStartModuleContent } from '../../framework/start'
 import { Command } from '../../lib/cli'
 import { generateArtifacts } from '../../utils'
-import { logger } from '../../utils/logger'
+import { log } from '../../utils/logger'
 
 export class Generate implements Command {
   async parse() {
@@ -14,7 +14,7 @@ export class Generate implements Command {
       await p.hooks.generate.onStart?.()
     }
 
-    logger.info('Generating Nexus artifacts ...')
+    log.info('Generating Nexus artifacts ...')
     await generateArtifacts(
       createStartModuleContent({
         internalStage: 'dev',
@@ -23,6 +23,6 @@ export class Generate implements Command {
       })
     )
 
-    logger.info('done')
+    log.info('done')
   }
 }

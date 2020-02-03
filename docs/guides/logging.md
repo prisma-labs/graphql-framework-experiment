@@ -4,12 +4,12 @@ Logging is one of the primary means for knowing what is going on at runtime, wha
 
 It is recommended that your app only sends to stdout via the `nexus` logging system. This ensures that you maintain log level control and are always working with JSON. We work hard to make the logger so good that you'll to use it.
 
-- Applications can get a reference to a logger singleton at `logger`.
+- Applications can get a reference to a logger singleton at `log`.
 
   ```ts
-  import { logger } from 'nexus-future'
+  import { log } from 'nexus-future'
 
-  logger.info('hello')
+  log.info('hello')
   ```
 
 - Logs are formatted as JSON and then sent to `stdout`.
@@ -17,11 +17,11 @@ It is recommended that your app only sends to stdout via the `nexus` logging sys
 
 ## Event Oriented
 
-- The logger api is designed to get you thinking about logs in terms of events with structured data instead of strings of interpolated data.
+- The log api is designed to get you thinking about logs in terms of events with structured data instead of strings of interpolated data.
 - This approach gets you significantly more leverage out of your logs once they hit your logging platform, e.g. [ELK](https://www.elastic.co/what-is/elk-stack)
 - The first parameter of the log function is the event name and hence maps to the `event` field in the output JSON.
   ```ts
-  logger.info('hello')
+  log.info('hello')
   // { "event": "hello", ... }
   ```
 
@@ -29,31 +29,31 @@ It is recommended that your app only sends to stdout via the `nexus` logging sys
 
 - The second parameter is optional contextual information. The object passed here is nested under the `context` field in the output JSON.
   ```ts
-  logger.info('hello', { user: 'Toto' })
+  log.info('hello', { user: 'Toto' })
   // { "context": { "user": "Toto"  }, ... }
   ```
 - If you have some information that you wish all logs to include in their context you can do this:
   ```ts
-  logger.addToContext({ user: 'Toto' })
-  logger.info('hello')
-  logger.warn('bye')
+  log.addToContext({ user: 'Toto' })
+  log.info('hello')
+  log.warn('bye')
   // { "context": { "user": "Toto"  }, "event": "hello", ... }
   // { "context": { "user": "Toto"  }, "event": "bye", ... }
   ```
 - Data is [merged deeply](https://lodash.com/docs/4.17.15#merge). When scalars conflict the most local takes precedence
   ```ts
-  logger.addToContext({ user: { name: 'Toto', age: 10 })
-  logger.info("hi", { user: { name: 'Titi', heightCM: 155 })
+  log.addToContext({ user: { name: 'Toto', age: 10 })
+  log.info("hi", { user: { name: 'Titi', heightCM: 155 })
   // { "context": { "user": { "name": "Titi", age: 10, heightCM: 155 }}, ... }
   ```
 - [child loggers](#child-loggers) inherit context from their parent and can add their own context but cannot modify their parents'
 
   ```ts
-  logger.addToContext({ user: 'Toto' })
-  const bar = logger.child('bar').addToContext({ bar: 'bar' })
-  const foo = logger.child('foo').addToContext({ foo: 'foo' })
+  log.addToContext({ user: 'Toto' })
+  const bar = log.child('bar').addToContext({ bar: 'bar' })
+  const foo = log.child('foo').addToContext({ foo: 'foo' })
 
-  logger.info('hello')
+  log.info('hello')
   bar.info('bar')
   foo.info('foo')
 
@@ -90,15 +90,15 @@ It is recommended that your app only sends to stdout via the `nexus` logging sys
 
 ## Child Loggers
 
-You can create child loggers recursively starting from the root logger. A child logger extends their parent's component path and inherits their parent's context. Children can add context that is visible to themselves and their descedents.
+You can create child loggers recursively starting from the root log. A child logger extends their parent's component path and inherits their parent's context. Children can add context that is visible to themselves and their descedents.
 
 Child loggers are useful when you want to pass a logger to something that should be tracked as its own subsystem and/or may add context that you want isolated from the rest of the system. For example a classic use-case is the logger-instance-per-request pattern where a request-scoped logger is used for all logs in a request-response code path. This makes it much easier in production to group logs in your logging platform by request-response lifecycles.
 
 All runtime logs in your app (including from plugins ([bug #300](https://github.com/graphql-nexus/nexus-future/issues/300))) come from either the `logger` itself or descendents thereof. This means if you wish absolutely every log being emitted by your app to contain some additional context you can do so simply by adding context to the root logger:
 
 ```ts
-logger.addToContext({ user: 'Toto' })
-logger
+log.addToContext({ user: 'Toto' })
+log
   .child('a')
   .child('b')
   .child('c')

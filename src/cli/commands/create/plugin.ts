@@ -10,23 +10,23 @@ import { createGitRepository } from '../../../utils'
 import { rootLogger } from '../../../utils/logger'
 import * as proc from '../../../utils/process'
 
-const logger = rootLogger
+const log = rootLogger
   .child('cli')
   .child('create')
   .child('plugin')
 
 export default class Plugin implements Command {
   async parse() {
-    logger.info('Scaffolding a nexus plugin')
+    log.info('Scaffolding a nexus plugin')
 
     const pluginName = await askUserPluginName()
     const pluginPackageName = 'nexus-plugin-' + pluginName
-    logger.info(`Creating directory ${pluginPackageName}...`)
+    log.info(`Creating directory ${pluginPackageName}...`)
     const projectPath = fs.path(pluginPackageName)
     await fs.dirAsync(projectPath)
     process.chdir(projectPath)
 
-    logger.info(`Scaffolding files...`)
+    log.info(`Scaffolding files...`)
     await Promise.all([
       fs.writeAsync(
         'README.md',
@@ -167,7 +167,7 @@ export default class Plugin implements Command {
       ),
     ])
 
-    logger.info(`Installing dev dependencies...`)
+    log.info(`Installing dev dependencies...`)
     await proc.run(
       'yarn add --dev ' +
         [
@@ -181,10 +181,10 @@ export default class Plugin implements Command {
         ].join(' ')
     )
 
-    logger.info(`Initializing git repository...`)
+    log.info(`Initializing git repository...`)
     await createGitRepository()
 
-    logger.info(stripIndent`
+    log.info(stripIndent`
         Done! To get started:
 
                cd ${pluginPackageName} && yarn dev

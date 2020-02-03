@@ -8,7 +8,7 @@ import * as Schema from './schema'
 
 export const DEFAULT_BUILD_FOLDER_NAME = 'node_modules/.build'
 
-const logger = rootLogger.child('layout')
+const log = rootLogger.child('layout')
 
 /**
  * The part of layout data resulting from the dynamic file/folder inspection.
@@ -121,7 +121,7 @@ export function createFromData(layoutData: Data): Layout {
  * and where key modules exist.
  */
 export const scan = async (): Promise<ScanResult> => {
-  logger.trace('starting scan...')
+  log.trace('starting scan...')
   const packageManagerType = await PackageManager.detectProjectPackageManager()
   const maybeAppModule = await findAppModule()
   const maybeSchemaModules = Schema.findDirOrModules()
@@ -158,16 +158,12 @@ export const scan = async (): Promise<ScanResult> => {
   }
 
   if (result.app.exists === false && result.schemaModules.length === 0) {
-    logger.error(
-      'We could not find any schema modules or entrypoint for your app'
-    )
-    logger.error(
-      'Please, either create a `schema.ts` file or `schema/` directory'
-    )
+    log.error('We could not find any schema modules or entrypoint for your app')
+    log.error('Please, either create a `schema.ts` file or `schema/` directory')
     process.exit(1)
   }
 
-  logger.trace('...completed scan', { result })
+  log.trace('...completed scan', { result })
 
   return result
 }
@@ -273,7 +269,7 @@ export function saveDataForChildProcess(
 export async function loadDataFromParentProcess(): Promise<Layout> {
   const savedData: undefined | string = process.env[ENV_VAR_DATA_NAME]
   if (!savedData) {
-    logger.trace(
+    log.trace(
       'WARNING an attempt to load saved layout data was made but no serialized data was found in the environment. This may represent a bug. Layout is being re-calculated as a fallback solution. This should result in the same layout data (if not, another probably bug, compounding confusion) but at least adds latentency to user experience.'
     )
     return create({}) // todo no build output...

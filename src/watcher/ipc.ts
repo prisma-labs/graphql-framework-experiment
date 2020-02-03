@@ -4,7 +4,7 @@ import { rootLogger } from '../utils/logger'
 
 export type NodeIPCServer = typeof ipc2.server
 
-const serverLogger = rootLogger.child('watcher:ipc:server')
+const serverLog = rootLogger.child('watcher:ipc:server')
 
 type MessageType = 'module_imported' | 'error' | 'app_server_listening'
 
@@ -77,18 +77,18 @@ export function create() {
   ipc2.serve()
   ipc2.server.start()
   ipc2.server.on('connect', _socket => {
-    serverLogger.trace('socket connected')
+    serverLog.trace('socket connected')
   })
   ipc2.server.on('disconnect', (...args) => {
-    serverLogger.trace('socket disconnected (client sent)', { args })
+    serverLog.trace('socket disconnected (client sent)', { args })
   })
   ipc2.server.on('destroy', (...args) => {
-    serverLogger.trace('socket destroyed (gone for good, no more retries)', {
+    serverLog.trace('socket destroyed (gone for good, no more retries)', {
       args,
     })
   })
   ipc2.server.on('socket.disconnected', (_socket, destroyedSocketId) => {
-    serverLogger.trace('socket disconnected (server sent)', {
+    serverLog.trace('socket disconnected (server sent)', {
       destroyedSocketId,
     })
   })
@@ -107,7 +107,7 @@ export function create() {
       return new Promise((res, rej) => {
         ipc2.server.on('error', rej)
         ipc2.server.on('start', () => {
-          serverLogger.trace('started')
+          serverLog.trace('started')
           res()
         })
       })
@@ -116,7 +116,7 @@ export function create() {
 
   api.on('message', message => {
     if (message.type === 'module_imported') return // too noisy...
-    serverLogger.trace('inbound message', message)
+    serverLog.trace('inbound message', message)
   })
 
   return api
@@ -124,7 +124,7 @@ export function create() {
 
 // client
 
-const clientLogger = rootLogger.child('watcher:ipc:server')
+const clientLog = rootLogger.child('watcher:ipc:server')
 
 export const client = createClient()
 
@@ -134,7 +134,7 @@ function createClient() {
   }
 
   ipc2.config.id = 'nexus_dev_runner'
-  ipc2.config.logger = clientLogger.trace
+  ipc2.config.logger = clientLog.trace
   ipc2.config.silent = true
 
   return {
@@ -170,9 +170,9 @@ function createClient() {
       state.connected = true
       return new Promise(res => {
         ipc2.connectTo('nexus_dev_watcher', () => {
-          clientLogger.trace('socket created')
+          clientLog.trace('socket created')
           ipc2.of.nexus_dev_watcher.on('connect', () => {
-            clientLogger.trace('connection to watcher established')
+            clientLog.trace('connection to watcher established')
             res()
           })
         })

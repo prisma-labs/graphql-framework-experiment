@@ -6,10 +6,10 @@ import * as Plugin from '../core/plugin'
 import * as Logger from '../lib/logger'
 import { sendServerReadySignalToDevModeMaster } from './dev-mode'
 
-type Request = HTTP.IncomingMessage & { logger: Logger.Logger }
+type Request = HTTP.IncomingMessage & { log: Logger.Logger }
 type ContextContributor<T extends {}> = (req: Request) => T
 
-const logger = Logger.create({ name: 'server' })
+const log = Logger.create({ name: 'server' })
 
 /**
  * The default server options. These are merged with whatever you provide. Your
@@ -26,7 +26,7 @@ const optDefaults: Required<ExtraOptions> = {
       ? 80
       : 4000,
   startMessage: ({ port, host }): void => {
-    logger.info('listening', {
+    log.info('listening', {
       url: `http://${host}:${port}`,
     })
   },
@@ -63,7 +63,7 @@ export function create(optsGiven: Options) {
     '/graphql',
     createExpressGraphql(req => {
       // TODO HACK
-      ;(req as any).logger = logger.child('request')
+      ;(req as any).log = log.child('request')
       const context = {}
 
       // Integrate context from plugins
@@ -81,7 +81,7 @@ export function create(optsGiven: Options) {
         // HACK see req mutation at this func body start
         Object.assign(context, {
           ...contextContributor((req as unknown) as Request),
-          logger: ((req as unknown) as Request).logger,
+          log: ((req as unknown) as Request).log,
         })
       }
       return {

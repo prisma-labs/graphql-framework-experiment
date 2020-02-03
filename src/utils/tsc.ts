@@ -5,7 +5,7 @@ import * as ts from 'typescript'
 import { Layout } from '../framework/layout'
 import { rootLogger } from './logger'
 
-const logger = rootLogger.child('compiler')
+const log = rootLogger.child('compiler')
 
 const diagnosticHost: ts.FormatDiagnosticsHost = {
   getNewLine: () => ts.sys.newLine,
@@ -135,12 +135,12 @@ export function compile(
   program: ts.EmitAndSemanticDiagnosticsBuilderProgram,
   layout: Layout
 ): void {
-  logger.trace('remove previous build folder if present...')
+  log.trace('remove previous build folder if present...')
   fs.remove(layout.buildOutput)
-  logger.trace('done')
-  logger.trace('emit transpiled modules to disk...')
+  log.trace('done')
+  log.trace('emit transpiled modules to disk...')
   const emitResult = program.emit()
-  logger.trace('done', { filesEmitted: emitResult.emittedFiles?.length ?? 0 })
+  log.trace('done', { filesEmitted: emitResult.emittedFiles?.length ?? 0 })
   const allDiagnostics = ts
     .getPreEmitDiagnostics(program.getProgram())
     .concat(emitResult.diagnostics)
@@ -164,7 +164,7 @@ export function extractContextTypes(
 
   program.getSourceFiles().forEach(visit)
 
-  logger.trace('finished compiler extension processing', {
+  log.trace('finished compiler extension processing', {
     contextTypeContributions,
   })
 
@@ -182,38 +182,38 @@ export function extractContextTypes(
         // TODO use id.unescapedText
         lastToken.escapedText === 'addToContext'
       ) {
-        logger.trace('found addToContext call', {
+        log.trace('found addToContext call', {
           call: lastToken.getFullText(),
         })
 
         // Get the argument passed too addToContext so we can extract its type
         const args = n.arguments
         if (args.length === 0) {
-          logger.trace(
+          log.trace(
             'no arguments passed to addToContext, this is wrong, stopping context type extraction'
           )
           return
         }
         if (args.length > 1) {
-          logger.trace(
+          log.trace(
             'multiple arguments passed to addToContext, this is wrong, stopping context type extraction'
           )
           return
         }
         const arg = args[0]
-        logger.trace('found addToContext arg', { arg: arg.getFullText() })
+        log.trace('found addToContext arg', { arg: arg.getFullText() })
 
         // Get the signature of the argument so we can extract its return type
         const argType = checker.getTypeAtLocation(arg)
         const argSigs = argType.getCallSignatures()
         if (argSigs.length === 0) {
-          logger.trace(
+          log.trace(
             'argument passed to addToContext had no signatures, this is wrong, stopping context type extraction'
           )
           return
         }
         if (argSigs.length > 1) {
-          logger.trace(
+          log.trace(
             'argument passed to addToContext has more than one signature, this might be wrong, stopping context type extraction'
           )
           return
@@ -249,10 +249,10 @@ export async function findOrScaffoldTsConfig(
 
   if (tsConfigPath) {
     if (path.dirname(tsConfigPath) !== layout.projectRoot) {
-      logger.error(
+      log.error(
         `Your tsconfig.json file needs to be in your project root directory`
       )
-      logger.error(
+      log.error(
         `Found ${tsConfigPath}, expected ${path.join(
           layout.projectRoot,
           'tsconfig.json'
@@ -268,8 +268,8 @@ export async function findOrScaffoldTsConfig(
 
   if (!tsConfigPath) {
     const scaffoldPath = layout.projectRelative('tsconfig.json')
-    logger.warn('We could not find a "tsconfig.json" file')
-    logger.warn(`We scaffolded one for you at ${scaffoldPath}`)
+    log.warn('We could not find a "tsconfig.json" file')
+    log.warn(`We scaffolded one for you at ${scaffoldPath}`)
 
     // It seems we cannot make `include` a comment below, because it is
     // evaluated at tsconfig read time, see this Stack-Overflow thread:
