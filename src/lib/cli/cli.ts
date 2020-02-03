@@ -1,5 +1,5 @@
 import chalk from 'chalk'
-import { logger as log } from '../../utils/logger'
+import { log } from '../../utils/logger'
 import { HelpError, unknownCommand } from './help'
 import { arg, format, isError } from './helpers'
 import {
