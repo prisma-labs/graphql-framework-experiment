@@ -74,7 +74,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
         // Users should normally not boot the server manually as doing so does not
         // bring value to the user's codebase.
 
-        const { app } = require('nexus-future')
+        const app = require('nexus-future')
         const singletonChecks = require('nexus-future/dist/framework/singleton-checks')
 
         if (singletonChecks.state.is_was_server_start_called === false) {
@@ -83,7 +83,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
         `
     : stripIndent`
         // Start the server
-        const { app } = require('nexus-future')
+        const app = require('nexus-future')
         app.server.start()
       `
 

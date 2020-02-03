@@ -15,9 +15,9 @@ Here are some of the things `nexus` cares about:
 Here is what a hello world looks like:
 
 ```ts
-import { app } from 'nexus-future'
+import { schema } from 'nexus-future'
 
-app.queryType({
+schema.queryType({
   definition(t) {
     t.field('hello', {
       type: 'World',
@@ -31,7 +31,7 @@ app.queryType({
   },
 })
 
-app.objectType({
+schema.objectType({
   name: 'World',
   definition(t) {
     t.string('name')

@@ -349,9 +349,9 @@ async function helloWorldTemplate(layout: Layout.Layout) {
   await fs.writeAsync(
     layout.sourcePath('schema.ts'),
     stripIndent`
-    import { app } from "nexus-future";
+    import { schema } from "nexus-future";
 
-    app.schema.addToContext(req => {
+    schema.addToContext(req => {
       return {
         db: {
           worlds: [
@@ -362,7 +362,7 @@ async function helloWorldTemplate(layout: Layout.Layout) {
       }
     })
 
-    app.schema.objectType({
+    schema.objectType({
       name: "World",
       definition(t) {
         t.id("id")
@@ -371,12 +371,12 @@ async function helloWorldTemplate(layout: Layout.Layout) {
       }
     })
 
-    app.schema.queryType({
+    schema.queryType({
       definition(t) {        
         t.field("hello", {
           type: "World",
           args: {
-            world: app.stringArg({ required: false })
+            world: schema.stringArg({ required: false })
           },
           resolve(_root, args, ctx) {
             const worldToFindByName = args.world || "Earth"

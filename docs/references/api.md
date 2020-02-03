@@ -1,19 +1,19 @@
-## `app`
+## Modules
 
-A singleton `nexus` app. Use this to build up your GraphQL schema and server.
+### `nexus-future`
 
-### `app.schema`
+Exports the singleton app components. Use to build up your GraphQL schema and server.
+
+#### `schema`
 
 An instance of [`Schema`](#schema).
 
 **Example**
 
 ```ts
-// schema.ts
+import { schema } from 'nexus-future'
 
-import { app } from 'nexus-future'
-
-app.schema.objectType({
+schema.objectType({
   name: 'Foo',
   definition(t) {
     t.id('id')
@@ -21,37 +21,51 @@ app.schema.objectType({
 })
 ```
 
-### `app.logger`
+#### `logger`
 
 An instance of [`RootLogger`](#rootlogger).
 
 **Example**
 
 ```ts
-// app.ts
+import { logger } from 'nexus-future'
 
-import { app } from 'nexus-future'
-
-app.logger.info('boot')
+logger.info('boot')
 ```
 
-### `app.server`
+#### `server`
 
 An instance of [`Server`](#server).
 
+**Example**
+
+```ts
+import { server } from 'nexus-future'
+
+server.start()
+```
+
 Framework Notes:
 
-- If your app does not call `app.server.start` then `nexus` will. It is
-  idiomatic to allow `nexus` to take care of this. If you deviate, we would love
-  to learn about your use-case!
+- If your app does not call `server.start` then `nexus` will. It is idiomatic to allow `nexus` to take care of this. If you deviate, we would love to learn about your use-case!
 
-## `Schema`
-
-### `schema.settings`
+### `nexus-future/testing`
 
 todo
 
-### `schema.addToContext`
+### `nexus-future/plugin`
+
+todo
+
+## Types
+
+### `Schema`
+
+#### `schema.settings`
+
+todo
+
+#### `schema.addToContext`
 
 Add context to your graphql resolver functions. The objects returned by your context contributor callbacks will be shallow-merged into `ctx`. The `ctx` type will also accurately reflect the types you return from callbacks passed to `addToContext`.
 
@@ -60,15 +74,15 @@ Add context to your graphql resolver functions. The objects returned by your con
 ```ts
 // app.ts
 
-import { app } from 'nexus-future'
+import { schema } from 'nexus-future'
 
-app.schema.addToContext(req => {
+schema.addToContext(req => {
   return {
     foo: 'bar',
   }
 })
 
-app.schema.objectType({
+schema.objectType({
   name: 'Foo',
   definition(t) {
     t.string('foo', (_parent, _args, ctx) => ctx.foo)
@@ -76,44 +90,44 @@ app.schema.objectType({
 })
 ```
 
-### `schema.<nexusDefBlock>`
+#### `schema.<nexusDefBlock>`
 
 Add types to your GraphQL Schema. The available nexus definition block functions include `objectType` `inputObjectType` `enumType` and so on. Refer to the [official Nexus Schema API documentation](https://nexus.js.org/docs/api-objecttype) for more information about these functions.
 
-## `Server`
+### `Server`
 
 TODO
 
-### `server.start`
+#### `server.start`
 
-### `server.stop`
+#### `server.stop`
 
-## `RootLogger`
+### `RootLogger`
 
 TODO
 
 Extends [`Logger`](#logger)
 
-### `rootLogger.settings`
+#### `rootLogger.settings`
 
-## `Logger`
+### `Logger`
 
 TODO
 
-### `.create`
+#### `.create`
 
-### `logger.fatal`
+#### `logger.fatal`
 
-### `logger.error`
+#### `logger.error`
 
-### `logger.warn`
+#### `logger.warn`
 
-### `logger.info`
+#### `logger.info`
 
-### `logger.debug`
+#### `logger.debug`
 
-### `logger.trace`
+#### `logger.trace`
 
-### `logger.addToContext`
+#### `logger.addToContext`
 
-### `logger.child`
+#### `logger.child`
