@@ -25,7 +25,7 @@ it('can build with just a schema module', () => {
   ws.fs.write(
     'schema.ts',
     `
-      import { app } from 'nexus-future'
+      import app from 'nexus-future'
 
       app.schema.objectType({
         name: 'A',
@@ -45,7 +45,7 @@ it('can build with just a schema folder of modules', () => {
   ws.fs.write(
     'schema/a.ts',
     `
-      import { app } from 'nexus-future'
+      import app from 'nexus-future'
 
       app.schema.objectType({
         name: 'A',
@@ -65,7 +65,7 @@ it('can build with schema + app modules', () => {
   ws.fs.write(
     'schema.ts',
     `
-      import { app } from 'nexus-future'
+      import app from 'nexus-future'
 
       app.schema.objectType({
         name: 'A',
@@ -79,7 +79,7 @@ it('can build with schema + app modules', () => {
   ws.fs.write(
     'app.ts',
     `
-      import { app } from 'nexus-future'
+      import app from 'nexus-future'
       app.server.start()
     `
   )
@@ -93,7 +93,7 @@ it('can nest modules', () => {
   ws.fs.write(
     'graphql/schema.ts',
     `
-      import { app } from 'nexus-future'
+      import app from 'nexus-future'
 
       app.schema.objectType({
         name: 'A',
@@ -107,7 +107,7 @@ it('can nest modules', () => {
   ws.fs.write(
     'graphql/app.ts',
     `
-      import { app } from 'nexus-future'
+      import app from 'nexus-future'
       app.server.start()
     `
   )
@@ -148,7 +148,7 @@ it('can build a plugin', () => {
   ws.fs.write(
     'schema.ts',
     `
-      import { app } from 'nexus-future'
+      import app from 'nexus-future'
 
       app.queryType({	
         definition(t) {	
@@ -176,7 +176,7 @@ it('can build a plugin', () => {
   ws.fs.write(
     'app.ts',
     `	
-      import { app } from 'nexus-future'
+      import app from 'nexus-future'
       import myplugin from './myplugin'	
 
       app.use(myplugin).server.start()	
