@@ -10,16 +10,10 @@ import * as singletonChecks from './singleton-checks'
 
 const log = Logger.create({ name: 'app' })
 
-/**
- * The available server options to configure how your app runs its server.
- */
-type ServerOptions = Partial<
-  Pick<Server.Options, 'port' | 'playground' | 'startMessage'>
->
-
 type Request = HTTP.IncomingMessage & { log: Logger.Logger }
 
-// TODO plugins could augment the request
+// todo the jsdoc below is lost on the destructured object exports later on...
+// todo plugins could augment the request
 // plugins will be able to use typegen to signal this fact
 // all places in the framework where the req object is referenced should be
 // actually referencing the typegen version, so that it reflects the req +
@@ -27,13 +21,12 @@ type Request = HTTP.IncomingMessage & { log: Logger.Logger }
 type ContextContributor<T extends {}> = (req: Request) => T
 
 export type App = {
-  use: (plugin: Plugin.Driver) => App
   /**
    * [API Reference](https://nexus-future.now.sh/#/references/api?id=logger)  ⌁  [Guide](https://nexus-future.now.sh/#/guides/logging)
    *
    * ### todo
    */
-  log: Logger.RootLogger
+  log: Logger.Logger
   /**
    * [API Reference](https://nexus-future.now.sh/#/references/api?id=server)  ⌁  [Guide](todo)
    *
@@ -41,9 +34,19 @@ export type App = {
    *
    */
   server: {
-    start: (config?: ServerOptions) => Promise<void>
+    /**
+     * todo
+     */
+    start: () => Promise<void>
+    /**
+     * todo
+     */
     stop: () => Promise<void>
   }
+  /**
+   * todo
+   */
+  settings: Settings
   /**
    * [API Reference](https://nexus-future.now.sh/#/references/api?id=appschema) // [Guide](todo)
    *
@@ -62,13 +65,42 @@ export type App = {
   }
 }
 
+type SettingsInput = {
+  logger?: Logger.SettingsInput
+  schema?: Schema.SettingsInput
+  server?: Server.ExtraSettingsInput
+}
+
+type SettingsData = Readonly<{
+  logger: Logger.SettingsData
+  schema: Schema.SettingsData
+  server: Server.ExtraSettingsData
+}>
+
+/**
+ * todo
+ */
+type Settings = {
+  /**
+   * todo
+   */
+  original: SettingsData
+  /**
+   * todo
+   */
+  current: SettingsData
+  /**
+   * todo
+   */
+  change(newSetting: SettingsInput): void
+}
+
 /**
  * Crate an app instance
  * TODO extract and improve config type
  */
 export function create(appConfig?: { types?: any }): App {
   const plugins: Plugin.RuntimeContributions[] = []
-
   // Automatically use all installed plugins
   // TODO during build step we should turn this into static imports, not unlike
   // the schema module imports system.
@@ -76,42 +108,50 @@ export function create(appConfig?: { types?: any }): App {
 
   const contextContributors: ContextContributor<any>[] = []
 
-  /**
-   * Auto-use all runtime plugins that are installed in the project
-   */
-
   let server: Server.Server
+
   const schema = Schema.create()
+
+  const settings: Settings = {
+    change(newSettings) {
+      if (newSettings.logger) {
+        log.settings(newSettings.logger)
+      }
+      if (newSettings.schema) {
+        schema.private.settings.change(newSettings.schema)
+      }
+      if (newSettings.server) {
+        Object.assign(settings.current.server, newSettings.server)
+      }
+    },
+    current: {
+      logger: log.settings,
+      schema: schema.private.settings.data,
+      server: { ...Server.defaultExtraSettings },
+    },
+    original: Lo.cloneDeep({
+      logger: log.settings,
+      schema: schema.private.settings.data,
+      server: { ...Server.defaultExtraSettings },
+    }),
+  }
+
   const api: App = {
     log,
-    // TODO bring this back pending future discussion
-    // installGlobally() {
-    //   installGlobally(api)
-    //   return api
-    // },
-    // TODO think hard about this api... When/why would it be used with auto-use
-    // import system? "Inproject" plugins? What is the right place to expose
-    // this? app.plugins.use() ?
-    use(pluginDriver) {
-      const plugin = pluginDriver.loadRuntimePlugin()
-      if (plugin) {
-        plugins.push(plugin)
-      }
-      return api
-    },
+    settings,
     schema: {
       addToContext(contextContributor) {
         contextContributors.push(contextContributor)
         return api
       },
-      ...schema.external,
+      ...schema.public,
     },
     server: {
       /**
        * Start the server. If you do not call this explicitly then nexus will
        * for you. You should not normally need to call this function yourself.
        */
-      async start(opts: ServerOptions = {}): Promise<void> {
+      async start(): Promise<void> {
         // Track the start call so that we can know in entrypoint whether to run
         // or not start for the user.
         singletonChecks.state.is_was_server_start_called = true
@@ -237,17 +277,17 @@ export function create(appConfig?: { types?: any }): App {
           nexusConfig.types.push(...appConfig.types)
         }
 
-        if (schema.internal.types.length === 0) {
+        if (schema.private.types.length === 0) {
           log.warn(
             'Your GraphQL schema is empty. Make sure your GraphQL schema lives in a `schema.ts` file or some `schema/` directories'
           )
         }
 
         return Server.create({
-          schema: await schema.internal.compile(nexusConfig),
+          schema: await schema.private.compile(nexusConfig),
           plugins,
           contextContributors,
-          ...opts,
+          ...settings.current.server,
         }).start()
       },
       async stop() {

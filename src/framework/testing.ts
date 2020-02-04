@@ -79,12 +79,16 @@ export async function createTestContext(): Promise<TestContext> {
       require(appModule)
     }
 
-    if (singletonChecks.state.is_was_server_start_called === false) {
-      await oldServerStart({
+    app.settings.change({
+      server: {
         port,
         playground: false,
         startMessage: () => '',
-      })
+      },
+    })
+
+    if (singletonChecks.state.is_was_server_start_called === false) {
+      await oldServerStart()
     } else {
       return Promise.resolve()
     }

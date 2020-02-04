@@ -15,7 +15,7 @@ const log = Logger.create({ name: 'server' })
  * The default server options. These are merged with whatever you provide. Your
  * settings take precedence over these.
  */
-const optDefaults: Required<ExtraOptions> = {
+export const defaultExtraSettings: Required<ExtraSettingsInput> = {
   port:
     typeof process.env.NEXUS_PORT === 'string'
       ? parseInt(process.env.NEXUS_PORT, 10)
@@ -33,8 +33,14 @@ const optDefaults: Required<ExtraOptions> = {
   playground: process.env.NODE_ENV === 'production' ? false : true,
 }
 
-type ExtraOptions = {
+export type ExtraSettingsInput = {
+  /**
+   * todo
+   */
   port?: number
+  /**
+   * todo
+   */
   playground?: boolean
   /**
    * Create a message suitable for printing to the terminal about the server
@@ -43,19 +49,21 @@ type ExtraOptions = {
   startMessage?: (address: { port: number; host: string; ip: string }) => void
 }
 
+export type ExtraSettingsData = Required<ExtraSettingsInput>
+
 /**
  * The available server options to configure how your app runs its server.
  */
-export type Options = createExpressGraphql.OptionsData &
-  ExtraOptions & {
+export type SettingsInput = createExpressGraphql.OptionsData &
+  ExtraSettingsInput & {
     plugins: Plugin.RuntimeContributions[]
     contextContributors: ContextContributor<any>[]
   }
 
-export function create(optsGiven: Options) {
+export function create(settingsGiven: SettingsInput) {
   const http = HTTP.createServer()
   const express = createExpress()
-  const opts = { ...optDefaults, ...optsGiven }
+  const opts = { ...defaultExtraSettings, ...settingsGiven }
 
   http.on('request', express)
 

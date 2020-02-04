@@ -8,7 +8,7 @@ type ConnectionPluginConfig = NonNullable<
 
 type ConnectionConfig = Omit<ConnectionPluginConfig, 'nexusFieldName'>
 
-type SettingsInput = {
+export type SettingsInput = {
   /**
    * todo
    */
@@ -35,6 +35,8 @@ type SettingsInput = {
   }
 }
 
+export type SettingsData = SettingsInput
+
 export type Schema = {
   // addToContext: <T extends {}>(
   //   contextContributor: ContextContributor<T>
@@ -54,15 +56,18 @@ export type Schema = {
   idArg: typeof NexusSchema.idArg
   extendType: typeof NexusSchema.extendType
   extendInputType: typeof NexusSchema.extendInputType
-  settings: (settingsInput: SettingsInput) => void
 }
 
 type SchemaInternal = {
-  internal: {
+  private: {
     types: any[]
     compile: any
+    settings: {
+      data: SettingsData
+      change: (newSettings: SettingsInput) => void
+    }
   }
-  external: Schema
+  public: Schema
 }
 
 export function create(): SchemaInternal {
@@ -86,32 +91,39 @@ export function create(): SchemaInternal {
     __types,
   } = createNexusSingleton()
 
-  const state: { settings: SettingsInput } = {
+  type State = {
+    settings: SettingsData
+  }
+
+  const state: State = {
     settings: {},
   }
 
-  return {
-    internal: {
+  const api: SchemaInternal = {
+    private: {
       types: __types,
       compile: (c: any) => {
         c.plugins = c.plugins ?? []
         c.plugins.push(...processConnectionsConfig(state.settings))
         return makeSchema(c)
       },
-    },
-    external: {
-      settings(newSettings) {
-        if (newSettings.connections) {
-          state.settings.connections = state.settings.connections ?? {}
-          const { types, ...connectionPluginConfig } = newSettings.connections
-          if (types) {
-            state.settings.connections.types =
-              state.settings.connections.types ?? {}
-            Object.assign(state.settings.connections.types, types)
+      settings: {
+        data: state.settings,
+        change(newSettings) {
+          if (newSettings.connections) {
+            state.settings.connections = state.settings.connections ?? {}
+            const { types, ...connectionPluginConfig } = newSettings.connections
+            if (types) {
+              state.settings.connections.types =
+                state.settings.connections.types ?? {}
+              Object.assign(state.settings.connections.types, types)
+            }
+            Object.assign(state.settings.connections, connectionPluginConfig)
           }
-          Object.assign(state.settings.connections, connectionPluginConfig)
-        }
+        },
       },
+    },
+    public: {
       queryType,
       mutationType,
       objectType,
@@ -129,6 +141,8 @@ export function create(): SchemaInternal {
       extendInputType,
     },
   }
+
+  return api
 }
 
 /**
