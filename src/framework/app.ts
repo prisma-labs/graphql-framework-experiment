@@ -40,7 +40,13 @@ export type App = {
    *
    */
   server: {
+    /**
+     * todo
+     */
     start: (config?: ServerOptions) => Promise<void>
+    /**
+     * todo
+     */
     stop: () => Promise<void>
   }
   /**
@@ -67,15 +73,26 @@ export type App = {
 
 type SettingsInput = {
   logger?: Logger.SettingsInput
+  schema?: Schema.SettingsInput
 }
 
 type SettingsData = Readonly<{
   logger: Logger.SettingsData
+  schema: Schema.SettingsData
 }>
 
+/**
+ * todo
+ */
 type Settings = {
+  /**
+   * todo
+   */
   current: SettingsData
-  change(settings: SettingsInput): void
+  /**
+   * todo
+   */
+  change(newSetting: SettingsInput): void
 }
 
 /**
@@ -84,17 +101,6 @@ type Settings = {
  */
 export function create(appConfig?: { types?: any }): App {
   const plugins: Plugin.RuntimeContributions[] = []
-  const settings: Settings = {
-    change(newSettings) {
-      if (newSettings.logger) {
-        log.settings(newSettings.logger)
-      }
-    },
-    current: {
-      logger: log.settings,
-    },
-  }
-
   // Automatically use all installed plugins
   // TODO during build step we should turn this into static imports, not unlike
   // the schema module imports system.
@@ -103,7 +109,23 @@ export function create(appConfig?: { types?: any }): App {
   const contextContributors: ContextContributor<any>[] = []
 
   let server: Server.Server
+
   const schema = Schema.create()
+
+  const settings: Settings = {
+    change(newSettings) {
+      if (newSettings.logger) {
+        log.settings(newSettings.logger)
+      }
+      if (newSettings.schema) {
+        schema.private.settings.change(newSettings.schema)
+      }
+    },
+    current: {
+      logger: log.settings,
+      schema: schema.private.settings.data,
+    },
+  }
 
   const api: App = {
     log,
@@ -113,7 +135,7 @@ export function create(appConfig?: { types?: any }): App {
         contextContributors.push(contextContributor)
         return api
       },
-      ...schema.external,
+      ...schema.public,
     },
     server: {
       /**
@@ -246,14 +268,14 @@ export function create(appConfig?: { types?: any }): App {
           nexusConfig.types.push(...appConfig.types)
         }
 
-        if (schema.internal.types.length === 0) {
+        if (schema.private.types.length === 0) {
           log.warn(
             'Your GraphQL schema is empty. Make sure your GraphQL schema lives in a `schema.ts` file or some `schema/` directories'
           )
         }
 
         return Server.create({
-          schema: await schema.internal.compile(nexusConfig),
+          schema: await schema.private.compile(nexusConfig),
           plugins,
           contextContributors,
           ...opts,
