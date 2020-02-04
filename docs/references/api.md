@@ -23,7 +23,7 @@ schema.objectType({
 
 #### `log`
 
-An instance of [`RootLogger`](#rootlogger).
+An instance of [`Logger`](#logger).
 
 **Example**
 
@@ -48,6 +48,25 @@ server.start()
 Framework Notes:
 
 - If your app does not call `server.start` then `nexus` will. It is idiomatic to allow `nexus` to take care of this. If you deviate, we would love to learn about your use-case!
+
+#### `settings`
+
+An instance of [`Settings`](#settings).
+
+**Example**
+
+```ts
+import { log, settings } from 'nexus-future'
+
+settings.change({
+  server: {
+    startMessage: info => {
+      settings.original.server.startMessage(info)
+      log.warn('stowaway message! :p')
+    },
+  },
+})
+```
 
 ### `nexus-future/testing`
 
@@ -102,14 +121,6 @@ TODO
 
 #### `server.stop`
 
-### `RootLogger`
-
-TODO
-
-Extends [`Logger`](#logger)
-
-#### `rootLogger.settings`
-
 ### `Logger`
 
 TODO
@@ -131,3 +142,13 @@ TODO
 #### `logger.addToContext`
 
 #### `logger.child`
+
+### `Settings`
+
+TODO
+
+#### `change`
+
+#### `current`
+
+#### `original`
