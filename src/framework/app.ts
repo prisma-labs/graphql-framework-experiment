@@ -10,16 +10,10 @@ import * as singletonChecks from './singleton-checks'
 
 const log = Logger.create({ name: 'app' })
 
-/**
- * The available server options to configure how your app runs its server.
- */
-type ServerOptions = Partial<
-  Pick<Server.Options, 'port' | 'playground' | 'startMessage'>
->
-
 type Request = HTTP.IncomingMessage & { log: Logger.Logger }
 
-// TODO plugins could augment the request
+// todo the jsdoc below is lost on the destructured object exports later on...
+// todo plugins could augment the request
 // plugins will be able to use typegen to signal this fact
 // all places in the framework where the req object is referenced should be
 // actually referencing the typegen version, so that it reflects the req +
@@ -43,7 +37,7 @@ export type App = {
     /**
      * todo
      */
-    start: (config?: ServerOptions) => Promise<void>
+    start: () => Promise<void>
     /**
      * todo
      */
@@ -74,17 +68,23 @@ export type App = {
 type SettingsInput = {
   logger?: Logger.SettingsInput
   schema?: Schema.SettingsInput
+  server?: Server.ExtraSettingsInput
 }
 
 type SettingsData = Readonly<{
   logger: Logger.SettingsData
   schema: Schema.SettingsData
+  server: Server.ExtraSettingsData
 }>
 
 /**
  * todo
  */
 type Settings = {
+  /**
+   * todo
+   */
+  original: SettingsData
   /**
    * todo
    */
@@ -120,11 +120,20 @@ export function create(appConfig?: { types?: any }): App {
       if (newSettings.schema) {
         schema.private.settings.change(newSettings.schema)
       }
+      if (newSettings.server) {
+        Object.assign(settings.current.server, newSettings.server)
+      }
     },
     current: {
       logger: log.settings,
       schema: schema.private.settings.data,
+      server: { ...Server.defaultExtraSettings },
     },
+    original: Lo.cloneDeep({
+      logger: log.settings,
+      schema: schema.private.settings.data,
+      server: { ...Server.defaultExtraSettings },
+    }),
   }
 
   const api: App = {
@@ -142,7 +151,7 @@ export function create(appConfig?: { types?: any }): App {
        * Start the server. If you do not call this explicitly then nexus will
        * for you. You should not normally need to call this function yourself.
        */
-      async start(opts: ServerOptions = {}): Promise<void> {
+      async start(): Promise<void> {
         // Track the start call so that we can know in entrypoint whether to run
         // or not start for the user.
         singletonChecks.state.is_was_server_start_called = true
@@ -278,7 +287,7 @@ export function create(appConfig?: { types?: any }): App {
           schema: await schema.private.compile(nexusConfig),
           plugins,
           contextContributors,
-          ...opts,
+          ...settings.current.server,
         }).start()
       },
       async stop() {
