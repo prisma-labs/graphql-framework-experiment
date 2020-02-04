@@ -27,13 +27,12 @@ type Request = HTTP.IncomingMessage & { log: Logger.Logger }
 type ContextContributor<T extends {}> = (req: Request) => T
 
 export type App = {
-  use: (plugin: Plugin.Driver) => App
   /**
    * [API Reference](https://nexus-future.now.sh/#/references/api?id=logger)  ⌁  [Guide](https://nexus-future.now.sh/#/guides/logging)
    *
    * ### todo
    */
-  log: Logger.RootLogger
+  log: Logger.Logger
   /**
    * [API Reference](https://nexus-future.now.sh/#/references/api?id=server)  ⌁  [Guide](todo)
    *
@@ -44,6 +43,10 @@ export type App = {
     start: (config?: ServerOptions) => Promise<void>
     stop: () => Promise<void>
   }
+  /**
+   * todo
+   */
+  settings: Settings
   /**
    * [API Reference](https://nexus-future.now.sh/#/references/api?id=appschema) // [Guide](todo)
    *
@@ -62,12 +65,35 @@ export type App = {
   }
 }
 
+type SettingsInput = {
+  logger?: Logger.SettingsInput
+}
+
+type SettingsData = Readonly<{
+  logger: Logger.SettingsData
+}>
+
+type Settings = {
+  current: SettingsData
+  change(settings: SettingsInput): void
+}
+
 /**
  * Crate an app instance
  * TODO extract and improve config type
  */
 export function create(appConfig?: { types?: any }): App {
   const plugins: Plugin.RuntimeContributions[] = []
+  const settings: Settings = {
+    change(newSettings) {
+      if (newSettings.logger) {
+        log.settings(newSettings.logger)
+      }
+    },
+    current: {
+      logger: log.settings,
+    },
+  }
 
   // Automatically use all installed plugins
   // TODO during build step we should turn this into static imports, not unlike
@@ -76,29 +102,12 @@ export function create(appConfig?: { types?: any }): App {
 
   const contextContributors: ContextContributor<any>[] = []
 
-  /**
-   * Auto-use all runtime plugins that are installed in the project
-   */
-
   let server: Server.Server
   const schema = Schema.create()
+
   const api: App = {
     log,
-    // TODO bring this back pending future discussion
-    // installGlobally() {
-    //   installGlobally(api)
-    //   return api
-    // },
-    // TODO think hard about this api... When/why would it be used with auto-use
-    // import system? "Inproject" plugins? What is the right place to expose
-    // this? app.plugins.use() ?
-    use(pluginDriver) {
-      const plugin = pluginDriver.loadRuntimePlugin()
-      if (plugin) {
-        plugins.push(plugin)
-      }
-      return api
-    },
+    settings,
     schema: {
       addToContext(contextContributor) {
         contextContributors.push(contextContributor)
