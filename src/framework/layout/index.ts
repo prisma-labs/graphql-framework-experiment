@@ -10,8 +10,23 @@ export {
   saveDataForChildProcess,
   scanProjectType,
 } from './layout'
-export {
-  emptyExceptionMessage as emptySchemaExceptionMessage,
-  importModules as importSchemaModules,
-  printStaticImports as printStaticSchemaImports,
+
+// todo refactor with TS 3.8 namespace re-export
+
+import {
+  DIR_NAME,
+  emptyExceptionMessage,
+  FILE_NAME,
+  importModules,
+  MODULE_NAME,
+  printStaticImports,
 } from './schema-modules'
+
+export const schema = {
+  emptyExceptionMessage,
+  importModules,
+  printStaticImports,
+  DIR_NAME,
+  MODULE_NAME,
+  FILE_NAME,
+}

@@ -1,4 +1,5 @@
 import { DEFAULT_BUILD_FOLDER_NAME } from '../../../src/framework/layout'
+import { FILE_NAME } from '../../../src/framework/layout/schema-modules'
 import { createWorkspace } from '../../__helpers'
 
 const ws = createWorkspace({
@@ -24,7 +25,7 @@ it('can build a prisma framework project', () => {
   )
 
   ws.fs.write(
-    'graphql.ts',
+    FILE_NAME,
     `
       import app from 'nexus-future'
 

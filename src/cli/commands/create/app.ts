@@ -84,7 +84,7 @@ export async function runBootstrapper(
     sourceRoot: fs.path('./src'),
     sourceRootRelative: './src',
     // todo replace magic string with constant from layout schema module
-    schemaModules: ['src/graphql.ts'],
+    schemaModules: ['src/' + Layout.schema.FILE_NAME],
     buildOutput: Layout.DEFAULT_BUILD_FOLDER_NAME,
     project: {
       name: optionsGiven?.projectName ?? CWDProjectNameOrGenerate(),
@@ -346,8 +346,7 @@ async function assertIsCleanSlate() {
 
 async function helloWorldTemplate(layout: Layout.Layout) {
   await fs.writeAsync(
-    // todo replace magic string with constant from layout schema module
-    layout.sourcePath('graphql.ts'),
+    layout.sourcePath(Layout.schema.FILE_NAME),
     stripIndent`
     import { schema } from "nexus-future";
 
@@ -407,8 +406,7 @@ async function scaffoldBaseFiles(layout: Layout.Layout, options: Options) {
   // TODO Template selector?
   // TODO given that we're scaffolding, we know the layout ahead of time. We
   // should take advantage of that, e.g. precompute layout data
-  // todo replace magic string with value from layout schema module
-  const appEntrypointPath = layout.sourcePath('graphql.ts')
+  const appEntrypointPath = layout.sourcePath(Layout.schema.FILE_NAME)
   await Promise.all([
     fs.writeAsync('package.json', {
       name: options.projectName,

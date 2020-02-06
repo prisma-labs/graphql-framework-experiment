@@ -46,7 +46,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   `
 
   if (config.internalStage === 'build') {
-    const staticImports = Layout.printStaticSchemaImports(config.layout)
+    const staticImports = Layout.schema.printStaticImports(config.layout)
     if (staticImports !== '') {
       output += '\n\n\n'
       output += stripIndent`

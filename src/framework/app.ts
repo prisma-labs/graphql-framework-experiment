@@ -170,7 +170,7 @@ export function create(appConfig?: { types?: any }): App {
         // At build time we inline static imports.
         // This code MUST run after user/system has had chance to run global installation
         if (process.env.NEXUS_STAGE === 'dev') {
-          Layout.importSchemaModules()
+          Layout.schema.importModules()
         }
 
         // todo refactor; this is from before when nexus and framework were
@@ -279,7 +279,7 @@ export function create(appConfig?: { types?: any }): App {
         }
 
         if (schema.private.types.length === 0) {
-          log.warn(Layout.emptySchemaExceptionMessage())
+          log.warn(Layout.schema.emptyExceptionMessage())
         }
 
         return Server.create({

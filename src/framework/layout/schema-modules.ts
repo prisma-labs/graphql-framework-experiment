@@ -4,8 +4,9 @@ import { Layout, relativeTranspiledImportPath } from '.'
 import { baseIgnores, flatMap, stripExt } from '../../utils'
 import { log } from '../schema/logger'
 
-const MODULE_NAME = 'graphql'
-const DIR_NAME = 'graphql'
+export const MODULE_NAME = 'graphql'
+export const FILE_NAME = MODULE_NAME + '.ts'
+export const DIR_NAME = 'graphql'
 
 export function emptyExceptionMessage() {
   // todo when the file is present but empty this error message is shown just
@@ -13,7 +14,7 @@ export function emptyExceptionMessage() {
   // that case. The instructions in that case should be something like "you have
   // schema files setup correctly but they are empty"
   return `Your GraphQL schema is empty. This is normal if you have not defined any GraphQL types yet. But if you did, check that the file name follows the convention: all ${Chalk.yellow(
-    MODULE_NAME + '.ts'
+    FILE_NAME
   )} modules or direct child modules within a ${Chalk.yellow(
     DIR_NAME
   )} directory are automatically imported.`
