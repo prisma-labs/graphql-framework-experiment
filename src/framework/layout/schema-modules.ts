@@ -20,7 +20,7 @@ export function emptyExceptionMessage() {
 }
 
 /**
- * Find all the schema.ts modules or modules within a schema/ folder.
+ * Find all the schema modules or child modules of a schema dir.
  *
  * The return value has two views.
  *
@@ -64,7 +64,8 @@ function findModules(): {
 }
 
 /**
- * Find all modules called schema.ts or directories called schema.
+ * Find all modules called schema modules or directories having the trigger
+ * name. This does not grab the child modules of the directory instances!
  */
 export function findDirOrModules(): string[] {
   // TODO async

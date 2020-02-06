@@ -1,4 +1,4 @@
-## `schema.ts` | `schema/*`
+## `graphql.ts` | `graphql/*`
 
 Optional –– Your GraphQL type definitions.
 
@@ -6,7 +6,7 @@ Optional –– Your GraphQL type definitions.
 
 It can be a single module or folder of modules. Multiple instances of module/folder-modules throughout your source tree is supported.
 
-In dev mode schema modules are synchronously found and imported at server boot time. At build time however static imports for all schema modules are inlined for boot performance.
+In dev mode graphql modules are synchronously found and imported at server boot time. At build time however static imports for all graphql modules are inlined for boot performance.
 
 ##### Aliases
 

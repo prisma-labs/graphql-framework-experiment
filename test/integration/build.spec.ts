@@ -23,7 +23,7 @@ it('exits 1 if app does not type check', () => {
 
 it('can build with just a schema module', () => {
   ws.fs.write(
-    'schema.ts',
+    'graphql.ts',
     `
       import app from 'nexus-future'
 
@@ -63,7 +63,7 @@ it('can build with just a schema folder of modules', () => {
 
 it('can build with schema + app modules', () => {
   ws.fs.write(
-    'schema.ts',
+    'graphql.ts',
     `
       import app from 'nexus-future'
 
@@ -91,7 +91,7 @@ it('can build with schema + app modules', () => {
 
 it('can nest modules', () => {
   ws.fs.write(
-    'graphql/schema.ts',
+    'graphql/graphql.ts',
     `
       import app from 'nexus-future'
 
@@ -146,7 +146,7 @@ it('can build a plugin', () => {
   )
 
   ws.fs.write(
-    'schema.ts',
+    'graphql.ts',
     `
       import app from 'nexus-future'
 

@@ -55,7 +55,7 @@ We have data about `Earth` from before, but now we need to update it with inform
 We're going to need to expose the `moons` world field to clients
 
 ```diff
-+++ src/schema.ts
++++ src/graphql.ts
   schema.objectType({
     name: "World",
     definition(t) {
@@ -71,7 +71,7 @@ Upon doing this however, we will see a warning in our dev mode logs:
 
 ```
  Warning: Your GraphQL `World` object definition is projecting a field `moons` with `Moon` as output type, but `Moon` is not defined in your GraphQL Schema
- Warning: in /Users/jasonkuhrt/foobar/src/schema.ts:10:13
+ Warning: in /Users/jasonkuhrt/foobar/src/graphql.ts:10:13
 
    6 definition(t) {
    7 t.model.id();
@@ -83,7 +83,7 @@ Upon doing this however, we will see a warning in our dev mode logs:
 The feedback is pretty clear already but to restate: The problem is that we're project a Prisma model field (`moons`) that is a connection to another Prisma model (`Moon`) that has not been projected on our API layer. So let's do that now:
 
 ```diff
-+++ src/schema.ts
++++ src/graphql.ts
 +schema.objectType({
 +  name:'Moon',
 +  definition(t){
@@ -103,7 +103,7 @@ Once you have projected `Moon` from your data layer to your API layer, you will 
 If you go to your GraphQL Playground now you will see that your GraphQL schema now contains your Moon data shape too. But of course we still need to update `Earth` with data about _its_ moon. To achieve that we're going to expose CRUD actions that clients can use to update `Earth`.
 
 ```diff
-+++ src/schema.ts
++++ src/graphql.ts
 +schema.mutationType({
 +  definition(t){
 +    t.crud.updateOneWorld()

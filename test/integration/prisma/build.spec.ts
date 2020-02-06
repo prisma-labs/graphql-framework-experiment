@@ -24,7 +24,7 @@ it('can build a prisma framework project', () => {
   )
 
   ws.fs.write(
-    'schema.ts',
+    'graphql.ts',
     `
       import app from 'nexus-future'
 

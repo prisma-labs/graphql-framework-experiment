@@ -158,8 +158,11 @@ export const scan = async (): Promise<ScanResult> => {
   }
 
   if (result.app.exists === false && result.schemaModules.length === 0) {
+    // todo fetch error message from schema module
     log.error('We could not find any schema modules or entrypoint for your app')
-    log.error('Please, either create a `schema.ts` file or `schema/` directory')
+    log.error(
+      'Please, either create a `graphql.ts` file or `graphql/` directory'
+    )
     process.exit(1)
   }
 
