@@ -4,6 +4,7 @@ import * as HTTP from 'http'
 import * as Lo from 'lodash'
 import * as Plugin from '../core/plugin'
 import * as Logger from '../lib/logger'
+import * as Layout from './layout'
 import * as Schema from './schema'
 import * as Server from './server'
 import * as singletonChecks from './singleton-checks'
@@ -169,7 +170,7 @@ export function create(appConfig?: { types?: any }): App {
         // At build time we inline static imports.
         // This code MUST run after user/system has had chance to run global installation
         if (process.env.NEXUS_STAGE === 'dev') {
-          Schema.importModules()
+          Layout.importSchemaModules()
         }
 
         // todo refactor; this is from before when nexus and framework were
@@ -278,9 +279,7 @@ export function create(appConfig?: { types?: any }): App {
         }
 
         if (schema.private.types.length === 0) {
-          log.warn(
-            'Your GraphQL schema is empty. Make sure your GraphQL schema lives in a `schema.ts` file or some `schema/` directories'
-          )
+          log.warn(Layout.emptySchemaExceptionMessage())
         }
 
         return Server.create({
