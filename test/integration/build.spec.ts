@@ -1,6 +1,7 @@
 // TODO boot and query to take integration test confidence even further
 
 import { DEFAULT_BUILD_FOLDER_NAME } from '../../src/framework/layout'
+import { DIR_NAME, FILE_NAME } from '../../src/framework/layout/schema-modules'
 import { createWorkspace } from '../__helpers'
 
 const ws = createWorkspace({
@@ -23,7 +24,7 @@ it('exits 1 if app does not type check', () => {
 
 it('can build with just a schema module', () => {
   ws.fs.write(
-    'schema.ts',
+    FILE_NAME,
     `
       import app from 'nexus-future'
 
@@ -43,7 +44,7 @@ it('can build with just a schema module', () => {
 
 it('can build with just a schema folder of modules', () => {
   ws.fs.write(
-    'schema/a.ts',
+    DIR_NAME + '/a.ts',
     `
       import app from 'nexus-future'
 
@@ -63,7 +64,7 @@ it('can build with just a schema folder of modules', () => {
 
 it('can build with schema + app modules', () => {
   ws.fs.write(
-    'schema.ts',
+    FILE_NAME,
     `
       import app from 'nexus-future'
 
@@ -91,7 +92,7 @@ it('can build with schema + app modules', () => {
 
 it('can nest modules', () => {
   ws.fs.write(
-    'graphql/schema.ts',
+    'app/' + FILE_NAME,
     `
       import app from 'nexus-future'
 
@@ -146,7 +147,7 @@ it('can build a plugin', () => {
   )
 
   ws.fs.write(
-    'schema.ts',
+    FILE_NAME,
     `
       import app from 'nexus-future'
 

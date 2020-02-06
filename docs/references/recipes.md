@@ -38,7 +38,7 @@
    1. `nexus-prisma` Nexus plugin allowing e.g.:
 
       ```diff
-      +++ src/schema.ts
+      +++ src/graphql.ts
         objectType({
           name: 'User',
           definition(t) {
@@ -53,7 +53,7 @@
    1. An instance of the generated Photon.JS client is a added to context under `photon` property, allowing e.g.:
 
       ```diff
-      +++ src/schema.ts
+      +++ src/graphql.ts
         queryType({
           definition(t) {
             t.list.field('users', {

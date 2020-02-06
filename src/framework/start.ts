@@ -1,6 +1,5 @@
 import { stripIndent } from 'common-tags'
-import { Layout, relativeTranspiledImportPath } from './layout'
-import { printStaticImports } from './schema'
+import * as Layout from './layout'
 
 type StartModuleConfig =
   | {
@@ -10,7 +9,7 @@ type StartModuleConfig =
        * example the user only supplies a schemta.ts module.
        */
       appPath: null | string
-      layout: Layout
+      layout: Layout.Layout
     }
   | {
       internalStage: 'build'
@@ -19,7 +18,7 @@ type StartModuleConfig =
        * example the user only supplies a schemta.ts module.
        */
       appPath: null | string
-      layout: Layout
+      layout: Layout.Layout
       buildStage: string
     }
 
@@ -47,7 +46,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   `
 
   if (config.internalStage === 'build') {
-    const staticImports = printStaticImports(config.layout)
+    const staticImports = Layout.schema.printStaticImports(config.layout)
     if (staticImports !== '') {
       output += '\n\n\n'
       output += stripIndent`
@@ -66,7 +65,10 @@ export function createStartModuleContent(config: StartModuleConfig): string {
         // import the user's app module
         require("${
           config.internalStage === 'build'
-            ? relativeTranspiledImportPath(config.layout, config.appPath!)
+            ? Layout.relativeTranspiledImportPath(
+                config.layout,
+                config.appPath!
+              )
             : config.appPath
         }")
 
