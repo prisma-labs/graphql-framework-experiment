@@ -83,7 +83,6 @@ export async function runBootstrapper(
     projectRoot: fs.path(),
     sourceRoot: fs.path('./src'),
     sourceRootRelative: './src',
-    // todo replace magic string with constant from layout schema module
     schemaModules: ['src/' + Layout.schema.FILE_NAME],
     buildOutput: Layout.DEFAULT_BUILD_FOLDER_NAME,
     project: {

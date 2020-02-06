@@ -1,3 +1,5 @@
+import Chalk from 'chalk'
+import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import * as Path from 'path'
 import { PackageJson } from 'type-fest'
@@ -158,11 +160,8 @@ export const scan = async (): Promise<ScanResult> => {
   }
 
   if (result.app.exists === false && result.schemaModules.length === 0) {
-    // todo fetch error message from schema module
-    log.error('We could not find any schema modules or entrypoint for your app')
-    log.error(
-      'Please, either create a `graphql.ts` file or `graphql/` directory'
-    )
+    log.error(checks.no_app_or_schema_modules.explanations.problem)
+    log.error(checks.no_app_or_schema_modules.explanations.solution)
     process.exit(1)
   }
 
@@ -171,11 +170,35 @@ export const scan = async (): Promise<ScanResult> => {
   return result
 }
 
+// todo make rest of codebase reference this source of truth
+// todo allow user to configure these for their project
+// todo once user can configure these for their project, settle on only one of
+// these, since user will be able to easily change it
+const ENTRYPOINT_MODULE_NAMES = ['app', 'server', 'service']
+const ENTRYPOINT_FILE_NAMES = ENTRYPOINT_MODULE_NAMES.map(n => n + '.ts')
+
+const checks = {
+  no_app_or_schema_modules: {
+    code: 'no_app_or_schema_modules',
+    // prettier-ignore
+    explanations: {
+      problem: `We could not find any ${Schema.MODULE_NAME} modules or app entrypoint`,
+      solution: stripIndent`
+      Please do one of the following:
+
+        1. Create a (${Chalk.yellow(Schema.FILE_NAME)} file and write your GraphQL type definitions in it.
+        2. Create a ${Chalk.yellow(Schema.DIR_NAME)} directory and write your GraphQL type definitions inside files there.
+        3. Create an app entrypoint; A file called any of: ${ENTRYPOINT_FILE_NAMES.map(f => Chalk.yellow(f)).join(', ')}.
+    `,
+    }
+  },
+}
+
 /**
  * Find the (optional) app module in the user's project.
  */
 export const findAppModule = async () => {
-  return findFile(['app.ts', 'server.ts', 'service.ts'])
+  return findFile(ENTRYPOINT_FILE_NAMES)
 }
 
 /**
