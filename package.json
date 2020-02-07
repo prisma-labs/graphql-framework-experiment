@@ -42,6 +42,7 @@
     "pino": "^5.15.0",
     "prompts": "^2.3.0",
     "simple-git": "^1.126.0",
+    "strip-ansi": "^6.0.0",
     "tree-kill": "^1.2.1",
     "ts-node": "^8.5.0",
     "tsconfig": "^7.0.0",
@@ -63,7 +64,6 @@
     "jest": "25.1.0",
     "prettier": "1.19.1",
     "pretty-quick": "2.0.1",
-    "strip-ansi": "6.0.0",
     "ts-jest": "25.2.0",
     "type-fest": "0.10.0"
   },
