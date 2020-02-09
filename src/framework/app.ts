@@ -28,22 +28,7 @@ export type App = {
    * ### todo
    */
   log: Logger.Logger
-  /**
-   * [API Reference](https://nexus-future.now.sh/#/references/api?id=server)  ⌁  [Guide](todo)
-   *
-   * ### todo
-   *
-   */
-  server: {
-    /**
-     * todo
-     */
-    start: () => Promise<void>
-    /**
-     * todo
-     */
-    stop: () => Promise<void>
-  }
+  server: Server.Server
   /**
    * todo
    */

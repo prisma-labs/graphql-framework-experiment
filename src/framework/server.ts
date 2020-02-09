@@ -9,6 +9,23 @@ import { sendServerReadySignalToDevModeMaster } from './dev-mode'
 type Request = HTTP.IncomingMessage & { log: Logger.Logger }
 type ContextContributor<T extends {}> = (req: Request) => T
 
+/**
+ * [API Reference](https://nexus-future.now.sh/#/references/api?id=server)  ⌁  [Guide](todo)
+ *
+ * ### todo
+ *
+ */
+export type Server = {
+  /**
+   * todo
+   */
+  start: () => Promise<void>
+  /**
+   * todo
+   */
+  stop: () => Promise<void>
+}
+
 const log = Logger.create({ name: 'server' })
 
 /**
@@ -60,7 +77,7 @@ export type SettingsInput = createExpressGraphql.OptionsData &
     contextContributors: ContextContributor<any>[]
   }
 
-export function create(settingsGiven: SettingsInput) {
+export function create(settingsGiven: SettingsInput): Server {
   const http = HTTP.createServer()
   const express = createExpress()
   const opts = { ...defaultExtraSettings, ...settingsGiven }
@@ -193,5 +210,3 @@ export function create(settingsGiven: SettingsInput) {
       }),
   }
 }
-
-export type Server = ReturnType<typeof create>
