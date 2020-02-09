@@ -88,6 +88,7 @@ export function createNexusSingleton() {
     return typeDef
   }
 
+  const arg = Nexus.arg
   const intArg = Nexus.intArg
   const stringArg = Nexus.stringArg
   const idArg = Nexus.idArg
