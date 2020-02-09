@@ -103,6 +103,7 @@ export function createNexusSingleton() {
     interfaceType,
     enumType,
     scalarType,
+    arg,
     intArg,
     stringArg,
     idArg,
