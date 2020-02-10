@@ -1,6 +1,5 @@
 import * as Nexus from '@nexus/schema'
 import { generateSchema } from '@nexus/schema/dist/core'
-import * as fs from 'fs-jetpack'
 
 export function createNexusSingleton() {
   const __types: any[] = []
@@ -115,35 +114,16 @@ export function createNexusSingleton() {
   }
 }
 
-export type NexusConfig = Nexus.core.SchemaConfig
-
-export function createInternalConfig(): NexusConfig {
-  const defaultTypesPath = fs.path(
-    'node_modules/@types/typegen-nexus/index.d.ts'
-  )
-
-  return {
-    outputs: {
-      schema: false,
-      typegen: defaultTypesPath,
-    },
-    typegenAutoConfig: {
-      sources: [],
-    },
-    shouldGenerateArtifacts: shouldGenerateArtifacts(),
-    shouldExitAfterGenerateArtifacts: shouldExitAfterGenerateArtifacts(),
-    types: [],
-  }
-}
-
-export const shouldGenerateArtifacts = (): boolean =>
-  process.env.NEXUS_SHOULD_GENERATE_ARTIFACTS === 'true'
+export function shouldGenerateArtifacts(): boolean {
+  return process.env.NEXUS_SHOULD_GENERATE_ARTIFACTS === 'true'
     ? true
     : process.env.NEXUS_SHOULD_GENERATE_ARTIFACTS === 'false'
     ? false
     : Boolean(!process.env.NODE_ENV || process.env.NODE_ENV === 'development')
+}
 
-export const shouldExitAfterGenerateArtifacts = (): boolean =>
-  process.env.NEXUS_SHOULD_EXIT_AFTER_GENERATE_ARTIFACTS === 'true'
+export function shouldExitAfterGenerateArtifacts(): boolean {
+  return process.env.NEXUS_SHOULD_EXIT_AFTER_GENERATE_ARTIFACTS === 'true'
     ? true
     : false
+}

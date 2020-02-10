@@ -1,9 +1,8 @@
-import { typegenAutoConfig } from '@nexus/schema/dist/core'
-import { stripIndents } from 'common-tags'
 import * as HTTP from 'http'
 import * as Lo from 'lodash'
 import * as Plugin from '../core/plugin'
 import * as Logger from '../lib/logger'
+import { sendServerReadySignalToDevModeMaster } from './dev-mode'
 import * as Schema from './schema'
 import * as Server from './server'
 import * as singletonChecks from './singleton-checks'
@@ -33,16 +32,7 @@ export type App = {
    * ### todo
    *
    */
-  server: {
-    /**
-     * todo
-     */
-    start: () => Promise<void>
-    /**
-     * todo
-     */
-    stop: () => Promise<void>
-  }
+  server: Server.ServerWithCustom
   /**
    * todo
    */
@@ -71,7 +61,7 @@ type SettingsInput = {
   server?: Server.ExtraSettingsInput
 }
 
-type SettingsData = Readonly<{
+export type SettingsData = Readonly<{
   logger: Logger.SettingsData
   schema: Schema.SettingsData
   server: Server.ExtraSettingsData
@@ -99,7 +89,7 @@ type Settings = {
  * Crate an app instance
  * TODO extract and improve config type
  */
-export function create(appConfig?: { types?: any }): App {
+export function create(): App {
   const plugins: Plugin.RuntimeContributions[] = []
   // Automatically use all installed plugins
   // TODO during build step we should turn this into static imports, not unlike
@@ -108,7 +98,8 @@ export function create(appConfig?: { types?: any }): App {
 
   const contextContributors: ContextContributor<any>[] = []
 
-  let server: Server.Server
+  let server: Server.Server | null = null
+  let customServerHook: Server.CustomServerHook | null = null
 
   const schema = Schema.create()
 
@@ -172,110 +163,8 @@ export function create(appConfig?: { types?: any }): App {
           Schema.importModules()
         }
 
-        // todo refactor; this is from before when nexus and framework were
-        // different (e.g. santa). Encapsulate component schema config
-        // into framework schema module.
-        //
-        // Create the NexusSchema config
-        const nexusConfig = Schema.createInternalConfig()
-
-        // Integrate plugin typegenAutoConfig contributions
-        const typegenAutoConfigFromPlugins = {}
-        for (const p of plugins) {
-          if (p.nexus?.typegenAutoConfig) {
-            Lo.merge(typegenAutoConfigFromPlugins, p.nexus.typegenAutoConfig)
-          }
-        }
-
-        const typegenAutoConfigObject = Lo.merge(
-          {},
-          typegenAutoConfigFromPlugins,
-          nexusConfig.typegenAutoConfig!
-        )
-        nexusConfig.typegenAutoConfig = undefined
-
-        function contextTypeContribSpecToCode(
-          ctxTypeContribSpec: Record<string, string>
-        ): string {
-          return stripIndents`
-              interface Context {
-                ${Object.entries(ctxTypeContribSpec)
-                  .map(([name, type]) => {
-                    // Quote key name to handle case of identifier-incompatible key names
-                    return `'${name}': ${type}`
-                  })
-                  .join('\n')}
-              }
-            `
-        }
-
-        // Our use-case of multiple context sources seems to require a custom
-        // handling of typegenConfig. Opened an issue about maybe making our
-        // curreent use-case, fairly basic, integrated into the auto system, here:
-        // https://github.com/prisma-labs/nexus/issues/323
-        nexusConfig.typegenConfig = async (schema, outputPath) => {
-          const configurator = await typegenAutoConfig(typegenAutoConfigObject)
-          const config = await configurator(schema, outputPath)
-
-          // Initialize
-          config.imports.push('interface Context {}')
-          config.contextType = 'Context'
-
-          // Integrate user's app calls to app.addToContext
-          const addToContextCallResults: string[] = process.env
-            .NEXUS_TYPEGEN_ADD_CONTEXT_RESULTS
-            ? JSON.parse(process.env.NEXUS_TYPEGEN_ADD_CONTEXT_RESULTS)
-            : []
-
-          const addToContextInterfaces = addToContextCallResults
-            .map(result => {
-              return stripIndents`
-                interface Context ${result}
-              `
-            })
-            .join('\n\n')
-
-          config.imports.push(addToContextInterfaces)
-
-          // Integrate plugin context contributions
-          for (const p of plugins) {
-            if (!p.context) continue
-
-            if (p.context.typeGen.imports) {
-              config.imports.push(
-                ...p.context.typeGen.imports.map(
-                  im => `import * as ${im.as} from '${im.from}'`
-                )
-              )
-            }
-
-            config.imports.push(
-              contextTypeContribSpecToCode(p.context.typeGen.fields)
-            )
-          }
-
-          config.imports.push(
-            "import * as Logger from 'nexus-future/dist/lib/logger'",
-            contextTypeContribSpecToCode({
-              log: 'Logger.Logger',
-            })
-          )
-
-          api.log.trace('built up Nexus typegenConfig', { config })
-          return config
-        }
-
-        log.trace('built up schema config', { nexusConfig })
-
-        // Merge the plugin nexus plugins
-        nexusConfig.plugins = nexusConfig.plugins ?? []
-        for (const plugin of plugins) {
-          nexusConfig.plugins.push(...(plugin.nexus?.plugins ?? []))
-        }
-
-        if (appConfig?.types && appConfig.types.length !== 0) {
-          nexusConfig.types.push(...appConfig.types)
-        }
+        const nexusConfig = Schema.createInternalConfig(plugins)
+        const compiledSchema = await schema.private.compile(nexusConfig)
 
         if (schema.private.types.length === 0) {
           log.warn(
@@ -283,15 +172,51 @@ export function create(appConfig?: { types?: any }): App {
           )
         }
 
-        return Server.create({
-          schema: await schema.private.compile(nexusConfig),
+        const defaultServer = Server.createDefaultServer({
+          schema: compiledSchema,
           plugins,
           contextContributors,
           ...settings.current.server,
-        }).start()
+        })
+
+        if (customServerHook) {
+          const customServer = await customServerHook({
+            schema: compiledSchema,
+            defaultServer,
+            settings: settings.current,
+          })
+
+          if (!customServer.start) {
+            log.error(
+              'Your custom server is missing a required `start` function'
+            )
+          }
+
+          if (!customServer.stop) {
+            log.error(
+              'Your custom server is missing a required `stop` function'
+            )
+          }
+
+          server = customServer
+        } else {
+          server = defaultServer
+        }
+
+        await server.start()
+        sendServerReadySignalToDevModeMaster()
       },
       async stop() {
-        server?.stop
+        return server?.stop()
+      },
+      async custom(hook) {
+        if (singletonChecks.state.is_was_server_start_called) {
+          log.warn(
+            'You called `server.start` before `server.custom`. Your custom server might not be used.'
+          )
+        }
+
+        customServerHook = hook
       },
     },
   }

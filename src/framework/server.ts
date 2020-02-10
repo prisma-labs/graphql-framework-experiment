@@ -1,10 +1,12 @@
-import createExpress from 'express'
+import createExpress, { Express } from 'express'
 import createExpressGraphql from 'express-graphql'
+import * as GraphQL from 'graphql'
 import * as HTTP from 'http'
 import * as Net from 'net'
 import * as Plugin from '../core/plugin'
 import * as Logger from '../lib/logger'
-import { sendServerReadySignalToDevModeMaster } from './dev-mode'
+import * as Utils from '../lib/utils'
+import * as App from './app'
 
 type Request = HTTP.IncomingMessage & { log: Logger.Logger }
 type ContextContributor<T extends {}> = (req: Request) => T
@@ -60,7 +62,34 @@ export type SettingsInput = createExpressGraphql.OptionsData &
     contextContributors: ContextContributor<any>[]
   }
 
-export function create(settingsGiven: SettingsInput) {
+export interface Server {
+  start: () => Promise<void>
+  stop: () => Promise<void>
+}
+
+interface ServerWithInstance<T extends any> extends Server {
+  instance: T
+}
+
+interface CustomServerHookInput {
+  schema: GraphQL.GraphQLSchema
+  defaultServer: ServerWithInstance<Express>
+  settings: App.SettingsData
+}
+
+export type CustomServerHook = (
+  e: CustomServerHookInput
+) => Utils.MaybePromise<Server>
+
+export type CustomServer = (hook: CustomServerHook) => void
+
+export interface ServerWithCustom extends Server {
+  custom: CustomServer
+}
+
+export function createDefaultServer(
+  settingsGiven: SettingsInput
+): ServerWithInstance<Express> {
   const http = HTTP.createServer()
   const express = createExpress()
   const opts = { ...defaultExtraSettings, ...settingsGiven }
@@ -177,7 +206,6 @@ export function create(settingsGiven: SettingsInput) {
             host: address.address === '127.0.0.1' ? 'localhost' : '',
             ip: address.address,
           })
-          sendServerReadySignalToDevModeMaster()
           res()
         })
       }),
@@ -191,7 +219,6 @@ export function create(settingsGiven: SettingsInput) {
           }
         })
       }),
+    instance: express,
   }
 }
-
-export type Server = ReturnType<typeof create>
