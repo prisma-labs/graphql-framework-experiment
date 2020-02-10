@@ -49,6 +49,7 @@ export type Schema = {
   scalarType: typeof NexusSchema.scalarType
   unionType: typeof NexusSchema.unionType
   interfaceType: typeof NexusSchema.interfaceType
+  arg: typeof NexusSchema.arg
   intArg: typeof NexusSchema.intArg
   stringArg: typeof NexusSchema.stringArg
   booleanArg: typeof NexusSchema.booleanArg
@@ -80,6 +81,7 @@ export function create(): SchemaInternal {
     scalarType,
     unionType,
     interfaceType,
+    arg,
     intArg,
     stringArg,
     booleanArg,
@@ -132,6 +134,7 @@ export function create(): SchemaInternal {
       scalarType,
       unionType,
       interfaceType,
+      arg,
       intArg,
       stringArg,
       booleanArg,

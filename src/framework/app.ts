@@ -3,6 +3,7 @@ import * as Lo from 'lodash'
 import * as Plugin from '../core/plugin'
 import * as Logger from '../lib/logger'
 import { sendServerReadySignalToDevModeMaster } from './dev-mode'
+import * as Layout from './layout'
 import * as Schema from './schema'
 import * as Server from './server'
 import * as singletonChecks from './singleton-checks'
@@ -160,16 +161,14 @@ export function create(): App {
         // At build time we inline static imports.
         // This code MUST run after user/system has had chance to run global installation
         if (process.env.NEXUS_STAGE === 'dev') {
-          Schema.importModules()
+          Layout.schema.importModules()
         }
 
         const nexusConfig = Schema.createInternalConfig(plugins)
         const compiledSchema = await schema.private.compile(nexusConfig)
 
         if (schema.private.types.length === 0) {
-          log.warn(
-            'Your GraphQL schema is empty. Make sure your GraphQL schema lives in a `schema.ts` file or some `schema/` directories'
-          )
+          log.warn(Layout.schema.emptyExceptionMessage())
         }
 
         const defaultServer = Server.createDefaultServer({

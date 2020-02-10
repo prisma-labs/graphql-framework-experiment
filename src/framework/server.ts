@@ -61,9 +61,20 @@ export type SettingsInput = createExpressGraphql.OptionsData &
     plugins: Plugin.RuntimeContributions[]
     contextContributors: ContextContributor<any>[]
   }
-
+/**
+ * [API Reference](https://nexus-future.now.sh/#/references/api?id=server)  ⌁  [Guide](todo)
+ *
+ * ### todo
+ *
+ */
 export interface Server {
+  /**
+   * todo
+   */
   start: () => Promise<void>
+  /**
+   * todo
+   */
   stop: () => Promise<void>
 }
 
