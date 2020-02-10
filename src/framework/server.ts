@@ -85,7 +85,7 @@ interface ServerWithInstance<T extends any> extends Server {
 interface CustomServerHookInput {
   schema: GraphQL.GraphQLSchema
   defaultServer: ServerWithInstance<Express>
-  settings: App.SettingsData
+  settings: App.SettingsData['server']
 }
 
 export type CustomServerHook = (

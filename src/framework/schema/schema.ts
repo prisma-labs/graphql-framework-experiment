@@ -1,6 +1,7 @@
 import * as NexusSchema from '@nexus/schema'
 import { Param1 } from '../../lib/utils'
 import { createNexusSingleton } from './nexus'
+import { NexusGraphQLSchema, SchemaConfig } from '@nexus/schema/dist/core'
 
 type ConnectionPluginConfig = NonNullable<
   Param1<typeof NexusSchema.connectionPlugin>
@@ -62,7 +63,7 @@ export type Schema = {
 type SchemaInternal = {
   private: {
     types: any[]
-    compile: any
+    compile: (config: SchemaConfig) => Promise<NexusGraphQLSchema>
     settings: {
       data: SettingsData
       change: (newSettings: SettingsInput) => void
@@ -104,7 +105,7 @@ export function create(): SchemaInternal {
   const api: SchemaInternal = {
     private: {
       types: __types,
-      compile: (c: any) => {
+      compile: c => {
         c.plugins = c.plugins ?? []
         c.plugins.push(...processConnectionsConfig(state.settings))
         return makeSchema(c)

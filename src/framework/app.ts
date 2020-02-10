@@ -182,7 +182,7 @@ export function create(): App {
           const customServer = await customServerHook({
             schema: compiledSchema,
             defaultServer,
-            settings: settings.current,
+            settings: settings.current.server,
           })
 
           if (!customServer.start) {
