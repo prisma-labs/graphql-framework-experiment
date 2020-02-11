@@ -2,7 +2,6 @@ import * as HTTP from 'http'
 import * as Lo from 'lodash'
 import * as Plugin from '../core/plugin'
 import * as Logger from '../lib/logger'
-import { sendServerReadySignalToDevModeMaster } from './dev-mode'
 import * as Layout from './layout'
 import * as Schema from './schema'
 import * as Server from './server'
@@ -71,7 +70,7 @@ export type SettingsData = Readonly<{
 /**
  * todo
  */
-type Settings = {
+export type Settings = {
   /**
    * todo
    */
@@ -99,9 +98,7 @@ export function create(): App {
 
   const contextContributors: ContextContributor<any>[] = []
 
-  let server: Server.Server | null = null
-  let customServerHook: Server.CustomServerHook | null = null
-
+  const server = Server.create()
   const schema = Schema.create()
 
   const settings: Settings = {
@@ -147,13 +144,10 @@ export function create(): App {
         // Track the start call so that we can know in entrypoint whether to run
         // or not start for the user.
         singletonChecks.state.is_was_server_start_called = true
+
         // During development we dynamically import all the schema modules
-        //
         // TODO IDEA we have concept of schema module and schema dir
         //      add a "refactor" command to toggle between them
-        // TODO put behind dev-mode guard
-        // TODO static imports codegen at build time
-        // TODO do not assume root source folder called `server`
         // TODO do not assume TS
         // TODO refactor and put a system behind this holy mother of...
 
@@ -171,51 +165,18 @@ export function create(): App {
           log.warn(Layout.schema.emptyExceptionMessage())
         }
 
-        const defaultServer = Server.createDefaultServer({
+        return server.createAndStart({
           schema: compiledSchema,
           plugins,
           contextContributors,
-          ...settings.current.server,
+          settings,
         })
-
-        if (customServerHook) {
-          const customServer = await customServerHook({
-            schema: compiledSchema,
-            defaultServer,
-            settings: settings.current.server,
-          })
-
-          if (!customServer.start) {
-            log.error(
-              'Your custom server is missing a required `start` function'
-            )
-          }
-
-          if (!customServer.stop) {
-            log.error(
-              'Your custom server is missing a required `stop` function'
-            )
-          }
-
-          server = customServer
-        } else {
-          server = defaultServer
-        }
-
-        await server.start()
-        sendServerReadySignalToDevModeMaster()
       },
-      async stop() {
-        return server?.stop()
+      stop() {
+        return server.stop()
       },
-      async custom(hook) {
-        if (singletonChecks.state.is_was_server_start_called) {
-          log.warn(
-            'You called `server.start` before `server.custom`. Your custom server might not be used.'
-          )
-        }
-
-        customServerHook = hook
+      async custom(customizer) {
+        server.setCustomizer(customizer)
       },
     },
   }
