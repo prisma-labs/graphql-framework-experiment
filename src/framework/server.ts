@@ -74,11 +74,11 @@ export interface Server {
   /**
    * todo
    */
-  start: () => Promise<void>
+  start(): Promise<void>
   /**
    * todo
    */
-  stop: () => Promise<void>
+  stop(): Promise<void>
 }
 
 interface OriginalServerWithInstance extends Server {
@@ -86,15 +86,23 @@ interface OriginalServerWithInstance extends Server {
 }
 
 interface CustomizerInput {
+  /**
+   * The generated executable GraphQL Schema
+   */
   schema: GraphQL.GraphQLSchema
+  /**
+   * The express instance bundled with Nexus. Use it to add express middlewares or change its configuration in anyway
+   */
   originalServer: OriginalServerWithInstance
-  serverSettings: App.SettingsData['server']
+  /**
+   * Function to add the generated context by Nexus to your custom server
+   */
   createContext: ContextCreator
 }
 
 export type Customizer = (e: CustomizerInput) => Utils.MaybePromise<Server>
 
-export type CustomServer = (hook: Customizer) => void
+export type CustomServer = (customizer: Customizer) => void
 
 export interface ServerWithCustom extends Server {
   custom: CustomServer
@@ -265,7 +273,6 @@ export function create(): ServerFactory {
         const customServer = await createCustomServer({
           schema: opts.schema,
           originalServer: defaultServer,
-          serverSettings: opts.settings.current.server,
           createContext,
         })
 
@@ -299,18 +306,18 @@ export function create(): ServerFactory {
 type AnonymousRequest = Record<string, any>
 type AnonymousContext = Record<string, any>
 
-type ContextCreator = <
+interface ContextCreator<
   Req extends AnonymousRequest = AnonymousRequest,
   Context extends AnonymousContext = AnonymousContext
->(
-  req: Req
-) => Context
+> {
+  (req: Req): Context
+}
 
 function contextFactory(
   contextContributors: ContextContributor<any>[],
   plugins: Plugin.RuntimeContributions[]
 ): ContextCreator {
-  const createContext: ContextCreator = (req: Record<string, any>) => {
+  const createContext: ContextCreator = req => {
     let context: Record<string, any> = {}
 
       // TODO HACK
@@ -335,7 +342,7 @@ function contextFactory(
     }
 
     // TODO: TS error if not casted to any :(
-    return context as any
+    return context
   }
 
   return createContext
