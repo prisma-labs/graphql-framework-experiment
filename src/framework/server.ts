@@ -1,30 +1,17 @@
-import createExpress from 'express'
+import createExpress, { Express } from 'express'
 import createExpressGraphql from 'express-graphql'
+import * as GraphQL from 'graphql'
 import * as HTTP from 'http'
 import * as Net from 'net'
 import * as Plugin from '../core/plugin'
 import * as Logger from '../lib/logger'
-import { sendServerReadySignalToDevModeMaster } from './dev-mode'
+import * as Utils from '../lib/utils'
+import * as App from './app'
+import * as DevMode from './dev-mode'
+import * as singletonChecks from './singleton-checks'
 
 type Request = HTTP.IncomingMessage & { log: Logger.Logger }
 type ContextContributor<T extends {}> = (req: Request) => T
-
-/**
- * [API Reference](https://nexus-future.now.sh/#/references/api?id=server)  ⌁  [Guide](todo)
- *
- * ### todo
- *
- */
-export type Server = {
-  /**
-   * todo
-   */
-  start: () => Promise<void>
-  /**
-   * todo
-   */
-  stop: () => Promise<void>
-}
 
 const log = Logger.create({ name: 'server' })
 
@@ -73,11 +60,62 @@ export type ExtraSettingsData = Required<ExtraSettingsInput>
  */
 export type SettingsInput = createExpressGraphql.OptionsData &
   ExtraSettingsInput & {
-    plugins: Plugin.RuntimeContributions[]
-    contextContributors: ContextContributor<any>[]
+    context: ContextCreator
   }
+/**
+ * [API Reference](https://nexus-future.now.sh/#/references/api?id=server)  ⌁  [Guide](todo)
+ *
+ * ### todo
+ *
+ */
+export interface Server {
+  /**
+   * Start the server instance
+   */
+  start(): Promise<void>
+  /**
+   * Stop the server instance
+   */
+  stop(): Promise<void>
+}
 
-export function create(settingsGiven: SettingsInput): Server {
+interface ServerWithExpressInstance extends Server {
+  /**
+   * The original Express server instance bundled with Nexus. Use it to add express middlewares or change its configuration in anyway
+   */
+  instance: Express
+}
+
+interface CustomizerLens {
+  /**
+   * The generated executable GraphQL Schema
+   */
+  schema: GraphQL.GraphQLSchema
+  /**
+   * The original Express server bundled with Nexus. Use it to add express middlewares or change its configuration in any way
+   */
+  express: Express
+  /**
+   * Function to add the generated context by Nexus to your custom server.
+   * If you need to add additional properties to your context, please use `server.addToContext`
+   */
+  context: ContextCreator
+}
+
+export type Customizer = (
+  lens: CustomizerLens
+) => Utils.MaybePromise<Server | void>
+
+export interface ServerWithCustomizer extends Server {
+  /**
+   * Provides a way to use a custom GraphQL server such as Apollo Server or Fastify
+   */
+  custom: (customizer: Customizer) => void
+}
+
+function createExpressServer(
+  settingsGiven: SettingsInput
+): ServerWithExpressInstance {
   const http = HTTP.createServer()
   const express = createExpress()
   const opts = { ...defaultExtraSettings, ...settingsGiven }
@@ -87,37 +125,15 @@ export function create(settingsGiven: SettingsInput): Server {
   express.use(
     '/graphql',
     createExpressGraphql(req => {
-      // TODO HACK
-      ;(req as any).log = log.child('request')
-      const context = {}
-
-      // Integrate context from plugins
-      for (const plugin of opts.plugins) {
-        if (!plugin.context) continue
-        const contextContribution = plugin.context.create(req)
-        Object.assign(context, contextContribution)
-      }
-
-      // Integrate context from app context api
-      // TODO support async; probably always supported by apollo server
-      // TODO good runtime feedback to user if something goes wrong
-      //
-      for (const contextContributor of opts.contextContributors) {
-        // HACK see req mutation at this func body start
-        Object.assign(context, {
-          ...contextContributor((req as unknown) as Request),
-          log: ((req as unknown) as Request).log,
-        })
-      }
       return {
         ...opts,
-        context,
+        context: settingsGiven.context(req),
       }
     })
   )
 
   if (opts.playground) {
-    express.get('/', (req, res) => {
+    express.get('/', (_req, res) => {
       res.send(`
         <!DOCTYPE html>
         <html>
@@ -194,7 +210,6 @@ export function create(settingsGiven: SettingsInput): Server {
             host: address.address === '127.0.0.1' ? 'localhost' : '',
             ip: address.address,
           })
-          sendServerReadySignalToDevModeMaster()
           res()
         })
       }),
@@ -208,5 +223,149 @@ export function create(settingsGiven: SettingsInput): Server {
           }
         })
       }),
+    instance: express,
   }
+}
+
+interface ServerFactory {
+  createAndStart(opts: {
+    schema: GraphQL.GraphQLSchema
+    plugins: Plugin.RuntimeContributions[]
+    contextContributors: ContextContributor<any>[]
+    settings: App.Settings
+  }): Promise<void>
+  stop(): Promise<void>
+  setCustomizer(customizer: Customizer): void
+}
+
+export function create(): ServerFactory {
+  let server: Server | null = null
+  let createCustomServer: Customizer | null = null
+  // let createContext: ContextCreator | null = null
+
+  return {
+    setCustomizer(customizer: Customizer) {
+      if (singletonChecks.state.is_was_server_start_called) {
+        log.warn(
+          'You called `server.start` before `server.custom`. Your custom server might not be used.'
+        )
+      }
+
+      createCustomServer = customizer
+    },
+    async createAndStart(opts: {
+      schema: GraphQL.GraphQLSchema
+      plugins: Plugin.RuntimeContributions[]
+      contextContributors: ContextContributor<any>[]
+      settings: App.Settings
+    }) {
+      const createContext = contextFactory(
+        opts.contextContributors,
+        opts.plugins
+      )
+      const createDefaultServer = () => {
+        return createExpressServer({
+          ...opts,
+          context: createContext,
+        })
+      }
+
+      if (!createCustomServer) {
+        server = createDefaultServer()
+      } else {
+        const customServer = await createCustomServer({
+          schema: opts.schema,
+          get express() {
+            // Lazily create the express server if it's accessed
+            // Enable free runtime-cost in case a custom server is used
+            server = createDefaultServer()
+            log.debug('Augmented Express server used')
+
+            return (server as ServerWithExpressInstance).instance
+          },
+          context: createContext,
+        })
+
+        if (customServer !== undefined) {
+          if (!customServer.start) {
+            log.fatal(
+              'Your custom server is missing a required `start` function'
+            )
+            return
+          }
+
+          if (!customServer.stop) {
+            log.fatal(
+              'Your custom server is missing a required `stop` function'
+            )
+            return
+          }
+
+          log.debug('Custom server used')
+          server = customServer
+        }
+      }
+
+      // If `server.custom` was called but nothing was returned nor `express` accessed, still create the default server
+      if (!server) {
+        server = createDefaultServer()
+      }
+
+      await server.start()
+      DevMode.sendServerReadySignalToDevModeMaster()
+    },
+    stop() {
+      if (!server) {
+        log.warn('You called `server.stop` before calling `server.start`')
+        return Promise.resolve()
+      }
+
+      return server.stop()
+    },
+  }
+}
+
+type AnonymousRequest = Record<string, any>
+type AnonymousContext = Record<string, any>
+
+interface ContextCreator<
+  Req extends AnonymousRequest = AnonymousRequest,
+  Context extends AnonymousContext = AnonymousContext
+> {
+  (req: Req): Context
+}
+
+function contextFactory(
+  contextContributors: ContextContributor<any>[],
+  plugins: Plugin.RuntimeContributions[]
+): ContextCreator {
+  const createContext: ContextCreator = req => {
+    let context: Record<string, any> = {}
+
+      // TODO HACK
+    ;(req as any).log = log.child('request')
+
+    // Integrate context from plugins
+    for (const plugin of plugins) {
+      if (!plugin.context) continue
+      const contextContribution = plugin.context.create(req)
+      Object.assign(context, contextContribution)
+    }
+
+    // Integrate context from app context api
+    // TODO support async; probably always supported by apollo server
+    // TODO good runtime feedback to user if something goes wrong
+    for (const contextContributor of contextContributors) {
+      // HACK see req mutation at this func body start
+      Object.assign(context, {
+        ...contextContributor((req as unknown) as Request),
+        log: ((req as unknown) as Request).log,
+      })
+    }
+
+    // TODO: TS error if not casted to any :(
+    return context
+  }
+
+  return createContext
 }
