@@ -60,9 +60,7 @@ export type ExtraSettingsData = Required<ExtraSettingsInput>
  */
 export type SettingsInput = createExpressGraphql.OptionsData &
   ExtraSettingsInput & {
-    plugins: Plugin.RuntimeContributions[]
-    contextContributors: ContextContributor<any>[]
-    createContext: ContextCreator
+    context: ContextCreator
   }
 /**
  * [API Reference](https://nexus-future.now.sh/#/references/api?id=server)  ⌁  [Guide](todo)
@@ -72,45 +70,52 @@ export type SettingsInput = createExpressGraphql.OptionsData &
  */
 export interface Server {
   /**
-   * todo
+   * Start the server instance
    */
   start(): Promise<void>
   /**
-   * todo
+   * Stop the server instance
    */
   stop(): Promise<void>
 }
 
-interface OriginalServerWithInstance extends Server {
+interface ExpressServerWithInstance extends Server {
+  /**
+   * The original Express server instance bundled with Nexus. Use it to add express middlewares or change its configuration in anyway
+   */
   instance: Express
 }
 
-interface CustomizerInput {
+interface CustomizerLens {
   /**
    * The generated executable GraphQL Schema
    */
   schema: GraphQL.GraphQLSchema
   /**
-   * The express instance bundled with Nexus. Use it to add express middlewares or change its configuration in anyway
+   * The original Express server bundled with Nexus. Use it to add express middlewares or change its configuration in any way
    */
-  originalServer: OriginalServerWithInstance
+  express: Express
   /**
-   * Function to add the generated context by Nexus to your custom server
+   * Function to add the generated context by Nexus to your custom server.
+   * If you need to add additional properties to your context, please use `server.addToContext`
    */
-  createContext: ContextCreator
+  context: ContextCreator
 }
 
-export type Customizer = (e: CustomizerInput) => Utils.MaybePromise<Server>
+export type Customizer = (
+  lens: CustomizerLens
+) => Utils.MaybePromise<Server | void>
 
-export type CustomServer = (customizer: Customizer) => void
-
-export interface ServerWithCustom extends Server {
-  custom: CustomServer
+export interface ServerWithCustomizer extends Server {
+  /**
+   * Provides a way to use a custom GraphQL server such as Apollo Server or Fastify
+   */
+  custom: (customizer: Customizer) => void
 }
 
-function createDefaultServer(
+function createExpressServer(
   settingsGiven: SettingsInput
-): OriginalServerWithInstance {
+): ExpressServerWithInstance {
   const http = HTTP.createServer()
   const express = createExpress()
   const opts = { ...defaultExtraSettings, ...settingsGiven }
@@ -120,11 +125,9 @@ function createDefaultServer(
   express.use(
     '/graphql',
     createExpressGraphql(req => {
-      const context = settingsGiven.createContext(req)
-
       return {
         ...opts,
-        context,
+        context: settingsGiven.context(req),
       }
     })
   )
@@ -225,7 +228,6 @@ function createDefaultServer(
 }
 
 interface ServerFactory {
-  setCustomizer(customizer: Customizer): void
   createAndStart(opts: {
     schema: GraphQL.GraphQLSchema
     plugins: Plugin.RuntimeContributions[]
@@ -233,6 +235,7 @@ interface ServerFactory {
     settings: App.Settings
   }): Promise<void>
   stop(): Promise<void>
+  setCustomizer(customizer: Customizer): void
 }
 
 export function create(): ServerFactory {
@@ -260,33 +263,52 @@ export function create(): ServerFactory {
         opts.contextContributors,
         opts.plugins
       )
+      const createDefaultServer = () => {
+        return createExpressServer({
+          ...opts,
+          context: createContext,
+        })
+      }
 
-      const defaultServer = createDefaultServer({
-        schema: opts.schema,
-        plugins: opts.plugins,
-        contextContributors: opts.contextContributors,
-        createContext,
-        ...opts.settings.current.server,
-      })
-
-      if (createCustomServer) {
+      if (!createCustomServer) {
+        server = createDefaultServer()
+      } else {
         const customServer = await createCustomServer({
           schema: opts.schema,
-          originalServer: defaultServer,
-          createContext,
+          get express() {
+            // Lazily create the express server if it's accessed
+            // Enable free runtime-cost in case a custom server is used
+            server = createDefaultServer()
+            log.debug('Augmented Express server used')
+
+            return (server as ExpressServerWithInstance).instance
+          },
+          context: createContext,
         })
 
-        if (!customServer.start) {
-          log.error('Your custom server is missing a required `start` function')
-        }
+        if (customServer !== undefined) {
+          if (!customServer.start) {
+            log.fatal(
+              'Your custom server is missing a required `start` function'
+            )
+            return
+          }
 
-        if (!customServer.stop) {
-          log.error('Your custom server is missing a required `stop` function')
-        }
+          if (!customServer.stop) {
+            log.fatal(
+              'Your custom server is missing a required `stop` function'
+            )
+            return
+          }
 
-        server = customServer
-      } else {
-        server = defaultServer
+          log.debug('Custom server used')
+          server = customServer
+        }
+      }
+
+      // If `server.custom` was called but nothing was returned nor `express` accessed, still create the default server
+      if (!server) {
+        server = createDefaultServer()
       }
 
       await server.start()

@@ -17,7 +17,7 @@ type Request = HTTP.IncomingMessage & { log: Logger.Logger }
 // all places in the framework where the req object is referenced should be
 // actually referencing the typegen version, so that it reflects the req +
 // plugin augmentations type
-type ContextContributor<T extends {}> = (req: Request) => T
+type ContextContributor<Req, T extends {} = any> = (req: Req) => T
 
 export type App = {
   /**
@@ -32,7 +32,7 @@ export type App = {
    * ### todo
    *
    */
-  server: Server.ServerWithCustom
+  server: Server.ServerWithCustomizer
   /**
    * todo
    */
@@ -49,8 +49,8 @@ export type App = {
     /**
      * todo
      */
-    addToContext: <T extends {}>(
-      contextContributor: ContextContributor<T>
+    addToContext: <Req extends any = Request, T extends {} = any>(
+      contextContributor: ContextContributor<Req, T>
     ) => void
   }
 }
@@ -140,7 +140,7 @@ export function create(): App {
        * Start the server. If you do not call this explicitly then nexus will
        * for you. You should not normally need to call this function yourself.
        */
-      async start(): Promise<void> {
+      async start() {
         // Track the start call so that we can know in entrypoint whether to run
         // or not start for the user.
         singletonChecks.state.is_was_server_start_called = true
@@ -175,7 +175,7 @@ export function create(): App {
       stop() {
         return server.stop()
       },
-      async custom(customizer) {
+      custom(customizer) {
         server.setCustomizer(customizer)
       },
     },
