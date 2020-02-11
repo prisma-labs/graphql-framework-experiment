@@ -79,7 +79,7 @@ export interface Server {
   stop(): Promise<void>
 }
 
-interface ExpressServerWithInstance extends Server {
+interface ServerWithExpressInstance extends Server {
   /**
    * The original Express server instance bundled with Nexus. Use it to add express middlewares or change its configuration in anyway
    */
@@ -115,7 +115,7 @@ export interface ServerWithCustomizer extends Server {
 
 function createExpressServer(
   settingsGiven: SettingsInput
-): ExpressServerWithInstance {
+): ServerWithExpressInstance {
   const http = HTTP.createServer()
   const express = createExpress()
   const opts = { ...defaultExtraSettings, ...settingsGiven }
@@ -281,7 +281,7 @@ export function create(): ServerFactory {
             server = createDefaultServer()
             log.debug('Augmented Express server used')
 
-            return (server as ExpressServerWithInstance).instance
+            return (server as ServerWithExpressInstance).instance
           },
           context: createContext,
         })
