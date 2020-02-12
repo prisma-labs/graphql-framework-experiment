@@ -1,8 +1,11 @@
 import Chalk from 'chalk'
 import * as fs from 'fs-jetpack'
-import { Layout, relativeTranspiledImportPath } from '.'
-import { baseIgnores, flatMap, stripExt } from '../../utils'
-import { log } from '../schema/logger'
+import {
+  Layout,
+  relativeTranspiledImportPath,
+  loadDataFromParentProcess,
+} from '.'
+import { baseIgnores, stripExt } from '../../utils'
 
 export const MODULE_NAME = 'graphql'
 export const FILE_NAME = MODULE_NAME + '.ts'
@@ -21,70 +24,18 @@ export function emptyExceptionMessage() {
 }
 
 /**
- * Find all the schema modules or child modules of a schema dir.
- *
- * The return value has two views.
- *
- * 1. `modules` is all modules found as described above.
- *
- * 2. `schemaDirsOrModules` is all occurances of the modules called schema or
- *    directories called schema. It does NOT include the modules _inside_ schema directory.
- */
-function findModules(): {
-  modules: string[]
-  schemaDirsOrModules: string[]
-} {
-  log.trace('finding modules...')
-
-  const schemaDirsOrModules = findDirOrModules()
-
-  log.trace('...found', { dirsOrModules: schemaDirsOrModules })
-
-  const modules = flatMap(schemaDirsOrModules, fileOrDir => {
-    const absolutePath = fs.path(fileOrDir)
-
-    if (fs.exists(absolutePath) === 'dir') {
-      return fs
-        .find(absolutePath, {
-          files: true,
-          directories: false,
-          recursive: true,
-          matching: '*.ts',
-        })
-        .map(f => fs.path(f))
-    }
-
-    return [absolutePath]
-  })
-
-  log.trace('... found final set (with dirs traversed)', {
-    expandedModules: modules,
-  })
-
-  return { modules, schemaDirsOrModules }
-}
-
-/**
  * Find all modules called schema modules or directories having the trigger
  * name. This does not grab the child modules of the directory instances!
  */
 export function findDirOrModules(): string[] {
   // TODO async
-  return fs
-    .find({
-      directories: false,
-      files: true,
-      recursive: true,
-      matching: [`${MODULE_NAME}.ts`, ...baseIgnores],
-    })
-    .concat(
-      fs.find({
-        directories: true,
-        files: false,
-        recursive: true,
-        matching: [DIR_NAME, ...baseIgnores],
-      })
-    )
+  const files = fs.find({
+    files: true,
+    recursive: true,
+    matching: [FILE_NAME, `**/${MODULE_NAME}/**/*.ts`, ...baseIgnores],
+  })
+
+  return files.map(f => fs.path(f))
 }
 
 /**
@@ -92,8 +43,10 @@ export function findDirOrModules(): string[] {
  *
  * There is an IO cost here to go find all modules dynamically, so do not use in production.
  */
-export function importModules(): void {
-  findModules().modules.forEach(modulePath => {
+export async function importModules(): Promise<void> {
+  const modules = (await loadDataFromParentProcess()).schemaModules
+
+  modules.forEach(modulePath => {
     require(stripExt(modulePath))
   })
 }
@@ -107,7 +60,7 @@ export function importModules(): void {
  * in the source/build root.
  */
 export function printStaticImports(layout: Layout): string {
-  return findModules().modules.reduce((script, modulePath) => {
+  return layout.schemaModules.reduce((script, modulePath) => {
     const relPath = relativeTranspiledImportPath(layout, modulePath)
     return `${script}\n${printSideEffectsImport(relPath)}`
   }, '')

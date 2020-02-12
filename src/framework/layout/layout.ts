@@ -3,7 +3,7 @@ import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import * as Path from 'path'
 import { PackageJson } from 'type-fest'
-import { findConfigFile, findFile, stripExt } from '../../utils'
+import { findFile, stripExt } from '../../utils'
 import { rootLogger } from '../../utils/logger'
 import * as PackageManager from '../../utils/package-manager'
 import * as Schema from './schema-modules'
@@ -125,7 +125,7 @@ export function createFromData(layoutData: Data): Layout {
 export const scan = async (): Promise<ScanResult> => {
   log.trace('starting scan...')
   const packageManagerType = await PackageManager.detectProjectPackageManager()
-  const maybeAppModule = await findAppModule()
+  const maybeAppModule = findAppModule()
   const maybeSchemaModules = Schema.findDirOrModules()
 
   // TODO do not assume app module is at source root?
@@ -166,7 +166,6 @@ export const scan = async (): Promise<ScanResult> => {
   }
 
   log.trace('...completed scan', { result })
-
   return result
 }
 
@@ -197,8 +196,12 @@ const checks = {
 /**
  * Find the (optional) app module in the user's project.
  */
-export const findAppModule = async () => {
-  return findFile(ENTRYPOINT_FILE_NAMES)
+export function findAppModule(): string | null {
+  log.trace('looking for app module')
+  const path = findFile(ENTRYPOINT_FILE_NAMES)
+  log.trace('done looking for app module')
+
+  return path
 }
 
 /**
@@ -240,7 +243,7 @@ function calcSourceRootToModule(layout: Layout, modulePath: string) {
  * package.json found along search, returns null.
  */
 function findPackageJsonPath(): string | null {
-  return findConfigFile('package.json', { required: false })
+  return fs.path('package.json')
 }
 
 /**

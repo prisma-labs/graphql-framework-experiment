@@ -1,13 +1,14 @@
+import { join } from 'path'
 import { register } from 'ts-node'
-import * as ts from 'typescript'
 import { Script } from 'vm'
+import { Worker } from 'worker_threads'
 import * as Layout from '../framework/layout'
-import { extractContextTypes, readTsConfig } from '../utils'
 import { rootLogger } from '../utils/logger'
 import cfgFactory from './cfg'
 import hook from './hook'
 import * as IPC from './ipc'
 import Module = require('module')
+import { TypegenMetadata } from '@nexus/schema/dist/core'
 
 const log = rootLogger
   .child('cli')
@@ -23,20 +24,26 @@ register({
 ;(async function() {
   await IPC.client.connect()
   log.trace('starting context type extraction')
-  const layout = await Layout.loadDataFromParentProcess()
-  const tsConfig = readTsConfig(layout)
-  const program = ts.createIncrementalProgram({
-    rootNames: tsConfig.fileNames,
-    options: {
-      incremental: true,
-      tsBuildInfoFile: './node_modules/.nexus/cache.tsbuildinfo',
-      ...tsConfig.options,
-    },
+
+  const layout = await Layout.create()
+
+  // TODO: Make sure that this works + find more elegant way
+  process.env = {
+    ...process.env,
+    ...Layout.saveDataForChildProcess(layout),
+  }
+
+  const worker = new Worker(join(__dirname, 'worker.js'), {
+    workerData: { layout: layout.data },
   })
-  process.env.NEXUS_TYPEGEN_ADD_CONTEXT_RESULTS = JSON.stringify(
-    extractContextTypes(program)
-  )
-  log.trace('finished context type extraction')
+
+  worker.once('message', contextTypes => {
+    process.env.NEXUS_TYPEGEN_ADD_CONTEXT_RESULTS = JSON.stringify(contextTypes)
+    log.trace('finished context type extraction', { contextTypes })
+    // Let the Node.js main thread exit, even though the Worker
+    // is still running:
+    worker.unref()
+  })
 
   // Remove app-runner.js from the argv array
   process.argv.splice(1, 1)
