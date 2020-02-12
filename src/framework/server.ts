@@ -97,7 +97,7 @@ interface CustomizerLens {
   express: Express
   /**
    * Function to add the generated context by Nexus to your custom server.
-   * If you need to add additional properties to your context, please use `server.addToContext`
+   * /!\ **If you need to add additional properties to your context, please use `schema.addToContext`**
    */
   context: ContextCreator
 }
