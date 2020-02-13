@@ -145,7 +145,7 @@ yarn -s release:stable
 
 #### Working With Example Apps via Linking
 
-Refer to https://github.com/graphql-nexus/nexus-future-examples
+Refer to https://github.com/prisma-labs/nexus-future-examples
 
 #### Working with create command
 
