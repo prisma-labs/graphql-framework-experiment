@@ -46,7 +46,7 @@ Start by updating our data layer to model information about moons. We don't want
 + }
 ```
 
-`nexus` reacts to changes in your Prisma schema. By saving the above, your dev database will be automatically migrated and photon regenerated. You literally now just move on to updating your GraphQL API.
+Nexus reacts to changes in your Prisma schema. By saving the above, your dev database will be automatically migrated and photon regenerated. You literally now just move on to updating your GraphQL API.
 
 ## Change the API Layer
 

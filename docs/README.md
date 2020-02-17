@@ -1,13 +1,13 @@
 # Introduction
 
-`nexus` is a framework for building GraphQL APIs in Node.
+Nexus is a framework for building GraphQL APIs in Node.
 
-Here are some of the things `nexus` cares about:
+Here are some of the things Nexus cares about:
 
 - Delightful developer experience
 - A CLI supporting devlopment lifecycle workflows
 - A deep plugin system for both runtime and CLI
-- Type-Safety across your entire codebase
+- Type-Safety across your entire stack
 - Integration Testing
 
 ## Hello World Example {docsify-ignore}

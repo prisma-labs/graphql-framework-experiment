@@ -20,7 +20,7 @@ Optional –– The entrypoint to your app
 
 There can only be at most a single `app.ts`/`server.ts`/`service.ts` module in your source tree.
 
-This module is optional **when** you just have schema modules and so `nexus` already knows how import them into the final build. Otherwise you'll need this module to import your custom modules etc.
+This module is optional **when** you just have schema modules and so Nexus already knows how import them into the final build. Otherwise you'll need this module to import your custom modules etc.
 
 ##### Aliases
 
