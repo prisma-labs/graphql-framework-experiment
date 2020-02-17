@@ -113,11 +113,11 @@ export interface ServerWithCustomizer extends Server {
   custom: (customizer: Customizer) => void
 }
 
-function createExpressServer(
+function setupExpress(
+  express: Express,
   settingsGiven: SettingsInput
 ): ServerWithExpressInstance {
   const http = HTTP.createServer()
-  const express = createExpress()
   const opts = { ...defaultExtraSettings, ...settingsGiven }
 
   http.on('request', express)
@@ -263,38 +263,35 @@ export function create(): ServerFactory {
         opts.contextContributors,
         opts.plugins
       )
-      const createDefaultServer = () => {
-        return createExpressServer({
+
+      if (!createCustomServer) {
+        server = setupExpress(createExpress(), {
           ...opts,
           context: createContext,
         })
-      }
-
-      if (!createCustomServer) {
-        server = createDefaultServer()
       } else {
-        const customServer = await createCustomServer({
+        let maybeExpress: null | Express = null
+        const maybeCustomServer = await createCustomServer({
           schema: opts.schema,
+          // Lazily create the express server if it's accessed
+          // Enable free runtime-cost in case a custom server is used
           get express() {
-            // Lazily create the express server if it's accessed
-            // Enable free runtime-cost in case a custom server is used
-            server = createDefaultServer()
-            log.debug('Augmented Express server used')
-
-            return (server as ServerWithExpressInstance).instance
+            maybeExpress = createExpress()
+            log.debug('Augmented Express used')
+            return maybeExpress
           },
           context: createContext,
         })
 
-        if (customServer !== undefined) {
-          if (!customServer.start) {
+        if (maybeCustomServer) {
+          if (!maybeCustomServer.start) {
             log.fatal(
               'Your custom server is missing a required `start` function'
             )
             return
           }
 
-          if (!customServer.stop) {
+          if (!maybeCustomServer.stop) {
             log.fatal(
               'Your custom server is missing a required `stop` function'
             )
@@ -302,13 +299,28 @@ export function create(): ServerFactory {
           }
 
           log.debug('Custom server used')
-          server = customServer
+          server = maybeCustomServer
         }
-      }
 
-      // If `server.custom` was called but nothing was returned nor `express` accessed, still create the default server
-      if (!server) {
-        server = createDefaultServer()
+        // Now do our built in express setup. Doing this after user
+        // customizations is important because in express middleware order is
+        // significant. E.g. to add cors to /graphql user's cors middleware
+        // would have to come first.
+        else if (maybeExpress) {
+          server = setupExpress(maybeExpress, {
+            ...opts,
+            context: createContext,
+          })
+        }
+
+        // If `server.custom` was called but nothing was returned nor `express`
+        // accessed, still create the default server
+        else {
+          server = setupExpress(createExpress(), {
+            ...opts,
+            context: createContext,
+          })
+        }
       }
 
       await server.start()
