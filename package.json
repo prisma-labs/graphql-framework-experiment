@@ -75,6 +75,7 @@
     "testEnvironment": "node"
   },
   "scripts": {
+    "dev:docs": "docsify serve docs",
     "docs:dev": "docsify serve docs",
     "docs:readme:build": "doctoc README.md --notitle --maxlevel 3",
     "docs:deploy": "now switch graphql-nexus && now --name='nexus-future' --prod",
