@@ -35,7 +35,6 @@ export function create(opts: Options): Process {
   process.stdout.on('resize', resizeChild)
 
   child.on('exit', () => {
-    console.log('remove resize listener')
     process.stdout.removeListener('resize', resizeChild)
   })
 
