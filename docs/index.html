@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>nexus-future</title>
+    <title>Nexus</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <meta name="description" content="Description" />
     <meta
@@ -23,19 +23,78 @@
         line-height: 2rem;
       }
 
+      /* Components */
+      .BigButton {
+        border-radius: 2rem;
+        border: 1px solid var(--theme-color, #42b983);
+        box-sizing: border-box;
+        color: var(--theme-color, #42b983) !important;
+        display: inline-block;
+        font-size: 1.05rem;
+        letter-spacing: 0.1rem;
+        margin: 0.5rem 1rem;
+        padding: 0.75em 2rem;
+        text-decoration: none;
+        transition: all 0.15s ease;
+      }
+
+      .BigButton:hover {
+        opacity: 0.5;
+      }
+      .BigButtonPrimary {
+        background-color: var(--theme-color, #42b983);
+        color: #fff !important;
+      }
+      .BigButtonPrimary:hover {
+        opacity: 0.8;
+        color: #262332 !important;
+      }
+
       /* Cover page */
 
+      .cover {
+        position: relative;
+        overflow: hidden;
+      }
+      .cover-main > p:first-child {
+        margin-bottom: 0 !important;
+      }
+      #delightful-graphql-application-framework {
+        margin-top: -0.5rem;
+        margin-bottom: 1.5rem;
+      }
+      #TerminalContainer {
+        position: absolute;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        padding: 0 1.5rem;
+      }
+      #TerminalContainer img {
+        margin-top: 1rem;
+        position: relative;
+        width: 100%;
+        max-width: 1300px;
+      }
+
+      .cover img[alt='logo'] {
+        width: 150px;
+      }
+      .cover img[alt='terminal'] {
+        position: absolute;
+        width: 1250px;
+        margin: auto;
+        /* margin-right: auto; */
+        left: 0;
+        top: 0;
+      }
       .cover-main {
         /* Otherwise mobile sidebar is not on top... */
         z-index: 0 !important;
+        margin-top: -10% !important;
       }
       .cover h3 span {
-        color: white;
-      }
-      .cover h1[id='🎄'] span {
-        font-size: 3em;
-      }
-      .cover h1 span {
         color: white;
       }
       .cover pre {
@@ -57,8 +116,21 @@
         width: 15rem;
         padding-top: 1rem;
       }
-      .sidebar .app-name {
-        font-size: 2rem;
+      .sidebar .app-name a {
+        display: block;
+        margin: 0 auto;
+        font-size: 0;
+        background: no-repeat url('/assets/nexus-logo-black.png');
+        background-size: 50px 50px;
+        opacity: 0.8;
+        width: 50px;
+        height: 50px;
+      }
+      .sidebar .app-name a:hover {
+        opacity: 0.6;
+      }
+      .sidebar .app-name a:active {
+        opacity: 0.3;
       }
       .sidebar {
         font-weight: bold;
@@ -210,7 +282,7 @@
         auto2top: true,
         coverpage: true,
         // onlyCover: true,
-        name: '🎄',
+        name: '.',
         repo: 'graphql-nexus/nexus-future',
         subMaxLevel: 3,
         loadSidebar: true,
