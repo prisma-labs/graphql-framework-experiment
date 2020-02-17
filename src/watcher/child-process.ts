@@ -27,9 +27,16 @@ export function create(opts: Options): Process {
     },
   }) as Process
 
-  process.stdout.on('resize', () => {
+  const resizeChild = () => {
     const { columns, rows } = process.stdout
     child.resize(columns, rows)
+  }
+
+  process.stdout.on('resize', resizeChild)
+
+  child.on('exit', () => {
+    console.log('remove resize listener')
+    process.stdout.removeListener('resize', resizeChild)
   })
 
   // todo use native .kill instead?
