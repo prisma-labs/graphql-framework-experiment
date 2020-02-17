@@ -1,4 +1,8 @@
-# nexus <!-- omit in toc -->
+<p align="center">
+  <img src="assets/../docs/assets/nexus-logo-black.png" height="150px">
+  <br>
+  <span>Delightful GraphQL Application Framework</span>
+</p>
 
 <br>
 
