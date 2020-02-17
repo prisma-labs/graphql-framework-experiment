@@ -1,0 +1,1757 @@
+{
+  "modules": [
+    {
+      "kind": "module",
+      "mainExport": {
+        "kind": "typeIndexRef",
+        "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/app\").App"
+      },
+      "namedExports": [
+        {
+          "kind": "export",
+          "name": "log",
+          "type": {
+            "kind": "typeIndexRef",
+            "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/lib/logger/logger\").Logger"
+          },
+          "isType": false,
+          "isTerm": true
+        },
+        {
+          "kind": "export",
+          "name": "schema",
+          "type": {
+            "kind": "intersection",
+            "raw": {
+              "typeText": "Schema & { addToContext: <Req extends any = Request, T extends {} = any>(contextContributor: ContextContributor<Req, T>) => void; }",
+              "nodeFullText": "",
+              "nodeText": ""
+            },
+            "types": [
+              {
+                "kind": "typeIndexRef",
+                "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/schema/schema\").Schema"
+              },
+              {
+                "kind": "object",
+                "props": [
+                  {
+                    "kind": "prop",
+                    "name": "addToContext",
+                    "type": {
+                      "kind": "callable",
+                      "isOverloaded": false,
+                      "hasProps": false,
+                      "props": [],
+                      "sigs": [
+                        {
+                          "kind": "sig",
+                          "return": {
+                            "kind": "primitive",
+                            "type": "void"
+                          },
+                          "params": [
+                            {
+                              "kind": "sigParam",
+                              "name": "contextContributor",
+                              "type": {
+                                "kind": "typeIndexRef",
+                                "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/app\").ContextContributor"
+                              }
+                            }
+                          ]
+                        }
+                      ],
+                      "raw": {
+                        "typeText": "<Req extends any = Request, T extends {} = any>(contextContributor: ContextContributor<Req, T>) => void",
+                        "nodeText": "<Req extends any = Request, T extends {} = any>(\n      contextContributor: ContextContributor<Req, T>\n    ) => void",
+                        "nodeFullText": "<Req extends any = Request, T extends {} = any>(\n      contextContributor: ContextContributor<Req, T>\n    ) => void"
+                      }
+                    }
+                  }
+                ],
+                "raw": {
+                  "typeText": "{ addToContext: <Req extends any = Request, T extends {} = any>(contextContributor: ContextContributor<Req, T>) => void; }",
+                  "nodeText": "{\n    // addToContext is a bridge between two components, schema and server, so\n    // its not in schema currently...\n\n    /**\n     * todo\n     */\n    addToContext: <Req extends any = Request, T extends {} = any>(\n      contextContributor: ContextContributor<Req, T>\n    ) => void\n  }",
+                  "nodeFullText": "{\n    // addToContext is a bridge between two components, schema and server, so\n    // its not in schema currently...\n\n    /**\n     * todo\n     */\n    addToContext: <Req extends any = Request, T extends {} = any>(\n      contextContributor: ContextContributor<Req, T>\n    ) => void\n  }"
+                }
+              }
+            ]
+          },
+          "isType": false,
+          "isTerm": true
+        },
+        {
+          "kind": "export",
+          "name": "server",
+          "type": {
+            "kind": "typeIndexRef",
+            "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/server\").ServerWithCustomizer"
+          },
+          "isType": false,
+          "isTerm": true
+        },
+        {
+          "kind": "export",
+          "name": "settings",
+          "type": {
+            "kind": "typeIndexRef",
+            "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/app\").Settings"
+          },
+          "isType": false,
+          "isTerm": true
+        }
+      ],
+      "name": "index",
+      "location": {
+        "absoluteFilePath": "/Users/jasonkuhrt/projects/nexus/nexus-future/src/index.ts"
+      }
+    }
+  ],
+  "typeIndex": {
+    "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/app\").App": {
+      "kind": "alias",
+      "name": "App",
+      "type": {
+        "kind": "object",
+        "props": [
+          {
+            "kind": "prop",
+            "name": "log",
+            "type": {
+              "kind": "typeIndexRef",
+              "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/lib/logger/logger\").Logger"
+            }
+          },
+          {
+            "kind": "prop",
+            "name": "server",
+            "type": {
+              "kind": "typeIndexRef",
+              "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/server\").ServerWithCustomizer"
+            }
+          },
+          {
+            "kind": "prop",
+            "name": "settings",
+            "type": {
+              "kind": "typeIndexRef",
+              "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/app\").Settings"
+            }
+          },
+          {
+            "kind": "prop",
+            "name": "schema",
+            "type": {
+              "kind": "intersection",
+              "raw": {
+                "typeText": "Schema & { addToContext: <Req extends any = Request, T extends {} = any>(contextContributor: ContextContributor<Req, T>) => void; }",
+                "nodeFullText": "",
+                "nodeText": ""
+              },
+              "types": [
+                {
+                  "kind": "typeIndexRef",
+                  "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/schema/schema\").Schema"
+                },
+                {
+                  "kind": "object",
+                  "props": [
+                    {
+                      "kind": "prop",
+                      "name": "addToContext",
+                      "type": {
+                        "kind": "callable",
+                        "isOverloaded": false,
+                        "hasProps": false,
+                        "props": [],
+                        "sigs": [
+                          {
+                            "kind": "sig",
+                            "return": {
+                              "kind": "primitive",
+                              "type": "void"
+                            },
+                            "params": [
+                              {
+                                "kind": "sigParam",
+                                "name": "contextContributor",
+                                "type": {
+                                  "kind": "typeIndexRef",
+                                  "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/app\").ContextContributor"
+                                }
+                              }
+                            ]
+                          }
+                        ],
+                        "raw": {
+                          "typeText": "<Req extends any = Request, T extends {} = any>(contextContributor: ContextContributor<Req, T>) => void",
+                          "nodeText": "<Req extends any = Request, T extends {} = any>(\n      contextContributor: ContextContributor<Req, T>\n    ) => void",
+                          "nodeFullText": "<Req extends any = Request, T extends {} = any>(\n      contextContributor: ContextContributor<Req, T>\n    ) => void"
+                        }
+                      }
+                    }
+                  ],
+                  "raw": {
+                    "typeText": "{ addToContext: <Req extends any = Request, T extends {} = any>(contextContributor: ContextContributor<Req, T>) => void; }",
+                    "nodeText": "{\n    // addToContext is a bridge between two components, schema and server, so\n    // its not in schema currently...\n\n    /**\n     * todo\n     */\n    addToContext: <Req extends any = Request, T extends {} = any>(\n      contextContributor: ContextContributor<Req, T>\n    ) => void\n  }",
+                    "nodeFullText": "{\n    // addToContext is a bridge between two components, schema and server, so\n    // its not in schema currently...\n\n    /**\n     * todo\n     */\n    addToContext: <Req extends any = Request, T extends {} = any>(\n      contextContributor: ContextContributor<Req, T>\n    ) => void\n  }"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "raw": {
+          "typeText": "App",
+          "nodeText": "export type App = {\n  /**\n   * [API Reference](https://nexus-future.now.sh/#/references/api?id=logger)  ⌁  [Guide](https://nexus-future.now.sh/#/guides/logging)\n   *\n   * ### todo\n   */\n  log: Logger.Logger\n  /**\n   * [API Reference](https://nexus-future.now.sh/#/references/api?id=server)  ⌁  [Guide](todo)\n   *\n   * ### todo\n   *\n   */\n  server: Server.ServerWithCustomizer\n  /**\n   * todo\n   */\n  settings: Settings\n  /**\n   * [API Reference](https://nexus-future.now.sh/#/references/api?id=appschema) // [Guide](todo)\n   *\n   * ### todo\n   */\n  schema: Schema.Schema & {\n    // addToContext is a bridge between two components, schema and server, so\n    // its not in schema currently...\n\n    /**\n     * todo\n     */\n    addToContext: <Req extends any = Request, T extends {} = any>(\n      contextContributor: ContextContributor<Req, T>\n    ) => void\n  }\n}",
+          "nodeFullText": "export type App = {\n  /**\n   * [API Reference](https://nexus-future.now.sh/#/references/api?id=logger)  ⌁  [Guide](https://nexus-future.now.sh/#/guides/logging)\n   *\n   * ### todo\n   */\n  log: Logger.Logger\n  /**\n   * [API Reference](https://nexus-future.now.sh/#/references/api?id=server)  ⌁  [Guide](todo)\n   *\n   * ### todo\n   *\n   */\n  server: Server.ServerWithCustomizer\n  /**\n   * todo\n   */\n  settings: Settings\n  /**\n   * [API Reference](https://nexus-future.now.sh/#/references/api?id=appschema) // [Guide](todo)\n   *\n   * ### todo\n   */\n  schema: Schema.Schema & {\n    // addToContext is a bridge between two components, schema and server, so\n    // its not in schema currently...\n\n    /**\n     * todo\n     */\n    addToContext: <Req extends any = Request, T extends {} = any>(\n      contextContributor: ContextContributor<Req, T>\n    ) => void\n  }\n}"
+        }
+      },
+      "raw": {
+        "typeText": "App",
+        "nodeText": "export type App = {\n  /**\n   * [API Reference](https://nexus-future.now.sh/#/references/api?id=logger)  ⌁  [Guide](https://nexus-future.now.sh/#/guides/logging)\n   *\n   * ### todo\n   */\n  log: Logger.Logger\n  /**\n   * [API Reference](https://nexus-future.now.sh/#/references/api?id=server)  ⌁  [Guide](todo)\n   *\n   * ### todo\n   *\n   */\n  server: Server.ServerWithCustomizer\n  /**\n   * todo\n   */\n  settings: Settings\n  /**\n   * [API Reference](https://nexus-future.now.sh/#/references/api?id=appschema) // [Guide](todo)\n   *\n   * ### todo\n   */\n  schema: Schema.Schema & {\n    // addToContext is a bridge between two components, schema and server, so\n    // its not in schema currently...\n\n    /**\n     * todo\n     */\n    addToContext: <Req extends any = Request, T extends {} = any>(\n      contextContributor: ContextContributor<Req, T>\n    ) => void\n  }\n}",
+        "nodeFullText": "export type App = {\n  /**\n   * [API Reference](https://nexus-future.now.sh/#/references/api?id=logger)  ⌁  [Guide](https://nexus-future.now.sh/#/guides/logging)\n   *\n   * ### todo\n   */\n  log: Logger.Logger\n  /**\n   * [API Reference](https://nexus-future.now.sh/#/references/api?id=server)  ⌁  [Guide](todo)\n   *\n   * ### todo\n   *\n   */\n  server: Server.ServerWithCustomizer\n  /**\n   * todo\n   */\n  settings: Settings\n  /**\n   * [API Reference](https://nexus-future.now.sh/#/references/api?id=appschema) // [Guide](todo)\n   *\n   * ### todo\n   */\n  schema: Schema.Schema & {\n    // addToContext is a bridge between two components, schema and server, so\n    // its not in schema currently...\n\n    /**\n     * todo\n     */\n    addToContext: <Req extends any = Request, T extends {} = any>(\n      contextContributor: ContextContributor<Req, T>\n    ) => void\n  }\n}"
+      }
+    },
+    "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/lib/logger/logger\").Logger": {
+      "kind": "alias",
+      "name": "Logger",
+      "type": {
+        "kind": "object",
+        "props": [
+          {
+            "kind": "prop",
+            "name": "fatal",
+            "type": {
+              "kind": "typeIndexRef",
+              "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/lib/logger/logger\").Log"
+            }
+          },
+          {
+            "kind": "prop",
+            "name": "error",
+            "type": {
+              "kind": "typeIndexRef",
+              "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/lib/logger/logger\").Log"
+            }
+          },
+          {
+            "kind": "prop",
+            "name": "warn",
+            "type": {
+              "kind": "typeIndexRef",
+              "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/lib/logger/logger\").Log"
+            }
+          },
+          {
+            "kind": "prop",
+            "name": "info",
+            "type": {
+              "kind": "typeIndexRef",
+              "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/lib/logger/logger\").Log"
+            }
+          },
+          {
+            "kind": "prop",
+            "name": "debug",
+            "type": {
+              "kind": "typeIndexRef",
+              "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/lib/logger/logger\").Log"
+            }
+          },
+          {
+            "kind": "prop",
+            "name": "trace",
+            "type": {
+              "kind": "typeIndexRef",
+              "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/lib/logger/logger\").Log"
+            }
+          },
+          {
+            "kind": "prop",
+            "name": "addToContext",
+            "type": {
+              "kind": "callable",
+              "isOverloaded": false,
+              "hasProps": false,
+              "props": [],
+              "sigs": [
+                {
+                  "kind": "sig",
+                  "return": {
+                    "kind": "typeIndexRef",
+                    "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/lib/logger/logger\").Logger"
+                  },
+                  "params": [
+                    {
+                      "kind": "sigParam",
+                      "name": "context",
+                      "type": {
+                        "kind": "unsupported",
+                        "raw": {
+                          "typeText": "Record<string, unknown>",
+                          "nodeText": "type Record<K extends keyof any, T> = {\r\n    [P in K]: T;\r\n};",
+                          "nodeFullText": "/**\r\n * Construct a type with a set of properties K of type T\r\n */\r\ntype Record<K extends keyof any, T> = {\r\n    [P in K]: T;\r\n};"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ],
+              "raw": {
+                "typeText": "(context: Record<string, unknown>) => Logger",
+                "nodeText": "(context: Context) => Logger",
+                "nodeFullText": "(context: Context) => Logger"
+              }
+            }
+          },
+          {
+            "kind": "prop",
+            "name": "child",
+            "type": {
+              "kind": "callable",
+              "isOverloaded": false,
+              "hasProps": false,
+              "props": [],
+              "sigs": [
+                {
+                  "kind": "sig",
+                  "return": {
+                    "kind": "typeIndexRef",
+                    "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/lib/logger/logger\").Logger"
+                  },
+                  "params": [
+                    {
+                      "kind": "sigParam",
+                      "name": "name",
+                      "type": {
+                        "kind": "primitive",
+                        "type": "string"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "raw": {
+                "typeText": "(name: string) => Logger",
+                "nodeText": "(name: string) => Logger",
+                "nodeFullText": "(name: string) => Logger"
+              }
+            }
+          }
+        ],
+        "raw": {
+          "typeText": "Logger",
+          "nodeText": "export type Logger = {\n  fatal: Log\n  error: Log\n  warn: Log\n  info: Log\n  debug: Log\n  trace: Log\n  addToContext: (context: Context) => Logger // fluent\n  child: (name: string) => Logger // fluent\n}",
+          "nodeFullText": "export type Logger = {\n  fatal: Log\n  error: Log\n  warn: Log\n  info: Log\n  debug: Log\n  trace: Log\n  addToContext: (context: Context) => Logger // fluent\n  child: (name: string) => Logger // fluent\n}"
+        }
+      },
+      "raw": {
+        "typeText": "Logger",
+        "nodeText": "export type Logger = {\n  fatal: Log\n  error: Log\n  warn: Log\n  info: Log\n  debug: Log\n  trace: Log\n  addToContext: (context: Context) => Logger // fluent\n  child: (name: string) => Logger // fluent\n}",
+        "nodeFullText": "export type Logger = {\n  fatal: Log\n  error: Log\n  warn: Log\n  info: Log\n  debug: Log\n  trace: Log\n  addToContext: (context: Context) => Logger // fluent\n  child: (name: string) => Logger // fluent\n}"
+      }
+    },
+    "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/lib/logger/logger\").Log": {
+      "kind": "alias",
+      "name": "Log",
+      "type": {
+        "kind": "callable",
+        "isOverloaded": false,
+        "hasProps": false,
+        "props": [],
+        "sigs": [
+          {
+            "kind": "sig",
+            "return": {
+              "kind": "primitive",
+              "type": "void"
+            },
+            "params": [
+              {
+                "kind": "sigParam",
+                "name": "event",
+                "type": {
+                  "kind": "primitive",
+                  "type": "string"
+                }
+              },
+              {
+                "kind": "sigParam",
+                "name": "context",
+                "type": {
+                  "kind": "union",
+                  "isDiscriminated": false,
+                  "discriminantProperties": null,
+                  "raw": {
+                    "typeText": "Record<string, unknown> | undefined",
+                    "nodeFullText": "",
+                    "nodeText": ""
+                  },
+                  "types": [
+                    {
+                      "kind": "primitive",
+                      "type": "undefined"
+                    },
+                    {
+                      "kind": "alias",
+                      "name": "Record",
+                      "type": {
+                        "kind": "unsupported",
+                        "raw": {
+                          "typeText": "Record<string, unknown>",
+                          "nodeText": "type Record<K extends keyof any, T> = {\r\n    [P in K]: T;\r\n};",
+                          "nodeFullText": "/**\r\n * Construct a type with a set of properties K of type T\r\n */\r\ntype Record<K extends keyof any, T> = {\r\n    [P in K]: T;\r\n};"
+                        }
+                      },
+                      "raw": {
+                        "typeText": "Record<string, unknown>",
+                        "nodeText": "type Record<K extends keyof any, T> = {\r\n    [P in K]: T;\r\n};",
+                        "nodeFullText": "/**\r\n * Construct a type with a set of properties K of type T\r\n */\r\ntype Record<K extends keyof any, T> = {\r\n    [P in K]: T;\r\n};"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "raw": {
+          "typeText": "Log",
+          "nodeText": "type Log = (event: string, context?: Context) => void",
+          "nodeFullText": "type Log = (event: string, context?: Context) => void"
+        }
+      },
+      "raw": {
+        "typeText": "Log",
+        "nodeText": "type Log = (event: string, context?: Context) => void",
+        "nodeFullText": "type Log = (event: string, context?: Context) => void"
+      }
+    },
+    "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/server\").ServerWithCustomizer": {
+      "kind": "interface",
+      "name": "ServerWithCustomizer",
+      "props": [
+        {
+          "kind": "prop",
+          "name": "custom",
+          "type": {
+            "kind": "callable",
+            "isOverloaded": false,
+            "hasProps": false,
+            "props": [],
+            "sigs": [
+              {
+                "kind": "sig",
+                "return": {
+                  "kind": "primitive",
+                  "type": "void"
+                },
+                "params": [
+                  {
+                    "kind": "sigParam",
+                    "name": "customizer",
+                    "type": {
+                      "kind": "typeIndexRef",
+                      "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/server\").Customizer"
+                    }
+                  }
+                ]
+              }
+            ],
+            "raw": {
+              "typeText": "(customizer: Customizer) => void",
+              "nodeText": "(customizer: Customizer) => void",
+              "nodeFullText": "(customizer: Customizer) => void"
+            }
+          }
+        },
+        {
+          "kind": "prop",
+          "name": "start",
+          "type": {
+            "kind": "callable",
+            "isOverloaded": false,
+            "hasProps": false,
+            "props": [],
+            "sigs": [
+              {
+                "kind": "sig",
+                "return": {
+                  "kind": "unsupported",
+                  "raw": {
+                    "typeText": "Promise<void>",
+                    "nodeText": "interface Promise<T> {\r\n    /**\r\n     * Attaches callbacks for the resolution and/or rejection of the Promise.\r\n     * @param onfulfilled The callback to execute when the Promise is resolved.\r\n     * @param onrejected The callback to execute when the Promise is rejected.\r\n     * @returns A Promise for the completion of which ever callback is executed.\r\n     */\r\n    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2>;\r\n\r\n    /**\r\n     * Attaches a callback for only the rejection of the Promise.\r\n     * @param onrejected The callback to execute when the Promise is rejected.\r\n     * @returns A Promise for the completion of the callback.\r\n     */\r\n    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult>;\r\n}",
+                    "nodeFullText": "/**\r\n * Represents the completion of an asynchronous operation\r\n */\r\ninterface Promise<T> {\r\n    /**\r\n     * Attaches callbacks for the resolution and/or rejection of the Promise.\r\n     * @param onfulfilled The callback to execute when the Promise is resolved.\r\n     * @param onrejected The callback to execute when the Promise is rejected.\r\n     * @returns A Promise for the completion of which ever callback is executed.\r\n     */\r\n    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2>;\r\n\r\n    /**\r\n     * Attaches a callback for only the rejection of the Promise.\r\n     * @param onrejected The callback to execute when the Promise is rejected.\r\n     * @returns A Promise for the completion of the callback.\r\n     */\r\n    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult>;\r\n}"
+                  }
+                },
+                "params": []
+              }
+            ],
+            "raw": {
+              "typeText": "() => Promise<void>",
+              "nodeText": "start(): Promise<void>",
+              "nodeFullText": "/**\n   * Start the server instance\n   */\n  start(): Promise<void>"
+            }
+          }
+        },
+        {
+          "kind": "prop",
+          "name": "stop",
+          "type": {
+            "kind": "callable",
+            "isOverloaded": false,
+            "hasProps": false,
+            "props": [],
+            "sigs": [
+              {
+                "kind": "sig",
+                "return": {
+                  "kind": "unsupported",
+                  "raw": {
+                    "typeText": "Promise<void>",
+                    "nodeText": "interface Promise<T> {\r\n    /**\r\n     * Attaches callbacks for the resolution and/or rejection of the Promise.\r\n     * @param onfulfilled The callback to execute when the Promise is resolved.\r\n     * @param onrejected The callback to execute when the Promise is rejected.\r\n     * @returns A Promise for the completion of which ever callback is executed.\r\n     */\r\n    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2>;\r\n\r\n    /**\r\n     * Attaches a callback for only the rejection of the Promise.\r\n     * @param onrejected The callback to execute when the Promise is rejected.\r\n     * @returns A Promise for the completion of the callback.\r\n     */\r\n    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult>;\r\n}",
+                    "nodeFullText": "/**\r\n * Represents the completion of an asynchronous operation\r\n */\r\ninterface Promise<T> {\r\n    /**\r\n     * Attaches callbacks for the resolution and/or rejection of the Promise.\r\n     * @param onfulfilled The callback to execute when the Promise is resolved.\r\n     * @param onrejected The callback to execute when the Promise is rejected.\r\n     * @returns A Promise for the completion of which ever callback is executed.\r\n     */\r\n    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2>;\r\n\r\n    /**\r\n     * Attaches a callback for only the rejection of the Promise.\r\n     * @param onrejected The callback to execute when the Promise is rejected.\r\n     * @returns A Promise for the completion of the callback.\r\n     */\r\n    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult>;\r\n}"
+                  }
+                },
+                "params": []
+              }
+            ],
+            "raw": {
+              "typeText": "() => Promise<void>",
+              "nodeText": "stop(): Promise<void>",
+              "nodeFullText": "/**\n   * Stop the server instance\n   */\n  stop(): Promise<void>"
+            }
+          }
+        }
+      ],
+      "raw": {
+        "typeText": "ServerWithCustomizer",
+        "nodeText": "export interface ServerWithCustomizer extends Server {\n  /**\n   * Provides a way to use a custom GraphQL server such as Apollo Server or Fastify\n   */\n  custom: (customizer: Customizer) => void\n}",
+        "nodeFullText": "export interface ServerWithCustomizer extends Server {\n  /**\n   * Provides a way to use a custom GraphQL server such as Apollo Server or Fastify\n   */\n  custom: (customizer: Customizer) => void\n}"
+      }
+    },
+    "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/server\").Customizer": {
+      "kind": "alias",
+      "name": "Customizer",
+      "type": {
+        "kind": "callable",
+        "isOverloaded": false,
+        "hasProps": false,
+        "props": [],
+        "sigs": [
+          {
+            "kind": "sig",
+            "return": {
+              "kind": "typeIndexRef",
+              "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/lib/utils/index\").MaybePromise"
+            },
+            "params": [
+              {
+                "kind": "sigParam",
+                "name": "lens",
+                "type": {
+                  "kind": "typeIndexRef",
+                  "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/server\").CustomizerLens"
+                }
+              }
+            ]
+          }
+        ],
+        "raw": {
+          "typeText": "Customizer",
+          "nodeText": "export type Customizer = (\n  lens: CustomizerLens\n) => Utils.MaybePromise<Server | void>",
+          "nodeFullText": "export type Customizer = (\n  lens: CustomizerLens\n) => Utils.MaybePromise<Server | void>"
+        }
+      },
+      "raw": {
+        "typeText": "Customizer",
+        "nodeText": "export type Customizer = (\n  lens: CustomizerLens\n) => Utils.MaybePromise<Server | void>",
+        "nodeFullText": "export type Customizer = (\n  lens: CustomizerLens\n) => Utils.MaybePromise<Server | void>"
+      }
+    },
+    "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/lib/utils/index\").MaybePromise": {
+      "kind": "alias",
+      "name": "MaybePromise",
+      "type": {
+        "kind": "union",
+        "isDiscriminated": false,
+        "discriminantProperties": null,
+        "raw": {
+          "typeText": "MaybePromise<void | Server>",
+          "nodeText": "export type MaybePromise<T = void> = T | Promise<T>",
+          "nodeFullText": "export type MaybePromise<T = void> = T | Promise<T>"
+        },
+        "types": [
+          {
+            "kind": "primitive",
+            "type": "void"
+          },
+          {
+            "kind": "typeIndexRef",
+            "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/server\").Server"
+          },
+          {
+            "kind": "unsupported",
+            "raw": {
+              "typeText": "Promise<void | Server>",
+              "nodeText": "interface Promise<T> {\r\n    /**\r\n     * Attaches callbacks for the resolution and/or rejection of the Promise.\r\n     * @param onfulfilled The callback to execute when the Promise is resolved.\r\n     * @param onrejected The callback to execute when the Promise is rejected.\r\n     * @returns A Promise for the completion of which ever callback is executed.\r\n     */\r\n    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2>;\r\n\r\n    /**\r\n     * Attaches a callback for only the rejection of the Promise.\r\n     * @param onrejected The callback to execute when the Promise is rejected.\r\n     * @returns A Promise for the completion of the callback.\r\n     */\r\n    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult>;\r\n}",
+              "nodeFullText": "/**\r\n * Represents the completion of an asynchronous operation\r\n */\r\ninterface Promise<T> {\r\n    /**\r\n     * Attaches callbacks for the resolution and/or rejection of the Promise.\r\n     * @param onfulfilled The callback to execute when the Promise is resolved.\r\n     * @param onrejected The callback to execute when the Promise is rejected.\r\n     * @returns A Promise for the completion of which ever callback is executed.\r\n     */\r\n    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2>;\r\n\r\n    /**\r\n     * Attaches a callback for only the rejection of the Promise.\r\n     * @param onrejected The callback to execute when the Promise is rejected.\r\n     * @returns A Promise for the completion of the callback.\r\n     */\r\n    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult>;\r\n}"
+            }
+          }
+        ]
+      },
+      "raw": {
+        "typeText": "MaybePromise<void | Server>",
+        "nodeText": "export type MaybePromise<T = void> = T | Promise<T>",
+        "nodeFullText": "export type MaybePromise<T = void> = T | Promise<T>"
+      }
+    },
+    "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/server\").Server": {
+      "kind": "interface",
+      "name": "Server",
+      "props": [
+        {
+          "kind": "prop",
+          "name": "start",
+          "type": {
+            "kind": "callable",
+            "isOverloaded": false,
+            "hasProps": false,
+            "props": [],
+            "sigs": [
+              {
+                "kind": "sig",
+                "return": {
+                  "kind": "unsupported",
+                  "raw": {
+                    "typeText": "Promise<void>",
+                    "nodeText": "interface Promise<T> {\r\n    /**\r\n     * Attaches callbacks for the resolution and/or rejection of the Promise.\r\n     * @param onfulfilled The callback to execute when the Promise is resolved.\r\n     * @param onrejected The callback to execute when the Promise is rejected.\r\n     * @returns A Promise for the completion of which ever callback is executed.\r\n     */\r\n    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2>;\r\n\r\n    /**\r\n     * Attaches a callback for only the rejection of the Promise.\r\n     * @param onrejected The callback to execute when the Promise is rejected.\r\n     * @returns A Promise for the completion of the callback.\r\n     */\r\n    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult>;\r\n}",
+                    "nodeFullText": "/**\r\n * Represents the completion of an asynchronous operation\r\n */\r\ninterface Promise<T> {\r\n    /**\r\n     * Attaches callbacks for the resolution and/or rejection of the Promise.\r\n     * @param onfulfilled The callback to execute when the Promise is resolved.\r\n     * @param onrejected The callback to execute when the Promise is rejected.\r\n     * @returns A Promise for the completion of which ever callback is executed.\r\n     */\r\n    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2>;\r\n\r\n    /**\r\n     * Attaches a callback for only the rejection of the Promise.\r\n     * @param onrejected The callback to execute when the Promise is rejected.\r\n     * @returns A Promise for the completion of the callback.\r\n     */\r\n    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult>;\r\n}"
+                  }
+                },
+                "params": []
+              }
+            ],
+            "raw": {
+              "typeText": "() => Promise<void>",
+              "nodeText": "start(): Promise<void>",
+              "nodeFullText": "/**\n   * Start the server instance\n   */\n  start(): Promise<void>"
+            }
+          }
+        },
+        {
+          "kind": "prop",
+          "name": "stop",
+          "type": {
+            "kind": "callable",
+            "isOverloaded": false,
+            "hasProps": false,
+            "props": [],
+            "sigs": [
+              {
+                "kind": "sig",
+                "return": {
+                  "kind": "unsupported",
+                  "raw": {
+                    "typeText": "Promise<void>",
+                    "nodeText": "interface Promise<T> {\r\n    /**\r\n     * Attaches callbacks for the resolution and/or rejection of the Promise.\r\n     * @param onfulfilled The callback to execute when the Promise is resolved.\r\n     * @param onrejected The callback to execute when the Promise is rejected.\r\n     * @returns A Promise for the completion of which ever callback is executed.\r\n     */\r\n    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2>;\r\n\r\n    /**\r\n     * Attaches a callback for only the rejection of the Promise.\r\n     * @param onrejected The callback to execute when the Promise is rejected.\r\n     * @returns A Promise for the completion of the callback.\r\n     */\r\n    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult>;\r\n}",
+                    "nodeFullText": "/**\r\n * Represents the completion of an asynchronous operation\r\n */\r\ninterface Promise<T> {\r\n    /**\r\n     * Attaches callbacks for the resolution and/or rejection of the Promise.\r\n     * @param onfulfilled The callback to execute when the Promise is resolved.\r\n     * @param onrejected The callback to execute when the Promise is rejected.\r\n     * @returns A Promise for the completion of which ever callback is executed.\r\n     */\r\n    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2>;\r\n\r\n    /**\r\n     * Attaches a callback for only the rejection of the Promise.\r\n     * @param onrejected The callback to execute when the Promise is rejected.\r\n     * @returns A Promise for the completion of the callback.\r\n     */\r\n    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult>;\r\n}"
+                  }
+                },
+                "params": []
+              }
+            ],
+            "raw": {
+              "typeText": "() => Promise<void>",
+              "nodeText": "stop(): Promise<void>",
+              "nodeFullText": "/**\n   * Stop the server instance\n   */\n  stop(): Promise<void>"
+            }
+          }
+        }
+      ],
+      "raw": {
+        "typeText": "Server",
+        "nodeText": "export interface Server {\n  /**\n   * Start the server instance\n   */\n  start(): Promise<void>\n  /**\n   * Stop the server instance\n   */\n  stop(): Promise<void>\n}",
+        "nodeFullText": "/**\n * [API Reference](https://nexus-future.now.sh/#/references/api?id=server)  ⌁  [Guide](todo)\n *\n * ### todo\n *\n */\nexport interface Server {\n  /**\n   * Start the server instance\n   */\n  start(): Promise<void>\n  /**\n   * Stop the server instance\n   */\n  stop(): Promise<void>\n}"
+      }
+    },
+    "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/server\").CustomizerLens": {
+      "kind": "interface",
+      "name": "CustomizerLens",
+      "props": [
+        {
+          "kind": "prop",
+          "name": "schema",
+          "type": {
+            "kind": "unsupported",
+            "raw": {
+              "typeText": "GraphQLSchema",
+              "nodeText": "export class GraphQLSchema {\n  extensions: Maybe<Readonly<Record<string, any>>>;\n  astNode: Maybe<SchemaDefinitionNode>;\n  extensionASTNodes: Maybe<ReadonlyArray<SchemaExtensionNode>>;\n\n  constructor(config: GraphQLSchemaConfig);\n\n  getQueryType(): Maybe<GraphQLObjectType>;\n  getMutationType(): Maybe<GraphQLObjectType>;\n  getSubscriptionType(): Maybe<GraphQLObjectType>;\n  getTypeMap(): TypeMap;\n  getType(name: string): Maybe<GraphQLNamedType>;\n  getPossibleTypes(\n    abstractType: GraphQLAbstractType,\n  ): ReadonlyArray<GraphQLObjectType>;\n\n  isPossibleType(\n    abstractType: GraphQLAbstractType,\n    possibleType: GraphQLObjectType,\n  ): boolean;\n\n  getDirectives(): ReadonlyArray<GraphQLDirective>;\n  getDirective(name: string): Maybe<GraphQLDirective>;\n\n  toConfig(): GraphQLSchemaConfig & {\n    types: GraphQLNamedType[];\n    directives: GraphQLDirective[];\n    extensions: Maybe<Readonly<Record<string, any>>>;\n    extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;\n    assumeValid: boolean;\n    allowedLegacyNames: ReadonlyArray<string>;\n  };\n}",
+              "nodeFullText": "/**\n * Schema Definition\n *\n * A Schema is created by supplying the root types of each type of operation,\n * query and mutation (optional). A schema definition is then supplied to the\n * validator and executor.\n *\n * Example:\n *\n *     const MyAppSchema = new GraphQLSchema({\n *       query: MyAppQueryRootType,\n *       mutation: MyAppMutationRootType,\n *     })\n *\n * Note: If an array of `directives` are provided to GraphQLSchema, that will be\n * the exact list of directives represented and allowed. If `directives` is not\n * provided then a default set of the specified directives (e.g. @include and\n * @skip) will be used. If you wish to provide *additional* directives to these\n * specified directives, you must explicitly declare them. Example:\n *\n *     const MyAppSchema = new GraphQLSchema({\n *       ...\n *       directives: specifiedDirectives.concat([ myCustomDirective ]),\n *     })\n *\n */\nexport class GraphQLSchema {\n  extensions: Maybe<Readonly<Record<string, any>>>;\n  astNode: Maybe<SchemaDefinitionNode>;\n  extensionASTNodes: Maybe<ReadonlyArray<SchemaExtensionNode>>;\n\n  constructor(config: GraphQLSchemaConfig);\n\n  getQueryType(): Maybe<GraphQLObjectType>;\n  getMutationType(): Maybe<GraphQLObjectType>;\n  getSubscriptionType(): Maybe<GraphQLObjectType>;\n  getTypeMap(): TypeMap;\n  getType(name: string): Maybe<GraphQLNamedType>;\n  getPossibleTypes(\n    abstractType: GraphQLAbstractType,\n  ): ReadonlyArray<GraphQLObjectType>;\n\n  isPossibleType(\n    abstractType: GraphQLAbstractType,\n    possibleType: GraphQLObjectType,\n  ): boolean;\n\n  getDirectives(): ReadonlyArray<GraphQLDirective>;\n  getDirective(name: string): Maybe<GraphQLDirective>;\n\n  toConfig(): GraphQLSchemaConfig & {\n    types: GraphQLNamedType[];\n    directives: GraphQLDirective[];\n    extensions: Maybe<Readonly<Record<string, any>>>;\n    extensionASTNodes: ReadonlyArray<SchemaExtensionNode>;\n    assumeValid: boolean;\n    allowedLegacyNames: ReadonlyArray<string>;\n  };\n}"
+            }
+          }
+        },
+        {
+          "kind": "prop",
+          "name": "express",
+          "type": {
+            "kind": "unsupported",
+            "raw": {
+              "typeText": "Express",
+              "nodeText": "interface Express extends core.Express { }",
+              "nodeFullText": "interface Express extends core.Express { }"
+            }
+          }
+        },
+        {
+          "kind": "prop",
+          "name": "context",
+          "type": {
+            "kind": "callable",
+            "isOverloaded": false,
+            "hasProps": false,
+            "props": [],
+            "sigs": [
+              {
+                "kind": "sig",
+                "return": {
+                  "kind": "unsupported",
+                  "raw": {
+                    "typeText": "Record<string, any>",
+                    "nodeText": "type Record<K extends keyof any, T> = {\r\n    [P in K]: T;\r\n};",
+                    "nodeFullText": "/**\r\n * Construct a type with a set of properties K of type T\r\n */\r\ntype Record<K extends keyof any, T> = {\r\n    [P in K]: T;\r\n};"
+                  }
+                },
+                "params": [
+                  {
+                    "kind": "sigParam",
+                    "name": "req",
+                    "type": {
+                      "kind": "unsupported",
+                      "raw": {
+                        "typeText": "Req",
+                        "nodeText": "Req extends AnonymousRequest = AnonymousRequest",
+                        "nodeFullText": "Req extends AnonymousRequest = AnonymousRequest"
+                      }
+                    }
+                  }
+                ]
+              }
+            ],
+            "raw": {
+              "typeText": "ContextCreator<Record<string, any>, Record<string, any>>",
+              "nodeText": "interface ContextCreator<\n  Req extends AnonymousRequest = AnonymousRequest,\n  Context extends AnonymousContext = AnonymousContext\n> {\n  (req: Req): Context\n}",
+              "nodeFullText": "interface ContextCreator<\n  Req extends AnonymousRequest = AnonymousRequest,\n  Context extends AnonymousContext = AnonymousContext\n> {\n  (req: Req): Context\n}"
+            }
+          }
+        }
+      ],
+      "raw": {
+        "typeText": "CustomizerLens",
+        "nodeText": "interface CustomizerLens {\n  /**\n   * The generated executable GraphQL Schema\n   */\n  schema: GraphQL.GraphQLSchema\n  /**\n   * The original Express server bundled with Nexus. Use it to add express middlewares or change its configuration in any way\n   */\n  express: Express\n  /**\n   * Function to add the generated context by Nexus to your custom server.\n   * /!\\ **If you need to add additional properties to your context, please use `schema.addToContext`**\n   */\n  context: ContextCreator\n}",
+        "nodeFullText": "interface CustomizerLens {\n  /**\n   * The generated executable GraphQL Schema\n   */\n  schema: GraphQL.GraphQLSchema\n  /**\n   * The original Express server bundled with Nexus. Use it to add express middlewares or change its configuration in any way\n   */\n  express: Express\n  /**\n   * Function to add the generated context by Nexus to your custom server.\n   * /!\\ **If you need to add additional properties to your context, please use `schema.addToContext`**\n   */\n  context: ContextCreator\n}"
+      }
+    },
+    "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/app\").Settings": {
+      "kind": "alias",
+      "name": "Settings",
+      "type": {
+        "kind": "object",
+        "props": [
+          {
+            "kind": "prop",
+            "name": "original",
+            "type": {
+              "kind": "unsupported",
+              "raw": {
+                "typeText": "Readonly<{ logger: Readonly<{ level: Level; pretty: Readonly<{ enabled: boolean; color: boolean; levelLabel: boolean; timeDiff: boolean; }>; output: Output; }>; schema: SettingsInput; server: Required<...>; }>",
+                "nodeText": "type Readonly<T> = {\r\n    readonly [P in keyof T]: T[P];\r\n};",
+                "nodeFullText": "/**\r\n * Make all properties in T readonly\r\n */\r\ntype Readonly<T> = {\r\n    readonly [P in keyof T]: T[P];\r\n};"
+              }
+            }
+          },
+          {
+            "kind": "prop",
+            "name": "current",
+            "type": {
+              "kind": "unsupported",
+              "raw": {
+                "typeText": "Readonly<{ logger: Readonly<{ level: Level; pretty: Readonly<{ enabled: boolean; color: boolean; levelLabel: boolean; timeDiff: boolean; }>; output: Output; }>; schema: SettingsInput; server: Required<...>; }>",
+                "nodeText": "type Readonly<T> = {\r\n    readonly [P in keyof T]: T[P];\r\n};",
+                "nodeFullText": "/**\r\n * Make all properties in T readonly\r\n */\r\ntype Readonly<T> = {\r\n    readonly [P in keyof T]: T[P];\r\n};"
+              }
+            }
+          },
+          {
+            "kind": "prop",
+            "name": "change",
+            "type": {
+              "kind": "callable",
+              "isOverloaded": false,
+              "hasProps": false,
+              "props": [],
+              "sigs": [
+                {
+                  "kind": "sig",
+                  "return": {
+                    "kind": "primitive",
+                    "type": "void"
+                  },
+                  "params": [
+                    {
+                      "kind": "sigParam",
+                      "name": "newSetting",
+                      "type": {
+                        "kind": "typeIndexRef",
+                        "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/app\").SettingsInput"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "raw": {
+                "typeText": "(newSetting: SettingsInput) => void",
+                "nodeText": "change(newSetting: SettingsInput): void",
+                "nodeFullText": "/**\n   * todo\n   */\n  change(newSetting: SettingsInput): void"
+              }
+            }
+          }
+        ],
+        "raw": {
+          "typeText": "Settings",
+          "nodeText": "export type Settings = {\n  /**\n   * todo\n   */\n  original: SettingsData\n  /**\n   * todo\n   */\n  current: SettingsData\n  /**\n   * todo\n   */\n  change(newSetting: SettingsInput): void\n}",
+          "nodeFullText": "/**\n * todo\n */\nexport type Settings = {\n  /**\n   * todo\n   */\n  original: SettingsData\n  /**\n   * todo\n   */\n  current: SettingsData\n  /**\n   * todo\n   */\n  change(newSetting: SettingsInput): void\n}"
+        }
+      },
+      "raw": {
+        "typeText": "Settings",
+        "nodeText": "export type Settings = {\n  /**\n   * todo\n   */\n  original: SettingsData\n  /**\n   * todo\n   */\n  current: SettingsData\n  /**\n   * todo\n   */\n  change(newSetting: SettingsInput): void\n}",
+        "nodeFullText": "/**\n * todo\n */\nexport type Settings = {\n  /**\n   * todo\n   */\n  original: SettingsData\n  /**\n   * todo\n   */\n  current: SettingsData\n  /**\n   * todo\n   */\n  change(newSetting: SettingsInput): void\n}"
+      }
+    },
+    "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/app\").SettingsInput": {
+      "kind": "alias",
+      "name": "SettingsInput",
+      "type": {
+        "kind": "object",
+        "props": [
+          {
+            "kind": "prop",
+            "name": "logger",
+            "type": {
+              "kind": "union",
+              "isDiscriminated": false,
+              "discriminantProperties": null,
+              "raw": {
+                "typeText": "SettingsInput | undefined",
+                "nodeFullText": "",
+                "nodeText": ""
+              },
+              "types": [
+                {
+                  "kind": "primitive",
+                  "type": "undefined"
+                },
+                {
+                  "kind": "alias",
+                  "name": "SettingsInput",
+                  "type": {
+                    "kind": "typeIndexRef",
+                    "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/lib/logger/root-logger\").SettingsInput"
+                  },
+                  "raw": {
+                    "typeText": "SettingsInput",
+                    "nodeText": "export type SettingsInput = {\n  /**\n   * Set the level of this and all descedent loggers. This level setting has\n   * highest precedence of all logger level configuration tiers.\n   *\n   * The level config takes the first value found, searching tiers as follows:\n   *\n   *  1. logger instance setting\n   *  2. logger constructor setting\n   *  3. LOG_LEVEL environment variable setting\n   *  3. NODE_ENV=production -> info\n   *  4. otherwise -> debug\n   */\n  level?: Level.Level\n  /**\n   * Control pretty mode.\n   *\n   * Shorthands:\n   *\n   *  - `true` is shorthand for `{ enabled: true }`\n   *  - `false` is shorthand for `{ enabled: false }`\n   *\n   * When `undefined` pretty takes the first value found, in order:\n   *\n   *  1. `process.env.LOG_PRETTY` (admits case insensitive: `true` | `false`)\n   *  2. `process.stdout.isTTY`\n   */\n  pretty?:\n    | boolean\n    | {\n        /**\n         * Disable or enable pretty mode.\n         *\n         * When `undefined` pretty takes the first value found, in order:\n         *\n         *  1. `process.env.LOG_PRETTY` (admits case insensitive: `true` | `false`)\n         *  2. `process.stdout.isTTY`\n         */\n        enabled?: boolean\n        /**\n         * Should logs be colored?\n         *\n         * @default `true`\n         *\n         * Disabling can be useful when pretty logs are going to a destination that\n         * does not support rendering ANSI color codes (consequence being very\n         * difficult to read content).\n         */\n        color?: boolean\n        /**\n         * Should logs include the level label?\n         *\n         * @default `false`\n         *\n         * Enable this if understanding the level of a log is important to you\n         * and the icon+color system is insufficient for you to do so. Can be\n         * helpful for newcomers or a matter of taste for some.\n         */\n        levelLabel?: boolean\n        /**\n         * Should the logs include the time between it and previous log?\n         *\n         * @default `true`\n         */\n        timeDiff?: boolean\n      }\n}",
+                    "nodeFullText": "export type SettingsInput = {\n  /**\n   * Set the level of this and all descedent loggers. This level setting has\n   * highest precedence of all logger level configuration tiers.\n   *\n   * The level config takes the first value found, searching tiers as follows:\n   *\n   *  1. logger instance setting\n   *  2. logger constructor setting\n   *  3. LOG_LEVEL environment variable setting\n   *  3. NODE_ENV=production -> info\n   *  4. otherwise -> debug\n   */\n  level?: Level.Level\n  /**\n   * Control pretty mode.\n   *\n   * Shorthands:\n   *\n   *  - `true` is shorthand for `{ enabled: true }`\n   *  - `false` is shorthand for `{ enabled: false }`\n   *\n   * When `undefined` pretty takes the first value found, in order:\n   *\n   *  1. `process.env.LOG_PRETTY` (admits case insensitive: `true` | `false`)\n   *  2. `process.stdout.isTTY`\n   */\n  pretty?:\n    | boolean\n    | {\n        /**\n         * Disable or enable pretty mode.\n         *\n         * When `undefined` pretty takes the first value found, in order:\n         *\n         *  1. `process.env.LOG_PRETTY` (admits case insensitive: `true` | `false`)\n         *  2. `process.stdout.isTTY`\n         */\n        enabled?: boolean\n        /**\n         * Should logs be colored?\n         *\n         * @default `true`\n         *\n         * Disabling can be useful when pretty logs are going to a destination that\n         * does not support rendering ANSI color codes (consequence being very\n         * difficult to read content).\n         */\n        color?: boolean\n        /**\n         * Should logs include the level label?\n         *\n         * @default `false`\n         *\n         * Enable this if understanding the level of a log is important to you\n         * and the icon+color system is insufficient for you to do so. Can be\n         * helpful for newcomers or a matter of taste for some.\n         */\n        levelLabel?: boolean\n        /**\n         * Should the logs include the time between it and previous log?\n         *\n         * @default `true`\n         */\n        timeDiff?: boolean\n      }\n}"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "kind": "prop",
+            "name": "schema",
+            "type": {
+              "kind": "union",
+              "isDiscriminated": false,
+              "discriminantProperties": null,
+              "raw": {
+                "typeText": "SettingsInput | undefined",
+                "nodeFullText": "",
+                "nodeText": ""
+              },
+              "types": [
+                {
+                  "kind": "primitive",
+                  "type": "undefined"
+                },
+                {
+                  "kind": "alias",
+                  "name": "SettingsInput",
+                  "type": {
+                    "kind": "typeIndexRef",
+                    "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/schema/schema\").SettingsInput"
+                  },
+                  "raw": {
+                    "typeText": "SettingsInput",
+                    "nodeText": "export type SettingsInput = {\n  /**\n   * todo\n   */\n  connections?: ConnectionConfig & {\n    // We tried the idea of types.default: false | ConnectionConfig\n    // but got blocked by https://github.com/microsoft/TypeScript/issues/17867\n\n    /**\n     * todo\n     *\n     * @default `false`\n     */\n    disableDefaultType?: boolean\n    /**\n     * todo\n     */\n    types?: {\n      default?: ConnectionConfig\n      // Extra undefined below is forced by it being above, forced via `?:`.\n      // This is a TS limitation, cannot express void vs missing semantics,\n      // being tracked here: https://github.com/microsoft/TypeScript/issues/13195\n      [typeName: string]: ConnectionConfig | undefined\n    }\n  }\n}",
+                    "nodeFullText": "export type SettingsInput = {\n  /**\n   * todo\n   */\n  connections?: ConnectionConfig & {\n    // We tried the idea of types.default: false | ConnectionConfig\n    // but got blocked by https://github.com/microsoft/TypeScript/issues/17867\n\n    /**\n     * todo\n     *\n     * @default `false`\n     */\n    disableDefaultType?: boolean\n    /**\n     * todo\n     */\n    types?: {\n      default?: ConnectionConfig\n      // Extra undefined below is forced by it being above, forced via `?:`.\n      // This is a TS limitation, cannot express void vs missing semantics,\n      // being tracked here: https://github.com/microsoft/TypeScript/issues/13195\n      [typeName: string]: ConnectionConfig | undefined\n    }\n  }\n}"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "kind": "prop",
+            "name": "server",
+            "type": {
+              "kind": "union",
+              "isDiscriminated": false,
+              "discriminantProperties": null,
+              "raw": {
+                "typeText": "ExtraSettingsInput | undefined",
+                "nodeFullText": "",
+                "nodeText": ""
+              },
+              "types": [
+                {
+                  "kind": "primitive",
+                  "type": "undefined"
+                },
+                {
+                  "kind": "alias",
+                  "name": "ExtraSettingsInput",
+                  "type": {
+                    "kind": "typeIndexRef",
+                    "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/server\").ExtraSettingsInput"
+                  },
+                  "raw": {
+                    "typeText": "ExtraSettingsInput",
+                    "nodeText": "export type ExtraSettingsInput = {\n  /**\n   * todo\n   */\n  port?: number\n  /**\n   * todo\n   */\n  playground?: boolean\n  /**\n   * Create a message suitable for printing to the terminal about the server\n   * having been booted.\n   */\n  startMessage?: (address: { port: number; host: string; ip: string }) => void\n}",
+                    "nodeFullText": "export type ExtraSettingsInput = {\n  /**\n   * todo\n   */\n  port?: number\n  /**\n   * todo\n   */\n  playground?: boolean\n  /**\n   * Create a message suitable for printing to the terminal about the server\n   * having been booted.\n   */\n  startMessage?: (address: { port: number; host: string; ip: string }) => void\n}"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "raw": {
+          "typeText": "SettingsInput",
+          "nodeText": "type SettingsInput = {\n  logger?: Logger.SettingsInput\n  schema?: Schema.SettingsInput\n  server?: Server.ExtraSettingsInput\n}",
+          "nodeFullText": "type SettingsInput = {\n  logger?: Logger.SettingsInput\n  schema?: Schema.SettingsInput\n  server?: Server.ExtraSettingsInput\n}"
+        }
+      },
+      "raw": {
+        "typeText": "SettingsInput",
+        "nodeText": "type SettingsInput = {\n  logger?: Logger.SettingsInput\n  schema?: Schema.SettingsInput\n  server?: Server.ExtraSettingsInput\n}",
+        "nodeFullText": "type SettingsInput = {\n  logger?: Logger.SettingsInput\n  schema?: Schema.SettingsInput\n  server?: Server.ExtraSettingsInput\n}"
+      }
+    },
+    "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/lib/logger/root-logger\").SettingsInput": {
+      "kind": "alias",
+      "name": "SettingsInput",
+      "type": {
+        "kind": "object",
+        "props": [
+          {
+            "kind": "prop",
+            "name": "level",
+            "type": {
+              "kind": "union",
+              "isDiscriminated": false,
+              "discriminantProperties": null,
+              "raw": {
+                "typeText": "\"fatal\" | \"error\" | \"warn\" | \"info\" | \"debug\" | \"trace\" | undefined",
+                "nodeFullText": "",
+                "nodeText": ""
+              },
+              "types": [
+                {
+                  "kind": "primitive",
+                  "type": "undefined"
+                },
+                {
+                  "kind": "literal",
+                  "name": "\"fatal\"",
+                  "base": "string"
+                },
+                {
+                  "kind": "literal",
+                  "name": "\"error\"",
+                  "base": "string"
+                },
+                {
+                  "kind": "literal",
+                  "name": "\"warn\"",
+                  "base": "string"
+                },
+                {
+                  "kind": "literal",
+                  "name": "\"info\"",
+                  "base": "string"
+                },
+                {
+                  "kind": "literal",
+                  "name": "\"debug\"",
+                  "base": "string"
+                },
+                {
+                  "kind": "literal",
+                  "name": "\"trace\"",
+                  "base": "string"
+                }
+              ]
+            }
+          },
+          {
+            "kind": "prop",
+            "name": "pretty",
+            "type": {
+              "kind": "union",
+              "isDiscriminated": false,
+              "discriminantProperties": null,
+              "raw": {
+                "typeText": "boolean | { enabled?: boolean | undefined; color?: boolean | undefined; levelLabel?: boolean | undefined; timeDiff?: boolean | undefined; } | undefined",
+                "nodeFullText": "",
+                "nodeText": ""
+              },
+              "types": [
+                {
+                  "kind": "primitive",
+                  "type": "undefined"
+                },
+                {
+                  "kind": "literal",
+                  "name": "false",
+                  "base": "boolean"
+                },
+                {
+                  "kind": "literal",
+                  "name": "true",
+                  "base": "boolean"
+                },
+                {
+                  "kind": "object",
+                  "props": [
+                    {
+                      "kind": "prop",
+                      "name": "enabled",
+                      "type": {
+                        "kind": "union",
+                        "isDiscriminated": false,
+                        "discriminantProperties": null,
+                        "raw": {
+                          "typeText": "boolean | undefined",
+                          "nodeFullText": "",
+                          "nodeText": ""
+                        },
+                        "types": [
+                          {
+                            "kind": "primitive",
+                            "type": "undefined"
+                          },
+                          {
+                            "kind": "literal",
+                            "name": "false",
+                            "base": "boolean"
+                          },
+                          {
+                            "kind": "literal",
+                            "name": "true",
+                            "base": "boolean"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "kind": "prop",
+                      "name": "color",
+                      "type": {
+                        "kind": "union",
+                        "isDiscriminated": false,
+                        "discriminantProperties": null,
+                        "raw": {
+                          "typeText": "boolean | undefined",
+                          "nodeFullText": "",
+                          "nodeText": ""
+                        },
+                        "types": [
+                          {
+                            "kind": "primitive",
+                            "type": "undefined"
+                          },
+                          {
+                            "kind": "literal",
+                            "name": "false",
+                            "base": "boolean"
+                          },
+                          {
+                            "kind": "literal",
+                            "name": "true",
+                            "base": "boolean"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "kind": "prop",
+                      "name": "levelLabel",
+                      "type": {
+                        "kind": "union",
+                        "isDiscriminated": false,
+                        "discriminantProperties": null,
+                        "raw": {
+                          "typeText": "boolean | undefined",
+                          "nodeFullText": "",
+                          "nodeText": ""
+                        },
+                        "types": [
+                          {
+                            "kind": "primitive",
+                            "type": "undefined"
+                          },
+                          {
+                            "kind": "literal",
+                            "name": "false",
+                            "base": "boolean"
+                          },
+                          {
+                            "kind": "literal",
+                            "name": "true",
+                            "base": "boolean"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "kind": "prop",
+                      "name": "timeDiff",
+                      "type": {
+                        "kind": "union",
+                        "isDiscriminated": false,
+                        "discriminantProperties": null,
+                        "raw": {
+                          "typeText": "boolean | undefined",
+                          "nodeFullText": "",
+                          "nodeText": ""
+                        },
+                        "types": [
+                          {
+                            "kind": "primitive",
+                            "type": "undefined"
+                          },
+                          {
+                            "kind": "literal",
+                            "name": "false",
+                            "base": "boolean"
+                          },
+                          {
+                            "kind": "literal",
+                            "name": "true",
+                            "base": "boolean"
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "raw": {
+                    "typeText": "{ enabled?: boolean | undefined; color?: boolean | undefined; levelLabel?: boolean | undefined; timeDiff?: boolean | undefined; }",
+                    "nodeText": "{\n        /**\n         * Disable or enable pretty mode.\n         *\n         * When `undefined` pretty takes the first value found, in order:\n         *\n         *  1. `process.env.LOG_PRETTY` (admits case insensitive: `true` | `false`)\n         *  2. `process.stdout.isTTY`\n         */\n        enabled?: boolean\n        /**\n         * Should logs be colored?\n         *\n         * @default `true`\n         *\n         * Disabling can be useful when pretty logs are going to a destination that\n         * does not support rendering ANSI color codes (consequence being very\n         * difficult to read content).\n         */\n        color?: boolean\n        /**\n         * Should logs include the level label?\n         *\n         * @default `false`\n         *\n         * Enable this if understanding the level of a log is important to you\n         * and the icon+color system is insufficient for you to do so. Can be\n         * helpful for newcomers or a matter of taste for some.\n         */\n        levelLabel?: boolean\n        /**\n         * Should the logs include the time between it and previous log?\n         *\n         * @default `true`\n         */\n        timeDiff?: boolean\n      }",
+                    "nodeFullText": "{\n        /**\n         * Disable or enable pretty mode.\n         *\n         * When `undefined` pretty takes the first value found, in order:\n         *\n         *  1. `process.env.LOG_PRETTY` (admits case insensitive: `true` | `false`)\n         *  2. `process.stdout.isTTY`\n         */\n        enabled?: boolean\n        /**\n         * Should logs be colored?\n         *\n         * @default `true`\n         *\n         * Disabling can be useful when pretty logs are going to a destination that\n         * does not support rendering ANSI color codes (consequence being very\n         * difficult to read content).\n         */\n        color?: boolean\n        /**\n         * Should logs include the level label?\n         *\n         * @default `false`\n         *\n         * Enable this if understanding the level of a log is important to you\n         * and the icon+color system is insufficient for you to do so. Can be\n         * helpful for newcomers or a matter of taste for some.\n         */\n        levelLabel?: boolean\n        /**\n         * Should the logs include the time between it and previous log?\n         *\n         * @default `true`\n         */\n        timeDiff?: boolean\n      }"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "raw": {
+          "typeText": "SettingsInput",
+          "nodeText": "export type SettingsInput = {\n  /**\n   * Set the level of this and all descedent loggers. This level setting has\n   * highest precedence of all logger level configuration tiers.\n   *\n   * The level config takes the first value found, searching tiers as follows:\n   *\n   *  1. logger instance setting\n   *  2. logger constructor setting\n   *  3. LOG_LEVEL environment variable setting\n   *  3. NODE_ENV=production -> info\n   *  4. otherwise -> debug\n   */\n  level?: Level.Level\n  /**\n   * Control pretty mode.\n   *\n   * Shorthands:\n   *\n   *  - `true` is shorthand for `{ enabled: true }`\n   *  - `false` is shorthand for `{ enabled: false }`\n   *\n   * When `undefined` pretty takes the first value found, in order:\n   *\n   *  1. `process.env.LOG_PRETTY` (admits case insensitive: `true` | `false`)\n   *  2. `process.stdout.isTTY`\n   */\n  pretty?:\n    | boolean\n    | {\n        /**\n         * Disable or enable pretty mode.\n         *\n         * When `undefined` pretty takes the first value found, in order:\n         *\n         *  1. `process.env.LOG_PRETTY` (admits case insensitive: `true` | `false`)\n         *  2. `process.stdout.isTTY`\n         */\n        enabled?: boolean\n        /**\n         * Should logs be colored?\n         *\n         * @default `true`\n         *\n         * Disabling can be useful when pretty logs are going to a destination that\n         * does not support rendering ANSI color codes (consequence being very\n         * difficult to read content).\n         */\n        color?: boolean\n        /**\n         * Should logs include the level label?\n         *\n         * @default `false`\n         *\n         * Enable this if understanding the level of a log is important to you\n         * and the icon+color system is insufficient for you to do so. Can be\n         * helpful for newcomers or a matter of taste for some.\n         */\n        levelLabel?: boolean\n        /**\n         * Should the logs include the time between it and previous log?\n         *\n         * @default `true`\n         */\n        timeDiff?: boolean\n      }\n}",
+          "nodeFullText": "export type SettingsInput = {\n  /**\n   * Set the level of this and all descedent loggers. This level setting has\n   * highest precedence of all logger level configuration tiers.\n   *\n   * The level config takes the first value found, searching tiers as follows:\n   *\n   *  1. logger instance setting\n   *  2. logger constructor setting\n   *  3. LOG_LEVEL environment variable setting\n   *  3. NODE_ENV=production -> info\n   *  4. otherwise -> debug\n   */\n  level?: Level.Level\n  /**\n   * Control pretty mode.\n   *\n   * Shorthands:\n   *\n   *  - `true` is shorthand for `{ enabled: true }`\n   *  - `false` is shorthand for `{ enabled: false }`\n   *\n   * When `undefined` pretty takes the first value found, in order:\n   *\n   *  1. `process.env.LOG_PRETTY` (admits case insensitive: `true` | `false`)\n   *  2. `process.stdout.isTTY`\n   */\n  pretty?:\n    | boolean\n    | {\n        /**\n         * Disable or enable pretty mode.\n         *\n         * When `undefined` pretty takes the first value found, in order:\n         *\n         *  1. `process.env.LOG_PRETTY` (admits case insensitive: `true` | `false`)\n         *  2. `process.stdout.isTTY`\n         */\n        enabled?: boolean\n        /**\n         * Should logs be colored?\n         *\n         * @default `true`\n         *\n         * Disabling can be useful when pretty logs are going to a destination that\n         * does not support rendering ANSI color codes (consequence being very\n         * difficult to read content).\n         */\n        color?: boolean\n        /**\n         * Should logs include the level label?\n         *\n         * @default `false`\n         *\n         * Enable this if understanding the level of a log is important to you\n         * and the icon+color system is insufficient for you to do so. Can be\n         * helpful for newcomers or a matter of taste for some.\n         */\n        levelLabel?: boolean\n        /**\n         * Should the logs include the time between it and previous log?\n         *\n         * @default `true`\n         */\n        timeDiff?: boolean\n      }\n}"
+        }
+      },
+      "raw": {
+        "typeText": "SettingsInput",
+        "nodeText": "export type SettingsInput = {\n  /**\n   * Set the level of this and all descedent loggers. This level setting has\n   * highest precedence of all logger level configuration tiers.\n   *\n   * The level config takes the first value found, searching tiers as follows:\n   *\n   *  1. logger instance setting\n   *  2. logger constructor setting\n   *  3. LOG_LEVEL environment variable setting\n   *  3. NODE_ENV=production -> info\n   *  4. otherwise -> debug\n   */\n  level?: Level.Level\n  /**\n   * Control pretty mode.\n   *\n   * Shorthands:\n   *\n   *  - `true` is shorthand for `{ enabled: true }`\n   *  - `false` is shorthand for `{ enabled: false }`\n   *\n   * When `undefined` pretty takes the first value found, in order:\n   *\n   *  1. `process.env.LOG_PRETTY` (admits case insensitive: `true` | `false`)\n   *  2. `process.stdout.isTTY`\n   */\n  pretty?:\n    | boolean\n    | {\n        /**\n         * Disable or enable pretty mode.\n         *\n         * When `undefined` pretty takes the first value found, in order:\n         *\n         *  1. `process.env.LOG_PRETTY` (admits case insensitive: `true` | `false`)\n         *  2. `process.stdout.isTTY`\n         */\n        enabled?: boolean\n        /**\n         * Should logs be colored?\n         *\n         * @default `true`\n         *\n         * Disabling can be useful when pretty logs are going to a destination that\n         * does not support rendering ANSI color codes (consequence being very\n         * difficult to read content).\n         */\n        color?: boolean\n        /**\n         * Should logs include the level label?\n         *\n         * @default `false`\n         *\n         * Enable this if understanding the level of a log is important to you\n         * and the icon+color system is insufficient for you to do so. Can be\n         * helpful for newcomers or a matter of taste for some.\n         */\n        levelLabel?: boolean\n        /**\n         * Should the logs include the time between it and previous log?\n         *\n         * @default `true`\n         */\n        timeDiff?: boolean\n      }\n}",
+        "nodeFullText": "export type SettingsInput = {\n  /**\n   * Set the level of this and all descedent loggers. This level setting has\n   * highest precedence of all logger level configuration tiers.\n   *\n   * The level config takes the first value found, searching tiers as follows:\n   *\n   *  1. logger instance setting\n   *  2. logger constructor setting\n   *  3. LOG_LEVEL environment variable setting\n   *  3. NODE_ENV=production -> info\n   *  4. otherwise -> debug\n   */\n  level?: Level.Level\n  /**\n   * Control pretty mode.\n   *\n   * Shorthands:\n   *\n   *  - `true` is shorthand for `{ enabled: true }`\n   *  - `false` is shorthand for `{ enabled: false }`\n   *\n   * When `undefined` pretty takes the first value found, in order:\n   *\n   *  1. `process.env.LOG_PRETTY` (admits case insensitive: `true` | `false`)\n   *  2. `process.stdout.isTTY`\n   */\n  pretty?:\n    | boolean\n    | {\n        /**\n         * Disable or enable pretty mode.\n         *\n         * When `undefined` pretty takes the first value found, in order:\n         *\n         *  1. `process.env.LOG_PRETTY` (admits case insensitive: `true` | `false`)\n         *  2. `process.stdout.isTTY`\n         */\n        enabled?: boolean\n        /**\n         * Should logs be colored?\n         *\n         * @default `true`\n         *\n         * Disabling can be useful when pretty logs are going to a destination that\n         * does not support rendering ANSI color codes (consequence being very\n         * difficult to read content).\n         */\n        color?: boolean\n        /**\n         * Should logs include the level label?\n         *\n         * @default `false`\n         *\n         * Enable this if understanding the level of a log is important to you\n         * and the icon+color system is insufficient for you to do so. Can be\n         * helpful for newcomers or a matter of taste for some.\n         */\n        levelLabel?: boolean\n        /**\n         * Should the logs include the time between it and previous log?\n         *\n         * @default `true`\n         */\n        timeDiff?: boolean\n      }\n}"
+      }
+    },
+    "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/schema/schema\").SettingsInput": {
+      "kind": "alias",
+      "name": "SettingsInput",
+      "type": {
+        "kind": "object",
+        "props": [
+          {
+            "kind": "prop",
+            "name": "connections",
+            "type": {
+              "kind": "union",
+              "isDiscriminated": false,
+              "discriminantProperties": null,
+              "raw": {
+                "typeText": "(Pick<ConnectionPluginConfig, \"includeNodesField\" | \"additionalArgs\" | \"disableForwardPagination\" | \"disableBackwardPagination\" | \"validateArgs\" | ... 7 more ... | \"typePrefix\"> & { ...; }) | undefined",
+                "nodeFullText": "",
+                "nodeText": ""
+              },
+              "types": [
+                {
+                  "kind": "primitive",
+                  "type": "undefined"
+                },
+                {
+                  "kind": "intersection",
+                  "raw": {
+                    "typeText": "Pick<ConnectionPluginConfig, \"includeNodesField\" | \"additionalArgs\" | \"disableForwardPagination\" | \"disableBackwardPagination\" | \"validateArgs\" | ... 7 more ... | \"typePrefix\"> & { ...; }",
+                    "nodeFullText": "",
+                    "nodeText": ""
+                  },
+                  "types": [
+                    {
+                      "kind": "unsupported",
+                      "raw": {
+                        "typeText": "Pick<ConnectionPluginConfig, \"includeNodesField\" | \"additionalArgs\" | \"disableForwardPagination\" | \"disableBackwardPagination\" | \"validateArgs\" | ... 7 more ... | \"typePrefix\">",
+                        "nodeText": "type Pick<T, K extends keyof T> = {\r\n    [P in K]: T[P];\r\n};",
+                        "nodeFullText": "/**\r\n * From T, pick a set of properties whose keys are in the union K\r\n */\r\ntype Pick<T, K extends keyof T> = {\r\n    [P in K]: T[P];\r\n};"
+                      }
+                    },
+                    {
+                      "kind": "object",
+                      "props": [
+                        {
+                          "kind": "prop",
+                          "name": "disableDefaultType",
+                          "type": {
+                            "kind": "union",
+                            "isDiscriminated": false,
+                            "discriminantProperties": null,
+                            "raw": {
+                              "typeText": "boolean | undefined",
+                              "nodeFullText": "",
+                              "nodeText": ""
+                            },
+                            "types": [
+                              {
+                                "kind": "primitive",
+                                "type": "undefined"
+                              },
+                              {
+                                "kind": "literal",
+                                "name": "false",
+                                "base": "boolean"
+                              },
+                              {
+                                "kind": "literal",
+                                "name": "true",
+                                "base": "boolean"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "prop",
+                          "name": "types",
+                          "type": {
+                            "kind": "union",
+                            "isDiscriminated": false,
+                            "discriminantProperties": null,
+                            "raw": {
+                              "typeText": "{ [typeName: string]: Pick<ConnectionPluginConfig, \"includeNodesField\" | \"additionalArgs\" | \"disableForwardPagination\" | \"disableBackwardPagination\" | \"validateArgs\" | ... 7 more ... | \"typePrefix\"> | undefined; default?: Pick<...> | undefined; } | undefined",
+                              "nodeFullText": "",
+                              "nodeText": ""
+                            },
+                            "types": [
+                              {
+                                "kind": "primitive",
+                                "type": "undefined"
+                              },
+                              {
+                                "kind": "object",
+                                "props": [
+                                  {
+                                    "kind": "prop",
+                                    "name": "default",
+                                    "type": {
+                                      "kind": "union",
+                                      "isDiscriminated": false,
+                                      "discriminantProperties": null,
+                                      "raw": {
+                                        "typeText": "Pick<ConnectionPluginConfig, \"includeNodesField\" | \"additionalArgs\" | \"disableForwardPagination\" | \"disableBackwardPagination\" | \"validateArgs\" | ... 7 more ... | \"typePrefix\"> | undefined",
+                                        "nodeFullText": "",
+                                        "nodeText": ""
+                                      },
+                                      "types": [
+                                        {
+                                          "kind": "primitive",
+                                          "type": "undefined"
+                                        },
+                                        {
+                                          "kind": "alias",
+                                          "name": "Pick",
+                                          "type": {
+                                            "kind": "unsupported",
+                                            "raw": {
+                                              "typeText": "Pick<ConnectionPluginConfig, \"includeNodesField\" | \"additionalArgs\" | \"disableForwardPagination\" | \"disableBackwardPagination\" | \"validateArgs\" | ... 7 more ... | \"typePrefix\">",
+                                              "nodeText": "type Pick<T, K extends keyof T> = {\r\n    [P in K]: T[P];\r\n};",
+                                              "nodeFullText": "/**\r\n * From T, pick a set of properties whose keys are in the union K\r\n */\r\ntype Pick<T, K extends keyof T> = {\r\n    [P in K]: T[P];\r\n};"
+                                            }
+                                          },
+                                          "raw": {
+                                            "typeText": "Pick<ConnectionPluginConfig, \"includeNodesField\" | \"additionalArgs\" | \"disableForwardPagination\" | \"disableBackwardPagination\" | \"validateArgs\" | ... 7 more ... | \"typePrefix\">",
+                                            "nodeText": "type Pick<T, K extends keyof T> = {\r\n    [P in K]: T[P];\r\n};",
+                                            "nodeFullText": "/**\r\n * From T, pick a set of properties whose keys are in the union K\r\n */\r\ntype Pick<T, K extends keyof T> = {\r\n    [P in K]: T[P];\r\n};"
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  }
+                                ],
+                                "raw": {
+                                  "typeText": "{ [typeName: string]: Pick<ConnectionPluginConfig, \"includeNodesField\" | \"additionalArgs\" | \"disableForwardPagination\" | \"disableBackwardPagination\" | \"validateArgs\" | ... 7 more ... | \"typePrefix\"> | undefined; default?: Pick<...> | undefined; }",
+                                  "nodeText": "{\n      default?: ConnectionConfig\n      // Extra undefined below is forced by it being above, forced via `?:`.\n      // This is a TS limitation, cannot express void vs missing semantics,\n      // being tracked here: https://github.com/microsoft/TypeScript/issues/13195\n      [typeName: string]: ConnectionConfig | undefined\n    }",
+                                  "nodeFullText": "{\n      default?: ConnectionConfig\n      // Extra undefined below is forced by it being above, forced via `?:`.\n      // This is a TS limitation, cannot express void vs missing semantics,\n      // being tracked here: https://github.com/microsoft/TypeScript/issues/13195\n      [typeName: string]: ConnectionConfig | undefined\n    }"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "raw": {
+                        "typeText": "{ disableDefaultType?: boolean | undefined; types?: { [typeName: string]: Pick<ConnectionPluginConfig, \"includeNodesField\" | \"additionalArgs\" | \"disableForwardPagination\" | ... 9 more ... | \"typePrefix\"> | undefined; default?: Pick<...> | undefined; } | undefined; }",
+                        "nodeText": "{\n    // We tried the idea of types.default: false | ConnectionConfig\n    // but got blocked by https://github.com/microsoft/TypeScript/issues/17867\n\n    /**\n     * todo\n     *\n     * @default `false`\n     */\n    disableDefaultType?: boolean\n    /**\n     * todo\n     */\n    types?: {\n      default?: ConnectionConfig\n      // Extra undefined below is forced by it being above, forced via `?:`.\n      // This is a TS limitation, cannot express void vs missing semantics,\n      // being tracked here: https://github.com/microsoft/TypeScript/issues/13195\n      [typeName: string]: ConnectionConfig | undefined\n    }\n  }",
+                        "nodeFullText": "{\n    // We tried the idea of types.default: false | ConnectionConfig\n    // but got blocked by https://github.com/microsoft/TypeScript/issues/17867\n\n    /**\n     * todo\n     *\n     * @default `false`\n     */\n    disableDefaultType?: boolean\n    /**\n     * todo\n     */\n    types?: {\n      default?: ConnectionConfig\n      // Extra undefined below is forced by it being above, forced via `?:`.\n      // This is a TS limitation, cannot express void vs missing semantics,\n      // being tracked here: https://github.com/microsoft/TypeScript/issues/13195\n      [typeName: string]: ConnectionConfig | undefined\n    }\n  }"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "raw": {
+          "typeText": "SettingsInput",
+          "nodeText": "export type SettingsInput = {\n  /**\n   * todo\n   */\n  connections?: ConnectionConfig & {\n    // We tried the idea of types.default: false | ConnectionConfig\n    // but got blocked by https://github.com/microsoft/TypeScript/issues/17867\n\n    /**\n     * todo\n     *\n     * @default `false`\n     */\n    disableDefaultType?: boolean\n    /**\n     * todo\n     */\n    types?: {\n      default?: ConnectionConfig\n      // Extra undefined below is forced by it being above, forced via `?:`.\n      // This is a TS limitation, cannot express void vs missing semantics,\n      // being tracked here: https://github.com/microsoft/TypeScript/issues/13195\n      [typeName: string]: ConnectionConfig | undefined\n    }\n  }\n}",
+          "nodeFullText": "export type SettingsInput = {\n  /**\n   * todo\n   */\n  connections?: ConnectionConfig & {\n    // We tried the idea of types.default: false | ConnectionConfig\n    // but got blocked by https://github.com/microsoft/TypeScript/issues/17867\n\n    /**\n     * todo\n     *\n     * @default `false`\n     */\n    disableDefaultType?: boolean\n    /**\n     * todo\n     */\n    types?: {\n      default?: ConnectionConfig\n      // Extra undefined below is forced by it being above, forced via `?:`.\n      // This is a TS limitation, cannot express void vs missing semantics,\n      // being tracked here: https://github.com/microsoft/TypeScript/issues/13195\n      [typeName: string]: ConnectionConfig | undefined\n    }\n  }\n}"
+        }
+      },
+      "raw": {
+        "typeText": "SettingsInput",
+        "nodeText": "export type SettingsInput = {\n  /**\n   * todo\n   */\n  connections?: ConnectionConfig & {\n    // We tried the idea of types.default: false | ConnectionConfig\n    // but got blocked by https://github.com/microsoft/TypeScript/issues/17867\n\n    /**\n     * todo\n     *\n     * @default `false`\n     */\n    disableDefaultType?: boolean\n    /**\n     * todo\n     */\n    types?: {\n      default?: ConnectionConfig\n      // Extra undefined below is forced by it being above, forced via `?:`.\n      // This is a TS limitation, cannot express void vs missing semantics,\n      // being tracked here: https://github.com/microsoft/TypeScript/issues/13195\n      [typeName: string]: ConnectionConfig | undefined\n    }\n  }\n}",
+        "nodeFullText": "export type SettingsInput = {\n  /**\n   * todo\n   */\n  connections?: ConnectionConfig & {\n    // We tried the idea of types.default: false | ConnectionConfig\n    // but got blocked by https://github.com/microsoft/TypeScript/issues/17867\n\n    /**\n     * todo\n     *\n     * @default `false`\n     */\n    disableDefaultType?: boolean\n    /**\n     * todo\n     */\n    types?: {\n      default?: ConnectionConfig\n      // Extra undefined below is forced by it being above, forced via `?:`.\n      // This is a TS limitation, cannot express void vs missing semantics,\n      // being tracked here: https://github.com/microsoft/TypeScript/issues/13195\n      [typeName: string]: ConnectionConfig | undefined\n    }\n  }\n}"
+      }
+    },
+    "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/server\").ExtraSettingsInput": {
+      "kind": "alias",
+      "name": "ExtraSettingsInput",
+      "type": {
+        "kind": "object",
+        "props": [
+          {
+            "kind": "prop",
+            "name": "port",
+            "type": {
+              "kind": "union",
+              "isDiscriminated": false,
+              "discriminantProperties": null,
+              "raw": {
+                "typeText": "number | undefined",
+                "nodeFullText": "",
+                "nodeText": ""
+              },
+              "types": [
+                {
+                  "kind": "primitive",
+                  "type": "undefined"
+                },
+                {
+                  "kind": "primitive",
+                  "type": "number"
+                }
+              ]
+            }
+          },
+          {
+            "kind": "prop",
+            "name": "playground",
+            "type": {
+              "kind": "union",
+              "isDiscriminated": false,
+              "discriminantProperties": null,
+              "raw": {
+                "typeText": "boolean | undefined",
+                "nodeFullText": "",
+                "nodeText": ""
+              },
+              "types": [
+                {
+                  "kind": "primitive",
+                  "type": "undefined"
+                },
+                {
+                  "kind": "literal",
+                  "name": "false",
+                  "base": "boolean"
+                },
+                {
+                  "kind": "literal",
+                  "name": "true",
+                  "base": "boolean"
+                }
+              ]
+            }
+          },
+          {
+            "kind": "prop",
+            "name": "startMessage",
+            "type": {
+              "kind": "union",
+              "isDiscriminated": false,
+              "discriminantProperties": null,
+              "raw": {
+                "typeText": "((address: { port: number; host: string; ip: string; }) => void) | undefined",
+                "nodeFullText": "",
+                "nodeText": ""
+              },
+              "types": [
+                {
+                  "kind": "primitive",
+                  "type": "undefined"
+                },
+                {
+                  "kind": "callable",
+                  "isOverloaded": false,
+                  "hasProps": false,
+                  "props": [],
+                  "sigs": [
+                    {
+                      "kind": "sig",
+                      "return": {
+                        "kind": "primitive",
+                        "type": "void"
+                      },
+                      "params": [
+                        {
+                          "kind": "sigParam",
+                          "name": "address",
+                          "type": {
+                            "kind": "object",
+                            "props": [
+                              {
+                                "kind": "prop",
+                                "name": "port",
+                                "type": {
+                                  "kind": "primitive",
+                                  "type": "number"
+                                }
+                              },
+                              {
+                                "kind": "prop",
+                                "name": "host",
+                                "type": {
+                                  "kind": "primitive",
+                                  "type": "string"
+                                }
+                              },
+                              {
+                                "kind": "prop",
+                                "name": "ip",
+                                "type": {
+                                  "kind": "primitive",
+                                  "type": "string"
+                                }
+                              }
+                            ],
+                            "raw": {
+                              "typeText": "{ port: number; host: string; ip: string; }",
+                              "nodeText": "{ port: number; host: string; ip: string }",
+                              "nodeFullText": "{ port: number; host: string; ip: string }"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ],
+                  "raw": {
+                    "typeText": "(address: { port: number; host: string; ip: string; }) => void",
+                    "nodeText": "(address: { port: number; host: string; ip: string }) => void",
+                    "nodeFullText": "(address: { port: number; host: string; ip: string }) => void"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "raw": {
+          "typeText": "ExtraSettingsInput",
+          "nodeText": "export type ExtraSettingsInput = {\n  /**\n   * todo\n   */\n  port?: number\n  /**\n   * todo\n   */\n  playground?: boolean\n  /**\n   * Create a message suitable for printing to the terminal about the server\n   * having been booted.\n   */\n  startMessage?: (address: { port: number; host: string; ip: string }) => void\n}",
+          "nodeFullText": "export type ExtraSettingsInput = {\n  /**\n   * todo\n   */\n  port?: number\n  /**\n   * todo\n   */\n  playground?: boolean\n  /**\n   * Create a message suitable for printing to the terminal about the server\n   * having been booted.\n   */\n  startMessage?: (address: { port: number; host: string; ip: string }) => void\n}"
+        }
+      },
+      "raw": {
+        "typeText": "ExtraSettingsInput",
+        "nodeText": "export type ExtraSettingsInput = {\n  /**\n   * todo\n   */\n  port?: number\n  /**\n   * todo\n   */\n  playground?: boolean\n  /**\n   * Create a message suitable for printing to the terminal about the server\n   * having been booted.\n   */\n  startMessage?: (address: { port: number; host: string; ip: string }) => void\n}",
+        "nodeFullText": "export type ExtraSettingsInput = {\n  /**\n   * todo\n   */\n  port?: number\n  /**\n   * todo\n   */\n  playground?: boolean\n  /**\n   * Create a message suitable for printing to the terminal about the server\n   * having been booted.\n   */\n  startMessage?: (address: { port: number; host: string; ip: string }) => void\n}"
+      }
+    },
+    "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/schema/schema\").Schema": {
+      "kind": "alias",
+      "name": "Schema",
+      "type": {
+        "kind": "object",
+        "props": [
+          {
+            "kind": "prop",
+            "name": "queryType",
+            "type": {
+              "kind": "unsupported",
+              "raw": {
+                "typeText": "(config: Pick<NexusObjectTypeConfig<\"Query\">, \"description\" | \"definition\" | \"nonNullDefaults\" | \"rootTyping\">) => NexusObjectTypeDef<\"Query\">",
+                "nodeText": "export declare function queryType(config: Omit<NexusObjectTypeConfig<\"Query\">, \"name\">): NexusObjectTypeDef<\"Query\">;",
+                "nodeFullText": "export declare function queryType(config: Omit<NexusObjectTypeConfig<\"Query\">, \"name\">): NexusObjectTypeDef<\"Query\">;"
+              }
+            }
+          },
+          {
+            "kind": "prop",
+            "name": "mutationType",
+            "type": {
+              "kind": "unsupported",
+              "raw": {
+                "typeText": "(config: Pick<NexusObjectTypeConfig<\"Mutation\">, \"description\" | \"definition\" | \"nonNullDefaults\" | \"rootTyping\">) => NexusObjectTypeDef<\"Mutation\">",
+                "nodeText": "export declare function mutationType(config: Omit<NexusObjectTypeConfig<\"Mutation\">, \"name\">): NexusObjectTypeDef<\"Mutation\">;",
+                "nodeFullText": "export declare function mutationType(config: Omit<NexusObjectTypeConfig<\"Mutation\">, \"name\">): NexusObjectTypeDef<\"Mutation\">;"
+              }
+            }
+          },
+          {
+            "kind": "prop",
+            "name": "objectType",
+            "type": {
+              "kind": "unsupported",
+              "raw": {
+                "typeText": "<TypeName extends string>(config: NexusObjectTypeConfig<TypeName>) => NexusObjectTypeDef<TypeName>",
+                "nodeText": "export declare function objectType<TypeName extends string>(config: NexusObjectTypeConfig<TypeName>): NexusObjectTypeDef<TypeName>;",
+                "nodeFullText": "export declare function objectType<TypeName extends string>(config: NexusObjectTypeConfig<TypeName>): NexusObjectTypeDef<TypeName>;"
+              }
+            }
+          },
+          {
+            "kind": "prop",
+            "name": "inputObjectType",
+            "type": {
+              "kind": "unsupported",
+              "raw": {
+                "typeText": "<TypeName extends string>(config: NexusInputObjectTypeConfig<TypeName>) => NexusInputObjectTypeDef<TypeName>",
+                "nodeText": "export declare function inputObjectType<TypeName extends string>(config: NexusInputObjectTypeConfig<TypeName>): NexusInputObjectTypeDef<TypeName>;",
+                "nodeFullText": "export declare function inputObjectType<TypeName extends string>(config: NexusInputObjectTypeConfig<TypeName>): NexusInputObjectTypeDef<TypeName>;"
+              }
+            }
+          },
+          {
+            "kind": "prop",
+            "name": "enumType",
+            "type": {
+              "kind": "unsupported",
+              "raw": {
+                "typeText": "<TypeName extends string>(config: EnumTypeConfig<TypeName>) => NexusEnumTypeDef<TypeName>",
+                "nodeText": "export declare function enumType<TypeName extends string>(config: EnumTypeConfig<TypeName>): NexusEnumTypeDef<TypeName>;",
+                "nodeFullText": "export declare function enumType<TypeName extends string>(config: EnumTypeConfig<TypeName>): NexusEnumTypeDef<TypeName>;"
+              }
+            }
+          },
+          {
+            "kind": "prop",
+            "name": "scalarType",
+            "type": {
+              "kind": "unsupported",
+              "raw": {
+                "typeText": "<TypeName extends string>(options: NexusScalarTypeConfig<TypeName>) => NexusScalarTypeDef<TypeName>",
+                "nodeText": "export declare function scalarType<TypeName extends string>(options: NexusScalarTypeConfig<TypeName>): NexusScalarTypeDef<TypeName>;",
+                "nodeFullText": "export declare function scalarType<TypeName extends string>(options: NexusScalarTypeConfig<TypeName>): NexusScalarTypeDef<TypeName>;"
+              }
+            }
+          },
+          {
+            "kind": "prop",
+            "name": "unionType",
+            "type": {
+              "kind": "unsupported",
+              "raw": {
+                "typeText": "<TypeName extends string>(config: NexusUnionTypeConfig<TypeName>) => NexusUnionTypeDef<TypeName>",
+                "nodeText": "export declare function unionType<TypeName extends string>(config: NexusUnionTypeConfig<TypeName>): NexusUnionTypeDef<TypeName>;",
+                "nodeFullText": "/**\n * Defines a new `GraphQLUnionType`\n * @param config\n */\nexport declare function unionType<TypeName extends string>(config: NexusUnionTypeConfig<TypeName>): NexusUnionTypeDef<TypeName>;"
+              }
+            }
+          },
+          {
+            "kind": "prop",
+            "name": "interfaceType",
+            "type": {
+              "kind": "unsupported",
+              "raw": {
+                "typeText": "<TypeName extends string>(config: NexusInterfaceTypeConfig<TypeName>) => NexusInterfaceTypeDef<TypeName>",
+                "nodeText": "export declare function interfaceType<TypeName extends string>(config: NexusInterfaceTypeConfig<TypeName>): NexusInterfaceTypeDef<TypeName>;",
+                "nodeFullText": "/**\n * Defines a GraphQLInterfaceType\n * @param config\n */\nexport declare function interfaceType<TypeName extends string>(config: NexusInterfaceTypeConfig<TypeName>): NexusInterfaceTypeDef<TypeName>;"
+              }
+            }
+          },
+          {
+            "kind": "prop",
+            "name": "arg",
+            "type": {
+              "kind": "unsupported",
+              "raw": {
+                "typeText": "<T extends string>(options: { type: NexusArgConfigType<T>; } & NexusArgConfig<T>) => NexusArgDef<T>",
+                "nodeText": "export declare function arg<T extends AllInputTypes>(options: {\n    type: NexusArgConfigType<T>;\n} & NexusArgConfig<T>): NexusArgDef<T>;",
+                "nodeFullText": "/**\n * Defines an argument that can be used in any object or interface type\n *\n * Takes the GraphQL type name and any options.\n *\n * The value returned from this argument can be used multiple times in any valid `args` object value\n *\n * @see https://graphql.github.io/learn/schema/#arguments\n */\nexport declare function arg<T extends AllInputTypes>(options: {\n    type: NexusArgConfigType<T>;\n} & NexusArgConfig<T>): NexusArgDef<T>;"
+              }
+            }
+          },
+          {
+            "kind": "prop",
+            "name": "intArg",
+            "type": {
+              "kind": "unsupported",
+              "raw": {
+                "typeText": "(options?: ScalarArgConfig<number> | undefined) => NexusArgDef<\"Int\">",
+                "nodeText": "export declare function intArg(options?: ScalarArgConfig<number>): NexusArgDef<\"Int\">;",
+                "nodeFullText": "export declare function intArg(options?: ScalarArgConfig<number>): NexusArgDef<\"Int\">;"
+              }
+            }
+          },
+          {
+            "kind": "prop",
+            "name": "stringArg",
+            "type": {
+              "kind": "unsupported",
+              "raw": {
+                "typeText": "(options?: ScalarArgConfig<string> | undefined) => NexusArgDef<\"String\">",
+                "nodeText": "export declare function stringArg(options?: ScalarArgConfig<string>): NexusArgDef<\"String\">;",
+                "nodeFullText": "export declare function stringArg(options?: ScalarArgConfig<string>): NexusArgDef<\"String\">;"
+              }
+            }
+          },
+          {
+            "kind": "prop",
+            "name": "booleanArg",
+            "type": {
+              "kind": "unsupported",
+              "raw": {
+                "typeText": "(options?: ScalarArgConfig<boolean> | undefined) => NexusArgDef<\"Boolean\">",
+                "nodeText": "export declare function booleanArg(options?: ScalarArgConfig<boolean>): NexusArgDef<\"Boolean\">;",
+                "nodeFullText": "export declare function booleanArg(options?: ScalarArgConfig<boolean>): NexusArgDef<\"Boolean\">;"
+              }
+            }
+          },
+          {
+            "kind": "prop",
+            "name": "floatArg",
+            "type": {
+              "kind": "unsupported",
+              "raw": {
+                "typeText": "(options?: ScalarArgConfig<number> | undefined) => NexusArgDef<\"Float\">",
+                "nodeText": "export declare function floatArg(options?: ScalarArgConfig<number>): NexusArgDef<\"Float\">;",
+                "nodeFullText": "export declare function floatArg(options?: ScalarArgConfig<number>): NexusArgDef<\"Float\">;"
+              }
+            }
+          },
+          {
+            "kind": "prop",
+            "name": "idArg",
+            "type": {
+              "kind": "unsupported",
+              "raw": {
+                "typeText": "(options?: ScalarArgConfig<string> | undefined) => NexusArgDef<\"ID\">",
+                "nodeText": "export declare function idArg(options?: ScalarArgConfig<string>): NexusArgDef<\"ID\">;",
+                "nodeFullText": "export declare function idArg(options?: ScalarArgConfig<string>): NexusArgDef<\"ID\">;"
+              }
+            }
+          },
+          {
+            "kind": "prop",
+            "name": "extendType",
+            "type": {
+              "kind": "unsupported",
+              "raw": {
+                "typeText": "<TypeName extends string>(config: NexusExtendTypeConfig<TypeName>) => NexusExtendTypeDef<TypeName>",
+                "nodeText": "export declare function extendType<TypeName extends AllOutputTypesPossible>(config: NexusExtendTypeConfig<TypeName>): NexusExtendTypeDef<TypeName>;",
+                "nodeFullText": "/**\n * Adds new fields to an existing objectType in the schema. Useful when\n * splitting your schema across several domains.\n *\n * @see http://graphql-nexus.com/api/extendType\n */\nexport declare function extendType<TypeName extends AllOutputTypesPossible>(config: NexusExtendTypeConfig<TypeName>): NexusExtendTypeDef<TypeName>;"
+              }
+            }
+          },
+          {
+            "kind": "prop",
+            "name": "extendInputType",
+            "type": {
+              "kind": "unsupported",
+              "raw": {
+                "typeText": "<TypeName extends string>(config: NexusExtendInputTypeConfig<TypeName>) => NexusExtendInputTypeDef<TypeName>",
+                "nodeText": "export declare function extendInputType<TypeName extends GetGen<\"inputNames\", string>>(config: NexusExtendInputTypeConfig<TypeName>): NexusExtendInputTypeDef<TypeName>;",
+                "nodeFullText": "/**\n * Adds new fields to an existing inputObjectType in the schema. Useful when\n * splitting your schema across several domains.\n *\n * @see http://graphql-nexus.com/api/extendType\n */\nexport declare function extendInputType<TypeName extends GetGen<\"inputNames\", string>>(config: NexusExtendInputTypeConfig<TypeName>): NexusExtendInputTypeDef<TypeName>;"
+              }
+            }
+          }
+        ],
+        "raw": {
+          "typeText": "Schema",
+          "nodeText": "export type Schema = {\n  // addToContext: <T extends {}>(\n  //   contextContributor: ContextContributor<T>\n  // ) => App\n  queryType: typeof NexusSchema.queryType\n  mutationType: typeof NexusSchema.mutationType\n  objectType: typeof NexusSchema.objectType\n  inputObjectType: typeof NexusSchema.inputObjectType\n  enumType: typeof NexusSchema.enumType\n  scalarType: typeof NexusSchema.scalarType\n  unionType: typeof NexusSchema.unionType\n  interfaceType: typeof NexusSchema.interfaceType\n  arg: typeof NexusSchema.arg\n  intArg: typeof NexusSchema.intArg\n  stringArg: typeof NexusSchema.stringArg\n  booleanArg: typeof NexusSchema.booleanArg\n  floatArg: typeof NexusSchema.floatArg\n  idArg: typeof NexusSchema.idArg\n  extendType: typeof NexusSchema.extendType\n  extendInputType: typeof NexusSchema.extendInputType\n}",
+          "nodeFullText": "export type Schema = {\n  // addToContext: <T extends {}>(\n  //   contextContributor: ContextContributor<T>\n  // ) => App\n  queryType: typeof NexusSchema.queryType\n  mutationType: typeof NexusSchema.mutationType\n  objectType: typeof NexusSchema.objectType\n  inputObjectType: typeof NexusSchema.inputObjectType\n  enumType: typeof NexusSchema.enumType\n  scalarType: typeof NexusSchema.scalarType\n  unionType: typeof NexusSchema.unionType\n  interfaceType: typeof NexusSchema.interfaceType\n  arg: typeof NexusSchema.arg\n  intArg: typeof NexusSchema.intArg\n  stringArg: typeof NexusSchema.stringArg\n  booleanArg: typeof NexusSchema.booleanArg\n  floatArg: typeof NexusSchema.floatArg\n  idArg: typeof NexusSchema.idArg\n  extendType: typeof NexusSchema.extendType\n  extendInputType: typeof NexusSchema.extendInputType\n}"
+        }
+      },
+      "raw": {
+        "typeText": "Schema",
+        "nodeText": "export type Schema = {\n  // addToContext: <T extends {}>(\n  //   contextContributor: ContextContributor<T>\n  // ) => App\n  queryType: typeof NexusSchema.queryType\n  mutationType: typeof NexusSchema.mutationType\n  objectType: typeof NexusSchema.objectType\n  inputObjectType: typeof NexusSchema.inputObjectType\n  enumType: typeof NexusSchema.enumType\n  scalarType: typeof NexusSchema.scalarType\n  unionType: typeof NexusSchema.unionType\n  interfaceType: typeof NexusSchema.interfaceType\n  arg: typeof NexusSchema.arg\n  intArg: typeof NexusSchema.intArg\n  stringArg: typeof NexusSchema.stringArg\n  booleanArg: typeof NexusSchema.booleanArg\n  floatArg: typeof NexusSchema.floatArg\n  idArg: typeof NexusSchema.idArg\n  extendType: typeof NexusSchema.extendType\n  extendInputType: typeof NexusSchema.extendInputType\n}",
+        "nodeFullText": "export type Schema = {\n  // addToContext: <T extends {}>(\n  //   contextContributor: ContextContributor<T>\n  // ) => App\n  queryType: typeof NexusSchema.queryType\n  mutationType: typeof NexusSchema.mutationType\n  objectType: typeof NexusSchema.objectType\n  inputObjectType: typeof NexusSchema.inputObjectType\n  enumType: typeof NexusSchema.enumType\n  scalarType: typeof NexusSchema.scalarType\n  unionType: typeof NexusSchema.unionType\n  interfaceType: typeof NexusSchema.interfaceType\n  arg: typeof NexusSchema.arg\n  intArg: typeof NexusSchema.intArg\n  stringArg: typeof NexusSchema.stringArg\n  booleanArg: typeof NexusSchema.booleanArg\n  floatArg: typeof NexusSchema.floatArg\n  idArg: typeof NexusSchema.idArg\n  extendType: typeof NexusSchema.extendType\n  extendInputType: typeof NexusSchema.extendInputType\n}"
+      }
+    },
+    "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/app\").ContextContributor": {
+      "kind": "alias",
+      "name": "ContextContributor",
+      "type": {
+        "kind": "callable",
+        "isOverloaded": false,
+        "hasProps": false,
+        "props": [],
+        "sigs": [
+          {
+            "kind": "sig",
+            "return": {
+              "kind": "unsupported",
+              "raw": {
+                "typeText": "T",
+                "nodeText": "T extends {} = any",
+                "nodeFullText": "T extends {} = any"
+              }
+            },
+            "params": [
+              {
+                "kind": "sigParam",
+                "name": "req",
+                "type": {
+                  "kind": "unsupported",
+                  "raw": {
+                    "typeText": "Req",
+                    "nodeText": "Req",
+                    "nodeFullText": "Req"
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "raw": {
+          "typeText": "ContextContributor<Req, T>",
+          "nodeText": "type ContextContributor<Req, T extends {} = any> = (req: Req) => T",
+          "nodeFullText": "// todo the jsdoc below is lost on the destructured object exports later on...\n// todo plugins could augment the request\n// plugins will be able to use typegen to signal this fact\n// all places in the framework where the req object is referenced should be\n// actually referencing the typegen version, so that it reflects the req +\n// plugin augmentations type\ntype ContextContributor<Req, T extends {} = any> = (req: Req) => T"
+        }
+      },
+      "raw": {
+        "typeText": "ContextContributor<Req, T>",
+        "nodeText": "type ContextContributor<Req, T extends {} = any> = (req: Req) => T",
+        "nodeFullText": "// todo the jsdoc below is lost on the destructured object exports later on...\n// todo plugins could augment the request\n// plugins will be able to use typegen to signal this fact\n// all places in the framework where the req object is referenced should be\n// actually referencing the typegen version, so that it reflects the req +\n// plugin augmentations type\ntype ContextContributor<Req, T extends {} = any> = (req: Req) => T"
+      }
+    }
+  }
+}
