@@ -1,14 +1,18 @@
-# nexus <!-- omit in toc -->
+<p align="center">
+  <img src="assets/../docs/assets/nexus-logo-black.png" height="150px">
+  <br>
+  <span>Delightful GraphQL Application Framework</span>
+</p>
 
 <br>
 
 ## Documentation <!-- omit in toc -->
 
-https://nexus-future.now.sh
+https://nexusjs.org
 
 <br>
 
-## Development
+## Internal Development
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
