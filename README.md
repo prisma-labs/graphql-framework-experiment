@@ -8,7 +8,7 @@
 
 ## Documentation <!-- omit in toc -->
 
-https://nexus-future.now.sh
+https://nexusjs.org
 
 <br>
 
