@@ -62,7 +62,7 @@ export type Schema = {
 
 type SchemaInternal = {
   private: {
-    types: any[]
+    isSchemaEmpty(): boolean
     compile: (config: SchemaConfig) => Promise<NexusGraphQLSchema>
     settings: {
       data: SettingsData
@@ -104,7 +104,9 @@ export function create(): SchemaInternal {
 
   const api: SchemaInternal = {
     private: {
-      types: __types,
+      isSchemaEmpty: () => {
+        return __types.length === 0
+      },
       compile: c => {
         c.plugins = c.plugins ?? []
         c.plugins.push(...processConnectionsConfig(state.settings))

@@ -155,13 +155,13 @@ export function create(): App {
         // At build time we inline static imports.
         // This code MUST run after user/system has had chance to run global installation
         if (process.env.NEXUS_STAGE === 'dev') {
-          Layout.schema.importModules()
+          await Layout.schema.importModules()
         }
 
         const nexusConfig = Schema.createInternalConfig(plugins)
         const compiledSchema = await schema.private.compile(nexusConfig)
 
-        if (schema.private.types.length === 0) {
+        if (schema.private.isSchemaEmpty()) {
           log.warn(Layout.schema.emptyExceptionMessage())
         }
 
