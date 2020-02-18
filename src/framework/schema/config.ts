@@ -1,5 +1,5 @@
 import * as Nexus from '@nexus/schema'
-import { stripIndents } from 'common-tags'
+import { stripIndents, stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import * as Lo from 'lodash'
 import * as Plugin from '../../core/plugin'
@@ -10,6 +10,18 @@ import {
 } from './nexus'
 
 export type NexusConfig = Nexus.core.SchemaConfig
+export const NEXUS_DEFAULT_TYPEGEN_PATH = fs.path(
+  'node_modules',
+  '@types',
+  'typegen-nexus',
+  'index.d.ts'
+)
+export const NEXUS_DEFAULT_RUNTIME_CONTEXT_TYPEGEN_PATH = fs.path(
+  'node_modules',
+  '@types',
+  'typegen-nexus-context',
+  'index.d.ts'
+)
 
 export function createInternalConfig(
   plugins: Plugin.RuntimeContributions[]
@@ -31,9 +43,6 @@ export function createInternalConfig(
 }
 
 function createDefaultNexusConfig(): NexusConfig {
-  const NEXUS_DEFAULT_TYPEGEN_PATH = fs.path(
-    'node_modules/@types/typegen-nexus/index.d.ts'
-  )
   return {
     outputs: {
       schema: false,
@@ -94,7 +103,12 @@ function withAutoTypegenConfig(
 
     // Initialize
     config.imports.push('interface Context {}')
-    config.contextType = 'Context'
+    config.imports.push(stripIndent`
+      declare global {
+        interface NexusContext extends Context {}
+      }
+    `)
+    config.contextType = 'NexusContext'
 
     // Integrate user's app calls to app.addToContext
     const addToContextCallResults: string[] = process.env
@@ -103,11 +117,7 @@ function withAutoTypegenConfig(
       : []
 
     const addToContextInterfaces = addToContextCallResults
-      .map(result => {
-        return stripIndents`
-                    interface Context ${result}
-                  `
-      })
+      .map(result => `interface Context ${result}`)
       .join('\n\n')
 
     config.imports.push(addToContextInterfaces)

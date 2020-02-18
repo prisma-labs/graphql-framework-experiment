@@ -8,7 +8,6 @@ import cfgFactory from './cfg'
 import hook from './hook'
 import * as IPC from './ipc'
 import Module = require('module')
-import { TypegenMetadata } from '@nexus/schema/dist/core'
 
 const log = rootLogger
   .child('cli')
@@ -23,7 +22,6 @@ register({
 })
 ;(async function() {
   await IPC.client.connect()
-  log.trace('starting context type extraction')
 
   const layout = await Layout.create()
 
@@ -33,16 +31,23 @@ register({
     ...Layout.saveDataForChildProcess(layout),
   }
 
-  const worker = new Worker(join(__dirname, 'worker.js'), {
-    workerData: { layout: layout.data },
+  log.trace('starting context type extraction')
+
+  const worker = new Worker(join(__dirname, 'extract-context-worker.js'), {
+    workerData: {
+      layout: layout.data,
+    },
   })
 
-  worker.once('message', contextTypes => {
-    process.env.NEXUS_TYPEGEN_ADD_CONTEXT_RESULTS = JSON.stringify(contextTypes)
+  worker.once('message', (contextTypes: string[]) => {
     log.trace('finished context type extraction', { contextTypes })
-    // Let the Node.js main thread exit, even though the Worker
-    // is still running:
-    worker.unref()
+  })
+
+  worker.on('error', error => {
+    log.warn(
+      'We could not extract your context types from `schema.addToContext`',
+      { error }
+    )
   })
 
   // Remove app-runner.js from the argv array
