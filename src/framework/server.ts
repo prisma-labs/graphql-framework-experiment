@@ -1,5 +1,5 @@
 import createExpress, { Express } from 'express'
-import createExpressGraphql from 'express-graphql'
+import * as ExpressGraphQL from 'express-graphql'
 import * as GraphQL from 'graphql'
 import * as HTTP from 'http'
 import * as Net from 'net'
@@ -10,6 +10,8 @@ import * as Utils from '../lib/utils'
 import * as App from './app'
 import * as DevMode from './dev-mode'
 import * as singletonChecks from './singleton-checks'
+
+const createExpressGraphql = ExpressGraphQL.default
 
 type Request = HTTP.IncomingMessage & { log: Logger.Logger }
 type ContextContributor<T extends {}> = (req: Request) => T
@@ -60,7 +62,7 @@ export type ExtraSettingsData = Required<ExtraSettingsInput>
 /**
  * The available server options to configure how your app runs its server.
  */
-export type SettingsInput = createExpressGraphql.OptionsData &
+export type SettingsInput = ExpressGraphQL.OptionsData &
   ExtraSettingsInput & {
     context: ContextCreator
   }
