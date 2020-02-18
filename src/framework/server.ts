@@ -11,6 +11,7 @@ import * as App from './app'
 import * as DevMode from './dev-mode'
 import * as singletonChecks from './singleton-checks'
 
+// Avoid forcing users to use esModuleInterop
 const createExpressGraphql = ExpressGraphQL.default
 
 type Request = HTTP.IncomingMessage & { log: Logger.Logger }
