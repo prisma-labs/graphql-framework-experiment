@@ -54,3 +54,5 @@ yarn-error.log*
 .vscode
 dist
 tsconfig.tsbuildinfo
+
+.now

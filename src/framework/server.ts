@@ -1,8 +1,9 @@
 import createExpress, { Express } from 'express'
-import createExpressGraphql from 'express-graphql'
+import * as ExpressGraphQL from 'express-graphql'
 import * as GraphQL from 'graphql'
 import * as HTTP from 'http'
 import * as Net from 'net'
+import stripAnsi from 'strip-ansi'
 import * as Plugin from '../core/plugin'
 import * as Logger from '../lib/logger'
 import * as Utils from '../lib/utils'
@@ -10,10 +11,13 @@ import * as App from './app'
 import * as DevMode from './dev-mode'
 import * as singletonChecks from './singleton-checks'
 
+const createExpressGraphql = ExpressGraphQL.default
+
 type Request = HTTP.IncomingMessage & { log: Logger.Logger }
 type ContextContributor<T extends {}> = (req: Request) => T
 
 const log = Logger.create({ name: 'server' })
+const resolverLogger = log.child('graphql')
 
 /**
  * The default server options. These are merged with whatever you provide. Your
@@ -58,7 +62,7 @@ export type ExtraSettingsData = Required<ExtraSettingsInput>
 /**
  * The available server options to configure how your app runs its server.
  */
-export type SettingsInput = createExpressGraphql.OptionsData &
+export type SettingsInput = ExpressGraphQL.OptionsData &
   ExtraSettingsInput & {
     context: ContextCreator
   }
@@ -113,11 +117,11 @@ export interface ServerWithCustomizer extends Server {
   custom: (customizer: Customizer) => void
 }
 
-function createExpressServer(
+function setupExpress(
+  express: Express,
   settingsGiven: SettingsInput
 ): ServerWithExpressInstance {
   const http = HTTP.createServer()
-  const express = createExpress()
   const opts = { ...defaultExtraSettings, ...settingsGiven }
 
   http.on('request', express)
@@ -128,6 +132,24 @@ function createExpressServer(
       return {
         ...opts,
         context: settingsGiven.context(req),
+        customFormatErrorFn: error => {
+          const colorlessMessage = stripAnsi(error.message)
+
+          if (process.env.NEXUS_STAGE === 'dev') {
+            resolverLogger.error(error.stack ?? error.message)
+          } else {
+            resolverLogger.error(
+              'An exception occured in one of your resolver',
+              {
+                error: error.stack ? stripAnsi(error.stack) : colorlessMessage,
+              }
+            )
+          }
+
+          error.message = colorlessMessage
+
+          return error
+        },
       }
     })
   )
@@ -263,38 +285,35 @@ export function create(): ServerFactory {
         opts.contextContributors,
         opts.plugins
       )
-      const createDefaultServer = () => {
-        return createExpressServer({
+
+      if (!createCustomServer) {
+        server = setupExpress(createExpress(), {
           ...opts,
           context: createContext,
         })
-      }
-
-      if (!createCustomServer) {
-        server = createDefaultServer()
       } else {
-        const customServer = await createCustomServer({
+        let maybeExpress: null | Express = null
+        const maybeCustomServer = await createCustomServer({
           schema: opts.schema,
+          // Lazily create the express server if it's accessed
+          // Enable free runtime-cost in case a custom server is used
           get express() {
-            // Lazily create the express server if it's accessed
-            // Enable free runtime-cost in case a custom server is used
-            server = createDefaultServer()
-            log.debug('Augmented Express server used')
-
-            return (server as ServerWithExpressInstance).instance
+            maybeExpress = createExpress()
+            log.debug('Augmented Express used')
+            return maybeExpress
           },
           context: createContext,
         })
 
-        if (customServer !== undefined) {
-          if (!customServer.start) {
+        if (maybeCustomServer) {
+          if (!maybeCustomServer.start) {
             log.fatal(
               'Your custom server is missing a required `start` function'
             )
             return
           }
 
-          if (!customServer.stop) {
+          if (!maybeCustomServer.stop) {
             log.fatal(
               'Your custom server is missing a required `stop` function'
             )
@@ -302,13 +321,28 @@ export function create(): ServerFactory {
           }
 
           log.debug('Custom server used')
-          server = customServer
+          server = maybeCustomServer
         }
-      }
 
-      // If `server.custom` was called but nothing was returned nor `express` accessed, still create the default server
-      if (!server) {
-        server = createDefaultServer()
+        // Now do our built in express setup. Doing this after user
+        // customizations is important because in express middleware order is
+        // significant. E.g. to add cors to /graphql user's cors middleware
+        // would have to come first.
+        else if (maybeExpress) {
+          server = setupExpress(maybeExpress, {
+            ...opts,
+            context: createContext,
+          })
+        }
+
+        // If `server.custom` was called but nothing was returned nor `express`
+        // accessed, still create the default server
+        else {
+          server = setupExpress(createExpress(), {
+            ...opts,
+            context: createContext,
+          })
+        }
       }
 
       await server.start()

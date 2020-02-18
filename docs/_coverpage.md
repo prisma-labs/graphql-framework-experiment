@@ -1,19 +1,24 @@
-# 🎄
+![logo](/assets/nexus-logo-white.png)
 
-# `nexus`
+### Delightful GraphQL Application Framework
 
-### Delightful GraphQL Application Framework for TypeScript Node
+<p>
+  <a  class="BigButton" href="https://github.com/graphql-nexus/nexus-future" target="_blank", rel="noopener">Github</a>
+  <span></span>
+  <a class="BigButton BigButtonPrimary" href="#/README">Docs</a>
+</p>
 
+<br>
+<br>
 <br>
 
 ```cli
 npx nexus-future
 ```
 
-<br>
-
-[Github](https://github.com/graphql-nexus/nexus-future)
-[Docs](/README)
+<div id="TerminalContainer">
+  <img src="/assets/nexus-terminal.png" />
+</div>
 
 <!-- background color -->
 
