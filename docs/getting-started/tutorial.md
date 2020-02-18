@@ -14,7 +14,7 @@
 
 ## 8. ... -->
 
-> For this tutorial we will use Prisma with PostgreSQL. Install PostgreSQL if needed and then get its connection URL. Check out [our postgresql setup guide](references/recipes?id=local-postgresql) if unsure.
+> For this tutorial we will use PostgreSQL as our database. Install PostgreSQL if needed and then get its connection URL. Check out [our postgresql setup guide](references/recipes?id=local-postgresql) if unsure.
 
 ## Scaffold Project
 
