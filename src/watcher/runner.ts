@@ -25,7 +25,7 @@ register({
 
   const layout = await Layout.create()
 
-  // TODO: Make sure that this works + find more elegant way
+  // TODO: Find more elegant way to do that?
   process.env = {
     ...process.env,
     ...Layout.saveDataForChildProcess(layout),
