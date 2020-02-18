@@ -332,10 +332,10 @@
     "@types/yargs" "^15.0.0"
     chalk "^3.0.0"
 
-"@nexus/schema@^0.12.0-rc.9":
-  version "0.12.0-rc.9"
-  resolved "https://registry.yarnpkg.com/@nexus/schema/-/schema-0.12.0-rc.9.tgz#dd850271e45c3c0e931d397fabd5a8ac53b943bd"
-  integrity sha512-M5jNB9ABa/xg+vOwB9owQUL8M7/rTaq3d0UtepX8U1o3ZMkkBvg955roJl1WHw/Xaow2akpHH+O8vgjDVmeq9g==
+"@nexus/schema@^0.12.0-rc.13":
+  version "0.12.0-rc.13"
+  resolved "https://registry.yarnpkg.com/@nexus/schema/-/schema-0.12.0-rc.13.tgz#afdc7433030b5d7fffcd2509a771581d6c143cf5"
+  integrity sha512-q4A5Jfe26wayPHE2qgXF5wJIu2soeUR2koyVCzihR6Zxe6THwONKkntHmznUNy4ofIGTRFsF4d0I7kmjceMhVw==
   dependencies:
     iterall "^1.2.2"
     tslib "^1.9.3"
