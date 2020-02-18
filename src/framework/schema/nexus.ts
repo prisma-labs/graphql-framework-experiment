@@ -16,14 +16,7 @@ export function createNexusSingleton() {
     // https://github.com/graphql-nexus/nexus-future/issues/33
     const schema = await (process.env.NEXUS_SHOULD_AWAIT_TYPEGEN === 'true'
       ? generateSchema(config)
-      : Promise.resolve(
-          Nexus.makeSchema({
-            ...config,
-            shouldGenerateArtifacts: process.env.NEXUS_DEV_MODE
-              ? false
-              : config.shouldGenerateArtifacts,
-          })
-        ))
+      : Promise.resolve(Nexus.makeSchema(config)))
 
     // HACK `generateSchema` in Nexus does not support this logic yet
     // TODO move this logic into Nexus
