@@ -3,9 +3,11 @@ const { parentPort, workerData } = require('worker_threads')
 const {
   NEXUS_DEFAULT_RUNTIME_CONTEXT_TYPEGEN_PATH,
 } = require('../framework/schema/config')
-const { remove, write } = require('fs-jetpack')
-const { dirname } = require('path')
-const { extractContextTypes, readTsConfig } = require('../utils')
+const {
+  extractContextTypes,
+  readTsConfig,
+  hardWriteFileSync,
+} = require('../utils')
 
 const tsConfig = readTsConfig(workerData.layout)
 const program = ts.createIncrementalProgram({
@@ -36,7 +38,9 @@ ${
     : `interface Context {}`
 }
 `
-remove(dirname(NEXUS_DEFAULT_RUNTIME_CONTEXT_TYPEGEN_PATH))
-write(NEXUS_DEFAULT_RUNTIME_CONTEXT_TYPEGEN_PATH, contextTypesFileContent)
+hardWriteFileSync(
+  NEXUS_DEFAULT_RUNTIME_CONTEXT_TYPEGEN_PATH,
+  contextTypesFileContent
+)
 
 parentPort.postMessage(contextTypes)

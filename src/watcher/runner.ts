@@ -41,6 +41,10 @@ register({
 
   worker.once('message', (contextTypes: string[]) => {
     log.trace('finished context type extraction', { contextTypes })
+
+    // Let the Node.js main thread exit, even though the Worker
+    // is still running:
+    worker.unref()
   })
 
   worker.on('error', error => {
