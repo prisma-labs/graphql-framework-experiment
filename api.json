@@ -4,7 +4,7 @@
       "kind": "module",
       "mainExport": {
         "kind": "typeIndexRef",
-        "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/app\").App"
+        "link": "(framework/app).App"
       },
       "namedExports": [
         {
@@ -12,7 +12,7 @@
           "name": "log",
           "type": {
             "kind": "typeIndexRef",
-            "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/lib/logger/logger\").Logger"
+            "link": "(lib/logger/logger).Logger"
           },
           "isType": false,
           "isTerm": true
@@ -30,7 +30,7 @@
             "types": [
               {
                 "kind": "typeIndexRef",
-                "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/schema/schema\").Schema"
+                "link": "(framework/schema/schema).Schema"
               },
               {
                 "kind": "object",
@@ -56,7 +56,7 @@
                               "name": "contextContributor",
                               "type": {
                                 "kind": "typeIndexRef",
-                                "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/app\").ContextContributor"
+                                "link": "(framework/app).ContextContributor"
                               }
                             }
                           ]
@@ -86,7 +86,7 @@
           "name": "server",
           "type": {
             "kind": "typeIndexRef",
-            "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/server\").ServerWithCustomizer"
+            "link": "(framework/server).ServerWithCustomizer"
           },
           "isType": false,
           "isTerm": true
@@ -96,7 +96,7 @@
           "name": "settings",
           "type": {
             "kind": "typeIndexRef",
-            "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/app\").Settings"
+            "link": "(framework/app).Settings"
           },
           "isType": false,
           "isTerm": true
@@ -109,7 +109,7 @@
     }
   ],
   "typeIndex": {
-    "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/app\").App": {
+    "(framework/app).App": {
       "kind": "alias",
       "name": "App",
       "type": {
@@ -120,7 +120,7 @@
             "name": "log",
             "type": {
               "kind": "typeIndexRef",
-              "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/lib/logger/logger\").Logger"
+              "link": "(lib/logger/logger).Logger"
             }
           },
           {
@@ -128,7 +128,7 @@
             "name": "server",
             "type": {
               "kind": "typeIndexRef",
-              "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/server\").ServerWithCustomizer"
+              "link": "(framework/server).ServerWithCustomizer"
             }
           },
           {
@@ -136,7 +136,7 @@
             "name": "settings",
             "type": {
               "kind": "typeIndexRef",
-              "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/app\").Settings"
+              "link": "(framework/app).Settings"
             }
           },
           {
@@ -152,7 +152,7 @@
               "types": [
                 {
                   "kind": "typeIndexRef",
-                  "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/schema/schema\").Schema"
+                  "link": "(framework/schema/schema).Schema"
                 },
                 {
                   "kind": "object",
@@ -178,7 +178,7 @@
                                 "name": "contextContributor",
                                 "type": {
                                   "kind": "typeIndexRef",
-                                  "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/app\").ContextContributor"
+                                  "link": "(framework/app).ContextContributor"
                                 }
                               }
                             ]
@@ -214,7 +214,7 @@
         "nodeFullText": "export type App = {\n  /**\n   * [API Reference](https://nexus-future.now.sh/#/references/api?id=logger)  ⌁  [Guide](https://nexus-future.now.sh/#/guides/logging)\n   *\n   * ### todo\n   */\n  log: Logger.Logger\n  /**\n   * [API Reference](https://nexus-future.now.sh/#/references/api?id=server)  ⌁  [Guide](todo)\n   *\n   * ### todo\n   *\n   */\n  server: Server.ServerWithCustomizer\n  /**\n   * todo\n   */\n  settings: Settings\n  /**\n   * [API Reference](https://nexus-future.now.sh/#/references/api?id=appschema) // [Guide](todo)\n   *\n   * ### todo\n   */\n  schema: Schema.Schema & {\n    // addToContext is a bridge between two components, schema and server, so\n    // its not in schema currently...\n\n    /**\n     * todo\n     */\n    addToContext: <Req extends any = Request, T extends {} = any>(\n      contextContributor: ContextContributor<Req, T>\n    ) => void\n  }\n}"
       }
     },
-    "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/lib/logger/logger\").Logger": {
+    "(lib/logger/logger).Logger": {
       "kind": "alias",
       "name": "Logger",
       "type": {
@@ -225,7 +225,7 @@
             "name": "fatal",
             "type": {
               "kind": "typeIndexRef",
-              "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/lib/logger/logger\").Log"
+              "link": "(lib/logger/logger).Log"
             }
           },
           {
@@ -233,7 +233,7 @@
             "name": "error",
             "type": {
               "kind": "typeIndexRef",
-              "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/lib/logger/logger\").Log"
+              "link": "(lib/logger/logger).Log"
             }
           },
           {
@@ -241,7 +241,7 @@
             "name": "warn",
             "type": {
               "kind": "typeIndexRef",
-              "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/lib/logger/logger\").Log"
+              "link": "(lib/logger/logger).Log"
             }
           },
           {
@@ -249,7 +249,7 @@
             "name": "info",
             "type": {
               "kind": "typeIndexRef",
-              "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/lib/logger/logger\").Log"
+              "link": "(lib/logger/logger).Log"
             }
           },
           {
@@ -257,7 +257,7 @@
             "name": "debug",
             "type": {
               "kind": "typeIndexRef",
-              "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/lib/logger/logger\").Log"
+              "link": "(lib/logger/logger).Log"
             }
           },
           {
@@ -265,7 +265,7 @@
             "name": "trace",
             "type": {
               "kind": "typeIndexRef",
-              "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/lib/logger/logger\").Log"
+              "link": "(lib/logger/logger).Log"
             }
           },
           {
@@ -281,7 +281,7 @@
                   "kind": "sig",
                   "return": {
                     "kind": "typeIndexRef",
-                    "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/lib/logger/logger\").Logger"
+                    "link": "(lib/logger/logger).Logger"
                   },
                   "params": [
                     {
@@ -319,7 +319,7 @@
                   "kind": "sig",
                   "return": {
                     "kind": "typeIndexRef",
-                    "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/lib/logger/logger\").Logger"
+                    "link": "(lib/logger/logger).Logger"
                   },
                   "params": [
                     {
@@ -353,7 +353,7 @@
         "nodeFullText": "export type Logger = {\n  fatal: Log\n  error: Log\n  warn: Log\n  info: Log\n  debug: Log\n  trace: Log\n  addToContext: (context: Context) => Logger // fluent\n  child: (name: string) => Logger // fluent\n}"
       }
     },
-    "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/lib/logger/logger\").Log": {
+    "(lib/logger/logger).Log": {
       "kind": "alias",
       "name": "Log",
       "type": {
@@ -429,7 +429,7 @@
         "nodeFullText": "type Log = (event: string, context?: Context) => void"
       }
     },
-    "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/server\").ServerWithCustomizer": {
+    "(framework/server).ServerWithCustomizer": {
       "kind": "interface",
       "name": "ServerWithCustomizer",
       "props": [
@@ -454,7 +454,7 @@
                     "name": "customizer",
                     "type": {
                       "kind": "typeIndexRef",
-                      "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/server\").Customizer"
+                      "link": "(framework/server).Customizer"
                     }
                   }
                 ]
@@ -532,7 +532,7 @@
         "nodeFullText": "export interface ServerWithCustomizer extends Server {\n  /**\n   * Provides a way to use a custom GraphQL server such as Apollo Server or Fastify\n   */\n  custom: (customizer: Customizer) => void\n}"
       }
     },
-    "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/server\").Customizer": {
+    "(framework/server).Customizer": {
       "kind": "alias",
       "name": "Customizer",
       "type": {
@@ -545,7 +545,7 @@
             "kind": "sig",
             "return": {
               "kind": "typeIndexRef",
-              "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/lib/utils/index\").MaybePromise"
+              "link": "(lib/utils/index).MaybePromise"
             },
             "params": [
               {
@@ -553,7 +553,7 @@
                 "name": "lens",
                 "type": {
                   "kind": "typeIndexRef",
-                  "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/server\").CustomizerLens"
+                  "link": "(framework/server).CustomizerLens"
                 }
               }
             ]
@@ -571,7 +571,7 @@
         "nodeFullText": "export type Customizer = (\n  lens: CustomizerLens\n) => Utils.MaybePromise<Server | void>"
       }
     },
-    "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/lib/utils/index\").MaybePromise": {
+    "(lib/utils/index).MaybePromise": {
       "kind": "alias",
       "name": "MaybePromise",
       "type": {
@@ -590,7 +590,7 @@
           },
           {
             "kind": "typeIndexRef",
-            "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/server\").Server"
+            "link": "(framework/server).Server"
           },
           {
             "kind": "unsupported",
@@ -608,7 +608,7 @@
         "nodeFullText": "export type MaybePromise<T = void> = T | Promise<T>"
       }
     },
-    "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/server\").Server": {
+    "(framework/server).Server": {
       "kind": "interface",
       "name": "Server",
       "props": [
@@ -677,7 +677,7 @@
         "nodeFullText": "/**\n * [API Reference](https://nexus-future.now.sh/#/references/api?id=server)  ⌁  [Guide](todo)\n *\n * ### todo\n *\n */\nexport interface Server {\n  /**\n   * Start the server instance\n   */\n  start(): Promise<void>\n  /**\n   * Stop the server instance\n   */\n  stop(): Promise<void>\n}"
       }
     },
-    "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/server\").CustomizerLens": {
+    "(framework/server).CustomizerLens": {
       "kind": "interface",
       "name": "CustomizerLens",
       "props": [
@@ -754,7 +754,7 @@
         "nodeFullText": "interface CustomizerLens {\n  /**\n   * The generated executable GraphQL Schema\n   */\n  schema: GraphQL.GraphQLSchema\n  /**\n   * The original Express server bundled with Nexus. Use it to add express middlewares or change its configuration in any way\n   */\n  express: Express\n  /**\n   * Function to add the generated context by Nexus to your custom server.\n   * /!\\ **If you need to add additional properties to your context, please use `schema.addToContext`**\n   */\n  context: ContextCreator\n}"
       }
     },
-    "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/app\").Settings": {
+    "(framework/app).Settings": {
       "kind": "alias",
       "name": "Settings",
       "type": {
@@ -805,7 +805,7 @@
                       "name": "newSetting",
                       "type": {
                         "kind": "typeIndexRef",
-                        "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/app\").SettingsInput"
+                        "link": "(framework/app).SettingsInput"
                       }
                     }
                   ]
@@ -831,7 +831,7 @@
         "nodeFullText": "/**\n * todo\n */\nexport type Settings = {\n  /**\n   * todo\n   */\n  original: SettingsData\n  /**\n   * todo\n   */\n  current: SettingsData\n  /**\n   * todo\n   */\n  change(newSetting: SettingsInput): void\n}"
       }
     },
-    "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/app\").SettingsInput": {
+    "(framework/app).SettingsInput": {
       "kind": "alias",
       "name": "SettingsInput",
       "type": {
@@ -859,7 +859,7 @@
                   "name": "SettingsInput",
                   "type": {
                     "kind": "typeIndexRef",
-                    "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/lib/logger/root-logger\").SettingsInput"
+                    "link": "(lib/logger/root-logger).SettingsInput"
                   },
                   "raw": {
                     "typeText": "SettingsInput",
@@ -892,7 +892,7 @@
                   "name": "SettingsInput",
                   "type": {
                     "kind": "typeIndexRef",
-                    "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/schema/schema\").SettingsInput"
+                    "link": "(framework/schema/schema).SettingsInput"
                   },
                   "raw": {
                     "typeText": "SettingsInput",
@@ -925,7 +925,7 @@
                   "name": "ExtraSettingsInput",
                   "type": {
                     "kind": "typeIndexRef",
-                    "link": "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/server\").ExtraSettingsInput"
+                    "link": "(framework/server).ExtraSettingsInput"
                   },
                   "raw": {
                     "typeText": "ExtraSettingsInput",
@@ -949,7 +949,7 @@
         "nodeFullText": "type SettingsInput = {\n  logger?: Logger.SettingsInput\n  schema?: Schema.SettingsInput\n  server?: Server.ExtraSettingsInput\n}"
       }
     },
-    "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/lib/logger/root-logger\").SettingsInput": {
+    "(lib/logger/root-logger).SettingsInput": {
       "kind": "alias",
       "name": "SettingsInput",
       "type": {
@@ -1178,7 +1178,7 @@
         "nodeFullText": "export type SettingsInput = {\n  /**\n   * Set the level of this and all descedent loggers. This level setting has\n   * highest precedence of all logger level configuration tiers.\n   *\n   * The level config takes the first value found, searching tiers as follows:\n   *\n   *  1. logger instance setting\n   *  2. logger constructor setting\n   *  3. LOG_LEVEL environment variable setting\n   *  3. NODE_ENV=production -> info\n   *  4. otherwise -> debug\n   */\n  level?: Level.Level\n  /**\n   * Control pretty mode.\n   *\n   * Shorthands:\n   *\n   *  - `true` is shorthand for `{ enabled: true }`\n   *  - `false` is shorthand for `{ enabled: false }`\n   *\n   * When `undefined` pretty takes the first value found, in order:\n   *\n   *  1. `process.env.LOG_PRETTY` (admits case insensitive: `true` | `false`)\n   *  2. `process.stdout.isTTY`\n   */\n  pretty?:\n    | boolean\n    | {\n        /**\n         * Disable or enable pretty mode.\n         *\n         * When `undefined` pretty takes the first value found, in order:\n         *\n         *  1. `process.env.LOG_PRETTY` (admits case insensitive: `true` | `false`)\n         *  2. `process.stdout.isTTY`\n         */\n        enabled?: boolean\n        /**\n         * Should logs be colored?\n         *\n         * @default `true`\n         *\n         * Disabling can be useful when pretty logs are going to a destination that\n         * does not support rendering ANSI color codes (consequence being very\n         * difficult to read content).\n         */\n        color?: boolean\n        /**\n         * Should logs include the level label?\n         *\n         * @default `false`\n         *\n         * Enable this if understanding the level of a log is important to you\n         * and the icon+color system is insufficient for you to do so. Can be\n         * helpful for newcomers or a matter of taste for some.\n         */\n        levelLabel?: boolean\n        /**\n         * Should the logs include the time between it and previous log?\n         *\n         * @default `true`\n         */\n        timeDiff?: boolean\n      }\n}"
       }
     },
-    "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/schema/schema\").SettingsInput": {
+    "(framework/schema/schema).SettingsInput": {
       "kind": "alias",
       "name": "SettingsInput",
       "type": {
@@ -1342,7 +1342,7 @@
         "nodeFullText": "export type SettingsInput = {\n  /**\n   * todo\n   */\n  connections?: ConnectionConfig & {\n    // We tried the idea of types.default: false | ConnectionConfig\n    // but got blocked by https://github.com/microsoft/TypeScript/issues/17867\n\n    /**\n     * todo\n     *\n     * @default `false`\n     */\n    disableDefaultType?: boolean\n    /**\n     * todo\n     */\n    types?: {\n      default?: ConnectionConfig\n      // Extra undefined below is forced by it being above, forced via `?:`.\n      // This is a TS limitation, cannot express void vs missing semantics,\n      // being tracked here: https://github.com/microsoft/TypeScript/issues/13195\n      [typeName: string]: ConnectionConfig | undefined\n    }\n  }\n}"
       }
     },
-    "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/server\").ExtraSettingsInput": {
+    "(framework/server).ExtraSettingsInput": {
       "kind": "alias",
       "name": "ExtraSettingsInput",
       "type": {
@@ -1495,7 +1495,7 @@
         "nodeFullText": "export type ExtraSettingsInput = {\n  /**\n   * todo\n   */\n  port?: number\n  /**\n   * todo\n   */\n  playground?: boolean\n  /**\n   * Create a message suitable for printing to the terminal about the server\n   * having been booted.\n   */\n  startMessage?: (address: { port: number; host: string; ip: string }) => void\n}"
       }
     },
-    "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/schema/schema\").Schema": {
+    "(framework/schema/schema).Schema": {
       "kind": "alias",
       "name": "Schema",
       "type": {
@@ -1706,7 +1706,7 @@
         "nodeFullText": "export type Schema = {\n  // addToContext: <T extends {}>(\n  //   contextContributor: ContextContributor<T>\n  // ) => App\n  queryType: typeof NexusSchema.queryType\n  mutationType: typeof NexusSchema.mutationType\n  objectType: typeof NexusSchema.objectType\n  inputObjectType: typeof NexusSchema.inputObjectType\n  enumType: typeof NexusSchema.enumType\n  scalarType: typeof NexusSchema.scalarType\n  unionType: typeof NexusSchema.unionType\n  interfaceType: typeof NexusSchema.interfaceType\n  arg: typeof NexusSchema.arg\n  intArg: typeof NexusSchema.intArg\n  stringArg: typeof NexusSchema.stringArg\n  booleanArg: typeof NexusSchema.booleanArg\n  floatArg: typeof NexusSchema.floatArg\n  idArg: typeof NexusSchema.idArg\n  extendType: typeof NexusSchema.extendType\n  extendInputType: typeof NexusSchema.extendInputType\n}"
       }
     },
-    "(\"/Users/jasonkuhrt/projects/nexus/nexus-future/src/framework/app\").ContextContributor": {
+    "(framework/app).ContextContributor": {
       "kind": "alias",
       "name": "ContextContributor",
       "type": {
