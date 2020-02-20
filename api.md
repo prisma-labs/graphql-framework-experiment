@@ -2,8 +2,7 @@
 
 #### `log`
 
-```ts
-```
+Of type [`Logger`](#t-logger)
 
 #### `schema`
 
@@ -13,13 +12,11 @@ Schema & { addToContext: <Req extends any = Request, T extends {} = any>(context
 
 #### `server`
 
-```ts
-```
+Of type [`ServerWithCustomizer`](#i-serverwithcustomizer)
 
 #### `settings`
 
-```ts
-```
+Of type [`Settings`](#t-settings)
 
 ### Exported Types
 
