@@ -6,9 +6,10 @@ labels: type/bug
 assignees: ''
 ---
 
-<!-- Instructions: -->
+<!--    Instructions                                -->
+<!--                                                -->
 <!-- 1. Remove sections/details you do not complete -->
-<!-- 2. Add sections/details useful to you -->
+<!-- 2. Add sections/details useful to you          -->
 
 |                        |                      |
 | ---------------------- | -------------------- |
