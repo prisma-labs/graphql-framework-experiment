@@ -20,7 +20,7 @@
     "nexus": "dist/cli/main.js"
   },
   "dependencies": {
-    "@nexus/schema": "^0.12.0-rc.9",
+    "@nexus/schema": "^0.12.0-rc.13",
     "@types/express": "^4.17.2",
     "@types/pino": "^5.15.5",
     "anymatch": "^3.1.1",
@@ -75,9 +75,10 @@
     "testEnvironment": "node"
   },
   "scripts": {
+    "dev:docs": "docsify serve docs",
     "docs:dev": "docsify serve docs",
     "docs:readme:build": "doctoc README.md --notitle --maxlevel 3",
-    "docs:deploy": "now switch graphql-nexus && now --name='nexus-future' --prod",
+    "docs:deploy": "now --prod",
     "release:stable": "dripip stable",
     "release:preview": "dripip preview",
     "publish:pr": "PR=$(hub pr show -f '%I') && yarn publish --tag pr.${PR} --no-git-tag-version --new-version \"0.0.0-pr.${PR}.$(git show -s head --format='%h')\" && git commit -am 'ver' && git push",

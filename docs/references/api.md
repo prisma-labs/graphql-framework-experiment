@@ -47,7 +47,7 @@ server.start()
 
 Framework Notes:
 
-- If your app does not call `server.start` then `nexus` will. It is idiomatic to allow `nexus` to take care of this. If you deviate, we would love to learn about your use-case!
+- If your app does not call `server.start` then Nexus will. It is idiomatic to allow Nexus to take care of this. If you deviate, we would love to learn about your use-case!
 
 #### `settings`
 

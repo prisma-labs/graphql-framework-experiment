@@ -2,16 +2,16 @@
 
 ## Here Be Dragons
 
-- Writing plugins is an expressive and exciting part of `nexus`
+- Writing plugins is an expressive and exciting part of Nexus
 - But please note that it is one of the least stable components
 - Not just in terms of lack of polish or unstable APIs but entire concepts and architecture
 - The bar to a finished stable plugin system is high not just because plugin systems are in general challenging, but also because the thing which it permits extending is itself not stable either: the framework components exposed at the application layer
-- If you are embarking on creating a plugin, please be aware you are in uncharted territory with no guarantees about API stability or even entire concepts/ways of extending `nexus`
+- If you are embarking on creating a plugin, please be aware you are in uncharted territory with no guarantees about API stability or even entire concepts/ways of extending Nexus
 - If you are ok with that, we welcome you aboard this journey and hope you share your feedback with the team on GitHub and creations with the community on slack!
 
 ## How it Looks
 
-- `nexus` CLI has a command to create new `nexus` plugin projects
+- Nexus CLI has a command to create new Nexus-plugin projects
   ```cli
   npx nexus-future create plugin
   ```
@@ -33,7 +33,7 @@
   export default NexusPlugin.create(() => { ... })
   ```
 
-- Your callback will be passed an api to hook into `nexus`
+- Your callback will be passed an api to hook into Nexus
 
   ```ts
   export default NexusPlugin.create(project => { ... })
@@ -56,7 +56,7 @@
   })
   ```
 
-- At runtime you can pass configuration to `nexus` and contribute toward the graphql resolver context:
+- At runtime you can pass configuration to Nexus and contribute toward the graphql resolver context:
 
   ```ts
   export default NexusPlugin.create(project => {
@@ -118,12 +118,12 @@
 
 ## Wholistic
 
-- The breadth of `nexus`'s plugin system is uncommon
+- The breadth of Nexus' plugin system is uncommon
 - Most tools are either rutime (Express) or workflow (ESLint) oriented and thus naturally scope their plugins to their focus
-- the advantage of `nexus`'s approach where plugins can hook into both workflow and runtime is that they allow plugin authors to deliver rich wholistic experiences for their users
+- the advantage of Nexus' approach where plugins can hook into both workflow and runtime is that they allow plugin authors to deliver rich wholistic experiences for their users
 - For example a plugin author might reinforce their plugin's runtime feature with additions to doctor which lint for idiomatic usage
 - No longer does a plugin need rely on a lengthy readme that probably isn't complete and probably isn't read by most users to guide users through correct configuration, etc. usage of their plugin
-- `nexus` is fanatic about giving as much latitude as possible to plugin authors to craft plugins that forward the principal of the pit of success to `nexus` app developers
+- Nexus is fanatic about giving as much latitude as possible to plugin authors to craft plugins that forward the principal of the pit of success to Nexus app developers
 
 ## Runtime vs Worktime
 
@@ -135,11 +135,11 @@
 ## Publishing for Consumption
 
 - You must name your plugin package `nexus-plugin-<your-plugin-name>`
-- `nexus` plugin cli will rely on this convention to search install etc. plugins ([todo](https://github.com/graphql-nexus/nexus-future/issues/155))
-- `nexus` relies on this pattern to auto-use plugins in a user's project
+- Nexus plugin cli will rely on this convention to search install etc. plugins ([todo](https://github.com/graphql-nexus/nexus-future/issues/155))
+- Nexus relies on this pattern to auto-use plugins in a user's project
 
 ## A Code Reference
 
-- The most sophisticated real-world `nexus` plugin is `nexus-plugin-prisma`.
+- The most sophisticated real-world Nexus plugin is `nexus-plugin-prisma`.
 - It currently drives many of the requirements of the plugin system where we want nexus-prisma users to feel prisma is as seamless a component as any core one.
 - If you like learning by reading code, check it out here: [graphql-nexus/plugin-prisma](https://github.com/graphql-nexus/plugin-prisma).

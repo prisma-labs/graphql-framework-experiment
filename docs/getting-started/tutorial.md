@@ -14,7 +14,7 @@
 
 ## 8. ... -->
 
-> For this tutorial we will use Prisma with PostgreSQL. Install PostgreSQL if needed and then get its connection URL. Check out [our postgresql setup guide](references/recipes?id=local-postgresql) if unsure.
+> For this tutorial we will use PostgreSQL as our database. Install PostgreSQL if needed and then get its connection URL. Check out [our postgresql setup guide](references/recipes?id=local-postgresql) if unsure.
 
 ## Scaffold Project
 
@@ -46,7 +46,7 @@ Start by updating our data layer to model information about moons. We don't want
 + }
 ```
 
-`nexus` reacts to changes in your Prisma schema. By saving the above, your dev database will be automatically migrated and photon regenerated. You literally now just move on to updating your GraphQL API.
+Nexus reacts to changes in your Prisma schema. By saving the above, your dev database will be automatically migrated and photon regenerated. You literally now just move on to updating your GraphQL API.
 
 ## Change the API Layer
 
