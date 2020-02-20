@@ -3,7 +3,6 @@
 #### `log`
 
 ```ts
-undefined
 ```
 
 #### `schema`
@@ -15,13 +14,11 @@ Schema & { addToContext: <Req extends any = Request, T extends {} = any>(context
 #### `server`
 
 ```ts
-undefined
 ```
 
 #### `settings`
 
 ```ts
-undefined
 ```
 
 ### Exported Types
