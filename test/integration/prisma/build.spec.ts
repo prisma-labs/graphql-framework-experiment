@@ -14,8 +14,8 @@ it('can build a prisma framework project', () => {
         provider = "sqlite"	
         url      = "file:dev.db"	
       }	
-      generator photon {	
-        provider = "photonjs"	
+      generator prisma_client {	
+        provider = "prisma-client-js"	
       }	
       model User {	
         id   Int    @id	

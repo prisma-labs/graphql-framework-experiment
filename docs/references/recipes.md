@@ -182,7 +182,7 @@ You will not use the `prisma2` CLI anymore. `$ prisma2 generaate` will be taken 
    npm install nexus-plugin-prisma
    ```
 
-1. Add a `schema.prisma` file. Add a datasource. Here we're working with SQLite. Add photon.
+1. Add a `schema.prisma` file. Add a datasource. Here we're working with SQLite. Add Prisma Client.
 
    ```diff
    +++ prisma/schema.prisma
@@ -192,8 +192,8 @@ You will not use the `prisma2` CLI anymore. `$ prisma2 generaate` will be taken 
    +    url      = "file:dev.db"
    +  }
    +
-   +  generator photonjs {
-   +    provider = "photonjs"
+   +  generator prisma_client {
+   +    provider = "prisma-client-js"
    +  }
    ```
 
@@ -226,7 +226,7 @@ You will not use the `prisma2` CLI anymore. `$ prisma2 generaate` will be taken 
         })
       ```
 
-   1. An instance of the generated Photon.JS client is a added to context under `photon` property, allowing e.g.:
+   1. An instance of the generated Prisma Client is a added to context under the `db` property, allowing e.g.:
 
       ```diff
       +++ src/graphql.ts
@@ -237,7 +237,7 @@ You will not use the `prisma2` CLI anymore. `$ prisma2 generaate` will be taken 
       -       resolve() {
       -         return [{ id: '1643', name: 'newton' }]
       +       resolve(_root, _args, ctx) {
-      +         return ctx.photon.users.findMany()
+      +         return ctx.db.users.findMany()
               },
             })
           },
