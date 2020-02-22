@@ -103,5 +103,11 @@
     "hooks": {
       "pre-commit": "pretty-quick --staged"
     }
+  },
+  "tydoc": {
+    "sourceModuleToPackagePathMappings": {
+      "testing": "testing",
+      "plugin": "plugin"
+    }
   }
 }
