@@ -1,5 +1,3 @@
-// const serverLog = rootLogger.child('ipc').child('server')
-
 type MessageType = 'module_imported' | 'error' | 'app_server_listening'
 
 type MessageStruct<

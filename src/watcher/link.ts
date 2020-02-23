@@ -1,5 +1,5 @@
 import * as nodecp from 'child_process'
-import * as lo from 'lodash'
+import * as TTYLinker from '../lib/tty-linker'
 import { rootLogger } from '../utils/logger'
 
 const log = rootLogger.child('dev').child('link')
@@ -14,6 +14,7 @@ export class Link {
       log.trace('forwarding SIGTERM')
       this.stop()
     })
+
     process.on('SIGINT', () => {
       // Note SIGINT becomes SIGTERM to the runner
       log.trace('forwarding SIGINT as SIGTERM')
@@ -23,6 +24,7 @@ export class Link {
 
   async startOrRestart() {
     log.trace('startOrRestart requested')
+
     if (this.startingOrRestarting) {
       log.trace('already a startOrRestartPending in progress')
       return
@@ -41,13 +43,9 @@ export class Link {
     }
   }
 
-  // onMessage(cb: (data: object) => void) {
-  //   this.listeners.push(cb)
-  //   this.childProcess?.on('message', cb)
-  // }
-
   stop() {
     log.trace('stop requested')
+
     if (this.stopped) {
       log.trace('already stopped')
       if (this.stopping === null) {
@@ -55,6 +53,7 @@ export class Link {
       }
       return this.stopping
     }
+
     this.stopped = true
     this.stopping = this.kill()
     return this.stopping
@@ -62,6 +61,7 @@ export class Link {
 
   private kill() {
     log.trace('kill child')
+
     return new Promise<StopResult>(res => {
       if (!this.childProcess) {
         log.trace('child already killed')
@@ -70,11 +70,14 @@ export class Link {
       this.childProcess.kill('SIGKILL')
       this.childProcess.once('exit', (code, signal) => {
         log.trace('killed child', { code, signal })
+        this.ttyLinker.parent.unforward(this.childProcess!)
         this.childProcess = null
         res({ code, signal })
       })
     })
   }
+
+  private ttyLinker = TTYLinker.create()
 
   private stopped: boolean = true
 
@@ -84,8 +87,6 @@ export class Link {
 
   private childProcess: null | nodecp.ChildProcessWithoutNullStreams = null
 
-  // private listeners: any[] = []
-
   private spawnRunner() {
     log.trace('spawn child')
 
@@ -94,23 +95,32 @@ export class Link {
         'attempt to spawn while previous child process still exists'
       )
     }
+
     this.childProcess = nodecp.fork(require.resolve('./runner'), [], {
       cwd: process.cwd(),
       stdio: 'pipe',
-      env: lo.merge({}, process.env, this.options.environmentAdditions),
+      env: {
+        ...process.env,
+        ...this.options.environmentAdditions,
+        ...this.ttyLinker.parent.serialize(),
+      },
     }) as nodecp.ChildProcessWithoutNullStreams
+
+    this.ttyLinker.parent.forward(this.childProcess)
 
     this.childProcess.stdout.on('data', data => {
       process.stdout.write(data)
     })
+
+    this.childProcess.stderr.on('data', data => {
+      process.stderr.write(data)
+    })
+
     // todo
     // this.childProcess.once('error', )
-
-    // for (const listener of this.listeners) {
-    //   this.childProcess.on('message', listener)
-    // }
   }
 }
+
 type StopResult = null | {
   code: null | number
   signal: null | NodeJS.Signals

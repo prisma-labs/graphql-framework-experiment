@@ -1,14 +1,9 @@
-// HACK force the process to think it has a tty. We know it will not becuse of
-// the way runner is run by watcher, wherein fork is run so that child object in
-// parent process has programatic stream control over stdin/out/err. This is to support
-// co-existence with dev mode UI where we want the user to be able to toggle
-// bewteen viewing their logs and the UI. It is assumed that watcher will always
-// be running with a tty but it would be a matter of invoking runner with some
-// additional special args if this constant ever becomes variable.
-require('tty').isatty = () => true
-process.stdout.isTTY = true
-process.stderr.isTTY = true
-// todo listen for ipc terminal resize events
+// Not using ECMA modules b/c TS autoformat moves it down but we need it first
+// for side-effects.
+require('../lib/tty-linker')
+  .create()
+  .child.install()
+
 import { register } from 'ts-node'
 import * as ts from 'typescript'
 import { Script } from 'vm'
