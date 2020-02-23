@@ -72,6 +72,7 @@ export function createWatcher(options: Opts): Promise<void> {
     /**
      * Core watcher listener
      */
+
     // TODO: plugin listeners can probably be merged into the core listener
     watcher.on('all', (_event, file) => {
       if (isIgnoredByCoreListener(file)) {
@@ -151,6 +152,9 @@ export function createWatcher(options: Opts): Promise<void> {
   })
 }
 
+/**
+ * todo
+ */
 function createPathMatcher(params: {
   toMatch?: string[]
   toIgnore?: string[]
