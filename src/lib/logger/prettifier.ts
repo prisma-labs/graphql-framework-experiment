@@ -114,6 +114,7 @@ export function create(options: Options) {
 }
 
 export function render(opts: Options, rec: Logger.LogRecord): string {
+  const terminalWidth = process.stdout.columns ?? 80
   const levelLabel = Level.LEVELS_BY_NUM[rec.level].label
   const style = LEVEL_STYLES[levelLabel]
 
@@ -199,7 +200,7 @@ export function render(opts: Options, rec: Logger.LogRecord): string {
   // 1. the headers section
   // 2. the headers/context separator
   const availableSinglelineContextColumns =
-    process.stdout.columns -
+    terminalWidth -
     gutterWidth -
     preContextWidth -
     seps.context.singleLine.symbol.length

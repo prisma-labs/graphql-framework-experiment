@@ -1,3 +1,13 @@
+// HACK force the process to think it has a tty. We know it will not becuse of
+// the way runner is run by watcher, wherein fork is run so that child object in
+// parent process has programatic stream control over stdin/out/err. This is to support
+// co-existence with dev mode UI where we want the user to be able to toggle
+// bewteen viewing their logs and the UI. It is assumed that watcher will always
+// be running with a tty but it would be a matter of invoking runner with some
+// additional special args if this constant ever becomes variable.
+require('tty').isatty = () => true
+process.stdout.isTTY = true
+process.stderr.isTTY = true
 import { register } from 'ts-node'
 import * as ts from 'typescript'
 import { Script } from 'vm'
@@ -9,10 +19,7 @@ import hook from './hook'
 import * as IPC from './ipc'
 import Module = require('module')
 
-const log = rootLogger
-  .child('cli')
-  .child('dev')
-  .child('runner')
+const log = rootLogger.child('dev').child('runner')
 
 log.trace('boot')
 
@@ -21,7 +28,6 @@ register({
   transpileOnly: true,
 })
 ;(async function() {
-  await IPC.client.connect()
   log.trace('starting context type extraction')
   const layout = await Layout.loadDataFromParentProcess()
   const tsConfig = readTsConfig(layout)
@@ -58,13 +64,13 @@ register({
     require(process.env.NODE_DEV_PRELOAD)
   }
 
-  // Listen SIGTERM and exit unless there is another listener
-  process.on('SIGTERM', function() {
-    if (process.listeners('SIGTERM').length === 1) {
-      log.trace('Child got SIGTERM, exiting')
-      process.exit(0)
-    }
-  })
+  // // Listen SIGTERM and exit unless there is another listener
+  // process.on('SIGTERM', function() {
+  //   if (process.listeners('SIGTERM').length === 1) {
+  //     log.trace('Child got SIGTERM, exiting')
+  //     process.exit(0)
+  //   }
+  // })
 
   // Overwrite child_process.fork() so that we can hook into forked processes
   // too. We also need to relay messages about required files to the parent.

@@ -4,7 +4,7 @@ import { rootLogger } from '../utils/logger'
 
 export type NodeIPCServer = typeof ipc2.server
 
-const serverLog = rootLogger.child('watcher:ipc:server')
+const serverLog = rootLogger.child('ipc').child('server')
 
 type MessageType = 'module_imported' | 'error' | 'app_server_listening'
 
@@ -51,7 +51,7 @@ type Message = ModuleRequiredMessage | ErrorMessage | AppServerListeningMessage
 
 type AppServerListeningMessage = MessageStruct<'app_server_listening', {}>
 
-export type Server = ReturnType<typeof create>
+// export type Server = ReturnType<typeof create>
 
 type EventType =
   | 'connect'
@@ -70,61 +70,61 @@ type EventsLookup = {
   message: [Message]
 }
 
-export function create() {
-  ipc2.config.id = 'nexus_dev_watcher'
-  // ipc2.config.logger = serverLogger.trace
-  ipc2.config.silent = true
-  ipc2.serve()
-  ipc2.server.start()
-  ipc2.server.on('connect', _socket => {
-    serverLog.trace('socket connected')
-  })
-  ipc2.server.on('disconnect', (...args) => {
-    serverLog.trace('socket disconnected (client sent)', { args })
-  })
-  ipc2.server.on('destroy', (...args) => {
-    serverLog.trace('socket destroyed (gone for good, no more retries)', {
-      args,
-    })
-  })
-  ipc2.server.on('socket.disconnected', (_socket, destroyedSocketId) => {
-    serverLog.trace('socket disconnected (server sent)', {
-      destroyedSocketId,
-    })
-  })
+// export function create() {
+//   ipc2.config.id = 'nexus_dev_watcher'
+//   // ipc2.config.logger = serverLogger.trace
+//   ipc2.config.silent = true
+//   ipc2.serve()
+//   ipc2.server.start()
+//   ipc2.server.on('connect', _socket => {
+//     serverLog.trace('socket connected')
+//   })
+//   ipc2.server.on('disconnect', (...args) => {
+//     serverLog.trace('socket disconnected (client sent)', { args })
+//   })
+//   ipc2.server.on('destroy', (...args) => {
+//     serverLog.trace('socket destroyed (gone for good, no more retries)', {
+//       args,
+//     })
+//   })
+//   ipc2.server.on('socket.disconnected', (_socket, destroyedSocketId) => {
+//     serverLog.trace('socket disconnected (server sent)', {
+//       destroyedSocketId,
+//     })
+//   })
 
-  const api = {
-    on: <E extends EventType>(
-      eventType: E,
-      observer: (...args: EventsLookup[E]) => void
-    ): void => {
-      ipc2.server.on(eventType, observer as any)
-    },
-    stop(): void {
-      ipc2.server.stop()
-    },
-    async start(): Promise<void> {
-      return new Promise((res, rej) => {
-        ipc2.server.on('error', rej)
-        ipc2.server.on('start', () => {
-          serverLog.trace('started')
-          res()
-        })
-      })
-    },
-  }
+//   const api = {
+//     on: <E extends EventType>(
+//       eventType: E,
+//       observer: (...args: EventsLookup[E]) => void
+//     ): void => {
+//       ipc2.server.on(eventType, observer as any)
+//     },
+//     stop(): void {
+//       ipc2.server.stop()
+//     },
+//     async start(): Promise<void> {
+//       return new Promise((res, rej) => {
+//         ipc2.server.on('error', rej)
+//         ipc2.server.on('start', () => {
+//           serverLog.trace('started')
+//           res()
+//         })
+//       })
+//     },
+//   }
 
-  api.on('message', message => {
-    if (message.type === 'module_imported') return // too noisy...
-    serverLog.trace('inbound message', message)
-  })
+//   api.on('message', message => {
+//     if (message.type === 'module_imported') return // too noisy...
+//     serverLog.trace('inbound message', message)
+//   })
 
-  return api
-}
+//   return api
+// }
 
 // client
 
-const clientLog = rootLogger.child('watcher:ipc:server')
+const clientLog = rootLogger.child('ipc').child('client')
 
 export const client = createClient()
 
@@ -144,14 +144,14 @@ function createClient() {
           type: 'module_imported',
           data,
         }
-        ipc2.of.nexus_dev_watcher.emit('message', msg)
+        process.send!(msg)
       },
       error(data: ErrorMessage['data']): void {
         const msg: ErrorMessage = {
           type: 'error',
           data,
         }
-        ipc2.of.nexus_dev_watcher.emit('message', msg)
+        process.send!(msg)
       },
       /**
        * Send a signal that lets dev-mode master know that server is booted and thus
@@ -165,18 +165,18 @@ function createClient() {
         ipc2.of.nexus_dev_watcher.emit('message', msg)
       },
     },
-    connect(): Promise<void> {
-      if (state.connected) return Promise.resolve()
-      state.connected = true
-      return new Promise(res => {
-        ipc2.connectTo('nexus_dev_watcher', () => {
-          clientLog.trace('socket created')
-          ipc2.of.nexus_dev_watcher.on('connect', () => {
-            clientLog.trace('connection to watcher established')
-            res()
-          })
-        })
-      })
-    },
+    // connect(): Promise<void> {
+    //   if (state.connected) return Promise.resolve()
+    //   state.connected = true
+    //   return new Promise(res => {
+    //     ipc2.connectTo('nexus_dev_watcher', () => {
+    //       clientLog.trace('socket created')
+    //       ipc2.of.nexus_dev_watcher.on('connect', () => {
+    //         clientLog.trace('connection to watcher established')
+    //         res()
+    //       })
+    //     })
+    //   })
+    // },
   }
 }

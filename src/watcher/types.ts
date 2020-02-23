@@ -33,23 +33,17 @@ export interface Compiler {
   writeReadyFile: () => void
   writeChildHookFile: (opts: any) => void
   init: (opts: Opts) => void
-  compileChanged: (fileName: string, onEvent: OnEvent) => void
-  compile: (params: {
-    compile: string
-    compiledPath: string
-    onEvent: OnEvent
-  }) => void
+  compileChanged: (fileName: string) => void
+  compile: (params: { compile: string; compiledPath: string }) => void
   log?: any
   stop?: any
 }
 
 interface BooleanOpts {
   dedupe?: boolean
-  respawn: boolean
   'no-cache'?: boolean
   clear?: boolean
   'type-check'?: boolean
-  transpileOnly: boolean
   logError?: boolean
   files?: boolean
   pretty?: boolean
@@ -83,7 +77,6 @@ export interface Opts extends BooleanOpts, StringOpts {
   layout: Layout
   log?: any
   watch?: string
-  onEvent: OnEvent
   stdio?: ForkOptions['stdio']
   eval: {
     code: string

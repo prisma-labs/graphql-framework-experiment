@@ -5,6 +5,7 @@ import { isError } from 'util'
 import * as Layout from '../framework/layout'
 import { CLI, HelpError } from '../lib/cli'
 import { fatal, isProcessFromProjectBin } from '../utils'
+import { log } from '../utils/logger'
 import * as PackageManager from '../utils/package-manager'
 import * as Commands from './commands'
 
@@ -13,11 +14,52 @@ dotenv.config()
 
 process.on('uncaughtException', e => {
   console.error(e)
+  exit(1)
 })
 
 process.on('unhandledRejection', e => {
   console.error(e)
+  exit(1)
 })
+
+type BeforeExiter = () => Promise<unknown>
+
+declare global {
+  namespace NodeJS {
+    interface Process {
+      beforeExiters: BeforeExiter[]
+      onBeforeExit(cb: BeforeExiter): void
+    }
+  }
+}
+
+process.once('SIGTERM', () => exit(0))
+process.once('SIGINT', () => exit(0))
+process.beforeExiters = []
+process.onBeforeExit = (cb: BeforeExiter): void => {
+  process.beforeExiters.push(cb)
+}
+let tearingDown = false
+async function exit(exitCode: number) {
+  log.trace('exiting', { beforeExitersCount: process.beforeExiters.length })
+  if (tearingDown) return
+  tearingDown = true
+  try {
+    await Promise.race([
+      new Promise(res => {
+        // todo send SIGKILL to process tree...
+        log.warn('time expired before all before-exit teardowns completed')
+        setTimeout(res, 2000)
+      }),
+      Promise.all(process.beforeExiters.map(f => f())),
+    ])
+  } catch (e) {
+    console.error(e)
+    // If exiting with an already already, preserve that
+    process.exit(exitCode > 0 ? exitCode : 1)
+  }
+  process.exit(exitCode)
+}
 
 main().then(exitCode => {
   process.exit(exitCode)
