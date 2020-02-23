@@ -1,4 +1,3 @@
-import * as ipc2 from 'node-ipc'
 import { fatal } from '../utils/process'
 
 /**
@@ -42,7 +41,7 @@ export function sendServerReadySignalToDevModeMaster(): void {
 function sendSignalToDevModeMaster(signal: string) {
   if (!IS_DEV_MODE) return
 
-  ipc2.of.nexus_dev_watcher.emit('message', { type: signal, data: {} })
+  process.send!({ type: signal, data: {} })
 }
 
 /**
