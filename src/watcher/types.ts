@@ -19,8 +19,6 @@ type EventLogging = {
 
 type Events = EventRestart | EventCompiled | EventLogging
 
-type OnEvent = (e: Events) => void
-
 export interface Compiler {
   allowJs: boolean
   tsConfigPath: string

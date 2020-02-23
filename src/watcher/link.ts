@@ -23,18 +23,18 @@ export class Link {
 
   async startOrRestart() {
     log.trace('startOrRestart requested')
-    if (this.startOrRestartPending) {
+    if (this.startingOrRestarting) {
       log.trace('already a startOrRestartPending in progress')
       return
     }
 
     this.stopped = false
     this.stopping = null
-    this.startOrRestartPending = true
+    this.startingOrRestarting = true
     if (this.childProcess) {
       await this.kill()
     }
-    this.startOrRestartPending = false
+    this.startingOrRestarting = false
     // may have been stopped while killing previous
     if (!this.stopped) {
       this.spawnRunner()
@@ -76,11 +76,11 @@ export class Link {
     })
   }
 
-  private stopped = true
+  private stopped: boolean = true
 
   private stopping: null | Promise<StopResult> = null
 
-  private startOrRestartPending = false
+  private startingOrRestarting: boolean = false
 
   private childProcess: null | nodecp.ChildProcessWithoutNullStreams = null
 

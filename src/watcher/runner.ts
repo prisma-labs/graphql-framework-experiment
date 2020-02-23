@@ -8,6 +8,7 @@
 require('tty').isatty = () => true
 process.stdout.isTTY = true
 process.stderr.isTTY = true
+// todo listen for ipc terminal resize events
 import { register } from 'ts-node'
 import * as ts from 'typescript'
 import { Script } from 'vm'
