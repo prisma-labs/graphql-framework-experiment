@@ -55,7 +55,7 @@
     "@types/node-fetch": "2.5.4",
     "@types/prompts": "2.0.3",
     "doctoc": "1.4.0",
-    "dripip": "0.6.0",
+    "dripip": "^0.6.1-next.2",
     "husky": "4.2.1",
     "jest": "25.1.0",
     "prettier": "1.19.1",
