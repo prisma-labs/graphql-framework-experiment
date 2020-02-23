@@ -1,5 +1,6 @@
 import anymatch from 'anymatch'
 import { saveDataForChildProcess } from '../framework/layout'
+import { clearConsole } from '../utils'
 import { rootLogger } from '../utils/logger'
 import { watch } from './chokidar'
 import { compiler } from './compiler'
@@ -85,7 +86,7 @@ export function createWatcher(options: Opts): Promise<void> {
      * Plugins watcher listeners
      */
 
-    const runnerPluginLens = {
+    const devModePluginLens = {
       restart: restart,
     }
 
@@ -103,7 +104,12 @@ export function createWatcher(options: Opts): Promise<void> {
         watcher.on('all', (event, file, stats) => {
           if (isMatchedByPluginListener(file)) {
             log.trace('plugin listener - matched file', { file })
-            plugin.dev.onFileWatcherEvent!(event, file, stats, runnerPluginLens)
+            plugin.dev.onFileWatcherEvent!(
+              event,
+              file,
+              stats,
+              devModePluginLens
+            )
           } else {
             log.trace('plugin listener - DID NOT match file', { file })
           }
@@ -121,8 +127,8 @@ export function createWatcher(options: Opts): Promise<void> {
 
     let restarting = false
 
-    // clearConsole()
     restarting = true
+    clearConsole()
     await link.startOrRestart()
     restarting = false
 
@@ -131,13 +137,14 @@ export function createWatcher(options: Opts): Promise<void> {
         log.trace('restart already in progress')
         return
       }
+      restarting = true
+      clearConsole()
       log.info('restarting', { changed: file })
       if (file === compiler.tsConfigPath) {
         log.trace('reinitializing TS compilation')
         compiler.init(options)
       }
       compiler.compileChanged(file)
-      // clearConsole()
       await link.startOrRestart()
       restarting = false
     }
