@@ -9,18 +9,7 @@ interface Options {
 }
 
 export class Link {
-  constructor(private options: Options) {
-    process.on('SIGTERM', () => {
-      log.trace('forwarding SIGTERM')
-      this.stop()
-    })
-
-    process.on('SIGINT', () => {
-      // Note SIGINT becomes SIGTERM to the runner
-      log.trace('forwarding SIGINT as SIGTERM')
-      this.stop()
-    })
-  }
+  constructor(private options: Options) {}
 
   async startOrRestart() {
     log.trace('startOrRestart requested')
@@ -116,8 +105,10 @@ export class Link {
       process.stderr.write(data)
     })
 
-    // todo
-    // this.childProcess.once('error', )
+    this.childProcess.once('error', error => {
+      log.warn('runner errored out, respawning', { error })
+      this.startOrRestart()
+    })
   }
 }
 
