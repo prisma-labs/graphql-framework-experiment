@@ -7,7 +7,7 @@ import * as chokidar from 'chokidar'
 import * as fs from 'fs'
 import { rootLogger } from '../utils/logger'
 
-const log = rootLogger.child('file-watcher')
+const log = rootLogger.child('dev').child('watcher')
 
 export type FileWatcher = chokidar.FSWatcher & {
   /**

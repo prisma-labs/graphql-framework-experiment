@@ -1,6 +1,7 @@
 - Getting Started
 
   - [Tutorial](getting-started/tutorial)
+  - [Migrate from Nexus Schema](getting-started/migrate-from-nexus-schema)
 
 - Guides
 
