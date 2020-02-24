@@ -13,26 +13,15 @@ export type SettingsInput = {
   /**
    * todo
    */
-  connections?: ConnectionConfig & {
-    // We tried the idea of types.default: false | ConnectionConfig
-    // but got blocked by https://github.com/microsoft/TypeScript/issues/17867
-
-    /**
-     * todo
-     *
-     * @default `false`
-     */
-    disableDefaultType?: boolean
+  connections?: {
     /**
      * todo
      */
-    types?: {
-      default?: ConnectionConfig
-      // Extra undefined below is forced by it being above, forced via `?:`.
-      // This is a TS limitation, cannot express void vs missing semantics,
-      // being tracked here: https://github.com/microsoft/TypeScript/issues/13195
-      [typeName: string]: ConnectionConfig | undefined
-    }
+    default?: ConnectionConfig | false
+    // Extra undefined below is forced by it being above, forced via `?:`.
+    // This is a TS limitation, cannot express void vs missing semantics,
+    // being tracked here: https://github.com/microsoft/TypeScript/issues/13195
+    [typeName: string]: ConnectionConfig | undefined | false
   }
 }
 
@@ -62,7 +51,7 @@ export type Schema = {
 
 type SchemaInternal = {
   private: {
-    types: any[]
+    isSchemaEmpty(): boolean
     compile: (config: SchemaConfig) => Promise<NexusGraphQLSchema>
     settings: {
       data: SettingsData
@@ -104,7 +93,9 @@ export function create(): SchemaInternal {
 
   const api: SchemaInternal = {
     private: {
-      types: __types,
+      isSchemaEmpty: () => {
+        return __types.length === 0
+      },
       compile: c => {
         c.plugins = c.plugins ?? []
         c.plugins.push(...processConnectionsConfig(state.settings))
@@ -161,23 +152,24 @@ function processConnectionsConfig(
   }
 
   const instances: NexusSchema.core.NexusPlugin[] = []
-  const { types, disableDefaultType, ...configBase } = settings.connections
-  const { default: defaultTypeConfig, ...customTypes } = types ?? {}
+  const {
+    default: defaultTypeConfig,
+    ...customTypesConfig
+  } = settings.connections
 
-  for (const [name, config] of Object.entries(customTypes)) {
-    instances.push(
-      NexusSchema.connectionPlugin({
-        nexusFieldName: name,
-        ...configBase,
-        ...config,
-      })
-    )
+  for (const [name, config] of Object.entries(customTypesConfig)) {
+    if (config) {
+      instances.push(
+        NexusSchema.connectionPlugin({
+          nexusFieldName: name,
+          ...config,
+        })
+      )
+    }
   }
 
-  if (disableDefaultType !== true) {
-    instances.push(
-      defaultConnectionPlugin({ ...configBase, ...defaultTypeConfig })
-    )
+  if (defaultTypeConfig) {
+    instances.push(defaultConnectionPlugin(defaultTypeConfig))
   }
 
   return instances
