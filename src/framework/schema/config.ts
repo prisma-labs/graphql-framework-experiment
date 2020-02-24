@@ -37,7 +37,7 @@ export function createInternalConfig(
 
   const finalConfig = withAutoTypegenConfig(defaultConfig, plugins)
 
-  log.trace('built up schema config', { nexusConfig: finalConfig })
+  log.trace('config built', { nexusConfig: finalConfig })
 
   return finalConfig
 }

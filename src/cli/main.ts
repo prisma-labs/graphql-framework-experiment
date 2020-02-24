@@ -4,23 +4,26 @@ import * as dotenv from 'dotenv'
 import { isError } from 'util'
 import * as Layout from '../framework/layout'
 import { CLI, HelpError } from '../lib/cli'
+import * as ExitSystem from '../lib/exit-system'
 import { fatal, isProcessFromProjectBin } from '../utils'
 import * as PackageManager from '../utils/package-manager'
 import * as Commands from './commands'
 
-// Loads env variable from .env file
 dotenv.config()
+ExitSystem.install()
 
 process.on('uncaughtException', e => {
   console.error(e)
+  ExitSystem.exit(1)
 })
 
 process.on('unhandledRejection', e => {
   console.error(e)
+  ExitSystem.exit(1)
 })
 
 main().then(exitCode => {
-  process.exit(exitCode)
+  ExitSystem.exit(exitCode)
 })
 
 /**
