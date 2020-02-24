@@ -25,6 +25,10 @@ export function createWatcher(options: Opts): Promise<void> {
         NEXUS_EVAL_FILENAME: options.eval.fileName,
         ...saveDataForChildProcess(options.layout),
       },
+      // Watch all modules imported by the user's app for changes.
+      onRunnerImportedModule(data) {
+        watcher.addSilently(data.filePath)
+      },
     })
 
     process.onBeforeExit(() => {
@@ -133,6 +137,10 @@ export function createWatcher(options: Opts): Promise<void> {
     await link.startOrRestart()
     restarting = false
 
+    // todo replace crappy `restarting` flag with an async debounce that
+    // includes awaiting completion of the returned promise. Basically this
+    // library + feature request
+    // https://github.com/sindresorhus/p-debounce/issues/3.
     async function restart(file: string) {
       if (restarting) {
         log.trace('restart already in progress')

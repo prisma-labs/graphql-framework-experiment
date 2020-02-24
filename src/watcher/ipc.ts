@@ -15,7 +15,7 @@ type MessageStruct<
  * classic use-case is for the server to watch only files actually part of the
  * program.
  */
-type ModuleRequiredMessage = MessageStruct<
+export type ModuleRequiredMessage = MessageStruct<
   'module_imported',
   {
     filePath: string
@@ -39,7 +39,10 @@ type ErrorMessage = MessageStruct<
   }
 >
 
-type Message = ModuleRequiredMessage | ErrorMessage | AppServerListeningMessage
+export type Message =
+  | ModuleRequiredMessage
+  | ErrorMessage
+  | AppServerListeningMessage
 
 type AppServerListeningMessage = MessageStruct<'app_server_listening', {}>
 

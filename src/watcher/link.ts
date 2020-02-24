@@ -1,11 +1,13 @@
 import * as nodecp from 'child_process'
 import * as TTYLinker from '../lib/tty-linker'
 import { rootLogger } from '../utils/logger'
+import { Message, ModuleRequiredMessage } from './ipc'
 
 const log = rootLogger.child('dev').child('link')
 
 interface Options {
   environmentAdditions?: Record<string, string>
+  onRunnerImportedModule?: (data: ModuleRequiredMessage['data']) => void
 }
 
 export class Link {
@@ -96,6 +98,12 @@ export class Link {
     }) as nodecp.ChildProcessWithoutNullStreams
 
     this.ttyLinker.parent.forward(this.childProcess)
+
+    this.childProcess.on('message', (msg: Message) => {
+      if (msg.type === 'module_imported') {
+        this.options.onRunnerImportedModule?.(msg.data)
+      }
+    })
 
     this.childProcess.stdout.on('data', data => {
       process.stdout.write(data)
