@@ -12,7 +12,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - run: git checkout ${GITHUB_REF##*/}
+      - name: Extract branch name
+        shell: bash
+        run: echo ${GITHUB_REF##*/} > BRANCH_NAME
+      - run: git checkout $(cat BRANCH_NAME)
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
@@ -22,3 +25,4 @@ jobs:
       - run: PR=$(jq --raw-output .pull_request.number \"$GITHUB_EVENT_PATH\") yarn test:e2e
         env:
           CI: true
+          BRANCH_NAME: $(echo )
