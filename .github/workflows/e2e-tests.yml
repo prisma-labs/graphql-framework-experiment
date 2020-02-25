@@ -16,7 +16,7 @@ jobs:
         env:
           HEAD_REF: ${{ github.head_ref }}
         run: |
-          git fetch --all && git checkout origin ${HEAD_REF}
+          git fetch --all && git checkout ${HEAD_REF}
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
