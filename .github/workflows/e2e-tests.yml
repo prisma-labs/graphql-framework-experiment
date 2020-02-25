@@ -23,6 +23,8 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: yarn --frozen-lockfile
       - run: yarn release:pr
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       - run: PR=$(jq --raw-output .pull_request.number \"$GITHUB_EVENT_PATH\") yarn test:e2e
         env:
           CI: true
