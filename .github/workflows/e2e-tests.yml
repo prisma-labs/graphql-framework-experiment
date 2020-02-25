@@ -13,6 +13,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Reattach HEAD
+        env:
+          BASE_BRANCH: ${{ github.base_ref }}
         run: |
           echo "Pull request's base branch is: ${BASE_BRANCH}"
       - name: Use Node.js ${{ matrix.node-version }}
@@ -24,4 +26,3 @@ jobs:
       - run: PR=$(jq --raw-output .pull_request.number \"$GITHUB_EVENT_PATH\") yarn test:e2e
         env:
           CI: true
-          BASE_BRANCH: ${{ github.base_ref }}
