@@ -28,6 +28,8 @@ export default class App implements Command {
 type Options = {
   projectName: string
   nexusFutureVersion: string
+  packageManager?: PackageManager.PackageManagerType
+  database?: Database | 'NO_DATABASE'
 }
 
 /**
@@ -71,7 +73,8 @@ export async function runBootstrapper(
   log.trace('checking folder is in a clean state...')
   await assertIsCleanSlate()
 
-  const packageManagerType = await askForPackageManager()
+  const packageManagerType =
+    optionsGiven?.packageManager ?? (await askForPackageManager())
 
   // TODO given the presence of plugin templates it does not make sense anymore
   // for an assumpton about how the layout is going to look
@@ -102,7 +105,9 @@ export async function runBootstrapper(
 
   // TODO in the future scan npm registry for nexus plugins, organize by
   // github stars, and so on.
-  const askDatabase = await askForDatabase()
+  const askDatabase = optionsGiven?.database
+    ? parseDatabaseChoice(optionsGiven.database)
+    : await askForDatabase()
 
   log.info('Scaffolding base project files...')
   await scaffoldBaseFiles(layout, options)
@@ -228,15 +233,14 @@ export async function runBootstrapper(
 }
 
 // TODO this data should come from db driver
-type Database = 'SQLite' | 'PostgreSQL' | 'MySQL'
-
+export type Database = 'SQLite' | 'PostgreSQL' | 'MySQL'
+type ParsedDatabase =
+  | { database: false }
+  | { database: true; choice: Database; connectionURI: string | undefined }
 /**
  * Ask the user if they would like to use a database driver.
  */
-async function askForDatabase(): Promise<
-  | { database: false }
-  | { database: true; choice: Database; connectionURI: string | undefined }
-> {
+async function askForDatabase(): Promise<ParsedDatabase> {
   let {
     usePrisma,
   }: {
@@ -516,4 +520,22 @@ function getPrismaPluginVersion(): string {
     prismaPluginVersion = 'latest'
   }
   return prismaPluginVersion
+}
+
+function parseDatabaseChoice(
+  database: Database | 'NO_DATABASE'
+): ParsedDatabase {
+  if (database === 'NO_DATABASE') {
+    return { database: false }
+  }
+
+  if (database === 'SQLite') {
+    return {
+      database: true,
+      choice: database,
+      connectionURI: 'sqlite:./dev.db',
+    }
+  }
+
+  return { database: true, choice: database, connectionURI: undefined }
 }
