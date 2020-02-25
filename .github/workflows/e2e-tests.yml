@@ -14,9 +14,9 @@ jobs:
       - uses: actions/checkout@v2
       - name: Reattach HEAD
         env:
-          BASE_BRANCH: ${{ github.base_ref }}
+          HEAD_REF: ${{ github.head_ref }}
         run: |
-          echo "Pull request's base branch is: ${BASE_BRANCH}"
+          echo "Pull request's base branch is: ${HEAD_REF}" && git checkout ${HEAD_REF}
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
