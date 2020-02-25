@@ -25,6 +25,10 @@ function setupE2EContext() {
   const LOCAL_BIN_PATH = FS.path('dist', 'cli', 'main.js')
   const RELATIVE_BIN_PATH = Path.join(tmpDir, 'node_modules', '.bin', 'nexus')
 
+  console.log({
+    tmpDir,
+  })
+
   FS.dir(tmpDir)
 
   afterEach(() => {
@@ -58,7 +62,6 @@ function setupE2EContext() {
       database: Database | 'NO_DATABASE',
       expectHandler: (data: string, proc: NodePty.IPty) => void
     ) {
-      // TODO: Remove @pr.419
       return ptySpawn(
         'node',
         [LOCAL_BIN_PATH],
