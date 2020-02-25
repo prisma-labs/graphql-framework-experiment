@@ -7,6 +7,7 @@ import { Database } from '../../src/cli/commands/create/app'
 import { PackageManagerType } from '../../src/utils/package-manager'
 import { ptySpawn } from './pty-spawn'
 import { GraphQLClient } from '../../src/lib/graphql-client'
+import { introspectionQuery } from 'graphql'
 
 function getTmpDir() {
   const uniqId = Math.random()
@@ -25,14 +26,10 @@ function setupE2EContext() {
   const LOCAL_BIN_PATH = FS.path('dist', 'cli', 'main.js')
   const RELATIVE_BIN_PATH = Path.join(tmpDir, 'node_modules', '.bin', 'nexus')
 
-  console.log({
-    tmpDir,
-  })
-
   FS.dir(tmpDir)
 
   afterEach(() => {
-    //FS.remove(tmpDir)
+    FS.remove(tmpDir)
   })
 
   return {
@@ -42,16 +39,11 @@ function setupE2EContext() {
       expectHandler: (data: string, proc: NodePty.IPty) => void = () => {},
       opts: NodePty.IPtyForkOptions = {}
     ) {
-      //return Process.run(`${BIN_PATH} ${args}`, { cwd: tmpDir })
       return ptySpawn(
         RELATIVE_BIN_PATH,
         args,
         {
           cwd: tmpDir,
-          // env: {
-          //   ...process.env,
-          //   LOG_PRETTY: 'false',
-          // },
           ...opts,
         },
         expectHandler
@@ -62,16 +54,19 @@ function setupE2EContext() {
       database: Database | 'NO_DATABASE',
       expectHandler: (data: string, proc: NodePty.IPty) => void
     ) {
+      if (!process.env.PR) {
+        throw new Error('Could not find env var `PR`')
+      }
+
       return ptySpawn(
-        'node',
-        [LOCAL_BIN_PATH],
+        'npx',
+        [`nexus-future@pr.${process.env.PR}`],
         {
           cwd: tmpDir,
           env: {
             ...process.env,
             PACKAGE_MANAGER_CHOICE: packageManager,
             DATABASE_CHOICE: database,
-            //LOG_PRETTY: 'false',
           },
         },
         expectHandler
@@ -104,23 +99,10 @@ test('e2e', async () => {
           population
         }
       }`)
+      const introspectionResult = await ctx.client.request(introspectionQuery)
 
-      expect(queryResult).toMatchInlineSnapshot(`
-        Object {
-          "worlds": Array [
-            Object {
-              "id": "1",
-              "name": "Earth",
-              "population": 6000000,
-            },
-            Object {
-              "id": "2",
-              "name": "Mars",
-              "population": 0,
-            },
-          ],
-        }
-      `)
+      expect(queryResult).toMatchSnapshot('query')
+      expect(introspectionResult).toMatchSnapshot('introspection')
       proc.kill()
     }
   })
