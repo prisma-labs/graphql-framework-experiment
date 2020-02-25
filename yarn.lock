@@ -1616,13 +1616,14 @@ dotenv@^8.2.0:
   resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-8.2.0.tgz#97e619259ada750eea3e4ea3e26bceea5424b16a"
   integrity sha512-8sJ78ElpbDJBHNeBzUbUVLsqKdccaa/BXF1uPTw3GrvQTBgrQrtObr2mUrE38vzYd8cEv+m/JBfDLioYcfXoaw==
 
-dripip@^0.6.1-next.2:
-  version "0.6.1-next.2"
-  resolved "https://registry.yarnpkg.com/dripip/-/dripip-0.6.1-next.2.tgz#fc9b6e84063774bc16249149171d7e0d6f80d522"
-  integrity sha512-YgweN+qvbPFQBcKZik4nMOZr9wmylWFAf8UXVH4Cw7CvbAAEH6SwCYOtapbaTX7P0HtOVTpIPNZMuYeKnxF5ow==
+dripip@^0.0.0-pr.30.ee27408:
+  version "0.0.0-pr.30.ee27408"
+  resolved "https://registry.yarnpkg.com/dripip/-/dripip-0.0.0-pr.30.ee27408.tgz#fa16aeb2162650f350801a959b42952bf845ff22"
+  integrity sha512-a0LaG3x+OQSnQm+4aAQxNq8yYo2CNJeIygtMMyuHXchwU02L5SZHV/Li533zhNtqUxoP3ew35JMoEzf8nfjETw==
   dependencies:
     "@oclif/command" "^1.5.19"
     "@oclif/config" "^1.13.3"
+    "@oclif/errors" "^1.2.2"
     "@oclif/plugin-help" "^2.2.1"
     "@octokit/rest" "^17.0.0"
     "@types/parse-git-config" "^3.0.0"

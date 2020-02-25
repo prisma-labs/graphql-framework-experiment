@@ -100,7 +100,7 @@ export async function runBootstrapper(
     ...optionsGiven,
     projectName: CWDProjectNameOrGenerate(),
     // @ts-ignore
-    nexusFutureVersion: `^${require('../../../../package.json').version}`,
+    nexusFutureVersion: getNexusVersion(),
   }
 
   // TODO in the future scan npm registry for nexus plugins, organize by
@@ -237,6 +237,7 @@ export type Database = 'SQLite' | 'PostgreSQL' | 'MySQL'
 type ParsedDatabase =
   | { database: false }
   | { database: true; choice: Database; connectionURI: string | undefined }
+
 /**
  * Ask the user if they would like to use a database driver.
  */
@@ -520,6 +521,19 @@ function getPrismaPluginVersion(): string {
     prismaPluginVersion = 'latest'
   }
   return prismaPluginVersion
+}
+
+/**
+ * Helper function for fetching the correct version of nexus to
+ * install. Carret is removed from the version when it's a pre-release.
+ */
+function getNexusVersion(): string {
+  const localNexusVersion: string = require('../../../../package.json').version
+
+  // TODO: Use proper RegEx instead
+  return localNexusVersion.includes('-')
+    ? localNexusVersion
+    : `^${localNexusVersion}`
 }
 
 function parseDatabaseChoice(
