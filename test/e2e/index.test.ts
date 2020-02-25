@@ -68,7 +68,6 @@ function setupE2EContext() {
             ...process.env,
             PACKAGE_MANAGER_CHOICE: packageManager,
             DATABASE_CHOICE: database,
-            NEXUS_VERSION: `pr.${process.env.PR}`,
             //LOG_PRETTY: 'false',
           },
         },
