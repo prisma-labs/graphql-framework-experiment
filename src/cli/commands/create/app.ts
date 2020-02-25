@@ -100,7 +100,7 @@ export async function runBootstrapper(
     ...optionsGiven,
     projectName: CWDProjectNameOrGenerate(),
     // @ts-ignore
-    nexusFutureVersion: getNexusVersion(),
+    nexusFutureVersion: `^${require('../../../../package.json').version}`,
   }
 
   // TODO in the future scan npm registry for nexus plugins, organize by
@@ -520,28 +520,6 @@ function getPrismaPluginVersion(): string {
     prismaPluginVersion = 'latest'
   }
   return prismaPluginVersion
-}
-
-/**
- * Helper function for fetching the correct version of nexus to
- * install. Useful for development and testing where we can override the version installed
- * by environment variable NEXUS_VERSION.
- */
-function getNexusVersion(): string {
-  let nexusVersion: string
-
-  if (process.env.NEXUS_VERSION) {
-    log.warn(
-      'found NEXUS_VERSION defined. This is only expected if you are actively developing on nexus right now or for e2e tests',
-      {
-        NEXUS_VERSION: process.env.NEXUS_VERSION,
-      }
-    )
-    nexusVersion = process.env.NEXUS_VERSION
-  } else {
-    nexusVersion = `^${require('../../../../package.json').version}`
-  }
-  return nexusVersion
 }
 
 function parseDatabaseChoice(
