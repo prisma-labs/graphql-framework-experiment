@@ -31,7 +31,8 @@ function setupE2EContext() {
       packageManager: PackageManagerType,
       database: Database | 'NO_DATABASE'
     ) {
-      return Process.run('npx nexus-future', {
+      // TODO: Remove @pr.419
+      return Process.run('npx nexus-future@pr.419', {
         envAdditions: {
           PACKAGE_MANAGER_CHOICE: packageManager,
           DATABASE_CHOICE: database,
