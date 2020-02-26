@@ -4,6 +4,7 @@ on: [pull_request]
 
 jobs:
   test:
+    needs: publish
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -20,7 +21,6 @@ jobs:
           CI: true
 
   publish:
-    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
