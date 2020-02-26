@@ -18,8 +18,8 @@ jobs:
       - run: yarn --frozen-lockfile
       - run: |
           # For nexus create app flow which will make an init commit 
-          git config user.name prisma-labs
-          git config user.email labs@prisma.io
+          git --global config user.name prisma-labs
+          git --global config user.email labs@prisma.io
       - run: PR=$(yarn -s dripip get-current-pr-num) yarn test:e2e
 
   publish:
