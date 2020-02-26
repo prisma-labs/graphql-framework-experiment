@@ -2,14 +2,14 @@
  * These testing utilities lives here so that `nexus-plugin-prisma` can reuse them
  */
 
-import { Database } from '../cli/commands/create/app'
-import { PackageManagerType } from './package-manager'
-import { GraphQLClient } from '../lib/graphql-client'
 import * as FS from 'fs-jetpack'
-import { IPtyForkOptions, IWindowsPtyForkOptions, IPty } from 'node-pty'
+import { IPty, IPtyForkOptions, IWindowsPtyForkOptions } from 'node-pty'
 import * as OS from 'os'
 import * as Path from 'path'
+import { Database } from '../cli/commands/create/app'
+import { GraphQLClient } from '../lib/graphql-client'
 import { rootLogger } from './logger'
+import { PackageManagerType } from './package-manager'
 
 export function setupE2EContext(nexusOutputDir?: string) {
   const tmpDir = nexusOutputDir ?? getTmpDir()
@@ -46,7 +46,7 @@ export function setupE2EContext(nexusOutputDir?: string) {
     ) {
       return ptySpawn(
         'npx',
-        [`nexus-future${version}`],
+        [`nexus-future@${version}`],
         {
           cwd: tmpDir,
           env: {

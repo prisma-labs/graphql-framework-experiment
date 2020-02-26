@@ -5,7 +5,7 @@ import { setupE2EContext } from '../../src/utils/e2e-testing'
 const ctx = setupE2EContext()
 
 test('e2e', async () => {
-  const nexusVersion = process.env.NEXUS_VERSION ?? '@latest'
+  const nexusVersion = process.env.NEXUS_VERSION ?? 'latest'
 
   // Run npx nexus-future and kill process
   const initResult = await ctx.spawnInit(
