@@ -2,7 +2,7 @@ import getPort from 'get-port'
 import { GraphQLClient } from 'graphql-request'
 import * as Lo from 'lodash'
 import * as Plugin from '../core/plugin'
-import * as app from './index'
+import app from './'
 import * as Layout from './layout'
 import * as singletonChecks from './singleton-checks'
 
