@@ -38,7 +38,7 @@ export class Dev implements Command {
       appPath: layout.app.path,
     })
 
-    log.info('boot')
+    log.info('boot', { version: require('../../../package.json').version })
 
     await createWatcher({
       plugins: plugins.map(p => p.hooks),
