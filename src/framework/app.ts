@@ -203,7 +203,7 @@ export function create(): App {
         const nexusConfig = Schema.createInternalConfig(plugins)
         const compiledSchema = await schema.private.compile(nexusConfig)
 
-        if (schema.private.types.length === 0) {
+        if (schema.private.isSchemaEmpty()) {
           log.warn(Layout.schema.emptyExceptionMessage())
         }
 

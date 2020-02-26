@@ -104,7 +104,7 @@ If you don't want to use a docker, here are some links to alternative approaches
 
 - [With Homebrew](https://wiki.postgresql.org/wiki/Homebrew)
 
-## Go to proudction
+## Go to production
 
 1. Add a build script
 
