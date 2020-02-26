@@ -4,7 +4,6 @@ on: [pull_request]
 
 jobs:
   test:
-    needs: publish
     runs-on: ubuntu-latest
     strategy:
       matrix:
