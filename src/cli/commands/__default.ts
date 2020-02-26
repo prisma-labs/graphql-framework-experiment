@@ -20,12 +20,6 @@ export class __Default implements Command {
         log.trace(
           'detected CWD is empty and not within an existing nexus project, delegating to create sub-command'
         )
-        console.log('Creating a new nexus project', {
-          projectName: CWDProjectNameOrGenerate(),
-          database: process.env.DATABASE_CHOICE as Database | 'NO_DATABASE', // For testing
-          packageManager: process.env
-            .PACKAGE_MANAGER_CHOICE as PackageManagerType, // For testing
-        })
         await run({
           projectName: CWDProjectNameOrGenerate(),
           database: process.env.DATABASE_CHOICE as Database | 'NO_DATABASE', // For testing
