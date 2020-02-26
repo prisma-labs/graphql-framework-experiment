@@ -13,7 +13,7 @@ test('e2e', async () => {
     'NO_DATABASE',
     nexusVersion,
     (data, proc) => {
-      console.log(data) // TODO: remove?
+      process.stdout.write(data)
       if (stripAnsi(data).includes('server:listening')) {
         proc.kill()
       }
