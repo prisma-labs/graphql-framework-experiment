@@ -16,8 +16,9 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - run: yarn --frozen-lockfile
-      - run: PR=$(jq --raw-output .pull_request.number \"$GITHUB_EVENT_PATH\") yarn test:e2e
+      - run: yarn test:e2e
         env:
+          PR: $(jq --raw-output .pull_request.number \"$GITHUB_EVENT_PATH\")
           CI: true
 
   publish:
