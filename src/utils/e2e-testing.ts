@@ -11,14 +11,14 @@ import * as OS from 'os'
 import * as Path from 'path'
 import { rootLogger } from './logger'
 
-export function setupE2EContext() {
-  const tmpDir = getTmpDir()
+export function setupE2EContext(nexusOutputDir?: string) {
+  const tmpDir = nexusOutputDir ?? getTmpDir()
   const RELATIVE_BIN_PATH = Path.join(tmpDir, 'node_modules', '.bin', 'nexus')
 
   FS.dir(tmpDir)
 
   afterEach(() => {
-    FS.remove(tmpDir)
+    // FS.remove(tmpDir)
   })
 
   return {
@@ -62,7 +62,7 @@ export function setupE2EContext() {
   }
 }
 
-function getTmpDir() {
+export function getTmpDir() {
   const uniqId = Math.random()
     .toString()
     .slice(2)
