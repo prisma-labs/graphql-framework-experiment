@@ -607,6 +607,11 @@
   dependencies:
     "@types/node" "*"
 
+"@types/debug@^4.1.5":
+  version "4.1.5"
+  resolved "https://registry.yarnpkg.com/@types/debug/-/debug-4.1.5.tgz#b14efa8852b7768d898906613c23f688713e02cd"
+  integrity sha512-Q1y515GcOdTHgagaVFhHnIFQ38ygs/kmxdNpvpou+raI9UO3YZcHDngBSYKQklcKlvA7iuQlmIKbzvmxcOE9CQ==
+
 "@types/events@*":
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/@types/events/-/events-3.0.0.tgz#2862f3f58a9a7f7c3e78d79f130dd4d71c25c2a7"
@@ -1616,20 +1621,22 @@ dotenv@^8.2.0:
   resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-8.2.0.tgz#97e619259ada750eea3e4ea3e26bceea5424b16a"
   integrity sha512-8sJ78ElpbDJBHNeBzUbUVLsqKdccaa/BXF1uPTw3GrvQTBgrQrtObr2mUrE38vzYd8cEv+m/JBfDLioYcfXoaw==
 
-dripip@^0.0.0-pr.30.ee27408:
-  version "0.0.0-pr.30.ee27408"
-  resolved "https://registry.yarnpkg.com/dripip/-/dripip-0.0.0-pr.30.ee27408.tgz#fa16aeb2162650f350801a959b42952bf845ff22"
-  integrity sha512-a0LaG3x+OQSnQm+4aAQxNq8yYo2CNJeIygtMMyuHXchwU02L5SZHV/Li533zhNtqUxoP3ew35JMoEzf8nfjETw==
+dripip@^0.7.0-next.3:
+  version "0.7.0-next.3"
+  resolved "https://registry.yarnpkg.com/dripip/-/dripip-0.7.0-next.3.tgz#8c2e53f8ae70568b95954cea3d3ba704e52b3a5a"
+  integrity sha512-IlnLteu/8LneXvmHQ62GTwquAAGFrXhckrPaYkKImIY9UfTLZAhg87O0D9ks5Pp9XIFO3LyRTNfwu1oLQDeasg==
   dependencies:
     "@oclif/command" "^1.5.19"
     "@oclif/config" "^1.13.3"
     "@oclif/errors" "^1.2.2"
     "@oclif/plugin-help" "^2.2.1"
     "@octokit/rest" "^17.0.0"
+    "@types/debug" "^4.1.5"
     "@types/parse-git-config" "^3.0.0"
     "@types/parse-github-url" "^1.0.0"
     chalk "^3.0.0"
     common-tags "^1.8.0"
+    debug "^4.1.1"
     fs-jetpack "^2.2.3"
     globby "^10.0.1"
     parse-git-config "^3.0.0"
