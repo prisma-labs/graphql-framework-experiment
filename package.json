@@ -55,7 +55,7 @@
     "@types/lodash": "4.14.149",
     "@types/node": "13.7.0",
     "doctoc": "1.4.0",
-    "dripip": "^0.7.0-next.3",
+    "dripip": "^0.7.0-next.5",
     "husky": "4.2.1",
     "jest": "25.1.0",
     "node-pty": "^0.9.0",
