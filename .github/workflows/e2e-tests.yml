@@ -4,6 +4,7 @@ on: [pull_request]
 
 jobs:
   test:
+    needs: publish
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -15,10 +16,17 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - run: yarn --frozen-lockfile
-      - run: yarn -s dripip pr
-        env:
-          NPM_TOKEN: ${{secrets.NPM_TOKEN}}
       - run: yarn test:e2e
         env:
           PR: $(yarn -s dripip get-current-pr-num)
           CI: true
+
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+      - run: yarn --frozen-lockfile
+      - run: yarn -s dripip pr
+        env:
+          NPM_TOKEN: ${{secrets.NPM_TOKEN}}
