@@ -72,7 +72,7 @@
   },
   "scripts": {
     "dev:docs": "docsify serve docs",
-    "docs:generate": "ts-node scripts/generate-docs",
+    "docs:gen": "ts-node scripts/generate-docs",
     "docs:dev": "docsify serve docs",
     "docs:readme:build": "doctoc README.md --notitle --maxlevel 3",
     "docs:deploy": "now --prod",
