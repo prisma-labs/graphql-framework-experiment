@@ -1621,10 +1621,10 @@ dotenv@^8.2.0:
   resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-8.2.0.tgz#97e619259ada750eea3e4ea3e26bceea5424b16a"
   integrity sha512-8sJ78ElpbDJBHNeBzUbUVLsqKdccaa/BXF1uPTw3GrvQTBgrQrtObr2mUrE38vzYd8cEv+m/JBfDLioYcfXoaw==
 
-dripip@^0.7.0-next.5:
-  version "0.7.0-next.5"
-  resolved "https://registry.yarnpkg.com/dripip/-/dripip-0.7.0-next.5.tgz#705ac42f49b997303128f236344168dfe5a9768f"
-  integrity sha512-mCzqxIL/5ovSZg4ZAmcGDMxfyUH01rU7B+g8Uu9JMGfqN+wUWNaFVm75frBHNxmg/HVV441xLP665P7H+qHO+A==
+dripip@^0.0.0-pr.49.1.9fb5e42:
+  version "0.0.0-pr.49.1.9fb5e42"
+  resolved "https://registry.yarnpkg.com/dripip/-/dripip-0.0.0-pr.49.1.9fb5e42.tgz#ec54e9b17ca5d0d3474f8d7e7ff1981db8a36d82"
+  integrity sha512-VEEc0Ep9FemCNkMbdlL99M7IGKC1U4cfRWpd+7JT427+GU2I37t8JpWoTeX72lKGFxet1xoIG1Ow+CCOO8PQeg==
   dependencies:
     "@oclif/command" "^1.5.19"
     "@oclif/config" "^1.13.3"
