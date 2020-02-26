@@ -1,13 +1,15 @@
 /**
  * These testing utilities lives here so that `nexus-plugin-prisma` can reuse them
  */
+
 import { Database } from '../cli/commands/create/app'
 import { PackageManagerType } from './package-manager'
 import { GraphQLClient } from '../lib/graphql-client'
 import * as FS from 'fs-jetpack'
-import * as NodePty from 'node-pty'
+import { IPtyForkOptions, IWindowsPtyForkOptions, IPty } from 'node-pty'
 import * as OS from 'os'
 import * as Path from 'path'
+import { rootLogger } from './logger'
 
 export function setupE2EContext() {
   const tmpDir = getTmpDir()
@@ -23,8 +25,8 @@ export function setupE2EContext() {
     tmpDir,
     spawnNexus(
       args: string[],
-      expectHandler: (data: string, proc: NodePty.IPty) => void = () => {},
-      opts: NodePty.IPtyForkOptions = {}
+      expectHandler: (data: string, proc: IPty) => void = () => {},
+      opts: IPtyForkOptions = {}
     ) {
       return ptySpawn(
         RELATIVE_BIN_PATH,
@@ -39,15 +41,12 @@ export function setupE2EContext() {
     spawnInit(
       packageManager: PackageManagerType,
       database: Database | 'NO_DATABASE',
-      expectHandler: (data: string, proc: NodePty.IPty) => void
+      version: string,
+      expectHandler: (data: string, proc: IPty) => void
     ) {
-      if (!process.env.PR) {
-        throw new Error('Could not find env var `PR`')
-      }
-
       return ptySpawn(
         'npx',
-        [`nexus-future@pr.${process.env.PR}`],
+        [`nexus-future${version}`],
         {
           cwd: tmpDir,
           env: {
@@ -78,12 +77,14 @@ function getTmpDir() {
 export function ptySpawn(
   command: string,
   args: string[],
-  opts: NodePty.IPtyForkOptions,
-  expectHandler: (data: string, proc: NodePty.IPty) => void
+  opts: IPtyForkOptions,
+  expectHandler: (data: string, proc: IPty) => void
 ) {
+  const nodePty = requireNodePty()
+
   return new Promise<{ exitCode: number; signal?: number; data: string }>(
     resolve => {
-      const proc = NodePty.spawn(command, args, {
+      const proc = nodePty.spawn(command, args, {
         cols: 80,
         rows: 80,
         ...opts,
@@ -100,4 +101,26 @@ export function ptySpawn(
       })
     }
   )
+}
+
+/**
+ * TODO: Once we have TS 3.8, remove that custom type and use the type from the module itself using the `import type` syntax
+ */
+type NodePty = {
+  spawn: (
+    file: string,
+    args: string[] | string,
+    options: IPtyForkOptions | IWindowsPtyForkOptions
+  ) => IPty
+}
+
+function requireNodePty(): NodePty {
+  try {
+    return require('node-pty') as NodePty
+  } catch (e) {
+    rootLogger.error(
+      'Could not require `node-pty`. Please install it as a dev dependency'
+    )
+    throw e
+  }
 }

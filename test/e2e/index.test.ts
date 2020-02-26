@@ -5,12 +5,21 @@ import { setupE2EContext } from '../../src/utils/e2e-testing'
 const ctx = setupE2EContext()
 
 test('e2e', async () => {
+  if (!process.env.PR) {
+    throw new Error('Could not find env var `PR`')
+  }
+
   // Run npx nexus-future and kill process
-  const initResult = await ctx.spawnInit('npm', 'NO_DATABASE', (data, proc) => {
-    if (stripAnsi(data).includes('server:listening')) {
-      proc.kill()
+  const initResult = await ctx.spawnInit(
+    'npm',
+    'NO_DATABASE',
+    `@pr.${process.env.PR}`,
+    (data, proc) => {
+      if (stripAnsi(data).includes('server:listening')) {
+        proc.kill()
+      }
     }
-  })
+  )
 
   expect(stripAnsi(initResult.data)).toContain('server:listening')
   expect(initResult.exitCode).toStrictEqual(0)
