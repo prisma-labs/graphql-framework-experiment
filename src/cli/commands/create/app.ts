@@ -113,7 +113,7 @@ export async function runBootstrapper(
   await scaffoldBaseFiles(layout, options)
 
   log.info(
-    `Installing nexus-future@${options.nexusFutureVersion}... (this will take around ~30 seconds)`
+    `Installing nexus-future@${options.nexusFutureVersion}... (this will take around ~15 seconds)`
   )
   await layout.packageManager.installDeps({ require: true })
 
@@ -524,16 +524,11 @@ function getPrismaPluginVersion(): string {
 }
 
 /**
- * Helper function for fetching the correct version of nexus to
- * install. Carret is removed from the version when it's a pre-release.
+ * Fetch the version of nexus to install.
  */
 function getNexusVersion(): string {
   const localNexusVersion: string = require('../../../../package.json').version
-
-  // TODO: Use proper RegEx instead
-  return localNexusVersion.includes('-')
-    ? localNexusVersion
-    : `^${localNexusVersion}`
+  return `^${localNexusVersion}`
 }
 
 function parseDatabaseChoice(
