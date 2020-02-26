@@ -3,28 +3,30 @@ name: Nexus CI
 on: [pull_request]
 
 jobs:
-  publish-and-build:
+  test:
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
         node-version: [10.x, 12.x]
-
     steps:
       - uses: actions/checkout@v2
-      - name: Reattach HEAD
-        env:
-          HEAD_REF: ${{ github.head_ref }}
-        run: |
-          git fetch --all && git checkout --track origin/${HEAD_REF}
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
       - run: yarn --frozen-lockfile
-      - run: yarn release:pr
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       - run: PR=$(jq --raw-output .pull_request.number \"$GITHUB_EVENT_PATH\") yarn test:e2e
         env:
           CI: true
+
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+      - run: yarn --frozen-lockfile
+      - run: yarn -s dripip preview-or-pr
+        env:
+          NPM_TOKEN: ${{secrets.NPM_TOKEN}}
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
