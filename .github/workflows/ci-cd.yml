@@ -1,0 +1,52 @@
+name: ci-cd
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: yarn --frozen-lockfile
+      - run: yarn -s test:unit
+
+  publish:
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+      - run: yarn --frozen-lockfile
+      - run: yarn -s dripip preview-or-pr
+        env:
+          NPM_TOKEN: ${{secrets.NPM_TOKEN}}
+
+  smoke-test:
+    needs: publish
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: yarn --frozen-lockfile
+      - run: |
+          # For nexus create app flow which will make an init commit 
+          git config --global user.name prisma-labs
+          git config --global user.email labs@prisma.io
+      - run: NEXUS_VERSION=$(yarn -s dripip get-current-commit-version) yarn test:e2e
