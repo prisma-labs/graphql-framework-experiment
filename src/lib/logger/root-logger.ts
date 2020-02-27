@@ -1,5 +1,6 @@
 import { format } from 'util'
 import { casesHandled } from '../utils'
+import { chalk } from './chalk'
 import * as Level from './level'
 import * as Logger from './logger'
 import * as Output from './output'
@@ -146,6 +147,13 @@ export function create(opts?: Options): RootLogger {
 
     if ('level' in newSettings) {
       state.pino.level = logger.settings.level
+    }
+
+    // sync chalk
+    if ('pretty' in newSettings) {
+      // todo do not assume true color support
+      // https://github.com/chalk/chalk#256-and-truecolor-color-support
+      chalk.level = newSettings.pretty ? 3 : 0
     }
 
     return logger

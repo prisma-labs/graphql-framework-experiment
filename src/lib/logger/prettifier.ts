@@ -1,7 +1,7 @@
-import chalk, { Chalk } from 'chalk'
 import stripAnsi from 'strip-ansi'
 import * as util from 'util'
 import * as utils from '../utils'
+import { Chalk, chalk } from './chalk'
 import * as Level from './level'
 import * as Logger from './logger'
 
@@ -11,10 +11,7 @@ const stopWatch = createStopWatch()
 // - https://jrgraphix.net/r/Unicode/2600-26FF
 // - https://graphemica.com/
 
-const LEVEL_STYLES: Record<
-  Level.Level,
-  { badge: string; color: chalk.Chalk }
-> = {
+const LEVEL_STYLES: Record<Level.Level, { badge: string; color: Chalk }> = {
   fatal: {
     // badge: '⚰',
     // badge: '☠',
