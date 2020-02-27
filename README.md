@@ -83,7 +83,7 @@ The built-in exception to this heuristic is `lib/utils` which can be thought of 
 
 ### Testing
 
-There are unit tests and integration tests. `yarn test` runs them all. Beware that the integration tests run slowly. `yarn dev:test` runs only unit for this reason. Testing on CI is not yet setup.
+We use GitHub Actions.
 
 #### Unit
 
@@ -91,26 +91,67 @@ There are unit tests and integration tests. `yarn test` runs them all. Beware th
 yarn test:unit
 ```
 
-We co-locate unit tests with their respective modules. These can be run via `yarn test:unit`.
+- Live under `/src` separated by and colocated with the respective module they test.
 
-#### Integration
+- There are unit tests (`yarn test:unit`) and e2e tests (`yarn test:e2e`).
+
+- Unit tests run in CI against every commit.
+
+#### E2E
 
 ```
-yarn test:integration
+yarn test:e2e
 ```
 
-Integration tests rely on `yarn link`. This means those integration tests cannot work on a machine that has not done `yarn link` inside the root of the cloned repo.
+- Live under `/test`
+
+- E2E tests run in CI against every commit _after the package has been published_. These are preview and pr releases so its acceptable, and doing it this way provides a true smoke test of if the _real_ user journey works end to end.
+
+- E2E tests can be run on your machine. They default to working with `latest` dist-tag. Use `NEXUS_VERSION` env var to set the desired version to test against.
 
 <br>
 
-### Releasing
+### Continuous Delivery
 
-We use [`dripip`](https://github.com/prisma-labs/dripip) to make releases. CI/CD preview releases are not setup yet.
+- We use [`dripip`](https://github.com/prisma-labs/dripip) to make releases.
 
-```
-yarn -s release:preview
-yarn -s release:stable
-```
+- Every PR commit results in:
+
+  1. Pre-Release of pattern:
+
+     ```
+     0.0.0-pr.<pr-num>.<build-num>.<short-sha>`
+     ```
+
+  1. Update to an npm dist tag of pattern
+
+     ```
+     pr.<pr-num>`
+     ```
+
+- Every trunk commit results in a
+
+  1. Pre-Release of pattern:
+
+     ```
+     <next-version>-next.<build-num>
+     ```
+
+  1. Update to an npm dist tag of pattern
+
+     ```
+     next
+     ```
+
+- Stable releases are cut _manually_.
+
+- Any release type can be run manually:
+
+  ```
+  yarn release:preview
+  yarn release:stable
+  yarn release:pr
+  ```
 
 ### Website
 
