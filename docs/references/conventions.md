@@ -1,29 +1,31 @@
-## `graphql.ts` | `graphql/*`
+Nexus imposes a few requirements about how you structure your codebase.
 
-Optional –– Your GraphQL type definitions.
+## Schema Module(s)
 
-##### About
+**Pattern**
 
-It can be a single module or folder of modules. Multiple instances of module/folder-modules throughout your source tree is supported.
+A `graphql` module or directory of modules `graphql.ts` `graphql/*.ts`.
 
-In dev mode graphql modules are synchronously found and imported at server boot time. At build time however static imports for all graphql modules are inlined for boot performance.
+This may be repeated multiple times in your source tree.
 
-##### Aliases
+**About**
 
-n/a
+This convention is optional if entrypoint is present, required otherwise.
 
-## `app.ts`
+This is where you should write your GraphQL type definitions.
 
-Optional –– The entrypoint to your app
+In dev mode the modules are synchronously found and imported when the server starts. Conversely, at build time, codegen runs making the modules statically imported. This is done to support tree-shaking and decrease application start time.
 
-##### About
+## Entrypoint
 
-There can only be at most a single `app.ts`/`server.ts`/`service.ts` module in your source tree.
+**Pattern**
 
-This module is optional **when** you just have schema modules and so Nexus already knows how import them into the final build. Otherwise you'll need this module to import your custom modules etc.
+A module, anywhere in your source directory, named one of: `app.ts` `server.ts` `service.ts`.
 
-##### Aliases
+Your app must have exactly one of, or none of, these.
 
-```
-server.ts service.ts
-```
+**About**
+
+This convention is optional if schema modules are present, required otherwise.
+
+If your app defines this module, Nexus will boot from it.

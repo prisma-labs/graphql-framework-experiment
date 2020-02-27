@@ -115,6 +115,16 @@
 
       /* Sidebar */
 
+      .sidebar code {
+        background-color: #f9f9f9;
+        border-style: solid;
+        border-color: #f9f9f9;
+        border-width: 0px 10px;
+        border-radius: 3px;
+        display: inline-block;
+        line-height: 1.5;
+        font-size: 0.85rem;
+      }
       .sidebar {
         width: 15rem;
         padding-top: 1rem;
@@ -159,9 +169,10 @@
         font-weight: bold !important;
       }
       .app-sub-sidebar li:before {
-        content: '⌁';
-        font-family: monospace;
-        line-height: 0.8;
+        /* content: '⌁'; */
+        content: '';
+        /* font-family: monospace; */
+        /* line-height: 0.8; */
       }
 
       /* Improvements to content (markdown) */
@@ -284,10 +295,9 @@
         ],
         auto2top: true,
         coverpage: true,
-        // onlyCover: true,
         name: '.',
         repo: 'graphql-nexus/nexus-future',
-        subMaxLevel: 3,
+        subMaxLevel: 6,
         loadSidebar: true,
         autoHeader: true,
         pagination: {
