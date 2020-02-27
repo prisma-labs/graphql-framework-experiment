@@ -9,7 +9,7 @@ Array [
       },
     },
     "event": "hi",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 30,
     "path": Array [
       "root",
@@ -21,7 +21,7 @@ Array [
   Object {
     "context": Object {},
     "event": "bye",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 30,
     "path": Array [
       "root",
@@ -38,7 +38,7 @@ Array [
   Object {
     "context": Object {},
     "event": "hi",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 60,
     "path": Array [
       "root",
@@ -50,7 +50,7 @@ Array [
   Object {
     "context": Object {},
     "event": "hi",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 50,
     "path": Array [
       "root",
@@ -62,7 +62,7 @@ Array [
   Object {
     "context": Object {},
     "event": "hi",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 40,
     "path": Array [
       "root",
@@ -74,7 +74,7 @@ Array [
   Object {
     "context": Object {},
     "event": "hi",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 30,
     "path": Array [
       "root",
@@ -86,7 +86,7 @@ Array [
   Object {
     "context": Object {},
     "event": "hi",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 20,
     "path": Array [
       "root",
@@ -98,7 +98,7 @@ Array [
   Object {
     "context": Object {},
     "event": "hi",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 10,
     "path": Array [
       "root",
@@ -120,7 +120,7 @@ Array [
       },
     },
     "event": "hi",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 30,
     "path": Array [
       "root",
@@ -142,7 +142,7 @@ Array [
       },
     },
     "event": "hi",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 30,
     "path": Array [
       "root",
@@ -163,7 +163,7 @@ Array [
       },
     },
     "event": "hi",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 30,
     "path": Array [
       "root",
@@ -184,7 +184,7 @@ Array [
       },
     },
     "event": "hi",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 30,
     "path": Array [
       "root",
@@ -201,7 +201,7 @@ Array [
   Object {
     "context": Object {},
     "event": "hi",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 30,
     "path": Array [
       "root",
@@ -219,7 +219,7 @@ Array [
   Object {
     "context": Object {},
     "event": "hi",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 10,
     "path": Array [
       "root",
@@ -240,7 +240,7 @@ Array [
       "from": "b1",
     },
     "event": "foo",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 30,
     "path": Array [
       "root",
@@ -256,7 +256,7 @@ Array [
       "from": "b2",
     },
     "event": "foo",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 30,
     "path": Array [
       "root",
@@ -272,7 +272,7 @@ Array [
       "from": "b3",
     },
     "event": "foo",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 30,
     "path": Array [
       "root",
@@ -290,7 +290,7 @@ Array [
   Object {
     "context": Object {},
     "event": "foo",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 10,
     "path": Array [
       "root",
@@ -303,50 +303,12 @@ Array [
 ]
 `;
 
-exports[`demo runs a demo with fake data, pretty, all levels active 1`] = `
-Array [
-  "",
-  "-----------",
-  "LOGGER DEMO",
-  "-----------",
-  "✕ root:foo  --  lib: /see/
-",
-  "■ root:foo  --  har: { mar: 'tek' }  jar: [
-  1, 2, 3, 4, 4, 5, 6,
-  6, 7, 9, 1, 2, 4, 5,
-  6, 7, 3, 6, 5, 4
-]  kio: [Object: null prototype] [foo] {}
-",
-  "▲ root:foo  --  bleep: [ 1, '2', true ]
-",
-  "● root:foo
-",
-  "○ root:foo
-  | results  [
-  |            { userId: 1, id: 1, title: 'delectus aut autem', completed: false },
-  |            { userId: 1, id: 2, title: 'quis ut nam facilis et officia qui', completed: false },
-  |            { userId: 1, id: 3, title: 'fugiat veniam minus', completed: false },
-  |            { userId: 1, id: 4, title: 'et porro tempora', completed: true },
-  |            { userId: 1, id: 5, title: 'laboriosam mollitia et enim quasi adipisci quia provident illum', completed: false }
-  |          ]
-  | tri      'wiz'
-  | on       false
-",
-  "○ root:foo  --  foo: 'bar'
-",
-  "— root:foo  --  a: 1  b: 2  c: 'three'
-",
-  "-----------",
-  "",
-]
-`;
-
 exports[`output defaults to stdout for all levels 1`] = `
 Array [
   Object {
     "context": Object {},
     "event": "foo",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 60,
     "path": Array [
       "root",
@@ -365,56 +327,6 @@ Array [
 ]
 `;
 
-exports[`settings pretty .enabled controls if logs are rendered pretty or as JSON 1`] = `
-Array [
-  Object {
-    "context": Object {},
-    "event": "foo",
-    "hostname": "Jasons-Prisma-Machine.local",
-    "level": 30,
-    "path": Array [
-      "root",
-    ],
-    "pid": 0,
-    "time": 0,
-    "v": 1,
-  },
-  "",
-  "-----------",
-  "LOGGER DEMO",
-  "-----------",
-  "[31m✕ [39m[31mroot[39m[90m:[39mfoo[90m  --  [39m[90mlib[39m[90m: [39m[31m/see/[39m
-",
-  "[31m■ [39m[31mroot[39m[90m:[39mfoo[90m  --  [39m[90mhar[39m[90m: [39m{ mar: [32m'tek'[39m }  [90mjar[39m[90m: [39m[
-  [33m1[39m, [33m2[39m, [33m3[39m, [33m4[39m, [33m4[39m, [33m5[39m, [33m6[39m,
-  [33m6[39m, [33m7[39m, [33m9[39m, [33m1[39m, [33m2[39m, [33m4[39m, [33m5[39m,
-  [33m6[39m, [33m7[39m, [33m3[39m, [33m6[39m, [33m5[39m, [33m4[39m
-]  [90mkio[39m[90m: [39m[Object: null prototype] [foo] {}
-",
-  "[33m▲ [39m[33mroot[39m[90m:[39mfoo[90m  --  [39m[90mbleep[39m[90m: [39m[ [33m1[39m, [32m'2'[39m, [33mtrue[39m ]
-",
-  "[32m● [39m[32mroot[39m[90m:[39mfoo
-",
-  "[34m○ [39m[34mroot[39m[90m:[39mfoo
-[90m  | [39m[90mresults[39m  [
-[90m  | [39m           { userId: [33m1[39m, id: [33m1[39m, title: [32m'delectus aut autem'[39m, completed: [33mfalse[39m },
-[90m  | [39m           { userId: [33m1[39m, id: [33m2[39m, title: [32m'quis ut nam facilis et officia qui'[39m, completed: [33mfalse[39m },
-[90m  | [39m           { userId: [33m1[39m, id: [33m3[39m, title: [32m'fugiat veniam minus'[39m, completed: [33mfalse[39m },
-[90m  | [39m           { userId: [33m1[39m, id: [33m4[39m, title: [32m'et porro tempora'[39m, completed: [33mtrue[39m },
-[90m  | [39m           { userId: [33m1[39m, id: [33m5[39m, title: [32m'laboriosam mollitia et enim quasi adipisci quia provident illum'[39m, completed: [33mfalse[39m }
-[90m  | [39m         ]
-[90m  | [39m[90mtri    [39m  [32m'wiz'[39m
-[90m  | [39m[90mon     [39m  [33mfalse[39m
-",
-  "[34m○ [39m[34mroot[39m[90m:[39mfoo[90m  --  [39m[90mfoo[39m[90m: [39m[32m'bar'[39m
-",
-  "[35m— [39m[35mroot[39m[90m:[39mfoo[90m  --  [39m[90ma[39m[90m: [39m[33m1[39m  [90mb[39m[90m: [39m[33m2[39m  [90mc[39m[90m: [39m[32m'three'[39m
-",
-  "-----------",
-  "",
-]
-`;
-
 exports[`settings pretty .levelLabel controls if label is spelt out or not 1`] = `
 Array [
   "✕ fatal root:foo
@@ -426,18 +338,6 @@ Array [
   "● info  root:foo
 ",
   "○ debug root:foo
-",
-]
-`;
-
-exports[`settings pretty context formatting multiline objects are formatted by util.inspect compact: yes 1`] = `
-Array [
-  "● root:foo
-  | ke1  {
-  |        a: {
-  |          b: { c: true, d: 'looooooooooooooooooooooooooooooooooooooooooooooooong' }
-  |        }
-  |      }
 ",
 ]
 `;
@@ -455,13 +355,6 @@ exports[`settings pretty context formatting multiline used if context does not f
 Array [
   "● root:foo
   | key  'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-",
-]
-`;
-
-exports[`settings pretty context formatting singleline objects are formatted by util.inspect compact: yes 1`] = `
-Array [
-  "● root:foo  --  ke1: { a: { b: { c: true } } }
 ",
 ]
 `;

@@ -1,6 +1,5 @@
-/**
- * TODO: fetch-mock not working. Figure out why
- */
+// otherwise jest throws error about empty test
+it.todo('fetch-mock not working. Figure out why')
 
 // import { rawRequest, request } from '.'
 // import fetchMock from 'fetch-mock'
