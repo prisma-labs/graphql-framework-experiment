@@ -103,10 +103,11 @@
         }
       ],
       "name": "index",
-      "jsdoc": {
+      "tsdoc": {
         "raw": "/**\n * Exports the singleton app components. Use to build up your GraphQL schema and server.\n */",
-        "summary": "Exports the singleton app components. Use to build up your GraphQL schema and server.\n",
-        "tags": []
+        "summary": "Exports the singleton app components. Use to build up your GraphQL schema and server.",
+        "examples": [],
+        "customTags": []
       },
       "path": "/",
       "isMain": true,
@@ -161,7 +162,7 @@
         }
       ],
       "name": "testing",
-      "jsdoc": null,
+      "tsdoc": null,
       "path": "/testing",
       "isMain": false,
       "location": {
@@ -220,7 +221,7 @@
         }
       ],
       "name": "plugin",
-      "jsdoc": null,
+      "tsdoc": null,
       "path": "/plugin",
       "isMain": false,
       "location": {
@@ -324,15 +325,16 @@
         ],
         "raw": {
           "typeText": "App",
-          "nodeText": "export type App = {\n  /**\n   * [API Reference](https://nexus-future.now.sh/#/references/api?id=logger)  ⌁  [Guide](https://nexus-future.now.sh/#/guides/logging)\n   *\n   * ### todo\n   */\n  log: Logger.Logger\n  /**\n   * [API Reference](https://nexus-future.now.sh/#/references/api?id=server)  ⌁  [Guide](todo)\n   *\n   * ### todo\n   *\n   */\n  server: Server.ServerWithCustomizer\n  /**\n   * todo\n   */\n  settings: Settings\n  /**\n   * [API Reference](https://nexus-future.now.sh/#/references/api?id=appschema) // [Guide](todo)\n   *\n   * ### todo\n   */\n  schema: Schema.Schema & {\n    // addToContext is a bridge between two components, schema and server, so\n    // its not in schema currently...\n\n    /**\n     * todo\n     */\n    addToContext: <Req extends any = Request, T extends {} = any>(\n      contextContributor: ContextContributor<Req, T>\n    ) => void\n  }\n}",
-          "nodeFullText": "export type App = {\n  /**\n   * [API Reference](https://nexus-future.now.sh/#/references/api?id=logger)  ⌁  [Guide](https://nexus-future.now.sh/#/guides/logging)\n   *\n   * ### todo\n   */\n  log: Logger.Logger\n  /**\n   * [API Reference](https://nexus-future.now.sh/#/references/api?id=server)  ⌁  [Guide](todo)\n   *\n   * ### todo\n   *\n   */\n  server: Server.ServerWithCustomizer\n  /**\n   * todo\n   */\n  settings: Settings\n  /**\n   * [API Reference](https://nexus-future.now.sh/#/references/api?id=appschema) // [Guide](todo)\n   *\n   * ### todo\n   */\n  schema: Schema.Schema & {\n    // addToContext is a bridge between two components, schema and server, so\n    // its not in schema currently...\n\n    /**\n     * todo\n     */\n    addToContext: <Req extends any = Request, T extends {} = any>(\n      contextContributor: ContextContributor<Req, T>\n    ) => void\n  }\n}"
+          "nodeText": "export type App = {\n  log: Logger.Logger\n  server: Server.ServerWithCustomizer\n  settings: Settings\n\n  schema: Schema.Schema & {\n    // addToContext is a bridge between two components, schema and server, so\n    // its not in schema currently...\n\n    /**\n     * todo\n     */\n    addToContext: <Req extends any = Request, T extends {} = any>(\n      contextContributor: ContextContributor<Req, T>\n    ) => void\n  }\n}",
+          "nodeFullText": "export type App = {\n  log: Logger.Logger\n  server: Server.ServerWithCustomizer\n  settings: Settings\n\n  schema: Schema.Schema & {\n    // addToContext is a bridge between two components, schema and server, so\n    // its not in schema currently...\n\n    /**\n     * todo\n     */\n    addToContext: <Req extends any = Request, T extends {} = any>(\n      contextContributor: ContextContributor<Req, T>\n    ) => void\n  }\n}"
         }
       },
       "raw": {
         "typeText": "App",
-        "nodeText": "export type App = {\n  /**\n   * [API Reference](https://nexus-future.now.sh/#/references/api?id=logger)  ⌁  [Guide](https://nexus-future.now.sh/#/guides/logging)\n   *\n   * ### todo\n   */\n  log: Logger.Logger\n  /**\n   * [API Reference](https://nexus-future.now.sh/#/references/api?id=server)  ⌁  [Guide](todo)\n   *\n   * ### todo\n   *\n   */\n  server: Server.ServerWithCustomizer\n  /**\n   * todo\n   */\n  settings: Settings\n  /**\n   * [API Reference](https://nexus-future.now.sh/#/references/api?id=appschema) // [Guide](todo)\n   *\n   * ### todo\n   */\n  schema: Schema.Schema & {\n    // addToContext is a bridge between two components, schema and server, so\n    // its not in schema currently...\n\n    /**\n     * todo\n     */\n    addToContext: <Req extends any = Request, T extends {} = any>(\n      contextContributor: ContextContributor<Req, T>\n    ) => void\n  }\n}",
-        "nodeFullText": "export type App = {\n  /**\n   * [API Reference](https://nexus-future.now.sh/#/references/api?id=logger)  ⌁  [Guide](https://nexus-future.now.sh/#/guides/logging)\n   *\n   * ### todo\n   */\n  log: Logger.Logger\n  /**\n   * [API Reference](https://nexus-future.now.sh/#/references/api?id=server)  ⌁  [Guide](todo)\n   *\n   * ### todo\n   *\n   */\n  server: Server.ServerWithCustomizer\n  /**\n   * todo\n   */\n  settings: Settings\n  /**\n   * [API Reference](https://nexus-future.now.sh/#/references/api?id=appschema) // [Guide](todo)\n   *\n   * ### todo\n   */\n  schema: Schema.Schema & {\n    // addToContext is a bridge between two components, schema and server, so\n    // its not in schema currently...\n\n    /**\n     * todo\n     */\n    addToContext: <Req extends any = Request, T extends {} = any>(\n      contextContributor: ContextContributor<Req, T>\n    ) => void\n  }\n}"
-      }
+        "nodeText": "export type App = {\n  log: Logger.Logger\n  server: Server.ServerWithCustomizer\n  settings: Settings\n\n  schema: Schema.Schema & {\n    // addToContext is a bridge between two components, schema and server, so\n    // its not in schema currently...\n\n    /**\n     * todo\n     */\n    addToContext: <Req extends any = Request, T extends {} = any>(\n      contextContributor: ContextContributor<Req, T>\n    ) => void\n  }\n}",
+        "nodeFullText": "export type App = {\n  log: Logger.Logger\n  server: Server.ServerWithCustomizer\n  settings: Settings\n\n  schema: Schema.Schema & {\n    // addToContext is a bridge between two components, schema and server, so\n    // its not in schema currently...\n\n    /**\n     * todo\n     */\n    addToContext: <Req extends any = Request, T extends {} = any>(\n      contextContributor: ContextContributor<Req, T>\n    ) => void\n  }\n}"
+      },
+      "tsdoc": null
     },
     "(lib/logger/logger).Logger": {
       "kind": "alias",
@@ -471,7 +473,8 @@
         "typeText": "Logger",
         "nodeText": "export type Logger = {\n  fatal: Log\n  error: Log\n  warn: Log\n  info: Log\n  debug: Log\n  trace: Log\n  addToContext: (context: Context) => Logger // fluent\n  child: (name: string) => Logger // fluent\n}",
         "nodeFullText": "export type Logger = {\n  fatal: Log\n  error: Log\n  warn: Log\n  info: Log\n  debug: Log\n  trace: Log\n  addToContext: (context: Context) => Logger // fluent\n  child: (name: string) => Logger // fluent\n}"
-      }
+      },
+      "tsdoc": null
     },
     "(lib/logger/logger).Log": {
       "kind": "alias",
@@ -529,6 +532,12 @@
                         "typeText": "Record<string, unknown>",
                         "nodeText": "type Record<K extends keyof any, T> = {\r\n    [P in K]: T;\r\n};",
                         "nodeFullText": "/**\r\n * Construct a type with a set of properties K of type T\r\n */\r\ntype Record<K extends keyof any, T> = {\r\n    [P in K]: T;\r\n};"
+                      },
+                      "tsdoc": {
+                        "raw": "/**\r\n * Construct a type with a set of properties K of type T\r\n */",
+                        "summary": "Construct a type with a set of properties K of type T",
+                        "examples": [],
+                        "customTags": []
                       }
                     }
                   ]
@@ -547,7 +556,8 @@
         "typeText": "Log",
         "nodeText": "type Log = (event: string, context?: Context) => void",
         "nodeFullText": "type Log = (event: string, context?: Context) => void"
-      }
+      },
+      "tsdoc": null
     },
     "(framework/server).ServerWithCustomizer": {
       "kind": "interface",
@@ -646,7 +656,7 @@
           }
         }
       ],
-      "jsdoc": null,
+      "tsdoc": null,
       "raw": {
         "typeText": "ServerWithCustomizer",
         "nodeText": "export interface ServerWithCustomizer extends Server {\n  /**\n   * Provides a way to use a custom GraphQL server such as Apollo Server or Fastify\n   */\n  custom: (customizer: Customizer) => void\n}",
@@ -690,7 +700,8 @@
         "typeText": "Customizer",
         "nodeText": "export type Customizer = (\n  lens: CustomizerLens\n) => Utils.MaybePromise<Server | void>",
         "nodeFullText": "export type Customizer = (\n  lens: CustomizerLens\n) => Utils.MaybePromise<Server | void>"
-      }
+      },
+      "tsdoc": null
     },
     "(lib/utils/index).MaybePromise": {
       "kind": "alias",
@@ -727,7 +738,8 @@
         "typeText": "MaybePromise<void | Server>",
         "nodeText": "export type MaybePromise<T = void> = T | Promise<T>",
         "nodeFullText": "export type MaybePromise<T = void> = T | Promise<T>"
-      }
+      },
+      "tsdoc": null
     },
     "(framework/server).Server": {
       "kind": "interface",
@@ -792,10 +804,11 @@
           }
         }
       ],
-      "jsdoc": {
-        "raw": "[API Reference](https://nexus-future.now.sh/#/references/api?id=server)  ⌁  [Guide](todo)\n\n### todo\n",
-        "summary": "",
-        "tags": []
+      "tsdoc": {
+        "raw": "/**\n * [API Reference](https://nexus-future.now.sh/#/references/api?id=server)  ⌁  [Guide](todo)\n *\n * ### todo\n *\n */",
+        "summary": "[API Reference](https://nexus-future.now.sh/#/references/api?id=server)  ⌁  [Guide](todo)\n\n### todo",
+        "examples": [],
+        "customTags": []
       },
       "raw": {
         "typeText": "Server",
@@ -874,7 +887,7 @@
           }
         }
       ],
-      "jsdoc": null,
+      "tsdoc": null,
       "raw": {
         "typeText": "CustomizerLens",
         "nodeText": "interface CustomizerLens {\n  /**\n   * The generated executable GraphQL Schema\n   */\n  schema: GraphQL.GraphQLSchema\n  /**\n   * The original Express server bundled with Nexus. Use it to add express middlewares or change its configuration in any way\n   */\n  express: Express\n  /**\n   * Function to add the generated context by Nexus to your custom server.\n   * /!\\ **If you need to add additional properties to your context, please use `schema.addToContext`**\n   */\n  context: ContextCreator\n}",
@@ -956,6 +969,12 @@
         "typeText": "Settings",
         "nodeText": "export type Settings = {\n  /**\n   * todo\n   */\n  original: SettingsData\n  /**\n   * todo\n   */\n  current: SettingsData\n  /**\n   * todo\n   */\n  change(newSetting: SettingsInput): void\n}",
         "nodeFullText": "/**\n * todo\n */\nexport type Settings = {\n  /**\n   * todo\n   */\n  original: SettingsData\n  /**\n   * todo\n   */\n  current: SettingsData\n  /**\n   * todo\n   */\n  change(newSetting: SettingsInput): void\n}"
+      },
+      "tsdoc": {
+        "raw": "/**\n * todo\n */",
+        "summary": "todo",
+        "examples": [],
+        "customTags": []
       }
     },
     "(framework/app).SettingsInput": {
@@ -992,7 +1011,8 @@
                     "typeText": "SettingsInput",
                     "nodeText": "export type SettingsInput = {\n  /**\n   * Set the level of this and all descedent loggers. This level setting has\n   * highest precedence of all logger level configuration tiers.\n   *\n   * The level config takes the first value found, searching tiers as follows:\n   *\n   *  1. logger instance setting\n   *  2. logger constructor setting\n   *  3. LOG_LEVEL environment variable setting\n   *  3. NODE_ENV=production -> info\n   *  4. otherwise -> debug\n   */\n  level?: Level.Level\n  /**\n   * Control pretty mode.\n   *\n   * Shorthands:\n   *\n   *  - `true` is shorthand for `{ enabled: true }`\n   *  - `false` is shorthand for `{ enabled: false }`\n   *\n   * When `undefined` pretty takes the first value found, in order:\n   *\n   *  1. `process.env.LOG_PRETTY` (admits case insensitive: `true` | `false`)\n   *  2. `process.stdout.isTTY`\n   */\n  pretty?:\n    | boolean\n    | {\n        /**\n         * Disable or enable pretty mode.\n         *\n         * When `undefined` pretty takes the first value found, in order:\n         *\n         *  1. `process.env.LOG_PRETTY` (admits case insensitive: `true` | `false`)\n         *  2. `process.stdout.isTTY`\n         */\n        enabled?: boolean\n        /**\n         * Should logs be colored?\n         *\n         * @default `true`\n         *\n         * Disabling can be useful when pretty logs are going to a destination that\n         * does not support rendering ANSI color codes (consequence being very\n         * difficult to read content).\n         */\n        color?: boolean\n        /**\n         * Should logs include the level label?\n         *\n         * @default `false`\n         *\n         * Enable this if understanding the level of a log is important to you\n         * and the icon+color system is insufficient for you to do so. Can be\n         * helpful for newcomers or a matter of taste for some.\n         */\n        levelLabel?: boolean\n        /**\n         * Should the logs include the time between it and previous log?\n         *\n         * @default `true`\n         */\n        timeDiff?: boolean\n      }\n}",
                     "nodeFullText": "export type SettingsInput = {\n  /**\n   * Set the level of this and all descedent loggers. This level setting has\n   * highest precedence of all logger level configuration tiers.\n   *\n   * The level config takes the first value found, searching tiers as follows:\n   *\n   *  1. logger instance setting\n   *  2. logger constructor setting\n   *  3. LOG_LEVEL environment variable setting\n   *  3. NODE_ENV=production -> info\n   *  4. otherwise -> debug\n   */\n  level?: Level.Level\n  /**\n   * Control pretty mode.\n   *\n   * Shorthands:\n   *\n   *  - `true` is shorthand for `{ enabled: true }`\n   *  - `false` is shorthand for `{ enabled: false }`\n   *\n   * When `undefined` pretty takes the first value found, in order:\n   *\n   *  1. `process.env.LOG_PRETTY` (admits case insensitive: `true` | `false`)\n   *  2. `process.stdout.isTTY`\n   */\n  pretty?:\n    | boolean\n    | {\n        /**\n         * Disable or enable pretty mode.\n         *\n         * When `undefined` pretty takes the first value found, in order:\n         *\n         *  1. `process.env.LOG_PRETTY` (admits case insensitive: `true` | `false`)\n         *  2. `process.stdout.isTTY`\n         */\n        enabled?: boolean\n        /**\n         * Should logs be colored?\n         *\n         * @default `true`\n         *\n         * Disabling can be useful when pretty logs are going to a destination that\n         * does not support rendering ANSI color codes (consequence being very\n         * difficult to read content).\n         */\n        color?: boolean\n        /**\n         * Should logs include the level label?\n         *\n         * @default `false`\n         *\n         * Enable this if understanding the level of a log is important to you\n         * and the icon+color system is insufficient for you to do so. Can be\n         * helpful for newcomers or a matter of taste for some.\n         */\n        levelLabel?: boolean\n        /**\n         * Should the logs include the time between it and previous log?\n         *\n         * @default `true`\n         */\n        timeDiff?: boolean\n      }\n}"
-                  }
+                  },
+                  "tsdoc": null
                 }
               ]
             }
@@ -1023,9 +1043,10 @@
                   },
                   "raw": {
                     "typeText": "SettingsInput",
-                    "nodeText": "export type SettingsInput = {\n  /**\n   * todo\n   */\n  connections?: ConnectionConfig & {\n    // We tried the idea of types.default: false | ConnectionConfig\n    // but got blocked by https://github.com/microsoft/TypeScript/issues/17867\n\n    /**\n     * todo\n     *\n     * @default `false`\n     */\n    disableDefaultType?: boolean\n    /**\n     * todo\n     */\n    types?: {\n      default?: ConnectionConfig\n      // Extra undefined below is forced by it being above, forced via `?:`.\n      // This is a TS limitation, cannot express void vs missing semantics,\n      // being tracked here: https://github.com/microsoft/TypeScript/issues/13195\n      [typeName: string]: ConnectionConfig | undefined\n    }\n  }\n}",
-                    "nodeFullText": "export type SettingsInput = {\n  /**\n   * todo\n   */\n  connections?: ConnectionConfig & {\n    // We tried the idea of types.default: false | ConnectionConfig\n    // but got blocked by https://github.com/microsoft/TypeScript/issues/17867\n\n    /**\n     * todo\n     *\n     * @default `false`\n     */\n    disableDefaultType?: boolean\n    /**\n     * todo\n     */\n    types?: {\n      default?: ConnectionConfig\n      // Extra undefined below is forced by it being above, forced via `?:`.\n      // This is a TS limitation, cannot express void vs missing semantics,\n      // being tracked here: https://github.com/microsoft/TypeScript/issues/13195\n      [typeName: string]: ConnectionConfig | undefined\n    }\n  }\n}"
-                  }
+                    "nodeText": "export type SettingsInput = {\n  /**\n   * todo\n   */\n  connections?: {\n    /**\n     * todo\n     */\n    default?: ConnectionConfig | false\n    // Extra undefined below is forced by it being above, forced via `?:`.\n    // This is a TS limitation, cannot express void vs missing semantics,\n    // being tracked here: https://github.com/microsoft/TypeScript/issues/13195\n    [typeName: string]: ConnectionConfig | undefined | false\n  }\n}",
+                    "nodeFullText": "export type SettingsInput = {\n  /**\n   * todo\n   */\n  connections?: {\n    /**\n     * todo\n     */\n    default?: ConnectionConfig | false\n    // Extra undefined below is forced by it being above, forced via `?:`.\n    // This is a TS limitation, cannot express void vs missing semantics,\n    // being tracked here: https://github.com/microsoft/TypeScript/issues/13195\n    [typeName: string]: ConnectionConfig | undefined | false\n  }\n}"
+                  },
+                  "tsdoc": null
                 }
               ]
             }
@@ -1058,7 +1079,8 @@
                     "typeText": "ExtraSettingsInput",
                     "nodeText": "export type ExtraSettingsInput = {\n  /**\n   * todo\n   */\n  port?: number\n  /**\n   * todo\n   */\n  playground?: boolean\n  /**\n   * Create a message suitable for printing to the terminal about the server\n   * having been booted.\n   */\n  startMessage?: (address: { port: number; host: string; ip: string }) => void\n}",
                     "nodeFullText": "export type ExtraSettingsInput = {\n  /**\n   * todo\n   */\n  port?: number\n  /**\n   * todo\n   */\n  playground?: boolean\n  /**\n   * Create a message suitable for printing to the terminal about the server\n   * having been booted.\n   */\n  startMessage?: (address: { port: number; host: string; ip: string }) => void\n}"
-                  }
+                  },
+                  "tsdoc": null
                 }
               ]
             }
@@ -1074,7 +1096,8 @@
         "typeText": "SettingsInput",
         "nodeText": "type SettingsInput = {\n  logger?: Logger.SettingsInput\n  schema?: Schema.SettingsInput\n  server?: Server.ExtraSettingsInput\n}",
         "nodeFullText": "type SettingsInput = {\n  logger?: Logger.SettingsInput\n  schema?: Schema.SettingsInput\n  server?: Server.ExtraSettingsInput\n}"
-      }
+      },
+      "tsdoc": null
     },
     "(lib/logger/root-logger).SettingsInput": {
       "kind": "alias",
@@ -1303,7 +1326,8 @@
         "typeText": "SettingsInput",
         "nodeText": "export type SettingsInput = {\n  /**\n   * Set the level of this and all descedent loggers. This level setting has\n   * highest precedence of all logger level configuration tiers.\n   *\n   * The level config takes the first value found, searching tiers as follows:\n   *\n   *  1. logger instance setting\n   *  2. logger constructor setting\n   *  3. LOG_LEVEL environment variable setting\n   *  3. NODE_ENV=production -> info\n   *  4. otherwise -> debug\n   */\n  level?: Level.Level\n  /**\n   * Control pretty mode.\n   *\n   * Shorthands:\n   *\n   *  - `true` is shorthand for `{ enabled: true }`\n   *  - `false` is shorthand for `{ enabled: false }`\n   *\n   * When `undefined` pretty takes the first value found, in order:\n   *\n   *  1. `process.env.LOG_PRETTY` (admits case insensitive: `true` | `false`)\n   *  2. `process.stdout.isTTY`\n   */\n  pretty?:\n    | boolean\n    | {\n        /**\n         * Disable or enable pretty mode.\n         *\n         * When `undefined` pretty takes the first value found, in order:\n         *\n         *  1. `process.env.LOG_PRETTY` (admits case insensitive: `true` | `false`)\n         *  2. `process.stdout.isTTY`\n         */\n        enabled?: boolean\n        /**\n         * Should logs be colored?\n         *\n         * @default `true`\n         *\n         * Disabling can be useful when pretty logs are going to a destination that\n         * does not support rendering ANSI color codes (consequence being very\n         * difficult to read content).\n         */\n        color?: boolean\n        /**\n         * Should logs include the level label?\n         *\n         * @default `false`\n         *\n         * Enable this if understanding the level of a log is important to you\n         * and the icon+color system is insufficient for you to do so. Can be\n         * helpful for newcomers or a matter of taste for some.\n         */\n        levelLabel?: boolean\n        /**\n         * Should the logs include the time between it and previous log?\n         *\n         * @default `true`\n         */\n        timeDiff?: boolean\n      }\n}",
         "nodeFullText": "export type SettingsInput = {\n  /**\n   * Set the level of this and all descedent loggers. This level setting has\n   * highest precedence of all logger level configuration tiers.\n   *\n   * The level config takes the first value found, searching tiers as follows:\n   *\n   *  1. logger instance setting\n   *  2. logger constructor setting\n   *  3. LOG_LEVEL environment variable setting\n   *  3. NODE_ENV=production -> info\n   *  4. otherwise -> debug\n   */\n  level?: Level.Level\n  /**\n   * Control pretty mode.\n   *\n   * Shorthands:\n   *\n   *  - `true` is shorthand for `{ enabled: true }`\n   *  - `false` is shorthand for `{ enabled: false }`\n   *\n   * When `undefined` pretty takes the first value found, in order:\n   *\n   *  1. `process.env.LOG_PRETTY` (admits case insensitive: `true` | `false`)\n   *  2. `process.stdout.isTTY`\n   */\n  pretty?:\n    | boolean\n    | {\n        /**\n         * Disable or enable pretty mode.\n         *\n         * When `undefined` pretty takes the first value found, in order:\n         *\n         *  1. `process.env.LOG_PRETTY` (admits case insensitive: `true` | `false`)\n         *  2. `process.stdout.isTTY`\n         */\n        enabled?: boolean\n        /**\n         * Should logs be colored?\n         *\n         * @default `true`\n         *\n         * Disabling can be useful when pretty logs are going to a destination that\n         * does not support rendering ANSI color codes (consequence being very\n         * difficult to read content).\n         */\n        color?: boolean\n        /**\n         * Should logs include the level label?\n         *\n         * @default `false`\n         *\n         * Enable this if understanding the level of a log is important to you\n         * and the icon+color system is insufficient for you to do so. Can be\n         * helpful for newcomers or a matter of taste for some.\n         */\n        levelLabel?: boolean\n        /**\n         * Should the logs include the time between it and previous log?\n         *\n         * @default `true`\n         */\n        timeDiff?: boolean\n      }\n}"
-      }
+      },
+      "tsdoc": null
     },
     "(framework/schema/schema).SettingsInput": {
       "kind": "alias",
@@ -1319,7 +1343,7 @@
               "isDiscriminated": false,
               "discriminantProperties": null,
               "raw": {
-                "typeText": "(Pick<ConnectionPluginConfig, \"includeNodesField\" | \"additionalArgs\" | \"disableForwardPagination\" | \"disableBackwardPagination\" | \"validateArgs\" | ... 7 more ... | \"typePrefix\"> & { ...; }) | undefined",
+                "typeText": "{ [typeName: string]: false | Pick<ConnectionPluginConfig, \"includeNodesField\" | \"additionalArgs\" | \"disableForwardPagination\" | \"disableBackwardPagination\" | \"validateArgs\" | ... 7 more ... | \"typePrefix\"> | undefined; default?: false | ... 1 more ... | undefined; } | undefined",
                 "nodeFullText": "",
                 "nodeText": ""
               },
@@ -1329,129 +1353,62 @@
                   "type": "undefined"
                 },
                 {
-                  "kind": "intersection",
-                  "raw": {
-                    "typeText": "Pick<ConnectionPluginConfig, \"includeNodesField\" | \"additionalArgs\" | \"disableForwardPagination\" | \"disableBackwardPagination\" | \"validateArgs\" | ... 7 more ... | \"typePrefix\"> & { ...; }",
-                    "nodeFullText": "",
-                    "nodeText": ""
-                  },
-                  "types": [
+                  "kind": "object",
+                  "props": [
                     {
-                      "kind": "unsupported",
-                      "raw": {
-                        "typeText": "Pick<ConnectionPluginConfig, \"includeNodesField\" | \"additionalArgs\" | \"disableForwardPagination\" | \"disableBackwardPagination\" | \"validateArgs\" | ... 7 more ... | \"typePrefix\">",
-                        "nodeText": "type Pick<T, K extends keyof T> = {\r\n    [P in K]: T[P];\r\n};",
-                        "nodeFullText": "/**\r\n * From T, pick a set of properties whose keys are in the union K\r\n */\r\ntype Pick<T, K extends keyof T> = {\r\n    [P in K]: T[P];\r\n};"
-                      }
-                    },
-                    {
-                      "kind": "object",
-                      "props": [
-                        {
-                          "kind": "prop",
-                          "name": "disableDefaultType",
-                          "type": {
-                            "kind": "union",
-                            "isDiscriminated": false,
-                            "discriminantProperties": null,
-                            "raw": {
-                              "typeText": "boolean | undefined",
-                              "nodeFullText": "",
-                              "nodeText": ""
-                            },
-                            "types": [
-                              {
-                                "kind": "primitive",
-                                "type": "undefined"
-                              },
-                              {
-                                "kind": "literal",
-                                "name": "false",
-                                "base": "boolean"
-                              },
-                              {
-                                "kind": "literal",
-                                "name": "true",
-                                "base": "boolean"
-                              }
-                            ]
-                          }
+                      "kind": "prop",
+                      "name": "default",
+                      "type": {
+                        "kind": "union",
+                        "isDiscriminated": false,
+                        "discriminantProperties": null,
+                        "raw": {
+                          "typeText": "false | Pick<ConnectionPluginConfig, \"includeNodesField\" | \"additionalArgs\" | \"disableForwardPagination\" | \"disableBackwardPagination\" | \"validateArgs\" | ... 7 more ... | \"typePrefix\"> | undefined",
+                          "nodeFullText": "",
+                          "nodeText": ""
                         },
-                        {
-                          "kind": "prop",
-                          "name": "types",
-                          "type": {
-                            "kind": "union",
-                            "isDiscriminated": false,
-                            "discriminantProperties": null,
-                            "raw": {
-                              "typeText": "{ [typeName: string]: Pick<ConnectionPluginConfig, \"includeNodesField\" | \"additionalArgs\" | \"disableForwardPagination\" | \"disableBackwardPagination\" | \"validateArgs\" | ... 7 more ... | \"typePrefix\"> | undefined; default?: Pick<...> | undefined; } | undefined",
-                              "nodeFullText": "",
-                              "nodeText": ""
-                            },
-                            "types": [
-                              {
-                                "kind": "primitive",
-                                "type": "undefined"
-                              },
-                              {
-                                "kind": "object",
-                                "props": [
-                                  {
-                                    "kind": "prop",
-                                    "name": "default",
-                                    "type": {
-                                      "kind": "union",
-                                      "isDiscriminated": false,
-                                      "discriminantProperties": null,
-                                      "raw": {
-                                        "typeText": "Pick<ConnectionPluginConfig, \"includeNodesField\" | \"additionalArgs\" | \"disableForwardPagination\" | \"disableBackwardPagination\" | \"validateArgs\" | ... 7 more ... | \"typePrefix\"> | undefined",
-                                        "nodeFullText": "",
-                                        "nodeText": ""
-                                      },
-                                      "types": [
-                                        {
-                                          "kind": "primitive",
-                                          "type": "undefined"
-                                        },
-                                        {
-                                          "kind": "alias",
-                                          "name": "Pick",
-                                          "type": {
-                                            "kind": "unsupported",
-                                            "raw": {
-                                              "typeText": "Pick<ConnectionPluginConfig, \"includeNodesField\" | \"additionalArgs\" | \"disableForwardPagination\" | \"disableBackwardPagination\" | \"validateArgs\" | ... 7 more ... | \"typePrefix\">",
-                                              "nodeText": "type Pick<T, K extends keyof T> = {\r\n    [P in K]: T[P];\r\n};",
-                                              "nodeFullText": "/**\r\n * From T, pick a set of properties whose keys are in the union K\r\n */\r\ntype Pick<T, K extends keyof T> = {\r\n    [P in K]: T[P];\r\n};"
-                                            }
-                                          },
-                                          "raw": {
-                                            "typeText": "Pick<ConnectionPluginConfig, \"includeNodesField\" | \"additionalArgs\" | \"disableForwardPagination\" | \"disableBackwardPagination\" | \"validateArgs\" | ... 7 more ... | \"typePrefix\">",
-                                            "nodeText": "type Pick<T, K extends keyof T> = {\r\n    [P in K]: T[P];\r\n};",
-                                            "nodeFullText": "/**\r\n * From T, pick a set of properties whose keys are in the union K\r\n */\r\ntype Pick<T, K extends keyof T> = {\r\n    [P in K]: T[P];\r\n};"
-                                          }
-                                        }
-                                      ]
-                                    }
-                                  }
-                                ],
-                                "raw": {
-                                  "typeText": "{ [typeName: string]: Pick<ConnectionPluginConfig, \"includeNodesField\" | \"additionalArgs\" | \"disableForwardPagination\" | \"disableBackwardPagination\" | \"validateArgs\" | ... 7 more ... | \"typePrefix\"> | undefined; default?: Pick<...> | undefined; }",
-                                  "nodeText": "{\n      default?: ConnectionConfig\n      // Extra undefined below is forced by it being above, forced via `?:`.\n      // This is a TS limitation, cannot express void vs missing semantics,\n      // being tracked here: https://github.com/microsoft/TypeScript/issues/13195\n      [typeName: string]: ConnectionConfig | undefined\n    }",
-                                  "nodeFullText": "{\n      default?: ConnectionConfig\n      // Extra undefined below is forced by it being above, forced via `?:`.\n      // This is a TS limitation, cannot express void vs missing semantics,\n      // being tracked here: https://github.com/microsoft/TypeScript/issues/13195\n      [typeName: string]: ConnectionConfig | undefined\n    }"
-                                }
+                        "types": [
+                          {
+                            "kind": "primitive",
+                            "type": "undefined"
+                          },
+                          {
+                            "kind": "literal",
+                            "name": "false",
+                            "base": "boolean"
+                          },
+                          {
+                            "kind": "alias",
+                            "name": "Pick",
+                            "type": {
+                              "kind": "unsupported",
+                              "raw": {
+                                "typeText": "Pick<ConnectionPluginConfig, \"includeNodesField\" | \"additionalArgs\" | \"disableForwardPagination\" | \"disableBackwardPagination\" | \"validateArgs\" | ... 7 more ... | \"typePrefix\">",
+                                "nodeText": "type Pick<T, K extends keyof T> = {\r\n    [P in K]: T[P];\r\n};",
+                                "nodeFullText": "/**\r\n * From T, pick a set of properties whose keys are in the union K\r\n */\r\ntype Pick<T, K extends keyof T> = {\r\n    [P in K]: T[P];\r\n};"
                               }
-                            ]
+                            },
+                            "raw": {
+                              "typeText": "Pick<ConnectionPluginConfig, \"includeNodesField\" | \"additionalArgs\" | \"disableForwardPagination\" | \"disableBackwardPagination\" | \"validateArgs\" | ... 7 more ... | \"typePrefix\">",
+                              "nodeText": "type Pick<T, K extends keyof T> = {\r\n    [P in K]: T[P];\r\n};",
+                              "nodeFullText": "/**\r\n * From T, pick a set of properties whose keys are in the union K\r\n */\r\ntype Pick<T, K extends keyof T> = {\r\n    [P in K]: T[P];\r\n};"
+                            },
+                            "tsdoc": {
+                              "raw": "/**\r\n * From T, pick a set of properties whose keys are in the union K\r\n */",
+                              "summary": "From T, pick a set of properties whose keys are in the union K",
+                              "examples": [],
+                              "customTags": []
+                            }
                           }
-                        }
-                      ],
-                      "raw": {
-                        "typeText": "{ disableDefaultType?: boolean | undefined; types?: { [typeName: string]: Pick<ConnectionPluginConfig, \"includeNodesField\" | \"additionalArgs\" | \"disableForwardPagination\" | ... 9 more ... | \"typePrefix\"> | undefined; default?: Pick<...> | undefined; } | undefined; }",
-                        "nodeText": "{\n    // We tried the idea of types.default: false | ConnectionConfig\n    // but got blocked by https://github.com/microsoft/TypeScript/issues/17867\n\n    /**\n     * todo\n     *\n     * @default `false`\n     */\n    disableDefaultType?: boolean\n    /**\n     * todo\n     */\n    types?: {\n      default?: ConnectionConfig\n      // Extra undefined below is forced by it being above, forced via `?:`.\n      // This is a TS limitation, cannot express void vs missing semantics,\n      // being tracked here: https://github.com/microsoft/TypeScript/issues/13195\n      [typeName: string]: ConnectionConfig | undefined\n    }\n  }",
-                        "nodeFullText": "{\n    // We tried the idea of types.default: false | ConnectionConfig\n    // but got blocked by https://github.com/microsoft/TypeScript/issues/17867\n\n    /**\n     * todo\n     *\n     * @default `false`\n     */\n    disableDefaultType?: boolean\n    /**\n     * todo\n     */\n    types?: {\n      default?: ConnectionConfig\n      // Extra undefined below is forced by it being above, forced via `?:`.\n      // This is a TS limitation, cannot express void vs missing semantics,\n      // being tracked here: https://github.com/microsoft/TypeScript/issues/13195\n      [typeName: string]: ConnectionConfig | undefined\n    }\n  }"
+                        ]
                       }
                     }
-                  ]
+                  ],
+                  "raw": {
+                    "typeText": "{ [typeName: string]: false | Pick<ConnectionPluginConfig, \"includeNodesField\" | \"additionalArgs\" | \"disableForwardPagination\" | \"disableBackwardPagination\" | \"validateArgs\" | ... 7 more ... | \"typePrefix\"> | undefined; default?: false | ... 1 more ... | undefined; }",
+                    "nodeText": "{\n    /**\n     * todo\n     */\n    default?: ConnectionConfig | false\n    // Extra undefined below is forced by it being above, forced via `?:`.\n    // This is a TS limitation, cannot express void vs missing semantics,\n    // being tracked here: https://github.com/microsoft/TypeScript/issues/13195\n    [typeName: string]: ConnectionConfig | undefined | false\n  }",
+                    "nodeFullText": "{\n    /**\n     * todo\n     */\n    default?: ConnectionConfig | false\n    // Extra undefined below is forced by it being above, forced via `?:`.\n    // This is a TS limitation, cannot express void vs missing semantics,\n    // being tracked here: https://github.com/microsoft/TypeScript/issues/13195\n    [typeName: string]: ConnectionConfig | undefined | false\n  }"
+                  }
                 }
               ]
             }
@@ -1459,15 +1416,16 @@
         ],
         "raw": {
           "typeText": "SettingsInput",
-          "nodeText": "export type SettingsInput = {\n  /**\n   * todo\n   */\n  connections?: ConnectionConfig & {\n    // We tried the idea of types.default: false | ConnectionConfig\n    // but got blocked by https://github.com/microsoft/TypeScript/issues/17867\n\n    /**\n     * todo\n     *\n     * @default `false`\n     */\n    disableDefaultType?: boolean\n    /**\n     * todo\n     */\n    types?: {\n      default?: ConnectionConfig\n      // Extra undefined below is forced by it being above, forced via `?:`.\n      // This is a TS limitation, cannot express void vs missing semantics,\n      // being tracked here: https://github.com/microsoft/TypeScript/issues/13195\n      [typeName: string]: ConnectionConfig | undefined\n    }\n  }\n}",
-          "nodeFullText": "export type SettingsInput = {\n  /**\n   * todo\n   */\n  connections?: ConnectionConfig & {\n    // We tried the idea of types.default: false | ConnectionConfig\n    // but got blocked by https://github.com/microsoft/TypeScript/issues/17867\n\n    /**\n     * todo\n     *\n     * @default `false`\n     */\n    disableDefaultType?: boolean\n    /**\n     * todo\n     */\n    types?: {\n      default?: ConnectionConfig\n      // Extra undefined below is forced by it being above, forced via `?:`.\n      // This is a TS limitation, cannot express void vs missing semantics,\n      // being tracked here: https://github.com/microsoft/TypeScript/issues/13195\n      [typeName: string]: ConnectionConfig | undefined\n    }\n  }\n}"
+          "nodeText": "export type SettingsInput = {\n  /**\n   * todo\n   */\n  connections?: {\n    /**\n     * todo\n     */\n    default?: ConnectionConfig | false\n    // Extra undefined below is forced by it being above, forced via `?:`.\n    // This is a TS limitation, cannot express void vs missing semantics,\n    // being tracked here: https://github.com/microsoft/TypeScript/issues/13195\n    [typeName: string]: ConnectionConfig | undefined | false\n  }\n}",
+          "nodeFullText": "export type SettingsInput = {\n  /**\n   * todo\n   */\n  connections?: {\n    /**\n     * todo\n     */\n    default?: ConnectionConfig | false\n    // Extra undefined below is forced by it being above, forced via `?:`.\n    // This is a TS limitation, cannot express void vs missing semantics,\n    // being tracked here: https://github.com/microsoft/TypeScript/issues/13195\n    [typeName: string]: ConnectionConfig | undefined | false\n  }\n}"
         }
       },
       "raw": {
         "typeText": "SettingsInput",
-        "nodeText": "export type SettingsInput = {\n  /**\n   * todo\n   */\n  connections?: ConnectionConfig & {\n    // We tried the idea of types.default: false | ConnectionConfig\n    // but got blocked by https://github.com/microsoft/TypeScript/issues/17867\n\n    /**\n     * todo\n     *\n     * @default `false`\n     */\n    disableDefaultType?: boolean\n    /**\n     * todo\n     */\n    types?: {\n      default?: ConnectionConfig\n      // Extra undefined below is forced by it being above, forced via `?:`.\n      // This is a TS limitation, cannot express void vs missing semantics,\n      // being tracked here: https://github.com/microsoft/TypeScript/issues/13195\n      [typeName: string]: ConnectionConfig | undefined\n    }\n  }\n}",
-        "nodeFullText": "export type SettingsInput = {\n  /**\n   * todo\n   */\n  connections?: ConnectionConfig & {\n    // We tried the idea of types.default: false | ConnectionConfig\n    // but got blocked by https://github.com/microsoft/TypeScript/issues/17867\n\n    /**\n     * todo\n     *\n     * @default `false`\n     */\n    disableDefaultType?: boolean\n    /**\n     * todo\n     */\n    types?: {\n      default?: ConnectionConfig\n      // Extra undefined below is forced by it being above, forced via `?:`.\n      // This is a TS limitation, cannot express void vs missing semantics,\n      // being tracked here: https://github.com/microsoft/TypeScript/issues/13195\n      [typeName: string]: ConnectionConfig | undefined\n    }\n  }\n}"
-      }
+        "nodeText": "export type SettingsInput = {\n  /**\n   * todo\n   */\n  connections?: {\n    /**\n     * todo\n     */\n    default?: ConnectionConfig | false\n    // Extra undefined below is forced by it being above, forced via `?:`.\n    // This is a TS limitation, cannot express void vs missing semantics,\n    // being tracked here: https://github.com/microsoft/TypeScript/issues/13195\n    [typeName: string]: ConnectionConfig | undefined | false\n  }\n}",
+        "nodeFullText": "export type SettingsInput = {\n  /**\n   * todo\n   */\n  connections?: {\n    /**\n     * todo\n     */\n    default?: ConnectionConfig | false\n    // Extra undefined below is forced by it being above, forced via `?:`.\n    // This is a TS limitation, cannot express void vs missing semantics,\n    // being tracked here: https://github.com/microsoft/TypeScript/issues/13195\n    [typeName: string]: ConnectionConfig | undefined | false\n  }\n}"
+      },
+      "tsdoc": null
     },
     "(framework/server).ExtraSettingsInput": {
       "kind": "alias",
@@ -1620,7 +1578,8 @@
         "typeText": "ExtraSettingsInput",
         "nodeText": "export type ExtraSettingsInput = {\n  /**\n   * todo\n   */\n  port?: number\n  /**\n   * todo\n   */\n  playground?: boolean\n  /**\n   * Create a message suitable for printing to the terminal about the server\n   * having been booted.\n   */\n  startMessage?: (address: { port: number; host: string; ip: string }) => void\n}",
         "nodeFullText": "export type ExtraSettingsInput = {\n  /**\n   * todo\n   */\n  port?: number\n  /**\n   * todo\n   */\n  playground?: boolean\n  /**\n   * Create a message suitable for printing to the terminal about the server\n   * having been booted.\n   */\n  startMessage?: (address: { port: number; host: string; ip: string }) => void\n}"
-      }
+      },
+      "tsdoc": null
     },
     "(framework/schema/schema).Schema": {
       "kind": "alias",
@@ -1831,7 +1790,8 @@
         "typeText": "Schema",
         "nodeText": "export type Schema = {\n  // addToContext: <T extends {}>(\n  //   contextContributor: ContextContributor<T>\n  // ) => App\n  queryType: typeof NexusSchema.queryType\n  mutationType: typeof NexusSchema.mutationType\n  objectType: typeof NexusSchema.objectType\n  inputObjectType: typeof NexusSchema.inputObjectType\n  enumType: typeof NexusSchema.enumType\n  scalarType: typeof NexusSchema.scalarType\n  unionType: typeof NexusSchema.unionType\n  interfaceType: typeof NexusSchema.interfaceType\n  arg: typeof NexusSchema.arg\n  intArg: typeof NexusSchema.intArg\n  stringArg: typeof NexusSchema.stringArg\n  booleanArg: typeof NexusSchema.booleanArg\n  floatArg: typeof NexusSchema.floatArg\n  idArg: typeof NexusSchema.idArg\n  extendType: typeof NexusSchema.extendType\n  extendInputType: typeof NexusSchema.extendInputType\n}",
         "nodeFullText": "export type Schema = {\n  // addToContext: <T extends {}>(\n  //   contextContributor: ContextContributor<T>\n  // ) => App\n  queryType: typeof NexusSchema.queryType\n  mutationType: typeof NexusSchema.mutationType\n  objectType: typeof NexusSchema.objectType\n  inputObjectType: typeof NexusSchema.inputObjectType\n  enumType: typeof NexusSchema.enumType\n  scalarType: typeof NexusSchema.scalarType\n  unionType: typeof NexusSchema.unionType\n  interfaceType: typeof NexusSchema.interfaceType\n  arg: typeof NexusSchema.arg\n  intArg: typeof NexusSchema.intArg\n  stringArg: typeof NexusSchema.stringArg\n  booleanArg: typeof NexusSchema.booleanArg\n  floatArg: typeof NexusSchema.floatArg\n  idArg: typeof NexusSchema.idArg\n  extendType: typeof NexusSchema.extendType\n  extendInputType: typeof NexusSchema.extendInputType\n}"
-      }
+      },
+      "tsdoc": null
     },
     "(framework/app).ContextContributor": {
       "kind": "alias",
@@ -1878,7 +1838,8 @@
         "typeText": "ContextContributor<Req, T>",
         "nodeText": "type ContextContributor<Req, T extends {} = any> = (req: Req) => T",
         "nodeFullText": "// todo the jsdoc below is lost on the destructured object exports later on...\n// todo plugins could augment the request\n// plugins will be able to use typegen to signal this fact\n// all places in the framework where the req object is referenced should be\n// actually referencing the typegen version, so that it reflects the req +\n// plugin augmentations type\ntype ContextContributor<Req, T extends {} = any> = (req: Req) => T"
-      }
+      },
+      "tsdoc": null
     },
     "(framework/testing).TestContext": {
       "kind": "alias",
@@ -1888,6 +1849,7 @@
         "nodeText": "export type TestContext = nexusFutureTestContextRoot",
         "typeText": "nexusFutureTestContextRoot"
       },
+      "tsdoc": null,
       "type": {
         "kind": "typeIndexRef",
         "link": "(framework/testing).nexusFutureTestContextRoot"
@@ -1906,7 +1868,7 @@
           }
         }
       ],
-      "jsdoc": null,
+      "tsdoc": null,
       "raw": {
         "typeText": "nexusFutureTestContextRoot",
         "nodeText": "interface nexusFutureTestContextRoot {\n    app: nexusFutureTestContextApp\n  }",
@@ -1921,11 +1883,71 @@
           "kind": "prop",
           "name": "query",
           "type": {
-            "kind": "unsupported",
+            "kind": "callable",
+            "isOverloaded": false,
+            "hasProps": false,
+            "props": [],
+            "sigs": [
+              {
+                "kind": "sig",
+                "return": {
+                  "kind": "unsupported",
+                  "raw": {
+                    "typeText": "Promise<T>",
+                    "nodeText": "interface Promise<T> {\r\n    /**\r\n     * Attaches callbacks for the resolution and/or rejection of the Promise.\r\n     * @param onfulfilled The callback to execute when the Promise is resolved.\r\n     * @param onrejected The callback to execute when the Promise is rejected.\r\n     * @returns A Promise for the completion of which ever callback is executed.\r\n     */\r\n    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2>;\r\n\r\n    /**\r\n     * Attaches a callback for only the rejection of the Promise.\r\n     * @param onrejected The callback to execute when the Promise is rejected.\r\n     * @returns A Promise for the completion of the callback.\r\n     */\r\n    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult>;\r\n}",
+                    "nodeFullText": "/**\r\n * Represents the completion of an asynchronous operation\r\n */\r\ninterface Promise<T> {\r\n    /**\r\n     * Attaches callbacks for the resolution and/or rejection of the Promise.\r\n     * @param onfulfilled The callback to execute when the Promise is resolved.\r\n     * @param onrejected The callback to execute when the Promise is rejected.\r\n     * @returns A Promise for the completion of which ever callback is executed.\r\n     */\r\n    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2>;\r\n\r\n    /**\r\n     * Attaches a callback for only the rejection of the Promise.\r\n     * @param onrejected The callback to execute when the Promise is rejected.\r\n     * @returns A Promise for the completion of the callback.\r\n     */\r\n    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult>;\r\n}"
+                  }
+                },
+                "params": [
+                  {
+                    "kind": "sigParam",
+                    "name": "query",
+                    "type": {
+                      "kind": "primitive",
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "kind": "sigParam",
+                    "name": "variables",
+                    "type": {
+                      "kind": "union",
+                      "isDiscriminated": false,
+                      "discriminantProperties": null,
+                      "raw": {
+                        "typeText": "Variables | undefined",
+                        "nodeFullText": "",
+                        "nodeText": ""
+                      },
+                      "types": [
+                        {
+                          "kind": "primitive",
+                          "type": "undefined"
+                        },
+                        {
+                          "kind": "alias",
+                          "name": "Variables",
+                          "type": {
+                            "kind": "typeIndexRef",
+                            "link": "(lib/graphql-client/types).Variables"
+                          },
+                          "raw": {
+                            "typeText": "Variables",
+                            "nodeText": "export type Variables = { [key: string]: any }",
+                            "nodeFullText": "export type Variables = { [key: string]: any }"
+                          },
+                          "tsdoc": null
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ],
             "raw": {
               "typeText": "<T extends any>(query: string, variables?: Variables | undefined) => Promise<T>",
-              "nodeText": "request<T extends any>(query: string, variables?: Variables): Promise<T>;",
-              "nodeFullText": "request<T extends any>(query: string, variables?: Variables): Promise<T>;"
+              "nodeText": "async request<T extends any>(\n    query: string,\n    variables?: Variables\n  ): Promise<T> {\n    const { headers, ...others } = this.options\n\n    const body = JSON.stringify({\n      query,\n      variables: variables ? variables : undefined,\n    })\n\n    const response = await fetch(this.url, {\n      method: 'POST',\n      headers: Object.assign({ 'Content-Type': 'application/json' }, headers),\n      body,\n      ...others,\n    })\n\n    const result = await getResult(response)\n\n    if (response.ok && !result.errors && result.data) {\n      return result.data\n    } else {\n      const errorResult =\n        typeof result === 'string' ? { error: result } : result\n      throw new ClientError(\n        { ...errorResult, status: response.status },\n        { query, variables }\n      )\n    }\n  }",
+              "nodeFullText": "async request<T extends any>(\n    query: string,\n    variables?: Variables\n  ): Promise<T> {\n    const { headers, ...others } = this.options\n\n    const body = JSON.stringify({\n      query,\n      variables: variables ? variables : undefined,\n    })\n\n    const response = await fetch(this.url, {\n      method: 'POST',\n      headers: Object.assign({ 'Content-Type': 'application/json' }, headers),\n      body,\n      ...others,\n    })\n\n    const result = await getResult(response)\n\n    if (response.ok && !result.errors && result.data) {\n      return result.data\n    } else {\n      const errorResult =\n        typeof result === 'string' ? { error: result } : result\n      throw new ClientError(\n        { ...errorResult, status: response.status },\n        { query, variables }\n      )\n    }\n  }"
             }
           }
         },
@@ -2002,12 +2024,31 @@
           }
         }
       ],
-      "jsdoc": null,
+      "tsdoc": null,
       "raw": {
         "typeText": "nexusFutureTestContextApp",
         "nodeText": "interface nexusFutureTestContextApp extends TestContextAppCore {}",
         "nodeFullText": "interface nexusFutureTestContextApp extends TestContextAppCore {}"
       }
+    },
+    "(lib/graphql-client/types).Variables": {
+      "kind": "alias",
+      "name": "Variables",
+      "type": {
+        "kind": "object",
+        "props": [],
+        "raw": {
+          "typeText": "Variables",
+          "nodeText": "export type Variables = { [key: string]: any }",
+          "nodeFullText": "export type Variables = { [key: string]: any }"
+        }
+      },
+      "raw": {
+        "typeText": "Variables",
+        "nodeText": "export type Variables = { [key: string]: any }",
+        "nodeFullText": "export type Variables = { [key: string]: any }"
+      },
+      "tsdoc": null
     },
     "(core/plugin/index).DriverCreator": {
       "kind": "alias",
@@ -2046,7 +2087,8 @@
         "typeText": "DriverCreator",
         "nodeText": "export type DriverCreator = (pluginName: string) => Driver",
         "nodeFullText": "export type DriverCreator = (pluginName: string) => Driver"
-      }
+      },
+      "tsdoc": null
     },
     "(core/plugin/index).Driver": {
       "kind": "alias",
@@ -2156,6 +2198,12 @@
                           "typeText": "RuntimeContributions<any>",
                           "nodeText": "export type RuntimeContributions<C extends {} = any> = {\n  context?: {\n    typeGen: {\n      fields: Record<string, string>\n      imports?: Array<{\n        as: string\n        from: string\n      }>\n    }\n    create: (req: Express.Request) => C\n  }\n  // todo schema property name\n  nexus?: {\n    typegenAutoConfig?: NexusSchema.core.SchemaConfig['typegenAutoConfig']\n    plugins?: NexusSchema.core.SchemaConfig['plugins']\n  }\n}",
                           "nodeFullText": "/**\n * The possible things that plugins can contribute toward at runtime. Everything\n * is optional.\n */\nexport type RuntimeContributions<C extends {} = any> = {\n  context?: {\n    typeGen: {\n      fields: Record<string, string>\n      imports?: Array<{\n        as: string\n        from: string\n      }>\n    }\n    create: (req: Express.Request) => C\n  }\n  // todo schema property name\n  nexus?: {\n    typegenAutoConfig?: NexusSchema.core.SchemaConfig['typegenAutoConfig']\n    plugins?: NexusSchema.core.SchemaConfig['plugins']\n  }\n}"
+                        },
+                        "tsdoc": {
+                          "raw": "/**\n * The possible things that plugins can contribute toward at runtime. Everything\n * is optional.\n */",
+                          "summary": "The possible things that plugins can contribute toward at runtime. Everything\nis optional.",
+                          "examples": [],
+                          "customTags": []
                         }
                       }
                     ]
@@ -2206,7 +2254,8 @@
                           "typeText": "DeepPartial<TestContextCore>",
                           "nodeText": "export type DeepPartial<T extends Record<string, any>> = {\n  [P in keyof T]?: T[P] extends Record<string, any> ? DeepPartial<T[P]> : T[P]\n} & { [x: string]: any }",
                           "nodeFullText": "export type DeepPartial<T extends Record<string, any>> = {\n  [P in keyof T]?: T[P] extends Record<string, any> ? DeepPartial<T[P]> : T[P]\n} & { [x: string]: any }"
-                        }
+                        },
+                        "tsdoc": null
                       }
                     ]
                   },
@@ -2231,7 +2280,8 @@
         "typeText": "Driver",
         "nodeText": "export type Driver = {\n  name: string\n  extendsWorkflow: boolean\n  extendsRuntime: boolean\n  extendsTesting: boolean\n  loadWorkflowPlugin: (layout: Layout.Layout) => WorkflowHooks\n  loadRuntimePlugin: () => undefined | RuntimeContributions\n  loadTestingPlugin: () => undefined | TestingContributions\n}",
         "nodeFullText": "export type Driver = {\n  name: string\n  extendsWorkflow: boolean\n  extendsRuntime: boolean\n  extendsTesting: boolean\n  loadWorkflowPlugin: (layout: Layout.Layout) => WorkflowHooks\n  loadRuntimePlugin: () => undefined | RuntimeContributions\n  loadTestingPlugin: () => undefined | TestingContributions\n}"
-      }
+      },
+      "tsdoc": null
     },
     "(core/plugin/index).WorkflowHooks": {
       "kind": "alias",
@@ -2337,7 +2387,8 @@
                           "typeText": "SideEffector",
                           "nodeText": "export type SideEffector = () => MaybePromise",
                           "nodeFullText": "export type SideEffector = () => MaybePromise"
-                        }
+                        },
+                        "tsdoc": null
                       }
                     ]
                   }
@@ -2370,7 +2421,8 @@
                           "typeText": "FileWatcherEventCallback",
                           "nodeText": "export type FileWatcherEventCallback = (\n  eventName: 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir',\n  path: string,\n  stats: fs.Stats | undefined,\n  runner: {\n    restart: (file: string) => void /* stop: () => void, start: () => void */\n  } //TODO: add stop and start methods\n) => void",
                           "nodeFullText": "export type FileWatcherEventCallback = (\n  eventName: 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir',\n  path: string,\n  stats: fs.Stats | undefined,\n  runner: {\n    restart: (file: string) => void /* stop: () => void, start: () => void */\n  } //TODO: add stop and start methods\n) => void"
-                        }
+                        },
+                        "tsdoc": null
                       }
                     ]
                   }
@@ -2629,7 +2681,8 @@
                           "typeText": "SideEffector",
                           "nodeText": "export type SideEffector = () => MaybePromise",
                           "nodeFullText": "export type SideEffector = () => MaybePromise"
-                        }
+                        },
+                        "tsdoc": null
                       }
                     ]
                   }
@@ -2676,7 +2729,8 @@
                           "typeText": "SideEffector",
                           "nodeText": "export type SideEffector = () => MaybePromise",
                           "nodeFullText": "export type SideEffector = () => MaybePromise"
-                        }
+                        },
+                        "tsdoc": null
                       }
                     ]
                   }
@@ -2932,7 +2986,8 @@
         "typeText": "WorkflowHooks",
         "nodeText": "export type WorkflowHooks = {\n  create: {\n    onAfterBaseSetup?: (lens: OnAfterBaseSetupLens) => MaybePromise\n  }\n  dev: {\n    onStart?: SideEffector\n    onFileWatcherEvent?: Chokidar.FileWatcherEventCallback\n    addToWatcherSettings: {\n      /**\n       * Set additional files to be watched for the app and plugin listeners\n       */\n      watchFilePatterns?: string[]\n      listeners?: {\n        /**\n         * Define the watcher settings for the app listener\n         */\n        app?: {\n          /**\n           * Set files patterns that should not trigger a server restart by the app\n           */\n          ignoreFilePatterns?: string[]\n        }\n        /**\n         * Define the watcher settings for your plugin listener\n         */\n        plugin?: {\n          /**\n           * Set file patterns that should trigger `dev.onFileWatcherEvent`\n           * When set without `plugin.ignoreFilePatterns`, `dev.onFileWatcherEvent` will only react to changes made to the files which matches the `plugin.allowFilePatterns` patterns\n           * When set with `plugin.ignoreFilePatterns`, `dev.onFileWatcherEvent` will only react to changes made to the files which matches the `plugin.allowFilePatterns` patterns, minus the files which matches `plugin.ignoreFilePatterns`\n           */\n          allowFilePatterns?: string[]\n          /**\n           * Set file patterns that should not trigger `dev.onFileWatcherEvent`\n           * When set without `plugin.allowFilePatterns`, `dev.onFileWatcherEvent` will react to changes made to all files watched except the files which matches the `plugin.ignoreFilePatterns` patterns\n           * When set with `plugin.allowFilePatterns`, , `dev.onFileWatcherEvent` will react to changes made to all files matched by `plugin.allowFilesPatterns` except the files which matches the `plugin.ignoreFilePatterns` patterns\n           */\n          ignoreFilePatterns?: string[]\n        }\n      }\n    }\n  }\n  generate: {\n    onStart?: SideEffector\n  }\n  build: {\n    onStart?: SideEffector\n  }\n  db?: {\n    init: {\n      onStart: SideEffector\n    }\n    migrate: {\n      plan: {\n        onStart: (ctx: DbMigratePlanContext) => void\n      }\n      apply: {\n        onStart: (ctx: DbMigrateApplyContext) => void\n      }\n      rollback: {\n        onStart: SideEffector\n      }\n    }\n    ui: {\n      onStart: (ctx: DbUiContext) => void\n    }\n  }\n}",
         "nodeFullText": "export type WorkflowHooks = {\n  create: {\n    onAfterBaseSetup?: (lens: OnAfterBaseSetupLens) => MaybePromise\n  }\n  dev: {\n    onStart?: SideEffector\n    onFileWatcherEvent?: Chokidar.FileWatcherEventCallback\n    addToWatcherSettings: {\n      /**\n       * Set additional files to be watched for the app and plugin listeners\n       */\n      watchFilePatterns?: string[]\n      listeners?: {\n        /**\n         * Define the watcher settings for the app listener\n         */\n        app?: {\n          /**\n           * Set files patterns that should not trigger a server restart by the app\n           */\n          ignoreFilePatterns?: string[]\n        }\n        /**\n         * Define the watcher settings for your plugin listener\n         */\n        plugin?: {\n          /**\n           * Set file patterns that should trigger `dev.onFileWatcherEvent`\n           * When set without `plugin.ignoreFilePatterns`, `dev.onFileWatcherEvent` will only react to changes made to the files which matches the `plugin.allowFilePatterns` patterns\n           * When set with `plugin.ignoreFilePatterns`, `dev.onFileWatcherEvent` will only react to changes made to the files which matches the `plugin.allowFilePatterns` patterns, minus the files which matches `plugin.ignoreFilePatterns`\n           */\n          allowFilePatterns?: string[]\n          /**\n           * Set file patterns that should not trigger `dev.onFileWatcherEvent`\n           * When set without `plugin.allowFilePatterns`, `dev.onFileWatcherEvent` will react to changes made to all files watched except the files which matches the `plugin.ignoreFilePatterns` patterns\n           * When set with `plugin.allowFilePatterns`, , `dev.onFileWatcherEvent` will react to changes made to all files matched by `plugin.allowFilesPatterns` except the files which matches the `plugin.ignoreFilePatterns` patterns\n           */\n          ignoreFilePatterns?: string[]\n        }\n      }\n    }\n  }\n  generate: {\n    onStart?: SideEffector\n  }\n  build: {\n    onStart?: SideEffector\n  }\n  db?: {\n    init: {\n      onStart: SideEffector\n    }\n    migrate: {\n      plan: {\n        onStart: (ctx: DbMigratePlanContext) => void\n      }\n      apply: {\n        onStart: (ctx: DbMigrateApplyContext) => void\n      }\n      rollback: {\n        onStart: SideEffector\n      }\n    }\n    ui: {\n      onStart: (ctx: DbUiContext) => void\n    }\n  }\n}"
-      }
+      },
+      "tsdoc": null
     },
     "(core/plugin/index).OnAfterBaseSetupLens": {
       "kind": "alias",
@@ -3010,7 +3065,8 @@
         "typeText": "OnAfterBaseSetupLens",
         "nodeText": "export type OnAfterBaseSetupLens = {\n  database: 'SQLite' | 'MySQL' | 'PostgreSQL' | undefined\n  connectionURI: string | undefined\n}",
         "nodeFullText": "export type OnAfterBaseSetupLens = {\n  database: 'SQLite' | 'MySQL' | 'PostgreSQL' | undefined\n  connectionURI: string | undefined\n}"
-      }
+      },
+      "tsdoc": null
     },
     "(lib/utils/index).SideEffector": {
       "kind": "alias",
@@ -3040,7 +3096,8 @@
         "typeText": "SideEffector",
         "nodeText": "export type SideEffector = () => MaybePromise",
         "nodeFullText": "export type SideEffector = () => MaybePromise"
-      }
+      },
+      "tsdoc": null
     },
     "(watcher/chokidar).FileWatcherEventCallback": {
       "kind": "alias",
@@ -3196,7 +3253,8 @@
         "typeText": "FileWatcherEventCallback",
         "nodeText": "export type FileWatcherEventCallback = (\n  eventName: 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir',\n  path: string,\n  stats: fs.Stats | undefined,\n  runner: {\n    restart: (file: string) => void /* stop: () => void, start: () => void */\n  } //TODO: add stop and start methods\n) => void",
         "nodeFullText": "export type FileWatcherEventCallback = (\n  eventName: 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir',\n  path: string,\n  stats: fs.Stats | undefined,\n  runner: {\n    restart: (file: string) => void /* stop: () => void, start: () => void */\n  } //TODO: add stop and start methods\n) => void"
-      }
+      },
+      "tsdoc": null
     },
     "(core/plugin/index).DbMigratePlanContext": {
       "kind": "alias",
@@ -3239,7 +3297,8 @@
         "typeText": "DbMigratePlanContext",
         "nodeText": "export type DbMigratePlanContext = {\n  migrationName: string | undefined\n}",
         "nodeFullText": "export type DbMigratePlanContext = {\n  migrationName: string | undefined\n}"
-      }
+      },
+      "tsdoc": null
     },
     "(core/plugin/index).DbMigrateApplyContext": {
       "kind": "alias",
@@ -3288,7 +3347,8 @@
         "typeText": "DbMigrateApplyContext",
         "nodeText": "export type DbMigrateApplyContext = {\n  force: boolean | undefined\n}",
         "nodeFullText": "export type DbMigrateApplyContext = {\n  force: boolean | undefined\n}"
-      }
+      },
+      "tsdoc": null
     },
     "(core/plugin/index).DbUiContext": {
       "kind": "alias",
@@ -3331,7 +3391,8 @@
         "typeText": "DbUiContext",
         "nodeText": "export type DbUiContext = {\n  port?: number\n}",
         "nodeFullText": "export type DbUiContext = {\n  port?: number\n}"
-      }
+      },
+      "tsdoc": null
     },
     "(framework/layout/layout).Layout": {
       "kind": "alias",
@@ -3500,6 +3561,12 @@
         "typeText": "Layout",
         "nodeText": "export type Layout = Data & {\n  /**\n   * Property that aliases all the and only the data properties, makes it\n   * easy to e.g. serialize just the data.\n   */\n  data: Data\n  projectRelative(filePath: string): string\n  sourceRelative(filePath: string): string\n  sourcePath(subPath: string): string\n  packageManager: PackageManager.PackageManager\n}",
         "nodeFullText": "/**\n * Layout represents the important edges of the project to support things like\n * scaffolding, build, and dev against the correct paths.\n */\nexport type Layout = Data & {\n  /**\n   * Property that aliases all the and only the data properties, makes it\n   * easy to e.g. serialize just the data.\n   */\n  data: Data\n  projectRelative(filePath: string): string\n  sourceRelative(filePath: string): string\n  sourcePath(subPath: string): string\n  packageManager: PackageManager.PackageManager\n}"
+      },
+      "tsdoc": {
+        "raw": "/**\n * Layout represents the important edges of the project to support things like\n * scaffolding, build, and dev against the correct paths.\n */",
+        "summary": "Layout represents the important edges of the project to support things like\nscaffolding, build, and dev against the correct paths.",
+        "examples": [],
+        "customTags": []
       }
     },
     "(framework/layout/layout).ScanResult": {
@@ -3662,6 +3729,12 @@
         "typeText": "ScanResult",
         "nodeText": "export type ScanResult = {\n  // build: {\n  //   dir: string\n  // }\n  // source: {\n  //   isNested: string\n  // }\n  app:\n    | {\n        exists: true\n        path: string\n      }\n    | {\n        exists: false\n        path: null\n      }\n  project: {\n    name: string\n    isAnonymous: boolean\n  }\n  sourceRoot: string\n  sourceRootRelative: string\n  projectRoot: string\n  schemaModules: string[]\n  packageManagerType: PackageManager.PackageManager['type']\n  // schema:\n  //   | {\n  //       exists: boolean\n  //       multiple: true\n  //       paths: string[]\n  //     }\n  //   | {\n  //       exists: boolean\n  //       multiple: false\n  //       path: null | string\n  //     }\n  // context: {\n  //   exists: boolean\n  //   path: null | string\n  // }\n}",
         "nodeFullText": "/**\n * The part of layout data resulting from the dynamic file/folder inspection.\n */\nexport type ScanResult = {\n  // build: {\n  //   dir: string\n  // }\n  // source: {\n  //   isNested: string\n  // }\n  app:\n    | {\n        exists: true\n        path: string\n      }\n    | {\n        exists: false\n        path: null\n      }\n  project: {\n    name: string\n    isAnonymous: boolean\n  }\n  sourceRoot: string\n  sourceRootRelative: string\n  projectRoot: string\n  schemaModules: string[]\n  packageManagerType: PackageManager.PackageManager['type']\n  // schema:\n  //   | {\n  //       exists: boolean\n  //       multiple: true\n  //       paths: string[]\n  //     }\n  //   | {\n  //       exists: boolean\n  //       multiple: false\n  //       path: null | string\n  //     }\n  // context: {\n  //   exists: boolean\n  //   path: null | string\n  // }\n}"
+      },
+      "tsdoc": {
+        "raw": "/**\n * The part of layout data resulting from the dynamic file/folder inspection.\n */",
+        "summary": "The part of layout data resulting from the dynamic file/folder inspection.",
+        "examples": [],
+        "customTags": []
       }
     },
     "(utils/package-manager).PackageManagerType": {
@@ -3693,7 +3766,8 @@
         "typeText": "PackageManagerType",
         "nodeText": "export type PackageManagerType = 'yarn' | 'npm'",
         "nodeFullText": "export type PackageManagerType = 'yarn' | 'npm'"
-      }
+      },
+      "tsdoc": null
     },
     "(framework/layout/layout).Data": {
       "kind": "alias",
@@ -3734,6 +3808,12 @@
         "typeText": "Data",
         "nodeText": "export type Data = ScanResult & {\n  buildOutput: string\n}",
         "nodeFullText": "/**\n * The combination of manual datums the user can specify about the layout plus\n * the dynamic scan results.\n */\nexport type Data = ScanResult & {\n  buildOutput: string\n}"
+      },
+      "tsdoc": {
+        "raw": "/**\n * The combination of manual datums the user can specify about the layout plus\n * the dynamic scan results.\n */",
+        "summary": "The combination of manual datums the user can specify about the layout plus\nthe dynamic scan results.",
+        "examples": [],
+        "customTags": []
       }
     },
     "(utils/package-manager).PackageManager": {
@@ -4043,6 +4123,12 @@
         "typeText": "PackageManager",
         "nodeText": "export type PackageManager = {\n  type: PackageManagerType\n  installDeps: OmitFirstArg<typeof installDeps>\n  addDeps: OmitFirstArg<typeof addDeps>\n  runBin: OmitFirstArg<typeof runBin>\n  runScript: OmitFirstArg<typeof runScript>\n  renderRunBin: OmitFirstArg<typeof renderRunBin>\n  renderRunScript: OmitFirstArg<typeof renderRunScript>\n  renderAddDeps: OmitFirstArg<typeof renderAddDeps>\n}",
         "nodeFullText": "//\n// Fluent API\n//\n\n/**\n * The package manager as a fluent API, all statics partially applied with the\n * package manager type.\n */\nexport type PackageManager = {\n  type: PackageManagerType\n  installDeps: OmitFirstArg<typeof installDeps>\n  addDeps: OmitFirstArg<typeof addDeps>\n  runBin: OmitFirstArg<typeof runBin>\n  runScript: OmitFirstArg<typeof runScript>\n  renderRunBin: OmitFirstArg<typeof renderRunBin>\n  renderRunScript: OmitFirstArg<typeof renderRunScript>\n  renderAddDeps: OmitFirstArg<typeof renderAddDeps>\n}"
+      },
+      "tsdoc": {
+        "raw": "/**\n * The package manager as a fluent API, all statics partially applied with the\n * package manager type.\n */",
+        "summary": "The package manager as a fluent API, all statics partially applied with the\npackage manager type.",
+        "examples": [],
+        "customTags": []
       }
     },
     "(core/plugin/index).RuntimeContributions": {
@@ -4298,6 +4384,12 @@
         "typeText": "RuntimeContributions<any>",
         "nodeText": "export type RuntimeContributions<C extends {} = any> = {\n  context?: {\n    typeGen: {\n      fields: Record<string, string>\n      imports?: Array<{\n        as: string\n        from: string\n      }>\n    }\n    create: (req: Express.Request) => C\n  }\n  // todo schema property name\n  nexus?: {\n    typegenAutoConfig?: NexusSchema.core.SchemaConfig['typegenAutoConfig']\n    plugins?: NexusSchema.core.SchemaConfig['plugins']\n  }\n}",
         "nodeFullText": "/**\n * The possible things that plugins can contribute toward at runtime. Everything\n * is optional.\n */\nexport type RuntimeContributions<C extends {} = any> = {\n  context?: {\n    typeGen: {\n      fields: Record<string, string>\n      imports?: Array<{\n        as: string\n        from: string\n      }>\n    }\n    create: (req: Express.Request) => C\n  }\n  // todo schema property name\n  nexus?: {\n    typegenAutoConfig?: NexusSchema.core.SchemaConfig['typegenAutoConfig']\n    plugins?: NexusSchema.core.SchemaConfig['plugins']\n  }\n}"
+      },
+      "tsdoc": {
+        "raw": "/**\n * The possible things that plugins can contribute toward at runtime. Everything\n * is optional.\n */",
+        "summary": "The possible things that plugins can contribute toward at runtime. Everything\nis optional.",
+        "examples": [],
+        "customTags": []
       }
     },
     "(lib/utils/index).DeepPartial": {
@@ -4344,7 +4436,8 @@
         "typeText": "DeepPartial<TestContextCore>",
         "nodeText": "export type DeepPartial<T extends Record<string, any>> = {\n  [P in keyof T]?: T[P] extends Record<string, any> ? DeepPartial<T[P]> : T[P]\n} & { [x: string]: any }",
         "nodeFullText": "export type DeepPartial<T extends Record<string, any>> = {\n  [P in keyof T]?: T[P] extends Record<string, any> ? DeepPartial<T[P]> : T[P]\n} & { [x: string]: any }"
-      }
+      },
+      "tsdoc": null
     },
     "(framework/testing).TestContextAppCore": {
       "kind": "interface",
@@ -4354,11 +4447,71 @@
           "kind": "prop",
           "name": "query",
           "type": {
-            "kind": "unsupported",
+            "kind": "callable",
+            "isOverloaded": false,
+            "hasProps": false,
+            "props": [],
+            "sigs": [
+              {
+                "kind": "sig",
+                "return": {
+                  "kind": "unsupported",
+                  "raw": {
+                    "typeText": "Promise<T>",
+                    "nodeText": "interface Promise<T> {\r\n    /**\r\n     * Attaches callbacks for the resolution and/or rejection of the Promise.\r\n     * @param onfulfilled The callback to execute when the Promise is resolved.\r\n     * @param onrejected The callback to execute when the Promise is rejected.\r\n     * @returns A Promise for the completion of which ever callback is executed.\r\n     */\r\n    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2>;\r\n\r\n    /**\r\n     * Attaches a callback for only the rejection of the Promise.\r\n     * @param onrejected The callback to execute when the Promise is rejected.\r\n     * @returns A Promise for the completion of the callback.\r\n     */\r\n    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult>;\r\n}",
+                    "nodeFullText": "/**\r\n * Represents the completion of an asynchronous operation\r\n */\r\ninterface Promise<T> {\r\n    /**\r\n     * Attaches callbacks for the resolution and/or rejection of the Promise.\r\n     * @param onfulfilled The callback to execute when the Promise is resolved.\r\n     * @param onrejected The callback to execute when the Promise is rejected.\r\n     * @returns A Promise for the completion of which ever callback is executed.\r\n     */\r\n    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2>;\r\n\r\n    /**\r\n     * Attaches a callback for only the rejection of the Promise.\r\n     * @param onrejected The callback to execute when the Promise is rejected.\r\n     * @returns A Promise for the completion of the callback.\r\n     */\r\n    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult>;\r\n}"
+                  }
+                },
+                "params": [
+                  {
+                    "kind": "sigParam",
+                    "name": "query",
+                    "type": {
+                      "kind": "primitive",
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "kind": "sigParam",
+                    "name": "variables",
+                    "type": {
+                      "kind": "union",
+                      "isDiscriminated": false,
+                      "discriminantProperties": null,
+                      "raw": {
+                        "typeText": "Variables | undefined",
+                        "nodeFullText": "",
+                        "nodeText": ""
+                      },
+                      "types": [
+                        {
+                          "kind": "primitive",
+                          "type": "undefined"
+                        },
+                        {
+                          "kind": "alias",
+                          "name": "Variables",
+                          "type": {
+                            "kind": "typeIndexRef",
+                            "link": "(lib/graphql-client/types).Variables"
+                          },
+                          "raw": {
+                            "typeText": "Variables",
+                            "nodeText": "export type Variables = { [key: string]: any }",
+                            "nodeFullText": "export type Variables = { [key: string]: any }"
+                          },
+                          "tsdoc": null
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ],
             "raw": {
               "typeText": "<T extends any>(query: string, variables?: Variables | undefined) => Promise<T>",
-              "nodeText": "request<T extends any>(query: string, variables?: Variables): Promise<T>;",
-              "nodeFullText": "request<T extends any>(query: string, variables?: Variables): Promise<T>;"
+              "nodeText": "async request<T extends any>(\n    query: string,\n    variables?: Variables\n  ): Promise<T> {\n    const { headers, ...others } = this.options\n\n    const body = JSON.stringify({\n      query,\n      variables: variables ? variables : undefined,\n    })\n\n    const response = await fetch(this.url, {\n      method: 'POST',\n      headers: Object.assign({ 'Content-Type': 'application/json' }, headers),\n      body,\n      ...others,\n    })\n\n    const result = await getResult(response)\n\n    if (response.ok && !result.errors && result.data) {\n      return result.data\n    } else {\n      const errorResult =\n        typeof result === 'string' ? { error: result } : result\n      throw new ClientError(\n        { ...errorResult, status: response.status },\n        { query, variables }\n      )\n    }\n  }",
+              "nodeFullText": "async request<T extends any>(\n    query: string,\n    variables?: Variables\n  ): Promise<T> {\n    const { headers, ...others } = this.options\n\n    const body = JSON.stringify({\n      query,\n      variables: variables ? variables : undefined,\n    })\n\n    const response = await fetch(this.url, {\n      method: 'POST',\n      headers: Object.assign({ 'Content-Type': 'application/json' }, headers),\n      body,\n      ...others,\n    })\n\n    const result = await getResult(response)\n\n    if (response.ok && !result.errors && result.data) {\n      return result.data\n    } else {\n      const errorResult =\n        typeof result === 'string' ? { error: result } : result\n      throw new ClientError(\n        { ...errorResult, status: response.status },\n        { query, variables }\n      )\n    }\n  }"
             }
           }
         },
@@ -4435,7 +4588,7 @@
           }
         }
       ],
-      "jsdoc": null,
+      "tsdoc": null,
       "raw": {
         "typeText": "TestContextAppCore",
         "nodeText": "export interface TestContextAppCore {\n  query: AppClient['query']\n  server: {\n    start: () => Promise<void>\n    stop: () => Promise<void>\n  }\n}",
@@ -4479,7 +4632,8 @@
         "typeText": "Definer",
         "nodeText": "type Definer = (lens: Lens) => void",
         "nodeFullText": "type Definer = (lens: Lens) => void"
-      }
+      },
+      "tsdoc": null
     },
     "(core/plugin/index).Lens": {
       "kind": "alias",
@@ -4577,7 +4731,8 @@
                                     "typeText": "RunOptions",
                                     "nodeText": "export type RunOptions = Omit<SpawnSyncOptions, 'encoding'> & {\n  envAdditions?: Record<string, string | undefined>\n  require?: boolean\n}",
                                     "nodeFullText": "// TODO should not use sync options type for async run\nexport type RunOptions = Omit<SpawnSyncOptions, 'encoding'> & {\n  envAdditions?: Record<string, string | undefined>\n  require?: boolean\n}"
-                                  }
+                                  },
+                                  "tsdoc": null
                                 }
                               ]
                             }
@@ -4648,7 +4803,8 @@
                                     "typeText": "RunOptions",
                                     "nodeText": "export type RunOptions = Omit<SpawnSyncOptions, 'encoding'> & {\n  envAdditions?: Record<string, string | undefined>\n  require?: boolean\n}",
                                     "nodeFullText": "// TODO should not use sync options type for async run\nexport type RunOptions = Omit<SpawnSyncOptions, 'encoding'> & {\n  envAdditions?: Record<string, string | undefined>\n  require?: boolean\n}"
-                                  }
+                                  },
+                                  "tsdoc": null
                                 }
                               ]
                             }
@@ -4690,7 +4846,8 @@
         "typeText": "Lens",
         "nodeText": "export type Lens = {\n  runtime: CallbackRegistrer<RuntimePlugin>\n  workflow: CallbackRegistrer<WorkflowDefiner>\n  testing: CallbackRegistrer<TestingPlugin>\n  utils: {\n    log: Logger.Logger\n    runSync: typeof runSync\n    run: typeof run\n    /**\n     * Check out https://github.com/terkelg/prompts for documentation\n     */\n    prompt: PromptsConstructor\n  }\n}",
         "nodeFullText": "export type Lens = {\n  runtime: CallbackRegistrer<RuntimePlugin>\n  workflow: CallbackRegistrer<WorkflowDefiner>\n  testing: CallbackRegistrer<TestingPlugin>\n  utils: {\n    log: Logger.Logger\n    runSync: typeof runSync\n    run: typeof run\n    /**\n     * Check out https://github.com/terkelg/prompts for documentation\n     */\n    prompt: PromptsConstructor\n  }\n}"
-      }
+      },
+      "tsdoc": null
     },
     "(lib/utils/index).CallbackRegistrer": {
       "kind": "alias",
@@ -4733,7 +4890,8 @@
         "typeText": "CallbackRegistrer<RuntimePlugin>",
         "nodeText": "export type CallbackRegistrer<F> = (f: F) => void",
         "nodeFullText": "export type CallbackRegistrer<F> = (f: F) => void"
-      }
+      },
+      "tsdoc": null
     },
     "(utils/process).SuccessfulRunResult": {
       "kind": "alias",
@@ -4884,7 +5042,8 @@
         "typeText": "SuccessfulRunResult",
         "nodeText": "export type SuccessfulRunResult = {\n  command: string\n  stderr: null | string // present if stdio using pipe mode\n  stdout: null | string // present if stdio using pipe mode\n  signal: null | string\n  exitCode: null | number // present if optional (non-throw) mode\n  error: null | Error // present if optonal (non-throw) mode\n}",
         "nodeFullText": "export type SuccessfulRunResult = {\n  command: string\n  stderr: null | string // present if stdio using pipe mode\n  stdout: null | string // present if stdio using pipe mode\n  signal: null | string\n  exitCode: null | number // present if optional (non-throw) mode\n  error: null | Error // present if optonal (non-throw) mode\n}"
-      }
+      },
+      "tsdoc": null
     },
     "(utils/process).RunOptions": {
       "kind": "alias",
@@ -4940,6 +5099,12 @@
                         "typeText": "Record<string, string | undefined>",
                         "nodeText": "type Record<K extends keyof any, T> = {\r\n    [P in K]: T;\r\n};",
                         "nodeFullText": "/**\r\n * Construct a type with a set of properties K of type T\r\n */\r\ntype Record<K extends keyof any, T> = {\r\n    [P in K]: T;\r\n};"
+                      },
+                      "tsdoc": {
+                        "raw": "/**\r\n * Construct a type with a set of properties K of type T\r\n */",
+                        "summary": "Construct a type with a set of properties K of type T",
+                        "examples": [],
+                        "customTags": []
                       }
                     }
                   ]
@@ -4988,7 +5153,8 @@
         "typeText": "RunOptions",
         "nodeText": "export type RunOptions = Omit<SpawnSyncOptions, 'encoding'> & {\n  envAdditions?: Record<string, string | undefined>\n  require?: boolean\n}",
         "nodeFullText": "// TODO should not use sync options type for async run\nexport type RunOptions = Omit<SpawnSyncOptions, 'encoding'> & {\n  envAdditions?: Record<string, string | undefined>\n  require?: boolean\n}"
-      }
+      },
+      "tsdoc": null
     },
     "(core/plugin/index).PromptsConstructor": {
       "kind": "alias",
@@ -5086,7 +5252,8 @@
         "typeText": "PromptsConstructor",
         "nodeText": "type PromptsConstructor = <T extends string = string>(\n  questions: Prompts.PromptObject<T> | Array<Prompts.PromptObject<T>>,\n  options?: Prompts.Options\n) => Promise<Prompts.Answers<T>>",
         "nodeFullText": "type PromptsConstructor = <T extends string = string>(\n  questions: Prompts.PromptObject<T> | Array<Prompts.PromptObject<T>>,\n  options?: Prompts.Options\n) => Promise<Prompts.Answers<T>>"
-      }
+      },
+      "tsdoc": null
     }
   }
 }

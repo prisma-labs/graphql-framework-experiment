@@ -39,6 +39,7 @@
   - [`I` `TestContext`](#i-testcontext-1)
   - [`I` `nexusFutureTestContextRoot`](#i-nexusfuturetestcontextroot)
   - [`I` `nexusFutureTestContextApp`](#i-nexusfuturetestcontextapp)
+  - [`T` `Variables`](#t-variables)
   - [`F` `DriverCreator`](#f-drivercreator)
   - [`T` `Driver`](#t-driver)
   - [`T` `WorkflowHooks`](#t-workflowhooks)
@@ -135,28 +136,10 @@ typeIndexRef
 
 ```ts
 export type App = {
-  /**
-   * [API Reference](https://nexus-future.now.sh/#/references/api?id=logger)  ⌁  [Guide](https://nexus-future.now.sh/#/guides/logging)
-   *
-   * ### todo
-   */
   log: Logger.Logger
-  /**
-   * [API Reference](https://nexus-future.now.sh/#/references/api?id=server)  ⌁  [Guide](todo)
-   *
-   * ### todo
-   *
-   */
   server: Server.ServerWithCustomizer
-  /**
-   * todo
-   */
   settings: Settings
-  /**
-   * [API Reference](https://nexus-future.now.sh/#/references/api?id=appschema) // [Guide](todo)
-   *
-   * ### todo
-   */
+
   schema: Schema.Schema & {
     // addToContext is a bridge between two components, schema and server, so
     // its not in schema currently...
@@ -371,26 +354,15 @@ export type SettingsInput = {
   /**
    * todo
    */
-  connections?: ConnectionConfig & {
-    // We tried the idea of types.default: false | ConnectionConfig
-    // but got blocked by https://github.com/microsoft/TypeScript/issues/17867
-
-    /**
-     * todo
-     *
-     * @default `false`
-     */
-    disableDefaultType?: boolean
+  connections?: {
     /**
      * todo
      */
-    types?: {
-      default?: ConnectionConfig
-      // Extra undefined below is forced by it being above, forced via `?:`.
-      // This is a TS limitation, cannot express void vs missing semantics,
-      // being tracked here: https://github.com/microsoft/TypeScript/issues/13195
-      [typeName: string]: ConnectionConfig | undefined
-    }
+    default?: ConnectionConfig | false
+    // Extra undefined below is forced by it being above, forced via `?:`.
+    // This is a TS limitation, cannot express void vs missing semantics,
+    // being tracked here: https://github.com/microsoft/TypeScript/issues/13195
+    [typeName: string]: ConnectionConfig | undefined | false
   }
 }
 ```
@@ -472,6 +444,12 @@ interface nexusFutureTestContextRoot {
 
 ```ts
 interface nexusFutureTestContextApp extends TestContextAppCore {}
+```
+
+#### `T` `Variables`
+
+```ts
+export type Variables = { [key: string]: any }
 ```
 
 #### `F` `DriverCreator`
