@@ -238,7 +238,7 @@ function setupExpress(
           const address = http.address()! as Net.AddressInfo
           opts.startMessage({
             port: address.port,
-            host: address.address === '0.0.0.0' ? 'localhost' : '',
+            host: address.address,
             ip: address.address,
           })
           res()
