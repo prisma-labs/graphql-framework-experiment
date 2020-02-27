@@ -74,6 +74,7 @@ describe('settings', () => {
           ).toBeLessThanOrEqual(terminalWidth)
         })
         it('objects are formatted by util.inspect compact: yes', () => {
+          if (!process.version.match(/^v12/)) return
           log.info('foo', { ke1: { a: { b: { c: true } } } })
           expect(output.memory.jsonOrRaw).toMatchSnapshot()
         })
@@ -134,6 +135,7 @@ describe('settings', () => {
         })
       })
       it('controls if logs are rendered pretty or as JSON', () => {
+        if (!process.version.match(/^v12/)) return
         output.captureConsoleLog()
         log.info('foo')
         Logger.demo(log)
@@ -302,6 +304,7 @@ describe('settings', () => {
 
 describe('demo', () => {
   it('runs a demo with fake data, pretty, all levels active', () => {
+    if (!process.version.match(/^v12/)) return
     output.captureConsoleLog()
     log.settings({ pretty: { color: false } })
     Logger.demo(log)
