@@ -87,19 +87,18 @@ We use GitHub Actions.
 
 #### Unit
 
-```
+```bash
 yarn test:unit
+yarn dev:test      # watch mode
 ```
 
 - Live under `/src` separated by and colocated with the respective module they test.
-
-- There are unit tests (`yarn test:unit`) and e2e tests (`yarn test:e2e`).
 
 - Unit tests run in CI against every commit.
 
 #### E2E
 
-```
+```bash
 yarn test:e2e
 ```
 

@@ -1,3 +1,6 @@
+// shows up in snapshots of json-mode logs
+require('os').hostname = () => 'mock-host'
+
 import * as Lo from 'lodash'
 import { spanChar } from '../utils'
 import * as Logger from './'

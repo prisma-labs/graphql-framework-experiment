@@ -9,7 +9,7 @@ Array [
       },
     },
     "event": "hi",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 30,
     "path": Array [
       "root",
@@ -21,7 +21,7 @@ Array [
   Object {
     "context": Object {},
     "event": "bye",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 30,
     "path": Array [
       "root",
@@ -38,7 +38,7 @@ Array [
   Object {
     "context": Object {},
     "event": "hi",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 60,
     "path": Array [
       "root",
@@ -50,7 +50,7 @@ Array [
   Object {
     "context": Object {},
     "event": "hi",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 50,
     "path": Array [
       "root",
@@ -62,7 +62,7 @@ Array [
   Object {
     "context": Object {},
     "event": "hi",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 40,
     "path": Array [
       "root",
@@ -74,7 +74,7 @@ Array [
   Object {
     "context": Object {},
     "event": "hi",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 30,
     "path": Array [
       "root",
@@ -86,7 +86,7 @@ Array [
   Object {
     "context": Object {},
     "event": "hi",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 20,
     "path": Array [
       "root",
@@ -98,7 +98,7 @@ Array [
   Object {
     "context": Object {},
     "event": "hi",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 10,
     "path": Array [
       "root",
@@ -120,7 +120,7 @@ Array [
       },
     },
     "event": "hi",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 30,
     "path": Array [
       "root",
@@ -142,7 +142,7 @@ Array [
       },
     },
     "event": "hi",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 30,
     "path": Array [
       "root",
@@ -163,7 +163,7 @@ Array [
       },
     },
     "event": "hi",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 30,
     "path": Array [
       "root",
@@ -184,7 +184,7 @@ Array [
       },
     },
     "event": "hi",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 30,
     "path": Array [
       "root",
@@ -201,7 +201,7 @@ Array [
   Object {
     "context": Object {},
     "event": "hi",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 30,
     "path": Array [
       "root",
@@ -219,7 +219,7 @@ Array [
   Object {
     "context": Object {},
     "event": "hi",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 10,
     "path": Array [
       "root",
@@ -240,7 +240,7 @@ Array [
       "from": "b1",
     },
     "event": "foo",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 30,
     "path": Array [
       "root",
@@ -256,7 +256,7 @@ Array [
       "from": "b2",
     },
     "event": "foo",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 30,
     "path": Array [
       "root",
@@ -272,7 +272,7 @@ Array [
       "from": "b3",
     },
     "event": "foo",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 30,
     "path": Array [
       "root",
@@ -290,7 +290,7 @@ Array [
   Object {
     "context": Object {},
     "event": "foo",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 10,
     "path": Array [
       "root",
@@ -346,7 +346,7 @@ Array [
   Object {
     "context": Object {},
     "event": "foo",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 60,
     "path": Array [
       "root",
@@ -370,7 +370,7 @@ Array [
   Object {
     "context": Object {},
     "event": "foo",
-    "hostname": "Jasons-Prisma-Machine.local",
+    "hostname": "mock-host",
     "level": 30,
     "path": Array [
       "root",
