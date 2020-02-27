@@ -103,6 +103,7 @@ describe('settings', () => {
           expect(output.memory.jsonOrRaw).toMatchSnapshot()
         })
         it('objects are formatted by util.inspect compact: yes', () => {
+          if (!process.version.match(/^v12/)) return
           log.info('foo', {
             ke1: {
               a: {
