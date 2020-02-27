@@ -109,15 +109,15 @@ We have our own logger but write to [`pino`](https://github.com/pinojs/pino) und
   **_example_**
 
   ```
-  {"level":30,"time":1578887817230,"pid":30997,"hostname":"Jasons-Prisma-Machine.local","path":["nexus","dev"],"context":{},"event":"boot","v":1}
-  {"level":30,"time":1578887819619,"pid":30998,"hostname":"Jasons-Prisma-Machine.local","path":["app"],"context":{},"event":"boot","v":1}
-  {"level":60,"time":1578887819621,"pid":30998,"hostname":"Jasons-Prisma-Machine.local","path":["app"],"context":{"lib":{}},"event":"foo","v":1}
-  {"level":50,"time":1578887819621,"pid":30998,"hostname":"Jasons-Prisma-Machine.local","path":["app"],"context":{"har":{"mar":"tek"}},"event":"foo","v":1}
-  {"level":40,"time":1578887819622,"pid":30998,"hostname":"Jasons-Prisma-Machine.local","path":["app"],"context":{"bleep":[1,"2",true]},"event":"foo","v":1}
-  {"level":30,"time":1578887819622,"pid":30998,"hostname":"Jasons-Prisma-Machine.local","path":["app"],"context":{},"event":"foo","v":1}
-  {"level":20,"time":1578887819622,"pid":30998,"hostname":"Jasons-Prisma-Machine.local","path":["app"],"context":{"foo":"bar"},"event":"foo","v":1}
-  {"level":10,"time":1578887819622,"pid":30998,"hostname":"Jasons-Prisma-Machine.local","path":["app"],"context":{"a":1,"b":2,"c":"three"},"event":"foo","v":1}
-  {"level":30,"time":1578887819645,"pid":30998,"hostname":"Jasons-Prisma-Machine.local","path":["app","server"],"context":{"host":"localhost","port":4000},"event":"listening","v":1}
+  {"level":30,"time":1578887817230,"pid":30997,"hostname":"some-host","path":["nexus","dev"],"context":{},"event":"boot","v":1}
+  {"level":30,"time":1578887819619,"pid":30998,"hostname":"some-host","path":["app"],"context":{},"event":"boot","v":1}
+  {"level":60,"time":1578887819621,"pid":30998,"hostname":"some-host","path":["app"],"context":{"lib":{}},"event":"foo","v":1}
+  {"level":50,"time":1578887819621,"pid":30998,"hostname":"some-host","path":["app"],"context":{"har":{"mar":"tek"}},"event":"foo","v":1}
+  {"level":40,"time":1578887819622,"pid":30998,"hostname":"some-host","path":["app"],"context":{"bleep":[1,"2",true]},"event":"foo","v":1}
+  {"level":30,"time":1578887819622,"pid":30998,"hostname":"some-host","path":["app"],"context":{},"event":"foo","v":1}
+  {"level":20,"time":1578887819622,"pid":30998,"hostname":"some-host","path":["app"],"context":{"foo":"bar"},"event":"foo","v":1}
+  {"level":10,"time":1578887819622,"pid":30998,"hostname":"some-host","path":["app"],"context":{"a":1,"b":2,"c":"three"},"event":"foo","v":1}
+  {"level":30,"time":1578887819645,"pid":30998,"hostname":"some-host","path":["app","server"],"context":{"host":"localhost","port":4000},"event":"listening","v":1}
   ```
 
 * Event oriented API, JSON schema, and pretty mode  
