@@ -4,7 +4,8 @@
  * the package that might be being used by anything else in the process.
  */
 
-export { Chalk } from 'chalk'
 import chalkPackageSingleton from 'chalk'
 
 export const chalk = new chalkPackageSingleton.Instance()
+
+export { Chalk } from 'chalk'
