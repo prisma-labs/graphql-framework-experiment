@@ -50,7 +50,7 @@ server.start()
 
 Use this to model your domain, all the data that your API will accept and return, and how all the various objects in the domain relate to one another (the "graph" in "GraphQL").
 
-### `objectType`
+### `F` `objectType`
 
 [GraphQL Docs for Object Types](https://graphql.org/learn/schema/#object-types-and-fields)
 
@@ -102,7 +102,7 @@ schema.enumType({
 
 `queryType` / `mutationType` are shorthand for the root types.
 
-### `enumType`
+### `F` `enumType`
 
 [GraphQL Docs for Enum Types](https://graphql.org/learn/schema/#enumeration-types)
 
@@ -133,7 +133,7 @@ const Episode = schema.enumType({
 })
 ```
 
-### `inputObjectType`
+### `F` `inputObjectType`
 
 [GraphQL Docs for Input Object Types](https://graphql.org/learn/schema/#input-types)
 
@@ -155,7 +155,7 @@ schema.inputObjectType({
 
 Unlike object types, input types do not have arguments, so they do not have resolvers or "backing types"
 
-### `interfaceType`
+### `F` `interfaceType`
 
 [GraphQL Docs for Interface Types](https://graphql.org/learn/schema/#input-types)
 
@@ -185,7 +185,7 @@ schema.objectType({
 
 If you need to modify the description or resolver defined by an interface, you can call the `modify` method on `objectType` to change these after the fact.
 
-### `scalarType`
+### `F` `scalarType`
 
 [GraphQL Docs for Scalar Types](https://graphql.org/learn/schema/#scalar-types)
 
@@ -249,7 +249,7 @@ schema.objectType({
 })
 ```
 
-### `unionType`
+### `F` `unionType`
 
 [GraphQL Docs for Union Types](https://graphql.org/learn/schema/#union-types)
 
@@ -271,7 +271,7 @@ schema.unionType({
 })
 ```
 
-### `arg`
+### `F` `arg`
 
 [GraphQL Docs on Arguments](https://graphql.org/learn/schema/#arguments)
 
@@ -336,31 +336,27 @@ The description to annotate the GraphQL SDL
 
 Format: `description?: string | null;`
 
-### `intArg`
+### `F` `intArg`
 
 Sugar for creating arguments of type `Integer`.
 
-### `stringArg`
+### `F` `stringArg`
 
 Sugar for creating arguments of type `String`.
 
-### `floatArg`
+### `F` `floatArg`
 
 Sugar for creating arguments of type `Float`.
 
-### `idArg`
+### `F` `idArg`
 
 Sugar for creating arguments of type `ID`.
 
-### `booleanArg`
+### `F` `booleanArg`
 
 Sugar for creating arguments of type `Boolean`.
 
-### `t.connection`
-
-todo
-
-### `addToContext`
+### `F` `addToContext`
 
 Add context to your graphql resolver functions. The objects returned by your context contributor callbacks will be shallow-merged into `ctx`. The `ctx` type will also accurately reflect the types you return from callbacks passed to `addToContext`.
 
@@ -385,6 +381,10 @@ schema.queryType({
   },
 })
 ```
+
+### `F` `t.connection`
+
+todo
 
 ## Logger
 
@@ -444,15 +444,20 @@ log.info('hello')
 }
 ```
 
-- `level` - Numeric representation of log levels. Numeric because it easy later to filter e.g. level `30` and up. `10` is `trace` while on the other end of the scale `50` is `fatal`.
+- `level`  
+  Numeric representation of log levels. Numeric because it easy later to filter e.g. level `30` and up. `10` is `trace` while on the other end of the scale `50` is `fatal`.
 
-- `time` - Unix timestamp in milliseconds.
+- `time`  
+  Unix timestamp in milliseconds.
 
-- `pid` - The process ID given by the host kernal.
+- `pid`  
+  The process ID given by the host kernal.
 
-- `hostname` - The machine host (`require('os').hostname()`)
+- `hostname`  
+  The machine host (`require('os').hostname()`)
 
-- `path` - The fully qualified name of the logger.
+- `path`  
+  The fully qualified name of the logger.
 
   **Example**
 
@@ -463,9 +468,11 @@ log.info('hello')
   log.child('b').info('hallo') // { path: ['nexus', 'b'], ... }
   ```
 
-- `context` - Custom contextual data added by you. Any data added by the log call, previous `addToContext` calls, or inheritance from parent context.
+- `context`  
+  Custom contextual data added by you. Any data added by the log call, previous `addToContext` calls, or inheritance from parent context.
 
-- `event` - The name of this log event.
+- `event`  
+  The name of this log event.
 
 **Example**
 
@@ -483,31 +490,31 @@ log.info('hello')
 }
 ```
 
-### `fatal`
+### `F` `fatal`
 
 Log something at `fatal` level.
 
-### `error`
+### `F` `error`
 
 Log something at `error` level.
 
-### `warn`
+### `F` `warn`
 
 Log something at `warn` level.
 
-### `info`
+### `F` `info`
 
 Log something at `info` level.
 
-### `debug`
+### `F` `debug`
 
 Log something at `debug` level.
 
-### `trace`
+### `F` `trace`
 
 Log something at `trace` level.
 
-### `addToContext`
+### `F` `addToContext`
 
 Add context to the logger. All subsequent logs will have this information included under their `context` property. Data is merged deeply using [lodash merge](https://lodash.com/docs/4.17.15#merge).
 
@@ -538,7 +545,7 @@ log.info("hi", { user: { name: 'Titi', heightCM: 155 })
 // { "context": { "user": { "name": "Titi", age: 10, heightCM: 155 }}, ... }
 ```
 
-### `child`
+### `F` `child`
 
 Create a new logger that inherits its parents' context and path.
 
@@ -586,7 +593,7 @@ All runtime logs in your app (including from plugins come from either the `logge
 
 Use this to run your HTTP server that clients will connect to. The default server is an instance of [`express-graphql`](https://github.com/graphql/express-graphql).
 
-### `start`
+### `F` `start`
 
 Make the server start listening for incoming client connections.
 
@@ -594,7 +601,7 @@ Calling start while already started is a no-op.
 
 Normally you should not need to use this method. When your app does not call `server.start`, Nexus will do so for you automatically.
 
-### `stop`
+### `F` `stop`
 
 Make the server stop listening for incoming client connections.
 
@@ -602,7 +609,7 @@ Calling stop while the server is already stopped is a no-op.
 
 Normally you should not need to use this method.
 
-### `custom`
+### `F` `custom`
 
 Augment or replace the default server implentation.
 
@@ -693,7 +700,146 @@ schema.addToContext<FastifyRequest>(_req => {
 
 ## Settings
 
-### `change`
+### `F` `change`
+
+**Signature**
+
+<!-- prettier-ignore -->
+```ts
+(settingsInput: {
+  server?: {
+    port?: number
+    host?: string
+  }
+  playground?: boolean
+  schema?: {
+    connections?: {} // TODO
+  }
+  logger?: {
+    level?: 'trace' | 'debug' | 'info' | 'warn' | 'critical' | 'fatal'
+    pretty?:
+      | boolean
+      | {
+          enabled: boolean
+          timeDiff: boolean
+          color: boolean
+          levelLabel: boolean
+        }
+  }
+}) => Settings
+```
+
+- param `settingsInput`
+
+  - `server.playground`  
+    Should the app expose a [GraphQL Playground](https://github.com/prisma-labs/graphql-playground) to clients?
+
+    **Default**
+
+    `true` in dev, `false` otherwise.
+
+  * `server.port`  
+    The port the server should listen on.
+
+    **Default**
+
+    - Is `NEXUS_PORT` environment variable set? Then that.
+    - Is `PORT` environment variable set? Then that.
+    - Is `NODE_ENV` environment variable `production`? Then `80`
+    - Else `4000`
+
+* `server.host`  
+  The host the server should listen on.
+
+  **Default**
+
+  - Is `NEXUS_HOST` environment variable set? Then that.
+  - Is `HOST` environment variable set? Then that.
+  - Else `0.0.0.0`
+
+* `schema.connections`  
+  todo
+
+* `logger.level`  
+  The level which logs must be at or above to be logged. Logs below this level are discarded.
+
+  **Default**
+
+  `debug` in dev, `info` otherwise.
+
+* `logger.pretty`  
+  Shorthand for `logger.pretty.enabled`.
+
+- `logger.pretty.enabled`  
+  Should logs be logged with rich formatting etc. (`true`), or as JSON (`false`)?
+
+  **Default**
+
+  - Is `LOG_PRETTY` environment variable `true`? Then `true`.
+  - Is `LOG_PRETTY` environment variable `false`? Then `false`.
+  - Is process.stdout attached to a TTY? Then `true`
+
+  **Example of what it looks like**
+
+  ```
+  LOG_DEMO=true npx nexus dev
+  ```
+
+  ```
+  -----------
+  LOGGER DEMO
+  -----------
+    4 ✕ root:foo  --  lib: /see/
+    0 ■ root:foo
+        | har  { mar: 'tek' }
+        | jar  [
+        |        1, 2, 3, 4, 4, 5, 6,
+        |        6, 7, 9, 1, 2, 4, 5,
+        |        6, 7, 3, 6, 5, 4
+        |      ]
+        | kio  [Object: null prototype] [foo] {}
+    1 ▲ root:foo  --  bleep: [ 1, '2', true ]
+    0 ● root:foo
+    1 ○ root:foo
+        | results  [
+        |            { userId: 1, id: 1, title: 'delectus aut autem', completed: false },
+        |            { userId: 1, id: 2, title: 'quis ut nam facilis et officia qui', completed: false },
+        |            { userId: 1, id: 3, title: 'fugiat veniam minus', completed: false },
+        |            { userId: 1, id: 4, title: 'et porro tempora', completed: true },
+        |            {
+        |              userId: 1,
+        |              id: 5,
+        |              title: 'laboriosam mollitia et enim quasi adipisci quia provident illum',
+        |              completed: false
+        |            }
+        |          ]
+        | tri      'wiz'
+        | on       false
+    0 ○ root:foo  --  foo: 'bar'
+    0 — root:foo  --  a: 1  b: 2  c: 'three'
+  -----------
+  ```
+
+- `logger.pretty.color`  
+  Should logs have color?
+
+  **Default**
+
+  `true`
+
+- `logger.pretty.timeDiff`  
+  Should a time delta between each log be shown in the gutter?
+
+  **Default**
+
+  `true`
+
+* `logger.pretty.levelLabel`  
+  Should the label of the level be shown in the gutter?
+
+  **Default**
+
+  `false`
 
 **Example**
 
@@ -707,128 +853,22 @@ settings.change({
 })
 ```
 
-### `current`
+### `O` `current`
 
 A reference to the current settings object.
 
-### `original`
+**Type**
+
+```ts
+SettingsData
+```
+
+### `O` `original`
 
 A reference to the original settings object.
 
-### Available Settings
-
-#### `server`
-
-##### `playground`
-
-Should the app expose a [GraphQL Playground](https://github.com/prisma-labs/graphql-playground) to clients?
-
-**Default**
-
-`true` in dev, `false` otherwise.
-
-##### `port`
-
-The port the server should listen on.
-
-##### `host`
-
-The host the server should listen on.
-
-#### `schema`
-
-##### `connections`
-
-todo
-
-#### `logger`
-
-##### `level`
-
-The level which logs must be at or above to be logged. Logs below this level are discarded.
-
-The level scale is:
-
-```
-fatal
-critical
-warn
-info
-debug
-trace
-```
-
-**Default**
-
-`debug` in dev, `info` otherwise.
-
-##### `pretty`
-
-Control if pretty mode is disabled or enabled, and how pretty mode looks.
-
 **Type**
 
-<!-- prettier-ignore -->
 ```ts
-boolean | { enabled: boolean, timeDiff: boolean, color: boolean, levelLabel: boolean }
-```
-
-- object
-  - `enabled` - Should logs be logged with rich formatting etc. (`true`), or as JSON (`false`)?
-  - `color` - Should logs have color?
-  - `timeDiff` - Should a time delta between each log be shown in the gutter?
-  - `levelLabel` - Should the label of the level be shown in the gutter?
-- `boolean` - Shorthand for `enabled`.
-
-**Defaults**
-
-- `enabled` - A dynamic process:
-
-  - Is `LOG_PRETTY` environment variable `true`? Then `true`.
-  - Is `LOG_PRETTY` environment variable `false`? Then `false`.
-  - Is process.stdout attached to a TTY? Then `true`
-
-- `color` - `true`
-- `timeDiff` - `true`
-- `levelLabel` - `false`
-
-**Example of what it looks like**
-
-```
-LOG_DEMO=true npx nexus dev
-```
-
-```
------------
-LOGGER DEMO
------------
-   4 ✕ root:foo  --  lib: /see/
-   0 ■ root:foo
-       | har  { mar: 'tek' }
-       | jar  [
-       |        1, 2, 3, 4, 4, 5, 6,
-       |        6, 7, 9, 1, 2, 4, 5,
-       |        6, 7, 3, 6, 5, 4
-       |      ]
-       | kio  [Object: null prototype] [foo] {}
-   1 ▲ root:foo  --  bleep: [ 1, '2', true ]
-   0 ● root:foo
-   1 ○ root:foo
-       | results  [
-       |            { userId: 1, id: 1, title: 'delectus aut autem', completed: false },
-       |            { userId: 1, id: 2, title: 'quis ut nam facilis et officia qui', completed: false },
-       |            { userId: 1, id: 3, title: 'fugiat veniam minus', completed: false },
-       |            { userId: 1, id: 4, title: 'et porro tempora', completed: true },
-       |            {
-       |              userId: 1,
-       |              id: 5,
-       |              title: 'laboriosam mollitia et enim quasi adipisci quia provident illum',
-       |              completed: false
-       |            }
-       |          ]
-       | tri      'wiz'
-       | on       false
-   0 ○ root:foo  --  foo: 'bar'
-   0 — root:foo  --  a: 1  b: 2  c: 'three'
------------
+SettingsData
 ```
