@@ -384,6 +384,460 @@ schema.queryType({
 
 ### `F` `t.connection`
 
+This field builder helps you implement paginated associations between types in your schema. The contributions that it makes to your GraphQL schema adhear to the [Relay Connection Specification](https://facebook.github.io/relay/graphql/connections.htm#sec-Node). In other words it allows you the API author to write the minimum logic required to create spec-compliant relay connections for your API clients.
+
+**Signature**
+
+<!-- prettier-ignore -->
+```ts
+(
+  fieldName: string,
+  config: {
+    type:                       GraphQLType,
+    additionalArgs?:            Args
+    inheritAdditionalArgs?:     boolean
+    disableForwardPagination?:  boolean
+    disableBackwardPagination?: boolean
+    strictArgs?:                boolean
+    validateArgs?:              (
+                                  argsArgs: Args,
+                                  info: ResolverInfo
+                                ) => void
+    extendConnection?:          (t: TypeBuilder) => void
+    extendEdge?:                (t: TypeBuilder) => void
+    pageInfoFromNodes?:         (
+                                  nodes:    Node[],
+                                  args:     Args,
+                                  context:  Context,
+                                  info:     ResolverInfo
+                                ) => {
+                                       hasNextPage:     boolean,
+                                       hasPreviousPage: booolean
+                                     }
+    cursorFromNode?:            (
+                                  node:    Node,
+                                  args:    Args,
+                                  context: Context,
+                                  info:    ResolverInfo,
+                                  forCursor: {
+                                    index: number
+                                    nodes: Node[]
+                                  }
+                                ) => MaybePromise<string>
+  } & 
+    | { nodes?:   never, resolve: Resolver } 
+    | { resolve?: never, nodes: NodeResolver } 
+) => void
+```
+
+- param `config`
+
+  - `type` <code class="TypeRef" ><a href="#graphqltype">GraphQLType</a></code>  
+    The type of this field.
+
+  - `resolve` <code class="TypeRef" ><a href="#graphqltype">Resolver</a></code>  
+    Implement everything yourself.
+
+    Useful for more complex pagination cases, where you may want to use utilities from other libraries like [`graphql-relay`](https://github.com/graphql/graphql-relay-js), and only use Nexus for the construction and type-safety.
+
+    Unlike with `nodes` approach, this approach makes no assumptions about values for the `edges` `cursor` `pageInfo` properties.
+
+    **Optionality**
+
+    Forbidden if `nodes` given. Required otherwise.
+
+  - `nodes` <code class="TypeRef" ><a href="#graphqltype">NodeResolver</a></code>
+
+    **Optionality**
+
+    Forbidden if `resolve` given. Required otherwise.
+
+    **Remarks**
+
+    When you use this approach (instead of `resolve`), Nexus makes some assumptions about the structure of the connection. You are only required to return a list of nodes to resolve based on the connection, and then we will automatically infer the `hasNextPage`, `hasPreviousPage`, and `cursor` values for you.
+
+    The returned array of nodes should have a length of one greater than the requested item count. The additional item should be placed according to this pattern:
+
+    - paginating forward / selecting `first`: last
+    - paginating backward / selecting `last`: first
+
+    For example, if the query is paginating forward, and there are 20 nodes in the returned array:
+
+    ```
+    Query Args     Returned Nodes
+
+    (first: 2)     [{id: 1}, {id: 2}, {id: 3}]
+                                    ~~~~~~~ ------------------- Extra
+    (last: 2)      [{id: 18}, {id: 19}, {id: 20}]
+                   ~~~~~~~~ ------------------------------------- Extra
+    ```
+
+    Nexus then slices the array in the paginating direction, and if there are more than "N" node results, Nexus takes this to mean that there is another page in the paginating direction.
+
+    If you set `assumeExactNodeCount` to `true` in `schema.connections` setting then this heuristic changes. Nexus then assumes that a next page exists if the returned array length is `>=` to requested node count.
+
+  * `additionalArgs` <code class="TypeRef" ><a href="#args">Args</a></code>  
+    Additional arguments to use for just this field.
+
+    **Default**
+
+    `undefined`
+
+    **Remarks**
+
+    When used, the `additionalArgs` in app settings `schema.connections` will not be inherited. If you do wish to inherit them, enable that with `inheritAdditionalArgs`.
+
+  * `inheritAdditionalArgs`  
+    Whether to inherit the `additionalArgs` from app settings `schema.connections`
+
+    **Default**
+
+    `true` if `additionalArgs` is not set, `false` otherwise.
+
+  * `disableForwardPagination`  
+    If `true` then `first` and `after` args are _not_ present. When disabled, `last` arg becomes required, unless you disable `strictArgs`.
+
+    **Default**
+
+    `false`
+
+  - `disableBackwardPagination`  
+    If `true` then `last` and `before` args are _not_ present. When disabled, `first` arg becomes required, unless you disable `strictArgs`.
+
+    **Default**
+
+    `false`
+
+  - `strictArgs`  
+    Whether `first`/`last` arg nullability should reflect the forward/backward pagination configuration. When `true`, then the following pattern is used:
+
+    - when _only_ forward pagination enabled
+      - meaning, `disableForwardPagination && !disableBackwardPagination`
+      - then, `last` arg is required
+    - when _only_ backward pagination enabled
+      - meaning, `!disableForwardPagination && disableBackwardPagination`
+      - then, `first` arg is required
+
+    **Default**
+
+    `true`
+
+  - `validateArgs`  
+    Custom logic to validate the args. Throw an error to signal validation failure.
+
+    **Signature**
+
+    <p class="OneLineSignature"></p>
+
+    ```ts
+    (args: Args, info: ResolverInfo) => void
+    ```
+
+    **Default**
+
+    Validates that client passes a `first` or a `last` arg, and not both.
+
+  - `extendConnection`
+    Dynamically add additional fields to the GraphQL connection object. Similar to `extendEdge`.
+
+    **Signature**
+
+    <p class="OneLineSignature"></p>
+
+    ```ts
+    (t: TypeBuilder) => void
+    ```
+
+    **Default**
+
+    `undefined`
+
+    **Remarks**
+
+    Because this customizes the GraphQL connection object type, the _name_ of the type will necessarially be changed as well. If it didn't, it would conflict with the non-extended connection type in your schema (if any). The following pattern will be used to name the GraphQL object type:
+
+    <p class="OneLineSignature"></p>
+
+    ```
+    {camelCaseJoin: <typeName><fieldName>}_Connection
+    ```
+
+    **Example**
+
+    ```ts
+    schema.queryType({
+      name: 'Query',
+      definition(t) {
+        t.connection("toto", {
+          type: 'Boolean',
+          extendConnection(t) {
+            t.string('foo', () => 'bar')
+          }
+        }),
+        ...
+      }
+    })
+    ```
+
+    ```graphql
+    type QueryToto_Connection {
+      edges: [BooleanEdge]
+      pageInfo: PageInfo!
+      foo: String!
+    }
+    ...
+    ```
+
+  - `extendEdge`  
+    Dynamically add additional fields to the GraphQL edge object. Similar to `extendConnection`.
+
+    **Signature**
+
+    <p class="OneLineSignature"></p>
+
+    ```ts
+    (t: TypeBuilder) => void
+    ```
+
+    **Default**
+
+    `undefined`
+
+    **Remarks**
+
+    Because this customizes the GraphQL edge object type, the _name_ of the type will necessarially be changed as well. If it didn't, it would conflict with the non-extended edge type in your schema (if any). The following pattern will be used to name the GraphQL object type:
+
+    <p class="OneLineSignature"></p>
+
+    ```
+    {camelCaseJoin: <typeName><fieldName>}_Edge
+    ```
+
+    **Example**
+
+    ```ts
+    schema.queryType({
+      name: 'Query',
+      definition(t) {
+        t.connection("toto", {
+          type: 'Boolean',
+          extendEdge(t) {
+            t.string('foo', () => 'bar')
+          }
+        }),
+        ...
+      }
+    })
+    ```
+
+    ```graphql
+    type QueryToto_Edge {
+      cursor: String!
+      node: Boolean!
+      foo: String!
+    }
+    ...
+    ```
+
+  * `pageInfoFromNodes`  
+    Override the default algorithm to determine `hasNextPage` and `hasPreviousPage` page info fields. Often needed when using `cursorFromNode`. See `nodes` for what default algorithm is.
+
+    **Signature**
+
+    ```ts
+    (
+      nodes:   Node[],
+      args:    Args,
+      context: Context,
+      info:    ResolverInfo
+    ) => {
+      hasNextPage:     boolean,
+      hasPreviousPage: booolean
+    }
+    ```
+
+    **Default**
+
+    `undefined`
+
+  * `cursorFromNode`
+    Approach we use to transform a node into a cursor
+
+    **Signature**
+
+    ```ts
+    (
+      node:    Node,
+      args:    Args,
+      context: Context,
+      info:    ResolverInfo,
+      forCursor: {
+        index: number
+        nodes: Node[]
+      }
+    ) => MaybePromise<string>
+    ```
+
+    **Default**
+
+    `'nodeField'`
+
+#### SchemaContributions {docsify-ignore}
+
+todo
+
+#### Examples {docsify-ignore}
+
+##### Example of using `resolve` {docsify-ignore}
+
+```ts
+import { schema } from 'nexus-future'
+import { connectionFromArray } from 'graphql-relay'
+
+schema.queryType(t => {
+  t.connection('users', {
+    type: 'User',
+    async resolve(root, args, ctx, info) {
+      return connectionFromArray(await ctx.resolveUserNodes(), args)
+    },
+  })
+})
+```
+
+##### Example of using `nodes` {docsify-ignore}
+
+```ts
+schema.queryType({
+  definition(t) {
+    t.connection('users', {
+      type: 'User',
+      nodes(root, args, ctx, info) {
+        // [{ id: 1,  ... }, ..., { id: 10, ... }]
+        return ctx.users.resolveForConnection(root, args, ctx, info)
+      },
+    })
+  },
+})
+```
+
+One limitation of the `nodes` property, is that you cannot paginate backward without a `cursor`, or without defining a `cursorFromNode` property on either the field or plugin config. This is because we can't know how long the connection list may be to begin paginating backward.
+
+```ts
+schema.queryType({
+  definition(t) {
+    t.connection('usersConnectionNodes', {
+      type: 'User',
+      cursorFromNode(node, args, ctx, info, { index, nodes }) {
+        if (args.last && !args.before) {
+          const totalCount = USERS_DATA.length
+          return `cursor:${totalCount - args.last! + index + 1}`
+        }
+        return connectionPlugin.defaultCursorFromNode(node, args, ctx, info, {
+          index,
+          nodes,
+        })
+      },
+      nodes() {
+        // ...
+      },
+    })
+  },
+})
+```
+
+##### Example of using `additionalArgs` {docsify-ignore}
+
+```ts
+schema.queryType({
+  definition(t) {
+    t.connection('userConnectionAdditionalArgs', {
+      type: 'User',
+      disableBackwardPagination: true,
+      additionalArgs: {
+        isEven: schema.booleanArg({
+          description: 'If true, filters the users with an odd pk',
+        }),
+      },
+      resolve() {
+        // ...
+      },
+    })
+  },
+})
+```
+
+##### Example of extending connection type globally {docsify-ignore}
+
+```ts
+settings.change({
+  schema: {
+    connections: {
+      extendConnection: {
+        totalCount: {
+          type: 'Int',
+        },
+      },
+    },
+  },
+})
+
+schema.queryType({
+  definition(t) {
+    t.connection('users', {
+      type: 'User',
+      nodes() {
+        // ...
+      },
+      totalCount() {
+        return ctx.users.totalCount(args)
+      },
+    })
+  },
+})
+```
+
+##### Example of extending connection type for one field {docsify-ignore}
+
+```ts
+schema.queryType({
+  definition(t) {
+    t.connection('users', {
+      extendConnection(t) {
+        t.int('totalCount', {
+          resolve(source, args, ctx) {
+            return ctx.users.totalCount(args),
+          }
+        })
+      },
+    })
+  },
+})
+```
+
+### Type Glossary
+
+#### `O` `Args`
+
+todo
+
+#### `U` `GraphQLType`
+
+todo
+
+#### `I` `TypeBuilder`
+
+todo
+
+#### `I` `Context`
+
+todo
+
+#### `I` `ResolverInfo`
+
+todo
+
+#### `I` `Node`
+
 todo
 
 ## Logger
@@ -428,7 +882,110 @@ import { log } from 'nexus-future'
 log.info('hello')
 ```
 
-### JSON Log
+### `F` `fatal`
+
+Log something at `fatal` level.
+
+### `F` `error`
+
+Log something at `error` level.
+
+### `F` `warn`
+
+Log something at `warn` level.
+
+### `F` `info`
+
+Log something at `info` level.
+
+### `F` `debug`
+
+Log something at `debug` level.
+
+### `F` `trace`
+
+Log something at `trace` level.
+
+### `F` `addToContext`
+
+Add context to the logger. All subsequent logs will have this information included under their `context` property. Data is merged deeply using [lodash merge](https://lodash.com/docs/4.17.15#merge).
+
+Use this if you have some information that you wish all logs to include in their context.
+
+**Signature**
+
+<p class="OneLineSignature"></p>
+
+<!-- prettier-ignore -->
+```ts
+(context: Record<string, unknown>) => Logger
+```
+
+**Example**
+
+```ts
+log.addToContext({ user: 'Toto' })
+log.info('hello')
+log.warn('bye')
+// { "context": { "user": "Toto"  }, "event": "hello", ... }
+// { "context": { "user": "Toto"  }, "event": "bye", ... }
+```
+
+**Example of local scalar precedence**
+
+```ts
+log.addToContext({ user: { name: 'Toto', age: 10 })
+log.info("hi", { user: { name: 'Titi', heightCM: 155 })
+// { "context": { "user": { "name": "Titi", age: 10, heightCM: 155 }}, ... }
+```
+
+### `F` `child`
+
+Create a new logger that inherits its parents' context and path.
+
+Context added by children is never visible to parents.
+
+Context added by children is deeply merged using [lodash merge](https://lodash.com/docs/4.17.15#merge) with the context inherited from parents.
+
+Context added to parents is immediately visible to all existing children.
+
+**Signature**
+
+<p class="OneLineSignature"></p>
+
+<!-- prettier-ignore -->
+```ts
+(name: string) => Logger
+```
+
+**Example**
+
+```ts
+log.addToContext({ user: 'Toto' })
+
+const bar = log.child('bar').addToContext({ bar: 'bar' })
+const foo = log.child('foo').addToContext({ foo: 'foo' })
+
+log.info('hello')
+bar.info('bar')
+foo.info('foo')
+
+// { "context": { "user": "Toto"  }, path: ["app"], "event": "hello", ... }
+// { "context": { "user": "Toto", "bar": "bar"  }, path: ["app", "bar"], "event": "bar", ... }
+// { "context": { "user": "Toto", "foo": "foo"  }, path: ["app", "foo"], "event": "foo", ... }
+```
+
+**Remarks**
+
+You can create child loggers recursively starting from the root logger. A child logger extends their parent's component path and inherits their parent's context. Children can add context that is visible to themselves and their descedents.
+
+Child loggers are useful when you want to pass a logger to something that should be tracked as its own subsystem and/or may add context that you want isolated from the rest of the system. For example a classic use-case is the logger-instance-per-request pattern where a request-scoped logger is used for all logs in a request-response code path. This makes it much easier in production to group logs in your logging platform by request-response lifecycles.
+
+All runtime logs in your app (including from plugins come from either the `logger` itself or descendents thereof. This means if you wish absolutely every log being emitted by your app to contain some additional context you can do so simply by adding context to the root logger.
+
+### Type Glossary
+
+#### `I` `JSONLog`
 
 **Type**
 
@@ -436,8 +993,8 @@ log.info('hello')
 {
   level: 10 | 20 | 30 | 40 | 50
   time: number
-  pid:number
-  hostname:string
+  pid: number
+  hostname: string
   path: string[]
   context: JSON
   event: string
@@ -490,103 +1047,6 @@ log.info('hello')
 }
 ```
 
-### `F` `fatal`
-
-Log something at `fatal` level.
-
-### `F` `error`
-
-Log something at `error` level.
-
-### `F` `warn`
-
-Log something at `warn` level.
-
-### `F` `info`
-
-Log something at `info` level.
-
-### `F` `debug`
-
-Log something at `debug` level.
-
-### `F` `trace`
-
-Log something at `trace` level.
-
-### `F` `addToContext`
-
-Add context to the logger. All subsequent logs will have this information included under their `context` property. Data is merged deeply using [lodash merge](https://lodash.com/docs/4.17.15#merge).
-
-Use this if you have some information that you wish all logs to include in their context.
-
-**Signature**
-
-<!-- prettier-ignore -->
-```ts
-(context: Record<string, unknown>) => Logger
-```
-
-**Example**
-
-```ts
-log.addToContext({ user: 'Toto' })
-log.info('hello')
-log.warn('bye')
-// { "context": { "user": "Toto"  }, "event": "hello", ... }
-// { "context": { "user": "Toto"  }, "event": "bye", ... }
-```
-
-**Example of local scalar precedence**
-
-```ts
-log.addToContext({ user: { name: 'Toto', age: 10 })
-log.info("hi", { user: { name: 'Titi', heightCM: 155 })
-// { "context": { "user": { "name": "Titi", age: 10, heightCM: 155 }}, ... }
-```
-
-### `F` `child`
-
-Create a new logger that inherits its parents' context and path.
-
-Context added by children is never visible to parents.
-
-Context added by children is deeply merged using [lodash merge](https://lodash.com/docs/4.17.15#merge) with the context inherited from parents.
-
-Context added to parents is immediately visible to all existing children.
-
-**Signature**
-
-<!-- prettier-ignore -->
-```ts
-(name: string) => Logger
-```
-
-**Example**
-
-```ts
-log.addToContext({ user: 'Toto' })
-
-const bar = log.child('bar').addToContext({ bar: 'bar' })
-const foo = log.child('foo').addToContext({ foo: 'foo' })
-
-log.info('hello')
-bar.info('bar')
-foo.info('foo')
-
-// { "context": { "user": "Toto"  }, path: ["app"], "event": "hello", ... }
-// { "context": { "user": "Toto", "bar": "bar"  }, path: ["app", "bar"], "event": "bar", ... }
-// { "context": { "user": "Toto", "foo": "foo"  }, path: ["app", "foo"], "event": "foo", ... }
-```
-
-**Remarks**
-
-You can create child loggers recursively starting from the root logger. A child logger extends their parent's component path and inherits their parent's context. Children can add context that is visible to themselves and their descedents.
-
-Child loggers are useful when you want to pass a logger to something that should be tracked as its own subsystem and/or may add context that you want isolated from the rest of the system. For example a classic use-case is the logger-instance-per-request pattern where a request-scoped logger is used for all logs in a request-response code path. This makes it much easier in production to group logs in your logging platform by request-response lifecycles.
-
-All runtime logs in your app (including from plugins come from either the `logger` itself or descendents thereof. This means if you wish absolutely every log being emitted by your app to contain some additional context you can do so simply by adding context to the root logger.
-
 ## Server
 
 [issues](https://github.com/graphql-nexus/nexus-future/labels/scope%2Fserver) - [`feature`](https://github.com/graphql-nexus/nexus-future/issues?q=is%3Aopen+label%3Ascope%2Fserver+label%3Atype%2Ffeature) [`bug`](https://github.com/graphql-nexus/nexus-future/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fserver+label%3Atype%2Fbug+)
@@ -617,7 +1077,13 @@ Augment or replace the default server implentation.
 
 <!-- prettier-ignore -->
 ```ts
-(customizerLens: { express: Express, schema: GraphQLSchema, context: ContextCreator }) => MaybePromise<void | ServerReplacement>
+(
+  customizerLens: {
+    express: Express,
+    schema:  GraphQLSchema,
+    context: ContextCreator
+  }
+) => MaybePromise<void | ServerReplacement>
 ```
 
 - param `customizerLens`
@@ -630,7 +1096,7 @@ Augment or replace the default server implentation.
 
   - `schema` – An instance of [GraphQLSchema](https://graphql.org/graphql-js/type/#graphqlschema) from `graphql` package. The result of `makeSchema` from `@nexus/schema`.
 
-  - `context` – The context creator for the app. This is a bundle of all the app's (`addToContext`) and plugins' context contributions. If you are replacing the server, you must invoke this function on every incoming request with the request object, and then thread the returned context data to your resolver execution. If you are using a high level server library like `apollo-server` or `fastify-gql` then all you should ahve to do is pass this function along to them (see example below).
+  - `context` – The context creator for the app. This is a bundle of all the app's (`addToContext`) and plugins' context contributions. If you are replacing the server, you must invoke this function on every incoming request with the request object, and then thread the returned context data to your resolver execution. If you are using a high level server library like `apollo-server` or `fastify-gql` then all you should have to do is pass this function along to them (see example below).
 
     > Warning [#424](https://github.com/graphql-nexus/nexus-future/issues/424)  
     > Currently, context contributors work directly against the Express [Request object](http://expressjs.com/en/4x/api.html#req). This means if your custom implementation calls the context creator with an incompatible request object, they context contributors may encounter runtime errors.
@@ -757,20 +1223,70 @@ schema.addToContext<FastifyRequest>(_req => {
   - Is `HOST` environment variable set? Then that.
   - Else `0.0.0.0`
 
-* `schema.connections`  
+* `schema.connections`
+
   todo
 
-* `logger.level`  
+  ##### Example of adding a specialized kind of connection field builder {docsify-ignore}
+
+  ```ts
+  import { makeSchema, connectionPlugin } from 'nexus'
+
+  const schema = makeSchema({
+    // ... types, etc,
+    plugins: [
+      connectionPlugin({
+        typePrefix: 'Analytics',
+        nexusFieldName: 'analyticsConnection',
+        extendConnection: {
+          totalCount: { type: 'Int' },
+          avgDuration: { type: 'Int' },
+        },
+      }),
+      connectionPlugin({}),
+    ],
+  })
+  ```
+
+  ##### Example of including a `nodes` field like GitHub API globally {docsify-ignore}
+
+  If you want to include a `nodes` field, which includes the nodes of the connection flattened into an array similar to how GitHub does in their [GraphQL API](https://developer.github.com/v4/), set schema setting `includeNodesField` to `true`.
+
+  ```ts
+  import { settings } from 'nexus-future'
+
+  settings.change({
+    connections: {
+      includeNodesField: true,
+    },
+  })
+  ```
+
+  ```graphql
+  query IncludeNodesFieldExample {
+    users(first: 10) {
+      nodes {
+        id
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+  ```
+
+- `logger.level`  
   The level which logs must be at or above to be logged. Logs below this level are discarded.
 
   **Default**
 
   `debug` in dev, `info` otherwise.
 
-* `logger.pretty`  
+- `logger.pretty`  
   Shorthand for `logger.pretty.enabled`.
 
-- `logger.pretty.enabled`  
+* `logger.pretty.enabled`  
   Should logs be logged with rich formatting etc. (`true`), or as JSON (`false`)?
 
   **Default**
@@ -820,21 +1336,21 @@ schema.addToContext<FastifyRequest>(_req => {
   -----------
   ```
 
-- `logger.pretty.color`  
+* `logger.pretty.color`  
   Should logs have color?
 
   **Default**
 
   `true`
 
-- `logger.pretty.timeDiff`  
+* `logger.pretty.timeDiff`  
   Should a time delta between each log be shown in the gutter?
 
   **Default**
 
   `true`
 
-* `logger.pretty.levelLabel`  
+- `logger.pretty.levelLabel`  
   Should the label of the level be shown in the gutter?
 
   **Default**

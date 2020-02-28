@@ -26,7 +26,19 @@
         line-height: 2rem;
       }
 
-      /* Components */
+      /* Component TypeRef */
+      .markdown-section code.TypeRef {
+        color: hsla(100, 100%, 0%, 0.5);
+      }
+      .markdown-section code.TypeRef a {
+        text-decoration: none;
+        color: hsla(100, 100%, 0%, 0.4);
+      }
+      .TypeRef::before {
+        content: '⌕ ';
+      }
+
+      /* Component BigButton */
       .BigButton {
         border-radius: 2rem;
         border: 1px solid var(--theme-color, #42b983);
@@ -218,8 +230,23 @@
         color: inherit;
         font-size: inherit;
       }
-      .markdown-section pre code {
-        font-size: 0.85rem;
+      .markdown-section h4 code {
+        font-size: 1.15rem;
+      }
+      .markdown-section h5 code {
+        font-size: 0.83rem;
+      }
+
+      .OneLineSignature {
+        margin: 0 !important;
+      }
+      .OneLineSignature + pre > code {
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
+      }
+      .markdown-section pre > code {
+        font-size: 0.8rem;
+        line-height: 1.75;
       }
       .markdown-section p a:hover {
         opacity: 0.8;
