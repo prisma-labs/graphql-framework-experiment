@@ -428,6 +428,61 @@ import { log } from 'nexus-future'
 log.info('hello')
 ```
 
+### JSON Log
+
+**Type**
+
+```ts
+{
+  level: 10 | 20 | 30 | 40 | 50
+  time: number
+  pid:number
+  hostname:string
+  path: string[]
+  context: JSON
+  event: string
+}
+```
+
+- `level` - Numeric representation of log levels. Numeric because it easy later to filter e.g. level `30` and up. `10` is `trace` while on the other end of the scale `50` is `fatal`.
+
+- `time` - Unix timestamp in milliseconds.
+
+- `pid` - The process ID given by the host kernal.
+
+- `hostname` - The machine host (`require('os').hostname()`)
+
+- `path` - The fully qualified name of the logger.
+
+  **Example**
+
+  ```ts
+  import { log } from 'nexus-future'
+
+  log.info('hi') //              { path: ['nexus'], ... }
+  log.child('b').info('hallo') // { path: ['nexus', 'b'], ... }
+  ```
+
+- `context` - Custom contextual data added by you. Any data added by the log call, previous `addToContext` calls, or inheritance from parent context.
+
+- `event` - The name of this log event.
+
+**Example**
+
+```json
+{
+  "path": ["nexus", "dev", "watcher"],
+  "event": "restarting",
+  "level": 30,
+  "time": 1582856917643,
+  "pid": 49426,
+  "hostname": "Jasons-Prisma-Machine.local",
+  "context": {
+    "changed": "api/graphql/user.ts"
+  }
+}
+```
+
 ### `fatal`
 
 Log something at `fatal` level.
