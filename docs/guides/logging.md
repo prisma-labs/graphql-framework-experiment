@@ -62,48 +62,6 @@ It is recommended that your app only sends to stdout via the Nexus logging syste
 
 ## Pretty Mode
 
-- You can render logs in a human friendly way by turning pretty mode on.
-- There are APIs and environment variables for that but you shouldn't have to use them in most cases.
-- In development mode pretty mode is enabled by default
-- Also if a tty is present pretty mode will be enabled by default
-- Pretty mode looks something like this:
-
-  ```
-  ● info  nexus:dev:boot
-  ● info  app:boot
-
-  ------------
-  LOGGING DEMO
-  ------------
-  ✕ fatal app:foo  --  lib: /see/
-  ■ error app:foo  --  har: [object Object]
-  ▲ warn  app:foo  --  bleep: 1,2,true
-  ● info  app:foo
-  ○ debug app:foo  --  foo: bar
-  — trace app:foo  --  a: 1  b: 2  c: three
-  ------------
-
-  ● info  app:server:listening  --  host: localhost  port: 4000
-  ```
-
-## Child Loggers
-
-You can create child loggers recursively starting from the root log. A child logger extends their parent's component path and inherits their parent's context. Children can add context that is visible to themselves and their descedents.
-
-Child loggers are useful when you want to pass a logger to something that should be tracked as its own subsystem and/or may add context that you want isolated from the rest of the system. For example a classic use-case is the logger-instance-per-request pattern where a request-scoped logger is used for all logs in a request-response code path. This makes it much easier in production to group logs in your logging platform by request-response lifecycles.
-
-All runtime logs in your app (including from plugins ([bug #300](https://github.com/graphql-nexus/nexus-future/issues/300))) come from either the `logger` itself or descendents thereof. This means if you wish absolutely every log being emitted by your app to contain some additional context you can do so simply by adding context to the root logger:
-
-```ts
-log.addToContext({ user: 'Toto' })
-log
-  .child('a')
-  .child('b')
-  .child('c')
-  .info('hello')
-// { "path": ["app", "a", "b", "c"],  context: { "user": "Toto" }, ... }
-```
-
 ## debug Tool Integration
 
 You may be a user of [`debug`](https://github.com/visionmedia/debug) or install libraries into your app that are. We (_will ↣_ [#265](https://github.com/graphql-nexus/nexus-future/issues/265)) have special case support for `debug` so that it seamlessly integrates into the Nexus logging system. The gist is that all `debug` logs are routed through the Nexus logger at `trace` level.

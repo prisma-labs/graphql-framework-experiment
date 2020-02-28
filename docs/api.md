@@ -424,13 +424,38 @@ Add context to the logger. All subsequent logs will have this information includ
 
 ### `child`
 
-Create a new logger that inherits its parents' context.
+<!-- prettier-ignore -->
+```ts
+(name: string) => Logger
+```
 
-Context added by children is never visible to parents.
+- Create a new logger that inherits its parents' context and path.
+- Context added by children is never visible to parents.
+- Context added by children is deeply merged with the context inherited from parents.
+- Context added to parents is immediately visible to all existing children.
 
-Context added by children is deeply merged with the context inherited from parents.
+**Example**
 
-Context added to parents is immediately visible to all existing children.
+```ts
+import { log } from 'nexus-future'
+
+log
+  .addToContext({ user: 'Toto' })
+  .child('a')
+  .child('b')
+  .child('c')
+  .info('hello')
+
+// { "path": ["nexus", "a", "b", "c"],  context: { "user": "Toto" }, ... }
+```
+
+**Remarks**
+
+You can create child loggers recursively starting from the root logger. A child logger extends their parent's component path and inherits their parent's context. Children can add context that is visible to themselves and their descedents.
+
+Child loggers are useful when you want to pass a logger to something that should be tracked as its own subsystem and/or may add context that you want isolated from the rest of the system. For example a classic use-case is the logger-instance-per-request pattern where a request-scoped logger is used for all logs in a request-response code path. This makes it much easier in production to group logs in your logging platform by request-response lifecycles.
+
+All runtime logs in your app (including from plugins ([bug #300](https://github.com/graphql-nexus/nexus-future/issues/300))) come from either the `logger` itself or descendents thereof. This means if you wish absolutely every log being emitted by your app to contain some additional context you can do so simply by adding context to the root logger.
 
 ## Server
 
@@ -531,8 +556,71 @@ trace
 
 ##### `pretty`
 
-Should logs be logged with rich color and formatting (`true`), or as JSON (`false`)?
+Control if pretty mode is disabled or enabled, and how pretty mode looks.
 
-**Default**
+**Type**
 
-`true` in dev, `false` otherwise.
+<!-- prettier-ignore -->
+```ts
+boolean | { enabled: boolean, timeDiff: boolean, color: boolean, levelLabel: boolean }
+```
+
+- object
+  - `enabled` - Should logs be logged with rich formatting etc. (`true`), or as JSON (`false`)?
+  - `color` - Should logs have color?
+  - `timeDiff` - Should a time delta between each log be shown in the gutter?
+  - `levelLabel` - Should the label of the level be shown in the gutter?
+- `boolean` - Shorthand for `enabled`.
+
+**Defaults**
+
+- `enabled` - A dynamic process:
+
+  - Is `LOG_PRETTY` environment variable `true`? Then `true`.
+  - Is `LOG_PRETTY` environment variable `false`? Then `false`.
+  - Is process.stdout attached to a TTY? Then `true`
+
+- `color` - `true`
+- `timeDiff` - `true`
+- `levelLabel` - `false`
+
+**Example of what it looks like**
+
+```
+LOG_DEMO=true npx nexus dev
+```
+
+```
+-----------
+LOGGER DEMO
+-----------
+   4 ✕ root:foo  --  lib: /see/
+   0 ■ root:foo
+       | har  { mar: 'tek' }
+       | jar  [
+       |        1, 2, 3, 4, 4, 5, 6,
+       |        6, 7, 9, 1, 2, 4, 5,
+       |        6, 7, 3, 6, 5, 4
+       |      ]
+       | kio  [Object: null prototype] [foo] {}
+   1 ▲ root:foo  --  bleep: [ 1, '2', true ]
+   0 ● root:foo
+   1 ○ root:foo
+       | results  [
+       |            { userId: 1, id: 1, title: 'delectus aut autem', completed: false },
+       |            { userId: 1, id: 2, title: 'quis ut nam facilis et officia qui', completed: false },
+       |            { userId: 1, id: 3, title: 'fugiat veniam minus', completed: false },
+       |            { userId: 1, id: 4, title: 'et porro tempora', completed: true },
+       |            {
+       |              userId: 1,
+       |              id: 5,
+       |              title: 'laboriosam mollitia et enim quasi adipisci quia provident illum',
+       |              completed: false
+       |            }
+       |          ]
+       | tri      'wiz'
+       | on       false
+   0 ○ root:foo  --  foo: 'bar'
+   0 — root:foo  --  a: 1  b: 2  c: 'three'
+-----------
+```
