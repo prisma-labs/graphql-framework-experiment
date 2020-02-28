@@ -9,7 +9,6 @@
 - Guides
 
   - [Testing](guides/testing)
-  - [Logging](guides/logging)
   - [Databases](guides/databases)
   - [Authorization](guides/authorization)
   - [Authentication](guides/authentication)
