@@ -50,7 +50,19 @@ server.start()
 
 Use this to model your domain, all the data that your API will accept and return, and how all the various objects in the domain relate to one another (the "graph" in "GraphQL").
 
-### `F` `objectType`
+### `queryType`
+
+todo
+
+### `mutationType`
+
+todo
+
+### `subscriptionType`
+
+todo
+
+### `objectType`
 
 [GraphQL Docs for Object Types](https://graphql.org/learn/schema/#object-types-and-fields)
 
@@ -100,289 +112,35 @@ schema.enumType({
 })
 ```
 
-`queryType` / `mutationType` are shorthand for the root types.
+#### `t.field`
 
-### `F` `enumType`
+todo
 
-[GraphQL Docs for Enum Types](https://graphql.org/learn/schema/#enumeration-types)
+#### `t.string`
 
-Defining as an array of enum values:
+todo
 
-```ts
-import { schema } from 'nexus-future
+#### `t.boolean`
 
-const Episode = schema.enumType({
-  name: 'Episode',
-  members: ['NEWHOPE', 'EMPIRE', 'JEDI'],
-  description: 'The first Star Wars episodes released',
-})
-```
+todo
 
-As an object, with a simple mapping of enum values to internal values:
+#### `t.int`
 
-```ts
-import { schema } from 'nexus-future'
+todo
 
-const Episode = schema.enumType({
-  name: 'Episode',
-  members: {
-    NEWHOPE: 4,
-    EMPIRE: 5,
-    JEDI: 6,
-  },
-})
-```
+#### `t.float`
 
-### `F` `inputObjectType`
+todo
 
-[GraphQL Docs for Input Object Types](https://graphql.org/learn/schema/#input-types)
+#### `t.boolean`
 
-Defines a complex object which can be passed as an input value.
+todo
 
-**Example**
+#### `t.id`
 
-```ts
-import { schema } from 'nexus-future'
+todo
 
-schema.inputObjectType({
-  name: 'InputType',
-  definition(t) {
-    t.string('key', { required: true })
-    t.int('answer')
-  },
-})
-```
-
-Unlike object types, input types do not have arguments, so they do not have resolvers or "backing types"
-
-### `F` `interfaceType`
-
-[GraphQL Docs for Interface Types](https://graphql.org/learn/schema/#input-types)
-
-In Nexus, you do not need to redefine the interface fields on the
-implementing object types, instead you may use `.implements(interfaceName)`
-and all of the interface fields will be added to the type.
-
-**Example**
-
-```ts
-import { schema } from 'nexus-future'
-
-schema.interfaceType({
-  name: 'Node',
-  definition(t) {
-    t.id('id', { description: 'GUID for a resource' })
-  },
-})
-
-schema.objectType({
-  name: 'User',
-  definition(t) {
-    t.implements('Node')
-  },
-})
-```
-
-If you need to modify the description or resolver defined by an interface, you can call the `modify` method on `objectType` to change these after the fact.
-
-### `F` `scalarType`
-
-[GraphQL Docs for Scalar Types](https://graphql.org/learn/schema/#scalar-types)
-
-Nexus allows you to provide an `asNexusMethod` property which will make the scalar available as a builtin on the definition block object. We automatically generate and merge the types so you get type-safety just like the scalar types specified in the spec:
-
-**Example**
-
-```ts
-import { schema } from 'nexus-future'
-
-schema.scalarType({
-  name: 'Date',
-  asNexusMethod: 'date',
-  description: 'Date custom scalar type',
-  parseValue(value) {
-    return new Date(value)
-  },
-  serialize(value) {
-    return value.getTime()
-  },
-  parseLiteral(ast) {
-    if (ast.kind === Kind.INT) {
-      return new Date(ast.value)
-    }
-    return null
-  },
-})
-```
-
-**Example of Upload scalar**
-
-```ts
-import { GraphQLUpload } from 'graphql-upload'
-
-export const Upload = GraphQLUpload
-```
-
-**Example of DateTime scalar**
-
-```ts
-import { GraphQLDate } from 'graphql-iso-date'
-
-export const DateTime = GraphQLDate
-```
-
-**Example of exposing scalar as builder method**
-
-If you have an existing GraphQL scalar and you'd like to expose it as a builder method, call `asNexusMethod`:
-
-```ts
-import { schema } from 'nexus-future'
-import { GraphQLDate } from 'graphql-iso-date'
-
-schema.asNexusMethod(GraphQLDate, 'date')
-
-schema.objectType({
-  name: 'SomeObject',
-  definition(t) {
-    t.date('createdAt') // t.date() is now available (with types!) because of `asNexusMethod`
-  },
-})
-```
-
-### `F` `unionType`
-
-[GraphQL Docs for Union Types](https://graphql.org/learn/schema/#union-types)
-
-Union types are very similar to interfaces, but they don't get to specify any
-common fields between the types.
-
-**Example**
-
-```ts
-import { schema } from 'nexus-future'
-
-schema.unionType({
-  name: 'MediaType',
-  description: 'Any container type that can be rendered into the feed',
-  definition(t) {
-    t.members('Post', 'Image', 'Card')
-    t.resolveType(item => item.name)
-  },
-})
-```
-
-### `F` `arg`
-
-[GraphQL Docs on Arguments](https://graphql.org/learn/schema/#arguments)
-
-**Example**
-
-Defines an argument that can be used in any object or interface type. Args can be reused in multiple locations, and it can be convenient to create your own wrappers around arguments.
-
-```ts
-import { schema } from 'nexus-future'
-import { ScalarArgConfig } from 'nexus-future/types'
-
-function requiredInt(opts: ScalarArgConfig<number>) {
-  return schema.arg({ ...opts, required: true, type: 'Int' })
-}
-```
-
-Options available are:
-
-**Type**
-
-The type of the argument.
-
-Format: `type: 'Boolean' | 'Float' | 'Int' | 'String' | 'ID'`
-
-**Required**
-
-Whether the argument is required or not.
-
-Format: `required?: boolean;`
-
-Note, when `required: true`, `nullable: false`
-
-&nbsp;
-
-**Nullable**
-
-Whether the argument is nullable or not.
-
-Format: `nullable?: boolean;`
-
-Note, when `nullable: true`, `required: false`
-
-&nbsp;
-
-**List**
-
-Whether the argument is a list or not.
-
-Format: `list?: null | true | boolean[];`
-
-null = not a list
-
-true = list
-
-array = nested list, where true/false decides whether the list member can be nullable
-
-&nbsp;
-
-**Description**
-
-The description to annotate the GraphQL SDL
-
-Format: `description?: string | null;`
-
-### `F` `intArg`
-
-Sugar for creating arguments of type `Integer`.
-
-### `F` `stringArg`
-
-Sugar for creating arguments of type `String`.
-
-### `F` `floatArg`
-
-Sugar for creating arguments of type `Float`.
-
-### `F` `idArg`
-
-Sugar for creating arguments of type `ID`.
-
-### `F` `booleanArg`
-
-Sugar for creating arguments of type `Boolean`.
-
-### `F` `addToContext`
-
-Add context to your graphql resolver functions. The objects returned by your context contributor callbacks will be shallow-merged into `ctx`. The `ctx` type will also accurately reflect the types you return from callbacks passed to `addToContext`.
-
-**Example**
-
-```ts
-import { schema } from 'nexus-future'
-
-schema.addToContext(_req => {
-  return {
-    greeting: 'Howdy!',
-  }
-})
-
-schema.queryType({
-  definition(t) {
-    t.string('hello', {
-      resolve(_root, _args, ctx) {
-        return ctx.greeting
-      },
-    })
-  },
-})
-```
-
-### `F` `t.connection`
+#### `t.connection`
 
 This field builder helps you implement paginated associations between types in your schema. The contributions that it makes to your GraphQL schema adhear to the [Relay Connection Specification](https://facebook.github.io/relay/graphql/connections.htm#sec-Node). In other words it allows you the API author to write the minimum logic required to create spec-compliant relay connections for your API clients.
 
@@ -682,11 +440,9 @@ This field builder helps you implement paginated associations between types in y
 
     `'nodeField'`
 
-#### SchemaContributions {docsify-ignore}
+##### SchemaContributions {docsify-ignore}
 
 todo
-
-#### Examples {docsify-ignore}
 
 ##### Example of using `resolve` {docsify-ignore}
 
@@ -814,6 +570,286 @@ schema.queryType({
 })
 ```
 
+### `inputObjectType`
+
+[GraphQL Docs for Input Object Types](https://graphql.org/learn/schema/#input-types)
+
+Defines a complex object which can be passed as an input value.
+
+**Example**
+
+```ts
+import { schema } from 'nexus-future'
+
+schema.inputObjectType({
+  name: 'InputType',
+  definition(t) {
+    t.string('key', { required: true })
+    t.int('answer')
+  },
+})
+```
+
+Unlike object types, input types do not have arguments, so they do not have resolvers or "backing types"
+
+### `enumType`
+
+[GraphQL Docs for Enum Types](https://graphql.org/learn/schema/#enumeration-types)
+
+Defining as an array of enum values:
+
+```ts
+import { schema } from 'nexus-future
+
+const Episode = schema.enumType({
+  name: 'Episode',
+  members: ['NEWHOPE', 'EMPIRE', 'JEDI'],
+  description: 'The first Star Wars episodes released',
+})
+```
+
+As an object, with a simple mapping of enum values to internal values:
+
+```ts
+import { schema } from 'nexus-future'
+
+const Episode = schema.enumType({
+  name: 'Episode',
+  members: {
+    NEWHOPE: 4,
+    EMPIRE: 5,
+    JEDI: 6,
+  },
+})
+```
+
+### `interfaceType`
+
+[GraphQL Docs for Interface Types](https://graphql.org/learn/schema/#input-types)
+
+In Nexus, you do not need to redefine the interface fields on the
+implementing object types, instead you may use `.implements(interfaceName)`
+and all of the interface fields will be added to the type.
+
+**Example**
+
+```ts
+import { schema } from 'nexus-future'
+
+schema.interfaceType({
+  name: 'Node',
+  definition(t) {
+    t.id('id', { description: 'GUID for a resource' })
+  },
+})
+
+schema.objectType({
+  name: 'User',
+  definition(t) {
+    t.implements('Node')
+  },
+})
+```
+
+If you need to modify the description or resolver defined by an interface, you can call the `modify` method on `objectType` to change these after the fact.
+
+### `scalarType`
+
+[GraphQL Docs for Scalar Types](https://graphql.org/learn/schema/#scalar-types)
+
+Nexus allows you to provide an `asNexusMethod` property which will make the scalar available as a builtin on the definition block object. We automatically generate and merge the types so you get type-safety just like the scalar types specified in the spec:
+
+**Example**
+
+```ts
+import { schema } from 'nexus-future'
+
+schema.scalarType({
+  name: 'Date',
+  asNexusMethod: 'date',
+  description: 'Date custom scalar type',
+  parseValue(value) {
+    return new Date(value)
+  },
+  serialize(value) {
+    return value.getTime()
+  },
+  parseLiteral(ast) {
+    if (ast.kind === Kind.INT) {
+      return new Date(ast.value)
+    }
+    return null
+  },
+})
+```
+
+**Example of Upload scalar**
+
+```ts
+import { GraphQLUpload } from 'graphql-upload'
+
+export const Upload = GraphQLUpload
+```
+
+**Example of DateTime scalar**
+
+```ts
+import { GraphQLDate } from 'graphql-iso-date'
+
+export const DateTime = GraphQLDate
+```
+
+**Example of exposing scalar as builder method**
+
+If you have an existing GraphQL scalar and you'd like to expose it as a builder method, call `asNexusMethod`:
+
+```ts
+import { schema } from 'nexus-future'
+import { GraphQLDate } from 'graphql-iso-date'
+
+schema.asNexusMethod(GraphQLDate, 'date')
+
+schema.objectType({
+  name: 'SomeObject',
+  definition(t) {
+    t.date('createdAt') // t.date() is now available (with types!) because of `asNexusMethod`
+  },
+})
+```
+
+### `unionType`
+
+[GraphQL Docs for Union Types](https://graphql.org/learn/schema/#union-types)
+
+Union types are very similar to interfaces, but they don't get to specify any
+common fields between the types.
+
+**Example**
+
+```ts
+import { schema } from 'nexus-future'
+
+schema.unionType({
+  name: 'MediaType',
+  description: 'Any container type that can be rendered into the feed',
+  definition(t) {
+    t.members('Post', 'Image', 'Card')
+    t.resolveType(item => item.name)
+  },
+})
+```
+
+### `arg`
+
+[GraphQL Docs on Arguments](https://graphql.org/learn/schema/#arguments)
+
+**Example**
+
+Defines an argument that can be used in any object or interface type. Args can be reused in multiple locations, and it can be convenient to create your own wrappers around arguments.
+
+```ts
+import { schema } from 'nexus-future'
+import { ScalarArgConfig } from 'nexus-future/types'
+
+function requiredInt(opts: ScalarArgConfig<number>) {
+  return schema.arg({ ...opts, required: true, type: 'Int' })
+}
+```
+
+Options available are:
+
+**Type**
+
+The type of the argument.
+
+Format: `type: 'Boolean' | 'Float' | 'Int' | 'String' | 'ID'`
+
+**Required**
+
+Whether the argument is required or not.
+
+Format: `required?: boolean;`
+
+Note, when `required: true`, `nullable: false`
+
+&nbsp;
+
+**Nullable**
+
+Whether the argument is nullable or not.
+
+Format: `nullable?: boolean;`
+
+Note, when `nullable: true`, `required: false`
+
+&nbsp;
+
+**List**
+
+Whether the argument is a list or not.
+
+Format: `list?: null | true | boolean[];`
+
+null = not a list
+
+true = list
+
+array = nested list, where true/false decides whether the list member can be nullable
+
+&nbsp;
+
+**Description**
+
+The description to annotate the GraphQL SDL
+
+Format: `description?: string | null;`
+
+### `intArg`
+
+Sugar for creating arguments of type `Integer`.
+
+### `stringArg`
+
+Sugar for creating arguments of type `String`.
+
+### `floatArg`
+
+Sugar for creating arguments of type `Float`.
+
+### `idArg`
+
+Sugar for creating arguments of type `ID`.
+
+### `booleanArg`
+
+Sugar for creating arguments of type `Boolean`.
+
+### `addToContext`
+
+Add context to your graphql resolver functions. The objects returned by your context contributor callbacks will be shallow-merged into `ctx`. The `ctx` type will also accurately reflect the types you return from callbacks passed to `addToContext`.
+
+**Example**
+
+```ts
+import { schema } from 'nexus-future'
+
+schema.addToContext(_req => {
+  return {
+    greeting: 'Howdy!',
+  }
+})
+
+schema.queryType({
+  definition(t) {
+    t.string('hello', {
+      resolve(_root, _args, ctx) {
+        return ctx.greeting
+      },
+    })
+  },
+})
+```
+
 ### Type Glossary
 
 #### `O` `Args`
@@ -882,31 +918,31 @@ import { log } from 'nexus-future'
 log.info('hello')
 ```
 
-### `F` `fatal`
+### `fatal`
 
 Log something at `fatal` level.
 
-### `F` `error`
+### `error`
 
 Log something at `error` level.
 
-### `F` `warn`
+### `warn`
 
 Log something at `warn` level.
 
-### `F` `info`
+### `info`
 
 Log something at `info` level.
 
-### `F` `debug`
+### `debug`
 
 Log something at `debug` level.
 
-### `F` `trace`
+### `trace`
 
 Log something at `trace` level.
 
-### `F` `addToContext`
+### `addToContext`
 
 Add context to the logger. All subsequent logs will have this information included under their `context` property. Data is merged deeply using [lodash merge](https://lodash.com/docs/4.17.15#merge).
 
@@ -939,7 +975,7 @@ log.info("hi", { user: { name: 'Titi', heightCM: 155 })
 // { "context": { "user": { "name": "Titi", age: 10, heightCM: 155 }}, ... }
 ```
 
-### `F` `child`
+### `child`
 
 Create a new logger that inherits its parents' context and path.
 
@@ -1053,7 +1089,7 @@ All runtime logs in your app (including from plugins come from either the `logge
 
 Use this to run your HTTP server that clients will connect to. The default server is an instance of [`express-graphql`](https://github.com/graphql/express-graphql).
 
-### `F` `start`
+### `start`
 
 Make the server start listening for incoming client connections.
 
@@ -1061,7 +1097,7 @@ Calling start while already started is a no-op.
 
 Normally you should not need to use this method. When your app does not call `server.start`, Nexus will do so for you automatically.
 
-### `F` `stop`
+### `stop`
 
 Make the server stop listening for incoming client connections.
 
@@ -1069,7 +1105,7 @@ Calling stop while the server is already stopped is a no-op.
 
 Normally you should not need to use this method.
 
-### `F` `custom`
+### `custom`
 
 Augment or replace the default server implentation.
 
@@ -1166,7 +1202,7 @@ schema.addToContext<FastifyRequest>(_req => {
 
 ## Settings
 
-### `F` `change`
+### `change`
 
 **Signature**
 
@@ -1369,7 +1405,7 @@ settings.change({
 })
 ```
 
-### `O` `current`
+### `current`
 
 A reference to the current settings object.
 
@@ -1379,7 +1415,7 @@ A reference to the current settings object.
 SettingsData
 ```
 
-### `O` `original`
+### `original`
 
 A reference to the original settings object.
 
