@@ -10,6 +10,7 @@ import { GraphQLClient } from '../lib/graphql-client'
 import { getTmpDir } from './fs'
 import { rootLogger } from './logger'
 import { PackageManagerType } from './package-manager'
+import stripAnsi = require('strip-ansi')
 
 export function setupE2EContext(nexusOutputDir?: string) {
   const tmpDir = nexusOutputDir ?? getTmpDir('nexus-prisma-tmp-')
@@ -31,10 +32,10 @@ export function setupE2EContext(nexusOutputDir?: string) {
           cwd: tmpDir,
           ...opts,
         },
-        expectHandler
+        (data, proc) => expectHandler(stripAnsi(data), proc)
       )
     },
-    spawnInit(
+    spawnNPXNexus(
       packageManager: PackageManagerType,
       database: Database | 'NO_DATABASE',
       version: string,
@@ -51,7 +52,7 @@ export function setupE2EContext(nexusOutputDir?: string) {
             DATABASE_CHOICE: database,
           },
         },
-        expectHandler
+        (data, proc) => expectHandler(stripAnsi(data), proc)
       )
     },
     client: new GraphQLClient('http://localhost:4000/graphql'),
@@ -81,7 +82,7 @@ export function ptySpawn(
       })
 
       proc.on('exit', (exitCode, signal) => {
-        resolve({ exitCode, signal, data: buffer })
+        resolve({ exitCode, signal, data: stripAnsi(buffer) })
       })
     }
   )
