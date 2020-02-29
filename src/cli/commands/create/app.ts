@@ -22,7 +22,7 @@ const log = rootLogger
 export default class App implements Command {
   async parse() {
     await run({
-      database: process.env.DATABASE_CHOICE as any | 'NO_DATABASE', // For testing
+      database: process.env.DATABASE_CHOICE as any, // For testing
       packageManager: process.env.PACKAGE_MANAGER_CHOICE as any, // For testing
     })
   }

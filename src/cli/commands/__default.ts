@@ -21,7 +21,7 @@ export class __Default implements Command {
         )
         await run({
           projectName: CWDProjectNameOrGenerate(),
-          database: process.env.DATABASE_CHOICE as any | 'NO_DATABASE', // For testing
+          database: process.env.DATABASE_CHOICE as any, // For testing
           packageManager: process.env.PACKAGE_MANAGER_CHOICE as any, // For testing
         })
         break
