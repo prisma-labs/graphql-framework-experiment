@@ -2,9 +2,9 @@ import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import prompts from 'prompts'
 import { PackageJson } from 'type-fest'
-import * as Plugin from '../../../core/plugin'
 import * as Layout from '../../../framework/layout'
 import { Command } from '../../../lib/cli'
+import * as Plugin from '../../../lib/plugin'
 import {
   createGitRepository,
   createTSConfigContents,

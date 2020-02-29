@@ -2,7 +2,7 @@ import * as Nexus from '@nexus/schema'
 import { stripIndents } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import * as Lo from 'lodash'
-import * as Plugin from '../../core/plugin'
+import * as Plugin from '../../lib/plugin'
 import { log } from './logger'
 import {
   shouldExitAfterGenerateArtifacts,

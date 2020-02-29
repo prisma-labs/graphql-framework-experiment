@@ -4,8 +4,8 @@ import * as GraphQL from 'graphql'
 import * as HTTP from 'http'
 import * as Net from 'net'
 import stripAnsi from 'strip-ansi'
-import * as Plugin from '../core/plugin'
 import * as Logger from '../lib/logger'
+import * as Plugin from '../lib/plugin'
 import * as Utils from '../lib/utils'
 import * as App from './app'
 import * as DevMode from './dev-mode'
@@ -34,10 +34,7 @@ export const defaultExtraSettings: Required<ExtraSettingsInput> = {
       : process.env.NODE_ENV === 'production'
       ? 80
       : 4000,
-  host:
-    process.env.NEXUS_HOST
-    || process.env.HOST
-    || '0.0.0.0',
+  host: process.env.NEXUS_HOST || process.env.HOST || '0.0.0.0',
   startMessage: ({ port, host }): void => {
     log.info('listening', {
       url: `http://${host}:${port}`,

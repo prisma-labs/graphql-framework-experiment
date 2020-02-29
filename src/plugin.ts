@@ -1,1 +1,1 @@
-export { create, Lens } from './core/plugin'
+export { create, Lens } from './lib/plugin'

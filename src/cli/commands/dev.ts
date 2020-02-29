@@ -1,7 +1,7 @@
-import * as Plugin from '../../core/plugin'
 import * as Layout from '../../framework/layout'
 import { createStartModuleContent } from '../../framework/start'
 import { arg, Command, isError } from '../../lib/cli'
+import * as Plugin from '../../lib/plugin'
 import { fatal, findOrScaffoldTsConfig } from '../../utils'
 import { rootLogger } from '../../utils/logger'
 import { createWatcher } from '../../watcher'
