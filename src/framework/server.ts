@@ -34,10 +34,11 @@ export const defaultExtraSettings: Required<ExtraSettingsInput> = {
       : process.env.NODE_ENV === 'production'
       ? 80
       : 4000,
-  host: process.env.NEXUS_HOST || process.env.HOST || '0.0.0.0',
+  host: process.env.NEXUS_HOST || process.env.HOST || 'localhost',
   startMessage: ({ port, host }): void => {
+    const prettyHost = host === '127.0.0.1' ? 'localhost' : host
     log.info('listening', {
-      url: `http://${host}:${port}`,
+      url: `http://${prettyHost}:${port}`,
     })
   },
   playground: process.env.NODE_ENV === 'production' ? false : true,
