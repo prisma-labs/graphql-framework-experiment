@@ -2,7 +2,7 @@ import * as Nexus from '@nexus/schema'
 import { stripIndents, stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import * as Lo from 'lodash'
-import * as Plugin from '../../core/plugin'
+import * as Plugin from '../../lib/plugin'
 import { log } from './logger'
 import {
   shouldExitAfterGenerateArtifacts,
@@ -37,7 +37,7 @@ export function createInternalConfig(
 
   const finalConfig = withAutoTypegenConfig(defaultConfig, plugins)
 
-  log.trace('built up schema config', { nexusConfig: finalConfig })
+  log.trace('config built', { nexusConfig: finalConfig })
 
   return finalConfig
 }

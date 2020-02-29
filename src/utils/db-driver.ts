@@ -1,6 +1,6 @@
 import { stripIndent } from 'common-tags'
-import * as Plugin from '../core/plugin'
 import * as Layout from '../framework/layout'
+import * as Plugin from '../lib/plugin'
 import { fatal } from './process'
 
 export async function validateAndLoadDBDriver(): Promise<Plugin.WorkflowHooks> {

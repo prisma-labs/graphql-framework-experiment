@@ -1,35 +1,40 @@
 import anymatch from 'anymatch'
 import { saveDataForChildProcess } from '../framework/layout'
+import { clearConsole } from '../utils'
 import { rootLogger } from '../utils/logger'
-import cfgFactory from './cfg'
-import * as CP from './child-process'
-import { FileWatcher, watch } from './chokidar'
+import { watch } from './chokidar'
 import { compiler } from './compiler'
-import * as IPC from './ipc'
+import * as Link from './link'
 import { Opts } from './types'
-import { isPrefixOf, isRegExpMatch } from './utils'
 
-const log = rootLogger
-  .child('cli')
-  .child('dev')
-  .child('watcher')
+const log = rootLogger.child('dev').child('watcher')
 
 /**
  * Entrypoint into the watcher system.
  */
-export function createWatcher(opts: Opts): Promise<void> {
+export function createWatcher(options: Opts): Promise<void> {
   return new Promise(async (resolve, reject) => {
-    const cfg = cfgFactory(opts)
+    compiler.init(options)
+    // compiler.stop = stopRunner
 
-    compiler.init(opts)
-    compiler.stop = stopRunner
+    // Setup the client (runner / server (watcher) system
 
-    // Run ./dedupe.js as preload script
-    if (cfg.dedupe) process.env.NODE_DEV_PRELOAD = __dirname + '/dedupe'
+    const link = new Link.Link({
+      environmentAdditions: {
+        NEXUS_EVAL: options.eval.code,
+        NEXUS_EVAL_FILENAME: options.eval.fileName,
+        ...saveDataForChildProcess(options.layout),
+      },
+      // Watch all modules imported by the user's app for changes.
+      onRunnerImportedModule(data) {
+        watcher.addSilently(data.filePath)
+      },
+    })
 
-    //
-    // Setup State
-    //
+    process.onBeforeExit(() => {
+      log.trace('tearndown before exit')
+      return link.stop()
+    })
 
     // Create a file watcher
 
@@ -42,13 +47,13 @@ export function createWatcher(opts: Opts): Promise<void> {
     // right now, and feedback loop sucks. For instance allow to find prisma
     // schema anywhere except in migrations ignore it, that is hard right now.
 
-    const pluginWatchContributions = opts.plugins.reduce(
+    const pluginWatchContributions = options.plugins.reduce(
       (patterns, p) =>
         patterns.concat(p.dev.addToWatcherSettings.watchFilePatterns ?? []),
       [] as string[]
     )
 
-    const pluginIgnoreContributions = opts.plugins.reduce(
+    const pluginIgnoreContributions = options.plugins.reduce(
       (patterns, p) =>
         patterns.concat(
           p.dev.addToWatcherSettings.listeners?.app?.ignoreFilePatterns ?? []
@@ -60,7 +65,7 @@ export function createWatcher(opts: Opts): Promise<void> {
     })
 
     const watcher = watch(
-      [opts.layout.sourceRoot, ...pluginWatchContributions],
+      [options.layout.sourceRoot, ...pluginWatchContributions],
       {
         ignored: ['./node_modules', './.*'],
         ignoreInitial: true,
@@ -71,38 +76,45 @@ export function createWatcher(opts: Opts): Promise<void> {
     /**
      * Core watcher listener
      */
+
     // TODO: plugin listeners can probably be merged into the core listener
     watcher.on('all', (_event, file) => {
       if (isIgnoredByCoreListener(file)) {
         return log.trace('global listener - DID NOT match file', { file })
       } else {
         log.trace('global listener - matched file', { file })
-        restartRunner(file)
+        restart(file)
       }
     })
-
-    const server = IPC.create()
-    await server.start()
-    server.on('error', reject)
 
     /**
      * Plugins watcher listeners
      */
-    for (const p of opts.plugins) {
-      if (p.dev.onFileWatcherEvent) {
+
+    const devModePluginLens = {
+      restart: restart,
+    }
+
+    for (const plugin of options.plugins) {
+      if (plugin.dev.onFileWatcherEvent) {
         const isMatchedByPluginListener = createPathMatcher({
           toMatch:
-            p.dev.addToWatcherSettings.listeners?.plugin?.allowFilePatterns,
+            plugin.dev.addToWatcherSettings.listeners?.plugin
+              ?.allowFilePatterns,
           toIgnore:
-            p.dev.addToWatcherSettings.listeners?.plugin?.ignoreFilePatterns,
+            plugin.dev.addToWatcherSettings.listeners?.plugin
+              ?.ignoreFilePatterns,
         })
 
         watcher.on('all', (event, file, stats) => {
           if (isMatchedByPluginListener(file)) {
             log.trace('plugin listener - matched file', { file })
-            p.dev.onFileWatcherEvent!(event, file, stats, {
-              restart: restartRunner,
-            })
+            plugin.dev.onFileWatcherEvent!(
+              event,
+              file,
+              stats,
+              devModePluginLens
+            )
           } else {
             log.trace('plugin listener - DID NOT match file', { file })
           }
@@ -118,283 +130,39 @@ export function createWatcher(opts: Opts): Promise<void> {
       log.trace('ready')
     })
 
-    // Create a mutable runner
-    let runner = startRunnerDo()
+    let restarting = false
 
-    // Create some state to dedupe restarts. For example a rapid succession of
-    // file changes will not trigger restart multiple times while the first
-    // invocation was still running to completion.
-    let runnerRestarting = false
+    restarting = true
+    clearConsole()
+    await link.startOrRestart()
+    restarting = false
 
-    // Relay SIGTERM & SIGINT to the runner process tree
-    //
-    process.on('SIGTERM', () => {
-      log.trace('process got SIGTERM')
-      server.stop()
-      stopRunnerOnBeforeExit().then(() => {
-        resolve()
-      })
-    })
-
-    process.on('SIGINT', () => {
-      log.trace('process got SIGINT')
-      server.stop()
-      stopRunnerOnBeforeExit().then(() => {
-        resolve()
-      })
-    })
-
-    function startRunnerDo(): CP.Process {
-      return startRunner(server, opts, cfg, watcher, {
-        onError: willTerminate => {
-          stopRunner(runner, willTerminate)
-          watcher.resume()
-        },
-      })
-    }
-
-    function stopRunnerOnBeforeExit() {
-      if (runner.exited) return Promise.resolve()
-
-      // TODO maybe we should be a timeout here so that child process hanging
-      // will never prevent nexus dev from exiting nicely.
-      return runner
-        .sigterm()
-        .then(() => {
-          log.trace('sigterm to runner process tree completed')
-        })
-        .catch(error => {
-          log.warn(
-            'attempt to sigterm the runner process tree ended with error',
-            { error }
-          )
-        })
-    }
-
-    function stopRunner(child: CP.Process, willTerminate?: boolean) {
-      if (child.exited || child.stopping) {
+    // todo replace crappy `restarting` flag with an async debounce that
+    // includes awaiting completion of the returned promise. Basically this
+    // library + feature request
+    // https://github.com/sindresorhus/p-debounce/issues/3.
+    async function restart(file: string) {
+      if (restarting) {
+        log.trace('restart already in progress')
         return
       }
-      child.stopping = true
-
-      if (willTerminate) {
-        log.trace(
-          'Disconnecting from child. willTerminate === true so NOT sending sigterm to force runner end, assuming it will end itself.'
-        )
-      } else {
-        log.trace(
-          'Disconnecting from child. willTerminate === false so sending sigterm to force runner end'
-        )
-        child
-          .sigterm()
-          .then(() => {
-            log.trace('sigterm to runner process tree completed')
-          })
-          .catch(error => {
-            log.warn(
-              'attempt to sigterm the runner process tree ended with error',
-              { error }
-            )
-          })
-      }
-    }
-
-    function restartRunner(file: string) {
-      /**
-       * Watcher is paused until the runner has stopped and properly restarted
-       * We wait for the child process to send the watcher a message saying it's ready to be restarted
-       * This prevents the runner to be run several times thus leading to an EPIPE error
-       */
-      watcher.pause()
+      restarting = true
+      clearConsole()
+      log.info('restarting', { changed: file })
       if (file === compiler.tsConfigPath) {
         log.trace('reinitializing TS compilation')
-        compiler.init(opts)
+        compiler.init(options)
       }
-
-      compiler.compileChanged(file, opts.onEvent)
-
-      if (runnerRestarting) {
-        log.trace('already starting')
-        return
-      }
-
-      runnerRestarting = true
-      if (!runner.exited) {
-        log.trace('runner is still executing, will restart upon its exit')
-        runner.on('exit', () => {
-          runner = startRunnerDo()
-          runnerRestarting = false
-        })
-        stopRunner(runner)
-      } else {
-        log.trace('runner already exited, probably due to a previous error')
-        runner = startRunnerDo()
-        runnerRestarting = false
-      }
+      compiler.compileChanged(file)
+      await link.startOrRestart()
+      restarting = false
     }
   })
 }
 
 /**
- * Returns the nesting-level of the given module.
- * Will return 0 for modules from the main package or linked modules,
- * a positive integer otherwise.
+ * todo
  */
-function getLevel(mod: string) {
-  const p = getPrefix(mod)
-
-  return p.split('node_modules').length - 1
-}
-
-/**
- * Returns the path up to the last occurence of `node_modules` or an
- * empty string if the path does not contain a node_modules dir.
- */
-function getPrefix(mod: string) {
-  const n = 'node_modules'
-  const i = mod.lastIndexOf(n)
-
-  return ~i ? mod.slice(0, i + n.length) : ''
-}
-
-/**
- * Start the App Runner. This occurs once on boot and then on every subsequent
- * file change in the users's project.
- */
-function startRunner(
-  server: IPC.Server,
-  opts: Opts,
-  cfg: ReturnType<typeof cfgFactory>,
-  watcher: FileWatcher,
-  callbacks?: { onError?: (willTerminate: any) => void }
-): CP.Process {
-  log.trace('will spawn runner')
-
-  const runnerModulePath = require.resolve('./runner')
-  // const childHookPath = compiler.getChildHookPath()
-
-  // TODO: childHook is no longer used at all
-  // const child = fork('-r' [runnerModulePath, childHookPath], {
-  //
-  // We are leaving this as a future fix, refer to:
-  // https://github.com/graphql-nexus/nexus-future/issues/76
-  const child = CP.create({
-    modulePath: runnerModulePath,
-    nodeArgs: opts.nodeArgs ?? [],
-    envAdditions: {
-      NEXUS_EVAL: opts.eval.code,
-      NEXUS_EVAL_FILENAME: opts.eval.fileName,
-      ...saveDataForChildProcess(opts.layout),
-    },
-  })
-
-  child.onData(chunk => {
-    opts.onEvent({ event: 'logging', data: chunk.toString() })
-  })
-
-  // TODO We have removed this code since switching to chokidar. What is the
-  // tradeoff exactly that we are making by no longer using this logic?
-  //
-  // const compileReqWatcher = filewatcher({ forcePolling: opts.poll })
-  // let currentCompilePath: string
-  // fs.writeFileSync(compiler.getCompileReqFilePath(), '')
-  // compileReqWatcher.add(compiler.getCompileReqFilePath())
-  // compileReqWatcher.on('change', function(file: string) {
-  //   log('compileReqWatcher event change %s', file)
-  //   fs.readFile(file, 'utf-8', function(err, data) {
-  //     if (err) {
-  //       console.error('error reading compile request file', err)
-  //       return
-  //     }
-  //     const [compile, compiledPath] = data.split('\n')
-  //     if (currentCompilePath === compiledPath) {
-  //       return
-  //     }
-  //     currentCompilePath = compiledPath
-  //     if (compiledPath) {
-  //       compiler.compile({
-  //         compile,
-  //         compiledPath,
-  //         callbacks: opts.callbacks ?? {},
-  //       })
-  //     }
-  //   })
-  // })
-
-  child.onExit(({ exitCode, signal }) => {
-    log.trace('runner exiting')
-    if (exitCode === null) {
-      log.trace('runner did not exit on its own accord')
-    } else {
-      log.trace('runner exited on its own accord with exit code', {
-        code: exitCode,
-      })
-    }
-
-    if (signal === null) {
-      log.trace('runner did NOT receive a signal causing this exit')
-    } else {
-      log.trace('runner received signal which caused this exit', { signal })
-    }
-
-    // TODO is it possible for multiple exit event triggers?
-    if (child.exited) return
-    child.exited = true
-  })
-
-  if (compiler.tsConfigPath) {
-    watcher.addSilently(compiler.tsConfigPath)
-  }
-
-  // TODO See above LOC ~238
-  // ipc.on(
-  //   child,
-  //   'compile',
-  //   (message: { compiledPath: string; compile: string }) => {
-  //     log('got runner message "compile" %s', message)
-  //     if (
-  //       !message.compiledPath ||
-  //       currentCompilePath === message.compiledPath
-  //     ) {
-  //       return
-  //     }
-  //     currentCompilePath = message.compiledPath
-  //     ;(message as any).callbacks = opts.callbacks
-  //     compiler.compile({ ...message, callbacks: opts.callbacks ?? {} })
-  //   }
-  // )
-
-  server.on('message', function(msg) {
-    if (msg.type === 'module_imported') {
-      // Listen for `required` messages and watch the required file.
-      const isIgnored =
-        cfg.ignore.some(isPrefixOf(msg.data.filePath)) ||
-        cfg.ignore.some(isRegExpMatch(msg.data.filePath))
-
-      if (
-        !isIgnored &&
-        (cfg.deps === -1 || getLevel(msg.data.filePath) <= cfg.deps)
-      ) {
-        watcher.addSilently(msg.data.filePath)
-      }
-    } else if (msg.type === 'error') {
-      // Upon errors, display a notification and tell the child to exit.
-      callbacks?.onError?.(msg.data.willTerminate)
-    } else if (msg.type === 'app_server_listening') {
-      // todo: Resuming watcher on this signal can lead to performance issues
-      /**
-       * Watcher is resumed once the child sent a message saying it's ready to be restarted
-       * This prevents the runner to be run several times thus leading to an EPIPE error
-       */
-      watcher.resume()
-    }
-  })
-
-  compiler.writeReadyFile()
-
-  return child
-}
-
 function createPathMatcher(params: {
   toMatch?: string[]
   toIgnore?: string[]

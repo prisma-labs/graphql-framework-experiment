@@ -1,3 +1,9 @@
+// Not using ECMA modules b/c TS autoformat moves it down but we need it first
+// for side-effects.
+require('../lib/tty-linker')
+  .create()
+  .child.install()
+
 import { join } from 'path'
 import { register } from 'ts-node'
 import { Script } from 'vm'
@@ -9,10 +15,7 @@ import hook from './hook'
 import * as IPC from './ipc'
 import Module = require('module')
 
-const log = rootLogger
-  .child('cli')
-  .child('dev')
-  .child('runner')
+const log = rootLogger.child('dev').child('runner')
 
 log.trace('boot')
 
@@ -21,8 +24,6 @@ register({
   transpileOnly: true,
 })
 ;(async function() {
-  await IPC.client.connect()
-
   const layout = await Layout.create()
 
   // TODO: Find more elegant way to do that?
@@ -74,13 +75,13 @@ register({
     require(process.env.NODE_DEV_PRELOAD)
   }
 
-  // Listen SIGTERM and exit unless there is another listener
-  process.on('SIGTERM', function() {
-    if (process.listeners('SIGTERM').length === 1) {
-      log.trace('Child got SIGTERM, exiting')
-      process.exit(0)
-    }
-  })
+  // // Listen SIGTERM and exit unless there is another listener
+  // process.on('SIGTERM', function() {
+  //   if (process.listeners('SIGTERM').length === 1) {
+  //     log.trace('Child got SIGTERM, exiting')
+  //     process.exit(0)
+  //   }
+  // })
 
   // Overwrite child_process.fork() so that we can hook into forked processes
   // too. We also need to relay messages about required files to the parent.

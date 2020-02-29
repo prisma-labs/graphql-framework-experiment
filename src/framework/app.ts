@@ -1,7 +1,7 @@
 import * as HTTP from 'http'
 import * as Lo from 'lodash'
-import * as Plugin from '../core/plugin'
 import * as Logger from '../lib/logger'
+import * as Plugin from '../lib/plugin'
 import * as Layout from './layout'
 import * as Schema from './schema'
 import * as Server from './server'

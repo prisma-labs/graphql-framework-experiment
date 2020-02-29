@@ -46,11 +46,11 @@ Start by updating our data layer to model information about moons. We don't want
 + }
 ```
 
-Nexus reacts to changes in your Prisma schema. By saving the above, your dev database will be automatically migrated and photon regenerated. You literally now just move on to updating your GraphQL API.
+Nexus reacts to changes in your Prisma schema. By saving the above, your dev database will be automatically migrated and Prisma Client regenerated. You literally now just move on to updating your GraphQL API.
 
 ## Change the API Layer
 
-We have data about `Earth` from before, but now we need to update it with information about its moon. Instead of working with photon inside one-off scripts, lets enhance our API and make the update as if a client app were.
+We have data about `Earth` from before, but now we need to update it with information about its moon. Instead of working with Prisma Client inside one-off scripts, lets enhance our API and make the update as if a client app were.
 
 We're going to need to expose the `moons` world field to clients
 

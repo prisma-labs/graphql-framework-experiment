@@ -2,9 +2,9 @@ import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import prompts from 'prompts'
 import { PackageJson } from 'type-fest'
-import * as Plugin from '../../../core/plugin'
 import * as Layout from '../../../framework/layout'
 import { Command } from '../../../lib/cli'
+import * as Plugin from '../../../lib/plugin'
 import {
   createGitRepository,
   createTSConfigContents,
@@ -28,6 +28,8 @@ export default class App implements Command {
 type Options = {
   projectName: string
   nexusFutureVersion: string
+  packageManager?: PackageManager.PackageManagerType
+  database?: Database | 'NO_DATABASE'
 }
 
 /**
@@ -71,7 +73,8 @@ export async function runBootstrapper(
   log.trace('checking folder is in a clean state...')
   await assertIsCleanSlate()
 
-  const packageManagerType = await askForPackageManager()
+  const packageManagerType =
+    optionsGiven?.packageManager ?? (await askForPackageManager())
 
   // TODO given the presence of plugin templates it does not make sense anymore
   // for an assumpton about how the layout is going to look
@@ -97,18 +100,20 @@ export async function runBootstrapper(
     ...optionsGiven,
     projectName: CWDProjectNameOrGenerate(),
     // @ts-ignore
-    nexusFutureVersion: `^${require('../../../../package.json').version}`,
+    nexusFutureVersion: getNexusVersion(),
   }
 
   // TODO in the future scan npm registry for nexus plugins, organize by
   // github stars, and so on.
-  const askDatabase = await askForDatabase()
+  const askDatabase = optionsGiven?.database
+    ? parseDatabaseChoice(optionsGiven.database)
+    : await askForDatabase()
 
   log.info('Scaffolding base project files...')
   await scaffoldBaseFiles(layout, options)
 
   log.info(
-    `Installing nexus-future@${options.nexusFutureVersion}... (this will take around ~30 seconds)`
+    `Installing nexus-future@${options.nexusFutureVersion}... (this will take around ~15 seconds)`
   )
   await layout.packageManager.installDeps({ require: true })
 
@@ -228,15 +233,15 @@ export async function runBootstrapper(
 }
 
 // TODO this data should come from db driver
-type Database = 'SQLite' | 'PostgreSQL' | 'MySQL'
+export type Database = 'SQLite' | 'PostgreSQL' | 'MySQL'
+type ParsedDatabase =
+  | { database: false }
+  | { database: true; choice: Database; connectionURI: string | undefined }
 
 /**
  * Ask the user if they would like to use a database driver.
  */
-async function askForDatabase(): Promise<
-  | { database: false }
-  | { database: true; choice: Database; connectionURI: string | undefined }
-> {
+async function askForDatabase(): Promise<ParsedDatabase> {
   let {
     usePrisma,
   }: {
@@ -498,7 +503,7 @@ function saveDataForChildProcess(data: SerializableParentData): void {
 }
 
 /**
- * Helper function for fetching the correct veresion of prisma plugin to
+ * Helper function for fetching the correct version of prisma plugin to
  * install. Useful for development where we can override the version installed
  * by environment variable NEXUS_PLUGIN_PRISMA_VERSION.
  */
@@ -516,4 +521,30 @@ function getPrismaPluginVersion(): string {
     prismaPluginVersion = 'latest'
   }
   return prismaPluginVersion
+}
+
+/**
+ * Fetch the version of nexus to install.
+ */
+function getNexusVersion(): string {
+  const localNexusVersion: string = require('../../../../package.json').version
+  return `^${localNexusVersion}`
+}
+
+function parseDatabaseChoice(
+  database: Database | 'NO_DATABASE'
+): ParsedDatabase {
+  if (database === 'NO_DATABASE') {
+    return { database: false }
+  }
+
+  if (database === 'SQLite') {
+    return {
+      database: true,
+      choice: database,
+      connectionURI: 'sqlite:./dev.db',
+    }
+  }
+
+  return { database: true, choice: database, connectionURI: undefined }
 }

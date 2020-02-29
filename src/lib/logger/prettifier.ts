@@ -1,7 +1,7 @@
-import chalk, { Chalk } from 'chalk'
 import stripAnsi from 'strip-ansi'
 import * as util from 'util'
 import * as utils from '../utils'
+import { Chalk, chalk } from './chalk'
 import * as Level from './level'
 import * as Logger from './logger'
 
@@ -11,10 +11,7 @@ const stopWatch = createStopWatch()
 // - https://jrgraphix.net/r/Unicode/2600-26FF
 // - https://graphemica.com/
 
-const LEVEL_STYLES: Record<
-  Level.Level,
-  { badge: string; color: chalk.Chalk }
-> = {
+const LEVEL_STYLES: Record<Level.Level, { badge: string; color: Chalk }> = {
   fatal: {
     // badge: '⚰',
     // badge: '☠',
@@ -114,6 +111,7 @@ export function create(options: Options) {
 }
 
 export function render(opts: Options, rec: Logger.LogRecord): string {
+  const terminalWidth = process.stdout.columns ?? 80
   const levelLabel = Level.LEVELS_BY_NUM[rec.level].label
   const style = LEVEL_STYLES[levelLabel]
 
@@ -199,7 +197,7 @@ export function render(opts: Options, rec: Logger.LogRecord): string {
   // 1. the headers section
   // 2. the headers/context separator
   const availableSinglelineContextColumns =
-    process.stdout.columns -
+    terminalWidth -
     gutterWidth -
     preContextWidth -
     seps.context.singleLine.symbol.length

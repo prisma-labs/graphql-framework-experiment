@@ -4,13 +4,14 @@ import * as GraphQL from 'graphql'
 import * as HTTP from 'http'
 import * as Net from 'net'
 import stripAnsi from 'strip-ansi'
-import * as Plugin from '../core/plugin'
 import * as Logger from '../lib/logger'
+import * as Plugin from '../lib/plugin'
 import * as Utils from '../lib/utils'
 import * as App from './app'
 import * as DevMode from './dev-mode'
 import * as singletonChecks from './singleton-checks'
 
+// Avoid forcing users to use esModuleInterop
 const createExpressGraphql = ExpressGraphQL.default
 
 type Request = HTTP.IncomingMessage & { log: Logger.Logger }
@@ -33,9 +34,11 @@ export const defaultExtraSettings: Required<ExtraSettingsInput> = {
       : process.env.NODE_ENV === 'production'
       ? 80
       : 4000,
+  host: process.env.NEXUS_HOST || process.env.HOST || 'localhost',
   startMessage: ({ port, host }): void => {
+    const prettyHost = host === '127.0.0.1' ? 'localhost' : host
     log.info('listening', {
-      url: `http://${host}:${port}`,
+      url: `http://${prettyHost}:${port}`,
     })
   },
   playground: process.env.NODE_ENV === 'production' ? false : true,
@@ -46,6 +49,10 @@ export type ExtraSettingsInput = {
    * todo
    */
   port?: number
+  /**
+   * Host the server should be listening on.
+   */
+  host?: string
   /**
    * todo
    */
@@ -159,7 +166,7 @@ function setupExpress(
       res.send(`
         <!DOCTYPE html>
         <html>
-  
+
         <head>
           <meta charset=utf-8/>
           <meta name="viewport" content="user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, minimal-ui">
@@ -168,7 +175,7 @@ function setupExpress(
           <link rel="shortcut icon" href="//cdn.jsdelivr.net/npm/graphql-playground-react/build/favicon.png" />
           <script src="//cdn.jsdelivr.net/npm/graphql-playground-react/build/static/js/middleware.js"></script>
         </head>
-  
+
         <body>
           <div id="root">
             <style>
@@ -177,7 +184,7 @@ function setupExpress(
                 font-family: Open Sans, sans-serif;
                 height: 90vh;
               }
-  
+
               #root {
                 height: 100%;
                 width: 100%;
@@ -185,19 +192,19 @@ function setupExpress(
                 align-items: center;
                 justify-content: center;
               }
-  
+
               .loading {
                 font-size: 32px;
                 font-weight: 200;
                 color: rgba(255, 255, 255, .6);
                 margin-left: 20px;
               }
-  
+
               img {
                 width: 78px;
                 height: 78px;
               }
-  
+
               .title {
                 font-weight: 400;
               }
@@ -213,7 +220,7 @@ function setupExpress(
               })
             })</script>
         </body>
-  
+
         </html>
       `)
     })
@@ -222,14 +229,14 @@ function setupExpress(
   return {
     start: () =>
       new Promise<void>(res => {
-        http.listen({ port: opts.port, host: '127.0.0.1' }, () => {
+        http.listen({ port: opts.port, host: opts.host }, () => {
           // - We do not support listening on unix domain sockets so string
           //   value will never be present here.
           // - We are working within the listen callback so address will not be null
           const address = http.address()! as Net.AddressInfo
           opts.startMessage({
             port: address.port,
-            host: address.address === '127.0.0.1' ? 'localhost' : '',
+            host: address.address,
             ip: address.address,
           })
           res()

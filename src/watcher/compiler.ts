@@ -8,10 +8,7 @@ import { rootLogger } from '../utils/logger'
 import { Compiler, Opts } from './types'
 const getCompiledPath = require('./get-compiled-path').default
 
-const log = rootLogger
-  .child('cli')
-  .child('dev')
-  .child('compiler')
+const log = rootLogger.child('dev').child('compiler')
 
 let sourceMapSupportPath = require
   .resolve('source-map-support')
@@ -150,7 +147,6 @@ export const compiler: Compiler = {
 
     const tsNodeOptions: RegisterOptions = {
       typeCheck: options['type-check'],
-      transpileOnly: options['transpileOnly'],
       pretty: options['pretty'],
       compiler: options['compiler'],
       project: options['project'],
@@ -169,9 +165,7 @@ export const compiler: Compiler = {
      * TODO: If not set via env variable, transpileOnly does not work
      * TODO: Figure out why???
      */
-    if (options.transpileOnly) {
-      process.env.TS_NODE_TRANSPILE_ONLY = 'true'
-    }
+    process.env.TS_NODE_TRANSPILE_ONLY = 'true'
 
     try {
       log.trace('applying ts-node register')
@@ -194,8 +188,7 @@ export const compiler: Compiler = {
     tsHandler = require.extensions['.ts']
     compiler.writeChildHookFile(options)
   },
-  compileChanged: function(fileName, onEvent) {
-    onEvent({ event: 'restart', file: fileName })
+  compileChanged: function(fileName) {
     const ext = path.extname(fileName)
     if (extensions.indexOf(ext) < 0) return
     try {
@@ -207,7 +200,6 @@ export const compiler: Compiler = {
           fileName,
           compiler.getCompiledDir()
         ),
-        onEvent,
       })
     } catch (e) {
       console.error(e)
@@ -234,7 +226,6 @@ export const compiler: Compiler = {
     try {
       m._compile(code, fileName)
       log.trace('compile finish', { fileName })
-      params.onEvent({ event: 'compiled', file: fileName })
     } catch (e) {
       code = 'throw ' + 'new Error(' + JSON.stringify(e.message) + ')' + ';'
       writeCompiled(code)

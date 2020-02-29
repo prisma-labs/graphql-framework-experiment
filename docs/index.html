@@ -22,11 +22,23 @@
         --theme-color-secondary: rgb(167, 94, 255);
       }
       body {
-        font-size: 16px;
+        font-size: 15px;
         line-height: 2rem;
       }
 
-      /* Components */
+      /* Component TypeRef */
+      .markdown-section code.TypeRef {
+        color: hsla(100, 100%, 0%, 0.5);
+      }
+      .markdown-section code.TypeRef a {
+        text-decoration: none;
+        color: hsla(100, 100%, 0%, 0.4);
+      }
+      .TypeRef::before {
+        content: '⌕ ';
+      }
+
+      /* Component BigButton */
       .BigButton {
         border-radius: 2rem;
         border: 1px solid var(--theme-color, #42b983);
@@ -115,6 +127,16 @@
 
       /* Sidebar */
 
+      .sidebar code {
+        background-color: #f9f9f9;
+        border-style: solid;
+        border-color: #f9f9f9;
+        border-width: 0px 10px;
+        border-radius: 3px;
+        display: inline-block;
+        line-height: 1.5;
+        font-size: 0.85rem;
+      }
       .sidebar {
         width: 15rem;
         padding-top: 1rem;
@@ -138,17 +160,24 @@
       .sidebar {
         font-weight: bold;
       }
+      .markdown-section li:last-child {
+        margin-bottom: 1rem;
+      }
+
+      .sidebar ul:last-child {
+        margin-bottom: 1rem;
+      }
+      .sidebar li p span:only-child {
+        opacity: 0.6;
+      }
       .sidebar ul li a {
-        margin: 0;
-        font-size: 0.9rem;
+        color: #364149;
+        line-height: 1.5;
         font-weight: bold;
       }
       .sidebar ul li a:hover {
         text-decoration: none;
         color: var(--theme-color);
-      }
-      .app-sub-sidebar {
-        margin-top: -0.5rem !important;
       }
       .app-sub-sidebar .app-sub-sidebar {
         margin-top: 0 !important;
@@ -159,9 +188,10 @@
         font-weight: bold !important;
       }
       .app-sub-sidebar li:before {
-        content: '⌁';
-        font-family: monospace;
-        line-height: 0.8;
+        /* content: '⌁'; */
+        content: '';
+        /* font-family: monospace; */
+        /* line-height: 0.8; */
       }
 
       /* Improvements to content (markdown) */
@@ -200,8 +230,23 @@
         color: inherit;
         font-size: inherit;
       }
-      .markdown-section pre code {
-        font-size: 0.85rem;
+      .markdown-section h4 code {
+        font-size: 1.15rem;
+      }
+      .markdown-section h5 code {
+        font-size: 0.83rem;
+      }
+
+      .OneLineSignature {
+        margin: 0 !important;
+      }
+      .OneLineSignature + pre > code {
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
+      }
+      .markdown-section pre > code {
+        font-size: 0.8rem;
+        line-height: 1.75;
       }
       .markdown-section p a:hover {
         opacity: 0.8;
@@ -284,10 +329,9 @@
         ],
         auto2top: true,
         coverpage: true,
-        // onlyCover: true,
         name: '.',
         repo: 'graphql-nexus/nexus-future',
-        subMaxLevel: 3,
+        subMaxLevel: 6,
         loadSidebar: true,
         autoHeader: true,
         pagination: {

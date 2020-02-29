@@ -1,7 +1,7 @@
-import * as Plugin from '../../core/plugin'
 import * as Layout from '../../framework/layout'
 import { createStartModuleContent } from '../../framework/start'
 import { Command } from '../../lib/cli'
+import * as Plugin from '../../lib/plugin'
 import { generateArtifacts } from '../../utils'
 import { log } from '../../utils/logger'
 

@@ -2,10 +2,10 @@ import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import ts from 'typescript'
 import { START_MODULE_NAME } from '../../constants'
-import * as Plugin from '../../core/plugin'
 import * as Layout from '../../framework/layout'
 import { createStartModuleContent } from '../../framework/start'
 import { arg, Command, isError } from '../../lib/cli'
+import * as Plugin from '../../lib/plugin'
 import {
   compile,
   createTSProgram,
