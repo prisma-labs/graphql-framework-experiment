@@ -51,4 +51,4 @@ jobs:
           # For nexus create app flow which will make an init commit 
           git config --global user.name prisma-labs
           git config --global user.email labs@prisma.io
-      - run: NEXUS_VERSION=$(yarn -s dripip get-current-commit-version) yarn test:e2e
+      - run: E2E_NEXUS_VERSION=$(yarn -s dripip get-current-commit-version) yarn test:e2e
