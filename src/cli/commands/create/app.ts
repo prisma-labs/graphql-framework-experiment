@@ -21,7 +21,10 @@ const log = rootLogger
 
 export default class App implements Command {
   async parse() {
-    await run()
+    await run({
+      database: process.env.DATABASE_CHOICE as any | 'NO_DATABASE', // For testing
+      packageManager: process.env.PACKAGE_MANAGER_CHOICE as any, // For testing
+    })
   }
 }
 
@@ -73,6 +76,8 @@ export async function runBootstrapper(
   log.trace('checking folder is in a clean state...')
   await assertIsCleanSlate()
 
+  const projectName = optionsGiven?.projectName ?? CWDProjectNameOrGenerate()
+
   const packageManagerType =
     optionsGiven?.packageManager ?? (await askForPackageManager())
 
@@ -89,18 +94,16 @@ export async function runBootstrapper(
     schemaModules: ['src/' + Layout.schema.FILE_NAME],
     buildOutput: Layout.DEFAULT_BUILD_FOLDER_NAME,
     project: {
-      name: optionsGiven?.projectName ?? CWDProjectNameOrGenerate(),
+      name: projectName,
       isAnonymous: false,
     },
     packageManagerType,
   })
 
-  // FIXME options given will always be overriden...
   const options: Options = {
-    ...optionsGiven,
-    projectName: CWDProjectNameOrGenerate(),
-    // @ts-ignore
+    projectName: projectName,
     nexusFutureVersion: getNexusVersion(),
+    ...optionsGiven,
   }
 
   // TODO in the future scan npm registry for nexus plugins, organize by

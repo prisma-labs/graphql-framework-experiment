@@ -4,22 +4,18 @@
 
 import * as FS from 'fs-jetpack'
 import { IPty, IPtyForkOptions, IWindowsPtyForkOptions } from 'node-pty'
-import * as OS from 'os'
 import * as Path from 'path'
 import { Database } from '../cli/commands/create/app'
 import { GraphQLClient } from '../lib/graphql-client'
+import { getTmpDir } from './fs'
 import { rootLogger } from './logger'
 import { PackageManagerType } from './package-manager'
 
 export function setupE2EContext(nexusOutputDir?: string) {
-  const tmpDir = nexusOutputDir ?? getTmpDir()
-  const RELATIVE_BIN_PATH = Path.join(tmpDir, 'node_modules', '.bin', 'nexus')
+  const tmpDir = nexusOutputDir ?? getTmpDir('nexus-prisma-tmp-')
+  const NEXUS_BIN_PATH = Path.join(tmpDir, 'node_modules', '.bin', 'nexus')
 
   FS.dir(tmpDir)
-
-  afterEach(() => {
-    // FS.remove(tmpDir)
-  })
 
   return {
     tmpDir,
@@ -29,7 +25,7 @@ export function setupE2EContext(nexusOutputDir?: string) {
       opts: IPtyForkOptions = {}
     ) {
       return ptySpawn(
-        RELATIVE_BIN_PATH,
+        NEXUS_BIN_PATH,
         args,
         {
           cwd: tmpDir,
@@ -60,18 +56,6 @@ export function setupE2EContext(nexusOutputDir?: string) {
     },
     client: new GraphQLClient('http://localhost:4000/graphql'),
   }
-}
-
-export function getTmpDir() {
-  const uniqId = Math.random()
-    .toString()
-    .slice(2)
-  const tmpDir = Path.join(OS.tmpdir(), `nexus-prisma-tmp-${uniqId}`)
-
-  // Create dir
-  FS.dir(tmpDir)
-
-  return tmpDir
 }
 
 export function ptySpawn(

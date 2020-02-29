@@ -1,4 +1,6 @@
 import * as fs from 'fs-jetpack'
+import * as FS from 'fs-jetpack'
+import * as OS from 'os'
 import * as Path from 'path'
 
 /**
@@ -46,4 +48,16 @@ export async function findFileRecurisvelyUpward(
   }
 
   return path
+}
+
+export function getTmpDir(prefix?: string) {
+  const uniqId = Math.random()
+    .toString()
+    .slice(2)
+  const tmpDir = Path.join(OS.tmpdir(), `${prefix ?? ''}${uniqId}`)
+
+  // Create dir
+  FS.dir(tmpDir)
+
+  return tmpDir
 }
