@@ -140,6 +140,22 @@ todo
 
 todo
 
+#### `t.implements`
+
+todo
+
+#### `t.list`
+
+todo
+
+#### `t.modify`
+
+todo
+
+#### `t.typeName`
+
+todo
+
 #### `t.connection`
 
 This field builder helps you implement paginated associations between types in your schema. The contributions that it makes to your GraphQL schema adhear to the [Relay Connection Specification](https://facebook.github.io/relay/graphql/connections.htm#sec-Node). In other words it allows you the API author to write the minimum logic required to create spec-compliant relay connections for your API clients.
