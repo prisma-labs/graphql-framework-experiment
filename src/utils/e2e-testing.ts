@@ -36,8 +36,8 @@ export function setupE2EContext(nexusOutputDir?: string) {
       )
     },
     spawnNPXNexus(
-      packageManager: PackageManagerType,
-      database: Database | 'NO_DATABASE',
+      packageManagerType: PackageManagerType,
+      databaseType: Database | 'NO_DATABASE',
       version: string,
       expectHandler: (data: string, proc: IPty) => void
     ) {
@@ -48,8 +48,9 @@ export function setupE2EContext(nexusOutputDir?: string) {
           cwd: tmpDir,
           env: {
             ...process.env,
-            PACKAGE_MANAGER_CHOICE: packageManager,
-            DATABASE_CHOICE: database,
+            CREATE_APP_CHOICE_PACKAGE_MANAGER_TYPE: packageManagerType,
+            CREATE_APP_CHOICE_DATABASE_TYPE: databaseType,
+            LOG_LEVEL: 'trace',
           },
         },
         (data, proc) => expectHandler(stripAnsi(data), proc)
