@@ -58,3 +58,5 @@ jobs:
           export E2E_NEXUS_VERSION=$(yarn -s dripip get-current-commit-version)
           echo "running e2e test with nexus version: ${E2E_NEXUS_VERSION}"
           # yarn test:e2e
+        env:
+          DEBUG: dripip*
