@@ -12,9 +12,12 @@ import { rootLogger } from './logger'
 import { PackageManagerType } from './package-manager'
 import stripAnsi = require('strip-ansi')
 
+const log = rootLogger.child('e2e')
+
 export function setupE2EContext(nexusOutputDir?: string) {
   const tmpDir = nexusOutputDir ?? getTmpDir('nexus-prisma-tmp-')
   const NEXUS_BIN_PATH = Path.join(tmpDir, 'node_modules', '.bin', 'nexus')
+  log.trace('setup', { tmpDir, NEXUS_BIN_PATH })
 
   FS.dir(tmpDir)
 
@@ -36,11 +39,16 @@ export function setupE2EContext(nexusOutputDir?: string) {
       )
     },
     spawnNPXNexus(
-      packageManager: PackageManagerType,
-      database: Database | 'NO_DATABASE',
+      packageManagerType: PackageManagerType,
+      databaseType: Database | 'NO_DATABASE',
       version: string,
       expectHandler: (data: string, proc: IPty) => void
     ) {
+      log.trace('npx nexus-future', {
+        version,
+        packageManagerType,
+        databaseType,
+      })
       return ptySpawn(
         'npx',
         [`nexus-future@${version}`],
@@ -48,8 +56,9 @@ export function setupE2EContext(nexusOutputDir?: string) {
           cwd: tmpDir,
           env: {
             ...process.env,
-            PACKAGE_MANAGER_CHOICE: packageManager,
-            DATABASE_CHOICE: database,
+            CREATE_APP_CHOICE_PACKAGE_MANAGER_TYPE: packageManagerType,
+            CREATE_APP_CHOICE_DATABASE_TYPE: databaseType,
+            LOG_LEVEL: 'trace',
           },
         },
         (data, proc) => expectHandler(stripAnsi(data), proc)

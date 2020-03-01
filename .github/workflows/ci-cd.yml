@@ -42,13 +42,20 @@ jobs:
         node-version: [10.x, 12.x]
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - run: yarn --frozen-lockfile
-      - run: |
+      - name: Install deps
+        run: yarn --frozen-lockfile
+      - name: Setup global git user
+        run: |
           # For nexus create app flow which will make an init commit 
           git config --global user.name prisma-labs
           git config --global user.email labs@prisma.io
-      - run: E2E_NEXUS_VERSION=$(yarn -s dripip get-current-commit-version) yarn test:e2e
+      - name: e2e test
+        run: |
+          export E2E_NEXUS_VERSION=$(yarn -s dripip get-current-commit-version)
+          yarn test:e2e

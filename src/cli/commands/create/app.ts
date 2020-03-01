@@ -21,18 +21,13 @@ const log = rootLogger
 
 export default class App implements Command {
   async parse() {
-    await run({
-      database: process.env.DATABASE_CHOICE as any, // For testing
-      packageManager: process.env.PACKAGE_MANAGER_CHOICE as any, // For testing
-    })
+    await run({})
   }
 }
 
-type Options = {
+interface Options {
   projectName: string
   nexusFutureVersion: string
-  packageManager?: PackageManager.PackageManagerType
-  database?: Database | 'NO_DATABASE'
 }
 
 /**
@@ -40,7 +35,7 @@ type Options = {
  */
 export async function run(optionsGiven?: Partial<Options>): Promise<void> {
   if (process.env.NEXUS_CREATE_HANDOFF === 'true') {
-    await runLocalHandOff(optionsGiven)
+    await runLocalHandOff()
   } else {
     await runBootstrapper(optionsGiven)
   }
@@ -49,9 +44,7 @@ export async function run(optionsGiven?: Partial<Options>): Promise<void> {
 /**
  * TODO
  */
-export async function runLocalHandOff(
-  optionsGiven?: Partial<Options>
-): Promise<void> {
+export async function runLocalHandOff(): Promise<void> {
   log.trace('start local handoff')
 
   const { layout, connectionURI, database } = await loadDataFromParentProcess()
@@ -76,10 +69,22 @@ export async function runBootstrapper(
   log.trace('checking folder is in a clean state...')
   await assertIsCleanSlate()
 
+  // For testing
+  const databaseTypeEnvVar = (process.env
+    .CREATE_APP_CHOICE_DATABASE_TYPE as any)
+    ? parseDatabaseChoice(process.env.CREATE_APP_CHOICE_DATABASE_TYPE as any)
+    : undefined
+  const packageManagerTypeEnvVar = process.env
+    .CREATE_APP_CHOICE_PACKAGE_MANAGER_TYPE as any
+  log.trace('create app user choices pre-filled by env vars?', {
+    packageManagerTypeEnvVar,
+    databaseTypeEnvVar,
+  })
+
   const projectName = optionsGiven?.projectName ?? CWDProjectNameOrGenerate()
 
   const packageManagerType =
-    optionsGiven?.packageManager ?? (await askForPackageManager())
+    packageManagerTypeEnvVar ?? (await askForPackageManager())
 
   // TODO given the presence of plugin templates it does not make sense anymore
   // for an assumpton about how the layout is going to look
@@ -108,9 +113,7 @@ export async function runBootstrapper(
 
   // TODO in the future scan npm registry for nexus plugins, organize by
   // github stars, and so on.
-  const askDatabase = optionsGiven?.database
-    ? parseDatabaseChoice(optionsGiven.database)
-    : await askForDatabase()
+  const askDatabase = databaseTypeEnvVar ?? (await askForDatabase())
 
   log.info('Scaffolding base project files...')
   await scaffoldBaseFiles(layout, options)
