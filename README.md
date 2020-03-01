@@ -106,7 +106,7 @@ yarn test:e2e
 
 - E2E tests run in CI against every commit _after the package has been published_. These are preview and pr releases so its acceptable, and doing it this way provides a true smoke test of if the _real_ user journey works end to end.
 
-- E2E tests can be run on your machine. They default to working with `latest` dist-tag. Use `NEXUS_VERSION` env var to set the desired version to test against.
+- E2E tests can be run on your machine. They default to working with `latest` dist-tag. Use `E2E_NEXUS_VERSION` env var to set the desired version to test against.
 
 <br>
 
