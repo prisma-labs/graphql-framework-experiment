@@ -60,3 +60,4 @@ jobs:
           # yarn test:e2e
         env:
           DEBUG: dripip*
+          DEBUG_HIDE_DATE: 'true'
