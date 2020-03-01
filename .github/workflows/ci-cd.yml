@@ -42,6 +42,8 @@ jobs:
         node-version: [10.x, 12.x]
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
@@ -57,7 +59,7 @@ jobs:
         run: |
           export E2E_NEXUS_VERSION=$(yarn -s dripip get-current-commit-version)
           echo "running e2e test with nexus version: ${E2E_NEXUS_VERSION}"
-          # yarn test:e2e
+          yarn test:e2e
         env:
           DEBUG: dripip*
           DEBUG_HIDE_DATE: 'true'
