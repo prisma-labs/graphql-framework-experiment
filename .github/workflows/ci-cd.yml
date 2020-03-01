@@ -56,6 +56,8 @@ jobs:
           git config --global user.name prisma-labs
           git config --global user.email labs@prisma.io
       - name: e2e test
+        env:
+          LOG_LEVEL: trace
         run: |
           export E2E_NEXUS_VERSION=$(yarn -s dripip get-current-commit-version)
           yarn test:e2e
