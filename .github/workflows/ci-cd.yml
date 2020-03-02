@@ -64,8 +64,6 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v1
       - name: Install deps
         run: yarn --frozen-lockfile
       - name: Setup global git user
@@ -77,6 +75,8 @@ jobs:
         env:
           LOG_LEVEL: trace
         run: |
+          ls /home/runner/work/nexus-future/nexus-future/published
+          pwd
           ls -lah
           export E2E_NEXUS_VERSION=$(cat published/result.json | jq -r '.version')
 
