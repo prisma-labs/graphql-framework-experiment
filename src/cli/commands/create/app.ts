@@ -4,6 +4,7 @@ import prompts from 'prompts'
 import { PackageJson } from 'type-fest'
 import * as Layout from '../../../framework/layout'
 import { Command } from '../../../lib/cli'
+import { ownPackage } from '../../../lib/own-package'
 import * as Plugin from '../../../lib/plugin'
 import {
   createGitRepository,
@@ -25,19 +26,23 @@ export default class App implements Command {
   }
 }
 
-interface Options {
+interface ConfigInput {
   projectName: string
-  nexusFutureVersion: string
+}
+
+interface InternalConfig {
+  projectName: string
+  nexusFutureVersionExpression: string
 }
 
 /**
  * TODO
  */
-export async function run(optionsGiven?: Partial<Options>): Promise<void> {
+export async function run(configInput?: Partial<ConfigInput>): Promise<void> {
   if (process.env.NEXUS_CREATE_HANDOFF === 'true') {
     await runLocalHandOff()
   } else {
-    await runBootstrapper(optionsGiven)
+    await runBootstrapper(configInput)
   }
 }
 
@@ -62,7 +67,7 @@ export async function runLocalHandOff(): Promise<void> {
  * TODO
  */
 export async function runBootstrapper(
-  optionsGiven?: Partial<Options>
+  configInput?: Partial<ConfigInput>
 ): Promise<void> {
   log.trace('start bootstrapper')
 
@@ -76,12 +81,18 @@ export async function runBootstrapper(
     : undefined
   const packageManagerTypeEnvVar = process.env
     .CREATE_APP_CHOICE_PACKAGE_MANAGER_TYPE as any
+  const nexusFutureVersionExpressionEnvVar =
+    process.env.CREATE_APP_CHOICE_NEXUS_FUTURE_VERSION_EXPRESSION
   log.trace('create app user choices pre-filled by env vars?', {
     packageManagerTypeEnvVar,
     databaseTypeEnvVar,
+    nexusFutureVersionExpressionEnvVar,
   })
 
-  const projectName = optionsGiven?.projectName ?? CWDProjectNameOrGenerate()
+  const projectName = configInput?.projectName ?? CWDProjectNameOrGenerate()
+
+  const nexusFutureVersionExpression =
+    nexusFutureVersionExpressionEnvVar ?? `^${ownPackage.version}`
 
   const packageManagerType =
     packageManagerTypeEnvVar ?? (await askForPackageManager())
@@ -102,13 +113,13 @@ export async function runBootstrapper(
       name: projectName,
       isAnonymous: false,
     },
-    packageManagerType,
+    packageManagerType: packageManagerType,
   })
 
-  const options: Options = {
+  const options: InternalConfig = {
     projectName: projectName,
-    nexusFutureVersion: getNexusVersion(),
-    ...optionsGiven,
+    nexusFutureVersionExpression: nexusFutureVersionExpression,
+    ...configInput,
   }
 
   // TODO in the future scan npm registry for nexus plugins, organize by
@@ -119,7 +130,7 @@ export async function runBootstrapper(
   await scaffoldBaseFiles(layout, options)
 
   log.info(
-    `Installing nexus-future@${options.nexusFutureVersion}... (this will take around ~15 seconds)`
+    `Installing nexus-future@${options.nexusFutureVersionExpression}... (this will take around ~15 seconds)`
   )
   await layout.packageManager.installDeps({ require: true })
 
@@ -412,7 +423,10 @@ async function helloWorldTemplate(layout: Layout.Layout) {
 /**
  * Scaffold a new nexus project from scratch
  */
-async function scaffoldBaseFiles(layout: Layout.Layout, options: Options) {
+async function scaffoldBaseFiles(
+  layout: Layout.Layout,
+  options: InternalConfig
+) {
   // TODO Template selector?
   // TODO given that we're scaffolding, we know the layout ahead of time. We
   // should take advantage of that, e.g. precompute layout data
@@ -422,7 +436,7 @@ async function scaffoldBaseFiles(layout: Layout.Layout, options: Options) {
       name: options.projectName,
       license: 'UNLICENSED',
       dependencies: {
-        'nexus-future': options.nexusFutureVersion,
+        'nexus-future': options.nexusFutureVersionExpression,
       },
       scripts: {
         format: "npx prettier --write './**/*.{ts,md}' '!./prisma/**/*.md'",
@@ -527,14 +541,6 @@ function getPrismaPluginVersion(): string {
     prismaPluginVersion = 'latest'
   }
   return prismaPluginVersion
-}
-
-/**
- * Fetch the version of nexus to install.
- */
-function getNexusVersion(): string {
-  const localNexusVersion: string = require('../../../../package.json').version
-  return `^${localNexusVersion}`
 }
 
 function parseDatabaseChoice(

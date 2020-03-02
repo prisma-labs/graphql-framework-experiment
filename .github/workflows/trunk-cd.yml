@@ -1,8 +1,6 @@
-name: ci-cd
+name: trunk-cd
 
 on:
-  pull_request:
-    branches: [master]
   push:
     branches: [master]
 
@@ -21,8 +19,29 @@ jobs:
       - run: yarn --frozen-lockfile
       - run: yarn -s test:unit
 
+  system-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install deps
+        run: yarn --frozen-lockfile
+      - run: yarn -s build
+      - name: Setup global git user
+        run: |
+          # For nexus create app flow which will make an init commit
+          git config --global user.name prisma-labs
+          git config --global user.email labs@prisma.io
+      - run: yarn -s test:system
+
   publish:
-    needs: unit-tests
+    needs: [unit-tests, system-tests]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -33,7 +52,7 @@ jobs:
         run: yarn --frozen-lockfile
       - name: Make release
         run: |
-          yarn -s dripip preview-or-pr --json > result.json
+          yarn -s dripip preview --json > result.json
           cat result.json | jq '.'
         env:
           NPM_TOKEN: ${{secrets.NPM_TOKEN}}
@@ -43,7 +62,7 @@ jobs:
           name: published
           path: result.json
 
-  smoke-test:
+  e2e-tests:
     needs: publish
     runs-on: ubuntu-latest
     strategy:

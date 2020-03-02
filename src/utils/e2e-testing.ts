@@ -12,17 +12,27 @@ import { rootLogger } from './logger'
 import { PackageManagerType } from './package-manager'
 import stripAnsi = require('strip-ansi')
 
-const log = rootLogger.child('e2e')
+const log = rootLogger.child('e2e-testing')
 
-export function setupE2EContext(nexusOutputDir?: string) {
-  const tmpDir = nexusOutputDir ?? getTmpDir('nexus-prisma-tmp-')
-  const NEXUS_BIN_PATH = Path.join(tmpDir, 'node_modules', '.bin', 'nexus')
-  log.trace('setup', { tmpDir, NEXUS_BIN_PATH })
+export function setupE2EContext(config: {
+  testProjectDir?: string
+  /**
+   * If enabled then:
+   *
+   * 1. The generated typegen imports will be re-written to not expect @nexus/schema to be hoisted
+   * 2. The Nexus version scaffolded by create app flow in the app's package.json is a path to literally this package on disk.
+   */
+  linkedPackageMode?: boolean
+}) {
+  const projectDir = config.testProjectDir ?? getTmpDir('nexus-prisma-tmp-')
+  const NEXUS_BIN_PATH = Path.join(projectDir, 'node_modules', '.bin', 'nexus')
+  log.trace('setup', { projectDir, config })
 
-  FS.dir(tmpDir)
+  FS.dir(projectDir)
 
-  return {
-    tmpDir,
+  const contextAPI = {
+    client: new GraphQLClient('http://localhost:4000/graphql'),
+    projectDir: projectDir,
     spawnNexus(
       args: string[],
       expectHandler: (data: string, proc: IPty) => void = () => {},
@@ -32,7 +42,7 @@ export function setupE2EContext(nexusOutputDir?: string) {
         NEXUS_BIN_PATH,
         args,
         {
-          cwd: tmpDir,
+          cwd: projectDir,
           ...opts,
         },
         (data, proc) => expectHandler(stripAnsi(data), proc)
@@ -53,7 +63,7 @@ export function setupE2EContext(nexusOutputDir?: string) {
         'npx',
         [`nexus-future@${version}`],
         {
-          cwd: tmpDir,
+          cwd: projectDir,
           env: {
             ...process.env,
             CREATE_APP_CHOICE_PACKAGE_MANAGER_TYPE: packageManagerType,
@@ -64,7 +74,39 @@ export function setupE2EContext(nexusOutputDir?: string) {
         (data, proc) => expectHandler(stripAnsi(data), proc)
       )
     },
-    client: new GraphQLClient('http://localhost:4000/graphql'),
+    spawnNexusFromBuild(
+      args: string[],
+      expectHandler: (data: string, proc: IPty) => void = () => {}
+    ) {
+      const projectPath = Path.join(__dirname, '../../')
+      const buildPath = Path.join(projectPath, '/dist/')
+      const cliPath = Path.join(buildPath, '/cli/main')
+      return ptySpawn(
+        'node',
+        [cliPath, ...args],
+        {
+          cwd: projectDir,
+        },
+        (data, proc) => expectHandler(stripAnsi(data), proc)
+      )
+    },
+  }
+
+  if (config?.linkedPackageMode) {
+    // Handling no-hoist problem - https://github.com/graphql-nexus/nexus-future/issues/432
+    process.env.NEXUS_TYPEGEN_NEXUS_SCHEMA_IMPORT_PATH = `"../../nexus-future/node_modules/@nexus/schema"`
+    process.env.CREATE_APP_CHOICE_NEXUS_FUTURE_VERSION_EXPRESSION = `file:${getRelativePathFromTestProjectToNexusPackage()}`
+  }
+
+  return contextAPI
+
+  //
+  // helpers
+  //
+
+  function getRelativePathFromTestProjectToNexusPackage() {
+    const nexusPackagePath = Path.join(__dirname, '../../')
+    return Path.join('..', Path.relative(projectDir, nexusPackagePath))
   }
 }
 
