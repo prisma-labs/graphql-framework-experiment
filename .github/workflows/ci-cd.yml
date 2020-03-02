@@ -72,8 +72,8 @@ jobs:
           LOG_LEVEL: trace
         run: |
           export E2E_NEXUS_VERSION=$(cat published/result.json | jq -r '.version')
-          if [ $E2E_NEXUS_VERSION == '' ]; then {
+          if [ $E2E_NEXUS_VERSION == '' ]; then
             echo "Failed to extract version"
             exit 1
-          }
+          fi
           yarn test:e2e
