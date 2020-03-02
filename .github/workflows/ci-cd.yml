@@ -56,10 +56,7 @@ jobs:
         uses: actions/download-artifact@v1
         with:
           name: published
-      - run: |
-          ls /home/runner/work/nexus-future/nexus-future/published
-          pwd
-          ls -lah
+      - run: cat published/result.json | jq -r '.version'
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
@@ -75,14 +72,9 @@ jobs:
         env:
           LOG_LEVEL: trace
         run: |
-          ls /home/runner/work/nexus-future/nexus-future/published
-          pwd
-          ls -lah
           export E2E_NEXUS_VERSION=$(cat published/result.json | jq -r '.version')
-
           if [ $E2E_NEXUS_VERSION == '' ]; then {
             echo "Failed to extract version"
             exit 1
           }
-
           yarn test:e2e
