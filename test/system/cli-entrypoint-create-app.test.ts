@@ -9,6 +9,8 @@ test('cli entrypoint create app', async () => {
   process.env.CREATE_APP_CHOICE_PACKAGE_MANAGER_TYPE = 'npm'
   process.env.CREATE_APP_CHOICE_NEXUS_FUTURE_VERSION_EXPRESSION = `file:${ctx.getRelativePathFromCWDToLocalPackage()}`
 
+  // Create a new app
+
   const createAppResult = await ctx.spawnNexusFromBuild([], (data, proc) => {
     process.stdout.write(data)
     if (data.includes('server:listening')) {
@@ -19,7 +21,7 @@ test('cli entrypoint create app', async () => {
   expect(createAppResult.data).toContain('server:listening')
   expect(createAppResult.exitCode).toStrictEqual(0)
 
-  // Run nexus dev and query graphql api
+  // Run dev and query graphql api
 
   await ctx.spawnNexusFromBuild(['dev'], async (data, proc) => {
     if (data.includes('server:listening')) {
@@ -38,7 +40,7 @@ test('cli entrypoint create app', async () => {
     }
   })
 
-  // Run nexus build
+  // Run build
 
   const res = await ctx.spawnNexus(['build'], () => {})
 

@@ -1,4 +1,4 @@
-name: ci-cd
+name: trunk-cd
 
 on:
   pull_request:
