@@ -14,7 +14,7 @@ import stripAnsi = require('strip-ansi')
 
 const log = rootLogger.child('e2e-testing')
 
-export function setupE2EContext(config: {
+export function setupE2EContext(config?: {
   testProjectDir?: string
   /**
    * If enabled then:
@@ -24,7 +24,7 @@ export function setupE2EContext(config: {
    */
   linkedPackageMode?: boolean
 }) {
-  const projectDir = config.testProjectDir ?? getTmpDir('nexus-prisma-tmp-')
+  const projectDir = config?.testProjectDir ?? getTmpDir('nexus-prisma-tmp-')
   const NEXUS_BIN_PATH = Path.join(projectDir, 'node_modules', '.bin', 'nexus')
   log.trace('setup', { projectDir, config })
 
