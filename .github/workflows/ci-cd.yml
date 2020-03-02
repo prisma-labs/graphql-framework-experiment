@@ -22,7 +22,7 @@ jobs:
       - run: yarn -s test:unit
 
   publish:
-    needs: unit-tests
+    # needs: unit-tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -48,7 +48,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [10.x, 12.x]
+        # node-version: [10.x, 12.x]
+        node-version: [12.x]
     steps:
       - name: Load publish result
         uses: actions/download-artifact@v1
