@@ -24,7 +24,7 @@ export function setupE2EContext(config?: {
    */
   linkedPackageMode?: boolean
 }) {
-  const projectDir = config?.testProjectDir ?? getTmpDir('nexus-prisma-tmp-')
+  const projectDir = config?.testProjectDir ?? getTmpDir('e2e-testing')
   const NEXUS_BIN_PATH = Path.join(projectDir, 'node_modules', '.bin', 'nexus')
   log.trace('setup', { projectDir, config })
 

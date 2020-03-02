@@ -1,6 +1,5 @@
 import * as fs from 'fs-jetpack'
 import * as FS from 'fs-jetpack'
-import * as OS from 'os'
 import * as Path from 'path'
 
 /**
@@ -69,7 +68,13 @@ export function getTmpDir(prefix?: string) {
     .toString()
     .slice(2)
 
-  const tmpDir = Path.join(OS.tmpdir(), `${prefix ?? ''}${uniqId}`)
+  // todo
+  // os.tmpdir(), on mac, returns /var/...
+  // but then ptySpawn, despite being given these as CWD value, lead to
+  // processes where the path is prefixed with /private
+  // This breaks the invariant check that a nexus project should be run
+  // with a cli from the locally installed version.
+  const tmpDir = Path.join('/private', 'tmp', `${prefix ?? ''}${uniqId}`)
 
   // Create dir
   FS.dir(tmpDir)

@@ -6,7 +6,6 @@ import { PackageJson } from 'type-fest'
 import { findFile, stripExt } from '../../utils'
 import { rootLogger } from '../../utils/logger'
 import * as PackageManager from '../../utils/package-manager'
-import { findConfigFile } from '../../utils/tsc'
 import * as Schema from './schema-modules'
 
 export const DEFAULT_BUILD_FOLDER_NAME = 'node_modules/.build'
@@ -244,7 +243,23 @@ function calcSourceRootToModule(layout: Layout, modulePath: string) {
  * package.json found along search, returns null.
  */
 function findPackageJsonPath(): string | null {
-  return findConfigFile('package.json', { required: false })
+  let found: string | null = null
+  let path = process.cwd()
+
+  while (true) {
+    if (FS.exists(Path.join(path, 'package.json'))) {
+      found = Path.join(path, 'package.json')
+      break
+    }
+
+    if (path === '/') {
+      break
+    }
+
+    path = Path.join(path, '..')
+  }
+
+  return found
 }
 
 /**
@@ -258,6 +273,7 @@ export async function scanProjectType(): Promise<
       type: 'NEXUS_project' | 'node_project'
       packageJson: {}
       packageJsonPath: string
+      packageJsonDir: string
     }
 > {
   const packageJsonPath = findPackageJsonPath()
@@ -271,10 +287,20 @@ export async function scanProjectType(): Promise<
 
   const packageJson = FS.read(packageJsonPath, 'json')
   if (packageJson?.dependencies?.['nexus-future']) {
-    return { type: 'NEXUS_project', packageJson, packageJsonPath }
+    return {
+      type: 'NEXUS_project',
+      packageJson,
+      packageJsonPath,
+      packageJsonDir: Path.dirname(packageJsonPath),
+    }
   }
 
-  return { type: 'node_project', packageJson, packageJsonPath }
+  return {
+    type: 'node_project',
+    packageJson,
+    packageJsonPath,
+    packageJsonDir: Path.dirname(packageJsonPath),
+  }
 }
 
 /**

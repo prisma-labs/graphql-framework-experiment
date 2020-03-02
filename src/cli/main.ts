@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { stripIndent } from 'common-tags'
 import * as dotenv from 'dotenv'
+import * as Path from 'path'
 import { isError } from 'util'
 import * as Layout from '../framework/layout'
 import { CLI, HelpError } from '../lib/cli'
@@ -28,7 +29,7 @@ main().then(exitCode => {
 
 /**
  * Check that this nexus process is being run from a locally installed
- * veresion unless there is local project or the local project does not have
+ * version unless there is no local project or the local project does not have
  * nexus installed.
  */
 async function guardNotGlobalCLIWithLocalProject(
@@ -36,6 +37,7 @@ async function guardNotGlobalCLIWithLocalProject(
 ): Promise<void> {
   // TODO data is attainable from layout scan calculated later on... not optimal to call this twice...
   const projectType = await Layout.scanProjectType()
+
   if (
     projectType.type === 'NEXUS_project' &&
     isProcessFromProjectBin(projectType.packageJsonPath)
@@ -45,8 +47,12 @@ async function guardNotGlobalCLIWithLocalProject(
         You are using the nexus cli from a location other than this project.
 
         Location of the nexus CLI you executed:      ${process.argv[1]}
-        Location of the nexus CLI for this project:  ${projectType.packageJsonPath +
-          '/node_modules/.bin/nexus'}
+        Location of the nexus CLI for this project:  ${Path.join(
+          projectType.packageJsonDir,
+          'node_modules',
+          '.bin',
+          'nexus'
+        )}
         
         Please use the nexus CLI for this project:
 
