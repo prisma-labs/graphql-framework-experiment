@@ -57,6 +57,8 @@ jobs:
         with:
           name: published
       - run: |
+          ls /home/runner/work/nexus-future/nexus-future/published
+          pwd
           ls -lah
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
