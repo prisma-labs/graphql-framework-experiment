@@ -1,29 +1,32 @@
 import { introspectionQuery } from 'graphql'
 import { setupE2EContext } from '../../src/utils/e2e-testing'
+import { rootLogger } from '../../src/utils/logger'
 
-const ctx = setupE2EContext()
+rootLogger.settings({ level: 'trace' })
+const log = rootLogger.child('system-test')
 
-test('e2e', async () => {
-  const nexusVersion = process.env.E2E_NEXUS_VERSION ?? 'latest'
+const ctx = setupE2EContext({
+  linkedPackageMode: true,
+})
 
-  // Run npx nexus-future and kill process
+test('cli entrypoint create app', async () => {
+  process.env.LOG_LEVEL = 'trace'
+  process.env.CREATE_APP_CHOICE_DATABASE_TYPE = 'NO_DATABASE'
+  process.env.CREATE_APP_CHOICE_PACKAGE_MANAGER_TYPE = 'npm'
 
-  const createAppResult = await ctx.spawnNPXNexus(
-    'npm',
-    'NO_DATABASE',
-    nexusVersion,
-    (data, proc) => {
-      process.stdout.write(data)
-      if (data.includes('server:listening')) {
-        proc.kill()
-      }
+  // Create a new app
+
+  const createAppResult = await ctx.spawnNexusFromBuild([], (data, proc) => {
+    process.stdout.write(data)
+    if (data.includes('server:listening')) {
+      proc.kill()
     }
-  )
+  })
 
   expect(createAppResult.data).toContain('server:listening')
   expect(createAppResult.exitCode).toStrictEqual(0)
 
-  // Run nexus dev and query graphql api
+  // Run dev and query graphql api
 
   await ctx.spawnNexus(['dev'], async (data, proc) => {
     if (data.includes('server:listening')) {
@@ -42,7 +45,7 @@ test('e2e', async () => {
     }
   })
 
-  // Run nexus build
+  // Run build
 
   const res = await ctx.spawnNexus(['build'], () => {})
 

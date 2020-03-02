@@ -4,9 +4,8 @@ import * as Layout from '../../framework/layout'
 import { Command } from '../../lib/cli'
 import { CWDProjectNameOrGenerate, generateProjectName } from '../../utils'
 import { rootLogger } from '../../utils/logger'
-import { run, Database } from './create/app'
+import { run as runCreateApp } from './create/app'
 import { Dev } from './dev'
-import { PackageManagerType } from '../../utils/package-manager'
 
 const log = rootLogger.child('cli').child('entrypoint')
 
@@ -14,17 +13,13 @@ export class __Default implements Command {
   async parse() {
     log.trace('start')
     const projectType = await Layout.scanProjectType()
-
     switch (projectType.type) {
       case 'new':
         log.trace(
           'detected CWD is empty and not within an existing nexus project, delegating to create sub-command'
         )
-        await run({
+        await runCreateApp({
           projectName: CWDProjectNameOrGenerate(),
-          database: process.env.DATABASE_CHOICE as Database | 'NO_DATABASE', // For testing
-          packageManager: process.env
-            .PACKAGE_MANAGER_CHOICE as PackageManagerType, // For testing
         })
         break
       case 'NEXUS_project':
@@ -51,7 +46,9 @@ export class __Default implements Command {
         )
         await fs.dirAsync(projectName)
         process.chdir(fs.path(projectName))
-        await run({ projectName })
+        await runCreateApp({
+          projectName: projectName,
+        })
 
         // It is not possible in POSIX for a process to change its parent
         // environment. Detail:

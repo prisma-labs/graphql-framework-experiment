@@ -55,7 +55,7 @@
     "@types/lodash": "4.14.149",
     "@types/node": "13.7.0",
     "doctoc": "1.4.0",
-    "dripip": "^0.7.0",
+    "dripip": "^0.7.1",
     "husky": "4.2.1",
     "jest": "25.1.0",
     "node-pty": "^0.9.0",
@@ -88,6 +88,7 @@
     "test:integration": "jest --verbose --testRegex '.+/integration/.+\\.spec\\.ts$'",
     "test:unit": "jest --verbose --testRegex '.+/src/.+\\.spec\\.ts$'",
     "test:e2e": "jest --verbose --testTimeout 60000 test/e2e",
+    "test:system": "jest --verbose --testTimeout 60000 test/system",
     "dev:test": "jest --watch --testRegex '.+/src/.+\\.spec\\.ts$'",
     "dev": "tsc -b -w"
   },

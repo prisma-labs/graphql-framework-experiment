@@ -4,74 +4,110 @@
 
 import * as FS from 'fs-jetpack'
 import { IPty, IPtyForkOptions, IWindowsPtyForkOptions } from 'node-pty'
-import * as OS from 'os'
 import * as Path from 'path'
 import { Database } from '../cli/commands/create/app'
 import { GraphQLClient } from '../lib/graphql-client'
+import { getTmpDir } from './fs'
 import { rootLogger } from './logger'
 import { PackageManagerType } from './package-manager'
+import stripAnsi = require('strip-ansi')
 
-export function setupE2EContext(nexusOutputDir?: string) {
-  const tmpDir = nexusOutputDir ?? getTmpDir()
-  const RELATIVE_BIN_PATH = Path.join(tmpDir, 'node_modules', '.bin', 'nexus')
+const log = rootLogger.child('e2e-testing')
 
-  FS.dir(tmpDir)
+export function setupE2EContext(config?: {
+  testProjectDir?: string
+  /**
+   * If enabled then:
+   *
+   * 1. The generated typegen imports will be re-written to not expect @nexus/schema to be hoisted
+   * 2. The Nexus version scaffolded by create app flow in the app's package.json is a path to literally this package on disk.
+   */
+  linkedPackageMode?: boolean
+}) {
+  const projectDir = config?.testProjectDir ?? getTmpDir('nexus-prisma-tmp-')
+  const NEXUS_BIN_PATH = Path.join(projectDir, 'node_modules', '.bin', 'nexus')
+  log.trace('setup', { projectDir, config })
 
-  afterEach(() => {
-    // FS.remove(tmpDir)
-  })
+  FS.dir(projectDir)
 
-  return {
-    tmpDir,
+  const contextAPI = {
+    client: new GraphQLClient('http://localhost:4000/graphql'),
+    projectDir: projectDir,
     spawnNexus(
       args: string[],
       expectHandler: (data: string, proc: IPty) => void = () => {},
       opts: IPtyForkOptions = {}
     ) {
       return ptySpawn(
-        RELATIVE_BIN_PATH,
+        NEXUS_BIN_PATH,
         args,
         {
-          cwd: tmpDir,
+          cwd: projectDir,
           ...opts,
         },
-        expectHandler
+        (data, proc) => expectHandler(stripAnsi(data), proc)
       )
     },
-    spawnInit(
-      packageManager: PackageManagerType,
-      database: Database | 'NO_DATABASE',
+    spawnNPXNexus(
+      packageManagerType: PackageManagerType,
+      databaseType: Database | 'NO_DATABASE',
       version: string,
       expectHandler: (data: string, proc: IPty) => void
     ) {
+      log.trace('npx nexus-future', {
+        version,
+        packageManagerType,
+        databaseType,
+      })
       return ptySpawn(
         'npx',
         [`nexus-future@${version}`],
         {
-          cwd: tmpDir,
+          cwd: projectDir,
           env: {
             ...process.env,
-            PACKAGE_MANAGER_CHOICE: packageManager,
-            DATABASE_CHOICE: database,
+            CREATE_APP_CHOICE_PACKAGE_MANAGER_TYPE: packageManagerType,
+            CREATE_APP_CHOICE_DATABASE_TYPE: databaseType,
+            LOG_LEVEL: 'trace',
           },
         },
-        expectHandler
+        (data, proc) => expectHandler(stripAnsi(data), proc)
       )
     },
-    client: new GraphQLClient('http://localhost:4000/graphql'),
+    spawnNexusFromBuild(
+      args: string[],
+      expectHandler: (data: string, proc: IPty) => void = () => {}
+    ) {
+      const projectPath = Path.join(__dirname, '../../')
+      const buildPath = Path.join(projectPath, '/dist/')
+      const cliPath = Path.join(buildPath, '/cli/main')
+      return ptySpawn(
+        'node',
+        [cliPath, ...args],
+        {
+          cwd: projectDir,
+        },
+        (data, proc) => expectHandler(stripAnsi(data), proc)
+      )
+    },
   }
-}
 
-export function getTmpDir() {
-  const uniqId = Math.random()
-    .toString()
-    .slice(2)
-  const tmpDir = Path.join(OS.tmpdir(), `nexus-prisma-tmp-${uniqId}`)
+  if (config?.linkedPackageMode) {
+    // Handling no-hoist problem - https://github.com/graphql-nexus/nexus-future/issues/432
+    process.env.NEXUS_TYPEGEN_NEXUS_SCHEMA_IMPORT_PATH = `"../../nexus-future/node_modules/@nexus/schema"`
+    process.env.CREATE_APP_CHOICE_NEXUS_FUTURE_VERSION_EXPRESSION = `file:${getRelativePathFromTestProjectToNexusPackage()}`
+  }
 
-  // Create dir
-  FS.dir(tmpDir)
+  return contextAPI
 
-  return tmpDir
+  //
+  // helpers
+  //
+
+  function getRelativePathFromTestProjectToNexusPackage() {
+    const nexusPackagePath = Path.join(__dirname, '../../')
+    return Path.join('..', Path.relative(projectDir, nexusPackagePath))
+  }
 }
 
 export function ptySpawn(
@@ -97,7 +133,7 @@ export function ptySpawn(
       })
 
       proc.on('exit', (exitCode, signal) => {
-        resolve({ exitCode, signal, data: buffer })
+        resolve({ exitCode, signal, data: stripAnsi(buffer) })
       })
     }
   )

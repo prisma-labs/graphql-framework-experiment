@@ -96,17 +96,35 @@ yarn dev:test      # watch mode
 
 - Unit tests run in CI against every commit.
 
+#### System
+
+```
+yarn test:system
+```
+
+- Live under `/test/system`
+
+- Almost like E2E but they work with the local package code (whereas E2E would work with an actually published package).
+
+- These are useful because they provide many of the functional checks of E2E with a lower barrier to running, namely needing a published package. For example pull-requests made by community members cannot trigger E2E tests because that would require publishing and GitHub actions has no way for [PRs from forks to access secrets](https://github.community/t5/GitHub-Actions/Allow-secrets-to-be-shared-with-trusted-Actions/td-p/34278).
+
+- You must run `yarn build` right before running these tests.
+
+- These tests run by having the local package installed via folder-reference into the test project. This disables package hoisting. This in turn [breaks typegen](https://github.com/graphql-nexus/nexus-future/issues/432) because its import of `@nexus/schema` will be unresolvable (it looks for `node_modules/@nexus/schema` but actually needs to look at `node_modules/nexus-future/node_modules/@nexus/schema`). The system tests encode a solution to this. You should only have to think about this when actually devloping the system tests.
+
+The solution to this problem is an env hook exposed by `nexus-future` called `NEXUS_TYPEGEN_NEXUS_SCHEMA_IMPORT_PATH`. when set it will cause the typegen file `node_modules/@types/nexus-typegen/index.d.ts` to have the import from-value rewritten to whatever the env var value is. This env hook lives inside the typegen component but is leveraged by the system tests suite.
+
 #### E2E
 
 ```bash
 yarn test:e2e
 ```
 
-- Live under `/test`
+- Live under `/test/e2e`
 
 - E2E tests run in CI against every commit _after the package has been published_. These are preview and pr releases so its acceptable, and doing it this way provides a true smoke test of if the _real_ user journey works end to end.
 
-- E2E tests can be run on your machine. They default to working with `latest` dist-tag. Use `NEXUS_VERSION` env var to set the desired version to test against.
+- E2E tests can be run on your machine. They default to working with `latest` dist-tag. Use `E2E_NEXUS_VERSION` env var to set the desired version to test against.
 
 <br>
 
