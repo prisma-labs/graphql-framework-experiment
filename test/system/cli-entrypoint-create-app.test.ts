@@ -5,15 +5,14 @@ import { rootLogger } from '../../src/utils/logger'
 rootLogger.settings({ level: 'trace' })
 const log = rootLogger.child('system-test')
 
-const ctx = setupE2EContext()
+const ctx = setupE2EContext({
+  linkedPackageMode: true,
+})
 
 test('cli entrypoint create app', async () => {
   process.env.LOG_LEVEL = 'trace'
   process.env.CREATE_APP_CHOICE_DATABASE_TYPE = 'NO_DATABASE'
   process.env.CREATE_APP_CHOICE_PACKAGE_MANAGER_TYPE = 'npm'
-  process.env.CREATE_APP_CHOICE_NEXUS_FUTURE_VERSION_EXPRESSION = `file:${ctx.getRelativePathFromCWDToLocalPackage()}`
-  // Handling no-hoist problem - https://github.com/graphql-nexus/nexus-future/issues/432
-  process.env.NEXUS_TYPEGEN_NEXUS_SCHEMA_IMPORT_PATH = `"../../nexus-future/node_modules/@nexus/schema"`
 
   // Create a new app
 
