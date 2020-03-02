@@ -23,10 +23,11 @@ export async function generateArtifacts(startScript: string): Promise<void> {
     throw result.error
   }
 
+  // Handling no-hoist problem
+  // https://github.com/graphql-nexus/nexus-future/issues/432
+  // todo link to website docs
+
   if (process.env.NEXUS_TYPEGEN_NEXUS_SCHEMA_IMPORT_PATH) {
-    // use-case:
-    // Fix path to @nexus/schema b/c it is not hoisted
-    // todo link to website docs
     const importPattern = /"@nexus\/schema"/g
     const indexDTSPath = FS.path(
       `${process.cwd()}`,
