@@ -51,12 +51,13 @@ jobs:
         # node-version: [10.x, 12.x]
         node-version: [12.x]
     steps:
+      - uses: actions/checkout@v2
       - name: Load publish result
         uses: actions/download-artifact@v1
         with:
           name: published
-          path: ./published
-      - uses: actions/checkout@v2
+      - run: |
+          ls -lah
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
