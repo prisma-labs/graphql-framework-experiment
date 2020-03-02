@@ -33,7 +33,7 @@ jobs:
         run: yarn --frozen-lockfile
       - name: Make release
         run: |
-          yarn -s dripip preview-or-pr --json > result.json
+          yarn -s dripip preview --json > result.json
           cat result.json | jq '.'
         env:
           NPM_TOKEN: ${{secrets.NPM_TOKEN}}

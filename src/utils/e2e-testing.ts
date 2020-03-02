@@ -64,6 +64,26 @@ export function setupE2EContext(nexusOutputDir?: string) {
         (data, proc) => expectHandler(stripAnsi(data), proc)
       )
     },
+    spawnNexusFromBuild(
+      args: string[],
+      expectHandler: (data: string, proc: IPty) => void = () => {}
+    ) {
+      const projectPath = Path.join(__dirname, '../../')
+      const buildPath = Path.join(projectPath, '/dist/')
+      const cliPath = Path.join(buildPath, '/cli/main')
+      return ptySpawn(
+        'node',
+        [cliPath, ...args],
+        {
+          cwd: tmpDir,
+        },
+        (data, proc) => expectHandler(stripAnsi(data), proc)
+      )
+    },
+    getRelativePathFromCWDToLocalPackage() {
+      const projectPath = Path.join(__dirname, '../../')
+      return Path.join('..', Path.relative(tmpDir, projectPath))
+    },
     client: new GraphQLClient('http://localhost:4000/graphql'),
   }
 }
