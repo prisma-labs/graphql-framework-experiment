@@ -1,11 +1,12 @@
 import Chalk from 'chalk'
 import { stripIndent } from 'common-tags'
-import * as fs from 'fs-jetpack'
+import * as FS from 'fs-jetpack'
 import * as Path from 'path'
 import { PackageJson } from 'type-fest'
 import { findFile, stripExt } from '../../utils'
 import { rootLogger } from '../../utils/logger'
 import * as PackageManager from '../../utils/package-manager'
+import { findConfigFile } from '../../utils/tsc'
 import * as Schema from './schema-modules'
 
 export const DEFAULT_BUILD_FOLDER_NAME = 'node_modules/.build'
@@ -243,7 +244,7 @@ function calcSourceRootToModule(layout: Layout, modulePath: string) {
  * package.json found along search, returns null.
  */
 function findPackageJsonPath(): string | null {
-  return fs.path('package.json')
+  return findConfigFile('package.json', { required: false })
 }
 
 /**
@@ -268,8 +269,8 @@ export async function scanProjectType(): Promise<
     return { type: 'unknown' }
   }
 
-  const packageJson = fs.read(packageJsonPath, 'json')
-  if (packageJson?.dependencies?.['nexus']) {
+  const packageJson = FS.read(packageJsonPath, 'json')
+  if (packageJson?.dependencies?.['nexus-future']) {
     return { type: 'NEXUS_project', packageJson, packageJsonPath }
   }
 
@@ -281,7 +282,7 @@ export async function scanProjectType(): Promise<
  * TODO we should make nice exceptions for known meaningless files, like .DS_Store
  */
 async function isEmptyCWD(): Promise<boolean> {
-  const contents = await fs.listAsync()
+  const contents = await FS.listAsync()
   return contents === undefined || contents.length === 0
 }
 
@@ -309,7 +310,7 @@ export async function loadDataFromParentProcess(): Promise<Layout> {
 
 function readProjectInfo(): ScanResult['project'] {
   try {
-    const packageJson: PackageJson = require(fs.path('package.json'))
+    const packageJson: PackageJson = require(FS.path('package.json'))
 
     if (packageJson.name) {
       return {
