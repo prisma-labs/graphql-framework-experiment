@@ -12,7 +12,7 @@ import { rootLogger } from './logger'
 import { PackageManagerType } from './package-manager'
 import stripAnsi = require('strip-ansi')
 
-const log = rootLogger.child('e2e')
+const log = rootLogger.child('e2e-testing')
 
 export function setupE2EContext(nexusOutputDir?: string) {
   const tmpDir = nexusOutputDir ?? getTmpDir('nexus-prisma-tmp-')
