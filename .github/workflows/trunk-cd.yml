@@ -59,16 +59,16 @@ jobs:
           echo '==> Publish Result'
           jq '.' <<< $result
 
-          if [ "$(jq -r '.version' <<< $result)" == 'null' ]; then
-            echo '==> Stopping workflow because no release was made/needed for this commit'
+          if [ "$(jq -r '.kind' <<< $result)" == 'did_not_publish' ]; then
+            echo '==> Stopping workflow because no release was made for this commit'
             # https://developer.github.com/v3/actions/workflow_runs/#cancel-a-workflow-run
             curl \
-              -XPOST \
-              "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/cancel" \
-              -v \
+              --request POST \
+              --verbose \
               --fail \
-              -H "Authorization: token ${INPUT_TOKEN}" \
-              -H "Content-Type: application/json"
+              --header "Authorization: token ${INPUT_TOKEN}" \
+              --header "Content-Type: application/json" \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/cancel"
             fi
         env:
           NPM_TOKEN: ${{secrets.NPM_TOKEN}}
