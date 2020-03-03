@@ -64,6 +64,8 @@ jobs:
             # https://developer.github.com/v3/actions/workflow_runs/#cancel-a-workflow-run
             curl \
               --fail \
+              --silent \
+              --show-error \
               --request POST \
               --url "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/cancel" \
               --header "Content-Type: application/json" \
