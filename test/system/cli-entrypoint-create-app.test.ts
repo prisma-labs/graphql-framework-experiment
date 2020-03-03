@@ -12,7 +12,6 @@ test('cli entrypoint create app', async () => {
   // Create a new app
 
   const createAppResult = await ctx.spawnNexusFromBuild([], (data, proc) => {
-    process.stdout.write(data)
     if (data.includes('server:listening')) {
       proc.kill()
     }
