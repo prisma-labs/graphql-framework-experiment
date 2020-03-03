@@ -24,6 +24,10 @@ export function setupE2EContext(config?: {
    */
   linkedPackageMode?: boolean
 }) {
+  rootLogger.settings({ level: 'trace' })
+  process.env.LOG_LEVEL = 'trace'
+  process.env.LOG_COLOR = 'true'
+
   const projectDir = config?.testProjectDir ?? getTmpDir('e2e-testing')
   const NEXUS_BIN_PATH = Path.join(projectDir, 'node_modules', '.bin', 'nexus')
   log.trace('setup', { projectDir, config })

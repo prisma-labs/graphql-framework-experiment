@@ -1,16 +1,11 @@
 import { introspectionQuery } from 'graphql'
 import { setupE2EContext } from '../../src/utils/e2e-testing'
-import { rootLogger } from '../../src/utils/logger'
-
-rootLogger.settings({ level: 'trace' })
-const log = rootLogger.child('system-test')
 
 const ctx = setupE2EContext({
   linkedPackageMode: true,
 })
 
 test('cli entrypoint create app', async () => {
-  process.env.LOG_LEVEL = 'trace'
   process.env.CREATE_APP_CHOICE_DATABASE_TYPE = 'NO_DATABASE'
   process.env.CREATE_APP_CHOICE_PACKAGE_MANAGER_TYPE = 'npm'
 
