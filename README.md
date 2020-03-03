@@ -2,6 +2,9 @@
   <img src="assets/../docs/assets/nexus-logo-black.png" height="150px">
   <br>
   <span>Delightful GraphQL Application Framework</span>
+  <br>
+  <br>
+  <img src="https://github.com/graphql-nexus/nexus-future/workflows/trunk/badge.svg">
 </p>
 
 <br>
