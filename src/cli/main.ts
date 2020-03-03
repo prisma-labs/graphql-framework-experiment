@@ -1,4 +1,5 @@
 #!/usr/bin/env node --experimental-worker
+
 import { stripIndent } from 'common-tags'
 import * as dotenv from 'dotenv'
 import * as Path from 'path'
