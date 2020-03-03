@@ -43,7 +43,7 @@ jobs:
           if [[ "$(node -v)" =~ v10 ]]; then
             echo 'alias node="node --experimental-worker"' >> "$HOME/.bash_profile"
             source "$HOME/.bash_profile"
-          fi;
+          fi
           yarn -s test:system
 
   publish:
@@ -100,7 +100,7 @@ jobs:
           if [[ "$(node -v)" =~ v10 ]]; then
             echo 'alias node="node --experimental-worker"' >> "$HOME/.bash_profile"
             source "$HOME/.bash_profile"
-          fi;
+          fi
 
           export E2E_NEXUS_VERSION=$(cat published/result.json | jq -r '.version')
           if [ $E2E_NEXUS_VERSION == '' ]; then
