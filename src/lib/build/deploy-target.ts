@@ -3,11 +3,11 @@ import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import * as path from 'path'
 import { PackageJson } from 'type-fest'
+import { DEFAULT_BUILD_FOLDER_NAME, Layout } from '../../framework/layout'
+import { rootLogger } from '../../utils/logger'
+import { fatal } from '../../utils/process'
+import { findConfigFile } from '../../utils/tsc'
 import { START_MODULE_NAME } from '../constants'
-import { DEFAULT_BUILD_FOLDER_NAME, Layout } from '../framework/layout'
-import { rootLogger } from './logger'
-import { fatal } from './process'
-import { findConfigFile } from './tsc'
 
 const log = rootLogger.child(__filename)
 
