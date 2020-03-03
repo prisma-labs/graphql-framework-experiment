@@ -74,16 +74,14 @@ export function setupE2EContext(config?: {
         expectHandler
       )
     },
-    spawnNexusFromBuild(
+    spawnNexusFromPath(
+      binPath: string,
       args: string[],
       expectHandler: (data: string, proc: IPty) => void = () => {}
     ) {
-      const projectPath = Path.join(__dirname, '../../')
-      const buildPath = Path.join(projectPath, '/dist/')
-      const cliPath = Path.join(buildPath, '/cli/main')
       return ptySpawn(
         'node',
-        [cliPath, ...args],
+        [binPath, ...args],
         { cwd: projectDir },
         expectHandler
       )
