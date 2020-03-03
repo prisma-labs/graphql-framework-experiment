@@ -38,4 +38,10 @@ jobs:
           # For nexus create app flow which will make an init commit 
           git config --global user.name prisma-labs
           git config --global user.email labs@prisma.io
-      - run: yarn -s test:system
+      - run: |
+          # For Node 10.x we require worker threads
+          if [[ "$(node -v)" =~ v10 ]]; then
+            echo 'alias node="node --experimental-worker"' >> "$HOME/.bash_profile"
+            source "$HOME/.bash_profile"
+          fi;
+          yarn -s test:system
