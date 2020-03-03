@@ -1,4 +1,5 @@
-#!/usr/bin/env node --experimental-worker
+#!/bin/sh
+':' //# comment; exec /usr/bin/env node --experimental-worker "$0" "$@"
 
 import { stripIndent } from 'common-tags'
 import * as dotenv from 'dotenv'
