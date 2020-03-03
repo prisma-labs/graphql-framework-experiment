@@ -1,9 +1,14 @@
 import { introspectionQuery } from 'graphql'
+import * as Path from 'path'
 import { setupE2EContext } from '../../src/utils/e2e-testing'
 
 const ctx = setupE2EContext({
   linkedPackageMode: true,
 })
+
+// const projectPath = Path.join(__dirname, '../../')
+// const buildPath = Path.join(projectPath, '/dist/')
+const BIN_PATH = Path.join(__dirname, '..', '..', 'dist', 'cli', 'main')
 
 test('cli entrypoint create app', async () => {
   process.env.CREATE_APP_CHOICE_DATABASE_TYPE = 'NO_DATABASE'
@@ -11,11 +16,15 @@ test('cli entrypoint create app', async () => {
 
   // Create a new app
 
-  const createAppResult = await ctx.spawnNexusFromBuild([], (data, proc) => {
-    if (data.includes('server:listening')) {
-      proc.kill()
+  const createAppResult = await ctx.spawnNexusFromPath(
+    BIN_PATH,
+    [],
+    (data, proc) => {
+      if (data.includes('server:listening')) {
+        proc.kill()
+      }
     }
-  })
+  )
 
   expect(createAppResult.data).toContain('server:listening')
   expect(createAppResult.exitCode).toStrictEqual(0)
