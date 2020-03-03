@@ -16,7 +16,8 @@ export class __Default implements Command {
     switch (projectType.type) {
       case 'new':
         log.trace(
-          'detected CWD is empty and not within an existing nexus project, delegating to create sub-command'
+          'detected CWD is empty and not within an existing nexus project, delegating to create sub-command',
+          { cwd: process.cwd() }
         )
         await runCreateApp({
           projectName: CWDProjectNameOrGenerate(),
@@ -24,13 +25,15 @@ export class __Default implements Command {
         break
       case 'NEXUS_project':
         log.trace(
-          'detected CWD is within a nexus project, delegating to dev mode'
+          'detected CWD is within a nexus project, delegating to dev mode',
+          { cwd: process.cwd() }
         )
         await new Dev().parse([])
         break
       case 'node_project':
         log.trace(
-          'detected CWD is within a node but not nexus project, aborting'
+          'detected CWD is within a node but not nexus project, aborting',
+          { cwd: process.cwd() }
         )
         console.log(
           "Looks like you are inside a node but not nexus project. Please either add nexus to this project's dependencies and re-run this command or navigate to a new empty folder that does not have a package.json file present in an anecestor directory."
@@ -42,7 +45,8 @@ export class __Default implements Command {
         // name and then changing into that directory.
         const projectName = generateProjectName()
         log.info(
-          `creating ./${projectName} where all subsequent work will occur`
+          `creating project directory where all subsequent work will occur`,
+          { cwd: process.cwd(), projectName: projectName }
         )
         await fs.dirAsync(projectName)
         process.chdir(fs.path(projectName))

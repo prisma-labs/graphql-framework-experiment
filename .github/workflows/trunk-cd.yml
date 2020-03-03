@@ -95,4 +95,5 @@ jobs:
             echo "Failed to extract version"
             exit 1
           fi
+
           yarn test:e2e

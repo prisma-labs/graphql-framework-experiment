@@ -1,9 +1,13 @@
 import Chalk from 'chalk'
 import { stripIndent } from 'common-tags'
-import * as fs from 'fs-jetpack'
+import * as FS from 'fs-jetpack'
 import * as Path from 'path'
 import { PackageJson } from 'type-fest'
-import { findConfigFile, findFile, stripExt } from '../../utils'
+import {
+  findDirContainingFileRecurisvelyUpwardSync,
+  findFile,
+  stripExt,
+} from '../../utils'
 import { rootLogger } from '../../utils/logger'
 import * as PackageManager from '../../utils/package-manager'
 import * as Schema from './schema-modules'
@@ -125,7 +129,7 @@ export function createFromData(layoutData: Data): Layout {
 export const scan = async (): Promise<ScanResult> => {
   log.trace('starting scan...')
   const packageManagerType = await PackageManager.detectProjectPackageManager()
-  const maybeAppModule = await findAppModule()
+  const maybeAppModule = findAppModule()
   const maybeSchemaModules = Schema.findDirOrModules()
 
   // TODO do not assume app module is at source root?
@@ -166,7 +170,6 @@ export const scan = async (): Promise<ScanResult> => {
   }
 
   log.trace('...completed scan', { result })
-
   return result
 }
 
@@ -197,8 +200,12 @@ const checks = {
 /**
  * Find the (optional) app module in the user's project.
  */
-export const findAppModule = async () => {
-  return findFile(ENTRYPOINT_FILE_NAMES)
+export function findAppModule(): string | null {
+  log.trace('looking for app module')
+  const path = findFile(ENTRYPOINT_FILE_NAMES)
+  log.trace('done looking for app module')
+
+  return path
 }
 
 /**
@@ -212,10 +219,10 @@ export const findAppModule = async () => {
  *
  */
 export function findProjectDir(): string {
-  let packageJsonPath = findPackageJsonPath()
+  let packageJsonPath = findPackageJson()
 
   if (packageJsonPath) {
-    return Path.dirname(packageJsonPath)
+    return packageJsonPath.dir
   }
 
   return process.cwd()
@@ -236,14 +243,6 @@ function calcSourceRootToModule(layout: Layout, modulePath: string) {
 }
 
 /**
- * Find the package.json file path. Looks recursively upward to disk root. If no
- * package.json found along search, returns null.
- */
-function findPackageJsonPath(): string | null {
-  return findConfigFile('package.json', { required: false })
-}
-
-/**
  * Detect whether or not CWD is inside a nexus project. nexus project is
  * defined as there being a package.json in or above CWD with nexus as a
  * direct dependency.
@@ -253,24 +252,32 @@ export async function scanProjectType(): Promise<
   | {
       type: 'NEXUS_project' | 'node_project'
       packageJson: {}
-      packageJsonPath: string
+      packageJsonLocation: { path: string; dir: string }
     }
 > {
-  const packageJsonPath = findPackageJsonPath()
+  const packageJsonLocation = findPackageJson()
 
-  if (packageJsonPath === null) {
+  if (packageJsonLocation === null) {
     if (await isEmptyCWD()) {
       return { type: 'new' }
     }
     return { type: 'unknown' }
   }
 
-  const packageJson = fs.read(packageJsonPath, 'json')
-  if (packageJson?.dependencies?.['nexus']) {
-    return { type: 'NEXUS_project', packageJson, packageJsonPath }
+  const packageJson = FS.read(packageJsonLocation.path, 'json')
+  if (packageJson?.dependencies?.['nexus-future']) {
+    return {
+      type: 'NEXUS_project',
+      packageJson: packageJsonLocation,
+      packageJsonLocation: packageJsonLocation,
+    }
   }
 
-  return { type: 'node_project', packageJson, packageJsonPath }
+  return {
+    type: 'node_project',
+    packageJson: packageJsonLocation,
+    packageJsonLocation: packageJsonLocation,
+  }
 }
 
 /**
@@ -278,7 +285,7 @@ export async function scanProjectType(): Promise<
  * TODO we should make nice exceptions for known meaningless files, like .DS_Store
  */
 async function isEmptyCWD(): Promise<boolean> {
-  const contents = await fs.listAsync()
+  const contents = await FS.listAsync()
   return contents === undefined || contents.length === 0
 }
 
@@ -306,7 +313,7 @@ export async function loadDataFromParentProcess(): Promise<Layout> {
 
 function readProjectInfo(): ScanResult['project'] {
   try {
-    const packageJson: PackageJson = require(fs.path('package.json'))
+    const packageJson: PackageJson = require(FS.path('package.json'))
 
     if (packageJson.name) {
       return {
@@ -320,4 +327,12 @@ function readProjectInfo(): ScanResult['project'] {
     name: 'anonymous',
     isAnonymous: true,
   }
+}
+
+/**
+ * Find the package.json file path. Looks recursively upward to disk root.
+ * Starts looking in CWD If no package.json found along search, returns null.
+ */
+function findPackageJson() {
+  return findDirContainingFileRecurisvelyUpwardSync('package.json')
 }

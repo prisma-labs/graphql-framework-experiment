@@ -24,7 +24,10 @@ export function setupE2EContext(config?: {
    */
   linkedPackageMode?: boolean
 }) {
-  const projectDir = config?.testProjectDir ?? getTmpDir('nexus-prisma-tmp-')
+  rootLogger.settings({ level: 'trace' })
+  process.env.LOG_LEVEL = 'trace'
+
+  const projectDir = config?.testProjectDir ?? getTmpDir('e2e-testing')
   const NEXUS_BIN_PATH = Path.join(projectDir, 'node_modules', '.bin', 'nexus')
   log.trace('setup', { projectDir, config })
 
@@ -41,11 +44,8 @@ export function setupE2EContext(config?: {
       return ptySpawn(
         NEXUS_BIN_PATH,
         args,
-        {
-          cwd: projectDir,
-          ...opts,
-        },
-        (data, proc) => expectHandler(stripAnsi(data), proc)
+        { cwd: projectDir, ...opts },
+        expectHandler
       )
     },
     spawnNPXNexus(
@@ -71,7 +71,7 @@ export function setupE2EContext(config?: {
             LOG_LEVEL: 'trace',
           },
         },
-        (data, proc) => expectHandler(stripAnsi(data), proc)
+        expectHandler
       )
     },
     spawnNexusFromBuild(
@@ -84,10 +84,8 @@ export function setupE2EContext(config?: {
       return ptySpawn(
         'node',
         [cliPath, ...args],
-        {
-          cwd: projectDir,
-        },
-        (data, proc) => expectHandler(stripAnsi(data), proc)
+        { cwd: projectDir },
+        expectHandler
       )
     },
   }
@@ -129,7 +127,8 @@ export function ptySpawn(
 
       proc.on('data', data => {
         buffer += data
-        expectHandler(data, proc)
+        process.stdout.write(data)
+        expectHandler(stripAnsi(data), proc)
       })
 
       proc.on('exit', (exitCode, signal) => {
