@@ -53,7 +53,21 @@ jobs:
       - name: Make release
         run: |
           yarn -s dripip preview --json > result.json
-          cat result.json | jq '.'
+
+          result=$(cat result.json)
+
+          echo '==> Publish Result'
+          jq '.' <<< $result
+
+          if [ "$(jq -r '.version' <<< $result)" == 'null' ]; then
+            echo '==> Stopping workflow because no release was made/needed for this commit'
+            # https://developer.github.com/v3/actions/workflow_runs/#cancel-a-workflow-run
+            curl \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/cancel" \
+              -v \
+              -H "Authorization: token ${INPUT_TOKEN}" \
+              -H "Content-Type: application/json"
+            fi
         env:
           NPM_TOKEN: ${{secrets.NPM_TOKEN}}
       - name: Save publish result
