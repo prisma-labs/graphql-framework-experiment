@@ -1,5 +1,5 @@
 import * as NodeFS from 'fs'
-import * as fs from 'fs-jetpack'
+import * as FS from 'fs-jetpack'
 import * as OS from 'os'
 import * as Path from 'path'
 
@@ -10,44 +10,72 @@ import * as Path from 'path'
  * enough for proper file change watch detection or something, not sure.
  */
 export function removeWrite(filePath: string, fileContent: string): void {
-  fs.remove(filePath)
-  fs.write(filePath, fileContent)
+  FS.remove(filePath)
+  FS.write(filePath, fileContent)
 }
 
 export async function removeWriteAsync(
   filePath: string,
   fileContent: string
 ): Promise<void> {
-  await fs.removeAsync(filePath)
-  await fs.writeAsync(filePath, fileContent)
+  await FS.removeAsync(filePath)
+  await FS.writeAsync(filePath, fileContent)
 }
 
 /**
- * Search for a file in cwd or in parent directory recursively up to the root directory.
+ * Search for a file in cwd or in parent directory recursively up to the root
+ * directory.
  */
 export async function findFileRecurisvelyUpward(
   fileName: string
 ): Promise<null | string> {
-  let path: null | string = null
+  let found: null | string = null
   let currentDir = process.cwd()
 
-  while (path === null) {
+  while (true) {
     const checkFilePath = Path.join(currentDir, fileName)
 
-    if (await fs.existsAsync(checkFilePath)) {
-      path = checkFilePath
+    if (await FS.existsAsync(checkFilePath)) {
+      found = checkFilePath
       break
     }
 
     if (currentDir === '/') {
-      // we reached root, no where left to go
       break
     }
 
     currentDir = Path.dirname(currentDir)
   }
 
-  return path
+  return found
+}
+
+/**
+ * Search for a file in cwd or in parent directory recursively up to the root
+ * directory.
+ */
+export function findDirContainingFileRecurisvelyUpwardSync(
+  fileName: string
+): { path: string; dir: string } | null {
+  let found: { path: string; dir: string } | null = null
+  let currentDir = process.cwd()
+
+  while (true) {
+    const filePath = Path.join(currentDir, fileName)
+
+    if (FS.exists(filePath)) {
+      found = { dir: currentDir, path: filePath }
+      break
+    }
+
+    if (currentDir === '/') {
+      break
+    }
+
+    currentDir = Path.join(currentDir, '..')
+  }
+
+  return found
 }
 
 /**
@@ -60,8 +88,8 @@ export async function findFileRecurisvelyUpward(
  * https://github.com/prisma-labs/nexus-prisma/issues/453.
  */
 export const hardWriteFileSync = (filePath: string, data: string): void => {
-  fs.remove(Path.dirname(filePath))
-  fs.write(filePath, data)
+  FS.remove(Path.dirname(filePath))
+  FS.write(filePath, data)
 }
 
 /**

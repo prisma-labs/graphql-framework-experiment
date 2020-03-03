@@ -3,7 +3,11 @@ import { stripIndent } from 'common-tags'
 import * as FS from 'fs-jetpack'
 import * as Path from 'path'
 import { PackageJson } from 'type-fest'
-import { findFile, stripExt } from '../../utils'
+import {
+  findDirContainingFileRecurisvelyUpwardSync,
+  findFile,
+  stripExt,
+} from '../../utils'
 import { rootLogger } from '../../utils/logger'
 import * as PackageManager from '../../utils/package-manager'
 import * as Schema from './schema-modules'
@@ -215,10 +219,10 @@ export function findAppModule(): string | null {
  *
  */
 export function findProjectDir(): string {
-  let packageJsonPath = findPackageJsonPath()
+  let packageJsonPath = findPackageJson()
 
   if (packageJsonPath) {
-    return Path.dirname(packageJsonPath)
+    return packageJsonPath.dir
   }
 
   return process.cwd()
@@ -239,30 +243,6 @@ function calcSourceRootToModule(layout: Layout, modulePath: string) {
 }
 
 /**
- * Find the package.json file path. Looks recursively upward to disk root. If no
- * package.json found along search, returns null.
- */
-function findPackageJsonPath(): string | null {
-  let found: string | null = null
-  let path = process.cwd()
-
-  while (true) {
-    if (FS.exists(Path.join(path, 'package.json'))) {
-      found = Path.join(path, 'package.json')
-      break
-    }
-
-    if (path === '/') {
-      break
-    }
-
-    path = Path.join(path, '..')
-  }
-
-  return found
-}
-
-/**
  * Detect whether or not CWD is inside a nexus project. nexus project is
  * defined as there being a package.json in or above CWD with nexus as a
  * direct dependency.
@@ -272,34 +252,31 @@ export async function scanProjectType(): Promise<
   | {
       type: 'NEXUS_project' | 'node_project'
       packageJson: {}
-      packageJsonPath: string
-      packageJsonDir: string
+      packageJsonLocation: { path: string; dir: string }
     }
 > {
-  const packageJsonPath = findPackageJsonPath()
+  const packageJsonLocation = findPackageJson()
 
-  if (packageJsonPath === null) {
+  if (packageJsonLocation === null) {
     if (await isEmptyCWD()) {
       return { type: 'new' }
     }
     return { type: 'unknown' }
   }
 
-  const packageJson = FS.read(packageJsonPath, 'json')
+  const packageJson = FS.read(packageJsonLocation.path, 'json')
   if (packageJson?.dependencies?.['nexus-future']) {
     return {
       type: 'NEXUS_project',
-      packageJson,
-      packageJsonPath,
-      packageJsonDir: Path.dirname(packageJsonPath),
+      packageJson: packageJsonLocation,
+      packageJsonLocation: packageJsonLocation,
     }
   }
 
   return {
     type: 'node_project',
-    packageJson,
-    packageJsonPath,
-    packageJsonDir: Path.dirname(packageJsonPath),
+    packageJson: packageJsonLocation,
+    packageJsonLocation: packageJsonLocation,
   }
 }
 
@@ -350,4 +327,12 @@ function readProjectInfo(): ScanResult['project'] {
     name: 'anonymous',
     isAnonymous: true,
   }
+}
+
+/**
+ * Find the package.json file path. Looks recursively upward to disk root.
+ * Starts looking in CWD If no package.json found along search, returns null.
+ */
+function findPackageJson() {
+  return findDirContainingFileRecurisvelyUpwardSync('package.json')
 }

@@ -40,7 +40,7 @@ async function guardNotGlobalCLIWithLocalProject(
 
   if (
     projectType.type === 'NEXUS_project' &&
-    isProcessFromProjectBin(projectType.packageJsonPath)
+    isProcessFromProjectBin(projectType.packageJsonLocation.path)
   ) {
     // TODO make npm aware
     fatal(stripIndent`
@@ -48,7 +48,7 @@ async function guardNotGlobalCLIWithLocalProject(
 
         Location of the nexus CLI you executed:      ${process.argv[1]}
         Location of the nexus CLI for this project:  ${Path.join(
-          projectType.packageJsonDir,
+          projectType.packageJsonLocation.dir,
           'node_modules',
           '.bin',
           'nexus'
