@@ -1,4 +1,4 @@
-name: trunk-cd
+name: trunk
 
 on:
   push:
