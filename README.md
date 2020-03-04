@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/../docs/assets/nexus-logo-black.png" height="150px">
+  <a href="https://nexusjs.org"><img src="assets/../docs/assets/nexus-logo-black.png" height="150px"></a>
   <br>
   <span>Delightful GraphQL Application Framework</span>
   <br>
