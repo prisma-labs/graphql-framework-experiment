@@ -6,13 +6,13 @@ import { createStartModuleContent } from '../../framework/start'
 import {
   compile,
   createTSProgram,
-  extractContextTypes,
   fatal,
   findOrScaffoldTsConfig,
   generateArtifacts,
   transpileModule,
 } from '../../utils'
 import { rootLogger } from '../../utils/logger'
+import { extractContextTypes } from '../add-to-context-extractor'
 import { START_MODULE_NAME } from '../constants'
 import { loadAllWorkflowPluginsFromPackageJson } from '../plugin'
 import {
@@ -55,8 +55,8 @@ export async function buildNexusApp(settings: BuildSettings) {
     await p.hooks.build.onStart?.()
   }
 
-  const tsProgram = createTSProgram(layout)
-  const contextFieldTypes = extractContextTypes(tsProgram)
+  const tsBuilder = createTSProgram(layout)
+  const contextFieldTypes = extractContextTypes(tsBuilder.getProgram())
   process.env.NEXUS_TYPEGEN_ADD_CONTEXT_RESULTS = JSON.stringify(
     contextFieldTypes
   )
@@ -79,7 +79,7 @@ export async function buildNexusApp(settings: BuildSettings) {
   const tsProgramWithTypegen = createTSProgram(layout)
   compile(tsProgramWithTypegen, layout)
 
-  await writeStartModule(settings.stage ?? 'production', layout, tsProgram)
+  await writeStartModule(settings.stage ?? 'production', layout, tsBuilder)
 
   log.info('success', {
     buildOutput: layout.buildOutput,

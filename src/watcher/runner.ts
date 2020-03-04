@@ -4,11 +4,10 @@ require('../lib/tty-linker')
   .create()
   .child.install()
 
-import { join } from 'path'
 import { register } from 'ts-node'
 import { Script } from 'vm'
-import { Worker } from 'worker_threads'
 import * as Layout from '../framework/layout'
+import { runAddToContextExtractorAsWorker } from '../lib/add-to-context-extractor'
 import { rootLogger } from '../utils/logger'
 import cfgFactory from './cfg'
 import hook from './hook'
@@ -34,26 +33,7 @@ register({
 
   log.trace('starting context type extraction')
 
-  const worker = new Worker(join(__dirname, 'extract-context-worker.js'), {
-    workerData: {
-      layout: layout.data,
-    },
-  })
-
-  worker.once('message', (contextTypes: string[]) => {
-    log.trace('finished context type extraction', { contextTypes })
-
-    // Let the Node.js main thread exit, even though the Worker
-    // is still running:
-    worker.unref()
-  })
-
-  worker.on('error', error => {
-    log.warn(
-      'We could not extract your context types from `schema.addToContext`',
-      { error }
-    )
-  })
+  runAddToContextExtractorAsWorker(layout)
 
   // Remove app-runner.js from the argv array
   process.argv.splice(1, 1)
