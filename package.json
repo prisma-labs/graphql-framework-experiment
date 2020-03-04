@@ -87,7 +87,7 @@
     "prepublishOnly": "yarn -s build",
     "test": "jest --verbose --testTimeout 120000",
     "test:integration": "jest --verbose --testRegex '.+/integration/.+\\.spec\\.ts$'",
-    "test:unit": "jest --verbose --testRegex '.+/src/.+\\.spec\\.ts$'",
+    "test:unit": "node --experimental-worker node_modules/.bin/jest --verbose --testRegex '.+/src/.+\\.spec\\.ts$'",
     "test:e2e": "jest --verbose --testTimeout 60000 test/e2e",
     "test:system": "jest --verbose --testTimeout 60000 test/system",
     "dev:test": "jest --watch --testRegex '.+/src/.+\\.spec\\.ts$'",
