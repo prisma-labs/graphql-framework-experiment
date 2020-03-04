@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env -S node --experimental-worker
 
 // #!/bin/sh
 // ':' //; exec node --experimental-worker "$0" "$@"
