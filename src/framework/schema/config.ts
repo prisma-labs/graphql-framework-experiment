@@ -1,5 +1,5 @@
 import * as Nexus from '@nexus/schema'
-import { stripIndents, stripIndent } from 'common-tags'
+import { stripIndent, stripIndents } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import * as Lo from 'lodash'
 import * as Plugin from '../../lib/plugin'
@@ -109,18 +109,6 @@ function withAutoTypegenConfig(
       }
     `)
     config.contextType = 'NexusContext'
-
-    // Integrate user's app calls to app.addToContext
-    const addToContextCallResults: string[] = process.env
-      .NEXUS_TYPEGEN_ADD_CONTEXT_RESULTS
-      ? JSON.parse(process.env.NEXUS_TYPEGEN_ADD_CONTEXT_RESULTS)
-      : []
-
-    const addToContextInterfaces = addToContextCallResults
-      .map(result => `interface Context ${result}`)
-      .join('\n\n')
-
-    config.imports.push(addToContextInterfaces)
 
     // Integrate plugin context contributions
     for (const p of plugins) {

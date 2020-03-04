@@ -1,11 +1,18 @@
+import { stripIndent } from 'common-tags'
 import * as Path from 'path'
 import ts from 'typescript'
 import { Worker } from 'worker_threads'
 import { Layout } from '../../framework/layout'
 import { NEXUS_DEFAULT_RUNTIME_CONTEXT_TYPEGEN_PATH } from '../../framework/schema/config'
+import { hardWriteFile } from '../../utils'
 import { rootLogger } from '../../utils/logger'
 
 const log = rootLogger.child('add-to-context-extractor')
+
+export async function extractContextTypesToTypeGenFile(program: ts.Program) {
+  const contextTypes = extractContextTypes(program)
+  await writeContextTypeGenFile(contextTypes)
+}
 
 /**
  * Run the extractor in a worker.
@@ -13,7 +20,6 @@ const log = rootLogger.child('add-to-context-extractor')
 export function runAddToContextExtractorAsWorker(layout: Layout) {
   const worker = new Worker(Path.join(__dirname, './worker.js'), {
     workerData: {
-      output: NEXUS_DEFAULT_RUNTIME_CONTEXT_TYPEGEN_PATH,
       layout: layout.data,
     },
   })
@@ -35,8 +41,35 @@ export function runAddToContextExtractorAsWorker(layout: Layout) {
 }
 
 /**
- * Run our custom compiler extension features, like extracting context types
- * from all `addToContext` calls.
+ * Output the context types to a typegen file.
+ */
+export async function writeContextTypeGenFile(contextTypes: string[]) {
+  const addToContextInterfaces = contextTypes
+    .map(result => ` interface Context ${result}`)
+    .join('\n\n')
+
+  const contextTypesFileContent = stripIndent`
+    import app from 'nexus-future'
+
+    declare global {
+      export interface NexusContext extends Context {}
+    }
+
+    ${
+      addToContextInterfaces.length > 0
+        ? addToContextInterfaces
+        : `interface Context {}`
+    }
+  `
+
+  await hardWriteFile(
+    NEXUS_DEFAULT_RUNTIME_CONTEXT_TYPEGEN_PATH,
+    contextTypesFileContent
+  )
+}
+
+/**
+ * Extract types from all `addToContext` calls.
  */
 export function extractContextTypes(program: ts.Program): string[] {
   const checker = program.getTypeChecker()

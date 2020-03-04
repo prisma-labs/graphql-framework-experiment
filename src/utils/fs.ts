@@ -87,9 +87,14 @@ export function findDirContainingFileRecurisvelyUpwardSync(
  * For more details that motivated this utility refer to the originating issue
  * https://github.com/prisma-labs/nexus-prisma/issues/453.
  */
-export const hardWriteFileSync = (filePath: string, data: string): void => {
+export function hardWriteFileSync(filePath: string, data: string) {
   FS.remove(Path.dirname(filePath))
   FS.write(filePath, data)
+}
+
+export async function hardWriteFile(filePath: string, data: string) {
+  await FS.removeAsync(Path.dirname(filePath))
+  await FS.writeAsync(filePath, data)
 }
 
 /**
