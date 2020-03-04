@@ -5,7 +5,7 @@ const { readTsConfig, hardWriteFileSync } = require('../../utils')
 
 const tsConfig = readTsConfig(workerData.layout)
 
-const program = ts.createIncrementalProgram({
+const builder = ts.createIncrementalProgram({
   rootNames: tsConfig.fileNames,
   options: {
     incremental: true,
@@ -14,7 +14,7 @@ const program = ts.createIncrementalProgram({
   },
 })
 
-const contextTypes = extractContextTypes(program)
+const contextTypes = extractContextTypes(builder.getProgram())
 
 const addToContextInterfaces = contextTypes
   .map(result => ` interface Context ${result}`)

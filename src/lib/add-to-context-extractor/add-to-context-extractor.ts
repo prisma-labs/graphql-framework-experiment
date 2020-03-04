@@ -11,7 +11,7 @@ const log = rootLogger.child('add-to-context-extractor')
  * Run the extractor in a worker.
  */
 export function runAddToContextExtractorAsWorker(layout: Layout) {
-  const worker = new Worker(Path.join(__dirname, 'extract-context-worker.js'), {
+  const worker = new Worker(Path.join(__dirname, './worker.js'), {
     workerData: {
       output: NEXUS_DEFAULT_RUNTIME_CONTEXT_TYPEGEN_PATH,
       layout: layout.data,

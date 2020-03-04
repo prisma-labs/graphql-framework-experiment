@@ -2,13 +2,13 @@ import Chalk from 'chalk'
 import * as fs from 'fs-jetpack'
 import {
   Layout,
-  relativeTranspiledImportPath,
   loadDataFromParentProcess,
+  relativeTranspiledImportPath,
 } from '.'
 import { baseIgnores, stripExt } from '../../utils'
 
 export const MODULE_NAME = 'graphql'
-export const FILE_NAME = MODULE_NAME + '.ts'
+export const CONVENTIONAL_SCHEMA_FILE_NAME = MODULE_NAME + '.ts'
 export const DIR_NAME = 'graphql'
 
 export function emptyExceptionMessage() {
@@ -17,7 +17,7 @@ export function emptyExceptionMessage() {
   // that case. The instructions in that case should be something like "you have
   // schema files setup correctly but they are empty"
   return `Your GraphQL schema is empty. This is normal if you have not defined any GraphQL types yet. But if you did, check that the file name follows the convention: all ${Chalk.yellow(
-    FILE_NAME
+    CONVENTIONAL_SCHEMA_FILE_NAME
   )} modules or direct child modules within a ${Chalk.yellow(
     DIR_NAME
   )} directory are automatically imported.`
@@ -32,7 +32,11 @@ export function findDirOrModules(): string[] {
   const files = fs.find({
     files: true,
     recursive: true,
-    matching: [FILE_NAME, `**/${MODULE_NAME}/**/*.ts`, ...baseIgnores],
+    matching: [
+      CONVENTIONAL_SCHEMA_FILE_NAME,
+      `**/${MODULE_NAME}/**/*.ts`,
+      ...baseIgnores,
+    ],
   })
 
   return files.map(f => fs.path(f))

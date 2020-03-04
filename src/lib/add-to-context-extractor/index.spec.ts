@@ -11,6 +11,16 @@ describe('ignores cases that do not apply', () => {
     `)
     ).toMatchInlineSnapshot(`Array []`)
   })
+
+  it('case 2', () => {
+    expect(
+      extract(`
+      addToContext(req => {
+        return { a: 1 }
+      })
+    `)
+    ).toMatchInlineSnapshot(`Array []`)
+  })
 })
 
 it('extracts return type from all calls', () => {
@@ -26,6 +36,10 @@ it('extracts return type from all calls', () => {
     ]
   `)
 })
+
+//
+// Helpers
+//
 
 function extract(source: string) {
   const project = new tsm.Project({

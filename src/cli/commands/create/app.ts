@@ -107,7 +107,7 @@ export async function runBootstrapper(
     projectRoot: fs.path(),
     sourceRoot: fs.path('./src'),
     sourceRootRelative: './src',
-    schemaModules: ['src/' + Layout.schema.FILE_NAME],
+    schemaModules: ['src/' + Layout.schema.CONVENTIONAL_SCHEMA_FILE_NAME],
     buildOutput: Layout.DEFAULT_BUILD_FOLDER_NAME,
     project: {
       name: projectName,
@@ -367,7 +367,7 @@ async function assertIsCleanSlate() {
 
 async function helloWorldTemplate(layout: Layout.Layout) {
   await fs.writeAsync(
-    layout.sourcePath(Layout.schema.FILE_NAME),
+    layout.sourcePath(Layout.schema.CONVENTIONAL_SCHEMA_FILE_NAME),
     stripIndent`
     import { schema } from "nexus-future";
 
@@ -430,7 +430,9 @@ async function scaffoldBaseFiles(
   // TODO Template selector?
   // TODO given that we're scaffolding, we know the layout ahead of time. We
   // should take advantage of that, e.g. precompute layout data
-  const appEntrypointPath = layout.sourcePath(Layout.schema.FILE_NAME)
+  const appEntrypointPath = layout.sourcePath(
+    Layout.schema.CONVENTIONAL_SCHEMA_FILE_NAME
+  )
   await Promise.all([
     fs.writeAsync('package.json', {
       name: options.projectName,
