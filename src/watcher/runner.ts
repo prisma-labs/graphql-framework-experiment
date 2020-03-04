@@ -7,12 +7,12 @@ require('../lib/tty-linker')
 import { register } from 'ts-node'
 import { Script } from 'vm'
 import * as Layout from '../framework/layout'
-import { runAddToContextExtractorAsWorker } from '../lib/add-to-context-extractor'
 import { rootLogger } from '../utils/logger'
 import cfgFactory from './cfg'
 import hook from './hook'
 import * as IPC from './ipc'
 import Module = require('module')
+import { runAddToContextExtractorAsWorkerIfPossible } from '../lib/add-to-context-extractor/add-to-context-extractor'
 
 const log = rootLogger.child('dev').child('runner')
 
@@ -33,7 +33,7 @@ register({
 
   log.trace('starting context type extraction')
 
-  runAddToContextExtractorAsWorker(layout)
+  runAddToContextExtractorAsWorkerIfPossible(layout)
 
   // Remove app-runner.js from the argv array
   process.argv.splice(1, 1)

@@ -1,7 +1,4 @@
-#!/usr/bin/env -S node --experimental-worker
-
-// #!/bin/sh
-// ':' //; exec node --experimental-worker "$0" "$@"
+#!/usr/bin/env node
 
 // HACK see readme for details about weird shebang
 

@@ -272,3 +272,9 @@ rm -rf test-create && mcd test-create && ../node_modules/.bin/nexus create
   ```
 
 - Went back on the no-strict-emit and now resoted to `sed` operations after build...
+- ...
+- UDPATE
+- ...
+- [We discovered](https://github.com/graphql-nexus/nexus-future/pull/439) that `npx` gets broken by the weird shebang
+-
+- reverted

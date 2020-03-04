@@ -90,8 +90,6 @@ export class Link {
     this.childProcess = nodecp.fork(require.resolve('./runner'), [], {
       cwd: process.cwd(),
       stdio: 'pipe',
-      // --experimental-worker for Node 10
-      execArgv: [...process.execArgv, '--experimental-worker'],
       env: {
         ...process.env,
         ...this.options.environmentAdditions,
