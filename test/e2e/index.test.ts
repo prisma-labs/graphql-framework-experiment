@@ -1,4 +1,5 @@
 import { introspectionQuery } from 'graphql'
+import { CONVENTIONAL_SCHEMA_FILE_NAME } from '../../src/framework/layout/schema-modules'
 import { setupE2EContext } from '../../src/utils/e2e-testing'
 
 const ctx = setupE2EContext()
@@ -23,21 +24,48 @@ test('e2e', async () => {
   expect(createAppResult.data).toContain('server:listening')
   expect(createAppResult.exitCode).toStrictEqual(0)
 
+  // Cover addToContext feature
+
+  await ctx.fs.writeAsync(
+    `./src/more/${CONVENTIONAL_SCHEMA_FILE_NAME}`,
+    `
+      import { schema } from 'nexus-future'
+
+      schema.addToContext(req => {
+        return { a: 1 }
+      })
+
+      schema.extendType({
+        type: 'Query',
+        definition(t) { 
+          t.int('a', (_parent, _args, ctx) => { 
+            return ctx.a
+          })
+        }
+      })
+    `
+  )
+
   // Run nexus dev and query graphql api
 
   await ctx.spawnNexus(['dev'], async (data, proc) => {
     if (data.includes('server:listening')) {
-      const queryResult = await ctx.client.request(`{
+      let result: any
+      result = await ctx.client.request(`{
         worlds {
           id
           name
           population
         }
       }`)
-      const introspectionResult = await ctx.client.request(introspectionQuery)
+      expect(result).toMatchSnapshot('query')
 
-      expect(queryResult).toMatchSnapshot('query')
-      expect(introspectionResult).toMatchSnapshot('introspection')
+      result = await ctx.client.request(introspectionQuery)
+      expect(result).toMatchSnapshot('introspection')
+
+      result = await ctx.client.request(`{ a }`)
+      expect(result).toMatchSnapshot('addToContext query')
+
       proc.kill()
     }
   })

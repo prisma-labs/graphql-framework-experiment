@@ -1,6 +1,6 @@
 // Borrowed from `graphql-request`
 
-import fetch, { Response, Headers } from 'node-fetch'
+import fetch, { Headers, Response } from 'node-fetch'
 import {
   ClientError,
   GraphQLError,

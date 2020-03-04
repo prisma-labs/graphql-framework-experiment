@@ -34,6 +34,7 @@ export function setupE2EContext(config?: {
   FS.dir(projectDir)
 
   const contextAPI = {
+    fs: FS.cwd(projectDir),
     client: new GraphQLClient('http://localhost:4000/graphql'),
     projectDir: projectDir,
     spawnNexus(
@@ -81,7 +82,7 @@ export function setupE2EContext(config?: {
     ) {
       return ptySpawn(
         'node',
-        [binPath, ...args],
+        ['--experimental-worker', binPath, ...args],
         { cwd: projectDir },
         expectHandler
       )

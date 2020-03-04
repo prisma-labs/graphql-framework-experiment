@@ -1,16 +1,11 @@
 const ts = require('typescript')
 const { parentPort, workerData } = require('worker_threads')
-const {
-  NEXUS_DEFAULT_RUNTIME_CONTEXT_TYPEGEN_PATH,
-} = require('../framework/schema/config')
-const {
-  extractContextTypes,
-  readTsConfig,
-  hardWriteFileSync,
-} = require('../utils')
+const { extractContextTypes } = require('./')
+const { readTsConfig, hardWriteFileSync } = require('../../utils')
 
 const tsConfig = readTsConfig(workerData.layout)
-const program = ts.createIncrementalProgram({
+
+const builder = ts.createIncrementalProgram({
   rootNames: tsConfig.fileNames,
   options: {
     incremental: true,
@@ -19,7 +14,7 @@ const program = ts.createIncrementalProgram({
   },
 })
 
-const contextTypes = extractContextTypes(program)
+const contextTypes = extractContextTypes(builder.getProgram())
 
 const addToContextInterfaces = contextTypes
   .map(result => ` interface Context ${result}`)
@@ -38,9 +33,7 @@ ${
     : `interface Context {}`
 }
 `
-hardWriteFileSync(
-  NEXUS_DEFAULT_RUNTIME_CONTEXT_TYPEGEN_PATH,
-  contextTypesFileContent
-)
+
+hardWriteFileSync(workerData.output, contextTypesFileContent)
 
 parentPort.postMessage(contextTypes)

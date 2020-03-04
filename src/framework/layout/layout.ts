@@ -189,7 +189,7 @@ const checks = {
       solution: stripIndent`
       Please do one of the following:
 
-        1. Create a (${Chalk.yellow(Schema.FILE_NAME)} file and write your GraphQL type definitions in it.
+        1. Create a (${Chalk.yellow(Schema.CONVENTIONAL_SCHEMA_FILE_NAME)} file and write your GraphQL type definitions in it.
         2. Create a ${Chalk.yellow(Schema.DIR_NAME)} directory and write your GraphQL type definitions inside files there.
         3. Create an app entrypoint; A file called any of: ${ENTRYPOINT_FILE_NAMES.map(f => Chalk.yellow(f)).join(', ')}.
     `,

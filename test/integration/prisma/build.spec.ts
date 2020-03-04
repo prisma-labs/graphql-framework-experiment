@@ -1,5 +1,5 @@
 import { DEFAULT_BUILD_FOLDER_NAME } from '../../../src/framework/layout'
-import { FILE_NAME } from '../../../src/framework/layout/schema-modules'
+import { CONVENTIONAL_SCHEMA_FILE_NAME } from '../../../src/framework/layout/schema-modules'
 import { createWorkspace } from '../../__helpers'
 
 const ws = createWorkspace({
@@ -25,7 +25,7 @@ it('can build a prisma framework project', () => {
   )
 
   ws.fs.write(
-    FILE_NAME,
+    CONVENTIONAL_SCHEMA_FILE_NAME,
     `
       import app from 'nexus-future'
 
