@@ -1,10 +1,9 @@
 import { stripIndent } from 'common-tags'
 import * as Path from 'path'
 import ts from 'typescript'
-import { Worker } from 'worker_threads'
 import { Layout } from '../../framework/layout'
 import { NEXUS_DEFAULT_RUNTIME_CONTEXT_TYPEGEN_PATH } from '../../framework/schema/config'
-import { hardWriteFile } from '../../utils'
+import { hardWriteFile, readTsConfig } from '../../utils'
 import { rootLogger } from '../../utils/logger'
 
 const log = rootLogger.child('add-to-context-extractor')
@@ -14,10 +13,36 @@ export async function extractContextTypesToTypeGenFile(program: ts.Program) {
   await writeContextTypeGenFile(contextTypes)
 }
 
+export function runAddToContextExtractorAsWorkerIfPossible(layout: Layout) {
+  let hasWorkerThreads = false
+  try {
+    require('worker_threads')
+  } catch {
+    // stays false
+  } finally {
+    if (hasWorkerThreads) {
+      runAddToContextExtractorAsWorker(layout)
+    } else {
+      const tsConfig = readTsConfig(layout)
+      const builder = ts.createIncrementalProgram({
+        rootNames: tsConfig.fileNames,
+        options: {
+          incremental: true,
+          tsBuildInfoFile: './node_modules/.nexus/cache.tsbuildinfo',
+          ...tsConfig.options,
+        },
+      })
+      extractContextTypesToTypeGenFile(builder.getProgram())
+    }
+  }
+}
+
 /**
  * Run the extractor in a worker.
  */
 export function runAddToContextExtractorAsWorker(layout: Layout) {
+  // avoid import error in node 10.x
+  const { Worker } = require('worker_threads')
   const worker = new Worker(Path.join(__dirname, './worker.js'), {
     workerData: {
       layout: layout.data,

@@ -82,7 +82,7 @@ export function setupE2EContext(config?: {
     ) {
       return ptySpawn(
         'node',
-        ['--experimental-worker', binPath, ...args],
+        [binPath, ...args],
         { cwd: projectDir },
         expectHandler
       )
