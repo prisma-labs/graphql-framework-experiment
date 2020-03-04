@@ -35,15 +35,21 @@ test('cli entrypoint create app', async () => {
     `
       import { schema } from 'nexus-future'
 
+      export interface B {
+        foo: number
+      }
+
+      const b: B = { foo: 1 }
+
       schema.addToContext(req => {
-        return { a: 1 }
+        return { a: 1, b: b }
       })
 
       schema.extendType({
         type: 'Query',
         definition(t) { 
           t.int('a', (_parent, _args, ctx) => { 
-            return ctx.a
+            return ctx.a + ctx.b.foo
           })
         }
       })

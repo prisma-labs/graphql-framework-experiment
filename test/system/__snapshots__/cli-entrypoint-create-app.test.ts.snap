@@ -2,7 +2,7 @@
 
 exports[`cli entrypoint create app: addToContext query 1`] = `
 Object {
-  "a": 1,
+  "a": 2,
 }
 `;
 
