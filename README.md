@@ -252,3 +252,23 @@ rm -rf test-create && mcd test-create && ../node_modules/.bin/nexus create
 - This fails because `strict` adds `alwaysStrict` and that is incompatible with `noImplicitUseStrict`
 - So we explor `strict` into all its parts except the one we want to remove, `alwaysStrict`
 - sigh
+- ...
+- UDPATE
+- ...
+- We discovered that TS also emits `;` which breaks things:
+
+  Needs to be:
+
+  ```
+  #!/bin/sh
+  ':' //; exec node --experimental-worker "$0" "$@"
+  ```
+
+  Actually:
+
+  ```
+  #!/bin/sh
+  ':'; //; exec node --experimental-worker "$0" "$@"
+  ```
+
+- Went back on the no-strict-emit and now resoted to `sed` operations after build...
