@@ -7,14 +7,7 @@
     "importHelpers": true,
     "module": "commonjs",
     "esModuleInterop": true,
-    // HACK see readme for details
-    // "strict": true,
-    "noImplicitAny": true,
-    "noImplicitThis": true,
-    "strictBindCallApply": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "strictPropertyInitialization": true,
+    "strict": true,
     "target": "es2017"
   }
 }

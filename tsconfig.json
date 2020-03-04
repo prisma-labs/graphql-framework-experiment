@@ -2,8 +2,6 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
-    // HACK see readme for details
-    "noImplicitUseStrict": true,
     "outDir": "dist",
     "rootDir": "src",
     "allowJs": true,
