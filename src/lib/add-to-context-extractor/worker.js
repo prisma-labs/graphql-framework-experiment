@@ -1,7 +1,7 @@
 const ts = require('typescript')
 const { parentPort, workerData } = require('worker_threads')
-const { extractContextTypes } = require('./')
-const { readTsConfig, hardWriteFileSync } = require('../../utils')
+const { extractContextTypesToTypeGenFile } = require('./')
+const { readTsConfig } = require('../../utils')
 
 const tsConfig = readTsConfig(workerData.layout)
 
@@ -14,26 +14,6 @@ const builder = ts.createIncrementalProgram({
   },
 })
 
-const contextTypes = extractContextTypes(builder.getProgram())
-
-const addToContextInterfaces = contextTypes
-  .map(result => ` interface Context ${result}`)
-  .join('\n\n')
-
-const contextTypesFileContent = `
-import app from 'nexus-future'
-
-declare global {
-  export interface NexusContext extends Context {}
-}
-
-${
-  addToContextInterfaces.length > 0
-    ? addToContextInterfaces
-    : `interface Context {}`
-}
-`
-
-hardWriteFileSync(workerData.output, contextTypesFileContent)
-
-parentPort.postMessage(contextTypes)
+extractContextTypesToTypeGenFile(builder.getProgram()).then(() => {
+  parentPort.postMessage(contextTypes)
+})

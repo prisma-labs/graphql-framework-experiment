@@ -12,7 +12,7 @@ import {
   transpileModule,
 } from '../../utils'
 import { rootLogger } from '../../utils/logger'
-import { extractContextTypes } from '../add-to-context-extractor'
+import { extractContextTypesToTypeGenFile } from '../add-to-context-extractor/add-to-context-extractor'
 import { START_MODULE_NAME } from '../constants'
 import { loadAllWorkflowPluginsFromPackageJson } from '../plugin'
 import {
@@ -56,21 +56,20 @@ export async function buildNexusApp(settings: BuildSettings) {
   }
 
   const tsBuilder = createTSProgram(layout)
-  const contextFieldTypes = extractContextTypes(tsBuilder.getProgram())
-  process.env.NEXUS_TYPEGEN_ADD_CONTEXT_RESULTS = JSON.stringify(
-    contextFieldTypes
-  )
 
   log.trace('running_typegen')
 
   log.info('Generating Nexus artifacts ...')
-  await generateArtifacts(
-    createStartModuleContent({
-      internalStage: 'dev',
-      appPath: layout.app.path,
-      layout,
-    })
-  )
+  await Promise.all([
+    extractContextTypesToTypeGenFile(tsBuilder.getProgram()),
+    generateArtifacts(
+      createStartModuleContent({
+        internalStage: 'dev',
+        appPath: layout.app.path,
+        layout,
+      })
+    ),
+  ])
 
   log.info('Compiling ...')
   // Recreate our program instance so that it picks up the typegen. We use
