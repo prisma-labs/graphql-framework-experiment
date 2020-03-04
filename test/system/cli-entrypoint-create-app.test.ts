@@ -7,8 +7,6 @@ const ctx = setupE2EContext({
   linkedPackageMode: true,
 })
 
-// const projectPath = Path.join(__dirname, '../../')
-// const buildPath = Path.join(projectPath, '/dist/')
 const BIN_PATH = Path.join(__dirname, '..', '..', 'dist', 'cli', 'main')
 
 test('cli entrypoint create app', async () => {

@@ -1,4 +1,7 @@
-#!/usr/bin/env node
+#!/bin/sh
+':' //; exec node --experimental-worker "$0" "$@"
+
+// HACK see readme for details about weird shebang
 
 import { stripIndent } from 'common-tags'
 import * as dotenv from 'dotenv'

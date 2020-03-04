@@ -219,3 +219,36 @@ In any example you can use this workflow:
 ```
 rm -rf test-create && mcd test-create && ../node_modules/.bin/nexus create
 ```
+
+### Hacks
+
+#### Shebang / TS use strict / experimental-worker mess
+
+- We use workers to speed up extraction of context type from user's app
+- These are experimental in Node 10.x and thus require flag `--experimental-worker`
+- We support Node 10.x
+- Node only allows opting in via cli flag (e.g. no config file being read optionally)
+- Nexus is a node CLI and has a shebang so os knows to use Node to interpret the contents
+- It is not possible to pass flags to node here
+- Except with a weird [shebang hack](https://unix.stackexchange.com/questions/65235/universal-node-js-shebang)
+- The shebang hack is broken by the output of `use strict` by TS strict mode
+
+  Needs to be:
+
+  ```
+  #!/bin/sh
+  ':' //; exec node --experimental-worker "$0" "$@"
+  ```
+
+  Actually:
+
+  ```
+  #!/bin/sh
+  "use strict"
+  ':' //; exec node --experimental-worker "$0" "$@"
+  ```
+
+- So we use `noImplicitUseStrict` option to remove it from our emit
+- This fails because `strict` adds `alwaysStrict` and that is incompatible with `noImplicitUseStrict`
+- So we explor `strict` into all its parts except the one we want to remove, `alwaysStrict`
+- sigh
