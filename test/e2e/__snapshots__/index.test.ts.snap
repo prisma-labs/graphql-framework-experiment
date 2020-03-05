@@ -2,7 +2,7 @@
 
 exports[`e2e: addToContext query 1`] = `
 Object {
-  "a": 1,
+  "a": 2,
 }
 `;
 
