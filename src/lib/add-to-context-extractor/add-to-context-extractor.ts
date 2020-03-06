@@ -1,6 +1,6 @@
 import * as Path from 'path'
 import ts from 'typescript'
-import { Layout } from '../../framework/layout'
+import { Layout } from '../../lib/layout'
 import { readTsConfig } from '../../utils'
 import { rootLogger } from '../../utils/logger'
 import { extractContextTypes, ExtractedContectTypes } from './extractor'

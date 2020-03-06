@@ -1,7 +1,7 @@
 import { stripIndent } from 'common-tags'
 import * as FS from 'fs-jetpack'
 import ts from 'typescript'
-import * as Layout from '../../framework/layout'
+import * as Layout from '../../lib/layout'
 import { createStartModuleContent } from '../../framework/start'
 import {
   compile,

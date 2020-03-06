@@ -3,7 +3,7 @@ import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import * as Path from 'path'
 import prompts, * as Prompts from 'prompts'
-import * as Layout from '../../framework/layout'
+import * as Layout from '../../lib/layout'
 import { TestContextCore } from '../../framework/testing'
 import * as Logger from '../../lib/logger'
 import {

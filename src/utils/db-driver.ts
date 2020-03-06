@@ -1,5 +1,5 @@
 import { stripIndent } from 'common-tags'
-import * as Layout from '../framework/layout'
+import * as Layout from '../lib/layout'
 import * as Plugin from '../lib/plugin'
 import { fatal } from './process'
 

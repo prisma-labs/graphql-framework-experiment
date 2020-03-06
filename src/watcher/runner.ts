@@ -6,7 +6,7 @@ require('../lib/tty-linker')
 
 import { register } from 'ts-node'
 import { Script } from 'vm'
-import * as Layout from '../framework/layout'
+import * as Layout from '../lib/layout'
 import { rootLogger } from '../utils/logger'
 import cfgFactory from './cfg'
 import hook from './hook'

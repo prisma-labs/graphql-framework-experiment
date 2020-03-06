@@ -1,5 +1,5 @@
 import { stripIndent } from 'common-tags'
-import * as Layout from './layout'
+import * as Layout from '../lib/layout'
 
 type StartModuleConfig =
   | {
