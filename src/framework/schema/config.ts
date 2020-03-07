@@ -45,7 +45,7 @@ export function createInternalConfig(
 function createDefaultNexusConfig(): NexusConfig {
   return {
     outputs: {
-      schema: false,
+      schema: fs.path('generated', 'schema.graphql'),
       typegen: NEXUS_DEFAULT_TYPEGEN_PATH,
     },
     typegenAutoConfig: {
