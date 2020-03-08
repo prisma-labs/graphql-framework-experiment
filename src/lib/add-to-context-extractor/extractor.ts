@@ -165,16 +165,32 @@ function extractFromType(propType: ts.Type, checker: ts.TypeChecker) {
   const sourceFile = tsm
     .createWrappedNode(d, { typeChecker: checker })
     .getSourceFile()
+  const { modulePath, isNode } = getAbsoluteImportPath(sourceFile)
   return {
-    name: sym.getName(),
-    modulePath: getAbsoluteImportPath(sourceFile),
+    name: name,
+    modulePath: modulePath,
     isExported: sourceFile.getExportedDeclarations().has(name),
+    isNode: isNode,
   }
 }
 
-function getAbsoluteImportPath(sourceFile: tsm.SourceFile): string {
-  return Path.join(
+function getAbsoluteImportPath(sourceFile: tsm.SourceFile) {
+  let isNode = false
+  let modulePath = Path.join(
     Path.dirname(sourceFile.getFilePath()),
     sourceFile.getBaseNameWithoutExtension()
   )
+
+  const nodeModule = modulePath.match(/node_modules\/@types\/node\/(.+)/)?.[1]
+  if (nodeModule) {
+    modulePath = nodeModule
+    isNode = true
+  } else {
+    const externalPackage = modulePath.match(/node_modules\/@types\/(.+)/)?.[1]
+    if (externalPackage) {
+      modulePath = externalPackage
+    }
+  }
+
+  return { isNode, modulePath }
 }

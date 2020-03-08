@@ -133,6 +133,7 @@ Object {
   "typeImports": Array [
     Object {
       "isExported": true,
+      "isNode": false,
       "modulePath": "/src/a",
       "name": "Foo",
     },
@@ -162,6 +163,7 @@ Object {
   "typeImports": Array [
     Object {
       "isExported": false,
+      "isNode": false,
       "modulePath": "/src/a",
       "name": "Foo",
     },
@@ -208,6 +210,7 @@ Object {
   "typeImports": Array [
     Object {
       "isExported": true,
+      "isNode": false,
       "modulePath": "/src/a",
       "name": "Foo",
     },
@@ -231,11 +234,13 @@ Object {
   "typeImports": Array [
     Object {
       "isExported": true,
+      "isNode": false,
       "modulePath": "/src/a",
       "name": "Foo",
     },
     Object {
       "isExported": true,
+      "isNode": false,
       "modulePath": "/src/a",
       "name": "Bar",
     },
@@ -260,6 +265,7 @@ Object {
   "typeImports": Array [
     Object {
       "isExported": true,
+      "isNode": false,
       "modulePath": "/src/a",
       "name": "Qux",
     },
@@ -270,6 +276,28 @@ Object {
 }
 `)
 })
+
+// todo Feature is supported, but untested.
+// todo how do we test this?
+it.todo('truncates import paths when detected to be a node stdlib module')
+it.todo('truncates import paths when detected to be an external package')
+// it('type from node stdlib', () => {
+//   expect(
+//     extract(`
+//       import { IncomingHttpHeaders } from 'http'
+//       schema.addToContext(req => {
+//         return { foo: '' as any as IncomingHttpHeaders }
+//       })
+//     `)
+//   ).toMatchInlineSnapshot(`
+// Object {
+//   "typeImports": Array [],
+//   "types": Array [
+//     "{ foo: any; }",
+//   ],
+// }
+// `)
+// })
 
 it.todo('props with union types where one union member is a type reference')
 it.todo(
@@ -283,6 +311,7 @@ it.todo(
 function extract(...sources: string[]) {
   const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g']
   const project = new tsm.Project({
+    skipLoadingLibFiles: false,
     useInMemoryFileSystem: true,
   })
   for (const source of sources) {
