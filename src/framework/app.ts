@@ -17,7 +17,7 @@ type Request = HTTP.IncomingMessage & { log: Logger.Logger }
 // all places in the framework where the req object is referenced should be
 // actually referencing the typegen version, so that it reflects the req +
 // plugin augmentations type
-type ContextContributor<Req, T extends {} = any> = (req: Req) => T
+type ContextContributor<Req> = (req: Req) => Record<string, unknown>
 
 export type App = {
   /**
@@ -49,8 +49,8 @@ export type App = {
     /**
      * todo
      */
-    addToContext: <Req extends any = Request, T extends {} = any>(
-      contextContributor: ContextContributor<Req, T>
+    addToContext: <Req extends any = Request>(
+      contextContributor: ContextContributor<Req>
     ) => void
   }
 }
