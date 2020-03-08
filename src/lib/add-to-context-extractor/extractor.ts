@@ -101,35 +101,39 @@ export function extractContextTypes(
         const ContextAdderRetType = checker.getReturnTypeOfSignature(
           contextAdderSig
         )
-        const contextAdderRetProps = ContextAdderRetType.getProperties()
         const ContextAdderRetTpeString = checker.typeToString(
           ContextAdderRetType
         )
         contextTypeContributions.types.push(ContextAdderRetTpeString)
 
         // search for named references, they will require importing later on
+        const contextAdderRetProps = ContextAdderRetType.getProperties()
         for (const prop of contextAdderRetProps) {
           const propType = checker.getTypeAtLocation(prop.declarations[0])
-          const sym = propType.getSymbol()
-          if (sym?.getName() === '__object') continue
-          if (sym?.getName() === '__type') continue
-          if (sym) {
-            const d = sym.getDeclarations()?.[0]
-            if (!d)
-              throw new Error(
-                'A type with a symbol but the symbol has no declaration'
-              )
-            const sourceFile = tsm
-              .createWrappedNode(d, { typeChecker: checker })
-              .getSourceFile()
-            contextTypeContributions.typeImports.push({
-              name: sym.getName(),
-              modulePath: getAbsoluteImportPath(sourceFile),
-              isExported: sourceFile
-                .getExportedDeclarations()
-                .has(sym.getName()),
-            })
+          let sym = propType.aliasSymbol
+          let name = sym?.getName()
+          if (!sym) {
+            sym = propType.getSymbol()
+            if (!sym) continue
+            name = sym.getName()
+            // not alias but is inline, then skip
+            if (name === '__object') continue
+            if (name === '__type') continue
           }
+          if (!name) continue
+          const d = sym.getDeclarations()?.[0]
+          if (!d)
+            throw new Error(
+              'A type with a symbol but the symbol has no declaration'
+            )
+          const sourceFile = tsm
+            .createWrappedNode(d, { typeChecker: checker })
+            .getSourceFile()
+          contextTypeContributions.typeImports.push({
+            name: sym.getName(),
+            modulePath: getAbsoluteImportPath(sourceFile),
+            isExported: sourceFile.getExportedDeclarations().has(name),
+          })
           // types[prop.getName()] = checker.typeToString(propType)
         }
       }

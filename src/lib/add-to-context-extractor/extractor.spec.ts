@@ -190,6 +190,35 @@ Object {
 `)
 })
 
+it('extracts from type alias', () => {
+  expect(
+    extract(`
+        export type Foo = { bar: { baz: string } }
+        
+        const foo: Foo = {
+          bar: {
+            baz: 'test',
+          },
+        }
+  
+        schema.addToContext(req => { return { foo } })
+      `)
+  ).toMatchInlineSnapshot(`
+Object {
+  "typeImports": Array [
+    Object {
+      "isExported": true,
+      "modulePath": "/src/main",
+      "name": "Foo",
+    },
+  ],
+  "types": Array [
+    "{ foo: Foo; }",
+  ],
+}
+`)
+})
+
 it.todo('props with union types where one union member is a type reference')
 it.todo(
   'props with union intersection types where one intersection member is a type reference'
