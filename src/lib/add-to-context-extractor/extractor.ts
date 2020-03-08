@@ -109,37 +109,66 @@ export function extractContextTypes(
         // search for named references, they will require importing later on
         const contextAdderRetProps = ContextAdderRetType.getProperties()
         for (const prop of contextAdderRetProps) {
+          log.trace('processing prop', { name: prop.getName() })
           const propType = checker.getTypeAtLocation(prop.declarations[0])
-          let sym = propType.aliasSymbol
-          let name = sym?.getName()
-          if (!sym) {
-            sym = propType.getSymbol()
-            if (!sym) continue
-            name = sym.getName()
-            // not alias but is inline, then skip
-            if (name === '__object') continue
-            if (name === '__type') continue
+          if (propType.aliasSymbol) {
+            log.trace('found alias', {
+              type: checker.typeToString(propType),
+            })
+            const info = extractFromType(propType, checker)
+            if (info) {
+              contextTypeContributions.typeImports.push(info)
+            }
+          } else if (propType.isIntersection()) {
+            log.trace('found intersection', {
+              types: propType.types.map(t => checker.typeToString(t)),
+            })
+            const infos = propType.types
+              .map(t => extractFromType(t, checker)!)
+              .filter(info => info !== null)
+            if (infos.length) {
+              contextTypeContributions.typeImports.push(...infos)
+            }
+          } else {
+            const info = extractFromType(propType, checker)
+            if (info) {
+              contextTypeContributions.typeImports.push(info)
+            }
           }
-          if (!name) continue
-          const d = sym.getDeclarations()?.[0]
-          if (!d)
-            throw new Error(
-              'A type with a symbol but the symbol has no declaration'
-            )
-          const sourceFile = tsm
-            .createWrappedNode(d, { typeChecker: checker })
-            .getSourceFile()
-          contextTypeContributions.typeImports.push({
-            name: sym.getName(),
-            modulePath: getAbsoluteImportPath(sourceFile),
-            isExported: sourceFile.getExportedDeclarations().has(name),
-          })
-          // types[prop.getName()] = checker.typeToString(propType)
         }
       }
     } else {
       n.forEachChild(visit)
     }
+  }
+}
+
+function extractFromType(propType: ts.Type, checker: ts.TypeChecker) {
+  let sym = propType.aliasSymbol
+  let name = sym?.getName()
+  log.trace('found prop type alias symbol?', { found: !!sym })
+
+  if (!sym) {
+    sym = propType.getSymbol()
+    log.trace('found prop type symbol?', { found: !!sym })
+    if (!sym) return null
+    name = sym.getName()
+    // not alias but is inline, then skip
+    if (name === '__object') return null
+    if (name === '__type') return null
+  }
+  log.trace('found name?', { name })
+  if (!name) return null
+  const d = sym.getDeclarations()?.[0]
+  if (!d)
+    throw new Error('A type with a symbol but the symbol has no declaration')
+  const sourceFile = tsm
+    .createWrappedNode(d, { typeChecker: checker })
+    .getSourceFile()
+  return {
+    name: sym.getName(),
+    modulePath: getAbsoluteImportPath(sourceFile),
+    isExported: sourceFile.getExportedDeclarations().has(name),
   }
 }
 

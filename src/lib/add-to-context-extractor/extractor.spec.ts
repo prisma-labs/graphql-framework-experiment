@@ -133,7 +133,7 @@ Object {
   "typeImports": Array [
     Object {
       "isExported": true,
-      "modulePath": "/src/main",
+      "modulePath": "/src/a",
       "name": "Foo",
     },
   ],
@@ -162,7 +162,7 @@ Object {
   "typeImports": Array [
     Object {
       "isExported": false,
-      "modulePath": "/src/main",
+      "modulePath": "/src/a",
       "name": "Foo",
     },
   ],
@@ -208,12 +208,64 @@ Object {
   "typeImports": Array [
     Object {
       "isExported": true,
-      "modulePath": "/src/main",
+      "modulePath": "/src/a",
       "name": "Foo",
     },
   ],
   "types": Array [
     "{ foo: Foo; }",
+  ],
+}
+`)
+})
+
+it('prop type intersection', () => {
+  expect(
+    extract(`
+        export type Bar = { b: 2 }
+        export type Foo = { a: 1 }
+        schema.addToContext(req => { return { foo: '' as any as Foo & Bar } })
+      `)
+  ).toMatchInlineSnapshot(`
+Object {
+  "typeImports": Array [
+    Object {
+      "isExported": true,
+      "modulePath": "/src/a",
+      "name": "Foo",
+    },
+    Object {
+      "isExported": true,
+      "modulePath": "/src/a",
+      "name": "Bar",
+    },
+  ],
+  "types": Array [
+    "{ foo: Foo & Bar; }",
+  ],
+}
+`)
+})
+
+it('prop type aliased intersection', () => {
+  expect(
+    extract(`
+        type Bar = { b: 2 }
+        type Foo = { a: 1 }
+        export type Qux = Foo & Bar
+        schema.addToContext(req => { return { foo: '' as any as Qux } })
+      `)
+  ).toMatchInlineSnapshot(`
+Object {
+  "typeImports": Array [
+    Object {
+      "isExported": true,
+      "modulePath": "/src/a",
+      "name": "Qux",
+    },
+  ],
+  "types": Array [
+    "{ foo: Qux; }",
   ],
 }
 `)
@@ -228,10 +280,14 @@ it.todo(
 // Helpers
 //
 
-function extract(source: string) {
+function extract(...sources: string[]) {
+  const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g']
   const project = new tsm.Project({
     useInMemoryFileSystem: true,
   })
-  project.createSourceFile('./src/main.ts', source)
+  for (const source of sources) {
+    const moduleName = letters.shift()!
+    project.createSourceFile(`./src/${moduleName}.ts`, source)
+  }
   return extractContextTypes(project.getProgram().compilerObject)
 }

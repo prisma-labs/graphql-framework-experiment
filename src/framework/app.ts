@@ -9,7 +9,7 @@ import * as singletonChecks from './singleton-checks'
 
 const log = Logger.create({ name: 'app' })
 
-type Request = HTTP.IncomingMessage & { log: Logger.Logger }
+export type Request = HTTP.IncomingMessage & { log: Logger.Logger }
 
 // todo the jsdoc below is lost on the destructured object exports later on...
 // todo plugins could augment the request
