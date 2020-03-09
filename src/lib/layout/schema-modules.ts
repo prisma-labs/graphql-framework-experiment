@@ -27,9 +27,12 @@ export function emptyExceptionMessage() {
  * Find all modules called schema modules or directories having the trigger
  * name. This does not grab the child modules of the directory instances!
  */
-export function findDirOrModules(): string[] {
+export function findDirOrModules(
+  opts: { cwd: string } = { cwd: process.cwd() }
+): string[] {
+  const localFS = fs.cwd(opts.cwd)
   // TODO async
-  const files = fs.find({
+  const files = localFS.find({
     files: true,
     recursive: true,
     matching: [
@@ -39,7 +42,7 @@ export function findDirOrModules(): string[] {
     ],
   })
 
-  return files.map(f => fs.path(f))
+  return files.map(f => localFS.path(f))
 }
 
 /**

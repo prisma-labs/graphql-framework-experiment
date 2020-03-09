@@ -66,10 +66,12 @@ export function sourceFilePathFromTranspiledPath({
 
 export function findFile(
   fileNames: string | string[],
-  config?: { ignore?: string[] }
+  config?: { ignore?: string[]; cwd?: string }
 ): null | string {
+  const cwd = config?.cwd ?? process.cwd()
   const paths = Array.isArray(fileNames) ? fileNames : [fileNames]
-  const foundFiles = fs.find({
+  const localFs = fs.cwd(cwd)
+  const foundFiles = localFs.find({
     matching: [
       ...paths,
       '!node_modules/**/*',
@@ -80,7 +82,7 @@ export function findFile(
 
   // TODO: What if several files were found?
   if (foundFiles.length > 0) {
-    return path.join(process.cwd(), foundFiles[0])
+    return path.join(cwd, foundFiles[0])
   }
 
   return null
@@ -88,10 +90,13 @@ export function findFile(
 
 export async function findFiles(
   fileNames: string | string[],
-  config?: { ignore?: string[] }
+  config?: { ignore?: string[]; cwd?: string }
 ): Promise<string[]> {
+  const cwd = config?.cwd ?? process.cwd()
   const paths = Array.isArray(fileNames) ? fileNames : [fileNames]
-  return fs.findAsync({
+  const localFS = fs.cwd(cwd)
+
+  return localFS.findAsync({
     matching: [
       ...paths,
       ...baseIgnores,

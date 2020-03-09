@@ -87,6 +87,7 @@ export type Layout = Data & {
 
 type Options = {
   buildOutput?: string
+  cwd?: string
 }
 
 const optionDefaults = {
@@ -100,8 +101,9 @@ export async function create(optionsGiven?: Options): Promise<Layout> {
   // TODO lodash merge defaults or something
   const options: Required<Options> = {
     buildOutput: optionsGiven?.buildOutput ?? optionDefaults.buildOutput,
+    cwd: optionsGiven?.cwd ?? process.cwd(),
   }
-  const data = await scan()
+  const data = await scan({ cwd: options.cwd })
   return createFromData({ ...data, buildOutput: options.buildOutput })
 }
 
@@ -126,11 +128,15 @@ export function createFromData(layoutData: Data): Layout {
  * Analyze the user's project files/folders for how conventions are being used
  * and where key modules exist.
  */
-export const scan = async (): Promise<ScanResult> => {
+export const scan = async (
+  opts: { cwd: string } = { cwd: process.cwd() }
+): Promise<ScanResult> => {
   log.trace('starting scan...')
-  const packageManagerType = await PackageManager.detectProjectPackageManager()
-  const maybeAppModule = findAppModule()
-  const maybeSchemaModules = Schema.findDirOrModules()
+  const packageManagerType = await PackageManager.detectProjectPackageManager(
+    opts
+  )
+  const maybeAppModule = findAppModule(opts)
+  const maybeSchemaModules = Schema.findDirOrModules(opts)
 
   // TODO do not assume app module is at source root?
   let sourceRoot: string
@@ -141,11 +147,11 @@ export const scan = async (): Promise<ScanResult> => {
       // TODO This assumes first member is shallowest, true?
       sourceRoot = Path.dirname(maybeSchemaModules[0])
     } else {
-      sourceRoot = process.cwd()
+      sourceRoot = opts.cwd
     }
   }
 
-  const projectRoot = findProjectDir()
+  const projectRoot = findProjectDir(opts)
 
   const result: ScanResult = {
     app:
@@ -159,7 +165,7 @@ export const scan = async (): Promise<ScanResult> => {
     // this is not valid path like syntax in a lot cases at least such as
     // tsconfig include field.
     sourceRootRelative: Path.relative(projectRoot, sourceRoot) || './',
-    project: readProjectInfo(),
+    project: readProjectInfo(opts),
     packageManagerType,
   }
 
@@ -200,9 +206,11 @@ const checks = {
 /**
  * Find the (optional) app module in the user's project.
  */
-export function findAppModule(): string | null {
+export function findAppModule(
+  opts: { cwd: string } = { cwd: process.cwd() }
+): string | null {
   log.trace('looking for app module')
-  const path = findFile(ENTRYPOINT_FILE_NAMES)
+  const path = findFile(ENTRYPOINT_FILE_NAMES, opts)
   log.trace('done looking for app module')
 
   return path
@@ -218,14 +226,16 @@ export function findAppModule(): string | null {
  * project root.
  *
  */
-export function findProjectDir(): string {
-  let packageJsonPath = findPackageJson()
+export function findProjectDir(
+  opts: { cwd: string } = { cwd: process.cwd() }
+): string {
+  let packageJsonPath = findPackageJson(opts)
 
   if (packageJsonPath) {
     return packageJsonPath.dir
   }
 
-  return process.cwd()
+  return opts.cwd
 }
 
 /**
@@ -311,9 +321,13 @@ export async function loadDataFromParentProcess(): Promise<Layout> {
   }
 }
 
-function readProjectInfo(): ScanResult['project'] {
+function readProjectInfo(
+  opts: { cwd: string } = { cwd: process.cwd() }
+): ScanResult['project'] {
+  const localFS = FS.cwd(opts.cwd)
+
   try {
-    const packageJson: PackageJson = require(FS.path('package.json'))
+    const packageJson: PackageJson = require(localFS.path('package.json'))
 
     if (packageJson.name) {
       return {
@@ -333,6 +347,6 @@ function readProjectInfo(): ScanResult['project'] {
  * Find the package.json file path. Looks recursively upward to disk root.
  * Starts looking in CWD If no package.json found along search, returns null.
  */
-function findPackageJson() {
-  return findDirContainingFileRecurisvelyUpwardSync('package.json')
+function findPackageJson(opts: { cwd: string } = { cwd: process.cwd() }) {
+  return findDirContainingFileRecurisvelyUpwardSync('package.json', opts)
 }
