@@ -8,11 +8,11 @@ import { writeContextTypeGenFile } from './typegen'
 
 const log = rootLogger.child('add-to-context-extractor')
 
-export async function extractContextTypesToTypeGenFile(program: ts.Program) {
-  const contextTypes = extractContextTypes(program)
-  await writeContextTypeGenFile(contextTypes)
-}
-
+/**
+ * Run the extractor in a work if possible. For example in Node 10 workers are
+ * not available by default. If workers are not available then extraction falls
+ * back to running in this process, possibly blocking with with intensive CPU work.
+ */
 export function runAddToContextExtractorAsWorkerIfPossible(layout: Layout) {
   let hasWorkerThreads = false
   try {
@@ -35,6 +35,14 @@ export function runAddToContextExtractorAsWorkerIfPossible(layout: Layout) {
       extractContextTypesToTypeGenFile(builder.getProgram())
     }
   }
+}
+
+/**
+ * Run the pure extractor and then write results to a typegen module.
+ */
+export async function extractContextTypesToTypeGenFile(program: ts.Program) {
+  const contextTypes = extractContextTypes(program)
+  await writeContextTypeGenFile(contextTypes)
 }
 
 /**
