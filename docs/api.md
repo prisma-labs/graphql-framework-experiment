@@ -1232,6 +1232,7 @@ schema.addToContext<FastifyRequest>(_req => {
   playground?: boolean
   schema?: {
     connections?: {} // TODO
+    generateGraphQLSDLFile?: false | string
   }
   logger?: {
     level?: 'trace' | 'debug' | 'info' | 'warn' | 'critical' | 'fatal'
@@ -1274,6 +1275,15 @@ schema.addToContext<FastifyRequest>(_req => {
   - Is `NEXUS_HOST` environment variable set? Then that.
   - Is `HOST` environment variable set? Then that.
   - Else `0.0.0.0`
+
+* `schema.generateGraphQLSDLFile`
+  Should a [GraphQL SDL file](https://www.prisma.io/blog/graphql-sdl-schema-definition-language-6755bcb9ce51) be generated when the app is built and to where?
+
+  A relative path is interpreted as being relative to the project directory. Intermediary folders are created automatically if they do not exist already.
+
+  **Default**
+
+  `false`
 
 * `schema.connections`
 
