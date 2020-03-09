@@ -10,6 +10,7 @@ import { MaybePromise } from '../utils'
  */
 rootLogger.settings({
   pretty: {
+    enabled: true,
     timeDiff: false,
     color: false,
   },
