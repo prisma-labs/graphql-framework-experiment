@@ -16,69 +16,6 @@ rootLogger.settings({
   },
 })
 
-/**
- * In-memory file tree
- */
-type VirtualFS = {
-  [path: string]: string | VirtualFS
-}
-
-function createTestContext() {
-  let tmpDir: null | string = null
-  let originalCwd = process.cwd
-
-  beforeEach(() => {
-    tmpDir = getTmpDir('tmp-layout-test')
-  })
-
-  return {
-    tmpDir,
-    async mockFS(vfs: VirtualFS, hook: () => MaybePromise<void>) {
-      writeToFS(tmpDir!, vfs)
-
-      // Mock process.cwd
-      process.cwd = () => {
-        return tmpDir!
-      }
-
-      await hook()
-
-      // Restore process.cwd
-      process.cwd = originalCwd
-    },
-    normalizeLayoutResult(data: Layout.Data): Layout.Data {
-      const normalizePath = (path: string): string =>
-        Path.relative(tmpDir!, path)
-      const app: Layout.Data['app'] = data.app.exists
-        ? {
-            exists: true,
-            path: normalizePath(data.app.path),
-          }
-        : { exists: false, path: null }
-
-      return {
-        ...data,
-        app,
-        projectRoot: normalizePath(data.projectRoot),
-        schemaModules: data.schemaModules.map(m => normalizePath(m)),
-        sourceRoot: normalizePath(data.sourceRoot),
-      }
-    },
-  }
-}
-
-function writeToFS(cwd: string, vfs: VirtualFS) {
-  Object.entries(vfs).forEach(([fileOrDirName, fileContentOrDir]) => {
-    const subPath = Path.join(cwd, fileOrDirName)
-
-    if (typeof fileContentOrDir === 'string') {
-      FS.write(subPath, fileContentOrDir)
-    } else {
-      writeToFS(subPath, { ...fileContentOrDir })
-    }
-  })
-}
-
 const ctx = createTestContext()
 
 it('fails if empty file tree', async () => {
@@ -260,3 +197,70 @@ Object {
 `)
   })
 })
+
+//
+// Helpers
+//
+
+/**
+ * In-memory file tree
+ */
+type VirtualFS = {
+  [path: string]: string | VirtualFS
+}
+
+function createTestContext() {
+  let tmpDir: null | string = null
+  let originalCwd = process.cwd
+
+  beforeEach(() => {
+    tmpDir = getTmpDir('tmp-layout-test')
+  })
+
+  return {
+    tmpDir,
+    async mockFS(vfs: VirtualFS, hook: () => MaybePromise<void>) {
+      writeToFS(tmpDir!, vfs)
+
+      // Mock process.cwd
+      process.cwd = () => {
+        return tmpDir!
+      }
+
+      await hook()
+
+      // Restore process.cwd
+      process.cwd = originalCwd
+    },
+    normalizeLayoutResult(data: Layout.Data): Layout.Data {
+      const normalizePath = (path: string): string =>
+        Path.relative(tmpDir!, path)
+      const app: Layout.Data['app'] = data.app.exists
+        ? {
+            exists: true,
+            path: normalizePath(data.app.path),
+          }
+        : { exists: false, path: null }
+
+      return {
+        ...data,
+        app,
+        projectRoot: normalizePath(data.projectRoot),
+        schemaModules: data.schemaModules.map(m => normalizePath(m)),
+        sourceRoot: normalizePath(data.sourceRoot),
+      }
+    },
+  }
+}
+
+function writeToFS(cwd: string, vfs: VirtualFS) {
+  Object.entries(vfs).forEach(([fileOrDirName, fileContentOrDir]) => {
+    const subPath = Path.join(cwd, fileOrDirName)
+
+    if (typeof fileContentOrDir === 'string') {
+      FS.write(subPath, fileContentOrDir)
+    } else {
+      writeToFS(subPath, { ...fileContentOrDir })
+    }
+  })
+}
