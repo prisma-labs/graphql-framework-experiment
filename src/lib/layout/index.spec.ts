@@ -180,6 +180,14 @@ Object {
   })
 })
 
+it.todo(
+  'user seeings note if multiple entrypoints found, gets feedback about which will be considered entrypoint'
+)
+
+it.todo('app.ts takes precedence over server.ts & service.ts')
+
+it.todo('server.ts takes precedence over service.ts')
+
 it('set app.exists = false if no entrypoint', async () => {
   const vfs: VirtualFS = {
     graphql: {
@@ -197,6 +205,8 @@ Object {
 `)
   })
 })
+
+// describe('Layout serialization save & load')
 
 //
 // Helpers
