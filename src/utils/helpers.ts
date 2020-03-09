@@ -28,8 +28,10 @@ export function generateProjectName(): string {
  * Get the name of the CWD or if at disk root and thus making it impossible to
  * extract a meaningful name, generate one.
  */
-export function CWDProjectNameOrGenerate(): string {
-  return Path.basename(process.cwd()) || generateProjectName()
+export function CWDProjectNameOrGenerate(
+  opts: { cwd: string } = { cwd: process.cwd() }
+): string {
+  return Path.basename(opts.cwd) || generateProjectName()
 }
 
 /**

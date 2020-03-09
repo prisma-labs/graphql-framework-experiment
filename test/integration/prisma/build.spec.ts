@@ -1,5 +1,5 @@
-import { DEFAULT_BUILD_FOLDER_NAME } from '../../../src/framework/layout'
-import { CONVENTIONAL_SCHEMA_FILE_NAME } from '../../../src/framework/layout/schema-modules'
+import { DEFAULT_BUILD_FOLDER_NAME } from '../../../src/lib/layout'
+import { CONVENTIONAL_SCHEMA_FILE_NAME } from '../../../src/lib/layout/schema-modules'
 import { createWorkspace } from '../../__helpers'
 
 const ws = createWorkspace({

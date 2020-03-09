@@ -1,5 +1,5 @@
 import chalk from 'chalk'
-import * as Layout from '../../framework/layout'
+import * as Layout from '../../lib/layout'
 import { Command } from '../../lib/cli'
 import { findOrScaffoldTsConfig } from '../../utils'
 

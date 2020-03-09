@@ -1,10 +1,10 @@
 // TODO boot and query to take integration test confidence even further
 
-import { DEFAULT_BUILD_FOLDER_NAME } from '../../src/framework/layout'
+import { DEFAULT_BUILD_FOLDER_NAME } from '../../src/lib/layout'
 import {
   CONVENTIONAL_SCHEMA_FILE_NAME,
   DIR_NAME,
-} from '../../src/framework/layout/schema-modules'
+} from '../../src/lib/layout/schema-modules'
 import { createWorkspace } from '../__helpers'
 
 const ws = createWorkspace({

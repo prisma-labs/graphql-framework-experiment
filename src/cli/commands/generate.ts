@@ -1,4 +1,4 @@
-import * as Layout from '../../framework/layout'
+import * as Layout from '../../lib/layout'
 import { createStartModuleContent } from '../../framework/start'
 import { Command } from '../../lib/cli'
 import * as Plugin from '../../lib/plugin'
