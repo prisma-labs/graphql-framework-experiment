@@ -1,13 +1,8 @@
 import * as NexusSchema from '@nexus/schema'
-import { Param1 } from '../../lib/utils'
+import { NexusGraphQLSchema } from '@nexus/schema/dist/core'
+import { RuntimeContributions } from '../../lib/plugin'
+import { ConnectionConfig, createNexusSchemaConfig } from './config'
 import { createNexusSingleton } from './nexus'
-import { NexusGraphQLSchema, SchemaConfig } from '@nexus/schema/dist/core'
-
-type ConnectionPluginConfig = NonNullable<
-  Param1<typeof NexusSchema.connectionPlugin>
->
-
-type ConnectionConfig = Omit<ConnectionPluginConfig, 'nexusFieldName'>
 
 export type SettingsInput = {
   /**
@@ -23,6 +18,16 @@ export type SettingsInput = {
     // being tracked here: https://github.com/microsoft/TypeScript/issues/13195
     [typeName: string]: ConnectionConfig | undefined | false
   }
+  /**
+   * Should a GraphQL SDL file be generated when the app is built and to where?
+   *
+   * A relative path is interpreted as being relative to the project directory.
+   * Intermediary folders are created automatically if they do not exist
+   * already.
+   *
+   * @default false
+   */
+  generateGraphQLSDLFile?: false | string
 }
 
 export type SettingsData = SettingsInput
@@ -52,7 +57,7 @@ export type Schema = {
 type SchemaInternal = {
   private: {
     isSchemaEmpty(): boolean
-    compile: (config: SchemaConfig) => Promise<NexusGraphQLSchema>
+    makeSchema: () => Promise<NexusGraphQLSchema>
     settings: {
       data: SettingsData
       change: (newSettings: SettingsInput) => void
@@ -61,7 +66,11 @@ type SchemaInternal = {
   public: Schema
 }
 
-export function create(): SchemaInternal {
+export function create({
+  plugins,
+}: {
+  plugins: RuntimeContributions[]
+}): SchemaInternal {
   const {
     queryType,
     mutationType,
@@ -96,14 +105,22 @@ export function create(): SchemaInternal {
       isSchemaEmpty: () => {
         return __types.length === 0
       },
-      compile: c => {
-        c.plugins = c.plugins ?? []
-        c.plugins.push(...processConnectionsConfig(state.settings))
-        return makeSchema(c)
+      makeSchema: () => {
+        const nexusSchemaConfig = createNexusSchemaConfig(
+          plugins,
+          state.settings
+        )
+        const schema = makeSchema(nexusSchemaConfig)
+        return schema
       },
       settings: {
         data: state.settings,
         change(newSettings) {
+          if (newSettings.generateGraphQLSDLFile) {
+            state.settings.generateGraphQLSDLFile =
+              newSettings.generateGraphQLSDLFile
+          }
+
           if (newSettings.connections) {
             state.settings.connections = state.settings.connections ?? {}
             const { types, ...connectionPluginConfig } = newSettings.connections
@@ -138,48 +155,4 @@ export function create(): SchemaInternal {
   }
 
   return api
-}
-
-/**
- * Process the schema connection settings into nexus schema relay connection
- * plugins.
- */
-function processConnectionsConfig(
-  settings: SettingsInput
-): NexusSchema.core.NexusPlugin[] {
-  if (settings.connections === undefined) {
-    return [defaultConnectionPlugin({})]
-  }
-
-  const instances: NexusSchema.core.NexusPlugin[] = []
-  const {
-    default: defaultTypeConfig,
-    ...customTypesConfig
-  } = settings.connections
-
-  for (const [name, config] of Object.entries(customTypesConfig)) {
-    if (config) {
-      instances.push(
-        NexusSchema.connectionPlugin({
-          nexusFieldName: name,
-          ...config,
-        })
-      )
-    }
-  }
-
-  if (defaultTypeConfig) {
-    instances.push(defaultConnectionPlugin(defaultTypeConfig))
-  }
-
-  return instances
-}
-
-function defaultConnectionPlugin(
-  configBase: ConnectionConfig
-): NexusSchema.core.NexusPlugin {
-  return NexusSchema.connectionPlugin({
-    ...configBase,
-    nexusFieldName: 'connection',
-  })
 }

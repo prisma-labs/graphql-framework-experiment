@@ -80,6 +80,7 @@ export type Layout = Data & {
    */
   data: Data
   projectRelative(filePath: string): string
+  projectPath(filePath: string): string
   sourceRelative(filePath: string): string
   sourcePath(subPath: string): string
   packageManager: PackageManager.PackageManager
@@ -119,6 +120,9 @@ export function createFromData(layoutData: Data): Layout {
     sourceRelative: Path.relative.bind(null, layoutData.sourceRoot),
     sourcePath(subpath: string): string {
       return Path.join(layoutData.sourceRoot, subpath)
+    },
+    projectPath(subpath: string): string {
+      return Path.join(layoutData.projectRoot, subpath)
     },
     packageManager: PackageManager.create(layoutData.packageManagerType),
   }
@@ -321,11 +325,20 @@ export async function loadDataFromParentProcess(): Promise<Layout> {
   }
 }
 
+export function mustLoadDataFromParentProcess(): Layout {
+  const savedData: undefined | string = process.env[ENV_VAR_DATA_NAME]
+  if (!savedData) {
+    throw new Error(
+      'An attempt to load saved layout data was made but no serialized data was found in the environment'
+    )
+  }
+  return createFromData(JSON.parse(savedData) as Data)
+}
+
 function readProjectInfo(
   opts: { cwd: string } = { cwd: process.cwd() }
 ): ScanResult['project'] {
   const localFS = FS.cwd(opts.cwd)
-
   try {
     const packageJson: PackageJson = require(localFS.path('package.json'))
 

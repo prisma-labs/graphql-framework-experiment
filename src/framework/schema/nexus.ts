@@ -115,17 +115,3 @@ export function createNexusSingleton() {
     __types,
   }
 }
-
-export function shouldGenerateArtifacts(): boolean {
-  return process.env.NEXUS_SHOULD_GENERATE_ARTIFACTS === 'true'
-    ? true
-    : process.env.NEXUS_SHOULD_GENERATE_ARTIFACTS === 'false'
-    ? false
-    : Boolean(!process.env.NODE_ENV || process.env.NODE_ENV === 'development')
-}
-
-export function shouldExitAfterGenerateArtifacts(): boolean {
-  return process.env.NEXUS_SHOULD_EXIT_AFTER_GENERATE_ARTIFACTS === 'true'
-    ? true
-    : false
-}

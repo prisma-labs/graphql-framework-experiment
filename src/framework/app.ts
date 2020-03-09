@@ -1,8 +1,8 @@
 import * as HTTP from 'http'
 import * as Lo from 'lodash'
+import * as Layout from '../lib/layout'
 import * as Logger from '../lib/logger'
 import * as Plugin from '../lib/plugin'
-import * as Layout from '../lib/layout'
 import * as Schema from './schema'
 import * as Server from './server'
 import * as singletonChecks from './singleton-checks'
@@ -99,7 +99,7 @@ export function create(): App {
   const contextContributors: ContextContributor<any>[] = []
 
   const server = Server.create()
-  const schema = Schema.create()
+  const schemaComponent = Schema.create({ plugins })
 
   const settings: Settings = {
     change(newSettings) {
@@ -107,7 +107,7 @@ export function create(): App {
         log.settings(newSettings.logger)
       }
       if (newSettings.schema) {
-        schema.private.settings.change(newSettings.schema)
+        schemaComponent.private.settings.change(newSettings.schema)
       }
       if (newSettings.server) {
         Object.assign(settings.current.server, newSettings.server)
@@ -115,13 +115,13 @@ export function create(): App {
     },
     current: {
       logger: log.settings,
-      schema: schema.private.settings.data,
-      server: { ...Server.defaultExtraSettings },
+      schema: schemaComponent.private.settings.data,
+      server: Server.defaultExtraSettings,
     },
     original: Lo.cloneDeep({
       logger: log.settings,
-      schema: schema.private.settings.data,
-      server: { ...Server.defaultExtraSettings },
+      schema: schemaComponent.private.settings.data,
+      server: Server.defaultExtraSettings,
     }),
   }
 
@@ -133,7 +133,7 @@ export function create(): App {
         contextContributors.push(contextContributor)
         return api
       },
-      ...schema.public,
+      ...schemaComponent.public,
     },
     server: {
       /**
@@ -152,15 +152,14 @@ export function create(): App {
           await Layout.schema.importModules()
         }
 
-        const nexusConfig = Schema.createInternalConfig(plugins)
-        const compiledSchema = await schema.private.compile(nexusConfig)
+        const schema = await schemaComponent.private.makeSchema()
 
-        if (schema.private.isSchemaEmpty()) {
+        if (schemaComponent.private.isSchemaEmpty()) {
           log.warn(Layout.schema.emptyExceptionMessage())
         }
 
         const result = server.createAndStart({
-          schema: compiledSchema,
+          schema,
           plugins,
           contextContributors,
           settings,
