@@ -19,26 +19,25 @@ rootLogger.settings({
 const ctx = createTestContext()
 
 it('fails if empty file tree', async () => {
-  const vfs: VirtualFS = {}
+  ctx.setup({})
 
-  await ctx.mockFS(vfs, async () => {
-    try {
-      await Layout.create()
-    } catch (err) {
-      expect(err.message).toContain(
-        "Path you want to find stuff in doesn't exist"
-      )
-    }
-  })
+  try {
+    await ctx.scan()
+  } catch (err) {
+    expect(err.message).toContain(
+      "Path you want to find stuff in doesn't exist"
+    )
+  }
 })
 
 it('fails if no entrypoint and no graphql modules', async () => {
-  const vfs: VirtualFS = {
+  ctx.setup({
     src: {
       'User.ts': '',
       'Post.ts': '',
     },
-  }
+  })
+
   let mockedStdoutBuffer: string = ''
   const mockStdout = jest
     .spyOn(process.stdout, 'write')
@@ -51,9 +50,9 @@ it('fails if no entrypoint and no graphql modules', async () => {
     .spyOn(process, 'exit')
     .mockImplementation((() => {}) as any)
 
-  await ctx.mockFS(vfs, async () => {
-    await Layout.create()
-    expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
+  await ctx.scan()
+
+  expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
       "■ nexus:layout:We could not find any graphql modules or app entrypoint
       ■ nexus:layout:Please do one of the following:
 
@@ -62,15 +61,14 @@ it('fails if no entrypoint and no graphql modules', async () => {
         3. Create an app entrypoint; A file called any of: app.ts, server.ts, service.ts.
       "
     `)
-    expect(mockExit).toHaveBeenCalledWith(1)
-  })
+  expect(mockExit).toHaveBeenCalledWith(1)
 
   mockStdout.mockRestore()
   mockExit.mockRestore()
 })
 
 it('finds nested graphql modules', async () => {
-  const vfs: VirtualFS = {
+  ctx.setup({
     src: {
       'app.ts': '',
       graphql: {
@@ -86,124 +84,170 @@ it('finds nested graphql modules', async () => {
         },
       },
     },
-  }
-
-  await ctx.mockFS(vfs, async () => {
-    const result = await Layout.create()
-    expect(ctx.normalizeLayoutResult(result.data)).toMatchInlineSnapshot(`
-      Object {
-        "app": Object {
-          "exists": true,
-          "path": "src/app.ts",
-        },
-        "buildOutput": "node_modules/.build",
-        "packageManagerType": "npm",
-        "project": Object {
-          "isAnonymous": true,
-          "name": "anonymous",
-        },
-        "projectRoot": "",
-        "schemaModules": Array [
-          "src/graphql/1.ts",
-          "src/graphql/2.ts",
-          "src/graphql/graphql/3.ts",
-          "src/graphql/graphql/4.ts",
-          "src/graphql/graphql/graphql/5.ts",
-          "src/graphql/graphql/graphql/6.ts",
-        ],
-        "sourceRoot": "src",
-        "sourceRootRelative": "src",
-      }
-    `)
   })
+
+  const result = await ctx.scan()
+
+  expect(result).toMatchInlineSnapshot(`
+    Object {
+      "app": Object {
+        "exists": true,
+        "path": "src/app.ts",
+      },
+      "buildOutput": "node_modules/.build",
+      "packageManagerType": "npm",
+      "project": Object {
+        "isAnonymous": true,
+        "name": "anonymous",
+      },
+      "projectRoot": "",
+      "schemaModules": Array [
+        "src/graphql/1.ts",
+        "src/graphql/2.ts",
+        "src/graphql/graphql/3.ts",
+        "src/graphql/graphql/4.ts",
+        "src/graphql/graphql/graphql/5.ts",
+        "src/graphql/graphql/graphql/6.ts",
+      ],
+      "sourceRoot": "src",
+      "sourceRootRelative": "src",
+    }
+  `)
 })
 
 it('detects yarn as package manager', async () => {
-  const vfs: VirtualFS = {
+  ctx.setup({
     'app.ts': '',
     'yarn.lock': '',
-  }
-
-  await ctx.mockFS(vfs, async () => {
-    const result = await Layout.create()
-    expect(
-      ctx.normalizeLayoutResult(result.data).packageManagerType
-    ).toMatchInlineSnapshot(`"yarn"`)
   })
+
+  const result = await ctx.scan()
+
+  expect(result.packageManagerType).toMatchInlineSnapshot(`"yarn"`)
 })
 
 it('finds app.ts entrypoint', async () => {
-  const vfs: VirtualFS = {
+  ctx.setup({
     'app.ts': '',
-  }
+  })
 
-  await ctx.mockFS(vfs, async () => {
-    const result = await Layout.create()
-    expect(ctx.normalizeLayoutResult(result.data).app).toMatchInlineSnapshot(`
+  const result = await ctx.scan()
+
+  expect(result.app).toMatchInlineSnapshot(`
 Object {
   "exists": true,
   "path": "app.ts",
 }
 `)
-  })
 })
 
 it('finds server.ts entrypoint', async () => {
-  const vfs: VirtualFS = {
+  ctx.setup({
     'server.ts': '',
-  }
+  })
 
-  await ctx.mockFS(vfs, async () => {
-    const result = await Layout.create()
-    expect(ctx.normalizeLayoutResult(result.data).app).toMatchInlineSnapshot(`
+  const result = await ctx.scan()
+
+  expect(result.app).toMatchInlineSnapshot(`
 Object {
   "exists": true,
   "path": "server.ts",
 }
 `)
-  })
 })
 
 it('finds service.ts entrypoint', async () => {
-  const vfs: VirtualFS = {
+  ctx.setup({
     'service.ts': '',
-  }
+  })
 
-  await ctx.mockFS(vfs, async () => {
-    const result = await Layout.create()
-    expect(ctx.normalizeLayoutResult(result.data).app).toMatchInlineSnapshot(`
+  const result = await ctx.scan()
+
+  expect(result.app).toMatchInlineSnapshot(`
 Object {
   "exists": true,
   "path": "service.ts",
 }
 `)
+})
+
+it('set app.exists = false if no entrypoint', async () => {
+  await ctx.setup({
+    graphql: {
+      'User.ts': '',
+    },
   })
+
+  const result = await ctx.scan()
+
+  expect(result.app).toMatchInlineSnapshot(`
+Object {
+  "exists": false,
+  "path": null,
+}
+`)
 })
 
 it.todo(
   'user seeings note if multiple entrypoints found, gets feedback about which will be considered entrypoint'
 )
 
-it.todo('app.ts takes precedence over server.ts & service.ts')
+// TODO: Currently works but seems like it's only thanks to lexical sort
+it('app.ts takes precedence over server.ts & service.ts', async () => {
+  ctx.setup({
+    'service.ts': '',
+    'app.ts': '',
+  })
 
-it.todo('server.ts takes precedence over service.ts')
+  const result = await ctx.scan()
 
-it('set app.exists = false if no entrypoint', async () => {
-  const vfs: VirtualFS = {
-    graphql: {
-      'User.ts': '',
-    },
-  }
-
-  await ctx.mockFS(vfs, async () => {
-    const result = await Layout.create()
-    expect(ctx.normalizeLayoutResult(result.data).app).toMatchInlineSnapshot(`
+  expect(result).toMatchInlineSnapshot(`
 Object {
-  "exists": false,
-  "path": null,
+  "app": Object {
+    "exists": true,
+    "path": "app.ts",
+  },
+  "buildOutput": "node_modules/.build",
+  "packageManagerType": "npm",
+  "project": Object {
+    "isAnonymous": true,
+    "name": "anonymous",
+  },
+  "projectRoot": "",
+  "schemaModules": Array [],
+  "sourceRoot": "",
+  "sourceRootRelative": "./",
 }
 `)
+})
+
+// TODO: Currently works but seems like it's only thanks to lexical sort
+it('server.ts takes precedence over service.ts', async () => {
+  ctx.setup({
+    'server.ts': '',
+    'service.ts': '',
   })
+
+  const result = await ctx.scan()
+
+  expect(result).toMatchInlineSnapshot(`
+Object {
+  "app": Object {
+    "exists": true,
+    "path": "server.ts",
+  },
+  "buildOutput": "node_modules/.build",
+  "packageManagerType": "npm",
+  "project": Object {
+    "isAnonymous": true,
+    "name": "anonymous",
+  },
+  "projectRoot": "",
+  "schemaModules": Array [],
+  "sourceRoot": "",
+  "sourceRootRelative": "./",
+}
+`)
 })
 
 // describe('Layout serialization save & load')
@@ -221,7 +265,6 @@ type VirtualFS = {
 
 function createTestContext() {
   let tmpDir: null | string = null
-  let originalCwd = process.cwd
 
   beforeEach(() => {
     tmpDir = getTmpDir('tmp-layout-test')
@@ -229,36 +272,13 @@ function createTestContext() {
 
   return {
     tmpDir,
-    async mockFS(vfs: VirtualFS, hook: () => MaybePromise<void>) {
+    setup(vfs: VirtualFS) {
       writeToFS(tmpDir!, vfs)
-
-      // Mock process.cwd
-      process.cwd = () => {
-        return tmpDir!
-      }
-
-      await hook()
-
-      // Restore process.cwd
-      process.cwd = originalCwd
     },
-    normalizeLayoutResult(data: Layout.Data): Layout.Data {
-      const normalizePath = (path: string): string =>
-        Path.relative(tmpDir!, path)
-      const app: Layout.Data['app'] = data.app.exists
-        ? {
-            exists: true,
-            path: normalizePath(data.app.path),
-          }
-        : { exists: false, path: null }
+    async scan() {
+      const data = await Layout.create({ cwd: tmpDir! })
 
-      return {
-        ...data,
-        app,
-        projectRoot: normalizePath(data.projectRoot),
-        schemaModules: data.schemaModules.map(m => normalizePath(m)),
-        sourceRoot: normalizePath(data.sourceRoot),
-      }
+      return normalizeLayoutResult(tmpDir!, data.data)
     },
   }
 }
@@ -273,4 +293,22 @@ function writeToFS(cwd: string, vfs: VirtualFS) {
       writeToFS(subPath, { ...fileContentOrDir })
     }
   })
+}
+
+function normalizeLayoutResult(tmpDir: string, data: Layout.Data): Layout.Data {
+  const normalizePath = (path: string): string => Path.relative(tmpDir, path)
+  const app: Layout.Data['app'] = data.app.exists
+    ? {
+        exists: true,
+        path: normalizePath(data.app.path),
+      }
+    : { exists: false, path: null }
+
+  return {
+    ...data,
+    app,
+    projectRoot: normalizePath(data.projectRoot),
+    schemaModules: data.schemaModules.map(m => normalizePath(m)),
+    sourceRoot: normalizePath(data.sourceRoot),
+  }
 }
