@@ -329,6 +329,26 @@ Object {
 `)
 })
 
+// This test is only relevant so long as we're using the TS type to string
+// function
+// todo cannot find a case that leads to TS truncating...
+// Spreading IncomingHttpHeaders will trigger it, but no access to node stdlib
+// with in memory FS...
+// it('does not', () => {
+//   expect(
+//     extract(`
+//         schema.addToContext(req => { return {} as any as { a:0; b:0; c:0; d:0; e:0; f:0; g:0; h:0; i:0; k:0; l:0; m:0; n:0; l:0; o:0; p:0; q:0; r:0; s:0; t:0; u:0; v:0; x:0; y:0; z:0; a2:0; b2:0; c2:0; d2:0; e2:0; f2:0; g2:0; h2:0; i2:0; k2:0; l2:0; m2:0; n2:0; l2:0; o2:0; p2:0; q2:0; r2:0; s2:0; t2:0; u2:0; v2:0; x2:0; y2:0; z2:0; } })
+//       `)
+//   ).toMatchInlineSnapshot(`
+// Object {
+//   "typeImports": Array [],
+//   "types": Array [
+//     "{ foo: any; any: any; as: any; Foo: any; }",
+//   ],
+// }
+// `)
+// })
+
 //
 // Helpers
 //
@@ -336,7 +356,6 @@ Object {
 function extract(...sources: string[]) {
   const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g']
   const project = new tsm.Project({
-    skipLoadingLibFiles: false,
     useInMemoryFileSystem: true,
   })
   for (const source of sources) {

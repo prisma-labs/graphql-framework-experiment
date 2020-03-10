@@ -113,7 +113,9 @@ export function extractContextTypes(
           contextAdderSig
         )
         const ContextAdderRetTypeString = checker.typeToString(
-          ContextAdderRetType
+          ContextAdderRetType,
+          undefined,
+          ts.TypeFormatFlags.NoTruncation
         )
         contextTypeContributions.types.push(ContextAdderRetTypeString)
 
@@ -124,7 +126,11 @@ export function extractContextTypes(
           const propType = checker.getTypeAtLocation(prop.declarations[0])
           if (propType.aliasSymbol) {
             log.trace('found alias', {
-              type: checker.typeToString(propType),
+              type: checker.typeToString(
+                propType,
+                undefined,
+                ts.TypeFormatFlags.NoTruncation
+              ),
             })
             const info = extractFromType(propType, checker)
             if (info) {
@@ -132,7 +138,13 @@ export function extractContextTypes(
             }
           } else if (propType.isIntersection()) {
             log.trace('found intersection', {
-              types: propType.types.map(t => checker.typeToString(t)),
+              types: propType.types.map(t =>
+                checker.typeToString(
+                  t,
+                  undefined,
+                  ts.TypeFormatFlags.NoTruncation
+                )
+              ),
             })
             const infos = propType.types
               .map(t => extractFromType(t, checker)!)
