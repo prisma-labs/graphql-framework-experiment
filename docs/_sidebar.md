@@ -1,5 +1,6 @@
 - Getting Started
 
+  - [Introduction](README)
   - [Tutorial](getting-started/tutorial)
   - [Project Structure](references/conventions)
   - [Migrate from Nexus Schema](getting-started/migrate-from-nexus-schema)
