@@ -6,15 +6,15 @@ Use this to model your domain, all the data that your API will accept and return
 
 ### `queryType`
 
-todo
+Refer to `objectType`. This is a shorthand where `config.name` is assigned `Query`.
 
 ### `mutationType`
 
-todo
+Refer to `objectType`. This is a shorthand where `config.name` is assigned `Mutation`.
 
 ### `subscriptionType`
 
-todo
+Not implemented, please see [#447](https://github.com/graphql-nexus/nexus-future/issues/447).
 
 ### `objectType`
 
@@ -26,8 +26,41 @@ fetch from your schema, with fields:
 **Signature**
 
 ```ts
-objectType(typeName: string, fn: ObjectDefinitionBlock): NexusObjectType
+objectType(config: {
+  name:             string
+  description?:     string
+  rootTyping?:      string | RootTypingImport
+  nonNullDefaults?: NonNullConfig
+  definition:       ObjectDefinitionBlock
+}) => NexusObjectType
 ```
+
+- `name`  
+  The name of this object.
+
+- `description`  
+  The description of this object. Tools like GraphQL Playground can display this content.
+
+  **Default**
+
+  `undefined`
+
+- `rootTyping`  
+  todo
+
+  **Default**
+
+  `undefined`
+
+- `nonNullDefaults`  
+  todo
+
+  **Default**
+
+  `undefined`
+
+- `definition`  
+  See below for the various field builders available.
 
 **Example**
 
@@ -41,9 +74,9 @@ schema.objectType({
     t.string('fullName', { description: 'Full name of the user' })
     t.field('status', { type: 'StatusEnum' })
     t.list.field('posts', {
-      type: Post, // or "Post"
-      resolve(root, args, ctx) {
-        return ctx.getUser(root.id).posts()
+      type: 'Post',
+      resolve(parent, args, ctx) {
+        return ctx.getUser(parent.id).posts()
       },
     })
   },
@@ -68,45 +101,58 @@ schema.enumType({
 
 #### `t.field`
 
-todo
+**Signature**
 
-#### `t.string`
-
-todo
-
-#### `t.boolean`
-
-todo
-
-#### `t.int`
+```ts
+(
+  name: string,
+  config: FieldConfig
+) => void
+```
 
 todo
 
-#### `t.float`
+#### `t.<scalar>`
 
-todo
+```
+t.id
+t.string
+t.boolean
+t.int
+t.float
+```
 
-#### `t.boolean`
+Field builder specialization for GraphQL scalar types: `string`, `boolean`, `int`, `float`, `id`. They are like `t.field` but omit the `config.type` property and accept a resolver as their second parameter as an alternative to full-on field config.
 
-todo
+**Signature**
 
-#### `t.id`
+```ts
+(name: string, param?: UntypedFieldConfig | Resolver) => void
+```
 
-todo
+#### `t.list`
+
+Use this to express a list of some other type. All field builders are available as properties.
 
 #### `t.implements`
 
 todo
 
-#### `t.list`
+**Signature**
 
-todo
+```ts
+(...interfaceNames: string[]) => void
+```
 
 #### `t.modify`
 
-todo
+Modify a field added via an interface.
 
-#### `t.typeName`
+**Signature**
+
+```ts
+(fieldName: string, modifications: todo) => void
+```
 
 todo
 
@@ -544,7 +590,38 @@ schema.queryType({
 
 [GraphQL Docs for Input Object Types](https://graphql.org/learn/schema/#input-types)
 
-Defines a complex object which can be passed as an input value.
+Defines an object which can be passed as an input value.
+
+**Signature**
+
+<!-- prettier-ignore -->
+```ts
+(config: {
+  description?:      string
+  nonNullDefaults?:  NonNullConfig
+  definition:        InputObjectDefinitionBlock
+}) => NexusInputObjectType
+```
+
+- `name`  
+  The name of this object.
+
+- `description`  
+  The description of this object. Tools like GraphQL Playground can display this content.
+
+  **Default**
+
+  `undefined`
+
+- `nonNullDefaults`  
+  todo
+
+  **Default**
+
+  `undefined`
+
+- `definition`  
+  See below for the various field builders available.
 
 **Example**
 
@@ -561,6 +638,18 @@ schema.inputObjectType({
 ```
 
 Unlike object types, input types do not have arguments, so they do not have resolvers or "backing types"
+
+#### `t.field`
+
+todo
+
+#### `t.<scalar>`
+
+todo
+
+#### `t.list`
+
+todo
 
 ### `enumType`
 
@@ -713,6 +802,43 @@ schema.unionType({
 
 [GraphQL Docs on Arguments](https://graphql.org/learn/schema/#arguments)
 
+**Signature**
+
+<!-- prettier-ignore -->
+```ts
+(config: {
+  type:         'Boolean' | 'Float' | 'Int' | 'String' | 'ID'
+  defualt?:     TYPEGEN
+  description?: string
+  list?:        null | true | boolean[]
+  nullable?:    boolean
+  required?:    boolean
+}) => NexusArgDef
+```
+
+- `type`  
+  The type of the argument.
+
+- `required`  
+  Whether the argument is required or not.
+
+  When `true` then `nullable` is `false`.
+
+- `nullable`  
+  Whether the argument is nullable or not.
+
+  When `true` then `required` is `false`.
+
+- `list`  
+  Whether the argument is a list or not.
+
+  When `true` it is a list.
+
+  When an array, the inner boolean specifies whether the list member can be nullable.
+
+- `description`  
+  The description to annotate the GraphQL SDL
+
 **Example**
 
 Defines an argument that can be used in any object or interface type. Args can be reused in multiple locations, and it can be convenient to create your own wrappers around arguments.
@@ -726,73 +852,17 @@ function requiredInt(opts: ScalarArgConfig<number>) {
 }
 ```
 
-Options available are:
+### `<scalar>Arg`
 
-**Type**
+```
+idArg
+stringArg
+booleanArg
+intArg
+floatArg
+```
 
-The type of the argument.
-
-Format: `type: 'Boolean' | 'Float' | 'Int' | 'String' | 'ID'`
-
-**Required**
-
-Whether the argument is required or not.
-
-Format: `required?: boolean;`
-
-Note, when `required: true`, `nullable: false`
-
-&nbsp;
-
-**Nullable**
-
-Whether the argument is nullable or not.
-
-Format: `nullable?: boolean;`
-
-Note, when `nullable: true`, `required: false`
-
-&nbsp;
-
-**List**
-
-Whether the argument is a list or not.
-
-Format: `list?: null | true | boolean[];`
-
-null = not a list
-
-true = list
-
-array = nested list, where true/false decides whether the list member can be nullable
-
-&nbsp;
-
-**Description**
-
-The description to annotate the GraphQL SDL
-
-Format: `description?: string | null;`
-
-### `intArg`
-
-Sugar for creating arguments of type `Integer`.
-
-### `stringArg`
-
-Sugar for creating arguments of type `String`.
-
-### `floatArg`
-
-Sugar for creating arguments of type `Float`.
-
-### `idArg`
-
-Sugar for creating arguments of type `ID`.
-
-### `booleanArg`
-
-Sugar for creating arguments of type `Boolean`.
+Sugar for creating arguments of type `Int` `String` `Float` `ID` `Boolean`.
 
 ### `addToContext`
 
@@ -822,6 +892,20 @@ schema.queryType({
 
 ### Type Glossary
 
+#### `I` `FieldConfig`
+
+```ts
+{
+  type:         string
+  args?:        Args
+  description?: string
+  deprecation?: string
+  nullable?:    boolean
+  list?:        true | boolean[]
+  resolve:      Resolver
+}
+```
+
 #### `O` `Args`
 
 todo
@@ -843,5 +927,62 @@ todo
 todo
 
 #### `I` `Node`
+
+todo
+
+#### `I` `NonNullConfig`
+
+todo
+
+```ts
+{
+  /**
+   * Whether output fields are non-null by default.
+   *
+   * type Example {
+   *   field: String!
+   *   otherField: [String!]!
+   * }
+   *
+   * @default true
+   */
+  output?: boolean;
+  /**
+   * Whether input fields (field arguments, input type members)
+   * are non-null by default.
+   *
+   * input Example {
+   *   field: String
+   *   something: [String]
+   * }
+   *
+   * @default false
+   */
+  input?: boolean;
+}
+```
+
+#### `I` `RootTypingImport`
+
+todo
+
+```ts
+{
+  /**
+   * File path to import the type from.
+   */
+  path: string;
+  /**
+   * Name of the type we want to reference in the `path`
+   */
+  name: string;
+  /**
+   * Name we want the imported type to be referenced as
+   */
+  alias?: string;
+}
+```
+
+#### `F` `Resolver`
 
 todo

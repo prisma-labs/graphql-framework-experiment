@@ -2,7 +2,7 @@
 
   - [Introduction](README)
   - [Tutorial](getting-started/tutorial)
-  - [Project Structure](references/conventions)
+  - [Project Structure](getting-started/project-structure)
   - [Migrate from Nexus Schema](getting-started/migrate-from-nexus-schema)
 
 * Guides
