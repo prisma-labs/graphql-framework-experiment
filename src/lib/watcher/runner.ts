@@ -1,18 +1,18 @@
 // Not using ECMA modules b/c TS autoformat moves it down but we need it first
 // for side-effects.
-require('../lib/tty-linker')
+require('../tty-linker')
   .create()
   .child.install()
 
 import { register } from 'ts-node'
 import { Script } from 'vm'
-import * as Layout from '../lib/layout'
-import { rootLogger } from '../utils/logger'
+import { rootLogger } from '../../utils/logger'
+import { runAddToContextExtractorAsWorkerIfPossible } from '../add-to-context-extractor/add-to-context-extractor'
+import * as Layout from '../layout'
 import cfgFactory from './cfg'
 import hook from './hook'
 import * as IPC from './ipc'
 import Module = require('module')
-import { runAddToContextExtractorAsWorkerIfPossible } from '../lib/add-to-context-extractor/add-to-context-extractor'
 
 const log = rootLogger.child('dev').child('runner')
 

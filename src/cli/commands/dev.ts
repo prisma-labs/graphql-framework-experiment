@@ -1,10 +1,10 @@
-import * as Layout from '../../lib/layout'
 import { createStartModuleContent } from '../../framework/start'
 import { arg, Command, isError } from '../../lib/cli'
+import * as Layout from '../../lib/layout'
 import * as Plugin from '../../lib/plugin'
+import { createWatcher } from '../../lib/watcher'
 import { fatal, findOrScaffoldTsConfig } from '../../utils'
 import { rootLogger } from '../../utils/logger'
-import { createWatcher } from '../../watcher'
 
 const log = rootLogger.child('dev')
 

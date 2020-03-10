@@ -3,8 +3,8 @@ import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import * as Path from 'path'
 import prompts, * as Prompts from 'prompts'
-import * as Layout from '../../lib/layout'
 import { TestContextCore } from '../../framework/testing'
+import * as Layout from '../../lib/layout'
 import * as Logger from '../../lib/logger'
 import {
   CallbackRegistrer,
@@ -15,7 +15,7 @@ import {
 import { fatal, run, runSync } from '../../utils'
 import { rootLogger } from '../../utils/logger'
 import * as PackageManager from '../../utils/package-manager'
-import * as Chokidar from '../../watcher/chokidar'
+import * as Chokidar from '../watcher/chokidar'
 
 //todo two loggers here...
 const pluginSystemLogger = Logger.create({ name: 'plugin' })

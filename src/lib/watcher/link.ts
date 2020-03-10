@@ -1,6 +1,6 @@
 import * as nodecp from 'child_process'
-import * as TTYLinker from '../lib/tty-linker'
-import { rootLogger } from '../utils/logger'
+import { rootLogger } from '../../utils/logger'
+import * as TTYLinker from '../tty-linker'
 import { Message, ModuleRequiredMessage } from './ipc'
 
 const log = rootLogger.child('dev').child('link')
