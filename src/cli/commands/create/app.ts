@@ -20,6 +20,8 @@ const log = rootLogger
   .child('create')
   .child('app')
 
+const SQLITE_DEFAULT_CONNECTION_URI = 'file:./dev.db'
+
 export default class App implements Command {
   async parse() {
     await run({})
@@ -298,7 +300,11 @@ async function askForDatabase(): Promise<ParsedDatabase> {
   })
 
   if (database === 'SQLite') {
-    return { database: true, choice: 'SQLite', connectionURI: 'file://dev.db' }
+    return {
+      database: true,
+      choice: 'SQLite',
+      connectionURI: SQLITE_DEFAULT_CONNECTION_URI,
+    }
   }
 
   // TODO: Removed temporarily until we have a more solid system to validate the uri,
@@ -506,7 +512,7 @@ async function loadDataFromParentProcess(): Promise<ParentData> {
     return {
       layout: await Layout.create({}),
       database: 'SQLite',
-      connectionURI: 'file://dev.db',
+      connectionURI: SQLITE_DEFAULT_CONNECTION_URI,
     }
   }
 
@@ -556,7 +562,7 @@ function parseDatabaseChoice(
     return {
       database: true,
       choice: database,
-      connectionURI: 'sqlite:./dev.db',
+      connectionURI: SQLITE_DEFAULT_CONNECTION_URI,
     }
   }
 
