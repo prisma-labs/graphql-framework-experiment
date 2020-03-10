@@ -1,4 +1,4 @@
-[`issues`](https://github.com/graphql-nexus/nexus-future/labels/scope%2Fplugins) ([`feature`](https://github.com/graphql-nexus/nexus-future/issues?q=is%3Aopen+label%3Ascope%2Fplugins+label%3Atype%2Ffeature), [`bug`](https://github.com/graphql-nexus/nexus-future/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fplugins+label%3Atype%2Fbug+))
+[`issues`](https://github.com/graphql-nexus/nexus-future/labels/scope%2Fplugins) ([`feature`](https://github.com/graphql-nexus/nexus-future/issues?q=is%3Aopen+label%3Ascope%2Fplugins+label%3Atype%2Ffeat), [`bug`](https://github.com/graphql-nexus/nexus-future/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fplugins+label%3Atype%2Fbug+))
 
 ## Here Be Dragons
 

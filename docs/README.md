@@ -1,4 +1,4 @@
-# Introduction
+# Introduction {docsify-ignore}
 
 > Nexus [schema](https://github.com/prisma-labs/nexus) is becoming the Nexus framework. Learn more about the transition in this [GitHub issue](https://github.com/prisma-labs/nexus/issues/373). Learn how to migrate your app in the [migration guide](/getting-started/migrate-from-nexus-schema).
 
