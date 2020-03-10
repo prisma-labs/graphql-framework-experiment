@@ -1,9 +1,8 @@
 import * as FS from 'fs-jetpack'
 import * as Path from 'path'
 import * as Layout from '.'
-import { getTmpDir } from '../../utils'
 import { rootLogger } from '../../utils/logger'
-import { MaybePromise } from '../utils'
+import * as TestContext from '../test-context'
 
 /**
  * Disable logger timeDiff and color to allow snapshot matching
@@ -16,7 +15,64 @@ rootLogger.settings({
   },
 })
 
-const ctx = createTestContext()
+/**
+ * Helpers
+ */
+
+// In-memory file tree
+type MemoryFS = {
+  [path: string]: string | MemoryFS
+}
+
+const layoutContext = TestContext.create(
+  (opts: TestContext.TmpDirContribution) => {
+    return {
+      setup(vfs: MemoryFS) {
+        const tmpDir = opts.tmpDir()
+
+        writeToFS(tmpDir, vfs)
+      },
+      async scan() {
+        const tmpDir = opts.tmpDir()
+        const data = await Layout.create({ cwd: tmpDir })
+
+        return normalizeLayoutResult(tmpDir, data.data)
+      },
+    }
+  }
+)
+
+function writeToFS(cwd: string, vfs: MemoryFS) {
+  Object.entries(vfs).forEach(([fileOrDirName, fileContentOrDir]) => {
+    const subPath = Path.join(cwd, fileOrDirName)
+
+    if (typeof fileContentOrDir === 'string') {
+      FS.write(subPath, fileContentOrDir)
+    } else {
+      writeToFS(subPath, { ...fileContentOrDir })
+    }
+  })
+}
+
+function normalizeLayoutResult(tmpDir: string, data: Layout.Data): Layout.Data {
+  const normalizePath = (path: string): string => Path.relative(tmpDir, path)
+  const app: Layout.Data['app'] = data.app.exists
+    ? {
+        exists: true,
+        path: normalizePath(data.app.path),
+      }
+    : { exists: false, path: null }
+
+  return {
+    ...data,
+    app,
+    projectRoot: normalizePath(data.projectRoot),
+    schemaModules: data.schemaModules.map(m => normalizePath(m)),
+    sourceRoot: normalizePath(data.sourceRoot),
+  }
+}
+
+const ctx = TestContext.compose(TestContext.tmpDir, layoutContext)
 
 it('fails if empty file tree', async () => {
   ctx.setup({})
@@ -249,66 +305,3 @@ Object {
 }
 `)
 })
-
-// describe('Layout serialization save & load')
-
-//
-// Helpers
-//
-
-/**
- * In-memory file tree
- */
-type VirtualFS = {
-  [path: string]: string | VirtualFS
-}
-
-function createTestContext() {
-  let tmpDir: null | string = null
-
-  beforeEach(() => {
-    tmpDir = getTmpDir('tmp-layout-test')
-  })
-
-  return {
-    tmpDir,
-    setup(vfs: VirtualFS) {
-      writeToFS(tmpDir!, vfs)
-    },
-    async scan() {
-      const data = await Layout.create({ cwd: tmpDir! })
-
-      return normalizeLayoutResult(tmpDir!, data.data)
-    },
-  }
-}
-
-function writeToFS(cwd: string, vfs: VirtualFS) {
-  Object.entries(vfs).forEach(([fileOrDirName, fileContentOrDir]) => {
-    const subPath = Path.join(cwd, fileOrDirName)
-
-    if (typeof fileContentOrDir === 'string') {
-      FS.write(subPath, fileContentOrDir)
-    } else {
-      writeToFS(subPath, { ...fileContentOrDir })
-    }
-  })
-}
-
-function normalizeLayoutResult(tmpDir: string, data: Layout.Data): Layout.Data {
-  const normalizePath = (path: string): string => Path.relative(tmpDir, path)
-  const app: Layout.Data['app'] = data.app.exists
-    ? {
-        exists: true,
-        path: normalizePath(data.app.path),
-      }
-    : { exists: false, path: null }
-
-  return {
-    ...data,
-    app,
-    projectRoot: normalizePath(data.projectRoot),
-    schemaModules: data.schemaModules.map(m => normalizePath(m)),
-    sourceRoot: normalizePath(data.sourceRoot),
-  }
-}
