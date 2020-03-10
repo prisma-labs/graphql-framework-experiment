@@ -5,8 +5,14 @@ import { rootLogger } from '../../utils/logger'
 
 const log = rootLogger.child('add-to-context-extractor')
 
+interface TypeImportInfo {
+  name: string
+  modulePath: string
+  isExported: boolean
+}
+
 export interface ExtractedContectTypes {
-  typeImports: { name: string; modulePath: string; isExported: boolean }[]
+  typeImports: TypeImportInfo[]
   // types: Record<string, string>[]
   types: string[]
 }
@@ -17,6 +23,8 @@ export interface ExtractedContectTypes {
 export function extractContextTypes(
   program: ts.Program
 ): ExtractedContectTypes {
+  const typeImportsIndex: Record<string, TypeImportInfo> = {}
+
   const checker = program.getTypeChecker()
 
   const contextTypeContributions: ExtractedContectTypes = {
@@ -38,6 +46,9 @@ export function extractContextTypes(
   log.trace('finished compiler extension processing', {
     contextTypeContributions,
   })
+
+  // flush deduped type imports
+  contextTypeContributions.typeImports.push(...Object.values(typeImportsIndex))
 
   return contextTypeContributions
 
@@ -101,10 +112,10 @@ export function extractContextTypes(
         const ContextAdderRetType = checker.getReturnTypeOfSignature(
           contextAdderSig
         )
-        const ContextAdderRetTpeString = checker.typeToString(
+        const ContextAdderRetTypeString = checker.typeToString(
           ContextAdderRetType
         )
-        contextTypeContributions.types.push(ContextAdderRetTpeString)
+        contextTypeContributions.types.push(ContextAdderRetTypeString)
 
         // search for named references, they will require importing later on
         const contextAdderRetProps = ContextAdderRetType.getProperties()
@@ -117,7 +128,7 @@ export function extractContextTypes(
             })
             const info = extractFromType(propType, checker)
             if (info) {
-              contextTypeContributions.typeImports.push(info)
+              typeImportsIndex[info.name] = info
             }
           } else if (propType.isIntersection()) {
             log.trace('found intersection', {
@@ -127,12 +138,14 @@ export function extractContextTypes(
               .map(t => extractFromType(t, checker)!)
               .filter(info => info !== null)
             if (infos.length) {
-              contextTypeContributions.typeImports.push(...infos)
+              infos.forEach(info => {
+                typeImportsIndex[info.name] = info
+              })
             }
           } else {
             const info = extractFromType(propType, checker)
             if (info) {
-              contextTypeContributions.typeImports.push(info)
+              typeImportsIndex[info.name] = info
             }
           }
         }

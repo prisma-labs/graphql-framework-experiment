@@ -304,6 +304,31 @@ it.todo(
   'props with union intersection types where one intersection member is a type reference'
 )
 
+it('dedupes imports', () => {
+  expect(
+    extract(`
+        export interface Qux { b: 2 }
+        schema.addToContext(req => { return { foo: {} as Qux, bar: {} as Qux } })
+        schema.addToContext(req => { return { mar: {} as Qux } })
+      `)
+  ).toMatchInlineSnapshot(`
+Object {
+  "typeImports": Array [
+    Object {
+      "isExported": true,
+      "isNode": false,
+      "modulePath": "/src/a",
+      "name": "Qux",
+    },
+  ],
+  "types": Array [
+    "{ foo: Qux; bar: Qux; }",
+    "{ mar: Qux; }",
+  ],
+}
+`)
+})
+
 //
 // Helpers
 //
