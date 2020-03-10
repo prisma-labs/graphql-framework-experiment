@@ -20,27 +20,29 @@ rootLogger.settings({
  */
 
 // In-memory file tree
-type VirtualFS = {
-  [path: string]: string | VirtualFS
+type MemoryFS = {
+  [path: string]: string | MemoryFS
 }
 
-const layoutContext = TestContext.create((opts: { tmpDir: () => string }) => {
-  return {
-    setup(vfs: VirtualFS) {
-      const tmpDir = opts.tmpDir()
+const layoutContext = TestContext.create(
+  (opts: TestContext.TmpDirContribution) => {
+    return {
+      setup(vfs: MemoryFS) {
+        const tmpDir = opts.tmpDir()
 
-      writeToFS(tmpDir, vfs)
-    },
-    async scan() {
-      const tmpDir = opts.tmpDir()
-      const data = await Layout.create({ cwd: tmpDir })
+        writeToFS(tmpDir, vfs)
+      },
+      async scan() {
+        const tmpDir = opts.tmpDir()
+        const data = await Layout.create({ cwd: tmpDir })
 
-      return normalizeLayoutResult(tmpDir, data.data)
-    },
+        return normalizeLayoutResult(tmpDir, data.data)
+      },
+    }
   }
-})
+)
 
-function writeToFS(cwd: string, vfs: VirtualFS) {
+function writeToFS(cwd: string, vfs: MemoryFS) {
   Object.entries(vfs).forEach(([fileOrDirName, fileContentOrDir]) => {
     const subPath = Path.join(cwd, fileOrDirName)
 

@@ -1,7 +1,7 @@
 import { create } from './compose-create'
 import { getTmpDir } from '../../utils'
 
-interface TmpDirContribution {
+export interface TmpDirContribution {
   tmpDir: () => string
 }
 
