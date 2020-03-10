@@ -116,18 +116,35 @@ export function readTsConfig(layout: Layout): ts.ParsedCommandLine {
 }
 
 export function createTSProgram(
-  layout: Layout
+  layout: Layout,
+  opts?: {
+    withCache?: boolean
+  }
 ): ts.EmitAndSemanticDiagnosticsBuilderProgram {
   const tsConfig = readTsConfig(layout)
+  const cacheOptions = opts?.withCache
+    ? {
+        tsBuildInfoFile: getTSIncrementalFilePath(layout),
+        incremental: true,
+      }
+    : {}
+
   const program = ts.createIncrementalProgram({
     rootNames: tsConfig.fileNames,
     options: {
-      incremental: true,
-      tsBuildInfoFile: './node_modules/.nexus/cache.tsbuildinfo',
+      ...cacheOptions,
       ...tsConfig.options,
     },
   })
   return program
+}
+
+export function deleteTSIncrementalFile(layout: Layout) {
+  fs.remove(getTSIncrementalFilePath(layout))
+}
+
+export function getTSIncrementalFilePath(layout: Layout) {
+  return layout.projectPath('node_modules', '.nexus', 'cache.tsbuildinfo')
 }
 
 /**

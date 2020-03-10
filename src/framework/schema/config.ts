@@ -29,26 +29,11 @@ export function createNexusSchemaConfig(
   frameworkPlugins: Plugin.RuntimeContributions[],
   settings: SettingsData
 ): NexusConfig {
-  const layout = mustLoadDataFromParentProcess()
-
-  // Process graphQL SDL output setting
-  let outputSchema: string | false
-  if (
-    settings.generateGraphQLSDLFile === undefined ||
-    settings.generateGraphQLSDLFile === false
-  ) {
-    outputSchema = false
-  } else {
-    if (isAbsolute(settings.generateGraphQLSDLFile)) {
-      outputSchema = settings.generateGraphQLSDLFile
-    } else {
-      outputSchema = layout.projectPath(settings.generateGraphQLSDLFile)
-    }
-  }
+  const outputSchemaPath = getOutputSchemaPath(settings)
 
   const baseConfig: NexusConfig = {
     outputs: {
-      schema: outputSchema,
+      schema: outputSchemaPath,
       typegen: NEXUS_DEFAULT_TYPEGEN_PATH,
     },
     typegenAutoConfig: {
@@ -221,4 +206,29 @@ function defaultConnectionPlugin(
     ...configBase,
     nexusFieldName: 'connection',
   })
+}
+
+function getOutputSchemaPath(settings: SettingsInput) {
+  if (process.env.NEXUS_STAGE !== 'dev') {
+    return false
+  }
+
+  const layout = mustLoadDataFromParentProcess() // Using layout at runtime and in "prod"
+  // Process graphQL SDL output setting
+  let outputSchema: string | false
+
+  if (
+    settings.generateGraphQLSDLFile === undefined ||
+    settings.generateGraphQLSDLFile === false
+  ) {
+    outputSchema = false
+  } else {
+    if (isAbsolute(settings.generateGraphQLSDLFile)) {
+      outputSchema = settings.generateGraphQLSDLFile
+    } else {
+      outputSchema = layout.projectPath(settings.generateGraphQLSDLFile)
+    }
+  }
+
+  return outputSchema
 }

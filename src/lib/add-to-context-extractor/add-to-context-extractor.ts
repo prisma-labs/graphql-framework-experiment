@@ -1,7 +1,7 @@
 import * as Path from 'path'
 import ts from 'typescript'
-import { Layout } from '../../lib/layout'
-import { readTsConfig } from '../../utils'
+import * as Layout from '../../lib/layout'
+import { createTSProgram } from '../../utils'
 import { rootLogger } from '../../utils/logger'
 import { extractContextTypes, ExtractedContectTypes } from './extractor'
 import { writeContextTypeGenFile } from './typegen'
@@ -13,7 +13,9 @@ const log = rootLogger.child('add-to-context-extractor')
  * not available by default. If workers are not available then extraction falls
  * back to running in this process, possibly blocking with with intensive CPU work.
  */
-export function runAddToContextExtractorAsWorkerIfPossible(layout: Layout) {
+export function runAddToContextExtractorAsWorkerIfPossible(
+  layoutData: Layout.Layout['data']
+) {
   let hasWorkerThreads = false
   try {
     require('worker_threads')
@@ -21,17 +23,10 @@ export function runAddToContextExtractorAsWorkerIfPossible(layout: Layout) {
     // stays false
   } finally {
     if (hasWorkerThreads) {
-      runAddToContextExtractorAsWorker(layout)
+      runAddToContextExtractorAsWorker(layoutData)
     } else {
-      const tsConfig = readTsConfig(layout)
-      const builder = ts.createIncrementalProgram({
-        rootNames: tsConfig.fileNames,
-        options: {
-          incremental: true,
-          tsBuildInfoFile: './node_modules/.nexus/cache.tsbuildinfo',
-          ...tsConfig.options,
-        },
-      })
+      const layout = Layout.createFromData(layoutData)
+      const builder = createTSProgram(layout, { withCache: true })
       extractContextTypesToTypeGenFile(builder.getProgram())
     }
   }
@@ -48,12 +43,14 @@ export async function extractContextTypesToTypeGenFile(program: ts.Program) {
 /**
  * Run the extractor in a worker.
  */
-export function runAddToContextExtractorAsWorker(layout: Layout) {
+export function runAddToContextExtractorAsWorker(
+  layoutData: Layout.Layout['data']
+) {
   // avoid import error in node 10.x
   const { Worker } = require('worker_threads')
   const worker = new Worker(Path.join(__dirname, './worker.js'), {
     workerData: {
-      layout: layout.data,
+      layout: layoutData,
     },
   })
 
