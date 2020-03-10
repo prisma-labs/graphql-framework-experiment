@@ -170,5 +170,5 @@ The Nexus plugin system has an auto-use feature. It means once you've installed 
 -   plugins: [nexusPrismaPlugin()],
 ```
 
-You will not use the `prisma2` CLI anymore. `$ prisma2 generaate` will be taken
+You will not use the `prisma2` CLI anymore. `$ prisma2 generate` will be taken
 care of for you. `$ prisma2 migrate` features will be made available under `$ nexus db ...`.
