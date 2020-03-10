@@ -329,6 +329,21 @@ Object {
 `)
 })
 
+it('does not import array types', () => {
+  expect(
+    extract(`
+        schema.addToContext(req => { return { foo: [] as string[] } })
+      `)
+  ).toMatchInlineSnapshot(`
+Object {
+  "typeImports": Array [],
+  "types": Array [
+    "{ foo: string[]; }",
+  ],
+}
+`)
+})
+
 // This test is only relevant so long as we're using the TS type to string
 // function
 // todo cannot find a case that leads to TS truncating...

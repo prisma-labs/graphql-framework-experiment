@@ -9,6 +9,7 @@ interface TypeImportInfo {
   name: string
   modulePath: string
   isExported: boolean
+  isNode: boolean
 }
 
 export interface ExtractedContectTypes {
@@ -123,43 +124,42 @@ export function extractContextTypes(
         const contextAdderRetProps = ContextAdderRetType.getProperties()
         for (const prop of contextAdderRetProps) {
           log.trace('processing prop', { name: prop.getName() })
-          const propType = checker.getTypeAtLocation(prop.declarations[0])
-          if (propType.aliasSymbol) {
-            log.trace('found alias', {
-              type: checker.typeToString(
-                propType,
-                undefined,
-                ts.TypeFormatFlags.NoTruncation
-              ),
-            })
-            const info = extractFromType(propType, checker)
-            if (info) {
-              typeImportsIndex[info.name] = info
-            }
-          } else if (propType.isIntersection()) {
-            log.trace('found intersection', {
-              types: propType.types.map(t =>
-                checker.typeToString(
-                  t,
-                  undefined,
-                  ts.TypeFormatFlags.NoTruncation
-                )
-              ),
-            })
-            const infos = propType.types
-              .map(t => extractFromType(t, checker)!)
-              .filter(info => info !== null)
-            if (infos.length) {
-              infos.forEach(info => {
-                typeImportsIndex[info.name] = info
+          const n = prop.declarations[0]
+          const tsmn = tsm.createWrappedNode(n, { typeChecker: checker })
+          const t = tsmn.getType()
+
+          if (t)
+            if (t.getAliasSymbol()) {
+              log.trace('found alias', {
+                type: t.getText(undefined, ts.TypeFormatFlags.NoTruncation),
               })
+              const info = extractTypeImportInfoFromType(t)
+              if (info) {
+                typeImportsIndex[info.name] = info
+              }
+            } else if (t.isIntersection()) {
+              log.trace('found intersection', {
+                types: t
+                  .getIntersectionTypes()
+                  .map(t =>
+                    t.getText(undefined, ts.TypeFormatFlags.NoTruncation)
+                  ),
+              })
+              const infos = t
+                .getIntersectionTypes()
+                .map(t => extractTypeImportInfoFromType(t)!)
+                .filter(info => info !== null)
+              if (infos.length) {
+                infos.forEach(info => {
+                  typeImportsIndex[info.name] = info
+                })
+              }
+            } else {
+              const info = extractTypeImportInfoFromType(t)
+              if (info) {
+                typeImportsIndex[info.name] = info
+              }
             }
-          } else {
-            const info = extractFromType(propType, checker)
-            if (info) {
-              typeImportsIndex[info.name] = info
-            }
-          }
         }
       }
     } else {
@@ -168,13 +168,17 @@ export function extractContextTypes(
   }
 }
 
-function extractFromType(propType: ts.Type, checker: ts.TypeChecker) {
-  let sym = propType.aliasSymbol
+function extractTypeImportInfoFromType(t: tsm.Type): null | TypeImportInfo {
+  let sym = t.getAliasSymbol()
   let name = sym?.getName()
   log.trace('found prop type alias symbol?', { found: !!sym })
 
+  if (t.isArray()) {
+    return extractTypeImportInfoFromType(t.getArrayElementTypeOrThrow())
+  }
+
   if (!sym) {
-    sym = propType.getSymbol()
+    sym = t.getSymbol()
     log.trace('found prop type symbol?', { found: !!sym })
     if (!sym) return null
     name = sym.getName()
@@ -187,9 +191,7 @@ function extractFromType(propType: ts.Type, checker: ts.TypeChecker) {
   const d = sym.getDeclarations()?.[0]
   if (!d)
     throw new Error('A type with a symbol but the symbol has no declaration')
-  const sourceFile = tsm
-    .createWrappedNode(d, { typeChecker: checker })
-    .getSourceFile()
+  const sourceFile = d.getSourceFile()
   const { modulePath, isNode } = getAbsoluteImportPath(sourceFile)
   return {
     name: name,
