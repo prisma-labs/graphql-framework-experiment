@@ -80,9 +80,9 @@ export type Layout = Data & {
    */
   data: Data
   projectRelative(filePath: string): string
-  projectPath(filePath: string): string
+  projectPath(...subPaths: string[]): string
   sourceRelative(filePath: string): string
-  sourcePath(subPath: string): string
+  sourcePath(...subPaths: string[]): string
   packageManager: PackageManager.PackageManager
 }
 
@@ -105,7 +105,17 @@ export async function create(optionsGiven?: Options): Promise<Layout> {
     cwd: optionsGiven?.cwd ?? process.cwd(),
   }
   const data = await scan({ cwd: options.cwd })
-  return createFromData({ ...data, buildOutput: options.buildOutput })
+  const layout = createFromData({ ...data, buildOutput: options.buildOutput })
+
+  /**
+   * Save the created layout in the env
+   */
+  process.env = {
+    ...process.env,
+    ...saveDataForChildProcess(layout),
+  }
+
+  return layout
 }
 
 /**
@@ -118,11 +128,11 @@ export function createFromData(layoutData: Data): Layout {
     data: layoutData,
     projectRelative: Path.relative.bind(null, layoutData.projectRoot),
     sourceRelative: Path.relative.bind(null, layoutData.sourceRoot),
-    sourcePath(subpath: string): string {
-      return Path.join(layoutData.sourceRoot, subpath)
+    sourcePath(...subPaths: string[]): string {
+      return Path.join(layoutData.sourceRoot, ...subPaths)
     },
-    projectPath(subpath: string): string {
-      return Path.join(layoutData.projectRoot, subpath)
+    projectPath(...subPaths: string[]): string {
+      return Path.join(layoutData.projectRoot, ...subPaths)
     },
     packageManager: PackageManager.create(layoutData.packageManagerType),
   }

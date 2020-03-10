@@ -25,12 +25,6 @@ register({
 ;(async function() {
   const layout = await Layout.create()
 
-  // TODO: Find more elegant way to do that?
-  process.env = {
-    ...process.env,
-    ...Layout.saveDataForChildProcess(layout),
-  }
-
   log.trace('starting context type extraction')
 
   runAddToContextExtractorAsWorkerIfPossible(layout)

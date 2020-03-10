@@ -1,6 +1,7 @@
 import { spawnSync } from 'child_process'
 import * as FS from 'fs-jetpack'
 import { rootLogger } from './logger'
+import { fatal } from './process'
 
 const log = rootLogger.child('typegen')
 
@@ -21,6 +22,11 @@ export async function generateArtifacts(startScript: string): Promise<void> {
   if (result.error) {
     log.trace('...had error trying to start the typegen process')
     throw result.error
+  }
+
+  if (result.stderr) {
+    log.trace('...had error trying to start the typegen process')
+    fatal(result.stderr)
   }
 
   // Handling no-hoist problem

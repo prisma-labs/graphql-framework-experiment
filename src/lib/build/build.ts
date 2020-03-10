@@ -6,6 +6,7 @@ import { createStartModuleContent } from '../../framework/start'
 import {
   compile,
   createTSProgram,
+  deleteTSIncrementalFile,
   fatal,
   findOrScaffoldTsConfig,
   generateArtifacts,
@@ -40,6 +41,11 @@ export async function buildNexusApp(settings: BuildSettings) {
       undefined,
   })
 
+  /**
+   * Delete the TS incremental file to make sure we're building from a clean slate
+   */
+  deleteTSIncrementalFile(layout)
+
   if (deploymentTarget) {
     const validatedTarget = validateTarget(deploymentTarget, layout)
     if (!validatedTarget.valid) {
@@ -55,7 +61,7 @@ export async function buildNexusApp(settings: BuildSettings) {
     await p.hooks.build.onStart?.()
   }
 
-  const tsBuilder = createTSProgram(layout)
+  const tsBuilder = createTSProgram(layout, { withCache: true })
 
   log.trace('running_typegen')
 
@@ -75,7 +81,8 @@ export async function buildNexusApp(settings: BuildSettings) {
   // Recreate our program instance so that it picks up the typegen. We use
   // incremental builder type of program so that the cache from the previous
   // run of TypeScript should make re-building up this one cheap.
-  const tsProgramWithTypegen = createTSProgram(layout)
+  const tsProgramWithTypegen = createTSProgram(layout, { withCache: true })
+
   compile(tsProgramWithTypegen, layout)
 
   await writeStartModule(settings.stage ?? 'production', layout, tsBuilder)

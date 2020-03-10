@@ -110,8 +110,7 @@ export function create({
           plugins,
           state.settings
         )
-        const schema = makeSchema(nexusSchemaConfig)
-        return schema
+        return makeSchema(nexusSchemaConfig)
       },
       settings: {
         data: state.settings,
