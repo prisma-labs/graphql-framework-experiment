@@ -2,69 +2,40 @@
 
 > Nexus [schema](https://github.com/prisma-labs/nexus) is becoming the Nexus framework. Learn more about the transition in this [GitHub issue](https://github.com/prisma-labs/nexus/issues/373). Learn how to migrate your app in the [migration guide](/getting-started/migrate-from-nexus-schema).
 
-Nexus is a batteries included framework for building GraphQL APIs in Node. It leverages TypeScript and the knowledge it has about your data sources and API schema to automatically enforce correctness on significant portions of your API implementation that traditionally require manual testing.
+Nexus is a delightful framework for building GraphQL APIs in Node. It leverages TypeScript and knowledge about your data sources and API schema to bring levels of type safety far beyond what other tools in Node can offer at near-zero complexity cost.
 
-If you would like to jump straight into code please refer to our [examples repo](https://github.com/graphql-nexus/examples).
+<!-- https://www.servant.dev/ -->
 
-A minimal Nexus app looks like this:
+If you are new to GraphQL here are some resources you might find helpful:
 
-```
-|- graphql.ts
-|- tsconfig.json
-|- package.json
-```
+- [graphql.org](https://graphql.org)
+- Free [EdX](https://www.edx.org/) course: [Exploring GraphQL: A Query Language for APIs](https://www.edx.org/course/exploring-graphql-a-query-language-for-apis)
+- [howtographql.com](https://www.howtographql.com)
 
-Just a regular TypeScript Node project with a `graphql.ts` module. You can define your API's GraphQL types in the `graphql.ts` module. Nexus will find and import them. Here's an example of what that might look like:
+If you would like to jump straight into code here are some things you might find useful to do:
 
-```ts
-import { schema } from 'nexus-future'
+- Start new project by running `npx nexus-future`
+- Peruse our [examples repo](https://github.com/graphql-nexus/examples)
 
-schema.queryType({
-  definition(t) {
-    t.field('hello', {
-      type: 'World',
-      resolve() {
-        return {
-          name: 'Earth',
-          population: 6_000_000,
-        }
-      },
-    })
-  },
-})
+## What
 
-schema.objectType({
-  name: 'World',
-  definition(t) {
-    t.string('name')
-    t.integer('population')
-  },
-})
-```
+Nexus is a sophisticated tool built of multiple components that broadly fall into three categories: runtime, worktime, testtime.
 
-A less trivial app might need to deal with multiple schema modules and server customization. Still minimal, that might look like:
+_worktime_
 
-```
-|- api/graphql/blog.ts
-|- api/graphql/user.ts
-|- api/app.ts
-|- tsconfig.json
-|- package.json
-```
+The worktime component is a command line interface (CLI). It abstracts away numerous details like how to setup TypeScript. You develop your app with zero configuration using `nexus dev`, and then when you are ready, build it for production using `nexus build`. Once built, you run it in production like any other vanilla Node app.
 
-Nexus will treat `app.ts` as your entrypoint and find all modules inside the `graphql` directory. Customizations in your `app` module might look like:
+_runtime_
 
-```ts
-import { settings, server } from 'nexus-future'
-import cors from 'cors'
+There are a few runtime components. The one you'll deal with the most is the schema. It gives you powerful abstractions for implementing the GraphQL part of your API. Other runtime components include a JSON logger and HTTP server. It is possible to have a useful Nexus app that only ever touches the schema component, though most non-trivial apps will leverage all components.
 
-settings.change({
-  schema: {
-    generateGraphQLSDLFile: 'api.graphql',
-  },
-})
+_testtime_
 
-server.custom(({ express }) => {
-  express.use(cors())
-})
-```
+Nexus pushes the boundaries of static typing as far as it can, but recognizes an unsatisfactory limit will be reached. Thus it embraces testing and ships with testtime components that are designed to pick up where static types drop off. While testtime components are the least developed so far, we think they will be a huge part of the value proposition, bringing levels of safetly typically associated with other [languages](https://www.idris-lang.org/) [and](https://www.haskell.org/) [tools](https://www.servant.dev/).
+
+## Why
+
+- Leverage the power of TypeScript at zero cost (setup/config headaches).
+- Leverage the power of modern IDE features.
+- Statically type code that would otherwise be impossible or impractical to type.
+- Ruby-on-Rails like wholistic thinking.
