@@ -8,25 +8,23 @@
 * Guides
 
   - [Testing](guides/testing)
-  - [Databases](guides/databases)
-  - [Authorization](guides/authorization)
-  - [Authentication](guides/authentication)
-  - [Deployment](guides/deployment)
+    <!-- - [Databases](guides/databases) -->
+    <!-- - [Authorization](guides/authorization) -->
+    <!-- - [Authentication](guides/authentication) -->
+    <!-- - [Deployment](guides/deployment) -->
   - [Writing Plugins](guides/writing-plugins)
 
 * [Recipes](references/recipes)
 
 * [Plugins](community/plugins)
 
-* [API](api)
+* [API](api/modules/main)
 
-  - [Schema](api/modules/main/schema)
-  - [Logger](api/modules/main/logger)
-  - [Server](api/modules/main/server)
-  - [Settings](api/modules/main/settings)
+  - [`schema`](api/modules/main/exports/schema)
+  - [`log`](api/modules/main/exports/logger)
+  - [`server`](api/modules/main/exports/server)
+  - [`settings`](api/modules/main/exports/settings)
 
 * [API Testing](api/modules/plugin)
 
 * [API Plugins](api/modules/testing)
-
-* [Roadmap](community/roadmap)
