@@ -2,9 +2,9 @@
 
 > Nexus [schema](https://github.com/prisma-labs/nexus) is becoming the Nexus framework. Learn more about the transition in this [GitHub issue](https://github.com/prisma-labs/nexus/issues/373). Learn how to migrate your app in the [migration guide](/getting-started/migrate-from-nexus-schema).
 
-Nexus is a framework for building GraphQL APIs in Node. It leverages TypeScript and the knowledge it has about your data sources and API schema to automatically enforce correctness on significant portions of your API implementation that traditionally require manual testing.
+Nexus is a batteries included framework for building GraphQL APIs in Node. It leverages TypeScript and the knowledge it has about your data sources and API schema to automatically enforce correctness on significant portions of your API implementation that traditionally require manual testing.
 
-Nexus is batteries included. It has components to handle your server, logger, schema and configuration.
+If you would like to jump straight into code please refer to our [examples repo](https://github.com/graphql-nexus/examples).
 
 A minimal Nexus app looks like this:
 
