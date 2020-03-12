@@ -143,6 +143,8 @@ export function create(): App {
        * for you. You should not normally need to call this function yourself.
        */
       async start() {
+        let backingTypes: BackingTypes.BackingTypes | undefined = undefined
+
         // During development we dynamically import all the schema modules
         // TODO IDEA we have concept of schema module and schema dir
         //      add a "refactor" command to toggle between them
@@ -151,14 +153,13 @@ export function create(): App {
         // At build time we inline static imports.
         // This code MUST run after user/system has had chance to run global installation
         if (process.env.NEXUS_STAGE === 'dev') {
-          await Layout.schema.importModules()
-        }
+          const layout = await Layout.loadDataFromParentProcess()
 
-        let backingTypes: BackingTypes.BackingTypes | undefined = undefined
+          await Layout.schema.importModules(layout)
 
-        if (process.env.NEXUS_STAGE === 'dev') {
           backingTypes = await BackingTypes.extractAndWrite(
-            settings.current.schema.rootTypingsFilePattern
+            settings.current.schema.rootTypingsGlobPattern,
+            { cwd: layout.sourceRoot }
           )
         }
 

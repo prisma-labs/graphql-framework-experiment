@@ -50,10 +50,8 @@ export function findDirOrModules(
  *
  * There is an IO cost here to go find all modules dynamically, so do not use in production.
  */
-export async function importModules(): Promise<void> {
-  const modules = (await loadDataFromParentProcess()).schemaModules
-
-  modules.forEach(modulePath => {
+export async function importModules(layout: Layout): Promise<void> {
+  layout.schemaModules.forEach(modulePath => {
     require(stripExt(modulePath))
   })
 }

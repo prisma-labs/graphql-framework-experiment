@@ -1,6 +1,14 @@
-import * as fs from 'fs-jetpack'
+import * as Path from 'path'
+import * as FS from 'fs-jetpack'
 import { hardWriteFileSync } from '../../utils'
 import { BackingTypes } from './types'
+
+export const DEFAULT_RELATIVE_BACKING_TYPES_TYPEGEN_PATH = Path.join(
+  'node_modules',
+  '@types',
+  'typegen-nexus-backing-types',
+  'index.d.ts'
+)
 
 export async function write(
   backingTypes: BackingTypes,
@@ -26,15 +34,10 @@ declare global {
 }
 `
 
-  const localFS = fs.cwd(opts.cwd)
+  const localFS = FS.cwd(opts.cwd)
 
   hardWriteFileSync(
-    localFS.path(
-      'node_modules',
-      '@types',
-      'typegen-nexus-backing-types',
-      'index.d.ts'
-    ),
+    localFS.path(DEFAULT_RELATIVE_BACKING_TYPES_TYPEGEN_PATH),
     output
   )
 }

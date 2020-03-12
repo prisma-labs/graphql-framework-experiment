@@ -1,9 +1,10 @@
-import * as Path from 'path'
 import * as FS from 'fs-jetpack'
+import * as Path from 'path'
+import { MemoryFS, writeToFS } from '../../utils/testing-utils'
 import * as TestContext from '../test-context'
 import { extractAndWrite } from './extract-and-write'
-import { writeToFS, MemoryFS } from '../../utils/testing-utils'
 import { BackingTypes } from './types'
+import { DEFAULT_RELATIVE_BACKING_TYPES_TYPEGEN_PATH } from './write'
 
 const localCtx = TestContext.create((opts: TestContext.TmpDirContribution) => {
   return {
@@ -25,10 +26,7 @@ const localCtx = TestContext.create((opts: TestContext.TmpDirContribution) => {
 
       const typegenPath = Path.join(
         cwd,
-        'node_modules',
-        '@types',
-        'typegen-nexus-backing-types',
-        'index.d.ts'
+        DEFAULT_RELATIVE_BACKING_TYPES_TYPEGEN_PATH
       )
       const typegen = FS.read(typegenPath)
 

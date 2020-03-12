@@ -29,7 +29,14 @@ export type SettingsInput = {
    * @default false
    */
   generateGraphQLSDLFile?: false | string
-  rootTypingsFilePattern?: string
+  /**
+   * A glob pattern which will be used to find the files from which to extract the backing types used in the `rootTyping` option of `schema.(objectType|interfaceType|unionType|enumType)`
+   *
+   * @default "./**\/*.ts"
+   *
+   * @example "./**\/*.backing.ts"
+   */
+  rootTypingsGlobPattern?: string
 }
 
 export type SettingsData = SettingsInput
@@ -122,9 +129,9 @@ export function create({
               newSettings.generateGraphQLSDLFile
           }
 
-          if (newSettings.rootTypingsFilePattern) {
-            state.settings.rootTypingsFilePattern =
-              newSettings.rootTypingsFilePattern
+          if (newSettings.rootTypingsGlobPattern) {
+            state.settings.rootTypingsGlobPattern =
+              newSettings.rootTypingsGlobPattern
           }
 
           if (newSettings.connections) {

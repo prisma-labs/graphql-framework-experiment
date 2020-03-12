@@ -1,3 +1,9 @@
+/**
+ * NOTE:
+ * This module is temporary until the backing-types API is implemented in @nexus/schema
+ * This should be deleted once it's done.
+ */
+
 import * as NexusSchema from '@nexus/schema'
 import * as BackingTypes from '../../lib/backing-types'
 
