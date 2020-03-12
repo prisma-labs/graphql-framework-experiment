@@ -1,7 +1,7 @@
-import * as FS from 'fs-jetpack'
 import * as Path from 'path'
 import * as Layout from '.'
 import { rootLogger } from '../../utils/logger'
+import { MemoryFS, writeToFS } from '../../utils/testing-utils'
 import * as TestContext from '../test-context'
 
 /**
@@ -18,11 +18,6 @@ rootLogger.settings({
 /**
  * Helpers
  */
-
-// In-memory file tree
-type MemoryFS = {
-  [path: string]: string | MemoryFS
-}
 
 const layoutContext = TestContext.create(
   (opts: TestContext.TmpDirContribution) => {
@@ -41,18 +36,6 @@ const layoutContext = TestContext.create(
     }
   }
 )
-
-function writeToFS(cwd: string, vfs: MemoryFS) {
-  Object.entries(vfs).forEach(([fileOrDirName, fileContentOrDir]) => {
-    const subPath = Path.join(cwd, fileOrDirName)
-
-    if (typeof fileContentOrDir === 'string') {
-      FS.write(subPath, fileContentOrDir)
-    } else {
-      writeToFS(subPath, { ...fileContentOrDir })
-    }
-  })
-}
 
 function normalizeLayoutResult(tmpDir: string, data: Layout.Data): Layout.Data {
   const normalizePath = (path: string): string => Path.relative(tmpDir, path)
