@@ -3,18 +3,25 @@ import { hardWriteFileSync } from '../../utils'
 import { BackingTypes } from './extract'
 
 export async function writeBackingTypes(backingTypes: BackingTypes) {
-  const final = `
-export type BackingTypes =
-${Object.keys(backingTypes)
-  .map(t => `  | '${t}'`)
-  .join('\n')}
+  let output: string = ''
+  const typeNames = Object.keys(backingTypes)
 
+  if (typeNames.length === 0) {
+    output = `export type BackingTypes = 'No backing types found. Make sure you have some types exported'\n`
+  } else {
+    output = `\
+ export type BackingTypes =
+${typeNames.map(t => `  | '${t}'`).join('\n')}
+`
+  }
+
+  output += `\
 declare global {
   export interface NexusBackingTypes {
     types: BackingTypes
   }
 }
-  `
+`
 
   hardWriteFileSync(
     fs.path(
@@ -23,6 +30,6 @@ declare global {
       'typegen-nexus-backing-types',
       'index.d.ts'
     ),
-    final
+    output
   )
 }
