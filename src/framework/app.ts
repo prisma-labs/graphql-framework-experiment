@@ -154,9 +154,13 @@ export function create(): App {
           await Layout.schema.importModules()
         }
 
-        const backingTypes = await BackingTypes.extractAndWrite(
-          settings.current.schema.rootTypingsFilePattern
-        )
+        let backingTypes: BackingTypes.BackingTypes | undefined = undefined
+
+        if (process.env.NEXUS_STAGE === 'dev') {
+          backingTypes = await BackingTypes.extractAndWrite(
+            settings.current.schema.rootTypingsFilePattern
+          )
+        }
 
         const schema = await schemaComponent.private.makeSchema(backingTypes)
 

@@ -17,14 +17,13 @@ export function createNexusSingleton() {
    */
   async function makeSchema(
     config: Nexus.core.SchemaConfig,
-    backingTypes: BackingTypes.BackingTypes
+    backingTypes?: BackingTypes.BackingTypes
   ): Promise<Nexus.core.NexusGraphQLSchema> {
-    const typesWithRemappedRootTypings = BackingTypes.withRemappedRootTypings(
-      __types,
-      backingTypes
-    )
+    const maybeTypesWithRemappedRootTypings = backingTypes
+      ? BackingTypes.withRemappedRootTypings(__types, backingTypes)
+      : __types
 
-    config.types.push(...typesWithRemappedRootTypings)
+    config.types.push(...maybeTypesWithRemappedRootTypings)
 
     // https://github.com/graphql-nexus/nexus-future/issues/33
     const schema = await (process.env.NEXUS_SHOULD_AWAIT_TYPEGEN === 'true'
