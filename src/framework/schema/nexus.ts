@@ -6,27 +6,27 @@ import { GetNexusFutureGen } from '../../lib/backing-types/typeHelpers'
 
 interface NexusObjectTypeConfig<TypeName extends string>
   extends Exclude<Nexus.core.NexusObjectTypeConfig<TypeName>, 'rootTyping'> {
-  rootTyping?: GetNexusFutureGen<'types'>
+  rootTyping?: GetNexusFutureGen<'types'> | Nexus.core.RootTypingImport
 }
 
 interface NexusInterfaceTypeConfig<TypeName extends string>
   extends Exclude<Nexus.core.NexusInterfaceTypeConfig<TypeName>, 'rootTyping'> {
-  rootTyping?: GetNexusFutureGen<'types'>
+  rootTyping?: GetNexusFutureGen<'types'> | Nexus.core.RootTypingImport
 }
 
 interface NexusUnionTypeConfig<TypeName extends string>
   extends Exclude<Nexus.core.NexusUnionTypeConfig<TypeName>, 'rootTyping'> {
-  rootTyping?: GetNexusFutureGen<'types'>
+  rootTyping?: GetNexusFutureGen<'types'> | Nexus.core.RootTypingImport
 }
 
 interface NexusEnumTypeConfig<TypeName extends string>
   extends Exclude<Nexus.core.EnumTypeConfig<TypeName>, 'rootTyping'> {
-  rootTyping?: GetNexusFutureGen<'types'>
+  rootTyping?: GetNexusFutureGen<'types'> | Nexus.core.RootTypingImport
 }
 
 interface NexusScalarTypeConfig<TypeName extends string>
   extends Exclude<Nexus.core.NexusScalarTypeConfig<TypeName>, 'rootTyping'> {
-  rootTyping?: GetNexusFutureGen<'types'>
+  rootTyping?: GetNexusFutureGen<'types'> | Nexus.core.RootTypingImport
 }
 
 export type AllNexusTypeDefs =
