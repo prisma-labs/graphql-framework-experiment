@@ -22,7 +22,7 @@
         --theme-color-secondary: rgb(167, 94, 255);
       }
       body {
-        font-size: 15px;
+        font-size: 16px;
         line-height: 2rem;
       }
 
@@ -38,7 +38,39 @@
         content: '⌕ ';
       }
 
+      @media only screen and (min-width: 1800px) {
+        .sidebar {
+          width: 30rem !important;
+        }
+      }
+
+      @media only screen and (min-width: 2600px) {
+        .sidebar {
+          width: 50rem !important;
+        }
+      }
+
+      /* Component TwpUp */
+
+      .TwoUp {
+        display: flex;
+        margin-top: 1.2em;
+        margin-bottom: 1.2em;
+      }
+      .TwoUp > * {
+        width: 50%;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+      }
+      .TwoUp > *:not(:last-child) {
+        margin-right: 1em;
+      }
+      .TwoUp > *:not(:first-child) {
+        margin-left: 1em;
+      }
+
       /* Component BigButton */
+
       .BigButton {
         border-radius: 2rem;
         border: 1px solid var(--theme-color, #42b983);
@@ -135,15 +167,23 @@
         border-radius: 3px;
         display: inline-block;
         line-height: 1.5;
-        font-size: 0.85rem;
+        font-size: 0.8rem;
       }
       .sidebar {
         width: 15rem;
         padding-top: 1rem;
       }
+      .sidebar-nav {
+        width: 15rem;
+        margin-left: auto;
+      }
+      .sidebar .app-name {
+        width: 15rem;
+        margin-left: auto;
+        margin-right: 0;
+      }
       .sidebar .app-name a {
-        display: block;
-        margin: 0 auto;
+        display: inline-block;
         font-size: 0;
         background: no-repeat url('/assets/nexus-logo-black.png');
         background-size: 50px 50px;
@@ -203,10 +243,18 @@
       .markdown-section h6 code {
         font-weight: 500;
       }
-
       .markdown-section h5 {
         margin-top: 3em;
       }
+      .markdown-section h6 .anchor,
+      .markdown-section h6 .anchor span {
+        color: rgb(172, 172, 172);
+        font-style: oblique;
+      }
+      .markdown-section h6 .anchor:active {
+        opacity: 0.2;
+      }
+
       .markdown-section {
         width: 700px;
       }
@@ -235,6 +283,45 @@
       }
       .markdown-section h5 code {
         font-size: 0.83rem;
+      }
+      .markdown-section blockquote > *:last-child {
+        margin-bottom: 0 !important;
+      }
+      .markdown-section blockquote {
+        padding-top: 0.3em;
+        padding-bottom: 0.8em;
+        opacity: 0.85;
+      }
+      .markdown-section blockquote p {
+        font-weight: normal;
+      }
+      .markdown-section blockquote::before {
+        font-weight: bold !important;
+      }
+
+      .NextIs {
+        line-height: 0 !important;
+        margin: 0 !important;
+      }
+
+      /* .NextIsNote */
+
+      .NextIs.Note + blockquote {
+        border-left-color: rgb(211, 211, 211);
+      }
+      .NextIs.Note + blockquote::before {
+        content: 'Note';
+        color: rgb(163, 163, 163);
+      }
+
+      /* .NextIsTip */
+
+      .NextIs.Tip + blockquote {
+        border-left-color: var(--theme-color);
+      }
+      .NextIs.Tip + blockquote::before {
+        content: 'Tip';
+        color: var(--theme-color);
       }
 
       .OneLineSignature {
@@ -331,7 +418,7 @@
         coverpage: true,
         name: '.',
         repo: 'graphql-nexus/nexus-future',
-        subMaxLevel: 6,
+        subMaxLevel: 4,
         loadSidebar: true,
         autoHeader: true,
         pagination: {

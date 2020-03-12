@@ -7,6 +7,7 @@
 
 * Guides
 
+  - [Schema](guides/schema)
   - [Testing](guides/testing)
     <!-- - [Databases](guides/databases) -->
     <!-- - [Authorization](guides/authorization) -->
@@ -25,6 +26,6 @@
   - [`server`](api/modules/main/exports/server)
   - [`settings`](api/modules/main/exports/settings)
 
-* [API Testing](api/modules/plugin)
+* [API `/testing`](api/modules/plugin)
 
-* [API Plugins](api/modules/testing)
+* [API `/plugins`](api/modules/testing)

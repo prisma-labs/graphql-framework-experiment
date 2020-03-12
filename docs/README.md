@@ -1,10 +1,10 @@
 # Introduction {docsify-ignore}
 
+<p class='NextIs Note'></p>
+
 > Nexus [schema](https://github.com/prisma-labs/nexus) is becoming the Nexus framework. Learn more about the transition in this [GitHub issue](https://github.com/prisma-labs/nexus/issues/373). Learn how to migrate your app in the [migration guide](/getting-started/migrate-from-nexus-schema).
 
 Nexus is a delightful framework for building GraphQL APIs in Node. It leverages TypeScript and knowledge about your data sources and API schema to bring levels of type safety far beyond what other tools in Node can offer at near-zero complexity cost.
-
-<!-- https://www.servant.dev/ -->
 
 If you are new to GraphQL here are some resources you might find helpful:
 
