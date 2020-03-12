@@ -104,7 +104,7 @@ export async function findFiles(
     ],
   })
 
-  return files.map(f => localFS.path(f))
+  return files.map(f => (path.isAbsolute(f) ? f : localFS.path(f)))
 }
 
 export const baseIgnores = ['!node_modules/**/*', '!.*/**/*']
