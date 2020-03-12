@@ -40,7 +40,6 @@ schema.objectType({
 We will now begin exploring the GraphQL schema building parts of the schema component. Having prior knowledge of GraphQL language itself will greatly help. If you are new to GraphQL you may want to read some of the resources listed below.
 
 - [graphql.org](https://graphql.org)
-- Free [EdX](https://www.edx.org/) course: [Exploring GraphQL: A Query Language for APIs](https://www.edx.org/course/exploring-graphql-a-query-language-for-apis)
 - [howtographql.com](https://www.howtographql.com)
 
 ### Meet the Object Type

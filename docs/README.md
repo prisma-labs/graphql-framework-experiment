@@ -8,9 +8,8 @@ Nexus is a delightful framework for building GraphQL APIs in Node. It leverages 
 
 If you are new to GraphQL here are some resources you might find helpful:
 
-- [graphql.org](https://graphql.org)
-- Free [EdX](https://www.edx.org/) course: [Exploring GraphQL: A Query Language for APIs](https://www.edx.org/course/exploring-graphql-a-query-language-for-apis)
-- [howtographql.com](https://www.howtographql.com)
+- [Official GraphQL website](https://graphql.org)
+- [How to GraphQL](https://www.howtographql.com)
 
 If you are new to TypeScript here are some resources you might find helpful:
 
