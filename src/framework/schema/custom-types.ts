@@ -1,14 +1,16 @@
 import * as NexusSchema from '@nexus/schema'
 import * as BackingTypes from '../../lib/backing-types'
 
+type RootTyping =
+  | BackingTypes.GetNexusFutureGen<'types'>
+  | NexusSchema.core.RootTypingImport
+
 export interface NexusObjectTypeConfig<TypeName extends string>
   extends Exclude<
     NexusSchema.core.NexusObjectTypeConfig<TypeName>,
     'rootTyping'
   > {
-  rootTyping?:
-    | BackingTypes.GetNexusFutureGen<'types'>
-    | NexusSchema.core.RootTypingImport
+  rootTyping?: RootTyping
 }
 
 export interface NexusInterfaceTypeConfig<TypeName extends string>
@@ -16,9 +18,7 @@ export interface NexusInterfaceTypeConfig<TypeName extends string>
     NexusSchema.core.NexusInterfaceTypeConfig<TypeName>,
     'rootTyping'
   > {
-  rootTyping?:
-    | BackingTypes.GetNexusFutureGen<'types'>
-    | NexusSchema.core.RootTypingImport
+  rootTyping?: RootTyping
 }
 
 export interface NexusUnionTypeConfig<TypeName extends string>
@@ -26,16 +26,12 @@ export interface NexusUnionTypeConfig<TypeName extends string>
     NexusSchema.core.NexusUnionTypeConfig<TypeName>,
     'rootTyping'
   > {
-  rootTyping?:
-    | BackingTypes.GetNexusFutureGen<'types'>
-    | NexusSchema.core.RootTypingImport
+  rootTyping?: RootTyping
 }
 
 export interface NexusEnumTypeConfig<TypeName extends string>
   extends Exclude<NexusSchema.core.EnumTypeConfig<TypeName>, 'rootTyping'> {
-  rootTyping?:
-    | BackingTypes.GetNexusFutureGen<'types'>
-    | NexusSchema.core.RootTypingImport
+  rootTyping?: RootTyping
 }
 
 export interface NexusScalarTypeConfig<TypeName extends string>
@@ -43,7 +39,5 @@ export interface NexusScalarTypeConfig<TypeName extends string>
     NexusSchema.core.NexusScalarTypeConfig<TypeName>,
     'rootTyping'
   > {
-  rootTyping?:
-    | BackingTypes.GetNexusFutureGen<'types'>
-    | NexusSchema.core.RootTypingImport
+  rootTyping?: RootTyping
 }
