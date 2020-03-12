@@ -12,6 +12,13 @@ If you are new to GraphQL here are some resources you might find helpful:
 - Free [EdX](https://www.edx.org/) course: [Exploring GraphQL: A Query Language for APIs](https://www.edx.org/course/exploring-graphql-a-query-language-for-apis)
 - [howtographql.com](https://www.howtographql.com)
 
+If you are new to TypeScript here are some resources you might find helpful:
+
+- [The New Handbook](https://microsoft.github.io/TypeScript-New-Handbook/everything/)
+- [The Interactive Playground](http://www.typescriptlang.org/play)
+- [Dozens of articles](https://mariusschulz.com/blog) by [Marius Schulz](https://github.com/mariusschulz)
+- [Dozens of articles](https://2ality.com/index.html) by [Dr. Axel Rauschmayer](https://github.com/rauschma)
+
 If you would like to jump straight into code here are some things you might find useful to do:
 
 - Start new project by running `npx nexus-future`
