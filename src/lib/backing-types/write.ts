@@ -1,8 +1,8 @@
 import * as fs from 'fs-jetpack'
 import { hardWriteFileSync } from '../../utils'
-import { BackingTypes } from './extract'
+import { BackingTypes } from './types'
 
-export async function writeBackingTypes(backingTypes: BackingTypes) {
+export async function write(backingTypes: BackingTypes) {
   let output: string = ''
   const typeNames = Object.keys(backingTypes)
 

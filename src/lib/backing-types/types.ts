@@ -1,12 +1,12 @@
+/**
+ * Helpers for handling the generated backing types typgen
+ */
 declare global {
   interface NexusBackingTypes {}
 }
 
 type GenTypesShapeKeys = 'types'
 
-/**
- * Helpers for handling the generated backing types typgen
- */
 type GenTypesShape = Record<GenTypesShapeKeys, any>
 
 export type GetNexusFutureGen<
@@ -17,3 +17,5 @@ export type GetNexusFutureGen<
     ? GenTypes[K]
     : Fallback
   : Fallback
+
+export type BackingTypes = Record<string, string>

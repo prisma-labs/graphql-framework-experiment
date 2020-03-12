@@ -7,7 +7,7 @@ import * as Schema from './schema'
 import * as Server from './server'
 import * as singletonChecks from './singleton-checks'
 import * as BackingTypes from '../lib/backing-types'
-import { writeBackingTypes } from '../lib/backing-types'
+import { write, extractAndWrite } from '../lib/backing-types'
 
 const log = Logger.create({ name: 'app' })
 
@@ -154,13 +154,9 @@ export function create(): App {
           await Layout.schema.importModules()
         }
 
-        const backingTypesFiles = await BackingTypes.findBackingTypesFiles(
+        const backingTypes = await BackingTypes.extractAndWrite(
           settings.current.schema.rootTypingsFilePattern
         )
-        const backingTypes = await BackingTypes.extractBackingTypesFromFiles(
-          backingTypesFiles
-        )
-        await writeBackingTypes(backingTypes)
 
         const schema = await schemaComponent.private.makeSchema(backingTypes)
 

@@ -1,33 +1,7 @@
 import * as Nexus from '@nexus/schema'
 import { AllTypeDefs, generateSchema } from '@nexus/schema/dist/core'
-import { BackingTypes } from '../../lib/backing-types'
-import { remapNexusTypesWithBackingTypes } from '../../lib/backing-types/remapNexusTypes'
-import { GetNexusFutureGen } from '../../lib/backing-types/typeHelpers'
-
-interface NexusObjectTypeConfig<TypeName extends string>
-  extends Exclude<Nexus.core.NexusObjectTypeConfig<TypeName>, 'rootTyping'> {
-  rootTyping?: GetNexusFutureGen<'types'> | Nexus.core.RootTypingImport
-}
-
-interface NexusInterfaceTypeConfig<TypeName extends string>
-  extends Exclude<Nexus.core.NexusInterfaceTypeConfig<TypeName>, 'rootTyping'> {
-  rootTyping?: GetNexusFutureGen<'types'> | Nexus.core.RootTypingImport
-}
-
-interface NexusUnionTypeConfig<TypeName extends string>
-  extends Exclude<Nexus.core.NexusUnionTypeConfig<TypeName>, 'rootTyping'> {
-  rootTyping?: GetNexusFutureGen<'types'> | Nexus.core.RootTypingImport
-}
-
-interface NexusEnumTypeConfig<TypeName extends string>
-  extends Exclude<Nexus.core.EnumTypeConfig<TypeName>, 'rootTyping'> {
-  rootTyping?: GetNexusFutureGen<'types'> | Nexus.core.RootTypingImport
-}
-
-interface NexusScalarTypeConfig<TypeName extends string>
-  extends Exclude<Nexus.core.NexusScalarTypeConfig<TypeName>, 'rootTyping'> {
-  rootTyping?: GetNexusFutureGen<'types'> | Nexus.core.RootTypingImport
-}
+import * as BackingTypes from '../../lib/backing-types'
+import * as CustomTypes from './custom-types'
 
 export type AllNexusTypeDefs =
   | AllTypeDefs
@@ -43,9 +17,9 @@ export function createNexusSingleton() {
    */
   async function makeSchema(
     config: Nexus.core.SchemaConfig,
-    backingTypes: BackingTypes
+    backingTypes: BackingTypes.BackingTypes
   ): Promise<Nexus.core.NexusGraphQLSchema> {
-    const typesWithRemappedRootTypings = remapNexusTypesWithBackingTypes(
+    const typesWithRemappedRootTypings = BackingTypes.withRemappedRootTypings(
       __types,
       backingTypes
     )
@@ -67,7 +41,7 @@ export function createNexusSingleton() {
   }
 
   function objectType<TypeName extends string>(
-    config: NexusObjectTypeConfig<TypeName>
+    config: CustomTypes.NexusObjectTypeConfig<TypeName>
   ): Nexus.core.NexusObjectTypeDef<TypeName> {
     const typeDef = Nexus.objectType(config)
     __types.push(typeDef)
@@ -75,7 +49,7 @@ export function createNexusSingleton() {
   }
 
   function interfaceType<TypeName extends string>(
-    config: NexusInterfaceTypeConfig<TypeName>
+    config: CustomTypes.NexusInterfaceTypeConfig<TypeName>
   ): Nexus.core.NexusInterfaceTypeDef<TypeName> {
     const typeDef = Nexus.interfaceType(config)
     __types.push(typeDef)
@@ -83,7 +57,7 @@ export function createNexusSingleton() {
   }
 
   function unionType<TypeName extends string>(
-    config: NexusUnionTypeConfig<TypeName>
+    config: CustomTypes.NexusUnionTypeConfig<TypeName>
   ): Nexus.core.NexusUnionTypeDef<TypeName> {
     const typeDef = Nexus.unionType(config)
     __types.push(typeDef)
@@ -91,7 +65,7 @@ export function createNexusSingleton() {
   }
 
   function scalarType<TypeName extends string>(
-    config: NexusScalarTypeConfig<TypeName>
+    config: CustomTypes.NexusScalarTypeConfig<TypeName>
   ): Nexus.core.NexusScalarTypeDef<TypeName> {
     const typeDef = Nexus.scalarType(config)
     __types.push(typeDef)
@@ -99,7 +73,7 @@ export function createNexusSingleton() {
   }
 
   function enumType<TypeName extends string>(
-    config: NexusEnumTypeConfig<TypeName>
+    config: CustomTypes.NexusEnumTypeConfig<TypeName>
   ): Nexus.core.NexusEnumTypeDef<TypeName> {
     const typeDef = Nexus.enumType(config)
     __types.push(typeDef)

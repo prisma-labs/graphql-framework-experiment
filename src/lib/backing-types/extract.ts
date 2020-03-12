@@ -1,20 +1,12 @@
 import * as fs from 'fs-jetpack'
-import { findFiles } from '../../utils'
+import { BackingTypes } from './types'
 
 export const defaultTSTypeMatcher = new RegExp(
   `export\\s+(?:interface|type|class|enum)\\s+(\\w+)`,
   'g'
 )
 
-export function findBackingTypesFiles(pattern?: string): Promise<string[]> {
-  return findFiles(pattern ?? './**/*.ts')
-}
-
-export type BackingTypes = Record<string, string>
-
-export function extractBackingTypesFromFiles(
-  filePaths: (string | undefined)[]
-): BackingTypes {
+export function extract(filePaths: (string | undefined)[]): BackingTypes {
   const backingTypes: Record<string, string> = {}
 
   for (const filePath of filePaths) {

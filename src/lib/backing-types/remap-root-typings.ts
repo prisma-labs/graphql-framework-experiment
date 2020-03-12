@@ -1,11 +1,11 @@
 import * as NexusSchema from '@nexus/schema'
 import * as Schema from '../../framework/schema'
 import { rootLogger } from '../../utils/logger'
-import { BackingTypes } from './extract'
+import { BackingTypes } from './types'
 
 const log = rootLogger.child('backing-types')
 
-export function remapNexusTypesWithBackingTypes(
+export function withRemappedRootTypings(
   types: Schema.AllNexusTypeDefs[],
   backingTypes: BackingTypes
 ) {
