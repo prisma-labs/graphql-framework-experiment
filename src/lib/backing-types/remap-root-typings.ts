@@ -2,6 +2,7 @@ import * as NexusSchema from '@nexus/schema'
 import * as Schema from '../../framework/schema'
 import { rootLogger } from '../../utils/logger'
 import { BackingTypes } from './types'
+import { suggestionList } from '../../utils/levenstein'
 
 const log = rootLogger.child('backing-types')
 
@@ -25,8 +26,16 @@ export function withRemappedRootTypings(
         }
 
         if (!filePath) {
+          const suggestions = suggestionList(
+            t.value.rootTyping,
+            Object.keys(backingTypes)
+          )
+
           log.warn(
             `We could not find the backing type '${t.value.rootTyping}' used in '${t.name}'`
+          )
+          log.warn(
+            `Did you mean ${suggestions.map(s => `"${s}"`).join(', ')} ?`
           )
           return t
         }
