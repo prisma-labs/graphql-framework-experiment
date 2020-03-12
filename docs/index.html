@@ -50,7 +50,21 @@
         }
       }
 
+      /* Component NexusVSDL */
+      .TwoUp.NexusVSDL > *:first-child {
+        flex-grow: 0;
+      }
+      .TwoUp.NexusVSDL > *:last-child {
+        flex-grow: 1;
+      }
       /* Component TwpUp */
+
+      @media (min-width: 1300px) {
+        .TwoUp {
+          width: 900px;
+          margin-left: -100px;
+        }
+      }
 
       .TwoUp {
         display: flex;
@@ -58,15 +72,14 @@
         margin-bottom: 1.2em;
       }
       .TwoUp > * {
-        width: 50%;
         margin-top: 0 !important;
         margin-bottom: 0 !important;
       }
       .TwoUp > *:not(:last-child) {
-        margin-right: 1em;
+        margin-right: 0.55em;
       }
       .TwoUp > *:not(:first-child) {
-        margin-left: 1em;
+        margin-left: 0.55em;
       }
 
       /* Component BigButton */

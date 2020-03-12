@@ -10,6 +10,7 @@ If you are new to GraphQL here are some resources you might find helpful:
 
 - [Official GraphQL website](https://graphql.org)
 - [How to GraphQL](https://www.howtographql.com)
+- [Production Ready GraphQL](https://book.productionreadygraphql.com/)
 
 If you are new to TypeScript here are some resources you might find helpful:
 
