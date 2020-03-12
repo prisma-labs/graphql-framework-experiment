@@ -96,13 +96,15 @@ export async function findFiles(
   const paths = Array.isArray(fileNames) ? fileNames : [fileNames]
   const localFS = fs.cwd(cwd)
 
-  return localFS.findAsync({
+  const files = await localFS.findAsync({
     matching: [
       ...paths,
       ...baseIgnores,
       ...(config?.ignore?.map(i => `!${i}`) ?? []),
     ],
   })
+
+  return files.map(f => localFS.path(f))
 }
 
 export const baseIgnores = ['!node_modules/**/*', '!.*/**/*']
