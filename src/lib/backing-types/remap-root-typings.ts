@@ -34,9 +34,11 @@ export function withRemappedRootTypings(
           log.warn(
             `We could not find the backing type '${t.value.rootTyping}' used in '${t.name}'`
           )
-          log.warn(
-            `Did you mean ${suggestions.map(s => `"${s}"`).join(', ')} ?`
-          )
+          if (suggestions.length > 0) {
+            log.warn(
+              `Did you mean ${suggestions.map(s => `"${s}"`).join(', ')} ?`
+            )
+          }
           return t
         }
 
