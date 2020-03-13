@@ -288,3 +288,21 @@ Object {
 }
 `)
 })
+
+it('takes shallowest path for sourceRoot', async () => {
+  ctx.setup({
+    src: {
+      '1': {
+        'graphql.ts': '',
+      },
+      '2': {
+        'graphql.ts': '',
+      },
+      'graphql.ts': '',
+    },
+  })
+
+  const result = await ctx.scan()
+
+  expect(result.sourceRoot).toMatchInlineSnapshot(`"src"`)
+})
