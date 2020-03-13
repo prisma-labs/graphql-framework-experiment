@@ -3,6 +3,7 @@ import { NexusGraphQLSchema } from '@nexus/schema/dist/core'
 import { RuntimeContributions } from '../../lib/plugin'
 import { ConnectionConfig, createNexusSchemaConfig } from './config'
 import { createNexusSingleton } from './nexus'
+import { BackingTypes } from '../../lib/backing-types'
 
 export type SettingsInput = {
   /**
@@ -28,6 +29,14 @@ export type SettingsInput = {
    * @default false
    */
   generateGraphQLSDLFile?: false | string
+  /**
+   * A glob pattern which will be used to find the files from which to extract the backing types used in the `rootTyping` option of `schema.(objectType|interfaceType|unionType|enumType)`
+   *
+   * @default "./**\/*.ts"
+   *
+   * @example "./**\/*.backing.ts"
+   */
+  rootTypingsGlobPattern?: string
 }
 
 export type SettingsData = SettingsInput
@@ -38,12 +47,12 @@ export type Schema = {
   // ) => App
   queryType: typeof NexusSchema.queryType
   mutationType: typeof NexusSchema.mutationType
-  objectType: typeof NexusSchema.objectType
+  objectType: ReturnType<typeof createNexusSingleton>['objectType']
+  enumType: ReturnType<typeof createNexusSingleton>['enumType']
+  scalarType: ReturnType<typeof createNexusSingleton>['scalarType']
+  unionType: ReturnType<typeof createNexusSingleton>['unionType']
+  interfaceType: ReturnType<typeof createNexusSingleton>['interfaceType']
   inputObjectType: typeof NexusSchema.inputObjectType
-  enumType: typeof NexusSchema.enumType
-  scalarType: typeof NexusSchema.scalarType
-  unionType: typeof NexusSchema.unionType
-  interfaceType: typeof NexusSchema.interfaceType
   arg: typeof NexusSchema.arg
   intArg: typeof NexusSchema.intArg
   stringArg: typeof NexusSchema.stringArg
@@ -57,7 +66,7 @@ export type Schema = {
 type SchemaInternal = {
   private: {
     isSchemaEmpty(): boolean
-    makeSchema: () => Promise<NexusGraphQLSchema>
+    makeSchema: (backingTypes?: BackingTypes) => Promise<NexusGraphQLSchema>
     settings: {
       data: SettingsData
       change: (newSettings: SettingsInput) => void
@@ -105,12 +114,12 @@ export function create({
       isSchemaEmpty: () => {
         return __types.length === 0
       },
-      makeSchema: () => {
+      makeSchema: backingTypes => {
         const nexusSchemaConfig = createNexusSchemaConfig(
           plugins,
           state.settings
         )
-        return makeSchema(nexusSchemaConfig)
+        return makeSchema(nexusSchemaConfig, backingTypes)
       },
       settings: {
         data: state.settings,
@@ -118,6 +127,11 @@ export function create({
           if (newSettings.generateGraphQLSDLFile) {
             state.settings.generateGraphQLSDLFile =
               newSettings.generateGraphQLSDLFile
+          }
+
+          if (newSettings.rootTypingsGlobPattern) {
+            state.settings.rootTypingsGlobPattern =
+              newSettings.rootTypingsGlobPattern
           }
 
           if (newSettings.connections) {

@@ -19,9 +19,9 @@ export type PackageManagerType = 'yarn' | 'npm'
  * Detect if the project is yarn or npm based. Detection is based on the kind of
  * lock file present. If nothing is found, npm is assumed.
  */
-export async function detectProjectPackageManager(
-  opts: { cwd: string } = { cwd: process.cwd() }
-): Promise<PackageManagerType> {
+export async function detectProjectPackageManager(opts?: {
+  cwd?: string
+}): Promise<PackageManagerType> {
   const packageManagerFound = await Promise.race([
     fsHelpers
       .findFileRecurisvelyUpward(YARN_LOCK_FILE_NAME, opts)

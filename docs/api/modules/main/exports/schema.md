@@ -26,41 +26,21 @@ fetch from your schema, with fields:
 **Signature**
 
 ```ts
-objectType(config: {
-  name:             string
-  description?:     string
-  rootTyping?:      string | RootTypingImport
-  nonNullDefaults?: NonNullConfig
-  definition:       ObjectDefinitionBlock
-}) => NexusObjectType
+objectType(config: NexusObjectTypeConfig): NexusObjectTypeDef
 ```
 
-- `name`  
-  The name of this object.
+**`NexusObjectTypeConfig` options**
 
-- `description`  
-  The description of this object. Tools like GraphQL Playground can display this content.
+- `name` **(required)**: Name of your type
 
-  **Default**
+- `definition` **(required)**: A function to define the fields of your type
 
-  `undefined`
+- `description` _(optional)_: The description to annotate the GraphQL SDL
 
-- `rootTyping`  
-  todo
+- `nonNullDefaults` _(optional)_: Configures the nullability for the type, check the documentation's "Getting Started" section to learn more about GraphQL Nexus's assumptions and configuration
+  on nullability.
 
-  **Default**
-
-  `undefined`
-
-- `nonNullDefaults`  
-  todo
-
-  **Default**
-
-  `undefined`
-
-- `definition`  
-  See below for the various field builders available.
+- `rootTyping` _(optional)_: Root type information for this type. By default, types are extracted for any .ts file in your project. You can configure that from the `schema.rootTypingsGlobPattern` setting
 
 **Example**
 
@@ -655,6 +635,24 @@ todo
 
 [GraphQL Docs for Enum Types](https://graphql.org/learn/schema/#enumeration-types)
 
+**Signature**
+
+```ts
+enumType(config: NexusEnumTypeConfig): NexusEnumTypeDef
+```
+
+**`NexusEnumTypeConfig` options**
+
+- `name` **(required)**: Name of your type
+
+- `members` **(required)**: All members of the enum, either as an array of strings/definition objects, as an object, or as a TypeScript enum
+
+- `description` _(optional)_: The description to annotate the GraphQL SDL
+
+- `rootTyping` _(optional)_: Root type information for this type. By default, types are extracted for any .ts file in your project. You can configure that from the `schema.rootTypingsGlobPattern` setting
+
+**Example**
+
 Defining as an array of enum values:
 
 ```ts
@@ -690,6 +688,25 @@ In Nexus, you do not need to redefine the interface fields on the
 implementing object types, instead you may use `.implements(interfaceName)`
 and all of the interface fields will be added to the type.
 
+**Signature**
+
+```ts
+interfaceType(config: NexusInterfaceTypeConfig): NexusInterfaceTypeDef
+```
+
+**`NexusInterfaceTypeConfig` options**
+
+- `name` **(required)**: Name of your type
+
+- `definition` **(required)**: A function to define the fields of your type
+
+- `description` _(optional)_: The description to annotate the GraphQL SDL
+
+- `nonNullDefaults` _(optional)_: Configures the nullability for the type, check the documentation's "Getting Started" section to learn more about GraphQL Nexus's assumptions and configuration
+  on nullability.
+
+- `rootTyping` _(optional)_: Root type information for this type. By default, types are extracted for any .ts file in your project. You can configure that from the `schema.rootTypingsGlobPattern` setting
+
 **Example**
 
 ```ts
@@ -717,6 +734,30 @@ If you need to modify the description or resolver defined by an interface, you c
 [GraphQL Docs for Scalar Types](https://graphql.org/learn/schema/#scalar-types)
 
 Nexus allows you to provide an `asNexusMethod` property which will make the scalar available as a builtin on the definition block object. We automatically generate and merge the types so you get type-safety just like the scalar types specified in the spec:
+
+**Signature**
+
+```ts
+scalarType(config: NexusScalarTypeConfig): NexusScalarTypeDef
+```
+
+**`NexusScalarTypeConfig` options**
+
+- `name` **(required)**: Name of your type
+
+- `serialize` **(required)**: Serializes an internal value to include in a response
+
+- `description` _(optional)_: The description to annotate the GraphQL SDL
+
+- `deprecation` _(optional)_: Any deprecation info for this scalar type
+
+- `parseValue` _(optional)_: Parses an externally provided value to use as an input
+
+- `parseLiteral` _(optional)_: Parses an externally provided literal value to use as an input
+
+- `asNexusMethod` _(optional)_: Adds this type as a method on the Object/Interface definition blocks
+
+- `rootTyping` _(optional)_: Root type information for this type. By default, types are extracted for any .ts file in your project. You can configure that from the `schema.rootTypingsGlobPattern` setting
 
 **Example**
 
@@ -782,6 +823,22 @@ schema.objectType({
 
 Union types are very similar to interfaces, but they don't get to specify any
 common fields between the types.
+
+**Signature**
+
+```ts
+unionType(config: NexusUnionTypeConfig): NexusUnionTypeDef
+```
+
+**`NexusUnionTypeConfig` options**
+
+- `name` **(required)**: Name of your type
+
+- `description` _(optional)_: The description to annotate the GraphQL SDL
+
+- `deprecation` _(optional)_: Info about a field deprecation. Formatted as a string and provided with the deprecated directive on field/enum types and as a comment on input field
+
+- `rootTyping` _(optional)_: Root type information for this type. By default, types are extracted for any .ts file in your project. You can configure that from the `schema.rootTypingsGlobPattern` setting
 
 **Example**
 

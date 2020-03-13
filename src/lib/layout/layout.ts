@@ -142,9 +142,7 @@ export function createFromData(layoutData: Data): Layout {
  * Analyze the user's project files/folders for how conventions are being used
  * and where key modules exist.
  */
-export const scan = async (
-  opts: { cwd: string } = { cwd: process.cwd() }
-): Promise<ScanResult> => {
+export const scan = async (opts?: { cwd?: string }): Promise<ScanResult> => {
   log.trace('starting scan...')
   const packageManagerType = await PackageManager.detectProjectPackageManager(
     opts
@@ -161,7 +159,7 @@ export const scan = async (
       // TODO This assumes first member is shallowest, true?
       sourceRoot = Path.dirname(maybeSchemaModules[0])
     } else {
-      sourceRoot = opts.cwd
+      sourceRoot = opts?.cwd ?? process.cwd()
     }
   }
 
@@ -220,9 +218,7 @@ const checks = {
 /**
  * Find the (optional) app module in the user's project.
  */
-export function findAppModule(
-  opts: { cwd: string } = { cwd: process.cwd() }
-): string | null {
+export function findAppModule(opts?: { cwd?: string }): string | null {
   log.trace('looking for app module')
   const path = findFile(ENTRYPOINT_FILE_NAMES, opts)
   log.trace('done looking for app module')
@@ -240,16 +236,14 @@ export function findAppModule(
  * project root.
  *
  */
-export function findProjectDir(
-  opts: { cwd: string } = { cwd: process.cwd() }
-): string {
+export function findProjectDir(opts?: { cwd?: string }): string {
   let packageJsonPath = findPackageJson(opts)
 
   if (packageJsonPath) {
     return packageJsonPath.dir
   }
 
-  return opts.cwd
+  return opts?.cwd ?? process.cwd()
 }
 
 /**
@@ -345,10 +339,8 @@ export function mustLoadDataFromParentProcess(): Layout {
   return createFromData(JSON.parse(savedData) as Data)
 }
 
-function readProjectInfo(
-  opts: { cwd: string } = { cwd: process.cwd() }
-): ScanResult['project'] {
-  const localFS = FS.cwd(opts.cwd)
+function readProjectInfo(opts?: { cwd?: string }): ScanResult['project'] {
+  const localFS = FS.cwd(opts?.cwd ?? process.cwd())
   try {
     const packageJson: PackageJson = require(localFS.path('package.json'))
 
@@ -370,6 +362,6 @@ function readProjectInfo(
  * Find the package.json file path. Looks recursively upward to disk root.
  * Starts looking in CWD If no package.json found along search, returns null.
  */
-function findPackageJson(opts: { cwd: string } = { cwd: process.cwd() }) {
+function findPackageJson(opts?: { cwd?: string }) {
   return findDirContainingFileRecurisvelyUpwardSync('package.json', opts)
 }

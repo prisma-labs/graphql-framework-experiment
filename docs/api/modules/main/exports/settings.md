@@ -15,6 +15,7 @@
   schema?: {
     connections?: {} // TODO
     generateGraphQLSDLFile?: false | string
+    rootTypingsGlobPattern?: string
   }
   logger?: {
     level?: 'trace' | 'debug' | 'info' | 'warn' | 'critical' | 'fatal'
@@ -66,6 +67,14 @@
   **Default**
 
   `false`
+
+* `schema.rootTypingsGlobPattern`
+
+  A glob pattern which will be used to find the files from which to extract the backing types used in the `rootTyping` option of `schema.(objectType|interfaceType|unionType|enumType)`
+
+  **Default**
+
+  The default glob pattern used id `./**/*.ts`
 
 * `schema.connections`
 

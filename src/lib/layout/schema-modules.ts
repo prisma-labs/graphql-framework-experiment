@@ -27,10 +27,8 @@ export function emptyExceptionMessage() {
  * Find all modules called schema modules or directories having the trigger
  * name. This does not grab the child modules of the directory instances!
  */
-export function findDirOrModules(
-  opts: { cwd: string } = { cwd: process.cwd() }
-): string[] {
-  const localFS = fs.cwd(opts.cwd)
+export function findDirOrModules(opts?: { cwd?: string }): string[] {
+  const localFS = fs.cwd(opts?.cwd ?? process.cwd())
   // TODO async
   const files = localFS.find({
     files: true,
@@ -50,10 +48,8 @@ export function findDirOrModules(
  *
  * There is an IO cost here to go find all modules dynamically, so do not use in production.
  */
-export async function importModules(): Promise<void> {
-  const modules = (await loadDataFromParentProcess()).schemaModules
-
-  modules.forEach(modulePath => {
+export async function importModules(layout: Layout): Promise<void> {
+  layout.schemaModules.forEach(modulePath => {
     require(stripExt(modulePath))
   })
 }

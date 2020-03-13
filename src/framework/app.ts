@@ -6,6 +6,8 @@ import * as Plugin from '../lib/plugin'
 import * as Schema from './schema'
 import * as Server from './server'
 import * as singletonChecks from './singleton-checks'
+import * as BackingTypes from '../lib/backing-types'
+import { write, extractAndWrite } from '../lib/backing-types'
 
 const log = Logger.create({ name: 'app' })
 
@@ -141,6 +143,8 @@ export function create(): App {
        * for you. You should not normally need to call this function yourself.
        */
       async start() {
+        let backingTypes: BackingTypes.BackingTypes | undefined = undefined
+
         // During development we dynamically import all the schema modules
         // TODO IDEA we have concept of schema module and schema dir
         //      add a "refactor" command to toggle between them
@@ -149,10 +153,17 @@ export function create(): App {
         // At build time we inline static imports.
         // This code MUST run after user/system has had chance to run global installation
         if (process.env.NEXUS_STAGE === 'dev') {
-          await Layout.schema.importModules()
+          const layout = await Layout.loadDataFromParentProcess()
+
+          await Layout.schema.importModules(layout)
+
+          backingTypes = await BackingTypes.extractAndWrite(
+            settings.current.schema.rootTypingsGlobPattern,
+            { extractCwd: layout.sourceRoot }
+          )
         }
 
-        const schema = await schemaComponent.private.makeSchema()
+        const schema = await schemaComponent.private.makeSchema(backingTypes)
 
         if (schemaComponent.private.isSchemaEmpty()) {
           log.warn(Layout.schema.emptyExceptionMessage())
