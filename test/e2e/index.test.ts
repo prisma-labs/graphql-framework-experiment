@@ -1,6 +1,6 @@
 import { introspectionQuery } from 'graphql'
+import { setupE2EContext } from '../../src/lib/e2e-testing'
 import { CONVENTIONAL_SCHEMA_FILE_NAME } from '../../src/lib/layout/schema-modules'
-import { setupE2EContext } from '../../src/utils/e2e-testing'
 
 const ctx = setupE2EContext()
 
