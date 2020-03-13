@@ -15,6 +15,7 @@ const localCtx = TestContext.create((opts: TestContext.TmpDirContribution) => {
       const cwd = opts.tmpDir()
       const backingTypes = await extractAndWrite(filePattern, {
         extractCwd: cwd,
+        writeCwd: cwd,
       })
       const normalizedBackingTypes = Object.entries(backingTypes).reduce<
         BackingTypes
