@@ -28,10 +28,10 @@ export async function removeWriteAsync(
  */
 export async function findFileRecurisvelyUpward(
   fileName: string,
-  opts: { cwd: string } = { cwd: process.cwd() }
+  opts?: { cwd?: string }
 ): Promise<null | string> {
   let found: null | string = null
-  let currentDir = opts.cwd
+  let currentDir = opts?.cwd ?? process.cwd()
 
   while (true) {
     const checkFilePath = Path.join(currentDir, fileName)
@@ -57,10 +57,10 @@ export async function findFileRecurisvelyUpward(
  */
 export function findDirContainingFileRecurisvelyUpwardSync(
   fileName: string,
-  opts: { cwd: string } = { cwd: process.cwd() }
+  opts?: { cwd?: string }
 ): { path: string; dir: string } | null {
   let found: { path: string; dir: string } | null = null
-  let currentDir = opts.cwd
+  let currentDir = opts?.cwd ?? process.cwd()
   const localFS = FS.cwd(currentDir)
 
   while (true) {
