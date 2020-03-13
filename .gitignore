@@ -51,6 +51,7 @@ typings/
 yarn-debug.log*
 yarn-error.log*
 
+.DS_Store
 .vscode
 dist
 tsconfig.tsbuildinfo

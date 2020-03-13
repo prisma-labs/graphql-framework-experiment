@@ -43,44 +43,49 @@ As the API author, there are three design tasks you will invariable perform over
 2. Define connections between these data types that model how logical entities and concepts relate in your business domain.
 3. Define entrypoints which allow traversal into this graph of data.
 
-This is an iterative process that can generally be seen as an finite loop wherein your team gradually refines and expands (or contracts!) the data graph as you respond to changing client app needs, business needs, and so on. Data modelling is hard work, not least becuase there are usually many ways to achieve something with no immediate obvious answer about which approach is best. If the process of data modelling itself or data modelling in GraphQL is new to you, you may find this specialed book on the topic by [Marc-Andre Giroux](https://twitter.com/__xuorig__) helpful: [Production Ready GraphQL](https://book.productionreadygraphql.com/).
+This is an iterative process that can generally be seen as an finite loop wherein your team gradually refines and expands (or contracts!) the data graph as you respond to changing client app needs, business needs, and so on. Data modelling is hard work. For one thing it is a suble art, occasionally underappreciated. There are typically multiple ways to model any one thing and competing tradeoffs that leave no obvious winner abound. If the process of data modelling itself or data modelling in GraphQL is new to you, you may find this book by [Marc-Andre Giroux](https://twitter.com/__xuorig__) helpful: [Production Ready GraphQL](https://book.productionreadygraphql.com/).
 
-## Backing Types
+## Backing Types Concepts
 
 As you begin to implement a schema for the first time you will notice something that may not have been obvious at first. The data that the client sees in the data graph is _not_ the same data flowing through your resolvers used to fulfill that graph. The client sees the API types but internally you as the API author deal with _backing types_.
 
-When a field's type is an object, then the field's resolver returns a backing type. Concretely this might for example be a plain JavaScript object containing node/row/document data from a database call. This backing type data is in turn passed down to all the object type's own field resolvers. The backing type of a GraphQL type sets up the data requirements of all resolvers for fields whose type is (aka. points to) that GraphQL type.
+Here is an example of resolution for a query as it would be seen roughly from a GraphQL type _only_ point of view.
 
-![diagram](https://user-images.githubusercontent.com/284476/76585273-5a4b5a00-64b4-11ea-8744-f175ff313872.png)
+![](../assets/diagram-backing-types-1.png)
 
-A small journey through query resolution of a contrived data graph will help illustrate the point.
+When a field's type is an object, then the field's resolver returns a backing type. Concretely this might for example be a plain JavaScript object containing node/row/document data from a database call. This backing type data is in turn passed down to all the object type's own field resolvers.
 
-```graphql
-query {
-  user(id: 5) {
-    fullName
-    age
-    comments: {
-      post {
-        title
-      }
-    }
-  }
-}
-```
+Here is the above diagram updated to include backing types now.
 
-1. Client sends query
-2. `Query.user` field resolver runs
-3. The db client fetches a user from the database and returns it
-4. The type of `Query.user` field is an object type, `User`. It is not a scalar. That means its own fields need to be resolved in turn to fulfill the query. Resolvers for fields of `User` that have been selected by the client query are run (in this case: `fullName`, `age`, `comments`).
-5. The three resolvers run. Their `parent` parameter is given the user model data fetched by the db client in step 2. _This is the backing type_.
-6. The resolvers for `fullName` and `age`, upon returning, are the end of the resolution process along their respective branches. This is because scalars represent leafs in the resolution process. Notice how the GraphQL field `age` is implemented by composing multiple fields from the backint type.
-7. The resolver for `comments` is an object type, and so its resolution looks essentially like how `User` got resolved above in step 2. So the resolver here fetches comments data from the database, which becomes the _backing type_ for the resolvers of `Comment` type _fields_.
+![](../assets/diagram-backing-types-2.png)
 
-Hopefully you can see how the GraphQL types that client sees are distinct from the backing types flowing through the resovlers.
+Here is a step-by-step breakdown of what is going on (follow the diagram annotation numbers):
+
+1. Client sends a query
+2. The field resolver for `Query.user` runs. Remember `Query` fields (along with `Subscription`, `Mutation`) are _entrypoints_.
+3. Within this resolver, the database client fetches a user from the database. The resolver returns this data. This data will now become **backing type** data...
+4. Resolution continues since the type of `Query.user` field is an object, not a scalar. As such its own fields need resolving. The fields that get resolved are limited to those selected by the client, in this case: `fullName`, `age`, `comments`. Those three field resolvers run. Their `parent` argument is the user model data fetched in step 3. _This is the backing type data for the GraphQL `User` object_.
+
+   ```ts
+   t.field('...', {
+     resolve(parent, args, ctx, info) {
+       //    ^------------------------------- Here
+     },
+   }
+   ```
+
+5. The `comments` field is is an object type so just like with `Query.users` before, its own fields must be resolved. The `comments` resolver fetches comments data from the database. Like in step 3 this data becomes _backing type_ data.
+
+6. Much like the GraphQL `Comment` object field were resolved, so is `Comment`. Resolution runs once for every comment retrived from the database in the previous step. The `text` field is scalar so resolution of that path can terminate there. But the `likers` field is typed to an object and so once again goes through the object-field resolution pattern.
+
+7. A request to the database for users who liked this comment is made.
+
+8. A repeat of step 4. But this time from a different edge in the graph. Before it was the entrypoint field `Query.user`. Now we're resolving from relation with `Comment`. Note how the backing type requirements of `User`, regardless of which part of the graph is pointing at it, remain the same. One other difference from step 4 is that, like in step 6, we are dealing with a list of data. That is, this resolution is run every user returned in step 7.
+
+Hopefully you can see how the GraphQL types that client sees are distinct from the backing types flowing through the resovlers. Below, you can find a code sample of how the implementation of this schema might look like.
 
 <details>
-<summary>Open this toggle for an example of the schema implementation in Nexus</summary>
+<summary>See code implementation</summary>
 
 ```ts
 schema.query({
@@ -171,6 +176,10 @@ schema.object({
   },
 })
 ```
+
+#### Backing Types API
+
+The backing type of a GraphQL type sets up the data requirements of all resolvers for fields whose type is (aka. points to) that GraphQL type.
 
 Backing types in Nexus are controlled at the level
 
