@@ -1,6 +1,6 @@
 import { codeBlock } from 'common-tags'
-import { NEXUS_DEFAULT_RUNTIME_CONTEXT_TYPEGEN_PATH } from '../../framework/schema/config'
-import { hardWriteFile } from '../../utils'
+import { NEXUS_DEFAULT_RUNTIME_CONTEXT_TYPEGEN_PATH } from '../../runtime/schema/config'
+import { hardWriteFile } from '../fs'
 import { ExtractedContectTypes } from './extractor'
 
 /**

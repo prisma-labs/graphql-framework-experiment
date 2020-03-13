@@ -1,5 +1,5 @@
-import app from './framework'
+import app from './runtime'
 
-export * from './framework'
+export * from './runtime'
 
 export default app

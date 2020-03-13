@@ -1,5 +1,6 @@
-import { fatal, validateAndLoadDBDriver } from '../../../utils'
-import { generateHelpForCommand, arg, Command, isError } from '../../../lib/cli'
+import { arg, Command, generateHelpForCommand, isError } from '../../../lib/cli'
+import { validateAndLoadDBDriver } from '../../../lib/plugin'
+import { fatal } from '../../../lib/process'
 
 export class DbUi implements Command {
   async parse(argv: string[]) {

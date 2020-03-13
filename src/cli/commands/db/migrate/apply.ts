@@ -1,10 +1,11 @@
-import { fatal, validateAndLoadDBDriver } from '../../../../utils'
 import {
-  generateHelpForCommand,
   arg,
   Command,
+  generateHelpForCommand,
   isError,
 } from '../../../../lib/cli'
+import { validateAndLoadDBDriver } from '../../../../lib/plugin'
+import { fatal } from '../../../../lib/process'
 
 export class DbApply implements Command {
   async parse(argv: string[]) {

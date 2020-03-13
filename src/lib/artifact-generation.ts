@@ -1,6 +1,6 @@
 import { spawnSync } from 'child_process'
 import * as FS from 'fs-jetpack'
-import { rootLogger } from './logger'
+import { rootLogger } from './nexus-logger'
 import { fatal } from './process'
 
 const log = rootLogger.child('typegen')

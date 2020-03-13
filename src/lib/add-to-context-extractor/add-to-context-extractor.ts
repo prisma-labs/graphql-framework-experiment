@@ -1,8 +1,8 @@
 import * as Path from 'path'
 import ts from 'typescript'
 import * as Layout from '../../lib/layout'
-import { createTSProgram } from '../../utils'
-import { rootLogger } from '../../utils/logger'
+import { createTSProgram } from '../../lib/tsc'
+import { rootLogger } from '../nexus-logger'
 import { extractContextTypes, ExtractedContectTypes } from './extractor'
 import { writeContextTypeGenFile } from './typegen'
 

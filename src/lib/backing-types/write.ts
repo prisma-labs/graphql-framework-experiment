@@ -1,7 +1,7 @@
 import * as FS from 'fs-jetpack'
 import * as Path from 'path'
-import { hardWriteFileSync } from '../../utils'
-import { rootLogger } from '../../utils/logger'
+import { hardWriteFileSync } from '../fs'
+import { rootLogger } from '../nexus-logger'
 import { BackingTypes } from './types'
 
 const log = rootLogger.child('backing-types')

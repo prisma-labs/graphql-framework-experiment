@@ -2,7 +2,7 @@ import { spawn, spawnSync, SpawnSyncOptions } from 'child_process'
 import { stripIndent } from 'common-tags'
 import * as Path from 'path'
 import { format } from 'util'
-import { log } from './logger'
+import { log } from './nexus-logger'
 
 /**
  * Log a meaningful semantic error message sans stack track and then crash
@@ -249,4 +249,15 @@ export function isProcessFromProjectBin(packageJsonPath: string): boolean {
     'node_modules/.bin'
   )
   return processBinDirPath !== projectBinDirPath
+}
+
+export function clearConsole() {
+  /**
+   * For convenience, we disable clearing the console when debugging
+   */
+  if (process.env.DEBUG !== undefined) {
+    return
+  }
+
+  process.stdout.write('\x1Bc')
 }

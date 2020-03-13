@@ -1,11 +1,7 @@
 import Chalk from 'chalk'
 import * as fs from 'fs-jetpack'
-import {
-  Layout,
-  loadDataFromParentProcess,
-  relativeTranspiledImportPath,
-} from '.'
-import { baseIgnores, stripExt } from '../../utils'
+import { Layout, relativeTranspiledImportPath } from '.'
+import { baseIgnores, stripExt } from '../../lib/fs'
 
 export const MODULE_NAME = 'graphql'
 export const CONVENTIONAL_SCHEMA_FILE_NAME = MODULE_NAME + '.ts'

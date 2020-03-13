@@ -2,18 +2,18 @@ import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import prompts from 'prompts'
 import { PackageJson } from 'type-fest'
-import * as Layout from '../../../lib/layout'
 import { Command } from '../../../lib/cli'
+import * as Layout from '../../../lib/layout'
+import { rootLogger } from '../../../lib/nexus-logger'
 import { ownPackage } from '../../../lib/own-package'
+import * as PackageManager from '../../../lib/package-manager'
 import * as Plugin from '../../../lib/plugin'
+import * as proc from '../../../lib/process'
+import { createTSConfigContents } from '../../../lib/tsc'
 import {
   createGitRepository,
-  createTSConfigContents,
   CWDProjectNameOrGenerate,
-} from '../../../utils'
-import { rootLogger } from '../../../utils/logger'
-import * as PackageManager from '../../../utils/package-manager'
-import * as proc from '../../../utils/process'
+} from '../../../lib/utils'
 
 const log = rootLogger
   .child('cli')

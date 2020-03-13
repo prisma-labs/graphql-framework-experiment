@@ -1,7 +1,7 @@
 import * as Path from 'path'
 import * as Layout from '.'
-import { rootLogger } from '../../utils/logger'
-import { MemoryFS, writeToFS } from '../../utils/testing-utils'
+import { rootLogger } from '../../lib/nexus-logger'
+import { MemoryFS, writeToFS } from '../../lib/testing-utils'
 import * as TestContext from '../test-context'
 
 /**

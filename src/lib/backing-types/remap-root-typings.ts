@@ -1,8 +1,8 @@
 import * as NexusSchema from '@nexus/schema'
-import * as Schema from '../../framework/schema'
-import { rootLogger } from '../../utils/logger'
+import * as Schema from '../../runtime/schema'
+import { suggestionList } from '../levenstein'
+import { rootLogger } from '../nexus-logger'
 import { BackingTypes } from './types'
-import { suggestionList } from '../../utils/levenstein'
 
 const log = rootLogger.child('backing-types')
 

@@ -8,7 +8,7 @@
  */
 import * as fsHelpers from './fs'
 import * as proc from './process'
-import { OmitFirstArg } from './helpers'
+import { OmitFirstArg } from './utils'
 
 const YARN_LOCK_FILE_NAME = 'yarn.lock'
 const NPM_LOCK_FILE_NAME = 'package-lock.json'

@@ -6,9 +6,9 @@ require('../tty-linker')
 
 import { register } from 'ts-node'
 import { Script } from 'vm'
-import { rootLogger } from '../../utils/logger'
 import { runAddToContextExtractorAsWorkerIfPossible } from '../add-to-context-extractor/add-to-context-extractor'
 import * as Layout from '../layout'
+import { rootLogger } from '../nexus-logger'
 import cfgFactory from './cfg'
 import hook from './hook'
 import * as IPC from './ipc'

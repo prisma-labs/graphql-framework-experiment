@@ -2,8 +2,8 @@ import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import * as path from 'path'
 import * as ts from 'typescript'
-import { Layout } from '../lib/layout'
-import { rootLogger } from './logger'
+import { Layout } from './layout'
+import { rootLogger } from './nexus-logger'
 
 const log = rootLogger.child('compiler')
 

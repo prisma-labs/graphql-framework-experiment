@@ -1,5 +1,5 @@
-import { findFiles } from '../../utils/path'
-import { rootLogger } from '../../utils/logger'
+import { findFiles } from '../fs'
+import { rootLogger } from '../nexus-logger'
 
 const log = rootLogger.child('backing-types')
 

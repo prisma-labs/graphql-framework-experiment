@@ -5,7 +5,7 @@
  */
 import * as chokidar from 'chokidar'
 import * as fs from 'fs'
-import { rootLogger } from '../../utils/logger'
+import { rootLogger } from '../nexus-logger'
 
 const log = rootLogger.child('dev').child('watcher')
 
