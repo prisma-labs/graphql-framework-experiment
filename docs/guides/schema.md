@@ -47,7 +47,7 @@ This is an iterative process that can generally be seen as an finite loop wherei
 
 ## Backing Types Concepts
 
-As you begin to implement a schema for the first time you will notice something that may not have been obvious at first. The data that the client sees in the data graph is _not_ the same data flowing through your resolvers used to fulfill that graph. The client sees the API types but internally you as the API author deal with _backing types_.
+As you begin to implement a schema for the first time you will notice something that may not have been obvious at first. The data that the client sees in the data graph is _not_ the same data flowing through the internal resolvers used to fulfill that graph. The client sees the API types but the API author deals with something else, _backing types_.
 
 Here is an example of resolution for a query as it would be seen roughly from a GraphQL type _only_ point of view.
 
@@ -82,7 +82,7 @@ Here is a step-by-step breakdown of what is going on (follow the diagram annotat
 
 8. A repeat of step 4. But this time from a different edge in the graph. Before it was the entrypoint field `Query.user`. Now we're resolving from relation with `Comment`. Note how the backing type requirements of `User`, regardless of which part of the graph is pointing at it, remain the same. One other difference from step 4 is that, like in step 6, we are dealing with a list of data. That is, this resolution is run every user returned in step 7.
 
-Hopefully you can see how the GraphQL types that client sees are distinct from the backing types flowing through the resovlers. Below, you can find a code sample of how the implementation of this schema might look like.
+Hopefully you can see how the GraphQL types seen by the client are distinct from the backing types flowing through the resolvers. Below, you can find a code sample of how the implementation of this schema might look like.
 
 <details>
 <summary>See code implementation</summary>
@@ -177,13 +177,142 @@ schema.object({
 })
 ```
 
+</details>
+
 #### Backing Types API
 
-The backing type of a GraphQL type sets up the data requirements of all resolvers for fields whose type is (aka. points to) that GraphQL type.
+When you first begin creating your schema, you may have no backing types setup. In this case, Nexus infers that the backing type is an exact match of the GraphQL type. Take this schema for example:
 
-Backing types in Nexus are controlled at the level
+<!-- prettier-ignore -->
+```ts
+// Nexus infers the backing type of:
+//
+// { fullName: string, age: number } ---> |
+//                                        |
+schema.object({                        // |
+  name: 'User',                        // |
+  definition(t) {                      // |
+    t.string('fullName', {             // |
+      resolve(user) {                  // |
+//            ^-------------------------- | 
+        return user.fullName           // |
+      },                               // |
+    })                                 // |
+    t.int('age', {                     // |
+      resolve(user) {                  // |
+//            ^-------------------------- |
+        return user.age                // |
+      },                               // |
+    })                                 // |
+  },                                   // |
+})                                     // |
+                                       // |
+schema.queryType({                     // |
+  definition(t) {                      // |
+    t.list.field('users', {            // |
+      type: 'User',                    // |
+      resolve() {                      // |
+        return [/**/]                  // |
+//               ^----------------------- |
+      },
+    })
+  },
+})
+```
 
-</details>
+This may suffice well enough for some time, but most apps will eventually see their GraphQL and backing types diverge. Once this happens, you can tell Nexus about it using the `rootTyping` object type config property.
+
+```ts
+export interface MyDBUser {
+  // |           ^-------------------- Create your backing type
+  // ^-------------------------------- Export your backing type (required)
+  firstName: string
+  lastName: string
+  birthDate: number
+}
+
+schema.object({
+  name: 'User',
+  rootTyping: 'MyDBUser',
+  //           ^---------------------- Tell Nexus what the backing type is.
+  //                                   Now, Nexus types...
+  definition(t) {
+    t.string('fullName', {
+      resolve(user) {
+        //    ^----------------------- as: MyDBUser
+        return [user.firstName, user.lastName].join(', ')
+      },
+    })
+    t.int('age', {
+      resolve(user) {
+        //    ^------------------------ as: MyDBUser
+        return yearsSinceUnixTimestamp(user.birthDate)
+      },
+    })
+  },
+})
+
+schema.queryType({
+  definition(t) {
+    t.list.field('users', {
+      type: 'User',
+      resolve(_root, args, ctx) {
+        //                     ^------- return as: MyDBUser[]
+        return ctx.db.user.getMany()
+      },
+    })
+  },
+})
+```
+
+Nexus does not care about where `MyDBUser` is defined. So long as it is defined and exported from a module within your app, it will be available for use in any `rootTyping` property.
+
+The `rootTyping` property is statically typed as a union of all the valid possibile types your app makes available. Thus, your IDE will/should give you autocompletion here.
+
+If you would like to use types from a third party package, you can just re-export them in your own app. Here's the above example re-visited using some third party typings:
+
+```ts
+export type * as Spotify from 'spotify-api'
+//                             ^------ Export your third-party type(s)
+//                                     Can be anywhere within your app
+
+schema.object({
+  name: 'User',
+  rootTyping: 'Spotify.Foo',
+  //           ^---------------------- Tell Nexus what the backing type is.
+  //                                   Now, Nexus types...
+  definition(t) {
+    t.string('fullName', {
+      resolve(user) {
+        //    ^----------------------- as: Spotify.Foo
+        return user.fullName
+      },
+    })
+    t.int('age', {
+      resolve(user) {
+        //    ^------------------------ as: Spotify.Foo
+        return user.age
+      },
+    })
+  },
+})
+
+schema.queryType({
+  definition(t) {
+    t.list.field('users', {
+      type: 'User',
+      resolve(_root, args, ctx) {
+        //                     ^------- return as: Spotify.Foo[]
+        return ctx.db.user.getMany()
+      },
+    })
+  },
+})
+```
+
+<p class="NextIs Detail"></p>
+
+> The backing type configuration is co-located with the GraphQL object because Nexus takes the view that a GraphQL object owns its backing type requirements and all nodes in the graph pointing to it must then satisfy those requirements in their own resolvers. We saw a bit of this in the Backing Types Conepts section before, where `User` object was related to by multiple nodes in the graph, and those various nodes passed the same backing types during resolution.
 
 ## The Building Blocks
 
