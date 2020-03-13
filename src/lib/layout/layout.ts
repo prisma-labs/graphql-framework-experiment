@@ -156,8 +156,7 @@ export const scan = async (opts?: { cwd?: string }): Promise<ScanResult> => {
     sourceRoot = Path.dirname(maybeAppModule)
   } else {
     if (maybeSchemaModules.length !== 0) {
-      // TODO This assumes first member is shallowest, true?
-      sourceRoot = Path.dirname(maybeSchemaModules[0])
+      sourceRoot = Path.dirname(getShallowestPath(maybeSchemaModules))
     } else {
       sourceRoot = opts?.cwd ?? process.cwd()
     }
@@ -364,4 +363,10 @@ function readProjectInfo(opts?: { cwd?: string }): ScanResult['project'] {
  */
 function findPackageJson(opts?: { cwd?: string }) {
   return findDirContainingFileRecurisvelyUpwardSync('package.json', opts)
+}
+
+function getShallowestPath(paths: string[]) {
+  return paths.sort((a, b) => {
+    return a.split(Path.sep).length - b.split(Path.sep).length
+  })[0]
 }
