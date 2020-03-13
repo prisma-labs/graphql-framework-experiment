@@ -1,6 +1,6 @@
 import * as fs from 'fs-jetpack'
+import { rootLogger } from '../nexus-logger'
 import { BackingTypes } from './types'
-import { rootLogger } from '../../utils/logger'
 
 const log = rootLogger.child('backing-types')
 

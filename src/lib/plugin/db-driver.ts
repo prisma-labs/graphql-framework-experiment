@@ -1,7 +1,7 @@
 import { stripIndent } from 'common-tags'
-import * as Layout from '../lib/layout'
-import * as Plugin from '../lib/plugin'
-import { fatal } from './process'
+import * as Plugin from '.'
+import * as Layout from '../layout'
+import { fatal } from '../process'
 
 export async function validateAndLoadDBDriver(): Promise<Plugin.WorkflowHooks> {
   const layout = await Layout.create()

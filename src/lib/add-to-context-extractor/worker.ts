@@ -1,6 +1,6 @@
 import ts from 'typescript'
 import { workerData } from 'worker_threads'
-import { readTsConfig } from '../../utils'
+import { readTsConfig } from '../../lib/tsc'
 import { extractContextTypesToTypeGenFile } from './add-to-context-extractor'
 
 const tsConfig = readTsConfig(workerData.layout)

@@ -1,10 +1,11 @@
-import { createStartModuleContent } from '../../framework/start'
 import { arg, Command, isError } from '../../lib/cli'
 import * as Layout from '../../lib/layout'
+import { rootLogger } from '../../lib/nexus-logger'
 import * as Plugin from '../../lib/plugin'
+import { fatal } from '../../lib/process'
+import { findOrScaffoldTsConfig } from '../../lib/tsc'
 import { createWatcher } from '../../lib/watcher'
-import { fatal, findOrScaffoldTsConfig } from '../../utils'
-import { rootLogger } from '../../utils/logger'
+import { createStartModuleContent } from '../../runtime/start'
 
 const log = rootLogger.child('dev')
 

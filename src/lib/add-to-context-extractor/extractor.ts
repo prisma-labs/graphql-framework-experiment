@@ -1,7 +1,7 @@
 import * as Path from 'path'
 import * as tsm from 'ts-morph'
 import ts from 'typescript'
-import { rootLogger } from '../../utils/logger'
+import { rootLogger } from '../nexus-logger'
 
 const log = rootLogger.child('add-to-context-extractor')
 

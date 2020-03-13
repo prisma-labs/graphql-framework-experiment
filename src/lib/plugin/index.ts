@@ -3,22 +3,23 @@ import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import * as Path from 'path'
 import prompts, * as Prompts from 'prompts'
-import { TestContextCore } from '../../framework/testing'
 import * as Layout from '../../lib/layout'
-import * as Logger from '../../lib/logger'
 import {
   CallbackRegistrer,
   DeepPartial,
   MaybePromise,
   SideEffector,
 } from '../../lib/utils'
-import { fatal, run, runSync } from '../../utils'
-import { rootLogger } from '../../utils/logger'
-import * as PackageManager from '../../utils/package-manager'
+import { TestContextCore } from '../../runtime/testing'
+import * as Logger from '../logger'
+import { rootLogger } from '../nexus-logger'
+import * as PackageManager from '../package-manager'
+import { fatal, run, runSync } from '../process'
 import * as Chokidar from '../watcher/chokidar'
+export * from './db-driver'
 
 //todo two loggers here...
-const pluginSystemLogger = Logger.create({ name: 'plugin' })
+const pluginSystemLogger = rootLogger.child('plugin')
 
 type PromptsConstructor = <T extends string = string>(
   questions: Prompts.PromptObject<T> | Array<Prompts.PromptObject<T>>,

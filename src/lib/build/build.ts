@@ -2,20 +2,20 @@ import { stripIndent } from 'common-tags'
 import * as FS from 'fs-jetpack'
 import ts from 'typescript'
 import * as Layout from '../../lib/layout'
-import { createStartModuleContent } from '../../framework/start'
 import {
   compile,
   createTSProgram,
   deleteTSIncrementalFile,
-  fatal,
   findOrScaffoldTsConfig,
-  generateArtifacts,
   transpileModule,
-} from '../../utils'
-import { rootLogger } from '../../utils/logger'
+} from '../../lib/tsc'
+import { createStartModuleContent } from '../../runtime/start'
 import { extractContextTypesToTypeGenFile } from '../add-to-context-extractor/add-to-context-extractor'
+import { generateArtifacts } from '../artifact-generation'
 import { START_MODULE_NAME } from '../constants'
+import { rootLogger } from '../nexus-logger'
 import { loadAllWorkflowPluginsFromPackageJson } from '../plugin'
+import { fatal } from '../process'
 import {
   computeBuildOutputFromTarget,
   logTargetPostBuildMessage,

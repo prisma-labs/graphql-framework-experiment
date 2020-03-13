@@ -1,5 +1,5 @@
 import * as nodecp from 'child_process'
-import { rootLogger } from '../../utils/logger'
+import { rootLogger } from '../nexus-logger'
 import * as TTYLinker from '../tty-linker'
 import { Message, ModuleRequiredMessage } from './ipc'
 

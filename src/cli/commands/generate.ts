@@ -1,9 +1,9 @@
-import * as Layout from '../../lib/layout'
-import { createStartModuleContent } from '../../framework/start'
+import { generateArtifacts } from '../../lib/artifact-generation'
 import { Command } from '../../lib/cli'
+import * as Layout from '../../lib/layout'
+import { log } from '../../lib/nexus-logger'
 import * as Plugin from '../../lib/plugin'
-import { generateArtifacts } from '../../utils'
-import { log } from '../../utils/logger'
+import { createStartModuleContent } from '../../runtime/start'
 
 export class Generate implements Command {
   async parse() {

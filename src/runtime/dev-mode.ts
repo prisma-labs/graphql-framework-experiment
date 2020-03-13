@@ -1,4 +1,4 @@
-import { fatal } from '../utils/process'
+import { fatal } from '../lib/process'
 
 /**
  * Dev Mode is a module providing functions that support special dev-mode-only

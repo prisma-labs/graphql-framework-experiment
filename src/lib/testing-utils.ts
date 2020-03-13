@@ -1,5 +1,5 @@
-import * as Path from 'path'
 import * as FS from 'fs-jetpack'
+import * as Path from 'path'
 
 // In-memory file tree
 export type MemoryFS = {

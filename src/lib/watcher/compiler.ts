@@ -4,7 +4,7 @@ import * as os from 'os'
 import * as path from 'path'
 import { register, RegisterOptions } from 'ts-node'
 import { resolveSync } from 'tsconfig'
-import { rootLogger } from '../../utils/logger'
+import { rootLogger } from '../nexus-logger'
 import { Compiler, Opts } from './types'
 const getCompiledPath = require('./get-compiled-path').default
 

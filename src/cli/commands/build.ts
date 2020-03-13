@@ -2,7 +2,7 @@ import { stripIndent } from 'common-tags'
 import { buildNexusApp } from '../../lib/build/build'
 import { formattedSupportedDeployTargets } from '../../lib/build/deploy-target'
 import { arg, Command, isError } from '../../lib/cli'
-import { rootLogger } from '../../utils/logger'
+import { rootLogger } from '../../lib/nexus-logger'
 
 const log = rootLogger.child('cli').child('build')
 

@@ -4,8 +4,9 @@ import * as fs from 'fs-jetpack'
 import * as path from 'path'
 import { LiteralUnion } from 'type-fest'
 import { ScriptTarget } from 'typescript'
-import { fatal, transpileModule } from '../utils'
-import { rootLogger } from '../utils/logger'
+import { rootLogger } from '../lib/nexus-logger'
+import { fatal } from '../lib/process'
+import { transpileModule } from '../lib/tsc'
 
 const log = rootLogger.child('config')
 

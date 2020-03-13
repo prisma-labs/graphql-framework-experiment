@@ -5,7 +5,7 @@
  */
 
 import * as lo from 'lodash'
-import { log } from '../utils/logger'
+import { log } from './nexus-logger'
 
 type BeforeExiter = () => Promise<unknown>
 

@@ -6,9 +6,9 @@ import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import prompts from 'prompts'
 import { Command } from '../../../lib/cli'
-import { createGitRepository } from '../../../utils'
-import { rootLogger } from '../../../utils/logger'
-import * as proc from '../../../utils/process'
+import { rootLogger } from '../../../lib/nexus-logger'
+import * as proc from '../../../lib/process'
+import { createGitRepository } from '../../../lib/utils'
 
 const log = rootLogger
   .child('cli')

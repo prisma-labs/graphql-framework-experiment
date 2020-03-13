@@ -6,9 +6,9 @@ import * as FS from 'fs-jetpack'
 import { IPty, IPtyForkOptions, IWindowsPtyForkOptions } from 'node-pty'
 import * as Path from 'path'
 import { Database } from '../cli/commands/create/app'
-import { GraphQLClient } from '../lib/graphql-client'
 import { getTmpDir } from './fs'
-import { rootLogger } from './logger'
+import { GraphQLClient } from './graphql-client'
+import { rootLogger } from './nexus-logger'
 import { PackageManagerType } from './package-manager'
 import stripAnsi = require('strip-ansi')
 

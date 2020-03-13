@@ -1,4 +1,4 @@
-import * as Logger from '../lib/logger'
+import * as Logger from './logger'
 
 export const log = Logger.create({ name: 'nexus' })
 

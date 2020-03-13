@@ -7,9 +7,9 @@ import {
   findDirContainingFileRecurisvelyUpwardSync,
   findFile,
   stripExt,
-} from '../../utils'
-import { rootLogger } from '../../utils/logger'
-import * as PackageManager from '../../utils/package-manager'
+} from '../../lib/fs'
+import { rootLogger } from '../nexus-logger'
+import * as PackageManager from '../package-manager'
 import * as Schema from './schema-modules'
 
 export const DEFAULT_BUILD_FOLDER_NAME = 'node_modules/.build'

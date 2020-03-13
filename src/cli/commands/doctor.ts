@@ -1,7 +1,7 @@
 import chalk from 'chalk'
-import * as Layout from '../../lib/layout'
 import { Command } from '../../lib/cli'
-import { findOrScaffoldTsConfig } from '../../utils'
+import * as Layout from '../../lib/layout'
+import { findOrScaffoldTsConfig } from '../../lib/tsc'
 
 export class Doctor implements Command {
   async parse() {
