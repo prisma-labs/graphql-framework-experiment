@@ -16,6 +16,19 @@ export interface NexusObjectTypeConfig<TypeName extends string>
     NexusSchema.core.NexusObjectTypeConfig<TypeName>,
     'rootTyping'
   > {
+  /**
+   * Root type information for this type.
+   * By default, types are extracted for any .ts file in your project. You can configure that from the `schema.rootTypingsGlobPattern` setting
+   *
+   * @example
+   *
+   * export type MyRootType = { ... }
+   *
+   * schema.objectType({
+   *   name: 'MyObjectType',
+   *   rootTyping: 'MyRootType'
+   * })
+   */
   rootTyping?: RootTyping
 }
 
@@ -24,6 +37,19 @@ export interface NexusInterfaceTypeConfig<TypeName extends string>
     NexusSchema.core.NexusInterfaceTypeConfig<TypeName>,
     'rootTyping'
   > {
+  /**
+   * Root type information for this type.
+   * By default, types are extracted for any .ts file in your project. You can configure that from the `schema.rootTypingsGlobPattern` setting
+   *
+   * @example
+   *
+   * export type MyRootType = { ... }
+   *
+   * schema.interfaceType({
+   *   name: 'MyInterfaceType',
+   *   rootTyping: 'MyRootType'
+   * })
+   */
   rootTyping?: RootTyping
 }
 
@@ -32,11 +58,37 @@ export interface NexusUnionTypeConfig<TypeName extends string>
     NexusSchema.core.NexusUnionTypeConfig<TypeName>,
     'rootTyping'
   > {
+  /**
+   * Root type information for this type.
+   * By default, types are extracted for any .ts file in your project. You can configure that from the `schema.rootTypingsGlobPattern` setting
+   *
+   * @example
+   *
+   * export type MyRootType = { ... }
+   *
+   * schema.unionType({
+   *   name: 'MyUnionType',
+   *   rootTyping: 'MyRootType'
+   * })
+   */
   rootTyping?: RootTyping
 }
 
 export interface NexusEnumTypeConfig<TypeName extends string>
   extends Exclude<NexusSchema.core.EnumTypeConfig<TypeName>, 'rootTyping'> {
+  /**
+   * Root type information for this type.
+   * By default, types are extracted for any .ts file in your project. You can configure that from the `schema.rootTypingsGlobPattern` setting
+   *
+   * @example
+   *
+   * export type MyRootType = { ... }
+   *
+   * schema.enumType({
+   *   name: 'MyEnumType',
+   *   rootTyping: 'MyRootType'
+   * })
+   */
   rootTyping?: RootTyping
 }
 
@@ -45,5 +97,18 @@ export interface NexusScalarTypeConfig<TypeName extends string>
     NexusSchema.core.NexusScalarTypeConfig<TypeName>,
     'rootTyping'
   > {
+  /**
+   * Root type information for this type.
+   * By default, types are extracted for any .ts file in your project. You can configure that from the `schema.rootTypingsGlobPattern` setting
+   *
+   * @example
+   *
+   * export type MyRootType = { ... }
+   *
+   * schema.scalarType({
+   *   name: 'MyScalarType',
+   *   rootTyping: 'MyRootType'
+   * })
+   */
   rootTyping?: RootTyping
 }
