@@ -4,18 +4,6 @@
 
 Use this to model your domain, all the data that your API will accept and return, and how all the various objects in the domain relate to one another (the "graph" in "GraphQL").
 
-### `queryType`
-
-Refer to `objectType`. This is a shorthand where `config.name` is assigned `Query`.
-
-### `mutationType`
-
-Refer to `objectType`. This is a shorthand where `config.name` is assigned `Mutation`.
-
-### `subscriptionType`
-
-Not implemented, please see [#447](https://github.com/graphql-nexus/nexus-future/issues/447).
-
 ### `objectType`
 
 [GraphQL Docs for Object Types](https://graphql.org/learn/schema/#object-types-and-fields)
@@ -26,21 +14,24 @@ fetch from your schema, with fields:
 **Signature**
 
 ```ts
-objectType(config: NexusObjectTypeConfig): NexusObjectTypeDef
+objectType(config: {
+  name:             string
+  description?:     string
+  rootTyping?:      NexusGenBackingTypes
+  nonNullDefaults?: NonNullConfig
+  definition:       ObjectDefinitionBlock
+}) => NexusObjectType
 ```
 
-**`NexusObjectTypeConfig` options**
+- `name` **(required)** The name of this object.
 
-- `name` **(required)**: Name of your type
+- `definition` **(required)** The function used to define the fields of this object. See below for the various field builders available.
 
-- `definition` **(required)**: A function to define the fields of your type
+- `description` The description of this object. Tools like GraphQL Playground can display this content.
 
-- `description` _(optional)_: The description to annotate the GraphQL SDL
+- `nonNullDefaults` <code class="TypeRef">[NonNullConfig](#i-nonnullconfig)</code>
 
-- `nonNullDefaults` _(optional)_: Configures the nullability for the type, check the documentation's "Getting Started" section to learn more about GraphQL Nexus's assumptions and configuration
-  on nullability.
-
-- `rootTyping` _(optional)_: Root type information for this type. By default, types are extracted for any .ts file in your project. You can configure that from the `schema.rootTypingsGlobPattern` setting
+- `rootTyping` <code class="TypeRef">[NexusGenBackingTypes](#s-nexusgenbackingtypes)</code>
 
 **Example**
 
@@ -52,11 +43,10 @@ schema.objectType({
   definition(t) {
     t.int('id', { description: 'Id of the user' })
     t.string('fullName', { description: 'Full name of the user' })
-    t.field('status', { type: 'StatusEnum' })
     t.list.field('posts', {
       type: 'Post',
-      resolve(parent, args, ctx) {
-        return ctx.getUser(parent.id).posts()
+      resolve(post, args, ctx) {
+        return ctx.db.user.getOne(post.id).posts()
       },
     })
   },
@@ -67,14 +57,6 @@ schema.objectType({
   definition(t) {
     t.int('id')
     t.string('title')
-  },
-})
-
-schema.enumType({
-  name: 'StatusEnum',
-  members: {
-    ACTIVE: 1,
-    DISABLED: 2,
   },
 })
 ```
@@ -186,10 +168,10 @@ This field builder helps you implement paginated associations between types in y
 
 - param `config`
 
-  - `type` <code class="TypeRef" ><a href="#graphqltype">GraphQLType</a></code>  
+  - `type` <code class="TypeRef" >[GraphQLType](#graphqltype)</code>  
     The type of this field.
 
-  - `resolve` <code class="TypeRef" ><a href="#graphqltype">Resolver</a></code>  
+  - `resolve` <code class="TypeRef" >[Resolver](#graphqltype)</code>  
     Implement everything yourself.
 
     Useful for more complex pagination cases, where you may want to use utilities from other libraries like [`graphql-relay`](https://github.com/graphql/graphql-relay-js), and only use Nexus for the construction and type-safety.
@@ -200,7 +182,7 @@ This field builder helps you implement paginated associations between types in y
 
     Forbidden if `nodes` given. Required otherwise.
 
-  - `nodes` <code class="TypeRef" ><a href="#graphqltype">NodeResolver</a></code>
+  - `nodes` <code class="TypeRef" >[NodeResolver](#graphqltype)</code>
 
     **Optionality**
 
@@ -230,7 +212,7 @@ This field builder helps you implement paginated associations between types in y
 
     If you set `assumeExactNodeCount` to `true` in `schema.connections` setting then this heuristic changes. Nexus then assumes that a next page exists if the returned array length is `>=` to requested node count.
 
-  * `additionalArgs` <code class="TypeRef" ><a href="#args">Args</a></code>  
+  * `additionalArgs` <code class="TypeRef" >[Args](#args)</code>  
     Additional arguments to use for just this field.
 
     **Default**
@@ -565,6 +547,18 @@ schema.queryType({
   },
 })
 ```
+
+### `queryType`
+
+Refer to `objectType`. This is a shorthand where `config.name` is assigned `Query`.
+
+### `mutationType`
+
+Refer to `objectType`. This is a shorthand where `config.name` is assigned `Mutation`.
+
+### `subscriptionType`
+
+Not implemented, please see [#447](https://github.com/graphql-nexus/nexus-future/issues/447).
 
 ### `inputObjectType`
 
@@ -1043,3 +1037,9 @@ todo
 #### `F` `Resolver`
 
 todo
+
+#### `S` `NexusGenBackingTypes`
+
+todo
+
+By default, types are extracted for any .ts file in your project. You can configure that from the `schema.rootTypingsGlobPattern` setting
