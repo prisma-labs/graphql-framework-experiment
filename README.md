@@ -184,16 +184,12 @@ yarn test:e2e
 
 #### Getting started
 
-1. Install `docsify-cli`
+1. Fix bin
 
-   There is currently [a bug](https://github.com/docsifyjs/docsify-cli/issues/88) with `docsify-cli` requiring the following manual fix after installation. To make this less painful, install globally so you should only have to do this once.
-
-   ```
-   yarn global add docsify
-   ```
+   There is currently [a bug](https://github.com/docsifyjs/docsify-cli/issues/88) with `docsify-cli` requiring the following manual fix after installation.
 
    ```
-   vim /usr/local/bin/docsify
+   vim ./node_modules/.bin/docsify
    :se ff=unix
    :wq
    ```
