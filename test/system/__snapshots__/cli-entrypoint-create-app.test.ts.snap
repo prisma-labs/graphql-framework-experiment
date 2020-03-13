@@ -6,6 +6,14 @@ Object {
 }
 `;
 
+exports[`cli entrypoint create app: backing type query 1`] = `
+Object {
+  "testBackingType": Object {
+    "test": "abcdef",
+  },
+}
+`;
+
 exports[`cli entrypoint create app: introspection 1`] = `
 Object {
   "__schema": Object {
@@ -158,6 +166,22 @@ Object {
               },
             },
           },
+          Object {
+            "args": Array [],
+            "deprecationReason": null,
+            "description": null,
+            "isDeprecated": false,
+            "name": "testBackingType",
+            "type": Object {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": Object {
+                "kind": "OBJECT",
+                "name": "TestBackingType",
+                "ofType": null,
+              },
+            },
+          },
         ],
         "inputFields": null,
         "interfaces": Array [],
@@ -262,6 +286,33 @@ Object {
         "interfaces": null,
         "kind": "SCALAR",
         "name": "Int",
+        "possibleTypes": null,
+      },
+      Object {
+        "description": null,
+        "enumValues": null,
+        "fields": Array [
+          Object {
+            "args": Array [],
+            "deprecationReason": null,
+            "description": null,
+            "isDeprecated": false,
+            "name": "test",
+            "type": Object {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": Object {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null,
+              },
+            },
+          },
+        ],
+        "inputFields": null,
+        "interfaces": Array [],
+        "kind": "OBJECT",
+        "name": "TestBackingType",
         "possibleTypes": null,
       },
       Object {
