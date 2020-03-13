@@ -1,5 +1,8 @@
 import * as fs from 'fs-jetpack'
 import { BackingTypes } from './types'
+import { rootLogger } from '../../utils/logger'
+
+const log = rootLogger.child('backing-types')
 
 export const defaultTSTypeMatcher = new RegExp(
   `export\\s+(?:interface|type|class|enum)\\s+(\\w+)`,
@@ -21,6 +24,8 @@ export function extract(filePaths: (string | undefined)[]): BackingTypes {
       backingTypes[typeName] = filePath
     })
   }
+
+  log.trace('extracted backing types from file', { backingTypes })
 
   return backingTypes
 }

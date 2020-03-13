@@ -4,12 +4,12 @@ import { write } from './write'
 
 export async function extractAndWrite(
   filePattern?: string,
-  opts: { cwd: string } = { cwd: process.cwd() }
+  opts?: { extractCwd?: string; writeCwd?: string }
 ) {
-  const backingTypesFiles = await find(filePattern, opts)
+  const backingTypesFiles = await find(filePattern, { cwd: opts?.extractCwd })
   const backingTypes = await extract(backingTypesFiles)
 
-  await write(backingTypes, opts)
+  await write(backingTypes, { cwd: opts?.writeCwd })
 
   return backingTypes
 }

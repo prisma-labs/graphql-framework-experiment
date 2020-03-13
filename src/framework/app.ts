@@ -159,7 +159,7 @@ export function create(): App {
 
           backingTypes = await BackingTypes.extractAndWrite(
             settings.current.schema.rootTypingsGlobPattern,
-            { cwd: layout.sourceRoot }
+            { extractCwd: layout.sourceRoot }
           )
         }
 

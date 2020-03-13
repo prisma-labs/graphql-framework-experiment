@@ -1,7 +1,10 @@
-import * as Path from 'path'
 import * as FS from 'fs-jetpack'
+import * as Path from 'path'
 import { hardWriteFileSync } from '../../utils'
+import { rootLogger } from '../../utils/logger'
 import { BackingTypes } from './types'
+
+const log = rootLogger.child('backing-types')
 
 export const DEFAULT_RELATIVE_BACKING_TYPES_TYPEGEN_PATH = Path.join(
   'node_modules',
@@ -12,10 +15,10 @@ export const DEFAULT_RELATIVE_BACKING_TYPES_TYPEGEN_PATH = Path.join(
 
 export async function write(
   backingTypes: BackingTypes,
-  opts: { cwd: string } = { cwd: process.cwd() }
+  opts?: { cwd?: string }
 ) {
-  let output: string = ''
   const typeNames = Object.keys(backingTypes)
+  let output: string = ''
 
   if (typeNames.length === 0) {
     output = `export type BackingTypes = 'No backing types found. Make sure you have some types exported'\n`
@@ -34,10 +37,10 @@ declare global {
 }
 `
 
-  const localFS = FS.cwd(opts.cwd)
+  const localFS = FS.cwd(opts?.cwd ?? process.cwd())
+  const outputPath = localFS.path(DEFAULT_RELATIVE_BACKING_TYPES_TYPEGEN_PATH)
 
-  hardWriteFileSync(
-    localFS.path(DEFAULT_RELATIVE_BACKING_TYPES_TYPEGEN_PATH),
-    output
-  )
+  log.trace('writing backing-types typegen', { outputPath })
+
+  hardWriteFileSync(outputPath, output)
 }
