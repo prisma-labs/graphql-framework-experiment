@@ -35,7 +35,7 @@ schema.objectType({
 })
 ```
 
-## Data Graph & Backing Types
+## Data Graph
 
 As the API author, there are three design tasks you will invariable perform over and over again:
 
@@ -45,7 +45,13 @@ As the API author, there are three design tasks you will invariable perform over
 
 This is an iterative process that can generally be seen as an finite loop wherein your team gradually refines and expands (or contracts!) the data graph as you respond to changing client app needs, business needs, and so on. Data modelling is hard work, not least becuase there are usually many ways to achieve something with no immediate obvious answer about which approach is best. If the process of data modelling itself or data modelling in GraphQL is new to you, you may find this specialed book on the topic by [Marc-Andre Giroux](https://twitter.com/__xuorig__) helpful: [Production Ready GraphQL](https://book.productionreadygraphql.com/).
 
+## Backing Types
+
 As you begin to implement a schema for the first time you will notice something that may not have been obvious at first. The data that the client sees in the data graph is _not_ the same data flowing through your resolvers used to fulfill that graph. The client sees the API types but internally you as the API author deal with _backing types_.
+
+When a field's type is an object, then the field's resolver returns a backing type. Concretely this might for example be a plain JavaScript object containing node/row/document data from a database call. This backing type data is in turn passed down to all the object type's own field resolvers. The backing type of a GraphQL type sets up the data requirements of all resolvers for fields whose type is (aka. points to) that GraphQL type.
+
+![diagram](https://user-images.githubusercontent.com/284476/76585273-5a4b5a00-64b4-11ea-8744-f175ff313872.png)
 
 A small journey through query resolution of a contrived data graph will help illustrate the point.
 
@@ -73,7 +79,8 @@ query {
 
 Hopefully you can see how the GraphQL types that client sees are distinct from the backing types flowing through the resovlers.
 
-Here is an example of the schema implementation:
+<details>
+<summary>Open this toggle for an example of the schema implementation in Nexus</summary>
 
 ```ts
 schema.query({
@@ -164,6 +171,10 @@ schema.object({
   },
 })
 ```
+
+Backing types in Nexus are controlled at the level
+
+</details>
 
 ## The Building Blocks
 
