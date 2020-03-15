@@ -94,7 +94,7 @@ If you do have server logic that needs porting, and it is express based, use `se
 + })
 ```
 
-If you are using a server other than express use `server.custom` but return your own implementation. Example for fastify-gql (see complete example app [here](https://github.com/prisma-labs/nexus-future-examples/tree/master/with-fastify-gql)):
+If you are using a server other than express use `server.custom` but return your own implementation. Example for fastify-gql (see complete example app [here](https://github.com/graphql-nexus/examples/tree/master/custom-server-fastify-gql)):
 
 ```diff
 +++ app.ts
