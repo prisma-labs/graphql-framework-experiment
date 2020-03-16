@@ -9,7 +9,8 @@ export async function extractAndWrite(
   const backingTypesFiles = await find(filePattern, { cwd: opts?.extractCwd })
   const backingTypes = await extract(backingTypesFiles)
 
-  await write(backingTypes, { cwd: opts?.writeCwd })
+  // Write in background
+  write(backingTypes, { cwd: opts?.writeCwd })
 
   return backingTypes
 }
