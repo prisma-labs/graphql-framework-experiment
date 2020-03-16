@@ -405,7 +405,7 @@ async function helloWorldTemplate(layout: Layout.Layout) {
             world: schema.stringArg({ required: false })
           },
           resolve(_root, args, ctx) {
-            const worldToFindByName = args.world || "Earth"
+            const worldToFindByName = args.world ?? "Earth"
             const world = ctx.db.worlds.find(w => w.name === worldToFindByName)
 
             if (!world) throw new Error(\`No such world named "\${args.world}"\`)
