@@ -18,13 +18,6 @@ export const NEXUS_DEFAULT_TYPEGEN_PATH = fs.path(
   'index.d.ts'
 )
 
-export const NEXUS_DEFAULT_RUNTIME_CONTEXT_TYPEGEN_PATH = fs.path(
-  'node_modules',
-  '@types',
-  'typegen-nexus-context',
-  'index.d.ts'
-)
-
 export function createNexusSchemaConfig(
   frameworkPlugins: Plugin.RuntimeContributions[],
   settings: SettingsData

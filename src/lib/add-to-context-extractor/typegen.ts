@@ -1,7 +1,14 @@
 import { codeBlock } from 'common-tags'
-import { NEXUS_DEFAULT_RUNTIME_CONTEXT_TYPEGEN_PATH } from '../../runtime/schema/config'
+import * as fs from 'fs-jetpack'
 import { hardWriteFile } from '../fs'
 import { ExtractedContectTypes } from './extractor'
+
+export const NEXUS_DEFAULT_RUNTIME_CONTEXT_TYPEGEN_PATH = fs.path(
+  'node_modules',
+  '@types',
+  'typegen-nexus-context',
+  'index.d.ts'
+)
 
 /**
  * Output the context types to a typegen file.
