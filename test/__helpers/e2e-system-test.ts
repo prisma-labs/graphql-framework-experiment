@@ -1,5 +1,6 @@
 import { introspectionQuery } from 'graphql'
 import { setupE2EContext } from '../../src/lib/e2e-testing'
+import { DEFAULT_BUILD_FOLDER_NAME } from '../../src/lib/layout'
 import { CONVENTIONAL_SCHEMA_FILE_NAME } from '../../src/lib/layout/schema-modules'
 
 /**
@@ -103,7 +104,7 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
   expect(res.exitCode).toStrictEqual(0)
 
   // Run built app and query graphql api
-  await ctx.spawn('node', ['node_modules/.build'], async (data, proc) => {
+  await ctx.spawn('node', [DEFAULT_BUILD_FOLDER_NAME], async (data, proc) => {
     if (data.includes('server:listening')) {
       let result: any
       result = await ctx.client.request(`{
