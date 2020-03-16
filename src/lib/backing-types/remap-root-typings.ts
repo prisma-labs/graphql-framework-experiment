@@ -6,49 +6,44 @@ import { BackingTypes } from './types'
 
 const log = rootLogger.child('backing-types')
 
+/**
+ * Remaps the rootTypings stored in the schema to actual filePath & typeName
+ * so that @nexus/schema can properly import them in its typegen file
+ * eg: 'CustomType1' -> { path: __filename, name: 'CustomType1' }
+ */
 export function withRemappedRootTypings(
-  types: Schema.AllNexusTypeDefs[],
+  schema: NexusSchema.core.NexusGraphQLSchema,
   backingTypes: BackingTypes
-) {
-  return types.map(t => {
-    if (
-      NexusSchema.core.isNexusObjectTypeDef(t) ||
-      NexusSchema.core.isNexusInterfaceTypeDef(t) ||
-      NexusSchema.core.isNexusUnionTypeDef(t) ||
-      NexusSchema.core.isNexusScalarTypeDef(t) ||
-      NexusSchema.core.isNexusEnumTypeDef(t)
-    ) {
-      if (typeof t.value.rootTyping === 'string') {
-        const filePath = backingTypes[t.value.rootTyping]
-
-        if (t.value.rootTyping.length === 0) {
-          return t
-        }
+): NexusSchema.core.NexusGraphQLSchema {
+  Object.entries(schema.extensions.nexus.config.rootTypings).forEach(
+    ([typeName, rootType]) => {
+      if (typeof rootType === 'string') {
+        const filePath = backingTypes[rootType]
 
         if (!filePath) {
           const suggestions = suggestionList(
-            t.value.rootTyping,
+            rootType,
             Object.keys(backingTypes)
           )
 
           log.warn(
-            `We could not find the backing type '${t.value.rootTyping}' used in '${t.name}'`
+            `We could not find the backing type '${rootType}' used in '${typeName}'`
           )
           if (suggestions.length > 0) {
             log.warn(
               `Did you mean ${suggestions.map(s => `"${s}"`).join(', ')} ?`
             )
           }
-          return t
+          return
         }
 
-        t.value.rootTyping = {
-          name: t.value.rootTyping,
+        schema.extensions.nexus.config.rootTypings[typeName] = {
+          name: rootType,
           path: filePath,
         }
       }
     }
+  )
 
-    return t
-  })
+  return schema
 }

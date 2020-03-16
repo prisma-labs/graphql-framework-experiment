@@ -1,9 +1,9 @@
 import * as NexusSchema from '@nexus/schema'
-import { NexusGraphQLSchema } from '@nexus/schema/dist/core'
+import { Layout } from '../../lib/layout'
 import { RuntimeContributions } from '../../lib/plugin'
 import { ConnectionConfig, createNexusSchemaConfig } from './config'
 import { createNexusSingleton } from './nexus'
-import { BackingTypes } from '../../lib/backing-types'
+import { writeTypegen } from './utils'
 
 export type SettingsInput = {
   /**
@@ -66,7 +66,9 @@ export type Schema = {
 type SchemaInternal = {
   private: {
     isSchemaEmpty(): boolean
-    makeSchema: (backingTypes?: BackingTypes) => Promise<NexusGraphQLSchema>
+    makeSchema: (
+      devModeLayout?: Layout
+    ) => Promise<NexusSchema.core.NexusGraphQLSchema>
     settings: {
       data: SettingsData
       change: (newSettings: SettingsInput) => void
@@ -114,12 +116,48 @@ export function create({
       isSchemaEmpty: () => {
         return __types.length === 0
       },
-      makeSchema: backingTypes => {
+      makeSchema: async devModeLayout => {
         const nexusSchemaConfig = createNexusSchemaConfig(
           plugins,
           state.settings
         )
-        return makeSchema(nexusSchemaConfig, backingTypes)
+        const { schema, missingTypes, typegenConfig } = await makeSchema(
+          nexusSchemaConfig
+        )
+        if (
+          process.env.NEXUS_STAGE === 'dev' &&
+          nexusSchemaConfig.shouldGenerateArtifacts === true
+        ) {
+          if (!devModeLayout) {
+            throw new Error(
+              'Layout should be defined in dev mode. This should not happen.'
+            )
+          }
+
+          const typegenPromise = writeTypegen(
+            schema,
+            typegenConfig,
+            state.settings.rootTypingsGlobPattern,
+            devModeLayout
+          )
+
+          // Await promise only if needed. Otherwise let it run in the background
+          if (process.env.NEXUS_SHOULD_AWAIT_TYPEGEN === 'true') {
+            await typegenPromise
+          }
+
+          if (nexusSchemaConfig.shouldExitAfterGenerateArtifacts) {
+            process.exit(0)
+          }
+        }
+
+        /**
+         * Assert that there are no missing types after running typegen only
+         * so that we don't block writing the typegen when eg: renaming types
+         */
+        NexusSchema.core.assertNoMissingTypes(schema, missingTypes)
+
+        return schema
       },
       settings: {
         data: state.settings,
