@@ -16,19 +16,28 @@ const log = rootLogger.child('add-to-context-extractor')
 export function runAddToContextExtractorAsWorkerIfPossible(
   layoutData: Layout.Layout['data']
 ) {
-  let hasWorkerThreads = false
+  let hasWorkerThreads = areWorkerThreadsAvailable()
+
+  if (hasWorkerThreads) {
+    log.trace('Worker threads available')
+    runAddToContextExtractorAsWorker(layoutData)
+  } else {
+    log.trace('Worker threads unavailable. Fallbacking to main process')
+    const layout = Layout.createFromData(layoutData)
+    const builder = createTSProgram(layout, { withCache: true })
+    extractContextTypesToTypeGenFile(builder.getProgram())
+  }
+}
+
+/**
+ * Check whether Worker Threads are available. In Node 10, workers aren't available by default.
+ */
+function areWorkerThreadsAvailable(): boolean {
   try {
     require('worker_threads')
+    return true
   } catch {
-    // stays false
-  } finally {
-    if (hasWorkerThreads) {
-      runAddToContextExtractorAsWorker(layoutData)
-    } else {
-      const layout = Layout.createFromData(layoutData)
-      const builder = createTSProgram(layout, { withCache: true })
-      extractContextTypesToTypeGenFile(builder.getProgram())
-    }
+    return false
   }
 }
 
