@@ -411,7 +411,11 @@ type Query {
 }
 ```
 
+</div>
+
 When an arg has a default you might think that then it should be nullable to the client but non-nullable to the resolver. However it turns out that if the client passes an _explicit_ `null` then that is considered an actual value and does not receive the default. Thus, and then, the resolver still sees it. If you are curious about seeing this change and/or become configurable then please refer to [#485](https://github.com/graphql-nexus/nexus-future/issues/485).
+
+<div class="TwoUp NexusVSDL">
 
 ```ts
 schema.queryType({
