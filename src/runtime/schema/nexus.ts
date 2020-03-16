@@ -1,7 +1,7 @@
 import * as Nexus from '@nexus/schema'
-import { AllTypeDefs, generateSchema } from '@nexus/schema/dist/core'
-import * as BackingTypes from '../../lib/backing-types'
+import { AllTypeDefs } from '@nexus/schema/dist/core'
 import * as CustomTypes from './custom-types'
+import { makeSchemaWithoutTypegen, EnhancedSchema } from './utils'
 
 export type AllNexusTypeDefs =
   | AllTypeDefs
@@ -16,27 +16,11 @@ export function createNexusSingleton() {
    * disk write is awaited upon.
    */
   async function makeSchema(
-    config: Nexus.core.SchemaConfig,
-    backingTypes?: BackingTypes.BackingTypes
-  ): Promise<Nexus.core.NexusGraphQLSchema> {
-    const maybeTypesWithRemappedRootTypings = backingTypes
-      ? BackingTypes.withRemappedRootTypings(__types, backingTypes)
-      : __types
+    config: Nexus.core.SchemaConfig
+  ): Promise<EnhancedSchema> {
+    config.types.push(__types)
 
-    config.types.push(...maybeTypesWithRemappedRootTypings)
-
-    // https://github.com/graphql-nexus/nexus-future/issues/33
-    const schema = await (process.env.NEXUS_SHOULD_AWAIT_TYPEGEN === 'true'
-      ? generateSchema(config)
-      : Promise.resolve(Nexus.makeSchema(config)))
-
-    // HACK `generateSchema` in Nexus does not support this logic yet
-    // TODO move this logic into Nexus
-    if (process.env.NEXUS_SHOULD_EXIT_AFTER_GENERATE_ARTIFACTS) {
-      process.exit(0)
-    }
-
-    return schema
+    return makeSchemaWithoutTypegen(config)
   }
 
   function objectType<TypeName extends string>(
