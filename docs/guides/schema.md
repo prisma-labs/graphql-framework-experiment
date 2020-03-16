@@ -306,21 +306,25 @@ As the API author, there are three design tasks you will invariable perform over
 
 This is an iterative process that can generally be seen as an finite loop wherein your team gradually refines and expands (or contracts!) the data graph as you respond to changing client app needs, business needs, and so on. Data modelling is hard work. For one thing it is a suble art, occasionally underappreciated. There are typically multiple ways to model any one thing and competing tradeoffs that leave no obvious winner abound. If the process of data modelling itself or data modelling in GraphQL is new to you, you may find this book by [Marc-Andre Giroux](https://twitter.com/__xuorig__) helpful: [Production Ready GraphQL](https://book.productionreadygraphql.com/).
 
-## Nullability
+## Nullability in Principal
 
-When creating an API, especially before going to production or lifting features out of beta, thinking about if arguments should be required and if field types should be nullable is an important design consideration. If arguments are optional or types are guaranteed present then clients have an easy time of interacting with the API. But it makes the API harder to change over time, because making arguments go from optional to required or field types from guaranteed to nullable are breaking changes from the point of view of a client.
-
-Here are some articles on the topic of GraphQL nullability:
+When creating an API, especially before going to production or lifting features out of beta, thinking about if arguments and input object fields (_inputs_) should be required and if object type fields (_outputs_) should be nullable is an important design consideration. If inputs are optional or outputs are guaranteed then clients will have a simpler API to deal with since they get to be lazier about what they give as API input and how they check results from API output. The design tradeoff however is that the API becomes harder to change over time since turning inputs from optional to required or making outputs go from guaranteed to nullable are breaking changes from the client's point of view. Furthermore, the API becomes exposed to greater levels of "null blast radius" wherein any unexpected `null` received (from a e.g. dependency data source) while resolving a request will "bubble up" the data tree until a nullable type is found (finally erroring if by root none has been found). Details about these design considerations and more are well covered in the following articles so we will refrain going into further detail here.
 
 - 2019 [Nullability in GraphQL](https://medium.com/expedia-group-tech/nullability-in-graphql-b8d06fbd8a3c) by Grant Norwood
 - 2018 [Using nullability in GraphQL](https://blog.apollographql.com/using-nullability-in-graphql-2254f84c4ed7) by Sashko Stubailo
 - 2017 [When To Use GraphQL Non-Null Fields](https://medium.com/@calebmer/when-to-use-graphql-non-null-fields-4059337f6fc8) by Caleb Meredith
 
-Nexus defaults to arguments being optional and field types being guaranteed. This actually goes against the suggested best practices and may change, see [#477](https://github.com/graphql-nexus/nexus-future/issues/477) and [#484](https://github.com/graphql-nexus/nexus-future/issues/484). Note that it is not possible to change the global default yet, see [#483](https://github.com/graphql-nexus/nexus-future/issues/483).
+## Nullability in Nexus
 
-Nullability can be configured at the type level or at field/arg level. When configured at the type level, field/arg levels may still be toggled too. Nexus tracks these settings and types args to a resolver accordingly. If an arg has a default then it will be used when the client passes nothing, but since clients can still pass explicit `null` resolvers must still handle nullability. If this surprises you then you may be interested in [#485](https://github.com/graphql-nexus/nexus-future/issues/485). Nexus types nullable args as `null | undefined`. `null` means the client passed in an explicit `null` while `undefined` means the client did not specify the argment in their query at all.
+Nexus defaults to inputs being required and outputs being nullable. This default maximizes the flexibility you have to change your API over time and minimizes the runtime "null blast radius" to zero (refer to [Nullability in Principal](#nullability-in-principal) for detail).
 
-Here's how things look by default:
+You can override the global defaults at the per-type level or per-field level. If you find yourself writing local overrides in a majority of cases then it might mean the global defaults are a bad fit for your API. In that case you ~can~ will be able to change the global defaults (see [#483](https://github.com/graphql-nexus/nexus-future/issues/483)).
+
+When you make an input nullable then Nexus will alter its type inside your resolver to have `null | undefined`. `null` is for the case that the client passed in an explicit `null` while `undefined` is for the case where the client simply did not specify the input at all.
+
+If an arg has been given a default value, then it will be used when the client passes nothing, but since clients can still pass explicit `null`, resolvers must still handle nullability. If this surprises you then you may be interested in [#485](https://github.com/graphql-nexus/nexus-future/issues/485).
+
+###### Example: Nullability By Default
 
 <div class="TwoUp NexusVSDL">
 
@@ -329,10 +333,10 @@ schema.queryType({
   definition(t) {
     t.string('echo', {
       args: {
-        this: 'String',
+        message: 'String',
       },
       resolve(_root, args) {
-        return args.this ?? 'nothing'
+        return args.message
       },
     })
   },
@@ -341,29 +345,29 @@ schema.queryType({
 
 ```graphql
 type Query {
-  echo(this: String): String!
+  echo(message: String!): String
 }
 ```
 
 </div>
 
-If we flip the defaults at the level of the type then we get different results:
+###### Example: Nullability Flipped at Type Level
 
 <div class="TwoUp NexusVSDL">
 
 ```ts
 schema.queryType({
   nonNullDefaults: {
-    input: true,
-    output: false,
+    input: false,
+    output: true,
   },
   definition(t) {
     t.string('echo', {
       args: {
-        this: 'String',
+        message: 'String',
       },
       resolve(_root, args) {
-        return args.this
+        return args.message ?? 'nothing'
       },
     })
   },
@@ -372,33 +376,71 @@ schema.queryType({
 
 ```graphql
 type Query {
-  echo(this: String!): String
+  echo(message: String): String!
 }
 ```
 
 </div>
 
-Even with the defaults still flipped at the type level, it is possible to toggle at the arg/field level. In this case we just revert the result back to what it is by defualt. Of course contrived, but it shows you what the API can achieve. Flipped the defaults at the type level but then toggled an arg or field might be a useful pattern if a particular type deviates from the global default for all but a few args/field types:
+###### Example: Nullability Flipped at Input & Field Level
 
 <div class="TwoUp NexusVSDL">
 
 ```ts
 schema.queryType({
-  nonNullDefaults: {
-    input: true,
-    output: false,
-  },
   definition(t) {
     t.string('echo', {
-      nullable: false,
       args: {
-        this: schema.arg({
+        message: schema.arg({
           type: 'String',
-          required: false,
+          nullable: true,
+        }),
+      },
+      nullable: false,
+      resolve(_root, args) {
+        return args.message ?? 'nothing'
+      },
+    })
+  },
+})
+```
+
+```graphql
+type Query {
+  echo(message: String): String!
+}
+```
+
+</div>
+
+###### Example: Mixing Levels
+
+It is possible to use type and input/field layers together. This provides flexibility to optimize for local sections of your API that have different characteristics. For example here, a type deviates from the global default for all but but one field and its input.
+
+<div class="TwoUp NexusVSDL">
+
+```ts
+schema.queryType({
+  // flip the global defaults
+  nonNullDefaults: {
+    input: false,
+    output: true,
+  },
+  definition(t) {
+    // ... Everything in this type uses the type-level
+    // nullability config ... Except the following,
+    // which effectively reverts back to what the global
+    // defaults are:
+    t.string('echo', {
+      nullable: true,
+      args: {
+        message: schema.arg({
+          type: 'String',
+          nullable: false,
         }),
       },
       resolve(_root, args) {
-        return args.this ?? 'nothing'
+        return args.message
       },
     })
   },
@@ -413,7 +455,9 @@ type Query {
 
 </div>
 
-When an arg has a default you might think that then it should be nullable to the client but non-nullable to the resolver. However it turns out that if the client passes an _explicit_ `null` then that is considered an actual value and does not receive the default. Thus, and then, the resolver still sees it. If you are curious about seeing this change and/or become configurable then please refer to [#485](https://github.com/graphql-nexus/nexus-future/issues/485).
+###### Example: Args That Have Default Values
+
+When an arg has a default you might think that then it should be nullable to the client but non-nullable within your resolver logic. However it turns out that if the client passes an _explicit_ `null` then that is considered an actual value, and hence is not subject to being assigned the default value. Thus, and then, the resolver still can observe null from the client. If you are curious about seeing this change and/or become configurable then please refer to [#485](https://github.com/graphql-nexus/nexus-future/issues/485).
 
 <div class="TwoUp NexusVSDL">
 
@@ -421,16 +465,17 @@ When an arg has a default you might think that then it should be nullable to the
 schema.queryType({
   definition(t) {
     t.string('echo', {
-      nullable: false,
       args: {
-        this: schema.arg({
+        message: schema.arg({
           type: 'String',
-          required: false,
           default: 'nothing via default',
+          nullable: true,
         }),
       },
+      nullable: false,
       resolve(_root, args) {
-        return args.this ?? 'nothing via explicit null'
+        const fallback = 'nothing via client null'
+        return args.message ?? fallback
       },
     })
   },
@@ -439,8 +484,8 @@ schema.queryType({
 
 ```graphql
 type Query {
-  foo(bar: String): String!
-}
+  echo(message: String = "nothing via default"): String!
+}}
 ```
 
 </div>
@@ -449,7 +494,7 @@ type Query {
 ```graphql
 query {
   echo1: echo
-  echo2: echo(this: null)
+  echo2: echo(message: null)
 }
 ```
 
@@ -457,7 +502,7 @@ query {
 {
   "data": {
     "echo1": "nothing via default",
-    "echo2": "nothing via explicit null"
+    "echo2": "nothing via client null"
   }
 }
 ```
