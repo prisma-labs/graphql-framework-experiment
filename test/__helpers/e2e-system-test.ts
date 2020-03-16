@@ -113,16 +113,16 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
             population
           }
         }`)
-      expect(result).toMatchSnapshot('query')
+      expect(result).toMatchSnapshot('built app query')
 
       result = await ctx.client.request(introspectionQuery)
-      expect(result).toMatchSnapshot('introspection')
+      expect(result).toMatchSnapshot('built app introspection')
 
       result = await ctx.client.request(`{ a }`)
-      expect(result).toMatchSnapshot('addToContext query')
+      expect(result).toMatchSnapshot('built app addToContext query')
 
       result = await ctx.client.request(`{ testBackingType { test } }`)
-      expect(result).toMatchSnapshot('backing type query')
+      expect(result).toMatchSnapshot('built app backing type query')
 
       proc.kill()
     }
