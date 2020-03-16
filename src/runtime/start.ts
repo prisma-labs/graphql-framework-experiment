@@ -77,7 +77,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
         // bring value to the user's codebase.
 
         const app = require('nexus-future')
-        const singletonChecks = require('nexus-future/dist/framework/singleton-checks')
+        const singletonChecks = require('nexus-future/dist/runtime/singleton-checks')
 
         if (singletonChecks.state.is_was_server_start_called === false) {
           app.server.start()
