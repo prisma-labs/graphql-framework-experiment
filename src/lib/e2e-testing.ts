@@ -37,6 +37,19 @@ export function setupE2EContext(config?: {
     fs: FS.cwd(projectDir),
     client: new GraphQLClient('http://localhost:4000/graphql'),
     projectDir: projectDir,
+    spawn(
+      binPath: string,
+      args: string[],
+      expectHandler: (data: string, proc: IPty) => void = () => {},
+      opts: IPtyForkOptions = {}
+    ) {
+      return ptySpawn(
+        binPath,
+        args,
+        { cwd: projectDir, ...opts },
+        expectHandler
+      )
+    },
     spawnNexus(
       args: string[],
       expectHandler: (data: string, proc: IPty) => void = () => {},

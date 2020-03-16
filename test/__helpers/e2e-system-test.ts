@@ -101,4 +101,30 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
 
   expect(res.data).toContain('success')
   expect(res.exitCode).toStrictEqual(0)
+
+  // Run built app and query graphql api
+  await ctx.spawn('node', ['node_modules/.build'], async (data, proc) => {
+    if (data.includes('server:listening')) {
+      let result: any
+      result = await ctx.client.request(`{
+          worlds {
+            id
+            name
+            population
+          }
+        }`)
+      expect(result).toMatchSnapshot('query')
+
+      result = await ctx.client.request(introspectionQuery)
+      expect(result).toMatchSnapshot('introspection')
+
+      result = await ctx.client.request(`{ a }`)
+      expect(result).toMatchSnapshot('addToContext query')
+
+      result = await ctx.client.request(`{ testBackingType { test } }`)
+      expect(result).toMatchSnapshot('backing type query')
+
+      proc.kill()
+    }
+  })
 }
