@@ -318,7 +318,7 @@ Here are some articles on the topic of GraphQL nullability:
 
 Nexus defaults to arguments being optional and field types being guaranteed. This actually goes against the suggested best practices and may change, see [#477](https://github.com/graphql-nexus/nexus-future/issues/477) and [#484](https://github.com/graphql-nexus/nexus-future/issues/484). Note that it is not possible to change the global default yet, see [#483](https://github.com/graphql-nexus/nexus-future/issues/483).
 
-Nullability can be configured at the type level or at field/arg level. When configured at the type level, field/arg levels may still be toggled too.
+Nullability can be configured at the type level or at field/arg level. When configured at the type level, field/arg levels may still be toggled too. Nexus tracks these settings and types args to a resolver accordingly. If an arg has a default then it will be used when the client passes nothing, but since clients can still pass explicit `null` resolvers must still handle nullability. If this surprises you then you may be interested in [#485](https://github.com/graphql-nexus/nexus-future/issues/485). Nexus types nullable args as `null | undefined`. `null` means the client passed in an explicit `null` while `undefined` means the client did not specify the argment in their query at all.
 
 Here's how things look by default:
 
@@ -327,12 +327,12 @@ Here's how things look by default:
 ```ts
 schema.queryType({
   definition(t) {
-    t.string('foo', {
+    t.string('echo', {
       args: {
-        bar: 'String',
+        this: 'String',
       },
-      resolve() {
-        return 'qux'
+      resolve(_root, args) {
+        return args.this ?? 'nothing'
       },
     })
   },
@@ -341,7 +341,7 @@ schema.queryType({
 
 ```graphql
 type Query {
-  foo(bar: String): String!
+  echo(this: String): String!
 }
 ```
 
@@ -358,12 +358,12 @@ schema.queryType({
     output: false,
   },
   definition(t) {
-    t.string('foo', {
+    t.string('echo', {
       args: {
-        bar: 'String',
+        this: 'String',
       },
-      resolve() {
-        return 'qux'
+      resolve(_root, args) {
+        return args.this
       },
     })
   },
@@ -372,7 +372,7 @@ schema.queryType({
 
 ```graphql
 type Query {
-  foo(bar: String!): String
+  echo(this: String!): String
 }
 ```
 
@@ -389,16 +389,16 @@ schema.queryType({
     output: false,
   },
   definition(t) {
-    t.string('foo', {
+    t.string('echo', {
       nullable: false,
       args: {
-        bar: schema.arg({
+        this: schema.arg({
           type: 'String',
           required: false,
         }),
       },
-      resolve() {
-        return 'qux'
+      resolve(_root, args) {
+        return args.this ?? 'nothing'
       },
     })
   },
@@ -408,6 +408,53 @@ schema.queryType({
 ```graphql
 type Query {
   foo(bar: String): String!
+}
+```
+
+When an arg has a default you might think that then it should be nullable to the client but non-nullable to the resolver. However it turns out that if the client passes an _explicit_ `null` then that is considered an actual value and does not receive the default. Thus, and then, the resolver still sees it. If you are curious about seeing this change and/or become configurable then please refer to [#485](https://github.com/graphql-nexus/nexus-future/issues/485).
+
+```ts
+schema.queryType({
+  definition(t) {
+    t.string('echo', {
+      nullable: false,
+      args: {
+        this: schema.arg({
+          type: 'String',
+          required: false,
+          default: 'nothing via default',
+        }),
+      },
+      resolve(_root, args) {
+        return args.this ?? 'nothing via explicit null'
+      },
+    })
+  },
+})
+```
+
+```graphql
+type Query {
+  foo(bar: String): String!
+}
+```
+
+</div>
+<div class="TwoUp NexusVSDL">
+
+```graphql
+query {
+  echo1: echo
+  echo2: echo(this: null)
+}
+```
+
+```json
+{
+  "data": {
+    "echo1": "nothing via default",
+    "echo2": "nothing via explicit null"
+  }
 }
 ```
 
