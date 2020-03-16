@@ -158,6 +158,7 @@ export function create(): App {
           await Layout.schema.importModules(layout)
 
           backingTypes = await BackingTypes.extractAndWrite(
+            layout,
             settings.current.schema.rootTypingsGlobPattern,
             { extractCwd: layout.sourceRoot }
           )

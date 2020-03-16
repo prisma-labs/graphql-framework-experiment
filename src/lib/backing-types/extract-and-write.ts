@@ -1,13 +1,13 @@
-import { extract } from './extract'
-import { find } from './find'
+import { extractWithTS } from './extract'
 import { write } from './write'
+import { Layout } from '../layout'
 
 export async function extractAndWrite(
+  layout: Layout,
   filePattern?: string,
   opts?: { extractCwd?: string; writeCwd?: string }
 ) {
-  const backingTypesFiles = await find(filePattern, { cwd: opts?.extractCwd })
-  const backingTypes = await extract(backingTypesFiles)
+  const backingTypes = await extractWithTS(layout, filePattern)
 
   await write(backingTypes, { cwd: opts?.writeCwd })
 
