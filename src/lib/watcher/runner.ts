@@ -27,7 +27,7 @@ register({
 
   log.trace('starting context type extraction')
 
-  runAddToContextExtractorAsWorkerIfPossible(layout)
+  runAddToContextExtractorAsWorkerIfPossible(layout.data)
 
   // Remove app-runner.js from the argv array
   process.argv.splice(1, 1)
