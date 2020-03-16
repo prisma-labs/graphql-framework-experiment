@@ -306,7 +306,114 @@ As the API author, there are three design tasks you will invariable perform over
 
 This is an iterative process that can generally be seen as an finite loop wherein your team gradually refines and expands (or contracts!) the data graph as you respond to changing client app needs, business needs, and so on. Data modelling is hard work. For one thing it is a suble art, occasionally underappreciated. There are typically multiple ways to model any one thing and competing tradeoffs that leave no obvious winner abound. If the process of data modelling itself or data modelling in GraphQL is new to you, you may find this book by [Marc-Andre Giroux](https://twitter.com/__xuorig__) helpful: [Production Ready GraphQL](https://book.productionreadygraphql.com/).
 
-## Backing Types Concepts
+## Nullability
+
+When creating an API, especially before going to production or lifting features out of beta, thinking about if arguments should be required and if field types should be nullable is an important design consideration. If arguments are optional or types are guaranteed present then clients have an easy time of interacting with the API. But it makes the API harder to change over time, because making arguments go from optional to required or field types from guaranteed to nullable are breaking changes from the point of view of a client.
+
+Here are some articles on the topic of GraphQL nullability:
+
+- 2019 [Nullability in GraphQL](https://medium.com/expedia-group-tech/nullability-in-graphql-b8d06fbd8a3c) by Grant Norwood
+- 2018 [Using nullability in GraphQL](https://blog.apollographql.com/using-nullability-in-graphql-2254f84c4ed7) by Sashko Stubailo
+- 2017 [When To Use GraphQL Non-Null Fields](https://medium.com/@calebmer/when-to-use-graphql-non-null-fields-4059337f6fc8) by Caleb Meredith
+
+Nexus defaults to arguments being optional and field types being guaranteed. This actually goes against the suggested best practices and may change, see [#477](https://github.com/graphql-nexus/nexus-future/issues/477) and [#484](https://github.com/graphql-nexus/nexus-future/issues/484). Note that it is not possible to change the global default yet, see [#483](https://github.com/graphql-nexus/nexus-future/issues/483).
+
+Nullability can be configured at the type level or at field/arg level. When configured at the type level, field/arg levels may still be toggled too.
+
+Here's how things look by default:
+
+<div class="TwoUp NexusVSDL">
+
+```ts
+schema.queryType({
+  definition(t) {
+    t.string('foo', {
+      args: {
+        bar: 'String',
+      },
+      resolve() {
+        return 'qux'
+      },
+    })
+  },
+})
+```
+
+```graphql
+type Query {
+  foo(bar: String): String!
+}
+```
+
+</div>
+
+If we flip the defaults at the level of the type then we get different results:
+
+<div class="TwoUp NexusVSDL">
+
+```ts
+schema.queryType({
+  nonNullDefaults: {
+    input: true,
+    output: false,
+  },
+  definition(t) {
+    t.string('foo', {
+      args: {
+        bar: 'String',
+      },
+      resolve() {
+        return 'qux'
+      },
+    })
+  },
+})
+```
+
+```graphql
+type Query {
+  foo(bar: String!): String
+}
+```
+
+</div>
+
+Even with the defaults still flipped at the type level, it is possible to toggle at the arg/field level. In this case we just revert the result back to what it is by defualt. Of course contrived, but it shows you what the API can achieve. Flipped the defaults at the type level but then toggled an arg or field might be a useful pattern if a particular type deviates from the global default for all but a few args/field types:
+
+<div class="TwoUp NexusVSDL">
+
+```ts
+schema.queryType({
+  nonNullDefaults: {
+    input: true,
+    output: false,
+  },
+  definition(t) {
+    t.string('foo', {
+      nullable: false,
+      args: {
+        bar: schema.arg({
+          type: 'String',
+          required: false,
+        }),
+      },
+      resolve() {
+        return 'qux'
+      },
+    })
+  },
+})
+```
+
+```graphql
+type Query {
+  foo(bar: String): String!
+}
+```
+
+</div>
+
+## Backing Types in Principal
 
 As you begin to implement a schema for the first time you will notice something that may not have been obvious at first. The data that the client sees in the data graph is _not_ the same data flowing through the internal resolvers used to fulfill that graph. The client sees the API types but the API author deals with something else, _backing types_.
 

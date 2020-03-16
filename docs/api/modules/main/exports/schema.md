@@ -8,7 +8,7 @@ Use this to model your domain, all the data that your API will accept and return
 
 [GraphQL Docs for Object Types](https://graphql.org/learn/schema/#object-types-and-fields)
 
-The most basic components of a GraphQL schema are object types, a type you can
+The most common kind of type in most GraphQL schemas. of a GraphQL schema are object types, a type you can
 fetch from your schema, with fields:
 
 **Signature**
