@@ -77,7 +77,6 @@ async function main(): Promise<number> {
   const cli = new CLI({
     dev: new Commands.Dev(),
     build: new Commands.Build(),
-    generate: new Commands.Generate(),
     doctor: new Commands.Doctor(),
     create: {
       app: new Commands.Create.App(),
