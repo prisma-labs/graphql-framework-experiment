@@ -131,13 +131,9 @@ Object {
             "isDeprecated": false,
             "name": "hello",
             "type": Object {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": Object {
-                "kind": "OBJECT",
-                "name": "World",
-                "ofType": null,
-              },
+              "kind": "OBJECT",
+              "name": "World",
+              "ofType": null,
             },
           },
           Object {
@@ -147,19 +143,15 @@ Object {
             "isDeprecated": false,
             "name": "worlds",
             "type": Object {
-              "kind": "NON_NULL",
+              "kind": "LIST",
               "name": null,
               "ofType": Object {
-                "kind": "LIST",
+                "kind": "NON_NULL",
                 "name": null,
                 "ofType": Object {
-                  "kind": "NON_NULL",
-                  "name": null,
-                  "ofType": Object {
-                    "kind": "OBJECT",
-                    "name": "World",
-                    "ofType": null,
-                  },
+                  "kind": "OBJECT",
+                  "name": "World",
+                  "ofType": null,
                 },
               },
             },
@@ -171,13 +163,9 @@ Object {
             "isDeprecated": false,
             "name": "a",
             "type": Object {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": Object {
-                "kind": "SCALAR",
-                "name": "Int",
-                "ofType": null,
-              },
+              "kind": "SCALAR",
+              "name": "Int",
+              "ofType": null,
             },
           },
           Object {
@@ -187,13 +175,9 @@ Object {
             "isDeprecated": false,
             "name": "testBackingType",
             "type": Object {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": Object {
-                "kind": "OBJECT",
-                "name": "TestBackingType",
-                "ofType": null,
-              },
+              "kind": "OBJECT",
+              "name": "TestBackingType",
+              "ofType": null,
             },
           },
         ],
@@ -224,13 +208,9 @@ Object {
             "isDeprecated": false,
             "name": "id",
             "type": Object {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": Object {
-                "kind": "SCALAR",
-                "name": "ID",
-                "ofType": null,
-              },
+              "kind": "SCALAR",
+              "name": "ID",
+              "ofType": null,
             },
           },
           Object {
@@ -240,13 +220,9 @@ Object {
             "isDeprecated": false,
             "name": "name",
             "type": Object {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": Object {
-                "kind": "SCALAR",
-                "name": "String",
-                "ofType": null,
-              },
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null,
             },
           },
           Object {
@@ -256,13 +232,9 @@ Object {
             "isDeprecated": false,
             "name": "population",
             "type": Object {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": Object {
-                "kind": "SCALAR",
-                "name": "Float",
-                "ofType": null,
-              },
+              "kind": "SCALAR",
+              "name": "Float",
+              "ofType": null,
             },
           },
         ],
@@ -313,13 +285,9 @@ Object {
             "isDeprecated": false,
             "name": "test",
             "type": Object {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": Object {
-                "kind": "SCALAR",
-                "name": "String",
-                "ofType": null,
-              },
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null,
             },
           },
         ],
@@ -1264,13 +1232,9 @@ Object {
             "isDeprecated": false,
             "name": "hello",
             "type": Object {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": Object {
-                "kind": "OBJECT",
-                "name": "World",
-                "ofType": null,
-              },
+              "kind": "OBJECT",
+              "name": "World",
+              "ofType": null,
             },
           },
           Object {
@@ -1280,19 +1244,15 @@ Object {
             "isDeprecated": false,
             "name": "worlds",
             "type": Object {
-              "kind": "NON_NULL",
+              "kind": "LIST",
               "name": null,
               "ofType": Object {
-                "kind": "LIST",
+                "kind": "NON_NULL",
                 "name": null,
                 "ofType": Object {
-                  "kind": "NON_NULL",
-                  "name": null,
-                  "ofType": Object {
-                    "kind": "OBJECT",
-                    "name": "World",
-                    "ofType": null,
-                  },
+                  "kind": "OBJECT",
+                  "name": "World",
+                  "ofType": null,
                 },
               },
             },
@@ -1304,13 +1264,9 @@ Object {
             "isDeprecated": false,
             "name": "a",
             "type": Object {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": Object {
-                "kind": "SCALAR",
-                "name": "Int",
-                "ofType": null,
-              },
+              "kind": "SCALAR",
+              "name": "Int",
+              "ofType": null,
             },
           },
           Object {
@@ -1320,13 +1276,9 @@ Object {
             "isDeprecated": false,
             "name": "testBackingType",
             "type": Object {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": Object {
-                "kind": "OBJECT",
-                "name": "TestBackingType",
-                "ofType": null,
-              },
+              "kind": "OBJECT",
+              "name": "TestBackingType",
+              "ofType": null,
             },
           },
         ],
@@ -1357,13 +1309,9 @@ Object {
             "isDeprecated": false,
             "name": "id",
             "type": Object {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": Object {
-                "kind": "SCALAR",
-                "name": "ID",
-                "ofType": null,
-              },
+              "kind": "SCALAR",
+              "name": "ID",
+              "ofType": null,
             },
           },
           Object {
@@ -1373,13 +1321,9 @@ Object {
             "isDeprecated": false,
             "name": "name",
             "type": Object {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": Object {
-                "kind": "SCALAR",
-                "name": "String",
-                "ofType": null,
-              },
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null,
             },
           },
           Object {
@@ -1389,13 +1333,9 @@ Object {
             "isDeprecated": false,
             "name": "population",
             "type": Object {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": Object {
-                "kind": "SCALAR",
-                "name": "Float",
-                "ofType": null,
-              },
+              "kind": "SCALAR",
+              "name": "Float",
+              "ofType": null,
             },
           },
         ],
@@ -1446,13 +1386,9 @@ Object {
             "isDeprecated": false,
             "name": "test",
             "type": Object {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": Object {
-                "kind": "SCALAR",
-                "name": "String",
-                "ofType": null,
-              },
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null,
             },
           },
         ],

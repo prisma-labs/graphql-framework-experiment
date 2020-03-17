@@ -25,6 +25,12 @@ export function createNexusSchemaConfig(
   const outputSchemaPath = getOutputSchemaPath(settings)
 
   const baseConfig: NexusConfig = {
+    // todo allow framework user to configure this
+    // https://github.com/graphql-nexus/nexus-future/issues/483
+    nonNullDefaults: {
+      input: false,
+      output: false,
+    },
     outputs: {
       schema: outputSchemaPath,
       typegen: NEXUS_DEFAULT_TYPEGEN_PATH,
