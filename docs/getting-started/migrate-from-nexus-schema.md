@@ -141,8 +141,8 @@ You should only be working with the `nexus` CLI. Below shows the example scripts
 
 By default Nexus Schema has [inputs as optional and outputs as guaranteed](https://nexus.js.org/docs/getting-started#nullability-default-values). Nexus Framework takes the opposite approach.
 
-- If you rely heavily on the Nexus Schema defaults then please wait for [#483](https://github.com/graphql-nexus/nexus-future/issues/483).
-- If you use these settings in your app then you can migrate seamlessly to Nexus framework, since this config is now the default:
+- If you rely heavily on the Nexus Schema defaults then please wait for [#483](https://github.com/graphql-nexus/nexus-future/issues/483) so that you can turn them back on that way in the framework.
+- If you use the following settings in your app currently then you can migrate seamlessly to Nexus framework, since this config is now the default:
 
   ```ts
   makeSchema({

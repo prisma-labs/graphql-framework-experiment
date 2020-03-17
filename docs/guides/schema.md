@@ -313,6 +313,7 @@ When creating an API, especially before going to production or lifting features 
 - 2019 [Nullability in GraphQL](https://medium.com/expedia-group-tech/nullability-in-graphql-b8d06fbd8a3c) by Grant Norwood
 - 2018 [Using nullability in GraphQL](https://blog.apollographql.com/using-nullability-in-graphql-2254f84c4ed7) by Sashko Stubailo
 - 2017 [When To Use GraphQL Non-Null Fields](https://medium.com/@calebmer/when-to-use-graphql-non-null-fields-4059337f6fc8) by Caleb Meredith
+- [Nullability Best Practices](https://graphql.org/learn/best-practices/#nullability) on grpahql.org
 
 ## Nullability in Nexus
 
