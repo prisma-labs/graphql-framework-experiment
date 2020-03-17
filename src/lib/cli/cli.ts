@@ -207,7 +207,7 @@ export class CLI implements Command {
   // TODO generate this from cli tree
   // static help template
   private static help = format(`
-    nexus - GraphQL APIs without the hassle
+    Delightful GraphQL Application Framework - https://nexusjs.org
 
     ${chalk.bold('Usage')}
 
@@ -218,7 +218,6 @@ export class CLI implements Command {
         create   Setup a ready-to-use nexus
            dev   Develop your application in watch mode
          build   Build a production-ready server
-      generate   Generate the artifacts
         doctor   Check your project state for any problems
             db   Set of commands to work with your database
 
