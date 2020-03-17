@@ -28,7 +28,7 @@ export function createNexusSchemaConfig(
     // todo allow framework user to configure this
     // https://github.com/graphql-nexus/nexus-future/issues/483
     nonNullDefaults: {
-      input: true,
+      input: false,
       output: false,
     },
     outputs: {

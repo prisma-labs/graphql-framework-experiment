@@ -308,7 +308,13 @@ This is an iterative process that can generally be seen as an finite loop wherei
 
 ## Nullability in Principal
 
-When creating an API, especially before going to production or lifting features out of beta, thinking about if arguments and input object fields (_inputs_) should be required and if object type fields (_outputs_) should be nullable is an important design consideration. If inputs are optional or outputs are guaranteed then clients will have a simpler API to deal with since they get to be lazier about what they give as API input and how they check results from API output. The design tradeoff however is that the API becomes harder to change over time since turning inputs from optional to required or making outputs go from guaranteed to nullable are breaking changes from the client's point of view. Furthermore, the API becomes exposed to greater levels of "null blast radius" wherein any unexpected `null` received (from a e.g. dependency data source) while resolving a request will "bubble up" the data tree until a nullable type is found (finally erroring if by root none has been found). Details about these design considerations and more are well covered in the following articles so we will refrain going into further detail here.
+When creating an API, especially before going to production or lifting features out of beta, thinking about if arguments and input object fields (_inputs_) should be required and if object type fields (_outputs_) should be nullable is an important design consideration. How easy your API is to consume trades for how easy it is to change and some reliability characteristics.
+
+If inputs are optional or outputs are guaranteed then client developers will have a simpler API to deal with since making requests demands no up front configuration and handling responses presents no null cases. On the other hand, for the API developer, changing the API becomes harder since turning inputs from optional to required or making outputs go from guaranteed to nullable are breaking changes from the client's point of view.
+
+Also, as more outputs are guaranteed, the greater the potential of the "null blast radius" can be. This is the effect where, within a server rutime, a `null` or error received from some data source where the schema states there shall be no `null` requires propagating the `null` up the data tree until a nullable type is found (or, at root, finally error).
+
+If you'd like to see these design considerations discussed further here are a few articles/resources you may find helpful:
 
 - 2019 [Nullability in GraphQL](https://medium.com/expedia-group-tech/nullability-in-graphql-b8d06fbd8a3c) by Grant Norwood
 - 2018 [Using nullability in GraphQL](https://blog.apollographql.com/using-nullability-in-graphql-2254f84c4ed7) by Sashko Stubailo
@@ -317,15 +323,23 @@ When creating an API, especially before going to production or lifting features 
 
 ## Nullability in Nexus
 
-Nexus defaults to inputs being required and outputs being nullable. This default maximizes the flexibility you have to change your API over time and minimizes the runtime "null blast radius" to zero (refer to [Nullability in Principal](#nullability-in-principal) for detail).
+Nexus defaults to both inputs and outputs being nullable. This means by default your API is conservative in what it sends but flexible in what it accepts. With this approach, by default:
+
+- You're free to defer some hard thinking about output nullability, knowing you can always change your mind later without breaking clients.
+- Client developers work more to processing API respones, having to handle null conditions.
+- You're forced to frontload some hard thinking about inputs, since realizing something should have been required later will require breaking clients.
+- Client developers work less to satisfy minimum query requirements.
+- The "null blast radius" (refer to [Nullability in Principal](#nullability-in-principal)) is reduced to zero.
+
+There is no right or wrong answer to nullability. These are just defaults, not judgements. Understand the tradeoffs, and react to your use-case, above all.
 
 You can override the global defaults at the per-type level or per-field level. If you find yourself writing local overrides in a majority of cases then it might mean the global defaults are a bad fit for your API. In that case you ~can~ will be able to change the global defaults (see [#483](https://github.com/graphql-nexus/nexus-future/issues/483)).
 
-When you make an input nullable then Nexus will alter its type inside your resolver to have `null | undefined`. `null` is for the case that the client passed in an explicit `null` while `undefined` is for the case where the client simply did not specify the input at all.
+When you make an input nullable then Nexus will alter its TypeScript type inside your resolver to have `null | undefined`. `null` is for the case that the client passed in an explicit `null` while `undefined` is for the case where the client simply did not specify the input at all.
 
 If an arg has been given a default value, then it will be used when the client passes nothing, but since clients can still pass explicit `null`, resolvers must still handle nullability. If this surprises you then you may be interested in [#485](https://github.com/graphql-nexus/nexus-future/issues/485).
 
-###### Example: Nullability By Default
+###### Example: Default Nullability Settings
 
 <div class="TwoUp NexusVSDL">
 
@@ -337,7 +351,7 @@ schema.queryType({
         message: 'String',
       },
       resolve(_root, args) {
-        return args.message
+        return args.message ?? 'nil'
       },
     })
   },
@@ -346,7 +360,7 @@ schema.queryType({
 
 ```graphql
 type Query {
-  echo(message: String!): String
+  echo(message: String): String
 }
 ```
 
@@ -359,7 +373,7 @@ type Query {
 ```ts
 schema.queryType({
   nonNullDefaults: {
-    input: false,
+    input: true,
     output: true,
   },
   definition(t) {
@@ -368,7 +382,7 @@ schema.queryType({
         message: 'String',
       },
       resolve(_root, args) {
-        return args.message ?? 'nothing'
+        return args.message
       },
     })
   },
@@ -394,12 +408,12 @@ schema.queryType({
       args: {
         message: schema.arg({
           type: 'String',
-          nullable: true,
+          nullable: false,
         }),
       },
       nullable: false,
       resolve(_root, args) {
-        return args.message ?? 'nothing'
+        return args.message
       },
     })
   },
@@ -424,7 +438,7 @@ It is possible to use type and input/field layers together. This provides flexib
 schema.queryType({
   // flip the global defaults
   nonNullDefaults: {
-    input: false,
+    input: true,
     output: true,
   },
   definition(t) {
@@ -433,7 +447,7 @@ schema.queryType({
     // which effectively reverts back to what the global
     // defaults are:
     t.string('echo', {
-      nullable: true,
+      nullable: false,
       args: {
         message: schema.arg({
           type: 'String',
@@ -469,13 +483,12 @@ schema.queryType({
       args: {
         message: schema.arg({
           type: 'String',
-          default: 'nothing via default',
-          nullable: true,
+          default: 'nil via default',
         }),
       },
       nullable: false,
       resolve(_root, args) {
-        const fallback = 'nothing via client null'
+        const fallback = 'nil via client null'
         return args.message ?? fallback
       },
     })
@@ -502,8 +515,8 @@ query {
 ```json
 {
   "data": {
-    "echo1": "nothing via default",
-    "echo2": "nothing via client null"
+    "echo1": "nil via default",
+    "echo2": "nil via client null"
   }
 }
 ```
