@@ -8,6 +8,7 @@ import * as Server from './server'
 import * as singletonChecks from './singleton-checks'
 import * as BackingTypes from '../lib/backing-types'
 import { write, extractAndWrite } from '../lib/backing-types'
+import { Response } from 'express'
 
 const log = Logger.create({ name: 'app' })
 
@@ -19,7 +20,10 @@ export type Request = HTTP.IncomingMessage & { log: Logger.Logger }
 // all places in the framework where the req object is referenced should be
 // actually referencing the typegen version, so that it reflects the req +
 // plugin augmentations type
-type ContextContributor<Req> = (req: Req) => Record<string, unknown>
+type ContextContributor<Req, Res> = (
+  req: Req,
+  res: Res
+) => Record<string, unknown>
 
 export type App = {
   /**
@@ -51,8 +55,8 @@ export type App = {
     /**
      * todo
      */
-    addToContext: <Req extends any = Request>(
-      contextContributor: ContextContributor<Req>
+    addToContext: <Req extends any = Request, Res extends any = Response>(
+      contextContributor: ContextContributor<Req, Res>
     ) => void
   }
 }
@@ -98,7 +102,7 @@ export function create(): App {
   // the schema module imports system.
   plugins.push(...Plugin.loadAllRuntimePluginsFromPackageJsonSync())
 
-  const contextContributors: ContextContributor<any>[] = []
+  const contextContributors: ContextContributor<any, any>[] = []
 
   const server = Server.create()
   const schemaComponent = Schema.create({ plugins })

@@ -1,4 +1,4 @@
-import createExpress, { Express } from 'express'
+import createExpress, { Express, Response } from 'express'
 import * as ExpressGraphQL from 'express-graphql'
 import * as GraphQL from 'graphql'
 import * as HTTP from 'http'
@@ -15,7 +15,7 @@ import * as singletonChecks from './singleton-checks'
 const createExpressGraphql = ExpressGraphQL.default
 
 type Request = HTTP.IncomingMessage & { log: Logger.Logger }
-type ContextContributor<T extends {}> = (req: Request) => T
+type ContextContributor<T extends {}> = (req: Request, res: Response) => T
 
 const log = Logger.create({ name: 'server' })
 const resolverLogger = log.child('graphql')
@@ -135,10 +135,10 @@ function setupExpress(
 
   express.use(
     '/graphql',
-    createExpressGraphql(req => {
+    createExpressGraphql((req, res) => {
       return {
         ...opts,
-        context: settingsGiven.context(req),
+        context: settingsGiven.context(req, res),
         customFormatErrorFn: error => {
           const colorlessMessage = stripAnsi(error.message)
 
@@ -367,20 +367,22 @@ export function create(): ServerFactory {
 }
 
 type AnonymousRequest = Record<string, any>
+type AnonymousResponse = Record<string, any>
 type AnonymousContext = Record<string, any>
 
 interface ContextCreator<
   Req extends AnonymousRequest = AnonymousRequest,
+  Res extends AnonymousResponse = AnonymousResponse,
   Context extends AnonymousContext = AnonymousContext
 > {
-  (req: Req): Context
+  (req: Req, res: Res): Context
 }
 
 function contextFactory(
   contextContributors: ContextContributor<any>[],
   plugins: Plugin.RuntimeContributions[]
 ): ContextCreator {
-  const createContext: ContextCreator = req => {
+  const createContext: ContextCreator = (req, res) => {
     let context: Record<string, any> = {}
 
       // TODO HACK
@@ -399,7 +401,10 @@ function contextFactory(
     for (const contextContributor of contextContributors) {
       // HACK see req mutation at this func body start
       Object.assign(context, {
-        ...contextContributor((req as unknown) as Request),
+        ...contextContributor(
+          (req as unknown) as Request,
+          (res as unknown) as Response
+        ),
         log: ((req as unknown) as Request).log,
       })
     }
