@@ -268,32 +268,33 @@ export async function scanProjectType(): Promise<
   | { type: 'unknown' | 'new' }
   | {
       type: 'NEXUS_project' | 'node_project'
-      packageJson: {}
-      packageJsonLocation: { path: string; dir: string }
+      packageJson: PackageJson
+      packageJsonLocation: string
     }
 > {
-  const packageJsonLocation = findPackageJson()
+  const packageJsonLocation = Path.join(process.cwd(), 'package.json')
 
-  if (packageJsonLocation === null) {
+  if (!FS.exists(packageJsonLocation)) {
     if (await isEmptyCWD()) {
       return { type: 'new' }
     }
     return { type: 'unknown' }
   }
 
-  const packageJson = FS.read(packageJsonLocation.path, 'json')
-  if (packageJson?.dependencies?.['nexus-future']) {
+  const packageJson: PackageJson = FS.read(packageJsonLocation, 'json')
+
+  if (packageJson.dependencies?.['nexus-future']) {
     return {
       type: 'NEXUS_project',
-      packageJson: packageJsonLocation,
-      packageJsonLocation: packageJsonLocation,
+      packageJson,
+      packageJsonLocation,
     }
   }
 
   return {
     type: 'node_project',
-    packageJson: packageJsonLocation,
-    packageJsonLocation: packageJsonLocation,
+    packageJson,
+    packageJsonLocation,
   }
 }
 
