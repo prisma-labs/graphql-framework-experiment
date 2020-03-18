@@ -4,7 +4,6 @@ about: You encountered something that is not working the way it should
 title: ''
 labels: type/bug
 assignees: ''
-
 ---
 
 <!--    Instructions                                -->
@@ -21,26 +20,10 @@ assignees: ''
 
 #### Description
 
-A one/two-liner and/or screenshot(s).
+<!-- Screenshots are often good -->
 
-#### Repro
+...
 
-The steps to repro the issue are:
+#### Repro Steps
 
 1. ...
-2. ...
-3. ...
-
-#### Context
-
-##### How This Issue Impacts Me
-
-...
-
-##### How I am Working Around This Issue
-
-...
-
-##### Other Details
-
-...
