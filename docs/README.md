@@ -6,6 +6,11 @@
 
 Nexus is a delightful framework for building GraphQL APIs in Node. It leverages TypeScript and knowledge about your data sources and API schema to bring levels of type safety far beyond what other tools in Node can offer at near-zero complexity cost.
 
+If you would like to jump straight into code here are some things you might find useful to do:
+
+- Start new project by running `npx nexus-future`
+- Peruse our [examples repo](https://github.com/graphql-nexus/examples)
+
 If you are new to GraphQL here are some resources you might find helpful:
 
 - [Official GraphQL website](https://graphql.org)
@@ -19,10 +24,11 @@ If you are new to TypeScript here are some resources you might find helpful:
 - [Dozens of articles](https://mariusschulz.com/blog) by [Marius Schulz](https://github.com/mariusschulz)
 - [Dozens of articles](https://2ality.com/index.html) by [Dr. Axel Rauschmayer](https://github.com/rauschma)
 
-If you would like to jump straight into code here are some things you might find useful to do:
+If this is your first time looking at Nexus, here's the lay of the land:
 
-- Start new project by running `npx nexus-future`
-- Peruse our [examples repo](https://github.com/graphql-nexus/examples)
+- **Website** https://nexusjs.org
+- **Discussions** https://github.com/graphql-nexus/nexus-future/discussions
+- **Issues** https://github.com/graphql-nexus/nexus-future/issues
 
 ## What
 

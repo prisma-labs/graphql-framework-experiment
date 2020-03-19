@@ -9,9 +9,11 @@
 
 <br>
 
-## Documentation <!-- omit in toc -->
+## Links
 
-https://nexusjs.org
+- **Website** https://nexusjs.org
+- **Discussions** https://github.com/graphql-nexus/nexus-future/discussions
+- **Issues** https://github.com/graphql-nexus/nexus-future/issues
 
 ## Repo / Package Overview
 
