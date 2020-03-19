@@ -20,6 +20,8 @@ type StartModuleConfig =
       appPath: null | string
       layout: Layout.Layout
       buildStage: string
+      relativePackageJsonPath?: string
+      pluginNames: string[]
     }
 
 export function createStartModuleContent(config: StartModuleConfig): string {
@@ -44,6 +46,24 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     // Guarantee the side-effect features like singleton global do run
     require("nexus-future")
   `
+
+  if (config.internalStage === 'build' && config.relativePackageJsonPath) {
+    output += '\n\n'
+    output += stripIndent`
+    // Hack to enable package.json to be imported by various deployment services such as now.sh
+    require('${config.relativePackageJsonPath}')
+    `
+  }
+
+  if (config.internalStage === 'build') {
+    output += '\n\n'
+    output += stripIndent`
+    // Statically require all plugins so that tree-shaking can be done
+    ${[...config.pluginNames, ...config.pluginNames]
+      .map(pluginName => `require('nexus-plugin-${pluginName}')`)
+      .join('\n')}
+    `
+  }
 
   if (config.internalStage === 'build') {
     const staticImports = Layout.schema.printStaticImports(config.layout)

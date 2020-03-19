@@ -1,5 +1,6 @@
 import { stripIndent } from 'common-tags'
 import * as FS from 'fs-jetpack'
+import * as Path from 'path'
 import ts from 'typescript'
 import * as Layout from '../../lib/layout'
 import {
@@ -85,7 +86,12 @@ export async function buildNexusApp(settings: BuildSettings) {
 
   compile(tsProgramWithTypegen, layout)
 
-  await writeStartModule(settings.stage ?? 'production', layout, tsBuilder)
+  await writeStartModule({
+    buildStage: settings.stage ?? 'production',
+    layout,
+    tsProgram: tsBuilder,
+    pluginNames: plugins.map(p => p.name),
+  })
 
   log.info('success', {
     buildOutput: layout.buildOutput,
@@ -100,11 +106,17 @@ export async function buildNexusApp(settings: BuildSettings) {
  * Output to disk in the build the start module that will be used to boot the
  * nexus app.
  */
-export async function writeStartModule(
-  buildStage: string,
-  layout: Layout.Layout,
+export async function writeStartModule({
+  buildStage,
+  layout,
+  pluginNames,
+  tsProgram,
+}: {
+  buildStage: string
+  layout: Layout.Layout
+  pluginNames: string[]
   tsProgram: ts.EmitAndSemanticDiagnosticsBuilderProgram
-): Promise<void> {
+}): Promise<void> {
   // TODO we can be more flexible and allow the user to write an index.ts
   // module. For example we can alias it, or, we can rename it e.g.
   // `index_original.js`. For now we just error out and ask the user to not name
@@ -118,6 +130,11 @@ export async function writeStartModule(
     `)
   }
 
+  const packageJsonPath = layout.projectPath('package.json')
+  const relativePackageJsonPath = !FS.exists(packageJsonPath)
+    ? Path.relative(layout.buildOutput, packageJsonPath)
+    : undefined
+
   log.trace('transpiling start module...')
   const startModule = transpileModule(
     createStartModuleContent({
@@ -125,6 +142,8 @@ export async function writeStartModule(
       appPath: layout.app.path,
       layout,
       buildStage,
+      pluginNames,
+      relativePackageJsonPath,
     }),
     tsProgram.getCompilerOptions()
   )
