@@ -9,10 +9,6 @@
 
   - [Schema](guides/schema)
   - [Testing](guides/testing)
-    <!-- - [Databases](guides/databases) -->
-    <!-- - [Authorization](guides/authorization) -->
-    <!-- - [Authentication](guides/authentication) -->
-    <!-- - [Deployment](guides/deployment) -->
   - [Writing Plugins](guides/writing-plugins)
 
 - Plugins
@@ -28,6 +24,6 @@
   - [`server`](api/modules/main/exports/server)
   - [`settings`](api/modules/main/exports/settings)
 
-- [API `/testing`](api/modules/plugin)
+- [<span>API</span> `/testing`](api/modules/plugin)
 
-- [API `/plugins`](api/modules/testing)
+- [<span>API</span> `/plugins`](api/modules/testing)

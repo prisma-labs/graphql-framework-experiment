@@ -1,6 +1,6 @@
 # Schema
 
-[issues](https://github.com/graphql-nexus/nexus-future/labels/scope%2Fschema) - [`features`](https://github.com/graphql-nexus/nexus-future/issues?q=is%3Aopen+label%3Ascope%2Fschema+label%3Atype%2Ffeat) [`bugs`](https://github.com/graphql-nexus/nexus-future/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fschema+label%3Atype%2Fbug+)
+[issues](https://github.com/graphql-nexus/nexus-future/labels/scope%2Fschema) – [features](https://github.com/graphql-nexus/nexus-future/issues?q=is%3Aopen+label%3Ascope%2Fschema+label%3Atype%2Ffeat) ⬝ [bugs](https://github.com/graphql-nexus/nexus-future/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fschema+label%3Atype%2Fbug+)
 
 This is the Nexus schema component guide. Here you will find concepts explained and a survey of how to use the API. If you are not familiar with Nexus this is a good document to read. If you are familiar, then the [Schema API Docs](/api/modules/main/exports/schema) may be of more use to you.
 
