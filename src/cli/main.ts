@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-// HACK see readme for details about weird shebang
-
 import { stripIndent } from 'common-tags'
 import * as dotenv from 'dotenv'
 import * as Path from 'path'

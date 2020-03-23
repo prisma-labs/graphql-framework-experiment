@@ -5,7 +5,7 @@
   - [Project Structure](getting-started/project-structure)
   - [Migrate from Nexus Schema](getting-started/migrate-from-nexus-schema)
 
-* Guides
+- Guides
 
   - [Schema](guides/schema)
   - [Testing](guides/testing)
@@ -15,17 +15,19 @@
     <!-- - [Deployment](guides/deployment) -->
   - [Writing Plugins](guides/writing-plugins)
 
-* [Recipes](references/recipes)
+- Plugins
 
-* [Plugins](community/plugins)
+  - [`prisma`](plugins/prisma)
 
-* [API](api/modules/main)
+- [Recipes](references/recipes)
+
+- [API](api/modules/main)
 
   - [`schema`](api/modules/main/exports/schema)
   - [`log`](api/modules/main/exports/logger)
   - [`server`](api/modules/main/exports/server)
   - [`settings`](api/modules/main/exports/settings)
 
-* [API `/testing`](api/modules/plugin)
+- [API `/testing`](api/modules/plugin)
 
-* [API `/plugins`](api/modules/testing)
+- [API `/plugins`](api/modules/testing)

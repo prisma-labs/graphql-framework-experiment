@@ -1,4 +1,4 @@
-## `prisma`
+# `prisma`
 
 [`github`](https://github.com/graphql-nexus/plugin-prisma) [`issues`](https://github.com/graphql-nexus/plugin-prisma/issues)
 
