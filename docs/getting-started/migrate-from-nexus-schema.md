@@ -137,6 +137,67 @@ You should only be working with the `nexus` CLI. Below shows the example scripts
 
 #### Other Details
 
+##### Backing Types
+
+With Nexus Schema backing types are handled as follows:
+
+- You co-locate TypeScript typings as strings with your object type configs
+- Or you centrally configure typings with `makeSchema`. Paths you give are to modules that export types. Type names that _match your GraphQL object type names_ are made their respective backing types.
+
+With Nexus Framework backing types are handled as follows:
+
+1. You export TypeScript types in any module
+2. You configure your object type configs to use any of these exported TypeScript types.
+
+**Example**
+
+_before_
+
+```ts
+// some-module.ts
+export type A = {
+  /* ... */
+}
+```
+
+```ts
+// schema.ts
+export const A = objectType({
+  name: 'A',
+  // ...
+})
+```
+
+```ts
+// main.ts
+// ...
+const schema = makeSchema({
+  typegenAutoConfig: [
+    {
+      source: path.join(__dirname, 'some-module.ts'),
+      alias: 'SomeModule',
+    },
+  ],
+  // ...
+})
+// ...
+```
+
+_after_
+
+```ts
+import { schema } from 'nexus-future'
+
+export type A = {
+  /* ... */
+}
+
+schema.objectType({
+  rootTyping: 'A',
+  // ...
+})
+```
+
 ##### Nullability
 
 By default Nexus Schema has [outputs as guaranteed](https://nexus.js.org/docs/getting-started#nullability-default-values). Nexus Framework has outputs as nullable.
