@@ -10,6 +10,7 @@
   server?: {
     port?: number
     host?: string
+    path?: string
   }
   playground?: boolean
   schema?: {
@@ -58,6 +59,13 @@
   - Is `NEXUS_HOST` environment variable set? Then that.
   - Is `HOST` environment variable set? Then that.
   - Else `0.0.0.0`
+
+* `server.path`  
+  The path on which the GraphQL API should be served.
+
+  **Default**
+
+  `/graphql`
 
 * `schema.generateGraphQLSDLFile`
   Should a [GraphQL SDL file](https://www.prisma.io/blog/graphql-sdl-schema-definition-language-6755bcb9ce51) be generated when the app is built and to where?
