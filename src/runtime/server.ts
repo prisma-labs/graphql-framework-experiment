@@ -42,6 +42,7 @@ export const defaultExtraSettings: Required<ExtraSettingsInput> = {
     })
   },
   playground: process.env.NODE_ENV === 'production' ? false : true,
+  path: '/graphql',
 }
 
 export type ExtraSettingsInput = {
@@ -57,6 +58,13 @@ export type ExtraSettingsInput = {
    * todo
    */
   playground?: boolean
+  /**
+   * Custom path for your GraphQL API
+   *
+   * @default
+   * /graphql
+   */
+  path?: string
   /**
    * Create a message suitable for printing to the terminal about the server
    * having been booted.
@@ -134,7 +142,7 @@ function setupExpress(
   http.on('request', express)
 
   express.use(
-    '/graphql',
+    opts.path,
     createExpressGraphql(req => {
       return {
         ...opts,
@@ -216,7 +224,7 @@ function setupExpress(
           </div>
           <script>window.addEventListener('load', function (event) {
               GraphQLPlayground.init(document.getElementById('root'), {
-                endpoint: '/graphql'
+                endpoint: '${opts.path}'
               })
             })</script>
         </body>
