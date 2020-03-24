@@ -59,7 +59,7 @@ export type ExtraSettingsInput = {
    */
   playground?: boolean
   /**
-   * Custom path for your GraphQL API
+   * The path on which the GraphQL API should be served.
    *
    * @default
    * /graphql
