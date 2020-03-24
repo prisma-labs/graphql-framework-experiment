@@ -23,6 +23,7 @@ export function createWatcher(options: Opts): Promise<void> {
       environmentAdditions: {
         NEXUS_EVAL: options.eval.code,
         NEXUS_EVAL_FILENAME: options.eval.fileName,
+        NEXUS_BUILD_OUTPUT: options.buildOutput,
         ...saveDataForChildProcess(options.layout),
       },
       // Watch all modules imported by the user's app for changes.
@@ -32,7 +33,7 @@ export function createWatcher(options: Opts): Promise<void> {
     })
 
     process.onBeforeExit(() => {
-      log.trace('tearndown before exit')
+      log.trace('teardown before exit')
       return link.stop()
     })
 

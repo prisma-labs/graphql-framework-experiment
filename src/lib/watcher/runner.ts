@@ -6,9 +6,12 @@ require('../tty-linker')
 
 import { register } from 'ts-node'
 import { Script } from 'vm'
-import { runAddToContextExtractorAsWorkerIfPossible } from '../add-to-context-extractor/add-to-context-extractor'
+import { extractContextTypesToTypeGenFile } from '../add-to-context-extractor'
+import { fastProductionBuild } from '../build/build'
 import * as Layout from '../layout'
 import { rootLogger } from '../nexus-logger'
+import { createTSProgram } from '../tsc'
+import { runInWorkerIfPossible, runWorkerThread } from '../worker'
 import cfgFactory from './cfg'
 import hook from './hook'
 import * as IPC from './ipc'
@@ -23,11 +26,26 @@ register({
   transpileOnly: true,
 })
 ;(async function() {
-  const layout = await Layout.create()
+  const withBuild = process.env.NEXUS_BUILD_OUTPUT !== undefined
+  const layout = await Layout.create({
+    buildOutput: process.env.NEXUS_BUILD_OUTPUT,
+  })
 
-  log.trace('starting context type extraction')
+  log.trace('starting context type extraction and build output')
 
-  runAddToContextExtractorAsWorkerIfPossible(layout.data)
+  runInWorkerIfPossible({
+    availableFn: () => {
+      runWorkerThread(layout.data, withBuild)
+    },
+    fallbackFn: () => {
+      const builder = createTSProgram(layout, { withCache: true })
+
+      if (withBuild) {
+        fastProductionBuild(builder, layout)
+      }
+      extractContextTypesToTypeGenFile(builder.getProgram())
+    },
+  })
 
   // Remove app-runner.js from the argv array
   process.argv.splice(1, 1)

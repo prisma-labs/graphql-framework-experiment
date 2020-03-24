@@ -1,3 +1,4 @@
+import * as Arg from 'arg'
 import { arg, Command, isError } from '../../lib/cli'
 import * as Layout from '../../lib/layout'
 import { rootLogger } from '../../lib/nexus-logger'
@@ -11,6 +12,9 @@ const log = rootLogger.child('dev')
 
 const DEV_ARGS = {
   '--inspect-brk': Number,
+  '--emit': Boolean,
+  '--output': String,
+  '-o': '--output',
 }
 
 export class Dev implements Command {
@@ -21,10 +25,14 @@ export class Dev implements Command {
       fatal(args.message)
     }
 
-    /**
-     * Load config before loading plugins which may rely on env vars being defined
-     */
-    const layout = await Layout.create()
+    log.info('boot', { version: require('../../../package.json').version })
+
+    const buildOutput = args['--output']
+      ? args['--output']
+      : args['--emit']
+      ? Layout.DEFAULT_BUILD_FOLDER_NAME
+      : undefined
+    const layout = await Layout.create({ buildOutput: buildOutput })
     const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
 
     await findOrScaffoldTsConfig(layout)
@@ -39,8 +47,6 @@ export class Dev implements Command {
       appPath: layout.app.path,
     })
 
-    log.info('boot', { version: require('../../../package.json').version })
-
     await createWatcher({
       plugins: plugins.map(p => p.hooks),
       layout,
@@ -48,6 +54,7 @@ export class Dev implements Command {
         code: bootModule,
         fileName: 'start.js',
       },
+      buildOutput,
     })
   }
 }

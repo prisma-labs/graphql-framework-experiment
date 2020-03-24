@@ -6,7 +6,7 @@ import { Message, ModuleRequiredMessage } from './ipc'
 const log = rootLogger.child('dev').child('link')
 
 interface Options {
-  environmentAdditions?: Record<string, string>
+  environmentAdditions?: Record<string, string | undefined>
   onRunnerImportedModule?: (data: ModuleRequiredMessage['data']) => void
 }
 

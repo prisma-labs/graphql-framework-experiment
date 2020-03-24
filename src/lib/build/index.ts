@@ -1,1 +1,1 @@
-export { writeStartModule } from './build'
+export { writeStartModule, fastProductionBuild } from './build'

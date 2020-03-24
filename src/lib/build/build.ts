@@ -105,6 +105,28 @@ export async function buildNexusApp(settings: BuildSettings) {
 }
 
 /**
+ * Run a production build without reporting TS errors nor generating the artifacts
+ */
+export async function fastProductionBuild(
+  builder: ts.EmitAndSemanticDiagnosticsBuilderProgram,
+  layout: Layout.Layout
+) {
+  log.trace('Running transpile only build...')
+  const plugins = await loadAllWorkflowPluginsFromPackageJson(layout)
+
+  compile(builder, layout, { skipTSErrors: true })
+
+  await writeStartModule({
+    buildStage: 'production',
+    layout,
+    tsProgram: builder,
+    pluginNames: plugins.map(p => p.name),
+  })
+
+  log.trace('Finished transpile only build', { output: layout.buildOutput })
+}
+
+/**
  * Output to disk in the build the start module that will be used to boot the
  * nexus app.
  */

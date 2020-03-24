@@ -1,1 +1,1 @@
-export { runAddToContextExtractorAsWorker } from './add-to-context-extractor'
+export { extractContextTypesToTypeGenFile } from './add-to-context-extractor'
