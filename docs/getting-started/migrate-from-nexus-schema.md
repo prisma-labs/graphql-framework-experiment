@@ -20,7 +20,7 @@ Versions of the `nexus` package `0.20` and below were what is now known as `@nex
 
 Not much to do but your source must include a `graphql` module or directory, and/or `app`/`server`/`service` entrypoint. More details in the [convention docs](/getting-started/project-structure). Nexus will give informative feedback if you get this wrong.
 
-#### Type Definitions (aka. schema)
+#### Type Defs (aka. schema)
 
 Nexus is based upon a singleton system. Import the `schema` component to get access to the nexus building blocks you're familiar with. But unlike before you will no longer need to export/import the type defs for passing into `makeSchema`. All of that is handled for you. To aid in this style of project code the framework has a convention that all `graphql` modules or child modules of `graphql` directories get auto-imported. Example:
 
@@ -135,19 +135,16 @@ You should only be working with the `nexus` CLI. Below shows the example scripts
   },
 ```
 
-#### Other Details
+#### Backing Types
 
-##### Backing Types
-
-With Nexus Schema backing types are handled as follows:
-
-- You co-locate TypeScript typings as strings with your object type configs
-- Or you centrally configure typings with `makeSchema`. Paths you give are to modules that export types. Type names that _match your GraphQL object type names_ are made their respective backing types.
+With Nexus Schema you manage backing types for your GraphQL objects centrally via `makeSchema`. Paths you give are to modules that export types. Type names that _match your GraphQL object type names_ are made their respective backing types.
 
 With Nexus Framework backing types are handled as follows:
 
 1. You export TypeScript types in any module
 2. You configure your object type configs to use any of these exported TypeScript types.
+
+For more detail about backing types and how they work in Nexus Framework, see the [backing types section in the schema guide](/guides/schema#backing-types-in-nexus)
 
 **Example**
 
@@ -198,7 +195,7 @@ schema.objectType({
 })
 ```
 
-##### Nullability
+#### Nullability
 
 By default Nexus Schema has [outputs as guaranteed](https://nexus.js.org/docs/getting-started#nullability-default-values). Nexus Framework has outputs as nullable.
 
@@ -214,7 +211,7 @@ By default Nexus Schema has [outputs as guaranteed](https://nexus.js.org/docs/ge
   })
   ```
 
-##### Logging
+#### Logging
 
 Nexus ships with its own logger.
 
@@ -225,7 +222,7 @@ import { log } from 'nexus-future'
 + log.info('hello world!', { population: 6_000_000 })
 ```
 
-##### Prisma
+#### Prisma
 
 If you were a [`nexus-prisma`](https://github.com/prisma-labs/nexus-prisma) user, you will now become a [`nexus-plugin-prisma`](https://github.com/graphql-nexus/plugin-prisma) user.
 
