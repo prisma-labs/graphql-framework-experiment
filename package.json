@@ -98,7 +98,17 @@
   "prettier": {
     "semi": false,
     "singleQuote": true,
-    "trailingComma": "es5"
+    "trailingComma": "es5",
+    "overrides": [
+      {
+        "files": [
+          "prisma.md"
+        ],
+        "options": {
+          "printWidth": 35
+        }
+      }
+    ]
   },
   "husky": {
     "hooks": {

@@ -40,49 +40,63 @@
         content: '⌕ ';
       }
 
-      @media only screen and (min-width: 1800px) {
-        .sidebar {
-          width: 30rem !important;
-        }
-      }
-
-      @media only screen and (min-width: 2600px) {
-        .sidebar {
-          width: 50rem !important;
-        }
-      }
-
       /* Component NexusVSDL */
 
-      .TwoUp.NexusVSDL > *:first-child {
+      .Row.NexusVSDL > *:first-child {
         flex-grow: 0;
       }
-      .TwoUp.NexusVSDL > *:last-child {
+      .Row.NexusVSDL > *:last-child {
         flex-grow: 1;
       }
 
       /* Component TwpUp */
 
-      @media (min-width: 1300px) {
-        .TwoUp {
-          width: 900px;
-          margin-left: -100px;
+      @media (max-width: 1300px) {
+        .Row.Collapsable {
+          flex-direction: column;
+        }
+        .Row.Collapsable > * {
+          margin-left: 0 !important;
+          margin-right: 0 !important;
+        }
+        .Row.Collapsable > *:not(:last-child) {
+          margin-bottom: 0.55em !important;
+        }
+        .Row.Collapsable > *:not(:first-child) {
+          margin-top: 0.55em !important;
         }
       }
 
-      .TwoUp {
+      @media (min-width: 1300px) {
+        .Row {
+          width: 900px;
+          margin-left: -100px; /* (900 - 700) / 2 */
+        }
+      }
+
+      @media (min-width: 1600px) {
+        .Row {
+          width: 1400px;
+          margin-left: -350px; /* (1300 - 700) / 2 */
+        }
+      }
+
+      .Row {
         display: flex;
         margin-top: 1.2em;
         margin-bottom: 1.2em;
+        flex-wrap: wrap;
       }
-      .TwoUp > * {
-        margin-top: 0 !important;
-        margin-bottom: 0 !important;
+      .Row > * {
+        /* margin-top: 0 !important; */
+        /* margin-bottom: 0 !important; */
+        flex-grow: 1;
+        /* align-self: flex-start; */
       }
-      .TwoUp > *:not(:last-child) {
+      .Row > *:not(:last-child) {
         margin-right: 0.55em;
       }
-      .TwoUp > *:not(:first-child) {
+      .Row > *:not(:first-child) {
         margin-left: 0.55em;
       }
 
@@ -175,6 +189,18 @@
       }
 
       /* Sidebar */
+
+      /* @media only screen and (min-width: 1800px) {
+        .sidebar {
+          width: 30rem !important;
+        }
+      }
+
+      @media only screen and (min-width: 2600px) {
+        .sidebar {
+          width: 50rem !important;
+        }
+      } */
 
       .sidebar ul li a {
         overflow: visible;

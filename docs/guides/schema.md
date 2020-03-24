@@ -104,7 +104,7 @@ We will now begin exploring the GraphQL schema building parts of the schema comp
 
 ###### Scalar Fields
 
-<div class="TwoUp NexusVSDL">
+<div class="Row NexusVSDL">
 
 ```ts
 schema.objectType({
@@ -133,7 +133,7 @@ type Alpha {
 
 ###### Relational Fields
 
-<div class="TwoUp NexusVSDL">
+<div class="Row NexusVSDL">
 
 ```ts
 schema.objectType({
@@ -169,7 +169,7 @@ type Beta {
 
 ###### Lists & Nullability
 
-<div class="TwoUp NexusVSDL">
+<div class="Row NexusVSDL">
 
 ```ts
 schema.objectType({
@@ -204,7 +204,7 @@ Enum types are a scalar with a finite set of allowed values. They can be used as
 
 [graphql.org Enumeration Types docs](https://graphql.org/learn/schema/#enumeration-types)
 
-<div class="TwoUp NexusVSDL">
+<div class="Row NexusVSDL">
 
 ```ts
 schema.enum({
@@ -224,7 +224,7 @@ enum Alpha {
 
 ###### Example: As argument type & field type
 
-<div class="TwoUp NexusVSDL">
+<div class="Row NexusVSDL">
 
 ```ts
 schema.queryType({
@@ -262,7 +262,7 @@ type Query {
 ```
 
 </div>
-<div class="TwoUp NexusVSDL">
+<div class="Row NexusVSDL">
 
 ```graphql
 query {
@@ -341,7 +341,7 @@ If an arg has been given a default value, then it will be used when the client p
 
 ###### Example: Default Nullability Settings
 
-<div class="TwoUp NexusVSDL">
+<div class="Row NexusVSDL">
 
 ```ts
 schema.queryType({
@@ -368,7 +368,7 @@ type Query {
 
 ###### Example: Nullability Flipped at Type Level
 
-<div class="TwoUp NexusVSDL">
+<div class="Row NexusVSDL">
 
 ```ts
 schema.queryType({
@@ -399,7 +399,7 @@ type Query {
 
 ###### Example: Nullability Flipped at Input & Field Level
 
-<div class="TwoUp NexusVSDL">
+<div class="Row NexusVSDL">
 
 ```ts
 schema.queryType({
@@ -432,7 +432,7 @@ type Query {
 
 It is possible to use type and input/field layers together. This provides flexibility to optimize for local sections of your API that have different characteristics. For example here, a type deviates from the global default for all but but one field and its input.
 
-<div class="TwoUp NexusVSDL">
+<div class="Row NexusVSDL">
 
 ```ts
 schema.queryType({
@@ -474,7 +474,7 @@ type Query {
 
 When an arg has a default you might think that then it should be nullable to the client but non-nullable within your resolver logic. However it turns out that if the client passes an _explicit_ `null` then that is considered an actual value, and hence is not subject to being assigned the default value. Thus, and then, the resolver still can observe null from the client. If you are curious about seeing this change and/or become configurable then please refer to [#485](https://github.com/graphql-nexus/nexus-future/issues/485).
 
-<div class="TwoUp NexusVSDL">
+<div class="Row NexusVSDL">
 
 ```ts
 schema.queryType({
@@ -503,7 +503,7 @@ type Query {
 ```
 
 </div>
-<div class="TwoUp NexusVSDL">
+<div class="Row NexusVSDL">
 
 ```graphql
 query {
