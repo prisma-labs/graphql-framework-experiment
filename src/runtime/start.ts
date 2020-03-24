@@ -1,6 +1,9 @@
 import { stripIndent } from 'common-tags'
 import * as Layout from '../lib/layout'
 
+export const START_MODULE_NAME = 'index'
+export const START_MODULE_HEADER = 'GENERATED NEXUS START MODULE'
+
 type StartModuleConfig =
   | {
       internalStage: 'dev'
@@ -25,7 +28,7 @@ type StartModuleConfig =
     }
 
 export function createStartModuleContent(config: StartModuleConfig): string {
-  let output = ''
+  let output = `// ${START_MODULE_HEADER}` + '\n'
 
   if (config.internalStage === 'build') {
     output += stripIndent`
@@ -59,7 +62,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     output += '\n\n'
     output += stripIndent`
     // Statically require all plugins so that tree-shaking can be done
-    ${[...config.pluginNames, ...config.pluginNames]
+    ${config.pluginNames
       .map(pluginName => `require('nexus-plugin-${pluginName}')`)
       .join('\n')}
     `

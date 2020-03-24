@@ -10,10 +10,12 @@ import {
   findOrScaffoldTsConfig,
   transpileModule,
 } from '../../lib/tsc'
-import { createStartModuleContent } from '../../runtime/start'
+import {
+  createStartModuleContent,
+  START_MODULE_NAME,
+} from '../../runtime/start'
 import { extractContextTypesToTypeGenFile } from '../add-to-context-extractor/add-to-context-extractor'
 import { generateArtifacts } from '../artifact-generation'
-import { START_MODULE_NAME } from '../constants'
 import { rootLogger } from '../nexus-logger'
 import { loadAllWorkflowPluginsFromPackageJson } from '../plugin'
 import { fatal } from '../process'
@@ -84,7 +86,7 @@ export async function buildNexusApp(settings: BuildSettings) {
   // run of TypeScript should make re-building up this one cheap.
   const tsProgramWithTypegen = createTSProgram(layout, { withCache: true })
 
-  compile(tsProgramWithTypegen, layout)
+  compile(tsProgramWithTypegen, layout, { removePreviousBuild: true })
 
   await writeStartModule({
     buildStage: settings.stage ?? 'production',
@@ -131,7 +133,8 @@ export async function writeStartModule({
   }
 
   const packageJsonPath = layout.projectPath('package.json')
-  const relativePackageJsonPath = !FS.exists(packageJsonPath)
+
+  const relativePackageJsonPath = FS.exists(packageJsonPath)
     ? Path.relative(layout.buildOutput, packageJsonPath)
     : undefined
 
