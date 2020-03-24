@@ -10,6 +10,7 @@ import {
 } from '../../lib/fs'
 import { rootLogger } from '../nexus-logger'
 import * as PackageManager from '../package-manager'
+import { getProjectRoot } from '../project-root'
 import * as Schema from './schema-modules'
 
 export const DEFAULT_BUILD_FOLDER_NAME = 'node_modules/.build'
@@ -236,13 +237,14 @@ export function findAppModule(opts?: { cwd?: string }): string | null {
  *
  */
 export function findProjectDir(opts?: { cwd?: string }): string {
-  let packageJsonPath = findPackageJson(opts)
+  const projectRoot = getProjectRoot()
+  const packageJsonPath = Path.join(projectRoot, 'package.json')
 
-  if (packageJsonPath) {
-    return packageJsonPath.dir
+  if (!FS.exists(packageJsonPath)) {
+    return opts?.cwd ?? process.cwd()
   }
 
-  return opts?.cwd ?? process.cwd()
+  return projectRoot
 }
 
 /**
