@@ -152,14 +152,23 @@ export function getTSIncrementalFilePath(layout: Layout) {
  */
 export function compile(
   program: ts.EmitAndSemanticDiagnosticsBuilderProgram,
-  layout: Layout
+  layout: Layout,
+  opts?: { skipTSErrors?: boolean; removePreviousBuild?: boolean }
 ): void {
-  log.trace('remove previous build folder if present...')
-  fs.remove(layout.buildOutput)
+  if (opts?.removePreviousBuild === true) {
+    log.trace('remove previous build folder if present...')
+    fs.remove(layout.buildOutput)
+  }
+
   log.trace('done')
   log.trace('emit transpiled modules to disk...')
   const emitResult = program.emit()
   log.trace('done', { filesEmitted: emitResult.emittedFiles?.length ?? 0 })
+
+  if (opts?.skipTSErrors === true) {
+    return
+  }
+
   const allDiagnostics = ts
     .getPreEmitDiagnostics(program.getProgram())
     .concat(emitResult.diagnostics)
