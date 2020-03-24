@@ -15,6 +15,7 @@ import * as Logger from '../logger'
 import { rootLogger } from '../nexus-logger'
 import * as PackageManager from '../package-manager'
 import { fatal, run, runSync } from '../process'
+import { getProjectRoot } from '../project-root'
 import * as Chokidar from '../watcher/chokidar'
 export * from './db-driver'
 
@@ -271,8 +272,9 @@ export function create(definer: Definer): DriverCreator {
  * Load all nexus plugins installed into the project
  */
 export async function loadAllFromPackageJson(): Promise<Driver[]> {
+  const packageJsonPath = Path.join(getProjectRoot(), 'package.json')
   const packageJson: undefined | Record<string, any> = await fs.readAsync(
-    'package.json',
+    packageJsonPath,
     'json'
   )
   return __doLoadAllFromPackageJson(packageJson)
@@ -280,12 +282,27 @@ export async function loadAllFromPackageJson(): Promise<Driver[]> {
 
 /**
  * Load all nexus plugins installed into the project
+ * TODO: /!\ This should not be called in production
  */
 export function loadAllFromPackageJsonSync(): Driver[] {
+  const packageJsonPath = Path.join(getProjectRoot(), 'package.json')
   const packageJson: undefined | Record<string, any> = fs.read(
-    'package.json',
+    packageJsonPath,
     'json'
   )
+
+  if (!packageJsonPath) {
+    log.trace(
+      'We could not find any package.json file. No plugins will be loaded.'
+    )
+    return []
+  }
+
+  log.trace('Extracting plugins from package.json', {
+    path: packageJsonPath,
+    content: packageJson,
+  })
+
   return __doLoadAllFromPackageJson(packageJson)
 }
 
