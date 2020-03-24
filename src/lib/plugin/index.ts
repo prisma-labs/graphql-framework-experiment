@@ -277,6 +277,19 @@ export async function loadAllFromPackageJson(): Promise<Driver[]> {
     packageJsonPath,
     'json'
   )
+
+  if (!packageJson) {
+    log.trace(
+      'We could not find any package.json file. No plugin will be loaded.',
+      { packageJsonPath }
+    )
+  } else {
+    log.trace('Extracting plugins from package.json', {
+      path: packageJsonPath,
+      content: packageJson,
+    })
+  }
+
   return __doLoadAllFromPackageJson(packageJson)
 }
 
@@ -291,17 +304,17 @@ export function loadAllFromPackageJsonSync(): Driver[] {
     'json'
   )
 
-  if (!packageJsonPath) {
+  if (!packageJson) {
     log.trace(
-      'We could not find any package.json file. No plugins will be loaded.'
+      'We could not find any package.json file. No plugin will be loaded.',
+      { packageJsonPath }
     )
-    return []
+  } else {
+    log.trace('Extracting plugins from package.json', {
+      path: packageJsonPath,
+      content: packageJson,
+    })
   }
-
-  log.trace('Extracting plugins from package.json', {
-    path: packageJsonPath,
-    content: packageJson,
-  })
 
   return __doLoadAllFromPackageJson(packageJson)
 }
@@ -312,7 +325,9 @@ export function loadAllFromPackageJsonSync(): Driver[] {
 function __doLoadAllFromPackageJson(
   packageJson: undefined | Record<string, any>
 ): Driver[] {
-  if (packageJson === undefined) return []
+  if (packageJson === undefined) {
+    return []
+  }
 
   const deps: Record<string, string> = packageJson?.dependencies ?? {}
 
