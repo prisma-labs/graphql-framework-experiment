@@ -393,7 +393,7 @@ schema.mutationType({
     /* 
     Assuming our prisma model for User has a createdByBrowser field,
     this removes it from the input type but ensures the value is
-    inferred from context and passed to Prisma Client JS.
+    inferred from context and passed to Prisma Client.
     */
     t.crud.createOneUser({
       computedInputs: {
@@ -418,7 +418,7 @@ nexusPrismaPlugin({
   /*
   Remove fields named "user" from all input types. When resolving
   a request whose data contains any of these types, the value is inferred
-  from context and passed to Prisma Client JS, even if it's nested. This is great for
+  from context and passed to Prisma Client, even if it's nested. This is great for
   creating data associated with one user's account.
   */
   computedInputs: {
@@ -473,7 +473,7 @@ mutation createOnePost {
 }
 ```
 
-### Publish Model Writes Along Side Prisma Client JS-Resolved Fields {docsify-ignore}
+### Publish Model Writes Along Side Prisma Client-Resolved Fields {docsify-ignore}
 
 ```ts
 schema.mutationType({
@@ -892,7 +892,7 @@ Only available within GraphQL `Query` and `Mutation` definitions.
 
 `t.crud` contains configurable _operation publishers_ that you use for exposing create, read, update, and delete mutations against your projected Prisma models.
 
-There are 8 kinds of operations (reflecting a subset of [Prisma Client JS](https://github.com/prisma/prisma-client-js)'s capabilities). An _operation publisher_ is the combination of some operation kind and a particular Prisma model. Thus the number of operation publishers on `t.crud` is `Prisma model count × operation kind count`. So for example if you defined 20 Prisma models then you would see 160 operation publishers on `t.crud`.
+There are 8 kinds of operations (reflecting a subset of [Prisma Client](https://github.com/prisma/prisma-client-js)'s capabilities). An _operation publisher_ is the combination of some operation kind and a particular Prisma model. Thus the number of operation publishers on `t.crud` is `Prisma model count × operation kind count`. So for example if you defined 20 Prisma models then you would see 160 operation publishers on `t.crud`.
 
 ##### Example
 
@@ -939,7 +939,7 @@ Relation fields may be connected with an existing record or a sub-create may be 
 
 Inlined creates are very similar to top-level ones but have the important difference that the sub-create has excluded the field where supplying its relation to the type of parent `Object` being created would _normally be_. This is because a sub-create forces its record to relate to the parent one.
 
-**Underlying Prisma Client JS Function**
+**Underlying Prisma Client Function**
 
 [`create`](https://github.com/prisma/prisma2/blob/master/docs/prisma-client-js/api.md#create)
 
@@ -1114,7 +1114,7 @@ Allow clients to find one particular record of the respective Prisma model. They
 
 The ability for list fields to be [filtered](#filtering), [ordered](#ordering), or [paginated](#pagination) depends upon if those features have been enabled for those GraphQL objects via [`t.model.<ListRelation>`](#list-relation).
 
-**Underlying Prisma Client JS Function**
+**Underlying Prisma Client Function**
 
 [`findOne`](https://github.com/prisma/prisma2/blob/master/docs/prisma-client-js/api.md#findone)
 
@@ -1193,7 +1193,7 @@ t.crud.updateOne<M>
 
 Allow clients to update one particular record at a time of the respective Prisma model.
 
-**Underlying Prisma Client JS Function**
+**Underlying Prisma Client Function**
 
 [`update`](https://github.com/prisma/prisma2/blob/master/docs/prisma-client-js/api.md#update)
 
@@ -1444,7 +1444,7 @@ t.crud.upsertOne<M>
 
 Allow clients to update or create (aka. insert) one particular record at a time of the respective Prisma model. This operation is a combination of [create](#create) and [update](#update). The generated GraphQL mutation matches `data` and `where` args to those of update, and `create` to that of `data` arg in create. Unlike update, upsert guarantees a return value.
 
-**Underlying Prisma Client JS Function**
+**Underlying Prisma Client Function**
 
 [`upsert`](https://github.com/prisma/prisma2/blob/master/docs/prisma-client-js/api.md#upsert)
 
@@ -1479,7 +1479,7 @@ t.crud.deleteOne<M>
 
 Allow clients to delete one particular record at a time of the respective Prisma model.
 
-**Underlying Prisma Client JS Function**
+**Underlying Prisma Client Function**
 
 [`delete`](https://github.com/prisma/prisma2/blob/master/docs/prisma-client-js/api.md#delete)
 
@@ -1594,7 +1594,7 @@ t.crud.<M Pluralized>
 
 Allow clients to fetch multiple records at once of the respective Prisma model.
 
-**Underlying Prisma Client JS Function**
+**Underlying Prisma Client Function**
 
 [`findMany`](https://github.com/prisma/prisma2/blob/master/docs/prisma-client-js/api.md#findMany)
 
@@ -1665,7 +1665,7 @@ t.crud.updateMany<M>
 
 Allow clients to update multiple records of the respective Prisma model at once. Unlike [`update`](#update) nested relation-updating is not supported here. Clients get back a `BatchPayload` object letting them know the number of affected records, but not access to the fields of affected records.
 
-**Underlying Prisma Client JS Function**
+**Underlying Prisma Client Function**
 
 [`updateMany`](https://github.com/prisma/prisma2/blob/master/docs/prisma-client-js/api.md#updateMany)
 
@@ -1711,7 +1711,7 @@ t.crud.deleteMany<M>
 
 Allow clients to delete multiple records of the respective Prisma model at once. Clients get back a `BatchPayload` object letting them know the number of affected records, but not access to the fields of affected records.
 
-**Underlying Prisma Client JS Function**
+**Underlying Prisma Client Function**
 
 [`deleteMany`](https://github.com/prisma/prisma2/blob/master/docs/prisma-client-js/api.md#deleteMany)
 
@@ -2407,11 +2407,11 @@ Note: This is an abbreviated version of the ComputedInputs type. The most import
 
 **About**
 
-Allow clients to omit fields from one mutation's corresponding input type and infer the value of those fields from the resolver's params (args, context, info) at runtime when determining what to pass to Prisma Client JS.
+Allow clients to omit fields from one mutation's corresponding input type and infer the value of those fields from the resolver's params (args, context, info) at runtime when determining what to pass to Prisma Client.
 
 - `ComputedInputs` (`Record<string, ({ args, ctx, info }: MutationResolverParams) => unknown>`) [(full type here)](#computedinputs-type-details).
 
-  Keys in the ComputedInputs object will be omitted from the mutation's corresponding input type. When resolving the mutation at runtime, each omitted key will be passed to Prisma Client JS based on the return value of that key's corresponding function in the ComputedInputs object when passed that resolver's parameters at runtime.
+  Keys in the ComputedInputs object will be omitted from the mutation's corresponding input type. When resolving the mutation at runtime, each omitted key will be passed to Prisma Client based on the return value of that key's corresponding function in the ComputedInputs object when passed that resolver's parameters at runtime.
 
 ##### GraphQL Schema Contributions
 
@@ -2512,11 +2512,11 @@ Note: This is an abbreviated version of the ComputedInputs type. The most import
 
 **About**
 
-Allow clients to omit fields with a given name across all of their GraphQL schema's inputs and infer the value of those fields from context when determining what to pass to Prisma Client JS
+Allow clients to omit fields with a given name across all of their GraphQL schema's inputs and infer the value of those fields from context when determining what to pass to Prisma Client
 
 - `ComputedInputs` (`Record<string, ({ args, ctx, info }: MutationResolverParams) => any>`) [(full type here)](#computedinputs-type-details).
 
-  Keys in the ComputedInputs object will be omitted from all input types. When resolving any mutation at runtime, that mutation's input type will be recursively searched for the omitted keys. Any time one of those keys would have appeared anywhere in the mutation's input type, a value will be passed to Prisma Client JS based on the return value of that key's corresponding function in the ComputedInputs object when passed the resolver's parameters at runtime.
+  Keys in the ComputedInputs object will be omitted from all input types. When resolving any mutation at runtime, that mutation's input type will be recursively searched for the omitted keys. Any time one of those keys would have appeared anywhere in the mutation's input type, a value will be passed to Prisma Client based on the return value of that key's corresponding function in the ComputedInputs object when passed the resolver's parameters at runtime.
 
 ##### GraphQL Schema Contributions
 
@@ -2575,8 +2575,8 @@ nexusPrismaPlugin({
   /*
   Remove fields named "createdWithBrowser" from all mutation input types. When resolving
   a request whose data contains any of these types, the value is inferred from the resvoler's 
-  params based on the function we defined below and passed to Prisma Client JS, even if it's nested.
-  This example assumes a Prisma Client JS context containing a "browser" key that maps to a string
+  params based on the function we defined below and passed to Prisma Client, even if it's nested.
+  This example assumes a Prisma Client context containing a "browser" key that maps to a string
   representing the browser from which the request was made.
   */
   computedInputs: {
@@ -2686,7 +2686,7 @@ mutation createOneNested {
 
 </div>
 
-If `{user: {connect: {where: {id: 1}}}}` looks familiar, global computedInputs can also be used to determine the user making a request and automatically populate mutations affecting a single user accordingly. For example, assuming Prisma Client JS' context includes a "userId" key, adding a user key to global computedInputs can simplify the "createOneNested" mutation from the previous example:
+If `{user: {connect: {where: {id: 1}}}}` looks familiar, global computedInputs can also be used to determine the user making a request and automatically populate mutations affecting a single user accordingly. For example, assuming Prisma Client' context includes a "userId" key, adding a user key to global computedInputs can simplify the "createOneNested" mutation from the previous example:
 
 ```ts
 nexusPrismaPlugin({
@@ -2712,11 +2712,11 @@ mutation createOneNested {
 
 ```ts
 /**
- *  Represents arguments required by Prisma Client JS that will
+ *  Represents arguments required by Prisma Client that will
  *  be derived from a request's input (root, args, and context)
  *  and omitted from the GraphQL API. The object itself maps the
  *  names of these args to a function that takes an object representing
- *  the request's input and returns the value to pass to the Prisma Client JS
+ *  the request's input and returns the value to pass to the Prisma Client
  *  arg of the same name.
  */
 export type LocalComputedInputs<
