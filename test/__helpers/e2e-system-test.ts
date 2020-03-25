@@ -163,7 +163,7 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
   await ctx.spawn([
     'npm',
     'install',
-    `nexus-prisma-plugin@${nexusPluginPrismaVersion}`,
+    `nexus-plugin-prisma@${nexusPluginPrismaVersion}`,
   ])
   await ctx.fs.writeAsync(
     './prisma/schema.prisma',
