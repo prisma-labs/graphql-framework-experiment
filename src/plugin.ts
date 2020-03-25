@@ -1,1 +1,6 @@
-export { create, Lens } from './lib/plugin'
+export {
+  createRuntimeDimension,
+  createTesttimeDimension,
+  createWorktimeDimension,
+  Lens,
+} from './lib/plugin'

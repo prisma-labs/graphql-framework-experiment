@@ -1,9 +1,9 @@
 import getPort from 'get-port'
 import * as Lo from 'lodash'
 import { GraphQLClient } from '../lib/graphql-client'
+import * as Layout from '../lib/layout'
 import * as Plugin from '../lib/plugin'
 import * as app from './index'
-import * as Layout from '../lib/layout'
 import * as singletonChecks from './singleton-checks'
 
 type AppClient = {
@@ -105,7 +105,7 @@ export async function createTestContext(): Promise<TestContext> {
     },
   }
 
-  const testContextContributions = await Plugin.loadAllTestingPluginsFromPackageJson()
+  const testContextContributions = await Plugin.loadAllTesttimePlugins()
 
   for (const testContextContribution of testContextContributions) {
     Lo.merge(testContextCore, testContextContribution)

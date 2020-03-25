@@ -6,8 +6,6 @@ import * as Plugin from '../lib/plugin'
 import * as Schema from './schema'
 import * as Server from './server'
 import * as singletonChecks from './singleton-checks'
-import * as BackingTypes from '../lib/backing-types'
-import { write, extractAndWrite } from '../lib/backing-types'
 
 const log = Logger.create({ name: 'app' })
 
@@ -96,7 +94,7 @@ export function create(): App {
   // Automatically use all installed plugins
   // TODO during build step we should turn this into static imports, not unlike
   // the schema module imports system.
-  plugins.push(...Plugin.loadAllRuntimePluginsFromPackageJsonSync())
+  plugins.push(...Plugin.loadAllRuntimePluginsSync())
 
   const contextContributors: ContextContributor<any>[] = []
 

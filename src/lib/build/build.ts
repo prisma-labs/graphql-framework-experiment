@@ -17,7 +17,7 @@ import {
 import { extractContextTypesToTypeGenFile } from '../add-to-context-extractor/add-to-context-extractor'
 import { generateArtifacts } from '../artifact-generation'
 import { rootLogger } from '../nexus-logger'
-import { loadAllWorkflowPluginsFromPackageJson } from '../plugin'
+import { loadAllWorktimePlugins } from '../plugin'
 import { fatal } from '../process'
 import {
   computeBuildOutputFromTarget,
@@ -56,7 +56,7 @@ export async function buildNexusApp(settings: BuildSettings) {
     }
   }
 
-  const plugins = await loadAllWorkflowPluginsFromPackageJson(layout)
+  const plugins = await loadAllWorktimePlugins(layout)
 
   await findOrScaffoldTsConfig(layout)
 

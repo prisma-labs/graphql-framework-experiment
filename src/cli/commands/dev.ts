@@ -25,7 +25,7 @@ export class Dev implements Command {
      * Load config before loading plugins which may rely on env vars being defined
      */
     const layout = await Layout.create()
-    const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
+    const plugins = await Plugin.loadAllWorktimePlugins(layout)
 
     await findOrScaffoldTsConfig(layout)
 

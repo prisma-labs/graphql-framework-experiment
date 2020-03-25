@@ -140,3 +140,27 @@ export async function createGitRepository() {
   await git.raw(['add', '-A'])
   await git.raw(['commit', '-m', 'initial commit'])
 }
+
+export function requireModule(config: {
+  depName: string
+  optional: boolean
+}): undefined | unknown {
+  const depPath = process.env.LINK
+    ? Path.join(process.cwd(), '/node_modules/', config.depName)
+    : config.depName
+
+  try {
+    const dep = require(depPath)
+    // The code may have been compiled from a TS source and then may have a .default property
+    if (dep.default !== undefined) {
+      return dep.default
+    } else {
+      return dep
+    }
+  } catch (error) {
+    if (error.code === 'MODULE_NOT_FOUND' && config.optional) {
+      return
+    }
+    throw error
+  }
+}

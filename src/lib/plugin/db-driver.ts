@@ -3,9 +3,9 @@ import * as Plugin from '.'
 import * as Layout from '../layout'
 import { fatal } from '../process'
 
-export async function validateAndLoadDBDriver(): Promise<Plugin.WorkflowHooks> {
+export async function validateAndLoadDBDriver(): Promise<Plugin.WorktimeHooks> {
   const layout = await Layout.create()
-  const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
+  const plugins = await Plugin.loadAllWorktimePlugins(layout)
   const dbDrivers = plugins.filter(p => p.hooks.db !== undefined)
 
   if (dbDrivers.length === 0) {

@@ -80,5 +80,5 @@ export interface Opts extends BooleanOpts, StringOpts {
     code: string
     fileName: string
   }
-  plugins: Plugin.WorkflowHooks[]
+  plugins: Plugin.WorktimeHooks[]
 }
