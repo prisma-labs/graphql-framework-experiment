@@ -90,7 +90,7 @@
     "test": "jest --verbose --testTimeout 120000",
     "test:integration": "jest --verbose --testRegex '.+/integration/.+\\.spec\\.ts$'",
     "test:unit": "jest --verbose --testRegex '.+/src/.+\\.spec\\.ts$'",
-    "test:e2e": "jest --verbose --testTimeout 120000 test/e2e",
+    "test:e2e": "DEBUG=true jest --verbose --testTimeout 120000 test/e2e",
     "test:system": "DEBUG=true jest --verbose --testTimeout 120000 test/system",
     "dev:test": "jest --watch --testRegex '.+/src/.+\\.spec\\.ts$'",
     "dev": "tsc -b -w"

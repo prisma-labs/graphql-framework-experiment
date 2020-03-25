@@ -140,7 +140,7 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
   log.warn('run built app from a different CWD than the project root')
 
   await ctx.spawn(
-    ['node', DEFAULT_BUILD_FOLDER_NAME],
+    ['node', ctx.fs.path(DEFAULT_BUILD_FOLDER_NAME)],
     async (data, proc) => {
       if (data.includes('server:listening')) {
         proc.kill()
