@@ -97,8 +97,9 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
   })
 
   // Run build
+  let res
 
-  const res = await ctx.spawnNexus(['build'], () => {})
+  res = await ctx.spawnNexus(['build'], () => {})
 
   expect(res.data).toContain('success')
   expect(res.exitCode).toStrictEqual(0)
@@ -139,4 +140,68 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
     },
     { cwd: '/foo/bar' }
   )
+
+  //
+  // Cover using a plugin
+  //
+
+  // Install a plugin
+  const nexusPluginPrismaVersion =
+    process.env.NEXUS_PLUGIN_PRISMA_VERSION ?? 'latest'
+
+  await ctx.spawn([
+    'npm',
+    'install',
+    `nexus-prisma-plugin@${nexusPluginPrismaVersion}`,
+  ])
+  await ctx.fs.writeAsync(
+    './prisma/schema.prisma',
+    `
+      datasource db {
+        provider = "SQLite"
+        url      = "prisma/db.dev"
+      }
+
+      generator prisma_client {
+        provider = "prisma-client-js"
+      }
+
+      model Foo {
+        id         Int    @id @default(autoincrement())
+      }      
+    `
+  )
+  await ctx.fs.writeAsync(
+    `./src/prisma-plugin/${CONVENTIONAL_SCHEMA_FILE_NAME}`,
+    `
+      import { schema } from 'nexus-future' 
+
+      schema.objectType({
+        name: 'Foo',
+        definition(t) {
+          t.model.id()
+        }
+      })
+    `
+  )
+
+  // Run dev with plugin
+  await ctx.spawnNexus(['dev'], async (data, proc) => {
+    if (data.includes('server:listening')) {
+      proc.kill()
+    }
+  })
+
+  // Build app with plugin
+  res = await ctx.spawnNexus(['build'], () => {})
+
+  expect(res.data).toContain('success')
+  expect(res.exitCode).toStrictEqual(0)
+
+  // Run built app with plugin
+  await ctx.spawn(['node', DEFAULT_BUILD_FOLDER_NAME], async (data, proc) => {
+    if (data.includes('server:listening')) {
+      proc.kill()
+    }
+  })
 }
