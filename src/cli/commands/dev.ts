@@ -1,6 +1,7 @@
 import { arg, Command, isError } from '../../lib/cli'
 import * as Layout from '../../lib/layout'
 import { rootLogger } from '../../lib/nexus-logger'
+import { ownPackage } from '../../lib/own-package'
 import * as Plugin from '../../lib/plugin'
 import { getInstalledRuntimePluginNames } from '../../lib/plugin/import'
 import { fatal } from '../../lib/process'
@@ -42,7 +43,7 @@ export class Dev implements Command {
       pluginNames: pluginNames,
     })
 
-    log.info('boot', { version: require('../../../package.json').version })
+    log.info('boot', { version: ownPackage.version })
 
     await createWatcher({
       plugins: plugins.map(p => p.hooks),

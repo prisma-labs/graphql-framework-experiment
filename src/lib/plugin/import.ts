@@ -25,10 +25,12 @@ export async function getInstalledRuntimePluginNames(): Promise<string[]> {
   const pluginDepNames = extractPluginNames(packageJson)
   const runtimePluginDepNames = pluginDepNames.filter(depName => {
     return (
-      null !== requireModule({ depName: depName + './runtime', optional: true })
+      null !==
+      requireModule({ depName: depName + '/dist/runtime', optional: true })
     )
   })
-  return runtimePluginDepNames
+  const runtimePluginNames = pluginDepNames.map(x => parsePluginName(x)!)
+  return runtimePluginNames
 }
 
 /**
@@ -44,6 +46,8 @@ export async function importAllPlugins(): Promise<Plugin[]> {
  * Logic shared between sync/async variants.
  */
 function doImportAllPlugins(packageJson: null | PackageJson): Plugin[] {
+  const pluginDepNames = extractPluginNames(packageJson)
+
   if (!packageJson) {
     log.trace(
       'We could not find any package.json file. No plugin will be loaded.'
@@ -51,10 +55,10 @@ function doImportAllPlugins(packageJson: null | PackageJson): Plugin[] {
   } else {
     log.trace('Extracting plugins from package.json', {
       content: packageJson,
+      pluginDepNames: pluginDepNames,
     })
   }
 
-  const pluginDepNames = extractPluginNames(packageJson)
   const plugins = pluginDepNames.map(depName => {
     const pluginName = parsePluginName(depName)! // guaranteed by extract above
     let plugin: Plugin = {
@@ -62,11 +66,11 @@ function doImportAllPlugins(packageJson: null | PackageJson): Plugin[] {
     }
     try {
       //prettier-ignore
-      plugin.testtime = requireModule({ depName: depName + './testtime', optional: true }) as any
+      plugin.testtime = (requireModule({ depName: depName + '/dist/testtime', optional: true }) as any)?.default
       //prettier-ignore
-      plugin.worktime = requireModule({ depName: depName + './worktime', optional: true }) as any
+      plugin.worktime = (requireModule({ depName: depName + '/dist/worktime', optional: true }) as any)?.default
       //prettier-ignore
-      plugin.runtime = requireModule({ depName: depName + './runtime', optional: true }) as any
+      plugin.runtime = (requireModule({ depName: depName + '/dist/runtime', optional: true }) as any)?.default
     } catch (error) {
       fatal(
         stripIndent`

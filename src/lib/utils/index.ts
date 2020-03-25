@@ -149,6 +149,8 @@ export function requireModule(config: {
     ? Path.join(process.cwd(), '/node_modules/', config.depName)
     : config.depName
 
+  console.log(depPath)
+
   try {
     const dep = require(depPath)
     // The code may have been compiled from a TS source and then may have a .default property
@@ -162,5 +164,23 @@ export function requireModule(config: {
       return null
     }
     throw error
+  }
+}
+
+/**
+ * A wrapper around require. It does nothing special except when LINK env var is
+ * set in which case it prefixes the import path with CWD. This is essential
+ * when dealing with plugin or plugin-like situations.
+ *
+ * In prisma case, Prisma Client is generated into user's project and required by other packages in
+ * user's prject. Problem is when those "other packages" are LINKED, then their
+ * attempts to import fail because they are looking relative to their location
+ * on disk, not hte user's project, where they just LINKED into.
+ */
+export function linkableRequire(id: string): any {
+  if (process.env.LINK) {
+    return require(Path.join(process.cwd(), '/node_modules/', id))
+  } else {
+    return require(id)
   }
 }
