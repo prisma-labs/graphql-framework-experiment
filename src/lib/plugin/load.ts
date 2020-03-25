@@ -107,9 +107,6 @@ export function loadPlugin<D extends Dimension, P extends Plugin>(
   log.trace('load', { dimension: dimension, plugin: plugin.name })
   try {
     const dim: any = plugin[dimension]
-    console.log(plugin)
-    console.log(dimension)
-    console.log(dim)
     return dim(...args)
   } catch (error) {
     fatal(

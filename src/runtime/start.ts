@@ -98,7 +98,6 @@ export function createStartModuleContent(config: StartModuleConfig): string {
         // bring value to the user's codebase.
 
         const app = require('nexus-future').default
-        console.log(app)
         const singletonChecks = require('nexus-future/dist/runtime/singleton-checks')
 
         // Apply runtime plugins

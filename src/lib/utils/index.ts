@@ -149,8 +149,6 @@ export function requireModule(config: {
     ? Path.join(process.cwd(), '/node_modules/', config.depName)
     : config.depName
 
-  console.log(depPath)
-
   try {
     const dep = require(depPath)
     // The code may have been compiled from a TS source and then may have a .default property
