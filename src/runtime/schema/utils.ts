@@ -2,7 +2,7 @@ import * as NexusSchema from '@nexus/schema'
 import * as BackingTypes from '../../lib/backing-types'
 import { Layout } from '../../lib/layout'
 
-export type EnhancedSchema = {
+export type NexusSchemaWithMetadata = {
   schema: ReturnType<typeof NexusSchema.core.makeSchemaInternal>['schema']
   missingTypes: ReturnType<
     typeof NexusSchema.core.makeSchemaInternal
@@ -10,9 +10,9 @@ export type EnhancedSchema = {
   typegenConfig: NexusSchema.core.TypegenMetadataConfig
 }
 
-export async function makeSchemaWithoutTypegen(
+export function makeSchemaWithoutTypegen(
   config: NexusSchema.core.SchemaConfig
-): Promise<EnhancedSchema> {
+): NexusSchemaWithMetadata {
   const {
     schema,
     missingTypes,

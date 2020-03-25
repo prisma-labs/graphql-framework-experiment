@@ -66,6 +66,10 @@ export type Schema = {
 type SchemaInternal = {
   private: {
     isSchemaEmpty(): boolean
+    /**
+     * Create the Nexus GraphQL Schema. If NEXUS_SHOULD_AWAIT_TYPEGEN=true then the typegen
+     * disk write is awaited upon.
+     */
     makeSchema: (
       devModeLayout?: Layout
     ) => Promise<NexusSchema.core.NexusGraphQLSchema>
@@ -121,7 +125,7 @@ export function create({
           plugins,
           state.settings
         )
-        const { schema, missingTypes, typegenConfig } = await makeSchema(
+        const { schema, missingTypes, typegenConfig } = makeSchema(
           nexusSchemaConfig
         )
         if (
