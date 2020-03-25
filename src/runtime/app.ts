@@ -87,19 +87,18 @@ export type Settings = {
 
 /**
  * Crate an app instance
- * TODO extract and improve config type
  */
 export function create(): App {
-  const plugins: Plugin.RuntimeContributions[] = []
-  // Automatically use all installed plugins
-  // TODO during build step we should turn this into static imports, not unlike
-  // the schema module imports system.
-  plugins.push(...Plugin.loadAllRuntimePluginsSync())
-
-  const contextContributors: ContextContributor<any>[] = []
+  const state: {
+    plugins: Plugin.RuntimeContributions[]
+    contextContributors: ContextContributor<any>[]
+  } = {
+    plugins: [],
+    contextContributors: [],
+  }
 
   const server = Server.create()
-  const schemaComponent = Schema.create({ plugins })
+  const schemaComponent = Schema.create()
 
   const settings: Settings = {
     change(newSettings) {
@@ -126,11 +125,11 @@ export function create(): App {
   }
 
   const api: App = {
-    log,
-    settings,
+    log: log,
+    settings: settings,
     schema: {
       addToContext(contextContributor) {
-        contextContributors.push(contextContributor)
+        state.contextContributors.push(contextContributor)
         return api
       },
       ...schemaComponent.public,
@@ -156,17 +155,20 @@ export function create(): App {
           await Layout.schema.importModules(devModeLayout)
         }
 
-        const schema = await schemaComponent.private.makeSchema(devModeLayout)
+        const schema = await schemaComponent.private.makeSchema(
+          state.plugins,
+          devModeLayout
+        )
 
         if (schemaComponent.private.isSchemaEmpty()) {
           log.warn(Layout.schema.emptyExceptionMessage())
         }
 
         const result = server.createAndStart({
-          schema,
-          plugins,
-          contextContributors,
-          settings,
+          settings: settings,
+          schema: schema,
+          plugins: state.plugins,
+          contextContributors: state.contextContributors,
         })
 
         // Track the start call so that we can know in entrypoint whether to run
@@ -182,6 +184,13 @@ export function create(): App {
         server.setCustomizer(customizer)
       },
     },
+  }
+
+  // Private API
+  const __api: any = api
+
+  __api.__use = function(pluginName: string, plugin: Plugin.RuntimePlugin) {
+    state.plugins.push(Plugin.loadRuntimePlugin(pluginName, plugin))
   }
 
   return api

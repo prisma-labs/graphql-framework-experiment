@@ -105,7 +105,7 @@ export async function createTestContext(): Promise<TestContext> {
     },
   }
 
-  const testContextContributions = await Plugin.loadAllTesttimePlugins()
+  const testContextContributions = await Plugin.loadInstalledTesttimePlugins()
 
   for (const testContextContribution of testContextContributions) {
     Lo.merge(testContextCore, testContextContribution)

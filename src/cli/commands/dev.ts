@@ -2,6 +2,7 @@ import { arg, Command, isError } from '../../lib/cli'
 import * as Layout from '../../lib/layout'
 import { rootLogger } from '../../lib/nexus-logger'
 import * as Plugin from '../../lib/plugin'
+import { getInstalledRuntimePluginNames } from '../../lib/plugin/import'
 import { fatal } from '../../lib/process'
 import { findOrScaffoldTsConfig } from '../../lib/tsc'
 import { createWatcher } from '../../lib/watcher'
@@ -25,7 +26,7 @@ export class Dev implements Command {
      * Load config before loading plugins which may rely on env vars being defined
      */
     const layout = await Layout.create()
-    const plugins = await Plugin.loadAllWorktimePlugins(layout)
+    const plugins = await Plugin.loadInstalledWorktimePlugins(layout)
 
     await findOrScaffoldTsConfig(layout)
 
@@ -33,10 +34,12 @@ export class Dev implements Command {
       await p.hooks.dev.onStart?.()
     }
 
+    const pluginNames = await getInstalledRuntimePluginNames()
     const bootModule = createStartModuleContent({
       internalStage: 'dev',
       layout: layout,
       appPath: layout.app.path,
+      pluginNames: pluginNames,
     })
 
     log.info('boot', { version: require('../../../package.json').version })

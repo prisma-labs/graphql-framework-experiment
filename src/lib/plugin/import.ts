@@ -18,82 +18,62 @@ export interface Plugin {
 }
 
 /**
- * Load all nexus plugins installed into the project
+ *
  */
-export async function importAllPlugins(): Promise<Plugin[]> {
-  const packageJsonPath = Path.join(getProjectRoot(), 'package.json')
-  const packageJson: undefined | Record<string, any> = await fs.readAsync(
-    packageJsonPath,
-    'json'
-  )
-
-  return __importAllPlugins(packageJsonPath, packageJson)
+export async function getInstalledRuntimePluginNames(): Promise<string[]> {
+  const packageJson = await readUsersPackageJson()
+  const pluginDepNames = extractPluginNames(packageJson)
+  const runtimePluginDepNames = pluginDepNames.filter(depName => {
+    return (
+      null !== requireModule({ depName: depName + './runtime', optional: true })
+    )
+  })
+  return runtimePluginDepNames
 }
 
 /**
  * Load all nexus plugins installed into the project
- * TODO: /!\ This should not be called in production
  */
-export function importAllPluginsSync(): Plugin[] {
-  const packageJsonPath = Path.join(getProjectRoot(), 'package.json')
-  const packageJson: undefined | Record<string, any> = fs.read(
-    packageJsonPath,
-    'json'
-  )
-
-  return __importAllPlugins(packageJsonPath, packageJson)
+export async function importAllPlugins(): Promise<Plugin[]> {
+  const packageJson = await readUsersPackageJson()
+  const plugins = doImportAllPlugins(packageJson)
+  return plugins
 }
 
 /**
  * Logic shared between sync/async variants.
  */
-function __importAllPlugins(
-  packageJsonPath: string,
-  packageJson?: PackageJson
-): Plugin[] {
+function doImportAllPlugins(packageJson: null | PackageJson): Plugin[] {
   if (!packageJson) {
     log.trace(
-      'We could not find any package.json file. No plugin will be loaded.',
-      { packageJsonPath }
+      'We could not find any package.json file. No plugin will be loaded.'
     )
   } else {
     log.trace('Extracting plugins from package.json', {
-      path: packageJsonPath,
       content: packageJson,
     })
   }
 
-  const deps = packageJson?.dependencies ?? {}
-  const depNames = Object.keys(deps)
-  const pluginDepNames = depNames.filter(depName =>
-    depName.match(/^nexus-plugin-.+/)
-  )
-  const plugins: Plugin[] = pluginDepNames.map(depName => {
-    const pluginName = parsePluginName(depName)! // filter above guarantees
-
+  const pluginDepNames = extractPluginNames(packageJson)
+  const plugins = pluginDepNames.map(depName => {
+    const pluginName = parsePluginName(depName)! // guaranteed by extract above
     let plugin: Plugin = {
       name: pluginName,
     }
     try {
-      plugin.testtime = requireModule({
-        depName: pluginName + './testtime',
-        optional: true,
-      }) as any
-      plugin.worktime = requireModule({
-        depName: pluginName + './worktime',
-        optional: true,
-      }) as any
-      plugin.runtime = requireModule({
-        depName: pluginName + './runtime',
-        optional: true,
-      }) as any
+      //prettier-ignore
+      plugin.testtime = requireModule({ depName: depName + './testtime', optional: true }) as any
+      //prettier-ignore
+      plugin.worktime = requireModule({ depName: depName + './worktime', optional: true }) as any
+      //prettier-ignore
+      plugin.runtime = requireModule({ depName: depName + './runtime', optional: true }) as any
     } catch (error) {
       fatal(
         stripIndent`
-        An error occured while importing the plugin ${pluginName}:
+          An error occured while importing the Nexus plugin "${pluginName}":
 
-        ${error}
-      `
+          ${error}
+        `
       )
     }
 
@@ -114,4 +94,24 @@ export function parsePluginName(packageName: string): null | string {
   const pluginName = matchResult[1]
 
   return pluginName
+}
+
+/**
+ *
+ */
+async function readUsersPackageJson(): Promise<null | PackageJson> {
+  const packageJsonPath = Path.join(getProjectRoot(), 'package.json')
+  return (await fs.readAsync(packageJsonPath, 'json')) ?? null
+}
+
+/**
+ *
+ */
+function extractPluginNames(packageJson: null | PackageJson): string[] {
+  const deps = packageJson?.dependencies ?? {}
+  const depNames = Object.keys(deps)
+  const pluginDepNames = depNames.filter(depName =>
+    depName.match(/^nexus-plugin-.+/)
+  )
+  return pluginDepNames
 }

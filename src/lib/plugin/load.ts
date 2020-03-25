@@ -3,19 +3,20 @@ import prompts from 'prompts'
 import * as Layout from '../../lib/layout'
 import { rootLogger } from '../nexus-logger'
 import { fatal, run, runSync } from '../process'
-import { importAllPlugins, importAllPluginsSync, Plugin } from './import'
+import { importAllPlugins, Plugin } from './import'
 import {
   Lens,
-  RuntimeContributions,
+  RuntimePlugin,
   TesttimeContributions,
   WorktimeHooks,
+  WorktimeLens,
 } from './index'
 
 type Dimension = 'worktime' | 'runtime' | 'testtime'
 
 const log = rootLogger.child('plugin')
 
-function createLens(pluginName: string): Lens {
+function createBaseLens(pluginName: string): Lens {
   return {
     log: log.child(pluginName),
     run: run,
@@ -27,78 +28,78 @@ function createLens(pluginName: string): Lens {
 /**
  * Load all workflow plugins that are installed into the project.
  */
-export async function loadAllWorktimePlugins(
+export async function loadInstalledWorktimePlugins(
   layout: Layout.Layout
 ): Promise<{ name: string; hooks: WorktimeHooks }[]> {
   const plugins = await importAllPlugins()
   const worktimePlugins = plugins.filter(plugin => plugin.worktime)
-  const workflowHooks = worktimePlugins.map(plugin => {
-    const lens: any = createLens(plugin.name)
-    lens.layout = layout
-    lens.packageManager = layout.packageManager
-    const hooks: WorktimeHooks = {
-      create: {},
-      dev: {
-        addToWatcherSettings: {},
-      },
-      build: {},
-      generate: {},
-    }
-
-    loadPlugin('worktime', plugin, [hooks, lens])
-
-    return {
-      name: plugin.name,
-      hooks: hooks,
-    }
+  const contributions = worktimePlugins.map(plugin => {
+    return loadWorktimePlugin(layout, plugin)
   })
 
-  return workflowHooks
+  return contributions
 }
 
-/**
- * Load all runtime plugins that are installed into the project.
- */
-export async function loadAllRuntimePlugins(): Promise<RuntimeContributions[]> {
+//prettier-ignore
+export async function loadInstalledTesttimePlugins(): Promise<TesttimeContributions[]> {
   const plugins = await importAllPlugins()
-  return __loadAllRuntimePlugins(plugins)
+  return plugins.filter(plugin => plugin.testtime).map(loadTesttimePlugin)
+}
+
+function createWorktimeLens(
+  layout: Layout.Layout,
+  pluginName: string
+): WorktimeLens {
+  const lens: any = createBaseLens(pluginName)
+  lens.layout = layout
+  lens.packageManager = layout.packageManager
+  return lens
 }
 
 /**
- * Load all runtime plugins that are installed into the project.
+ * Try to load a worktime plugin
  */
-export function loadAllRuntimePluginsSync(): RuntimeContributions[] {
-  const plugins = importAllPluginsSync()
-  return __loadAllRuntimePlugins(plugins)
+export function loadWorktimePlugin(layout: Layout.Layout, plugin: Plugin) {
+  const hooks: WorktimeHooks = {
+    create: {},
+    dev: {
+      addToWatcherSettings: {},
+    },
+    build: {},
+    generate: {},
+  }
+
+  loadPlugin('worktime', plugin, [
+    hooks,
+    createWorktimeLens(layout, plugin.name),
+  ])
+
+  return {
+    name: plugin.name,
+    hooks: hooks,
+  }
 }
 
 /**
- * Logic shared between sync/async variants.
+ * Try to load a testtime plugin
  */
-function __loadAllRuntimePlugins(plugins: Plugin[]): RuntimeContributions[] {
-  return plugins
-    .filter(plugin => plugin.runtime)
-    .map(plugin => {
-      return loadPlugin('runtime', plugin, [createLens(plugin.name)])
-    })
+export function loadTesttimePlugin(plugin: Plugin) {
+  return loadPlugin('testtime', plugin, [createBaseLens(plugin.name)])
 }
 
-export async function loadAllTesttimePlugins(): Promise<
-  TesttimeContributions[]
-> {
-  const plugins = await importAllPlugins()
-
-  return plugins
-    .filter(plugin => plugin.testtime)
-    .map(plugin => {
-      return loadPlugin('testtime', plugin, [createLens(plugin.name)])
-    })
+/**
+ * Try to load a runtime plugin
+ */
+export function loadRuntimePlugin(pluginName: string, plugin: RuntimePlugin) {
+  return loadPlugin('runtime', { name: pluginName, runtime: plugin }, [
+    createBaseLens(pluginName),
+  ])
 }
 
 /**
  * Try to load the given dimension of the given plugin.
  */
-function loadPlugin<D extends Dimension, P extends Plugin>(
+export function loadPlugin<D extends Dimension, P extends Plugin>(
   dimension: D,
   plugin: P,
   args: any[]

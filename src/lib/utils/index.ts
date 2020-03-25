@@ -144,7 +144,7 @@ export async function createGitRepository() {
 export function requireModule(config: {
   depName: string
   optional: boolean
-}): undefined | unknown {
+}): null | unknown {
   const depPath = process.env.LINK
     ? Path.join(process.cwd(), '/node_modules/', config.depName)
     : config.depName
@@ -159,7 +159,7 @@ export function requireModule(config: {
     }
   } catch (error) {
     if (error.code === 'MODULE_NOT_FOUND' && config.optional) {
-      return
+      return null
     }
     throw error
   }

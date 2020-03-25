@@ -17,7 +17,8 @@ import {
 import { extractContextTypesToTypeGenFile } from '../add-to-context-extractor/add-to-context-extractor'
 import { generateArtifacts } from '../artifact-generation'
 import { rootLogger } from '../nexus-logger'
-import { loadAllWorktimePlugins } from '../plugin'
+import { loadInstalledWorktimePlugins } from '../plugin'
+import { getInstalledRuntimePluginNames } from '../plugin/import'
 import { fatal } from '../process'
 import {
   computeBuildOutputFromTarget,
@@ -56,7 +57,7 @@ export async function buildNexusApp(settings: BuildSettings) {
     }
   }
 
-  const plugins = await loadAllWorktimePlugins(layout)
+  const plugins = await loadInstalledWorktimePlugins(layout)
 
   await findOrScaffoldTsConfig(layout)
 
@@ -69,13 +70,15 @@ export async function buildNexusApp(settings: BuildSettings) {
   log.trace('running_typegen')
 
   log.info('Generating Nexus artifacts ...')
+  const pluginNames = await getInstalledRuntimePluginNames()
   await Promise.all([
     extractContextTypesToTypeGenFile(tsBuilder.getProgram()),
     generateArtifacts(
       createStartModuleContent({
         internalStage: 'dev',
         appPath: layout.app.path,
-        layout,
+        layout: layout,
+        pluginNames: pluginNames,
       })
     ),
   ])
@@ -92,7 +95,6 @@ export async function buildNexusApp(settings: BuildSettings) {
     buildStage: settings.stage ?? 'production',
     layout,
     tsProgram: tsBuilder,
-    pluginNames: plugins.map(p => p.name),
   })
 
   log.info('success', {
@@ -111,14 +113,13 @@ export async function buildNexusApp(settings: BuildSettings) {
 export async function writeStartModule({
   buildStage,
   layout,
-  pluginNames,
   tsProgram,
 }: {
   buildStage: string
   layout: Layout.Layout
-  pluginNames: string[]
   tsProgram: ts.EmitAndSemanticDiagnosticsBuilderProgram
 }): Promise<void> {
+  const pluginNames = await getInstalledRuntimePluginNames()
   // TODO we can be more flexible and allow the user to write an index.ts
   // module. For example we can alias it, or, we can rename it e.g.
   // `index_original.js`. For now we just error out and ask the user to not name

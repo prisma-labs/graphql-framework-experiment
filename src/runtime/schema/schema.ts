@@ -67,6 +67,7 @@ type SchemaInternal = {
   private: {
     isSchemaEmpty(): boolean
     makeSchema: (
+      plugins: RuntimeContributions[],
       devModeLayout?: Layout
     ) => Promise<NexusSchema.core.NexusGraphQLSchema>
     settings: {
@@ -77,11 +78,7 @@ type SchemaInternal = {
   public: Schema
 }
 
-export function create({
-  plugins,
-}: {
-  plugins: RuntimeContributions[]
-}): SchemaInternal {
+export function create(): SchemaInternal {
   const {
     queryType,
     mutationType,
@@ -116,7 +113,7 @@ export function create({
       isSchemaEmpty: () => {
         return __types.length === 0
       },
-      makeSchema: async devModeLayout => {
+      makeSchema: async (plugins, devModeLayout) => {
         const nexusSchemaConfig = createNexusSchemaConfig(
           plugins,
           state.settings

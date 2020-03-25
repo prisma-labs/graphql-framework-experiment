@@ -8,6 +8,7 @@ import * as PackageManager from '../package-manager'
 import { run, runSync } from '../process'
 import * as Chokidar from '../watcher/chokidar'
 export * from './db-driver'
+export * from './import'
 export * from './load'
 
 type PromptsConstructor = <T extends string = string>(

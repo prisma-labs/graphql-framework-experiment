@@ -13,6 +13,7 @@ type StartModuleConfig =
        */
       appPath: null | string
       layout: Layout.Layout
+      pluginNames: string[]
     }
   | {
       internalStage: 'build'
@@ -53,20 +54,22 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   if (config.internalStage === 'build' && config.relativePackageJsonPath) {
     output += '\n\n'
     output += stripIndent`
-    // Hack to enable package.json to be imported by various deployment services such as now.sh
-    require('${config.relativePackageJsonPath}')
+      // Hack to enable package.json to be imported by various deployment services such as now.sh
+      require('${config.relativePackageJsonPath}')
     `
   }
 
-  if (config.internalStage === 'build') {
-    output += '\n\n'
-    output += stripIndent`
-    // Statically require all plugins so that tree-shaking can be done
-    ${config.pluginNames
+  output += '\n\n'
+  output += stripIndent`
+    // Apply runtime plugins
+    const plugins = [${config.pluginNames
       .map(pluginName => `require('nexus-plugin-${pluginName}')`)
-      .join('\n')}
-    `
-  }
+      .join(', ')}]
+    plugins.forEach(function (plugin) {
+      app.__use(pluginName, plugin)
+    })
+    
+  `
 
   if (config.internalStage === 'build') {
     const staticImports = Layout.schema.printStaticImports(config.layout)
