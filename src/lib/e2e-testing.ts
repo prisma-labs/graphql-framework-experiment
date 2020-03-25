@@ -38,11 +38,11 @@ export function setupE2EContext(config?: {
     client: new GraphQLClient('http://localhost:4000/graphql'),
     projectDir: projectDir,
     spawn(
-      binPath: string,
-      args: string[],
+      binPathAndArgs: string[],
       expectHandler: (data: string, proc: IPty) => void = () => {},
       opts: IPtyForkOptions = {}
     ) {
+      const [binPath, ...args] = binPathAndArgs
       return ptySpawn(
         binPath,
         args,

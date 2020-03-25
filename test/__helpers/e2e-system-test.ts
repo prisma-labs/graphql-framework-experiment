@@ -104,7 +104,7 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
   expect(res.exitCode).toStrictEqual(0)
 
   // Run built app and query graphql api
-  await ctx.spawn('node', [DEFAULT_BUILD_FOLDER_NAME], async (data, proc) => {
+  await ctx.spawn(['node', DEFAULT_BUILD_FOLDER_NAME], async (data, proc) => {
     if (data.includes('server:listening')) {
       let result: any
       result = await ctx.client.request(`{
@@ -128,4 +128,15 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
       proc.kill()
     }
   })
+
+  // Run the built app from a different CWD than the project root
+  await ctx.spawn(
+    ['node', DEFAULT_BUILD_FOLDER_NAME],
+    async (data, proc) => {
+      if (data.includes('server:listening')) {
+        proc.kill()
+      }
+    },
+    { cwd: '/foo/bar' }
+  )
 }
