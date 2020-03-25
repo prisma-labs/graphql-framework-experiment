@@ -1,23 +1,29 @@
 import { spawnSync } from 'child_process'
 import * as FS from 'fs-jetpack'
+import * as Path from 'path'
 import { rootLogger } from './nexus-logger'
 import { fatal } from './process'
+import { getProjectRoot } from './project-root'
 
 const log = rootLogger.child('typegen')
 
 export async function generateArtifacts(startScript: string): Promise<void> {
   log.trace('start')
-  const result = spawnSync('npx', ['ts-node', '--eval', startScript], {
-    encoding: 'utf8',
-    env: {
-      ...process.env,
-      NEXUS_STAGE: 'dev',
-      NEXUS_SHOULD_AWAIT_TYPEGEN: 'true',
-      NEXUS_SHOULD_GENERATE_ARTIFACTS: 'true',
-      NEXUS_SHOULD_EXIT_AFTER_GENERATE_ARTIFACTS: 'true',
-      TS_NODE_TRANSPILE_ONLY: 'true',
-    },
-  })
+  const result = spawnSync(
+    Path.join(getProjectRoot(), 'node_modules/.bin/ts-node'),
+    ['--eval', startScript],
+    {
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        NEXUS_STAGE: 'dev',
+        NEXUS_SHOULD_AWAIT_TYPEGEN: 'true',
+        NEXUS_SHOULD_GENERATE_ARTIFACTS: 'true',
+        NEXUS_SHOULD_EXIT_AFTER_GENERATE_ARTIFACTS: 'true',
+        TS_NODE_TRANSPILE_ONLY: 'true',
+      },
+    }
+  )
 
   if (result.error) {
     log.trace('...had error trying to start the typegen process')
