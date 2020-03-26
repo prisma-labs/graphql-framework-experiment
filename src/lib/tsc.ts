@@ -136,6 +136,7 @@ export function createTSProgram(
       ...tsConfig.options,
     },
   })
+
   return program
 }
 
@@ -160,7 +161,6 @@ export function compile(
     fs.remove(layout.buildOutput)
   }
 
-  log.trace('done')
   log.trace('emit transpiled modules to disk...')
   const emitResult = program.emit()
   log.trace('done', { filesEmitted: emitResult.emittedFiles?.length ?? 0 })

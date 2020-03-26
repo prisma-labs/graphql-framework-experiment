@@ -3,6 +3,7 @@ import ts from 'typescript'
 import * as Layout from '../../lib/layout'
 import { createTSProgram } from '../../lib/tsc'
 import { rootLogger } from '../nexus-logger'
+import { areWorkerThreadsAvailable } from '../utils'
 import { extractContextTypes, ExtractedContectTypes } from './extractor'
 import { writeContextTypeGenFile } from './typegen'
 
@@ -26,18 +27,6 @@ export function runAddToContextExtractorAsWorkerIfPossible(
     const layout = Layout.createFromData(layoutData)
     const builder = createTSProgram(layout, { withCache: true })
     extractContextTypesToTypeGenFile(builder.getProgram())
-  }
-}
-
-/**
- * Check whether Worker Threads are available. In Node 10, workers aren't available by default.
- */
-function areWorkerThreadsAvailable(): boolean {
-  try {
-    require('worker_threads')
-    return true
-  } catch {
-    return false
   }
 }
 

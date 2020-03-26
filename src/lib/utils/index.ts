@@ -140,3 +140,44 @@ export async function createGitRepository() {
   await git.raw(['add', '-A'])
   await git.raw(['commit', '-m', 'initial commit'])
 }
+
+/**
+ * Check whether Worker Threads are available. In Node 10, workers aren't available by default.
+ */
+export function areWorkerThreadsAvailable(): boolean {
+  try {
+    require('worker_threads')
+    return true
+  } catch (error) {
+    if (error.code === 'MODULE_NOT_FOUND') {
+      return false
+    }
+    throw error
+  }
+}
+
+/**
+ * A wrapper around require. It does nothing special except when LINK env var is
+ * set in which case it prefixes the import path with CWD. This is essential
+ * when dealing with plugin or plugin-like situations.
+ *
+ * In prisma case, Prisma Client is generated into user's project and required by other packages in
+ * user's prject. Problem is when those "other packages" are LINKED, then their
+ * attempts to import fail because they are looking relative to their location
+ * on disk, not hte user's project, where they just LINKED into.
+ */
+export function linkableRequire(id: string): any {
+  if (process.env.LINK) {
+    return require(Path.join(process.cwd(), 'node_modules', id))
+  } else {
+    return require(id)
+  }
+}
+
+export function linkableResolve(id: string): any {
+  if (process.env.LINK) {
+    return require.resolve(Path.join(process.cwd(), 'node_modules', id))
+  } else {
+    return require.resolve(id)
+  }
+}

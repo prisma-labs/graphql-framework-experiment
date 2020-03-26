@@ -36,14 +36,14 @@ export class Dev implements Command {
     const bootModule = createStartModuleContent({
       internalStage: 'dev',
       layout: layout,
-      appPath: layout.app.path,
+      disableArtifactGeneration: false,
     })
 
     log.info('boot', { version: require('../../../package.json').version })
 
     await createWatcher({
       plugins: plugins.map(p => p.hooks),
-      layout,
+      layout: layout,
       eval: {
         code: bootModule,
         fileName: 'start.js',
