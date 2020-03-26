@@ -131,7 +131,7 @@ async function main() {
 
   // Update the environment to make it look as if this module is running in the
   // user's app. A reference for some of the magic going on here is
-  // https://github.com/patrick-steele-idem/app-module-path-node
+  // https://github.com/patrick-steele-idem/app-module-path-node.
 
   const cwd = process.cwd()
   const g: any = global
@@ -145,10 +145,14 @@ async function main() {
   moduleReplacement.filename = startModuleFileName
   moduleReplacement.paths = M._nodeModulePaths(cwd)
 
-  m.path = layout.sourceRoot
+  // Changig this will make the reuires in the startModule that is evaluated
+  // within this module later work. Otherwise they will require relative to
+  // where this module is located, inside the Nexus package, then erroring.
   module.filename = startModuleFileName
   module.paths.length = 0
   module.paths.push(...moduleReplacement.paths)
+  // Present in JS, not typed in TS
+  m.path = layout.sourceRoot
 
   // Without these the following run in conext attempt will fail
   g.exports = moduleReplacement.exports
