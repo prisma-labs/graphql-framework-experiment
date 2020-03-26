@@ -170,8 +170,8 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
     './prisma/schema.prisma',
     `
       datasource db {
-        provider = "SQLite"
-        url      = "prisma/db.dev"
+        provider = "sqlite"
+        url      = "file:data.db"
       }
 
       generator prisma_client {
