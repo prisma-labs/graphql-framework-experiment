@@ -156,9 +156,10 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
   log.warn('Check that prisma plugin can integrate')
 
   // Install a plugin
-  log.warn('Install plugin')
   const nexusPluginPrismaVersion =
     process.env.NEXUS_PLUGIN_PRISMA_VERSION ?? 'latest'
+
+  log.warn('Install plugin', { version: nexusPluginPrismaVersion })
 
   await ctx.spawn([
     'npm',
