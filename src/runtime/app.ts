@@ -6,8 +6,6 @@ import * as Plugin from '../lib/plugin'
 import * as Schema from './schema'
 import * as Server from './server'
 import * as singletonChecks from './singleton-checks'
-import * as BackingTypes from '../lib/backing-types'
-import { write, extractAndWrite } from '../lib/backing-types'
 
 const log = Logger.create({ name: 'app' })
 
@@ -143,22 +141,7 @@ export function create(): App {
        * for you. You should not normally need to call this function yourself.
        */
       async start() {
-        let devModeLayout: Layout.Layout | undefined = undefined
-
-        // During development we dynamically import all the schema modules
-        // TODO IDEA we have concept of schema module and schema dir
-        //      add a "refactor" command to toggle between them
-
-        // During dev mode we will dynamically require the user's graphql modules.
-        // At build time we inline static imports.
-        // This code MUST run after user/system has had chance to run global installation
-        if (process.env.NEXUS_STAGE === 'dev') {
-          devModeLayout = await Layout.loadDataFromParentProcess()
-
-          await Layout.schema.importModules(devModeLayout)
-        }
-
-        const schema = await schemaComponent.private.makeSchema(devModeLayout)
+        const schema = await schemaComponent.private.makeSchema()
 
         if (schemaComponent.private.isSchemaEmpty()) {
           log.warn(Layout.schema.emptyExceptionMessage())

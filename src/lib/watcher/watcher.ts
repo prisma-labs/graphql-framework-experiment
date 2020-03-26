@@ -15,14 +15,11 @@ const log = rootLogger.child('dev').child('watcher')
 export function createWatcher(options: Opts): Promise<void> {
   return new Promise(async (resolve, reject) => {
     compiler.init(options)
-    // compiler.stop = stopRunner
 
     // Setup the client (runner / server (watcher) system
 
     const link = new Link.Link({
       environmentAdditions: {
-        NEXUS_EVAL: options.eval.code,
-        NEXUS_EVAL_FILENAME: options.eval.fileName,
         ...saveDataForChildProcess(options.layout),
       },
       // Watch all modules imported by the user's app for changes.
