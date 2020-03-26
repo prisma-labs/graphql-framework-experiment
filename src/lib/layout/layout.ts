@@ -8,6 +8,7 @@ import {
   findFile,
   stripExt,
 } from '../../lib/fs'
+import { START_MODULE_NAME } from '../../runtime/start'
 import { rootLogger } from '../nexus-logger'
 import * as PackageManager from '../package-manager'
 import { getProjectRoot } from '../project-root'
@@ -30,11 +31,11 @@ export type ScanResult = {
   app:
     | {
         exists: true
-        path: string
+        pathAbs: string
       }
     | {
         exists: false
-        path: null
+        pathAbs: null
       }
   project: {
     name: string
@@ -68,6 +69,8 @@ export type ScanResult = {
  */
 export type Data = ScanResult & {
   buildOutput: string
+  startModuleOutAbsPath: string
+  startModuleInAbsPath: string
 }
 
 /**
@@ -106,7 +109,16 @@ export async function create(optionsGiven?: Options): Promise<Layout> {
     cwd: optionsGiven?.cwd ?? process.cwd(),
   }
   const data = await scan({ cwd: options.cwd })
-  const layout = createFromData({ ...data, buildOutput: options.buildOutput })
+  const layout = createFromData({
+    ...data,
+    buildOutput: options.buildOutput,
+    startModuleInAbsPath: Path.join(data.sourceRoot, START_MODULE_NAME + '.ts'),
+    startModuleOutAbsPath: Path.join(
+      data.projectRoot,
+      options.buildOutput,
+      START_MODULE_NAME + '.js'
+    ),
+  })
 
   /**
    * Save the created layout in the env
@@ -168,8 +180,8 @@ export const scan = async (opts?: { cwd?: string }): Promise<ScanResult> => {
   const result: ScanResult = {
     app:
       maybeAppModule === null
-        ? ({ exists: false, path: maybeAppModule } as const)
-        : ({ exists: true, path: maybeAppModule } as const),
+        ? ({ exists: false, pathAbs: maybeAppModule } as const)
+        : ({ exists: true, pathAbs: maybeAppModule } as const),
     projectRoot,
     sourceRoot,
     schemaModules: maybeSchemaModules,

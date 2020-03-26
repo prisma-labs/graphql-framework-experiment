@@ -1,32 +1,46 @@
 import { spawnSync } from 'child_process'
 import * as FS from 'fs-jetpack'
-import { rootLogger } from './nexus-logger'
-import { fatal } from './process'
+import { Layout } from '../layout'
+import { rootLogger } from '../nexus-logger'
+import { fatal } from '../process'
+import { getProjectRoot } from '../project-root'
 
 const log = rootLogger.child('typegen')
 
-export async function generateArtifacts(startScript: string): Promise<void> {
+export async function generateArtifacts(layout: Layout): Promise<void> {
   log.trace('start')
-  const result = spawnSync('npx', ['ts-node', '--eval', startScript], {
+
+  const result = spawnSync('node', [layout.startModuleOutAbsPath], {
+    stdio: 'inherit',
     encoding: 'utf8',
+    cwd: getProjectRoot(),
     env: {
       ...process.env,
-      NEXUS_STAGE: 'dev',
       NEXUS_SHOULD_AWAIT_TYPEGEN: 'true',
-      NEXUS_SHOULD_GENERATE_ARTIFACTS: 'true',
       NEXUS_SHOULD_EXIT_AFTER_GENERATE_ARTIFACTS: 'true',
-      TS_NODE_TRANSPILE_ONLY: 'true',
     },
   })
 
   if (result.error) {
-    log.trace('...had error trying to start the typegen process')
+    log.trace('There was an error while trying to start the typegen process')
     throw result.error
   }
 
   if (result.stderr) {
-    log.trace('...had error trying to start the typegen process')
+    log.trace('There was an error while trying to start the typegen process')
     fatal(result.stderr)
+  }
+
+  if (result.status !== 0) {
+    log.trace('There was an error while running the typegen process')
+    const error = new Error(`
+      Nexus artifact generation failed with exit code "${result.status}". The following stderr was captured:
+
+          ${result.stderr}
+    `)
+
+    throw error
+    // todo fatal??
   }
 
   // Handling no-hoist problem
@@ -66,15 +80,4 @@ export async function generateArtifacts(startScript: string): Promise<void> {
   }
 
   log.trace('done', result as any)
-
-  if (result.status !== 0) {
-    log.trace('...had error while running the typegen process')
-    const error = new Error(`
-      Nexus artifact generation failed with exit code "${result.status}". The following stderr was captured:
-
-          ${result.stderr}
-    `)
-
-    throw error
-  }
 }

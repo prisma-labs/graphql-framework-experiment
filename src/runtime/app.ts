@@ -145,19 +145,8 @@ export function create(): App {
         // Track the start call so that we can know in entrypoint whether to run
         // or not start for the user.
         singletonChecks.state.is_was_server_start_called = true
-
-        let devModeLayout: Layout.Layout | undefined = undefined
-
-        // During development we dynamically import all the schema modules
-        // During dev mode we will dynamically require the user's graphql modules.
-        // At build time we inline static imports.
-        if (process.env.NEXUS_STAGE === 'dev') {
-          devModeLayout = await Layout.loadDataFromParentProcess()
-
-          await Layout.schema.importModules(devModeLayout)
-        }
-
-        const schema = await schemaComponent.private.makeSchema(devModeLayout)
+              
+        const schema = await schemaComponent.private.makeSchema()
 
         if (schemaComponent.private.isSchemaEmpty()) {
           log.warn(Layout.schema.emptyExceptionMessage())

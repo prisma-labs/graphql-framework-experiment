@@ -140,3 +140,18 @@ export async function createGitRepository() {
   await git.raw(['add', '-A'])
   await git.raw(['commit', '-m', 'initial commit'])
 }
+
+/**
+ * Check whether Worker Threads are available. In Node 10, workers aren't available by default.
+ */
+export function areWorkerThreadsAvailable(): boolean {
+  try {
+    require('worker_threads')
+    return true
+  } catch (error) {
+    if (error.code === 'MODULE_NOT_FOUND') {
+      return false
+    }
+    throw error
+  }
+}
