@@ -1,17 +1,16 @@
 import { stripIndent } from 'common-tags'
 import * as FS from 'fs-jetpack'
 import * as Path from 'path'
-import ts from 'typescript'
 import * as Layout from '../../lib/layout'
 import {
   compile,
   createTSProgram,
   deleteTSIncrementalFile,
   findOrScaffoldTsConfig,
-  transpileModule,
 } from '../../lib/tsc'
 import {
   createStartModuleContent,
+  prepareStartModule,
   START_MODULE_NAME,
 } from '../../runtime/start'
 import { extractContextTypesToTypeGenFile } from '../add-to-context-extractor/add-to-context-extractor'
@@ -129,14 +128,6 @@ export async function buildNexusApp(settings: BuildSettings) {
   if (deploymentTarget) {
     logTargetPostBuildMessage(deploymentTarget)
   }
-}
-
-function prepareStartModule(
-  tsBuilder: ts.EmitAndSemanticDiagnosticsBuilderProgram,
-  startModule: string
-): string {
-  log.trace('Transpiling start module')
-  return transpileModule(startModule, tsBuilder.getCompilerOptions())
 }
 
 /**

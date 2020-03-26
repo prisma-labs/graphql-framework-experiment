@@ -6,10 +6,14 @@ require('../tty-linker')
 
 import { register } from 'ts-node'
 import { Script } from 'vm'
-import { createStartModuleContent } from '../../runtime/start'
+import {
+  createStartModuleContent,
+  prepareStartModule,
+} from '../../runtime/start'
 import { runAddToContextExtractorAsWorkerIfPossible } from '../add-to-context-extractor/add-to-context-extractor'
 import * as Layout from '../layout'
 import { rootLogger } from '../nexus-logger'
+import { createTSProgram } from '../tsc'
 import cfgFactory from './cfg'
 import hook from './hook'
 import * as IPC from './ipc'
@@ -127,11 +131,16 @@ register({
     IPC.client.senders.moduleImported({ filePath })
   })
 
-  const startModule = createStartModuleContent({
-    internalStage: 'dev',
-    layout: layout,
-    inlineSchemaModuleImports: true,
-  })
+  const tsBuilder = createTSProgram(layout, { withCache: true })
+  const startModule = prepareStartModule(
+    tsBuilder,
+    createStartModuleContent({
+      internalStage: 'dev',
+      layout: layout,
+      inlineSchemaModuleImports: true,
+      absoluteSourceImportPaths: true,
+    })
+  )
 
   evalScript(startModule)
 
