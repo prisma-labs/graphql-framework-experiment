@@ -42,9 +42,9 @@ function normalizeLayoutResult(tmpDir: string, data: Layout.Data): Layout.Data {
   const app: Layout.Data['app'] = data.app.exists
     ? {
         exists: true,
-        path: normalizePath(data.app.path),
+        pathAbs: normalizePath(data.app.pathAbs),
       }
-    : { exists: false, path: null }
+    : { exists: false, pathAbs: null }
 
   return {
     ...data,
