@@ -4,6 +4,7 @@ require('../tty-linker')
   .create()
   .child.install()
 
+import * as path from 'path'
 import * as tsNode from 'ts-node'
 import { Script } from 'vm'
 import { createStartModuleContent } from '../../runtime/start'
@@ -20,6 +21,8 @@ const log = rootLogger.child('dev').child('runner')
 const tsNodeRegister = tsNode.register({
   transpileOnly: true,
 })
+
+main()
 
 async function main() {
   const layout = await Layout.create()
@@ -129,41 +132,47 @@ async function main() {
     startModuleFileName
   )
 
+  emulatedEval(startModule, startModuleFileName)
+}
+
+/**
+ * Eval something with the module system mutated to appear is if the thing being
+ * evaled was the module that the module system booted within.
+ */
+function emulatedEval(script: string, filepath: string): void {
   // Update the environment to make it look as if this module is running in the
   // user's app. A reference for some of the magic going on here is
   // https://github.com/patrick-steele-idem/app-module-path-node.
 
   const cwd = process.cwd()
-  const g: any = global
-  const m: any = module
-  const M: any = Module
+  const global_: any = global
+  const module_: any = module
+  const Module_: any = Module
 
-  g.__filename = startModuleFileName
-  g.__dirname = cwd
+  global_.__filename = filepath
+  global_.__dirname = cwd
 
-  const moduleReplacement = new Module(startModuleFileName)
-  moduleReplacement.filename = startModuleFileName
-  moduleReplacement.paths = M._nodeModulePaths(cwd)
+  const moduleReplacement = new Module(filepath)
+  moduleReplacement.filename = filepath
+  moduleReplacement.paths = Module_._nodeModulePaths(cwd)
 
   // Changig this will make the reuires in the startModule that is evaluated
   // within this module later work. Otherwise they will require relative to
   // where this module is located, inside the Nexus package, then erroring.
-  module.filename = startModuleFileName
+  module.filename = filepath
   module.paths.length = 0
   module.paths.push(...moduleReplacement.paths)
   // Present in JS, not typed in TS
-  m.path = layout.sourceRoot
+  module_.path = path.dirname(filepath)
 
   // Without these the following run in conext attempt will fail
-  g.exports = moduleReplacement.exports
-  g.module = moduleReplacement
-  g.require = moduleReplacement.require.bind(moduleReplacement)
+  global_.exports = moduleReplacement.exports
+  global_.module = moduleReplacement
+  global_.require = moduleReplacement.require.bind(moduleReplacement)
 
-  const startModuleScript = new Script(startModule, {
-    filename: startModuleFileName,
+  const startModuleScript = new Script(script, {
+    filename: filepath,
   })
 
   startModuleScript.runInThisContext()
 }
-
-main()

@@ -66,9 +66,7 @@ export type Schema = {
 type SchemaInternal = {
   private: {
     isSchemaEmpty(): boolean
-    makeSchema: (
-      devModeLayout?: Layout.Layout
-    ) => Promise<NexusSchema.core.NexusGraphQLSchema>
+    makeSchema: () => Promise<NexusSchema.core.NexusGraphQLSchema>
     settings: {
       data: SettingsData
       change: (newSettings: SettingsInput) => void
