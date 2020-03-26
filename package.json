@@ -41,7 +41,6 @@
     "node-fetch": "^2.6.0",
     "pino": "^5.15.0",
     "prompts": "^2.3.0",
-    "resolve-from": "^5.0.0",
     "simple-git": "^1.126.0",
     "strip-ansi": "^6.0.0",
     "ts-morph": "^7.0.0",

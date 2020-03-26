@@ -21,47 +21,6 @@ export async function generateArtifacts(layout: Layout): Promise<void> {
     },
   })
 
-  // if (areWorkerThreadsAvailable()) {
-  //   // avoid import error in node 10.x
-  //   const { Worker } = require('worker_threads')
-  //   const worker: Worker = new Worker(
-  //     Path.join(__dirname, './typegen-worker.js'),
-  //     {
-  //       workerData: {
-  //         startModule: startModule,
-  //         // layout: layout.data,
-  //       },
-  //     } as WorkerOptions
-  //   )
-
-  //   await new Promise((res, rej) => {
-  //     worker.once('error', error => {
-  //       rej(error)
-  //     })
-  //     worker.once('exit', exitCode => {
-  //       if (exitCode !== 0) {
-  //         rej()
-  //       } else {
-  //         res()
-  //       }
-  //     })
-  //   })
-  // }
-  // const result = spawnSync(
-  //   Path.join(, 'node_modules/.bin/ts-node'),
-  //   ['--eval', startScript],
-  //   {
-  //     encoding: 'utf8',
-  //     env: {
-  //       ...process.env,
-  //       NEXUS_SHOULD_AWAIT_TYPEGEN: 'true',
-  //       NEXUS_SHOULD_GENERATE_ARTIFACTS: 'true',
-  //       NEXUS_SHOULD_EXIT_AFTER_GENERATE_ARTIFACTS: 'true',
-  //       TS_NODE_TRANSPILE_ONLY: 'true',
-  //     },
-  //   }
-  // )
-
   if (result.error) {
     log.trace('There was an error while trying to start the typegen process')
     throw result.error

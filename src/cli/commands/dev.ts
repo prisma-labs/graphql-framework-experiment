@@ -36,7 +36,6 @@ export class Dev implements Command {
     const bootModule = createStartModuleContent({
       internalStage: 'dev',
       layout: layout,
-      disableArtifactGeneration: false,
     })
 
     log.info('boot', { version: require('../../../package.json').version })
