@@ -129,6 +129,8 @@ export function createTSProgram(
       }
     : {}
 
+  log.trace('Create TypeScript program')
+
   const program = ts.createIncrementalProgram({
     rootNames: tsConfig.fileNames,
     options: {

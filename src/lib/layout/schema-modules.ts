@@ -58,16 +58,10 @@ export async function importModules(layout: Layout): Promise<void> {
  * Note that it is assumed the module these imports will run in will be located
  * in the source/build root.
  */
-export function printStaticImports(
-  layout: Layout,
-  opts?: { absolutePaths: boolean }
-): string {
+export function printStaticImports(layout: Layout): string {
   return layout.schemaModules.reduce((script, modulePath) => {
-    const path = opts?.absolutePaths
-      ? modulePath
-      : relativeTranspiledImportPath(layout, modulePath)
-
-    return `${script}\n${printSideEffectsImport(path)}`
+    const relPath = relativeTranspiledImportPath(layout, modulePath)
+    return `${script}\n${printSideEffectsImport(relPath)}`
   }, '')
 }
 

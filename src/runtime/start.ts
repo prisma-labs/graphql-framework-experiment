@@ -17,14 +17,6 @@ type StartModuleConfig = {
   relativePackageJsonPath?: string
   inlineSchemaModuleImports?: boolean
   pluginNames?: string[]
-  /**
-   * Make all imports of the user's source code be absolute paths. This can be
-   * useful when working within modules of this framework package which will
-   * eval this start modle. In those cases the start modules requires would be
-   * relative to the runner within this package rather than the user's source
-   * code which is what you'd want.
-   */
-  absoluteSourceImportPaths?: boolean
 }
 
 export function createStartModuleContent(config: StartModuleConfig): string {
@@ -72,9 +64,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
 
   if (config.inlineSchemaModuleImports) {
     // This MUST come after nexus-future package has been imported for its side-effects
-    const staticImports = Layout.schema.printStaticImports(config.layout, {
-      absolutePaths: config.absoluteSourceImportPaths ?? false,
-    })
+    const staticImports = Layout.schema.printStaticImports(config.layout)
     if (staticImports !== '') {
       output += '\n\n\n'
       output += stripIndent`
@@ -90,10 +80,8 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   output += config.layout.app.exists
     ? stripIndent`
         // import the user's app module
-        require("${stripExt(
-          config.absoluteSourceImportPaths
-            ? config.layout.app.pathAbs
-            : './' + config.layout.sourceRelative(config.layout.app.pathAbs)
+        require("./${stripExt(
+          config.layout.sourceRelative(config.layout.app.pathAbs)
         )}")
 
         // Boot the server for the user if they did not alreay do so manually.

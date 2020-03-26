@@ -17,6 +17,7 @@ const log = rootLogger.child('add-to-context-extractor')
 export function runAddToContextExtractorAsWorkerIfPossible(
   layoutData: Layout.Layout['data']
 ) {
+  log.trace('starting context type extraction')
   let hasWorkerThreads = areWorkerThreadsAvailable()
 
   if (hasWorkerThreads) {

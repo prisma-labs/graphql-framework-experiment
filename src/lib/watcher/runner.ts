@@ -4,16 +4,12 @@ require('../tty-linker')
   .create()
   .child.install()
 
-import { register } from 'ts-node'
+import * as tsNode from 'ts-node'
 import { Script } from 'vm'
-import {
-  createStartModuleContent,
-  prepareStartModule,
-} from '../../runtime/start'
+import { createStartModuleContent } from '../../runtime/start'
 import { runAddToContextExtractorAsWorkerIfPossible } from '../add-to-context-extractor/add-to-context-extractor'
 import * as Layout from '../layout'
 import { rootLogger } from '../nexus-logger'
-import { createTSProgram } from '../tsc'
 import cfgFactory from './cfg'
 import hook from './hook'
 import * as IPC from './ipc'
@@ -21,31 +17,23 @@ import Module = require('module')
 
 const log = rootLogger.child('dev').child('runner')
 
-log.trace('boot')
-
-// TODO HACK, big one, like running ts-node twice?
-register({
+const tsNodeRegister = tsNode.register({
   transpileOnly: true,
 })
-;(async function() {
-  const layout = await Layout.create()
 
-  log.trace('starting context type extraction')
+async function main() {
+  const layout = await Layout.create()
 
   runAddToContextExtractorAsWorkerIfPossible(layout.data)
 
   // Remove app-runner.js from the argv array
+  // todo why?
   process.argv.splice(1, 1)
 
-  // A signal that the framework can use to make integrity checks with
+  // Enable dev mode code paths for IPC interaction
   process.env.NEXUS_DEV_MODE = 'true'
 
-  if (process.env.DEBUG_RUNNER) {
-    process.env.DEBUG = process.env.DEBUG_RUNNER
-  }
-
   const cfg = cfgFactory()
-  const cwd = process.cwd()
 
   // Set NODE_ENV to 'development' unless already set
   if (!process.env.NODE_ENV) process.env.NODE_ENV = 'development'
@@ -131,32 +119,47 @@ register({
     IPC.client.senders.moduleImported({ filePath })
   })
 
-  const tsBuilder = createTSProgram(layout, { withCache: true })
-  const startModule = prepareStartModule(
-    tsBuilder,
+  const startModuleFileName = layout.sourceRoot + '/index.ts'
+  const startModule = tsNodeRegister.compile(
     createStartModuleContent({
       internalStage: 'dev',
       layout: layout,
       inlineSchemaModuleImports: true,
-      absoluteSourceImportPaths: true,
-    })
+    }),
+    startModuleFileName
   )
 
-  evalScript(startModule)
+  // Update the environment to make it look as if this module is running in the
+  // user's app. A reference for some of the magic going on here is
+  // https://github.com/patrick-steele-idem/app-module-path-node
 
-  function evalScript(script: string) {
-    const EVAL_FILENAME = 'start.js'
-    const module = new Module(EVAL_FILENAME)
-    module.filename = EVAL_FILENAME
-    module.paths = (Module as any)._nodeModulePaths(cwd)
-    ;(global as any).__filename = EVAL_FILENAME
-    ;(global as any).__dirname = cwd
-    ;(global as any).exports = module.exports
-    ;(global as any).module = module
-    ;(global as any).require = module.require.bind(module)
+  const cwd = process.cwd()
+  const g: any = global
+  const m: any = module
+  const M: any = Module
 
-    new Script(script, {
-      filename: EVAL_FILENAME,
-    }).runInThisContext()
-  }
-})()
+  g.__filename = startModuleFileName
+  g.__dirname = cwd
+
+  const moduleReplacement = new Module(startModuleFileName)
+  moduleReplacement.filename = startModuleFileName
+  moduleReplacement.paths = M._nodeModulePaths(cwd)
+
+  m.path = layout.sourceRoot
+  module.filename = startModuleFileName
+  module.paths.length = 0
+  module.paths.push(...moduleReplacement.paths)
+
+  // Without these the following run in conext attempt will fail
+  g.exports = moduleReplacement.exports
+  g.module = moduleReplacement
+  g.require = moduleReplacement.require.bind(moduleReplacement)
+
+  const startModuleScript = new Script(startModule, {
+    filename: startModuleFileName,
+  })
+
+  startModuleScript.runInThisContext()
+}
+
+main()
