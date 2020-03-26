@@ -76,9 +76,5 @@ export interface Opts extends BooleanOpts, StringOpts {
   log?: any
   watch?: string
   stdio?: ForkOptions['stdio']
-  eval: {
-    code: string
-    fileName: string
-  }
   plugins: Plugin.WorkflowHooks[]
 }

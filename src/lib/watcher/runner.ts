@@ -6,6 +6,7 @@ require('../tty-linker')
 
 import { register } from 'ts-node'
 import { Script } from 'vm'
+import { createStartModuleContent } from '../../runtime/start'
 import { runAddToContextExtractorAsWorkerIfPossible } from '../add-to-context-extractor/add-to-context-extractor'
 import * as Layout from '../layout'
 import { rootLogger } from '../nexus-logger'
@@ -126,14 +127,16 @@ register({
     IPC.client.senders.moduleImported({ filePath })
   })
 
-  if (!process.env.NEXUS_EVAL) {
-    throw new Error('process.env.NEXUS_EVAL is required')
-  }
+  const startModule = createStartModuleContent({
+    internalStage: 'dev',
+    layout: layout,
+    inlineSchemaModuleImports: true,
+  })
 
-  evalScript(process.env.NEXUS_EVAL)
+  evalScript(startModule)
 
   function evalScript(script: string) {
-    const EVAL_FILENAME = process.env.NEXUS_EVAL_FILENAME!
+    const EVAL_FILENAME = 'start.js'
     const module = new Module(EVAL_FILENAME)
     module.filename = EVAL_FILENAME
     module.paths = (Module as any)._nodeModulePaths(cwd)
