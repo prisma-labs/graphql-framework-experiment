@@ -1,7 +1,7 @@
 import * as Nexus from '@nexus/schema'
 import { AllTypeDefs } from '@nexus/schema/dist/core'
 import * as CustomTypes from './custom-types'
-import { makeSchemaWithoutTypegen, EnhancedSchema } from './utils'
+import { makeSchemaWithoutTypegen, NexusSchemaWithMetadata } from './utils'
 
 export type AllNexusTypeDefs =
   | AllTypeDefs
@@ -11,13 +11,9 @@ export type AllNexusTypeDefs =
 export function createNexusSingleton() {
   const __types: AllNexusTypeDefs[] = []
 
-  /**
-   * Create the Nexus GraphQL Schema. If NEXUS_SHOULD_AWAIT_TYPEGEN=true then the typegen
-   * disk write is awaited upon.
-   */
-  async function makeSchema(
+  function makeSchema(
     config: Nexus.core.SchemaConfig
-  ): Promise<EnhancedSchema> {
+  ): NexusSchemaWithMetadata {
     config.types.push(__types)
 
     return makeSchemaWithoutTypegen(config)

@@ -32,7 +32,7 @@ export type App = {
    * ### todo
    *
    */
-  server: Server.ServerWithCustomizer
+  server: Server.Server
   /**
    * todo
    */
@@ -136,35 +136,31 @@ export function create(): App {
       ...schemaComponent.public,
     },
     server: {
+      express: server.express,
       /**
        * Start the server. If you do not call this explicitly then nexus will
        * for you. You should not normally need to call this function yourself.
        */
       async start() {
+        // Track the start call so that we can know in entrypoint whether to run
+        // or not start for the user.
+        singletonChecks.state.is_was_server_start_called = true
+              
         const schema = await schemaComponent.private.makeSchema()
 
         if (schemaComponent.private.isSchemaEmpty()) {
           log.warn(Layout.schema.emptyExceptionMessage())
         }
 
-        const result = server.createAndStart({
+        await server.setupAndStart({
           schema,
           plugins,
           contextContributors,
           settings,
         })
-
-        // Track the start call so that we can know in entrypoint whether to run
-        // or not start for the user.
-        singletonChecks.state.is_was_server_start_called = true
-
-        return result
       },
       stop() {
         return server.stop()
-      },
-      custom(customizer) {
-        server.setCustomizer(customizer)
       },
     },
   }
