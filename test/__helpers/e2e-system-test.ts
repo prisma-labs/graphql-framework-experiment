@@ -188,6 +188,12 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
     `
       import { schema } from 'nexus-future' 
 
+      schema.mutationType({
+        definition(t) {
+          t.crud.foos()
+        }
+      })
+
       schema.objectType({
         name: 'Foo',
         definition(t) {
