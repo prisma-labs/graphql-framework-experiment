@@ -69,9 +69,9 @@ Nexus has an API for adding to context.
 
 #### Server
 
-The server migration is particularly dependent on your setup. Nexus bundles `express` and `express-graphql` but there is an escape hatch if you need it.
+The server migration is particularly dependent on your setup. Nexus bundles `express` and `express-graphql`.
 
-If you are not doing any or much custom server logic you can get away with not dealing with the server at all. Just delete all code.
+If you are not doing any or much custom server logic you can get away with not dealing with the server at all. Just delete all code, Nexus will handle it for you.
 
 ```diff
 --- app.ts
@@ -82,37 +82,16 @@ If you are not doing any or much custom server logic you can get away with not d
 - server.start()
 ```
 
-If you do have server logic that needs porting, and it is express based, use `server.custom`:
+If you do have server logic that needs porting, and it is express based, use `server.express`:
 
 ```diff
 --- app.ts
 + import { server } from 'nexus-future'
 
-+ server.custom(({ express }) => {
-+   express.use(...)
-+   ...
-+ })
++ server.express.use(...)
 ```
 
-If you are using a server other than express use `server.custom` but return your own implementation. Example for fastify-gql (see complete example app [here](https://github.com/graphql-nexus/examples/tree/master/custom-server-fastify-gql)):
-
-```diff
-+++ app.ts
-+ server.custom(({ schema, context }) => {
-+   const app = Fastify()
-+
-+   app.register(FastifyGQL, { schema, context })
-+
-+   return {
-+     start() {
-+       return app.listen(settings.current.server.port)
-+     },
-+     stop() {
-+       return app.close()
-+     }
-+   }
-+ })
-```
+We currently do not support any other server than `express`.
 
 #### Developing & Building
 
