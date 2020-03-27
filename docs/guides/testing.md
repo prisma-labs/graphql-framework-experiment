@@ -84,7 +84,7 @@ it('makes sure a user was registered', async () => {
 
 ## With a Database
 
-Integration testing with a databsae can add a lot of complexity to your test suite. But Nexus is in a good position to help since it knows about both test and database domains of your app. The following assumes you are using a [db driver](/guides/databases?id=driver-system). It is _not_ about database testing _in general_.
+Integration testing with a databsae can add a lot of complexity to your test suite. But Nexus is in a good position to help since it knows about both test and database domains of your app.
 
 Integration between Nexus' test and database systems is young and still missing many features. Below we will cover some utilities and patterns that you can copy into your project meanwhile.
 
@@ -106,7 +106,7 @@ Integration between Nexus' test and database systems is young and still missing 
    const util = require('util')
    const exec = util.promisify(require('child_process').exec)
 
-   const nexusBinary = './node_modules/.bin/nexus'
+   const prismaBinary = './node_modules/.bin/prisma2'
 
    /**
     * Custom test environment for nexus and Postgres
@@ -129,7 +129,7 @@ Integration between Nexus' test and database systems is young and still missing 
        this.global.process.env.POSTGRES_URL = this.connectionString
 
        // Run the migrations to ensure our schema has the required structure
-       await exec(`${nexusBinary} db migrate apply -f`)
+       await exec(`${prismaBinary} migrate up --experimental`)
 
        return super.setup()
      }
@@ -178,7 +178,7 @@ Integration between Nexus' test and database systems is young and still missing 
    POSTGRES_URL="<your-development-postgres-url>"
    ```
 
-1. Nexus db drivers augment `TestContext['app']` with a `db` property. This can be used for example to seed your database with data at the beginning of a test suite:
+1. `nexus-plugin-prisma` augment `TestContext['app']` with a `db` property. This can be used for example to seed your database with data at the beginning of a test suite:
 
    ```ts
    beforeAll(async () => {
