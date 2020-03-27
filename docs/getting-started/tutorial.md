@@ -155,12 +155,13 @@ We will Deploy to Heroku
 For this step, create an account at [Heroku](https://www.heroku.com/) and [setup the CLI](https://devcenter.heroku.com/articles/heroku-cli).
 
 1.  Create a new app: `heroku apps:create`
-1.  Attach your project to the app: `heroku git:remote --app <app-name>`
-1.  Add a postgres database to it: `heroku addons:create heroku-postgresql --app <app-name>`
-1.  Get the postgres database credentials: `heroku pg:credentials:url --app <app-name>`
-1.  Export the connection URL into your shell `export DATABASE_URL="<connection-url>"`
-1.  Initialize the postgres database: `npx nexus db init`
-1.  Deploy using the git push to master workflow. See your app running in the cloud!
+2.  Attach your project to the app: `heroku git:remote --app <app-name>`
+3.  Add a postgres database to it: `heroku addons:create heroku-postgresql --app <app-name>`
+4.  Get the postgres database credentials: `heroku pg:credentials:url --app <app-name>`
+5.  Export the connection URL into your shell `export DATABASE_URL="<connection-url>"`
+6.  Create a migration file: `prisma2 migrate save --experimental`
+7.  Migrate your database: `prisma2 migrate up --experimental`
+8.  Deploy using the git push to master workflow. See your app running in the cloud!
 
 ## Next Steps
 

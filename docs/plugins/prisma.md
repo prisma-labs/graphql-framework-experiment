@@ -551,23 +551,9 @@ todo
 
 todo
 
-### `buid`
+### `build`
 
 todo
-
-### `db introspect`
-
-todo
-
-### `db migrate`
-
-todo
-
-### `db ui`
-
-todo
-
-### `db init`
 
 todo
 
