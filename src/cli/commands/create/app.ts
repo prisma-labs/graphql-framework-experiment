@@ -381,7 +381,7 @@ async function helloWorldTemplate(layout: Layout.Layout) {
 
     schema.addToContext(req => {
       return {
-        db: {
+        memoryDB: {
           worlds: [
             { id: "1", population: 6_000_000, name: "Earth" },
             { id: "2", population: 0, name: "Mars" }
@@ -408,7 +408,7 @@ async function helloWorldTemplate(layout: Layout.Layout) {
           },
           resolve(_root, args, ctx) {
             const worldToFindByName = args.world ?? "Earth"
-            const world = ctx.db.worlds.find(w => w.name === worldToFindByName)
+            const world = ctx.memoryDB.worlds.find(w => w.name === worldToFindByName)
 
             if (!world) throw new Error(\`No such world named "\${args.world}"\`)
 
@@ -419,7 +419,7 @@ async function helloWorldTemplate(layout: Layout.Layout) {
         t.list.field('worlds', {
           type: 'World',
           resolve(_root, _args, ctx) {
-            return ctx.db.worlds
+            return ctx.memoryDB.worlds
           } 
         })
       }
