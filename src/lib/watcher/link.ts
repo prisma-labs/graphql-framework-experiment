@@ -8,6 +8,7 @@ const log = rootLogger.child('dev').child('link')
 interface Options {
   environmentAdditions?: Record<string, string>
   onRunnerImportedModule?: (data: ModuleRequiredMessage['data']) => void
+  onServerListening?: () => void
 }
 
 export class Link {
@@ -102,6 +103,9 @@ export class Link {
     this.childProcess.on('message', (msg: Message) => {
       if (msg.type === 'module_imported') {
         this.options.onRunnerImportedModule?.(msg.data)
+      }
+      if (msg.type === 'app_server_listening') {
+        this.options.onServerListening?.()
       }
     })
 

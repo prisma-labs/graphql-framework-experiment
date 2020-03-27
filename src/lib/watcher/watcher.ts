@@ -1,6 +1,7 @@
 import anymatch from 'anymatch'
 import { saveDataForChildProcess } from '../layout'
 import { rootLogger } from '../nexus-logger'
+import { WorkflowHooks } from '../plugin'
 import { clearConsole } from '../process'
 import { watch } from './chokidar'
 import { compiler } from './compiler'
@@ -25,6 +26,13 @@ export function createWatcher(options: Opts): Promise<void> {
       // Watch all modules imported by the user's app for changes.
       onRunnerImportedModule(data) {
         watcher.addSilently(data.filePath)
+      },
+      onServerListening() {
+        options.plugins.forEach(p => {
+          p.dev.onAfterRestart?.()
+        })
+
+        watcher.resume()
       },
     })
 
@@ -80,7 +88,7 @@ export function createWatcher(options: Opts): Promise<void> {
         return log.trace('global listener - DID NOT match file', { file })
       } else {
         log.trace('global listener - matched file', { file })
-        restart(file)
+        restart(file, options.plugins)
       }
     })
 
@@ -89,7 +97,9 @@ export function createWatcher(options: Opts): Promise<void> {
      */
 
     const devModePluginLens = {
-      restart: restart,
+      restart: (file: string) => restart(file, options.plugins),
+      pause: () => watcher.pause(),
+      resume: () => watcher.resume(),
     }
 
     for (const plugin of options.plugins) {
@@ -138,13 +148,16 @@ export function createWatcher(options: Opts): Promise<void> {
     // includes awaiting completion of the returned promise. Basically this
     // library + feature request
     // https://github.com/sindresorhus/p-debounce/issues/3.
-    async function restart(file: string) {
+    async function restart(file: string, plugins: WorkflowHooks[]) {
       if (restarting) {
         log.trace('restart already in progress')
         return
       }
       restarting = true
       clearConsole()
+      plugins.forEach(p => {
+        p.dev.onBeforeRestart?.()
+      })
       log.info('restarting', { changed: file })
       if (file === compiler.tsConfigPath) {
         log.trace('reinitializing TS compilation')

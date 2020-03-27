@@ -22,8 +22,10 @@ export type FileWatcherEventCallback = (
   eventName: 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir',
   path: string,
   stats: fs.Stats | undefined,
-  runner: {
-    restart: (file: string) => void /* stop: () => void, start: () => void */
+  watcher: {
+    restart: (file: string) => void
+    pause: () => void
+    resume: () => void
   } //TODO: add stop and start methods
 ) => void
 
