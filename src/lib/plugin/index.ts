@@ -17,7 +17,6 @@ import * as PackageManager from '../package-manager'
 import { fatal, run, runSync } from '../process'
 import { getProjectRoot } from '../project-root'
 import * as Chokidar from '../watcher/chokidar'
-export * from './db-driver'
 
 //todo two loggers here...
 const pluginSystemLogger = rootLogger.child('plugin')
@@ -52,6 +51,8 @@ export type WorkflowHooks = {
   }
   dev: {
     onStart?: SideEffector
+    onBeforeWatcherRestart?: SideEffector
+    onAfterWatcherRestart?: SideEffector
     onFileWatcherEvent?: Chokidar.FileWatcherEventCallback
     addToWatcherSettings: {
       /**

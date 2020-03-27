@@ -218,8 +218,6 @@ export class CLI implements Command {
         create   Setup a ready-to-use nexus
            dev   Develop your application in watch mode
          build   Build a production-ready server
-        doctor   Check your project state for any problems
-            db   Set of commands to work with your database
 
     ${chalk.bold('Examples')}
 
