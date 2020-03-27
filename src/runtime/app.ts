@@ -5,7 +5,6 @@ import * as Logger from '../lib/logger'
 import * as Plugin from '../lib/plugin'
 import * as Schema from './schema'
 import * as Server from './server'
-import * as singletonChecks from './singleton-checks'
 
 const log = Logger.create({ name: 'app' })
 
@@ -92,9 +91,11 @@ export function create(): App {
   const state: {
     plugins: Plugin.RuntimeContributions[]
     contextContributors: ContextContributor<any>[]
+    isWasServerStartCalled: boolean
   } = {
     plugins: [],
     contextContributors: [],
+    isWasServerStartCalled: false,
   }
 
   const server = Server.create()
@@ -143,7 +144,7 @@ export function create(): App {
       async start() {
         // Track the start call so that we can know in entrypoint whether to run
         // or not start for the user.
-        singletonChecks.state.is_was_server_start_called = true
+        state.isWasServerStartCalled = true
 
         const schema = await schemaComponent.private.makeSchema(state.plugins)
 
@@ -164,10 +165,12 @@ export function create(): App {
     },
   }
 
-  // Private API
-  const __api: any = api
+  // Private API :(
+  const api__: any = api
 
-  __api.__use = function(pluginName: string, plugin: Plugin.RuntimePlugin) {
+  api__.__state = state
+
+  api__.__use = function(pluginName: string, plugin: Plugin.RuntimePlugin) {
     state.plugins.push(Plugin.loadRuntimePlugin(pluginName, plugin))
   }
 
