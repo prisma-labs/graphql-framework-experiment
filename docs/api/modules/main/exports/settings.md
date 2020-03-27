@@ -1,4 +1,8 @@
-# Settings
+# `import { settings }`
+
+[issues](https://github.com/graphql-nexus/nexus-future/labels/scope%2Fsettings) - [`feature`](https://github.com/graphql-nexus/nexus-future/issues?q=is%3Aopen+label%3Ascope%2Fsettings+label%3Atype%2Ffeat) [`bug`](https://github.com/graphql-nexus/nexus-future/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fsettings+label%3Atype%2Fbug+)
+
+Use the settings to centrally configure various aspects of the various components.
 
 ### `change`
 
