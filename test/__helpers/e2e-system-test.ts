@@ -179,7 +179,8 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
       }
 
       model Foo {
-        id         Int    @id @default(autoincrement())
+        id   Int    @id @default(autoincrement())
+        name String
       }      
     `
   )
@@ -187,12 +188,6 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
     `./src/prisma-plugin/${CONVENTIONAL_SCHEMA_FILE_NAME}`,
     `
       import { schema } from 'nexus-future' 
-
-      schema.mutationType({
-        definition(t) {
-          t.crud.foos()
-        }
-      })
 
       schema.objectType({
         name: 'Foo',
