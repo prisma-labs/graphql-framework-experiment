@@ -247,3 +247,11 @@ export function stripExt(filePath: string): string {
   const { dir, name } = path.parse(filePath)
   return path.join(dir, name)
 }
+
+/**
+ * Removes Windows \ and Converts to /
+ *
+ */
+export function enforcePosixPath(anyPath: string) {
+  return anyPath.replace(path.sep, '/')
+}

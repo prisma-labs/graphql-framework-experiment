@@ -200,7 +200,10 @@ export async function findOrScaffoldTsConfig(
   const tsConfigPath = findConfigFile('tsconfig.json', { required: false })
 
   if (tsConfigPath) {
-    if (path.dirname(tsConfigPath) !== layout.projectRoot) {
+    if (
+      path.normalize(path.dirname(tsConfigPath)) !==
+      path.normalize(layout.projectRoot)
+    ) {
       log.error(
         `Your tsconfig.json file needs to be in your project root directory`
       )
