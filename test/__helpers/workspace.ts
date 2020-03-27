@@ -1,5 +1,6 @@
 import * as jetpack from 'fs-jetpack'
 import * as path from 'path'
+import * as os from 'os'
 import createGit, { SimpleGit } from 'simple-git/promise'
 import { createRunner } from '../../src/utils'
 import { gitRepo, gitReset } from './utils'
@@ -50,12 +51,16 @@ async function doCreateWorkspace(config: Options): Promise<Workspace> {
   })!.md5
   const ver = '6'
   const testVer = config.cacheVersion ?? '1'
+  const tempDir = os.tmpdir()
   const currentGitBranch = (
     await createGit().raw(['rev-parse', '--abbrev-ref', 'HEAD'])
   ).trim()
   const cacheKey = `v${ver}-yarnlock-${yarnLockHash}-gitbranch-${currentGitBranch}-testv${testVer}`
 
-  dir.path = `/tmp/nexus-integration-test-project-bases/${config.name}-${cacheKey}`
+  dir.path = path.join(
+    tempDir,
+    `nexus-integration-test-project-bases/${config.name}-${cacheKey}`
+  )
 
   dir.pathRelativeTonexusFuture =
     '../' + path.relative(dir.path, path.join(__dirname, '../..'))
@@ -88,7 +93,7 @@ async function doCreateWorkspace(config: Options): Promise<Workspace> {
           nexus: dir.pathRelativeTonexusFuture,
         },
         scripts: {
-          postinstall: 'yarn -s link nexus && chmod +x node_modules/.bin/nexus',
+          postinstall: 'yarn -s link nexus',
         },
       }),
       fs.writeAsync(

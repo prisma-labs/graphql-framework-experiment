@@ -64,6 +64,7 @@
     "node-pty": "^0.9.0",
     "prettier": "1.19.1",
     "pretty-quick": "2.0.1",
+    "rimraf": "^3.0.2",
     "ts-jest": "25.2.1",
     "type-fest": "0.11.0"
   },
@@ -84,7 +85,7 @@
     "release:pr": "dripip pr",
     "format": "prettier --write '*/**/*.ts'",
     "build": "yarn -s clean && tsc -b",
-    "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "clean": "rimraf dist tsconfig.tsbuildinfo",
     "postpublish": "yarn -s clean",
     "prepublishOnly": "yarn -s build",
     "test": "jest --verbose --testTimeout 180000",
