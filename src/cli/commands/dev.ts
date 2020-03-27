@@ -36,7 +36,7 @@ export class Dev implements Command {
     log.info('start', { version: ownPackage.version })
 
     await createWatcher({
-      plugins: [],
+      plugins: plugins.map(p => p.hooks),
       layout: layout,
     })
   }
