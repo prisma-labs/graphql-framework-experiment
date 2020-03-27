@@ -51,6 +51,8 @@ export type WorkflowHooks = {
   }
   dev: {
     onStart?: SideEffector
+    onBeforeWatcherRestart?: SideEffector
+    onAfterWatcherRestart?: SideEffector
     onFileWatcherEvent?: Chokidar.FileWatcherEventCallback
     addToWatcherSettings: {
       /**

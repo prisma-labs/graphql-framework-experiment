@@ -29,7 +29,7 @@ export function createWatcher(options: Opts): Promise<void> {
       },
       onServerListening() {
         options.plugins.forEach(p => {
-          p.dev.onAfterRestart?.()
+          p.dev.onAfterWatcherRestart?.()
         })
 
         watcher.resume()
@@ -156,7 +156,7 @@ export function createWatcher(options: Opts): Promise<void> {
       restarting = true
       clearConsole()
       plugins.forEach(p => {
-        p.dev.onBeforeRestart?.()
+        p.dev.onBeforeWatcherRestart?.()
       })
       log.info('restarting', { changed: file })
       if (file === compiler.tsConfigPath) {
