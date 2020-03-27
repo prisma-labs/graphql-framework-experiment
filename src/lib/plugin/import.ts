@@ -29,7 +29,7 @@ export async function getInstalledRuntimePluginNames(): Promise<string[]> {
       requireModule({ depName: depName + '/dist/runtime', optional: true })
     )
   })
-  const runtimePluginNames = pluginDepNames.map(x => parsePluginName(x)!)
+  const runtimePluginNames = runtimePluginDepNames.map(x => parsePluginName(x)!)
   return runtimePluginNames
 }
 
