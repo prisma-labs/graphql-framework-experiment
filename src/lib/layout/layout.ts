@@ -7,6 +7,7 @@ import {
   findDirContainingFileRecurisvelyUpwardSync,
   findFile,
   stripExt,
+  enforcePosixPath,
 } from '../../lib/fs'
 import { START_MODULE_NAME } from '../../runtime/start'
 import { rootLogger } from '../nexus-logger'
@@ -266,7 +267,10 @@ export function relativeTranspiledImportPath(
   layout: Layout,
   modulePath: string
 ): string {
-  return './' + stripExt(calcSourceRootToModule(layout, modulePath))
+  return (
+    './' +
+    enforcePosixPath(stripExt(calcSourceRootToModule(layout, modulePath)))
+  )
 }
 
 function calcSourceRootToModule(layout: Layout, modulePath: string) {

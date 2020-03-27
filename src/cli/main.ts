@@ -41,7 +41,7 @@ async function guardNotGlobalCLIWithLocalProject(
 
   if (
     projectType.type === 'NEXUS_project' &&
-    isProcessFromProjectBin(projectType.packageJsonLocation.path)
+    !isProcessFromProjectBin(projectType.packageJsonLocation.path)
   ) {
     // TODO make npm aware
     fatal(stripIndent`
