@@ -42,6 +42,23 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     const app = require("nexus-future").default
   `
 
+  content += '\n\n\n'
+  content += `
+    // Last resort error handling
+    import * as ExitSystem from 'nexus-future/dist/lib/exit-system'
+    process.once('uncaughtException', error => {
+      app.log.fatal('uncaughtException', { error: error })
+      process.exit(1)
+      // ExitSystem.exit(1)
+    })
+
+    process.once('unhandledRejection', error => {
+      app.log.fatal('uncaughtException', { error: error })
+      process.exit(1)
+      // ExitSystem.exit(1)
+    })
+  `
+
   if (config.relativePackageJsonPath) {
     content += '\n\n\n'
     content += stripIndent`
