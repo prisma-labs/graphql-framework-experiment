@@ -1,7 +1,7 @@
 import anymatch from 'anymatch'
 import { saveDataForChildProcess } from '../layout'
 import { rootLogger } from '../nexus-logger'
-import { WorkflowHooks } from '../plugin'
+import { WorktimeHooks } from '../plugin'
 import { clearConsole } from '../process'
 import { watch } from './chokidar'
 import { compiler } from './compiler'
@@ -148,7 +148,7 @@ export function createWatcher(options: Opts): Promise<void> {
     // includes awaiting completion of the returned promise. Basically this
     // library + feature request
     // https://github.com/sindresorhus/p-debounce/issues/3.
-    async function restart(file: string, plugins: WorkflowHooks[]) {
+    async function restart(file: string, plugins: WorktimeHooks[]) {
       if (restarting) {
         log.trace('restart already in progress')
         return
