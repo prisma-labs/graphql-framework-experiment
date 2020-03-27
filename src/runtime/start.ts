@@ -68,7 +68,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   if (config.layout.app.exists) {
     content += '\n\n\n'
     content += stripIndent`
-      // import the user's app module
+      // Import the user's app module
       require("./${stripExt(
         config.layout.sourceRelative(config.layout.app.pathAbs)
       )}")
@@ -94,7 +94,8 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   content += '\n\n\n'
   content += stripIndent`
     // Boot the server if the user did not already.
-    if ((app: any).__state.isWasServerStartCalled === false) {
+    const app__:any = app
+    if (app__.__state.isWasServerStartCalled === false) {
       app.server.start()
     }  
   `
