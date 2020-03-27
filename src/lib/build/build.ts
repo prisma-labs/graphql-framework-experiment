@@ -116,7 +116,7 @@ export async function buildNexusApp(settings: BuildSettings) {
       createStartModuleContent({
         internalStage: 'build',
         layout: layout,
-        pluginNames: plugins.map(p => p.name),
+        pluginNames: pluginNames,
         relativePackageJsonPath: relativePackageJsonPath,
         disableArtifactGeneration: true,
         inlineSchemaModuleImports: true,
@@ -145,7 +145,6 @@ export async function writeStartModule({
   startModule: string
   layout: Layout.Layout
 }): Promise<void> {
-  const pluginNames = await getInstalledRuntimePluginNames()
   // TODO we can be more flexible and allow the user to write an index.ts
   // module. For example we can alias it, or, we can rename it e.g.
   // `index_original.js`. For now we just error out and ask the user to not name
