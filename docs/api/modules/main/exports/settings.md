@@ -1,4 +1,8 @@
-# Settings
+# `import { settings }`
+
+[issues](https://github.com/graphql-nexus/nexus-future/labels/scope%2Fsettings) - [`feature`](https://github.com/graphql-nexus/nexus-future/issues?q=is%3Aopen+label%3Ascope%2Fsettings+label%3Atype%2Ffeat) [`bug`](https://github.com/graphql-nexus/nexus-future/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fsettings+label%3Atype%2Fbug+)
+
+Use the settings to centrally configure various aspects of the various components.
 
 ### `change`
 
@@ -10,6 +14,7 @@
   server?: {
     port?: number
     host?: string
+    path?: string
   }
   playground?: boolean
   schema?: {
@@ -58,6 +63,13 @@
   - Is `NEXUS_HOST` environment variable set? Then that.
   - Is `HOST` environment variable set? Then that.
   - Else `0.0.0.0`
+
+* `server.path`  
+  The path on which the GraphQL API should be served.
+
+  **Default**
+
+  `/graphql`
 
 * `schema.generateGraphQLSDLFile`
   Should a [GraphQL SDL file](https://www.prisma.io/blog/graphql-sdl-schema-definition-language-6755bcb9ce51) be generated when the app is built and to where?

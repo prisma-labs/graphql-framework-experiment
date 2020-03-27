@@ -21,19 +21,12 @@
    +  }
    ```
 
-1. Initialize your database
+1) Initialize your database
 
-   ```cli
-   npx nexus db init
-   ```
+- Run `yarn prisma2 migrate save --experimental` to create your first migration file.
+- Run `yarn prisma2 migrate up --experimental` to migrate your database.
 
 1. Done. Now your app has:
-
-   1. Functioning `db` command
-
-      ```cli
-      nexus db
-      ```
 
    1. `nexus-prisma` Nexus plugin allowing e.g.:
 
@@ -50,7 +43,7 @@
         })
       ```
 
-   1. An instance of the generated Prisma Client is a added to context under the `db` property, allowing e.g.:
+   2. An instance of the generated Prisma Client is a added to context under the `db` property, allowing e.g.:
 
       ```diff
       +++ src/graphql.ts
@@ -68,7 +61,7 @@
         })
       ```
 
-   1. The TypeScript types representing your Prisma models are registered as a Nexus data source. In short this enables proper typing of `parent` parameters in your resolves. They reflect the data of the correspondingly named Prisma model.
+   3. The TypeScript types representing your Prisma models are registered as a Nexus data source. In short this enables proper typing of `parent` parameters in your resolves. They reflect the data of the correspondingly named Prisma model.
 
 ## Create a Consumable Plugin
 

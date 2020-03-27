@@ -32,7 +32,7 @@ export type App = {
    * ### todo
    *
    */
-  server: Server.ServerWithCustomizer
+  server: Server.Server
   /**
    * todo
    */
@@ -135,53 +135,31 @@ export function create(): App {
       ...schemaComponent.public,
     },
     server: {
+      express: server.express,
       /**
        * Start the server. If you do not call this explicitly then nexus will
        * for you. You should not normally need to call this function yourself.
        */
       async start() {
-        let devModeLayout: Layout.Layout | undefined = undefined
+        // Track the start call so that we can know in entrypoint whether to run
+        // or not start for the user.
+        singletonChecks.state.is_was_server_start_called = true
 
-        // During development we dynamically import all the schema modules
-        // TODO IDEA we have concept of schema module and schema dir
-        //      add a "refactor" command to toggle between them
-
-        // During dev mode we will dynamically require the user's graphql modules.
-        // At build time we inline static imports.
-        // This code MUST run after user/system has had chance to run global installation
-        if (process.env.NEXUS_STAGE === 'dev') {
-          devModeLayout = await Layout.loadDataFromParentProcess()
-
-          await Layout.schema.importModules(devModeLayout)
-        }
-
-        const schema = await schemaComponent.private.makeSchema(
-          state.plugins,
-          devModeLayout
-        )
+        const schema = await schemaComponent.private.makeSchema(state.plugins)
 
         if (schemaComponent.private.isSchemaEmpty()) {
           log.warn(Layout.schema.emptyExceptionMessage())
         }
 
-        const result = server.createAndStart({
+        await server.setupAndStart({
           settings: settings,
           schema: schema,
           plugins: state.plugins,
           contextContributors: state.contextContributors,
         })
-
-        // Track the start call so that we can know in entrypoint whether to run
-        // or not start for the user.
-        singletonChecks.state.is_was_server_start_called = true
-
-        return result
       },
       stop() {
         return server.stop()
-      },
-      custom(customizer) {
-        server.setCustomizer(customizer)
       },
     },
   }

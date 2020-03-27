@@ -1,5 +1,5 @@
 import * as NexusSchema from '@nexus/schema'
-import { Layout } from '../../lib/layout'
+import * as Layout from '../../lib/layout'
 import { RuntimeContributions } from '../../lib/plugin'
 import { ConnectionConfig, createNexusSchemaConfig } from './config'
 import { createNexusSingleton } from './nexus'
@@ -66,9 +66,12 @@ export type Schema = {
 type SchemaInternal = {
   private: {
     isSchemaEmpty(): boolean
+    /**
+     * Create the Nexus GraphQL Schema. If NEXUS_SHOULD_AWAIT_TYPEGEN=true then the typegen
+     * disk write is awaited upon.
+     */
     makeSchema: (
-      plugins: RuntimeContributions[],
-      devModeLayout?: Layout
+      plugins: RuntimeContributions[]
     ) => Promise<NexusSchema.core.NexusGraphQLSchema>
     settings: {
       data: SettingsData
@@ -113,21 +116,20 @@ export function create(): SchemaInternal {
       isSchemaEmpty: () => {
         return __types.length === 0
       },
-      makeSchema: async (plugins, devModeLayout) => {
+      makeSchema: async plugins => {
         const nexusSchemaConfig = createNexusSchemaConfig(
           plugins,
           state.settings
         )
-        const { schema, missingTypes, typegenConfig } = await makeSchema(
+        const { schema, missingTypes, typegenConfig } = makeSchema(
           nexusSchemaConfig
         )
-        if (
-          process.env.NEXUS_STAGE === 'dev' &&
-          nexusSchemaConfig.shouldGenerateArtifacts === true
-        ) {
+        if (nexusSchemaConfig.shouldGenerateArtifacts === true) {
+          const devModeLayout = await Layout.loadDataFromParentProcess()
+
           if (!devModeLayout) {
             throw new Error(
-              'Layout should be defined in dev mode. This should not happen.'
+              'Layout should be defined when should gen artifacts is true. This should not happen.'
             )
           }
 

@@ -1,6 +1,6 @@
 export {
-  createRuntimeDimension,
-  createTesttimeDimension,
-  createWorktimeDimension,
   Lens,
+  RuntimePlugin,
+  TesttimePlugin,
+  WorktimePlugin,
 } from './lib/plugin'

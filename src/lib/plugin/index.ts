@@ -7,7 +7,6 @@ import * as Logger from '../logger'
 import * as PackageManager from '../package-manager'
 import { run, runSync } from '../process'
 import * as Chokidar from '../watcher/chokidar'
-export * from './db-driver'
 export * from './import'
 export * from './load'
 
@@ -39,6 +38,8 @@ export type WorktimeHooks = {
   }
   dev: {
     onStart?: SideEffector
+    onBeforeWatcherRestart?: SideEffector
+    onAfterWatcherRestart?: SideEffector
     onFileWatcherEvent?: Chokidar.FileWatcherEventCallback
     addToWatcherSettings: {
       /**
@@ -157,10 +158,3 @@ export type WorktimePlugin = (hooks: WorktimeHooks, lens: WorktimeLens) => void
 export type RuntimePlugin = (lens: Lens) => RuntimeContributions
 // prettier-ignore
 export type TesttimePlugin = (lens: Lens) => TesttimeContributions
-
-//prettier-ignore
-export function createRuntimeDimension(plugin: RuntimePlugin)   { return plugin }
-//prettier-ignore
-export function createWorktimeDimension(plugin: WorktimePlugin) { return plugin }
-//prettier-ignore
-export function createTesttimeDimension(plugin: TesttimePlugin) { return plugin }

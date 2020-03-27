@@ -42,9 +42,9 @@ function normalizeLayoutResult(tmpDir: string, data: Layout.Data): Layout.Data {
   const app: Layout.Data['app'] = data.app.exists
     ? {
         exists: true,
-        path: normalizePath(data.app.path),
+        pathAbs: normalizePath(data.app.pathAbs),
       }
-    : { exists: false, path: null }
+    : { exists: false, pathAbs: null }
 
   return {
     ...data,
@@ -52,6 +52,8 @@ function normalizeLayoutResult(tmpDir: string, data: Layout.Data): Layout.Data {
     projectRoot: normalizePath(data.projectRoot),
     schemaModules: data.schemaModules.map(m => normalizePath(m)),
     sourceRoot: normalizePath(data.sourceRoot),
+    startModuleInAbsPath: normalizePath(data.startModuleInAbsPath),
+    startModuleOutAbsPath: normalizePath(data.startModuleOutAbsPath),
   }
 }
 
@@ -131,7 +133,7 @@ it('finds nested graphql modules', async () => {
     Object {
       "app": Object {
         "exists": true,
-        "path": "src/app.ts",
+        "pathAbs": "src/app.ts",
       },
       "buildOutput": "node_modules/.build",
       "packageManagerType": "npm",
@@ -150,6 +152,8 @@ it('finds nested graphql modules', async () => {
       ],
       "sourceRoot": "src",
       "sourceRootRelative": "src",
+      "startModuleInAbsPath": "src/index.ts",
+      "startModuleOutAbsPath": "node_modules/.build/index.js",
     }
   `)
 })
@@ -173,11 +177,11 @@ it('finds app.ts entrypoint', async () => {
   const result = await ctx.scan()
 
   expect(result.app).toMatchInlineSnapshot(`
-Object {
-  "exists": true,
-  "path": "app.ts",
-}
-`)
+    Object {
+      "exists": true,
+      "pathAbs": "app.ts",
+    }
+  `)
 })
 
 it('finds server.ts entrypoint', async () => {
@@ -188,11 +192,11 @@ it('finds server.ts entrypoint', async () => {
   const result = await ctx.scan()
 
   expect(result.app).toMatchInlineSnapshot(`
-Object {
-  "exists": true,
-  "path": "server.ts",
-}
-`)
+    Object {
+      "exists": true,
+      "pathAbs": "server.ts",
+    }
+  `)
 })
 
 it('finds service.ts entrypoint', async () => {
@@ -203,11 +207,11 @@ it('finds service.ts entrypoint', async () => {
   const result = await ctx.scan()
 
   expect(result.app).toMatchInlineSnapshot(`
-Object {
-  "exists": true,
-  "path": "service.ts",
-}
-`)
+    Object {
+      "exists": true,
+      "pathAbs": "service.ts",
+    }
+  `)
 })
 
 it('set app.exists = false if no entrypoint', async () => {
@@ -220,11 +224,11 @@ it('set app.exists = false if no entrypoint', async () => {
   const result = await ctx.scan()
 
   expect(result.app).toMatchInlineSnapshot(`
-Object {
-  "exists": false,
-  "path": null,
-}
-`)
+    Object {
+      "exists": false,
+      "pathAbs": null,
+    }
+  `)
 })
 
 it.todo(
@@ -244,7 +248,7 @@ it('app.ts takes precedence over server.ts & service.ts', async () => {
 Object {
   "app": Object {
     "exists": true,
-    "path": "app.ts",
+    "pathAbs": "app.ts",
   },
   "buildOutput": "node_modules/.build",
   "packageManagerType": "npm",
@@ -256,6 +260,8 @@ Object {
   "schemaModules": Array [],
   "sourceRoot": "",
   "sourceRootRelative": "./",
+  "startModuleInAbsPath": "index.ts",
+  "startModuleOutAbsPath": "node_modules/.build/index.js",
 }
 `)
 })
@@ -273,7 +279,7 @@ it('server.ts takes precedence over service.ts', async () => {
 Object {
   "app": Object {
     "exists": true,
-    "path": "server.ts",
+    "pathAbs": "server.ts",
   },
   "buildOutput": "node_modules/.build",
   "packageManagerType": "npm",
@@ -285,6 +291,8 @@ Object {
   "schemaModules": Array [],
   "sourceRoot": "",
   "sourceRootRelative": "./",
+  "startModuleInAbsPath": "index.ts",
+  "startModuleOutAbsPath": "node_modules/.build/index.js",
 }
 `)
 })

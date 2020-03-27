@@ -2,23 +2,6 @@ import { ForkOptions } from 'child_process'
 import { Layout } from '../layout'
 import * as Plugin from '../plugin'
 
-type EventRestart = {
-  event: 'restart'
-  file: string
-}
-
-type EventCompiled = {
-  event: 'compiled'
-  file: string
-}
-
-type EventLogging = {
-  event: 'logging'
-  data: string
-}
-
-type Events = EventRestart | EventCompiled | EventLogging
-
 export interface Compiler {
   allowJs: boolean
   tsConfigPath: string
@@ -76,9 +59,5 @@ export interface Opts extends BooleanOpts, StringOpts {
   log?: any
   watch?: string
   stdio?: ForkOptions['stdio']
-  eval: {
-    code: string
-    fileName: string
-  }
   plugins: Plugin.WorktimeHooks[]
 }

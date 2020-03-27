@@ -3,11 +3,9 @@ import * as Layout from '../../lib/layout'
 import { rootLogger } from '../../lib/nexus-logger'
 import { ownPackage } from '../../lib/own-package'
 import * as Plugin from '../../lib/plugin'
-import { getInstalledRuntimePluginNames } from '../../lib/plugin/import'
 import { fatal } from '../../lib/process'
 import { findOrScaffoldTsConfig } from '../../lib/tsc'
 import { createWatcher } from '../../lib/watcher'
-import { createStartModuleContent } from '../../runtime/start'
 
 const log = rootLogger.child('dev')
 
@@ -35,23 +33,10 @@ export class Dev implements Command {
       await p.hooks.dev.onStart?.()
     }
 
-    const pluginNames = await getInstalledRuntimePluginNames()
-    const bootModule = createStartModuleContent({
-      internalStage: 'dev',
-      layout: layout,
-      appPath: layout.app.path,
-      pluginNames: pluginNames,
-    })
-
-    log.info('boot', { version: ownPackage.version })
+    log.info('start', { version: ownPackage.version })
 
     await createWatcher({
-      plugins: plugins.map(p => p.hooks),
-      layout,
-      eval: {
-        code: bootModule,
-        fileName: 'start.js',
-      },
+      layout: layout,
     })
   }
 }

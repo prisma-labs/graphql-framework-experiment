@@ -1,78 +1,74 @@
 import { stripIndent } from 'common-tags'
+import { EmitAndSemanticDiagnosticsBuilderProgram } from 'typescript'
+import { stripExt } from '../lib/fs'
 import * as Layout from '../lib/layout'
 import { rootLogger } from '../lib/nexus-logger'
+import { transpileModule } from '../lib/tsc'
 
 const log = rootLogger.child('start-module')
 
 export const START_MODULE_NAME = 'index'
 export const START_MODULE_HEADER = 'GENERATED NEXUS START MODULE'
 
-type StartModuleConfig =
-  | {
-      internalStage: 'dev'
-      /**
-       * Whether or not app content needs to be scaffolded. This is needed when for
-       * example the user only supplies a schemta.ts module.
-       */
-      appPath: null | string
-      layout: Layout.Layout
-      pluginNames: string[]
-    }
-  | {
-      internalStage: 'build'
-      /**
-       * Whether or not app content needs to be scaffolded. This is needed when for
-       * example the user only supplies a schemta.ts module.
-       */
-      appPath: null | string
-      layout: Layout.Layout
-      buildStage: string
-      relativePackageJsonPath?: string
-      pluginNames: string[]
-    }
+type StartModuleConfig = {
+  internalStage: 'build' | 'dev'
+  layout: Layout.Layout
+  disableArtifactGeneration?: boolean
+  relativePackageJsonPath?: string
+  inlineSchemaModuleImports?: boolean
+  pluginNames: string[]
+}
 
 export function createStartModuleContent(config: StartModuleConfig): string {
+  log.trace('create start module')
   let content = `// ${START_MODULE_HEADER}` + '\n'
 
-  if (config.internalStage === 'build') {
-    content += stripIndent`
-      // Guarantee that development mode features will not accidentally run
-      process.env.NEXUS_SHOULD_GENERATE_ARTIFACTS = 'false'
+  content += '\n\n\n'
+  content += stripIndent`
+    process.env.NEXUS_SHOULD_GENERATE_ARTIFACTS = '${!config.disableArtifactGeneration}'
+  `
 
-    `
-  } else if (config.internalStage === 'dev') {
+  if (config.internalStage === 'dev') {
+    content += '\n\n\n'
     content += stripIndent`
-      // Guarantee that development mode features are on
-      process.env.NEXUS_SHOULD_GENERATE_ARTIFACTS = 'true'
       process.env.NEXUS_STAGE = 'dev'
     `
   }
 
   content += '\n\n\n'
   content += stripIndent`
-    // Guarantee the side-effect features like singleton global do run
+    // Guarantee that any side-effect features run
     require("nexus-future")
   `
 
-  if (config.internalStage === 'build' && config.relativePackageJsonPath) {
+  if (config.relativePackageJsonPath) {
     content += '\n\n'
     content += stripIndent`
-      // Hack to enable package.json to be imported by various deployment services such as now.sh
+      // package.json is needed for plugin auto-import system.
+      // On the Zeit Now platform, builds and dev copy source into
+      // new directory. Copying follows paths found in source. Give one here
+      // to package.json to make sure Zeit Now brings it along.
       require('${config.relativePackageJsonPath}')
     `
   }
 
-  content += '\n\n'
-  content +=
-    "const { linkableRequire } = require('nexus-future/dist/lib/utils')"
+  if (config.pluginNames) {
+    content += '\n\n'
+    content += stripIndent`
+    // Statically require all plugins so that tree-shaking can be done
+    ${config.pluginNames
+      .map(pluginName => `require('nexus-plugin-${pluginName}')`)
+      .join('\n')}
+    `
+  }
 
-  if (config.internalStage === 'build') {
+  if (config.inlineSchemaModuleImports) {
+    // This MUST come after nexus-future package has been imported for its side-effects
     const staticImports = Layout.schema.printStaticImports(config.layout)
     if (staticImports !== '') {
       content += '\n\n\n'
       content += stripIndent`
         // Import the user's schema modules
-        // This MUST come after nexus-future package has been imported for its side-effects
         ${staticImports}
       `
     }
@@ -81,17 +77,12 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   // TODO Despite the comment below there are still sometimes reasons to do so
   // https://github.com/graphql-nexus/nexus-future/issues/141
   content += '\n\n\n'
-  content += config.appPath
+  content += config.layout.app.exists
     ? stripIndent`
         // import the user's app module
-        require("${
-          config.internalStage === 'build'
-            ? Layout.relativeTranspiledImportPath(
-                config.layout,
-                config.appPath!
-              )
-            : config.appPath
-        }")
+        require("./${stripExt(
+          config.layout.sourceRelative(config.layout.app.pathAbs)
+        )}")
 
         // Boot the server for the user if they did not alreay do so manually.
         // Users should normally not boot the server manually as doing so does not
@@ -135,4 +126,12 @@ export function createStartModuleContent(config: StartModuleConfig): string {
 
   log.trace('created', { content })
   return content
+}
+
+export function prepareStartModule(
+  tsBuilder: EmitAndSemanticDiagnosticsBuilderProgram,
+  startModule: string
+): string {
+  log.trace('Transpiling start module')
+  return transpileModule(startModule, tsBuilder.getCompilerOptions())
 }

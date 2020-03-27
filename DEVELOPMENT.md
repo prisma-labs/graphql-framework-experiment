@@ -88,6 +88,10 @@ yarn dev:test      # watch mode
 yarn test:system
 ```
 
+- Environment variables
+
+  - `NEXUS_PLUGIN_PRISMA_VERSION` – which version of the prisma plugin to install during the plugin part of the test
+
 - Live under `/test/system`
 
 - Almost like E2E but they work with the local package code (whereas E2E would work with an actually published package).
@@ -106,7 +110,11 @@ The solution to this problem is an env hook exposed by `nexus-future` called `NE
 yarn test:e2e
 ```
 
+- Environment variables
+
 - Live under `/test/e2e`
+
+  - `E2E_NEXUS_VERSION` – which version of Nexus to install during app creation
 
 - E2E tests run in CI against every commit _after the package has been published_. These are preview and pr releases so its acceptable, and doing it this way provides a true smoke test of if the _real_ user journey works end to end.
 

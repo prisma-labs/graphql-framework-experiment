@@ -104,13 +104,15 @@ export async function runBootstrapper(
   const layout = Layout.createFromData({
     app: {
       exists: false,
-      path: null,
+      pathAbs: null,
     },
     projectRoot: fs.path(),
     sourceRoot: fs.path('./src'),
     sourceRootRelative: './src',
     schemaModules: ['src/' + Layout.schema.CONVENTIONAL_SCHEMA_FILE_NAME],
     buildOutput: Layout.DEFAULT_BUILD_FOLDER_NAME,
+    startModuleOutAbsPath: '', // todo
+    startModuleInAbsPath: '', // todo
     project: {
       name: projectName,
       isAnonymous: false,
@@ -149,6 +151,7 @@ export async function runBootstrapper(
 
   if (askDatabase.database) {
     deps.push(`nexus-plugin-prisma@${getPrismaPluginVersion()}`)
+    devDeps.push(`prisma2@2.0.0-preview023`)
     // This allows installing prisma without a warning being emitted about there
     // being a missing prisma schema. For more detail refer to
     // https://prisma-company.slack.com/archives/CEYCG2MCN/p1575480721184700 and
@@ -379,7 +382,7 @@ async function helloWorldTemplate(layout: Layout.Layout) {
 
     schema.addToContext(req => {
       return {
-        db: {
+        memoryDB: {
           worlds: [
             { id: "1", population: 6_000_000, name: "Earth" },
             { id: "2", population: 0, name: "Mars" }
@@ -406,7 +409,7 @@ async function helloWorldTemplate(layout: Layout.Layout) {
           },
           resolve(_root, args, ctx) {
             const worldToFindByName = args.world ?? "Earth"
-            const world = ctx.db.worlds.find(w => w.name === worldToFindByName)
+            const world = ctx.memoryDB.worlds.find(w => w.name === worldToFindByName)
 
             if (!world) throw new Error(\`No such world named "\${args.world}"\`)
 
@@ -417,7 +420,7 @@ async function helloWorldTemplate(layout: Layout.Layout) {
         t.list.field('worlds', {
           type: 'World',
           resolve(_root, _args, ctx) {
-            return ctx.db.worlds
+            return ctx.memoryDB.worlds
           } 
         })
       }
