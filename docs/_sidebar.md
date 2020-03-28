@@ -3,7 +3,6 @@
 - [Introduction](README)
 - [Onboarding](getting-started/onboarding)
 - [Tutorial](getting-started/tutorial)
-- [Project Structure](getting-started/project-structure)
 - [Migrate from Nexus Schema](getting-started/migrate-from-nexus-schema)
 
 - Guides
@@ -11,6 +10,8 @@
 - [Concepts](guides/concepts)
 - [Schema](guides/schema)
 - [Testing](guides/testing)
+- [Project Structure](getting-started/project-structure)
+- [Error Handling](guides/error-handling)
 - [Recipes](references/recipes)
 - [Writing Plugins](guides/writing-plugins)
 
