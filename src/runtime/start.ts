@@ -87,7 +87,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     content += stripIndent`
       // Import the user's app module
       require("./${stripExt(
-        config.layout.sourceRelative(config.layout.app.pathAbs)
+        config.layout.sourceRelative(config.layout.app.path)
       )}")
     `
   }

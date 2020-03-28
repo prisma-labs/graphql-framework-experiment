@@ -39,7 +39,7 @@ export async function buildNexusApp(settings: BuildSettings) {
   const deploymentTarget = normalizeTarget(settings.target)
 
   const layout = await Layout.create({
-    buildOutput:
+    buildOutputRelative:
       settings.output ??
       computeBuildOutputFromTarget(deploymentTarget) ??
       undefined,
@@ -113,7 +113,7 @@ export async function buildNexusApp(settings: BuildSettings) {
   const packageJsonPath = layout.projectPath('package.json')
 
   const relativePackageJsonPath = FS.exists(packageJsonPath)
-    ? Path.relative(layout.buildOutput, packageJsonPath)
+    ? Path.relative(layout.buildOutputRelative, packageJsonPath)
     : undefined
 
   await writeStartModule({
@@ -132,7 +132,7 @@ export async function buildNexusApp(settings: BuildSettings) {
   })
 
   log.info('success', {
-    buildOutput: layout.buildOutput,
+    buildOutput: layout.buildOutputRelative,
     time: Date.now() - startTime,
   })
 
@@ -156,9 +156,9 @@ export async function writeStartModule({
   // module. For example we can alias it, or, we can rename it e.g.
   // `index_original.js`. For now we just error out and ask the user to not name
   // their module index.ts.
-  if (FS.exists(layout.startModuleInAbsPath)) {
+  if (FS.exists(layout.startModuleInPath)) {
     fatal(stripIndent`
-      Found ${layout.startModuleInAbsPath}
+      Found ${layout.startModuleInPath}
       Nexus reserves the source root module name ${START_MODULE_NAME}.js for its own use.
       Please change your app layout to not have this module.
       This is a temporary limitation that we intend to remove in the future. 
@@ -167,5 +167,5 @@ export async function writeStartModule({
   }
 
   log.trace('Writing start module to disk')
-  await FS.writeAsync(layout.startModuleOutAbsPath, startModule)
+  await FS.writeAsync(layout.startModuleOutPath, startModule)
 }

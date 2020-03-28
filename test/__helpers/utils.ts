@@ -1,6 +1,6 @@
 import { SimpleGit } from 'simple-git/promise'
 import stripAnsi from 'strip-ansi'
-import { SuccessfulRunResult } from '../../src/utils'
+import { SuccessfulRunResult } from '../../src/lib/process'
 
 export async function gitReset(git: SimpleGit) {
   await Promise.all([
@@ -24,4 +24,16 @@ export function withoutColors(
     stdout: stripAnsi(result.stdout!),
     stderr: stripAnsi(result.stderr!),
   }
+}
+
+// todo extends Json
+export function stripDynamics<C extends object>(
+  dynamicPattern: string,
+  content: C
+): C {
+  return JSON.parse(
+    JSON.stringify(content)
+      .split(dynamicPattern)
+      .join('__DYNAMIC__')
+  )
 }

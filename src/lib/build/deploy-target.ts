@@ -86,7 +86,7 @@ interface NowJson {
  */
 function validateNow(layout: Layout): ValidatorResult {
   const maybeNowJsonPath = findConfigFile('now.json', { required: false })
-  const startModulePath = `${layout.buildOutput}/${START_MODULE_NAME}.js`
+  const startModulePath = `${layout.buildOutputRelative}/${START_MODULE_NAME}.js`
   let isValid = true
 
   // Make sure there's a now.json file
@@ -227,7 +227,7 @@ function validateHeroku(layout: Layout): ValidatorResult {
     // Make sure there's a start script
     if (!packageJsonContent.scripts?.start) {
       log.error(
-        `Please add the following to your \`package.json\` file: "scripts": { "start": "node ${layout.buildOutput}" }`
+        `Please add the following to your \`package.json\` file: "scripts": { "start": "node ${layout.buildOutputRelative}" }`
       )
       console.log()
       isValid = false
@@ -235,13 +235,15 @@ function validateHeroku(layout: Layout): ValidatorResult {
 
     // Make sure the start script starts the built server
     if (
-      !packageJsonContent.scripts?.start?.includes(`node ${layout.buildOutput}`)
+      !packageJsonContent.scripts?.start?.includes(
+        `node ${layout.buildOutputRelative}`
+      )
     ) {
       log.error(
         `Please make sure your \`start\` script points to your built server`
       )
       log.error(`Found: "${packageJsonContent.scripts?.start}"`)
-      log.error(`Expected: "node ${layout.buildOutput}"`)
+      log.error(`Expected: "node ${layout.buildOutputRelative}"`)
       console.log()
       isValid = false
     }

@@ -3,9 +3,9 @@ import * as fs from 'fs-jetpack'
 import * as Path from 'path'
 import { PackageJson } from 'type-fest'
 import { RuntimePlugin, TesttimePlugin, WorktimePlugin } from '.'
+import { findProjectDir } from '../layout/layout'
 import { rootLogger } from '../nexus-logger'
 import { fatal } from '../process'
-import { getProjectRoot } from '../project-root'
 import { requireModule } from '../utils'
 
 const log = rootLogger.child('plugin-manager')
@@ -104,7 +104,7 @@ export function parsePluginName(packageName: string): null | string {
  *
  */
 async function readUsersPackageJson(): Promise<null | PackageJson> {
-  const packageJsonPath = Path.join(getProjectRoot(), 'package.json')
+  const packageJsonPath = Path.join(findProjectDir(), 'package.json')
   return (await fs.readAsync(packageJsonPath, 'json')) ?? null
 }
 
