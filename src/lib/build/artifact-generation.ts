@@ -3,17 +3,16 @@ import * as FS from 'fs-jetpack'
 import { Layout } from '../layout'
 import { rootLogger } from '../nexus-logger'
 import { fatal } from '../process'
-import { getProjectRoot } from '../project-root'
 
 const log = rootLogger.child('typegen')
 
 export async function generateArtifacts(layout: Layout): Promise<void> {
   log.trace('start')
 
-  const result = spawnSync('node', [layout.startModuleOutAbsPath], {
+  const result = spawnSync('node', [layout.startModuleOutPath], {
     stdio: 'inherit',
     encoding: 'utf8',
-    cwd: getProjectRoot(),
+    cwd: layout.projectRoot,
     env: {
       ...process.env,
       NEXUS_SHOULD_AWAIT_TYPEGEN: 'true',

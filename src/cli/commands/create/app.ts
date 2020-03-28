@@ -104,15 +104,15 @@ export async function runBootstrapper(
   const layout = Layout.createFromData({
     app: {
       exists: false,
-      pathAbs: null,
+      path: null,
     },
     projectRoot: fs.path(),
     sourceRoot: fs.path('./src'),
     sourceRootRelative: './src',
     schemaModules: ['src/' + Layout.schema.CONVENTIONAL_SCHEMA_FILE_NAME],
-    buildOutput: Layout.DEFAULT_BUILD_FOLDER_NAME,
-    startModuleOutAbsPath: '', // todo
-    startModuleInAbsPath: '', // todo
+    buildOutputRelative: Layout.DEFAULT_BUILD_FOLDER_NAME,
+    startModuleOutPath: '', // todo
+    startModuleInPath: '', // todo
     project: {
       name: projectName,
       isAnonymous: false,

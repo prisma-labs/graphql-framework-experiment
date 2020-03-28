@@ -1,5 +1,5 @@
-import * as Path from 'path'
 import * as Layout from '.'
+import { stripDynamics } from '../../../test/__helpers/utils'
 import { rootLogger } from '../../lib/nexus-logger'
 import { MemoryFS, writeToFS } from '../../lib/testing-utils'
 import * as TestContext from '../test-context'
@@ -30,32 +30,11 @@ const layoutContext = TestContext.create(
       async scan() {
         const tmpDir = opts.tmpDir()
         const data = await Layout.create({ cwd: tmpDir })
-
-        return normalizeLayoutResult(tmpDir, data.data)
+        return stripDynamics(tmpDir, data.data)
       },
     }
   }
 )
-
-function normalizeLayoutResult(tmpDir: string, data: Layout.Data): Layout.Data {
-  const normalizePath = (path: string): string => Path.relative(tmpDir, path)
-  const app: Layout.Data['app'] = data.app.exists
-    ? {
-        exists: true,
-        pathAbs: normalizePath(data.app.pathAbs),
-      }
-    : { exists: false, pathAbs: null }
-
-  return {
-    ...data,
-    app,
-    projectRoot: normalizePath(data.projectRoot),
-    schemaModules: data.schemaModules.map(m => normalizePath(m)),
-    sourceRoot: normalizePath(data.sourceRoot),
-    startModuleInAbsPath: normalizePath(data.startModuleInAbsPath),
-    startModuleOutAbsPath: normalizePath(data.startModuleOutAbsPath),
-  }
-}
 
 const ctx = TestContext.compose(TestContext.tmpDir, layoutContext)
 
@@ -133,27 +112,27 @@ it('finds nested graphql modules', async () => {
     Object {
       "app": Object {
         "exists": true,
-        "pathAbs": "src/app.ts",
+        "path": "__DYNAMIC__/src/app.ts",
       },
-      "buildOutput": "node_modules/.build",
+      "buildOutputRelative": "node_modules/.build",
       "packageManagerType": "npm",
       "project": Object {
         "isAnonymous": true,
         "name": "anonymous",
       },
-      "projectRoot": "",
+      "projectRoot": "__DYNAMIC__",
       "schemaModules": Array [
-        "src/graphql/1.ts",
-        "src/graphql/2.ts",
-        "src/graphql/graphql/3.ts",
-        "src/graphql/graphql/4.ts",
-        "src/graphql/graphql/graphql/5.ts",
-        "src/graphql/graphql/graphql/6.ts",
+        "__DYNAMIC__/src/graphql/1.ts",
+        "__DYNAMIC__/src/graphql/2.ts",
+        "__DYNAMIC__/src/graphql/graphql/3.ts",
+        "__DYNAMIC__/src/graphql/graphql/4.ts",
+        "__DYNAMIC__/src/graphql/graphql/graphql/5.ts",
+        "__DYNAMIC__/src/graphql/graphql/graphql/6.ts",
       ],
-      "sourceRoot": "src",
+      "sourceRoot": "__DYNAMIC__/src",
       "sourceRootRelative": "src",
-      "startModuleInAbsPath": "src/index.ts",
-      "startModuleOutAbsPath": "node_modules/.build/index.js",
+      "startModuleInPath": "__DYNAMIC__/src/index.ts",
+      "startModuleOutPath": "__DYNAMIC__/node_modules/.build/index.js",
     }
   `)
 })
@@ -179,7 +158,7 @@ it('finds app.ts entrypoint', async () => {
   expect(result.app).toMatchInlineSnapshot(`
     Object {
       "exists": true,
-      "pathAbs": "app.ts",
+      "path": "__DYNAMIC__/app.ts",
     }
   `)
 })
@@ -194,7 +173,7 @@ it('finds server.ts entrypoint', async () => {
   expect(result.app).toMatchInlineSnapshot(`
     Object {
       "exists": true,
-      "pathAbs": "server.ts",
+      "path": "__DYNAMIC__/server.ts",
     }
   `)
 })
@@ -209,7 +188,7 @@ it('finds service.ts entrypoint', async () => {
   expect(result.app).toMatchInlineSnapshot(`
     Object {
       "exists": true,
-      "pathAbs": "service.ts",
+      "path": "__DYNAMIC__/service.ts",
     }
   `)
 })
@@ -226,7 +205,7 @@ it('set app.exists = false if no entrypoint', async () => {
   expect(result.app).toMatchInlineSnapshot(`
     Object {
       "exists": false,
-      "pathAbs": null,
+      "path": null,
     }
   `)
 })
@@ -245,25 +224,25 @@ it('app.ts takes precedence over server.ts & service.ts', async () => {
   const result = await ctx.scan()
 
   expect(result).toMatchInlineSnapshot(`
-Object {
-  "app": Object {
-    "exists": true,
-    "pathAbs": "app.ts",
-  },
-  "buildOutput": "node_modules/.build",
-  "packageManagerType": "npm",
-  "project": Object {
-    "isAnonymous": true,
-    "name": "anonymous",
-  },
-  "projectRoot": "",
-  "schemaModules": Array [],
-  "sourceRoot": "",
-  "sourceRootRelative": "./",
-  "startModuleInAbsPath": "index.ts",
-  "startModuleOutAbsPath": "node_modules/.build/index.js",
-}
-`)
+    Object {
+      "app": Object {
+        "exists": true,
+        "path": "__DYNAMIC__/app.ts",
+      },
+      "buildOutputRelative": "node_modules/.build",
+      "packageManagerType": "npm",
+      "project": Object {
+        "isAnonymous": true,
+        "name": "anonymous",
+      },
+      "projectRoot": "__DYNAMIC__",
+      "schemaModules": Array [],
+      "sourceRoot": "__DYNAMIC__",
+      "sourceRootRelative": "./",
+      "startModuleInPath": "__DYNAMIC__/index.ts",
+      "startModuleOutPath": "__DYNAMIC__/node_modules/.build/index.js",
+    }
+  `)
 })
 
 // TODO: Currently works but seems like it's only thanks to lexical sort
@@ -276,25 +255,25 @@ it('server.ts takes precedence over service.ts', async () => {
   const result = await ctx.scan()
 
   expect(result).toMatchInlineSnapshot(`
-Object {
-  "app": Object {
-    "exists": true,
-    "pathAbs": "server.ts",
-  },
-  "buildOutput": "node_modules/.build",
-  "packageManagerType": "npm",
-  "project": Object {
-    "isAnonymous": true,
-    "name": "anonymous",
-  },
-  "projectRoot": "",
-  "schemaModules": Array [],
-  "sourceRoot": "",
-  "sourceRootRelative": "./",
-  "startModuleInAbsPath": "index.ts",
-  "startModuleOutAbsPath": "node_modules/.build/index.js",
-}
-`)
+    Object {
+      "app": Object {
+        "exists": true,
+        "path": "__DYNAMIC__/server.ts",
+      },
+      "buildOutputRelative": "node_modules/.build",
+      "packageManagerType": "npm",
+      "project": Object {
+        "isAnonymous": true,
+        "name": "anonymous",
+      },
+      "projectRoot": "__DYNAMIC__",
+      "schemaModules": Array [],
+      "sourceRoot": "__DYNAMIC__",
+      "sourceRootRelative": "./",
+      "startModuleInPath": "__DYNAMIC__/index.ts",
+      "startModuleOutPath": "__DYNAMIC__/node_modules/.build/index.js",
+    }
+  `)
 })
 
 it('takes shallowest path for sourceRoot', async () => {
@@ -312,5 +291,5 @@ it('takes shallowest path for sourceRoot', async () => {
 
   const result = await ctx.scan()
 
-  expect(result.sourceRoot).toMatchInlineSnapshot(`"src"`)
+  expect(result.sourceRoot).toMatchInlineSnapshot(`"__DYNAMIC__/src"`)
 })

@@ -11,11 +11,11 @@ import {
   SideEffector,
 } from '../../lib/utils'
 import { TestContextCore } from '../../runtime/testing'
+import { findProjectDir } from '../layout/layout'
 import * as Logger from '../logger'
 import { rootLogger } from '../nexus-logger'
 import * as PackageManager from '../package-manager'
 import { fatal, run, runSync } from '../process'
-import { getProjectRoot } from '../project-root'
 import * as Chokidar from '../watcher/chokidar'
 
 //todo two loggers here...
@@ -273,7 +273,7 @@ export function create(definer: Definer): DriverCreator {
  * Load all nexus plugins installed into the project
  */
 export async function loadAllFromPackageJson(): Promise<Driver[]> {
-  const packageJsonPath = Path.join(getProjectRoot(), 'package.json')
+  const packageJsonPath = Path.join(findProjectDir(), 'package.json')
   const packageJson: undefined | Record<string, any> = await fs.readAsync(
     packageJsonPath,
     'json'
@@ -299,7 +299,7 @@ export async function loadAllFromPackageJson(): Promise<Driver[]> {
  * TODO: /!\ This should not be called in production
  */
 export function loadAllFromPackageJsonSync(): Driver[] {
-  const packageJsonPath = Path.join(getProjectRoot(), 'package.json')
+  const packageJsonPath = Path.join(findProjectDir(), 'package.json')
   const packageJson: undefined | Record<string, any> = fs.read(
     packageJsonPath,
     'json'
