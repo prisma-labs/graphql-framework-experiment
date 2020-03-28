@@ -68,7 +68,7 @@ export async function buildNexusApp(settings: BuildSettings) {
   let tsBuilder
   tsBuilder = createTSProgram(layout, { withCache: true })
 
-  const pluginNames = await getInstalledRuntimePluginNames()
+  const installedRuntimePluginNames = await getInstalledRuntimePluginNames()
 
   log.trace('Compiling a development build for typegen')
 
@@ -79,7 +79,7 @@ export async function buildNexusApp(settings: BuildSettings) {
     startModule: prepareStartModule(
       tsBuilder,
       createStartModuleContent({
-        pluginNames: pluginNames,
+        pluginNames: installedRuntimePluginNames,
         internalStage: 'build',
         layout: layout,
         inlineSchemaModuleImports: true,
@@ -122,7 +122,7 @@ export async function buildNexusApp(settings: BuildSettings) {
       createStartModuleContent({
         internalStage: 'build',
         layout: layout,
-        pluginNames: pluginNames,
+        pluginNames: installedRuntimePluginNames,
         relativePackageJsonPath: relativePackageJsonPath,
         disableArtifactGeneration: true,
         inlineSchemaModuleImports: true,
