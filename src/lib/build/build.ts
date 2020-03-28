@@ -100,7 +100,6 @@ export async function buildNexusApp(settings: BuildSettings) {
     }),
   ])
 
-  console.log('skdjfsf')
   log.info('Compiling a production build')
 
   // Recreate our program instance so that it picks up the typegen. We use
