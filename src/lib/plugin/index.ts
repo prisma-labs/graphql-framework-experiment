@@ -345,15 +345,8 @@ function __doLoadAllFromPackageJson(
 
     let SomePlugin: PluginPackage
     try {
-      if (process.env.LINK) {
-        SomePlugin = require(Path.join(
-          process.cwd(),
-          '/node_modules/',
-          depName
-        ))
-      } else {
-        SomePlugin = require(depName)
-      }
+      SomePlugin = require(Path.join(process.cwd(), '/node_modules/', depName))
+
       // The plugin dist code may have been compiled from a TS source and then
       // may have a .default property.
       // @ts-ignore
