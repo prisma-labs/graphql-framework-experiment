@@ -1,10 +1,9 @@
 import getPort from 'get-port'
 import * as Lo from 'lodash'
 import { GraphQLClient } from '../lib/graphql-client'
+import * as Layout from '../lib/layout'
 import * as Plugin from '../lib/plugin'
 import * as app from './index'
-import * as Layout from '../lib/layout'
-import * as singletonChecks from './singleton-checks'
 
 type AppClient = {
   query: GraphQLClient['request']
@@ -87,7 +86,7 @@ export async function createTestContext(): Promise<TestContext> {
       },
     })
 
-    if (singletonChecks.state.is_was_server_start_called === false) {
+    if ((app as any).__state.isWasServerStartCalled === false) {
       await oldServerStart()
     } else {
       return Promise.resolve()

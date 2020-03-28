@@ -5,7 +5,6 @@ import * as Logger from '../lib/logger'
 import * as Plugin from '../lib/plugin'
 import * as Schema from './schema'
 import * as Server from './server'
-import * as singletonChecks from './singleton-checks'
 
 const log = Logger.create({ name: 'app' })
 
@@ -90,16 +89,22 @@ export type Settings = {
  * TODO extract and improve config type
  */
 export function create(): App {
-  const plugins: Plugin.RuntimeContributions[] = []
+  const state: {
+    plugins: Plugin.RuntimeContributions[]
+    contextContributors: ContextContributor<any>[]
+    isWasServerStartCalled: boolean
+  } = {
+    plugins: [],
+    contextContributors: [],
+    isWasServerStartCalled: false,
+  }
   // Automatically use all installed plugins
   // TODO during build step we should turn this into static imports, not unlike
   // the schema module imports system.
-  plugins.push(...Plugin.loadAllRuntimePluginsFromPackageJsonSync())
-
-  const contextContributors: ContextContributor<any>[] = []
+  state.plugins.push(...Plugin.loadAllRuntimePluginsFromPackageJsonSync())
 
   const server = Server.create()
-  const schemaComponent = Schema.create({ plugins })
+  const schemaComponent = Schema.create({ plugins: state.plugins })
 
   const settings: Settings = {
     change(newSettings) {
@@ -130,7 +135,7 @@ export function create(): App {
     settings,
     schema: {
       addToContext(contextContributor) {
-        contextContributors.push(contextContributor)
+        state.contextContributors.push(contextContributor)
         return api
       },
       ...schemaComponent.public,
@@ -144,8 +149,8 @@ export function create(): App {
       async start() {
         // Track the start call so that we can know in entrypoint whether to run
         // or not start for the user.
-        singletonChecks.state.is_was_server_start_called = true
-              
+        state.isWasServerStartCalled = true
+
         const schema = await schemaComponent.private.makeSchema()
 
         if (schemaComponent.private.isSchemaEmpty()) {
@@ -153,10 +158,10 @@ export function create(): App {
         }
 
         await server.setupAndStart({
-          schema,
-          plugins,
-          contextContributors,
-          settings,
+          settings: settings,
+          schema: schema,
+          plugins: state.plugins,
+          contextContributors: state.contextContributors,
         })
       },
       stop() {
@@ -164,6 +169,11 @@ export function create(): App {
       },
     },
   }
+
+  // Private API :(
+  const api__: any = api
+
+  api__.__state = state
 
   return api
 }

@@ -90,31 +90,26 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     }
   }
 
-  // TODO Despite the comment below there are still sometimes reasons to do so
-  // https://github.com/graphql-nexus/nexus-future/issues/141
+  if (config.layout.app.exists) {
+    content += '\n\n\n'
+    content += stripIndent`
+      // Import the user's app module
+      require("./${stripExt(
+        config.layout.sourceRelative(config.layout.app.path)
+      )}")
+    `
+  }
+
   content += '\n\n\n'
-  content += config.layout.app.exists
-    ? stripIndent`
-        // Import the user's app module
-        require("./${stripExt(
-          config.layout.sourceRelative(config.layout.app.path)
-        )}")
+  content += stripIndent`
+    // Boot the server if the user did not already.
+    const app__:any = app
+    if (app__.__state.isWasServerStartCalled === false) {
+      app.server.start()
+    }  
+  `
 
-        // Boot the server for the user if they did not alreay do so manually.
-        // Users should normally not boot the server manually as doing so does not
-        // bring value to the user's codebase.
-
-        const singletonChecks = require('nexus-future/dist/runtime/singleton-checks')
-
-        if (singletonChecks.state.is_was_server_start_called === false) {
-          app.server.start()
-        }
-        `
-    : stripIndent`
-        // Start the server
-        app.server.start()
-      `
-
+  log.trace('created', { content })
   return content
 }
 
