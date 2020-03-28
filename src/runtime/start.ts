@@ -42,8 +42,9 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     const app = require("nexus-future").default
   `
 
+  // todo test coverage for this feature
   content += '\n\n\n'
-  content += `
+  content += stripIndent`
     // Last resort error handling
     process.once('uncaughtException', error => {
       app.log.fatal('uncaughtException', { error: error })
@@ -51,7 +52,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     })
 
     process.once('unhandledRejection', error => {
-      app.log.fatal('uncaughtException', { error: error })
+      app.log.fatal('unhandledRejection', { error: error })
       process.exit(1)
     })
   `
@@ -64,6 +65,16 @@ export function createStartModuleContent(config: StartModuleConfig): string {
       // new directory. Copying follows paths found in source. Give one here
       // to package.json to make sure Zeit Now brings it along.
       require('${config.relativePackageJsonPath}')
+    `
+  }
+
+  if (config.pluginNames) {
+    content += '\n\n'
+    content += stripIndent`
+    // Statically require all plugins so that tree-shaking can be done
+    ${config.pluginNames
+      .map(pluginName => `require('nexus-plugin-${pluginName}')`)
+      .join('\n')}
     `
   }
 
