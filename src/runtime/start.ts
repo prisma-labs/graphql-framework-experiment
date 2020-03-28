@@ -42,6 +42,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     const app = require("nexus-future").default
   `
 
+  // todo test coverage for this feature
   content += '\n\n\n'
   content += stripIndent`
     // Last resort error handling
