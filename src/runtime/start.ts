@@ -21,29 +21,44 @@ type StartModuleConfig = {
 
 export function createStartModuleContent(config: StartModuleConfig): string {
   log.trace('create start module')
-  let output = `// ${START_MODULE_HEADER}` + '\n'
+  let content = `// ${START_MODULE_HEADER}` + '\n'
 
-  output += '\n\n\n'
-  output += stripIndent`
+  content += '\n\n\n'
+  content += stripIndent`
     process.env.NEXUS_SHOULD_GENERATE_ARTIFACTS = '${!config.disableArtifactGeneration}'
   `
 
   if (config.internalStage === 'dev') {
-    output += '\n\n\n'
-    output += stripIndent`
+    content += '\n\n\n'
+    content += stripIndent`
       process.env.NEXUS_STAGE = 'dev'
     `
   }
 
-  output += '\n\n\n'
-  output += stripIndent`
-    // Guarantee that any side-effect features run
-    require("nexus-future")
+  content += '\n\n\n'
+  content += stripIndent`
+    // Run framework initialization side-effects
+    // Also, import the app for later use
+    const app = require("nexus-future").default
+  `
+
+  content += '\n\n\n'
+  content += stripIndent`
+    // Last resort error handling
+    process.once('uncaughtException', error => {
+      app.log.fatal('uncaughtException', { error: error })
+      process.exit(1)
+    })
+
+    process.once('unhandledRejection', error => {
+      app.log.fatal('unhandledRejection', { error: error })
+      process.exit(1)
+    })
   `
 
   if (config.relativePackageJsonPath) {
-    output += '\n\n'
-    output += stripIndent`
+    content += '\n\n'
+    content += stripIndent`
       // package.json is needed for plugin auto-import system.
       // On the Zeit Now platform, builds and dev copy source into
       // new directory. Copying follows paths found in source. Give one here
@@ -53,8 +68,8 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   }
 
   if (config.pluginNames) {
-    output += '\n\n'
-    output += stripIndent`
+    content += '\n\n'
+    content += stripIndent`
     // Statically require all plugins so that tree-shaking can be done
     ${config.pluginNames
       .map(pluginName => `require('nexus-plugin-${pluginName}')`)
@@ -66,8 +81,8 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     // This MUST come after nexus-future package has been imported for its side-effects
     const staticImports = Layout.schema.printStaticImports(config.layout)
     if (staticImports !== '') {
-      output += '\n\n\n'
-      output += stripIndent`
+      content += '\n\n\n'
+      content += stripIndent`
         // Import the user's schema modules
         ${staticImports}
       `
@@ -76,10 +91,10 @@ export function createStartModuleContent(config: StartModuleConfig): string {
 
   // TODO Despite the comment below there are still sometimes reasons to do so
   // https://github.com/graphql-nexus/nexus-future/issues/141
-  output += '\n\n\n'
-  output += config.layout.app.exists
+  content += '\n\n\n'
+  content += config.layout.app.exists
     ? stripIndent`
-        // import the user's app module
+        // Import the user's app module
         require("./${stripExt(
           config.layout.sourceRelative(config.layout.app.path)
         )}")
@@ -88,7 +103,6 @@ export function createStartModuleContent(config: StartModuleConfig): string {
         // Users should normally not boot the server manually as doing so does not
         // bring value to the user's codebase.
 
-        const app = require('nexus-future')
         const singletonChecks = require('nexus-future/dist/runtime/singleton-checks')
 
         if (singletonChecks.state.is_was_server_start_called === false) {
@@ -97,11 +111,10 @@ export function createStartModuleContent(config: StartModuleConfig): string {
         `
     : stripIndent`
         // Start the server
-        const app = require('nexus-future')
         app.server.start()
       `
 
-  return output
+  return content
 }
 
 export function prepareStartModule(
