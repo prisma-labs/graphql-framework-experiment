@@ -81,7 +81,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     ? stripIndent`
         // import the user's app module
         require("./${stripExt(
-          config.layout.sourceRelative(config.layout.app.pathAbs)
+          config.layout.sourceRelative(config.layout.app.path)
         )}")
 
         // Boot the server for the user if they did not alreay do so manually.
