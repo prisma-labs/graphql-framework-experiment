@@ -86,8 +86,14 @@ export async function buildNexusApp(settings: BuildSettings) {
   log.info('Running typegen & extracting types from addToContext calls')
 
   await Promise.all([
-    extractContextTypesToTypeGenFile(tsBuilder.getProgram()),
-    generateArtifacts(layout),
+    extractContextTypesToTypeGenFile(tsBuilder.getProgram()).catch(error => {
+      log.fatal('failed to extract context types', { error })
+      process.exit(1)
+    }),
+    generateArtifacts(layout).catch(error => {
+      log.fatal('failed to generate artifacts', { error })
+      process.exit(1)
+    }),
   ])
 
   log.info('Compiling a production build')
