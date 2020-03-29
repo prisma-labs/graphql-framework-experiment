@@ -15,93 +15,85 @@
   ```cli
   npx nexus-future create plugin
   ```
-- To write a plugin you import from the plugin module
-  ```ts
-  import * as NexusPlugin from 'nexus-future/plugin'
-  ```
-- Use the `create` function to build your plugin
+- To write a plugin you create any of `testtime` `runtime` and `worktime` modules and import the respective plugin types to type your function. In each module export your plugin as `plugin`.
 
   ```ts
-  import * as NexusPlugin from 'nexus-future/plugin'
+  // runtime.ts
+  import { RuntimePlugin } from 'nexus-future/plugin'
 
-  NexusPlugin.create(() => { ... })
-  ```
-
-- Export your plugin as default from your package entrypoint
-
-  ```ts
-  export default NexusPlugin.create(() => { ... })
+  export const plugin: RuntimePlugin = project => {
+    /* ... */
+  }
   ```
 
-- Your callback will be passed an api to hook into Nexus
-
   ```ts
-  export default NexusPlugin.create(project => { ... })
+  // testtime.ts
+  import { TesttimePlugin } from 'nexus-future/plugin'
+
+  export const plugin: TesttimePlugin = project => {
+    /* ... */
+  }
   ```
 
-- You can hook into the runtime or the worktime ([todo](https://github.com/graphql-nexus/nexus-future/issues/294))
-
   ```ts
-  export default NexusPlugin.create(project => {
-    project.worktime(() => { ... })
-    project.runtime(() => { ... })
-  })
+  // worktime.ts
+  import { WorktimePlugin } from 'nexus-future/plugin'
+
+  export const plugin: WorktimePlugin = project => {
+    /* ... */
+  }
   ```
 
-- You have access to project utils ([todo](https://github.com/graphql-nexus/nexus-future/issues/282))
+- The `project` parameter gives you access to utils and core components
 
   ```ts
-  export default nexusPlugin.create(project => {
+  export const plugin: TesttimePlugin = project => {
     project.utils.log.trace('hello')
-  })
+  }
   ```
 
-- At runtime you can pass configuration to Nexus and contribute toward the graphql resolver context:
+- With runtime plugins you can pass configuration to Nexus and contribute toward the graphql resolver context:
 
   ```ts
-  export default NexusPlugin.create(project => {
-    project.runtime(() => {
-      return {
-        context: {
-          create: req => {
-            returm {
-              token: req.headers.authorization.match(/^Bearer (.+)$/)?[1] ?? null
-              }
-            },
-            typeGen: {
-              fields: {
-                token: 'null | string'
-              }
+  export const plugin: RuntimePlugin = (project => {
+    return {
+      context: {
+        create: req => {
+          returm {
+            token: req.headers.authorization.match(/^Bearer (.+)$/)?[1] ?? null
             }
           },
-          nexus: {
-            ...
+          typeGen: {
+            fields: {
+              token: 'null | string'
+            }
           }
+        },
+        nexus: {
+          // ...
         }
       }
-    })
-  })
+    }
+  }
   ```
 
-- At worktime you can hook onto various events grouped by subsystem:
+- With worktime plugins you can hook onto various events grouped by subsystem:
 
   ```ts
-  export default NexusPlugin.create(project => {
-    project.worktime(hooks => {
-      // Not all hooks shown here
-      hooks.build.onStart = async () => { ... }
-      hooks.create.onAfterBaseSetup = async () => { ... }
-      hooks.generate.onStart = async () => { ... }
-      hooks.dev.onStart = async () => { ... }
-      hooks.dev.onFileWatcherEvent = async () => { ... }
-      hooks.dev.addToSettings = { ... }
-      hooks.db.init.onStart = async () => { ... }
-      hooks.db.migrate.apply = async () => { ... }
-      hooks.db.plan.onStart = async () => { ... }
-      hooks.db.rollback.onStart = async () => { ... }
-      hooks.db.ui.onStart = async () => { ... }
-    })
-  })
+  export const plugin:WorktimePlugin = project => {
+    // Not all hooks shown here
+    project.hooks.build.onStart = async () => { ... }
+    project.hooks.create.onAfterBaseSetup = async () => { ... }
+    project.hooks.generate.onStart = async () => { ... }
+    project.hooks.dev.onStart = async () => { ... }
+    project.hooks.dev.onFileWatcherEvent = async () => { ... }
+    project.hooks.dev.addToSettings = { ... }
+    project.hooks.db.init.onStart = async () => { ... }
+    project.hooks.db.migrate.apply = async () => { ... }
+    project.hooks.db.plan.onStart = async () => { ... }
+    project.hooks.db.rollback.onStart = async () => { ... }
+    project.hooks.db.ui.onStart = async () => { ... }
+  }
   ```
 
 - Some worktime hooks give you contextual information to reflect upon:
