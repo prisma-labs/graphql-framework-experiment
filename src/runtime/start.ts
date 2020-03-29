@@ -93,6 +93,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
 
   if (config.pluginNames.length) {
     const aliasAndPluginNames = config.pluginNames.map(pluginName => {
+      // TODO nice camelcase identifier
       const namedImportAlias = `plugin_${Math.random()
         .toString()
         .slice(2, 5)}`
