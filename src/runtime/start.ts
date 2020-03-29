@@ -24,19 +24,19 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   log.trace('create start module')
   let content = `// ${START_MODULE_HEADER}` + '\n'
 
-  content += '\n\n\n'
+  content += EOL + EOL + EOL
   content += stripIndent`
     process.env.NEXUS_SHOULD_GENERATE_ARTIFACTS = '${!config.disableArtifactGeneration}'
   `
 
   if (config.internalStage === 'dev') {
-    content += '\n\n\n'
+    content += EOL + EOL + EOL
     content += stripIndent`
       process.env.NEXUS_STAGE = 'dev'
     `
   }
 
-  content += '\n\n\n'
+  content += EOL + EOL + EOL
   content += stripIndent`
     // Run framework initialization side-effects
     // Also, import the app for later use
@@ -44,7 +44,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   `
 
   // todo test coverage for this feature
-  content += '\n\n\n'
+  content += EOL + EOL + EOL
   content += stripIndent`
     // Last resort error handling
     process.once('uncaughtException', error => {
@@ -59,7 +59,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   `
 
   if (config.relativePackageJsonPath) {
-    content += '\n\n\n'
+    content += EOL + EOL + EOL
     content += stripIndent`
       // package.json is needed for plugin auto-import system.
       // On the Zeit Now platform, builds and dev copy source into
@@ -70,7 +70,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   }
 
   if (config.pluginNames) {
-    content += '\n\n'
+    content += EOL + EOL + EOL
     content += stripIndent`
     // Statically require all plugins so that tree-shaking can be done
     ${config.pluginNames
@@ -83,7 +83,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     // This MUST come after nexus-future package has been imported for its side-effects
     const staticImports = Layout.schema.printStaticImports(config.layout)
     if (staticImports !== '') {
-      content += '\n\n\n'
+      content += EOL + EOL + EOL
       content += stripIndent`
         // Import the user's schema modules
         ${staticImports}
@@ -92,7 +92,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   }
 
   if (config.layout.app.exists) {
-    content += '\n\n\n'
+    content += EOL + EOL + EOL
     content += stripIndent`
       // Import the user's app module
       require("./${stripExt(
@@ -108,7 +108,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
         .slice(2, 5)}`
       return [namedImportAlias, pluginName]
     })
-    content += '\n\n\n'
+    content += EOL + EOL + EOL
     content += stripIndent`
       // Apply runtime plugins
       ${aliasAndPluginNames
@@ -125,7 +125,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     `
   }
 
-  content += '\n\n\n'
+  content += EOL + EOL + EOL
   content += stripIndent`
     // Boot the server if the user did not already.
     const app__:any = app
