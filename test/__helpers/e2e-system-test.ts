@@ -158,14 +158,18 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
   // Install a plugin
   const nexusPluginPrismaVersion =
     process.env.NEXUS_PLUGIN_PRISMA_VERSION ?? 'latest'
+  const prismaVersion = process.env.PRISMA_VERSION ?? '2.0.0-preview023'
 
-  log.warn('Install plugin', { version: nexusPluginPrismaVersion })
+  log.warn('Install', { nexusPluginPrismaVersion, prismaVersion })
+
+  await ctx.spawn(['npm', 'install', `prisma2@${prismaVersion}`])
 
   await ctx.spawn([
     'npm',
     'install',
     `nexus-plugin-prisma@${nexusPluginPrismaVersion}`,
   ])
+
   await ctx.fs.writeAsync(
     './prisma/schema.prisma',
     `
@@ -197,6 +201,8 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
       })
     `
   )
+
+  await ctx.spawn(['npx', 'prisma2', `geneate`])
 
   log.warn('run dev with plugin')
 

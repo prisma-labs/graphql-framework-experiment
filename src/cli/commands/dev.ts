@@ -1,6 +1,7 @@
 import { arg, Command, isError } from '../../lib/cli'
 import * as Layout from '../../lib/layout'
 import { rootLogger } from '../../lib/nexus-logger'
+import { ownPackage } from '../../lib/own-package'
 import * as Plugin from '../../lib/plugin'
 import { fatal } from '../../lib/process'
 import { findOrScaffoldTsConfig } from '../../lib/tsc'
@@ -24,7 +25,7 @@ export class Dev implements Command {
      * Load config before loading plugins which may rely on env vars being defined
      */
     const layout = await Layout.create()
-    const plugins = await Plugin.loadAllWorkflowPluginsFromPackageJson(layout)
+    const plugins = await Plugin.loadInstalledWorktimePlugins(layout)
 
     await findOrScaffoldTsConfig(layout)
 
@@ -32,7 +33,7 @@ export class Dev implements Command {
       await p.hooks.dev.onStart?.()
     }
 
-    log.info('start', { version: require('../../../package.json').version })
+    log.info('start', { version: ownPackage.version })
 
     await createWatcher({
       plugins: plugins.map(p => p.hooks),

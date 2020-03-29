@@ -1,6 +1,7 @@
-interface Package {
+interface PackageJson {
   name: string
   version: string
+  dependencies?: Record<string, string>
 }
 
-export const ownPackage: Package = require('../../../package.json')
+export const ownPackage: PackageJson = require('../../../package.json')

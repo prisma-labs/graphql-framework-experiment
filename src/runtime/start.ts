@@ -1,14 +1,15 @@
 import { stripIndent } from 'common-tags'
+import { EOL } from 'os'
 import { EmitAndSemanticDiagnosticsBuilderProgram } from 'typescript'
 import { stripExt } from '../lib/fs'
 import * as Layout from '../lib/layout'
 import { rootLogger } from '../lib/nexus-logger'
 import { transpileModule } from '../lib/tsc'
 
+const log = rootLogger.child('start-module')
+
 export const START_MODULE_NAME = 'index'
 export const START_MODULE_HEADER = 'GENERATED NEXUS START MODULE'
-
-const log = rootLogger.child('start-module')
 
 type StartModuleConfig = {
   internalStage: 'build' | 'dev'
@@ -16,26 +17,26 @@ type StartModuleConfig = {
   disableArtifactGeneration?: boolean
   relativePackageJsonPath?: string
   inlineSchemaModuleImports?: boolean
-  pluginNames?: string[]
+  pluginNames: string[]
 }
 
 export function createStartModuleContent(config: StartModuleConfig): string {
   log.trace('create start module')
   let content = `// ${START_MODULE_HEADER}` + '\n'
 
-  content += '\n\n\n'
+  content += EOL + EOL + EOL
   content += stripIndent`
     process.env.NEXUS_SHOULD_GENERATE_ARTIFACTS = '${!config.disableArtifactGeneration}'
   `
 
   if (config.internalStage === 'dev') {
-    content += '\n\n\n'
+    content += EOL + EOL + EOL
     content += stripIndent`
       process.env.NEXUS_STAGE = 'dev'
     `
   }
 
-  content += '\n\n\n'
+  content += EOL + EOL + EOL
   content += stripIndent`
     // Run framework initialization side-effects
     // Also, import the app for later use
@@ -43,7 +44,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   `
 
   // todo test coverage for this feature
-  content += '\n\n\n'
+  content += EOL + EOL + EOL
   content += stripIndent`
     // Last resort error handling
     process.once('uncaughtException', error => {
@@ -58,7 +59,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   `
 
   if (config.relativePackageJsonPath) {
-    content += '\n\n'
+    content += EOL + EOL + EOL
     content += stripIndent`
       // package.json is needed for plugin auto-import system.
       // On the Zeit Now platform, builds and dev copy source into
@@ -68,21 +69,11 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     `
   }
 
-  if (config.pluginNames) {
-    content += '\n\n'
-    content += stripIndent`
-    // Statically require all plugins so that tree-shaking can be done
-    ${config.pluginNames
-      .map(pluginName => `require('nexus-plugin-${pluginName}')`)
-      .join('\n')}
-    `
-  }
-
   if (config.inlineSchemaModuleImports) {
     // This MUST come after nexus-future package has been imported for its side-effects
     const staticImports = Layout.schema.printStaticImports(config.layout)
     if (staticImports !== '') {
-      content += '\n\n\n'
+      content += EOL + EOL + EOL
       content += stripIndent`
         // Import the user's schema modules
         ${staticImports}
@@ -91,7 +82,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   }
 
   if (config.layout.app.exists) {
-    content += '\n\n\n'
+    content += EOL + EOL + EOL
     content += stripIndent`
       // Import the user's app module
       require("./${stripExt(
@@ -100,11 +91,35 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     `
   }
 
-  content += '\n\n\n'
+  if (config.pluginNames.length) {
+    const aliasAndPluginNames = config.pluginNames.map(pluginName => {
+      // TODO nice camelcase identifier
+      const namedImportAlias = `plugin_${Math.random()
+        .toString()
+        .slice(2, 5)}`
+      return [namedImportAlias, pluginName]
+    })
+    content += EOL + EOL + EOL
+    content += stripIndent`
+      // Apply runtime plugins
+      ${aliasAndPluginNames
+        .map(([namedImportAlias, pluginName]) => {
+          return `import { plugin as ${namedImportAlias} } from 'nexus-plugin-${pluginName}/dist/runtime'`
+        })
+        .join(EOL)}
+
+      ${aliasAndPluginNames
+        .map(([namedImportAlias, pluginName]) => {
+          return `app.__use('${pluginName}', ${namedImportAlias})`
+        })
+        .join(EOL)}
+    `
+  }
+
+  content += EOL + EOL + EOL
   content += stripIndent`
     // Boot the server if the user did not already.
-    const app__:any = app
-    if (app__.__state.isWasServerStartCalled === false) {
+    if (app.__state.isWasServerStartCalled === false) {
       app.server.start()
     }  
   `

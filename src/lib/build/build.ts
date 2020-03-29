@@ -15,7 +15,8 @@ import {
 } from '../../runtime/start'
 import { extractContextTypesToTypeGenFile } from '../add-to-context-extractor/add-to-context-extractor'
 import { rootLogger } from '../nexus-logger'
-import { loadAllWorkflowPluginsFromPackageJson } from '../plugin'
+import { loadInstalledWorktimePlugins } from '../plugin'
+import { getInstalledRuntimePluginNames } from '../plugin/import'
 import { fatal } from '../process'
 import { generateArtifacts } from './artifact-generation'
 import {
@@ -34,6 +35,8 @@ interface BuildSettings {
 }
 
 export async function buildNexusApp(settings: BuildSettings) {
+  process.env.NEXUS_BUILD = 'true'
+
   const startTime = Date.now()
   const deploymentTarget = normalizeTarget(settings.target)
 
@@ -56,7 +59,7 @@ export async function buildNexusApp(settings: BuildSettings) {
     }
   }
 
-  const plugins = await loadAllWorkflowPluginsFromPackageJson(layout)
+  const plugins = await loadInstalledWorktimePlugins(layout)
 
   await findOrScaffoldTsConfig(layout)
 
@@ -67,6 +70,8 @@ export async function buildNexusApp(settings: BuildSettings) {
   let tsBuilder
   tsBuilder = createTSProgram(layout, { withCache: true })
 
+  const installedRuntimePluginNames = await getInstalledRuntimePluginNames()
+
   log.trace('Compiling a development build for typegen')
 
   tsBuilder.emit()
@@ -76,6 +81,7 @@ export async function buildNexusApp(settings: BuildSettings) {
     startModule: prepareStartModule(
       tsBuilder,
       createStartModuleContent({
+        pluginNames: installedRuntimePluginNames,
         internalStage: 'build',
         layout: layout,
         inlineSchemaModuleImports: true,
@@ -118,7 +124,7 @@ export async function buildNexusApp(settings: BuildSettings) {
       createStartModuleContent({
         internalStage: 'build',
         layout: layout,
-        pluginNames: plugins.map(p => p.name),
+        pluginNames: installedRuntimePluginNames,
         relativePackageJsonPath: relativePackageJsonPath,
         disableArtifactGeneration: true,
         inlineSchemaModuleImports: true,
@@ -134,6 +140,7 @@ export async function buildNexusApp(settings: BuildSettings) {
   if (deploymentTarget) {
     logTargetPostBuildMessage(deploymentTarget)
   }
+  delete process.env.NEXUS_BUILD
 }
 
 /**

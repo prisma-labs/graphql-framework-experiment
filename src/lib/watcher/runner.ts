@@ -11,6 +11,7 @@ import { createStartModuleContent } from '../../runtime/start'
 import { runAddToContextExtractorAsWorkerIfPossible } from '../add-to-context-extractor/add-to-context-extractor'
 import * as Layout from '../layout'
 import { rootLogger } from '../nexus-logger'
+import { getInstalledRuntimePluginNames } from '../plugin'
 import cfgFactory from './cfg'
 import hook from './hook'
 import * as IPC from './ipc'
@@ -122,9 +123,11 @@ async function main() {
     IPC.client.senders.moduleImported({ filePath })
   })
 
+  const pluginNames = await getInstalledRuntimePluginNames()
   const startModuleFileName = layout.sourceRoot + '/index.ts'
   const startModule = tsNodeRegister.compile(
     createStartModuleContent({
+      pluginNames: pluginNames,
       internalStage: 'dev',
       layout: layout,
       inlineSchemaModuleImports: true,

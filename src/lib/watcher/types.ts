@@ -59,5 +59,5 @@ export interface Opts extends BooleanOpts, StringOpts {
   log?: any
   watch?: string
   stdio?: ForkOptions['stdio']
-  plugins: Plugin.WorkflowHooks[]
+  plugins: Plugin.WorktimeHooks[]
 }

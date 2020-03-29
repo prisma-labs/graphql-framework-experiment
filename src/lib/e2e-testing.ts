@@ -1,5 +1,5 @@
 /**
- * These testing utilities lives here so that `nexus-plugin-prisma` can reuse them
+ * These testing utilities live here so that `nexus-plugin-prisma` can reuse them
  */
 
 import * as FS from 'fs-jetpack'

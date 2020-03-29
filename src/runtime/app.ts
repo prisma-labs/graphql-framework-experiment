@@ -86,7 +86,6 @@ export type Settings = {
 
 /**
  * Crate an app instance
- * TODO extract and improve config type
  */
 export function create(): App {
   const state: {
@@ -98,13 +97,9 @@ export function create(): App {
     contextContributors: [],
     isWasServerStartCalled: false,
   }
-  // Automatically use all installed plugins
-  // TODO during build step we should turn this into static imports, not unlike
-  // the schema module imports system.
-  state.plugins.push(...Plugin.loadAllRuntimePluginsFromPackageJsonSync())
 
   const server = Server.create()
-  const schemaComponent = Schema.create({ plugins: state.plugins })
+  const schemaComponent = Schema.create()
 
   const settings: Settings = {
     change(newSettings) {
@@ -131,8 +126,8 @@ export function create(): App {
   }
 
   const api: App = {
-    log,
-    settings,
+    log: log,
+    settings: settings,
     schema: {
       addToContext(contextContributor) {
         state.contextContributors.push(contextContributor)
@@ -151,7 +146,7 @@ export function create(): App {
         // or not start for the user.
         state.isWasServerStartCalled = true
 
-        const schema = await schemaComponent.private.makeSchema()
+        const schema = await schemaComponent.private.makeSchema(state.plugins)
 
         if (schemaComponent.private.isSchemaEmpty()) {
           log.warn(Layout.schema.emptyExceptionMessage())
@@ -174,6 +169,10 @@ export function create(): App {
   const api__: any = api
 
   api__.__state = state
+
+  api__.__use = function(pluginName: string, plugin: Plugin.RuntimePlugin) {
+    state.plugins.push(Plugin.loadRuntimePlugin(pluginName, plugin))
+  }
 
   return api
 }

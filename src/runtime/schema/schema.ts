@@ -70,7 +70,9 @@ type SchemaInternal = {
      * Create the Nexus GraphQL Schema. If NEXUS_SHOULD_AWAIT_TYPEGEN=true then the typegen
      * disk write is awaited upon.
      */
-    makeSchema: () => Promise<NexusSchema.core.NexusGraphQLSchema>
+    makeSchema: (
+      plugins: RuntimeContributions[]
+    ) => Promise<NexusSchema.core.NexusGraphQLSchema>
     settings: {
       data: SettingsData
       change: (newSettings: SettingsInput) => void
@@ -79,11 +81,7 @@ type SchemaInternal = {
   public: Schema
 }
 
-export function create({
-  plugins,
-}: {
-  plugins: RuntimeContributions[]
-}): SchemaInternal {
+export function create(): SchemaInternal {
   const {
     queryType,
     mutationType,
@@ -118,7 +116,7 @@ export function create({
       isSchemaEmpty: () => {
         return __types.length === 0
       },
-      makeSchema: async () => {
+      makeSchema: async plugins => {
         const nexusSchemaConfig = createNexusSchemaConfig(
           plugins,
           state.settings
