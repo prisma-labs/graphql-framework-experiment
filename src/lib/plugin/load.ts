@@ -116,8 +116,11 @@ export function loadPlugin<D extends Dimension, P extends Plugin>(
 ): ReturnType<NonNullable<P[D]>> {
   log.trace('load', { dimension: dimension, plugin: plugin.name })
   try {
-    const dim: any = plugin[dimension]
-    return dim(lens)
+    const dim = plugin[dimension]
+    // caller  must:
+    // check given plugin has given dimenesion
+    // pass correct lens type for given plugin
+    return dim!(lens as any) as any
   } catch (error) {
     fatal(
       stripIndent`
