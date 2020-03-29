@@ -35,6 +35,8 @@ interface BuildSettings {
 }
 
 export async function buildNexusApp(settings: BuildSettings) {
+  process.env.NEXUS_BUILD = 'true'
+
   const startTime = Date.now()
   const deploymentTarget = normalizeTarget(settings.target)
 
@@ -138,6 +140,7 @@ export async function buildNexusApp(settings: BuildSettings) {
   if (deploymentTarget) {
     logTargetPostBuildMessage(deploymentTarget)
   }
+  delete process.env.NEXUS_BUILD
 }
 
 /**

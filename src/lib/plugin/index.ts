@@ -147,7 +147,9 @@ export type Lens = {
   prompt: PromptsConstructor
 }
 
-export interface RuntimeLens extends Lens {}
+export interface RuntimeLens extends Lens {
+  isBuild: boolean
+}
 
 export interface TesttimeLens extends Lens {}
 

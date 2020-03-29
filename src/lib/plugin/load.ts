@@ -6,6 +6,7 @@ import { fatal, run, runSync } from '../process'
 import { importAllPlugins, Plugin } from './import'
 import {
   Lens,
+  RuntimeLens,
   RuntimePlugin,
   TesttimeContributions,
   WorktimeHooks,
@@ -87,12 +88,18 @@ export function loadTesttimePlugin(plugin: Plugin) {
   return loadPlugin('testtime', plugin, [createBaseLens(plugin.name)])
 }
 
+function createRuntimeLens(pluginName: string): RuntimeLens {
+  const lens: any = createBaseLens(pluginName)
+  lens.isBuild = process.env.NEXUS_BUILD === 'true'
+  return lens
+}
+
 /**
  * Try to load a runtime plugin
  */
 export function loadRuntimePlugin(pluginName: string, plugin: RuntimePlugin) {
   return loadPlugin('runtime', { name: pluginName, runtime: plugin }, [
-    createBaseLens(pluginName),
+    createRuntimeLens(pluginName),
   ])
 }
 

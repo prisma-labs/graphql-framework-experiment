@@ -69,16 +69,6 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     `
   }
 
-  if (config.pluginNames) {
-    content += EOL + EOL + EOL
-    content += stripIndent`
-    // Statically require all plugins so that tree-shaking can be done
-    ${config.pluginNames
-      .map(pluginName => `require('nexus-plugin-${pluginName}')`)
-      .join('\n')}
-    `
-  }
-
   if (config.inlineSchemaModuleImports) {
     // This MUST come after nexus-future package has been imported for its side-effects
     const staticImports = Layout.schema.printStaticImports(config.layout)
@@ -101,7 +91,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     `
   }
 
-  if (config.pluginNames) {
+  if (config.pluginNames.length) {
     const aliasAndPluginNames = config.pluginNames.map(pluginName => {
       const namedImportAlias = `plugin_${Math.random()
         .toString()
@@ -128,8 +118,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   content += EOL + EOL + EOL
   content += stripIndent`
     // Boot the server if the user did not already.
-    const app__:any = app
-    if (app__.__state.isWasServerStartCalled === false) {
+    if (app.__state.isWasServerStartCalled === false) {
       app.server.start()
     }  
   `
