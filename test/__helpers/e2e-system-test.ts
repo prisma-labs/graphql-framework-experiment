@@ -169,6 +169,7 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
     'install',
     `nexus-plugin-prisma@${nexusPluginPrismaVersion}`,
   ])
+
   await ctx.fs.writeAsync(
     './prisma/schema.prisma',
     `
@@ -200,6 +201,8 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
       })
     `
   )
+
+  await ctx.spawn(['npx', 'prisma2', `geneate`])
 
   log.warn('run dev with plugin')
 

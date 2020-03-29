@@ -66,11 +66,11 @@ function doImportAllPlugins(packageJson: null | PackageJson): Plugin[] {
     }
     try {
       //prettier-ignore
-      plugin.testtime = (requireModule({ depName: depName + '/dist/testtime', optional: true }) as any)?.default
+      plugin.testtime = (requireModule({ depName: depName + '/dist/testtime', optional: true }) as any)?.plugin
       //prettier-ignore
-      plugin.worktime = (requireModule({ depName: depName + '/dist/worktime', optional: true }) as any)?.default
+      plugin.worktime = (requireModule({ depName: depName + '/dist/worktime', optional: true }) as any)?.plugin
       //prettier-ignore
-      plugin.runtime = (requireModule({ depName: depName + '/dist/runtime', optional: true }) as any)?.default
+      plugin.runtime = (requireModule({ depName: depName + '/dist/runtime', optional: true }) as any)?.plugin
     } catch (error) {
       fatal(
         stripIndent`
