@@ -70,10 +70,7 @@ export function loadWorktimePlugin(layout: Layout.Layout, plugin: Plugin) {
     generate: {},
   }
 
-  loadPlugin('worktime', plugin, [
-    hooks,
-    createWorktimeLens(layout, plugin.name),
-  ])
+  loadPlugin('worktime', plugin, createWorktimeLens(layout, plugin.name))
 
   return {
     name: plugin.name,
@@ -85,7 +82,7 @@ export function loadWorktimePlugin(layout: Layout.Layout, plugin: Plugin) {
  * Try to load a testtime plugin
  */
 export function loadTesttimePlugin(plugin: Plugin) {
-  return loadPlugin('testtime', plugin, [createBaseLens(plugin.name)])
+  return loadPlugin('testtime', plugin, createBaseLens(plugin.name))
 }
 
 function createRuntimeLens(pluginName: string): RuntimeLens {
@@ -98,9 +95,11 @@ function createRuntimeLens(pluginName: string): RuntimeLens {
  * Try to load a runtime plugin
  */
 export function loadRuntimePlugin(pluginName: string, plugin: RuntimePlugin) {
-  return loadPlugin('runtime', { name: pluginName, runtime: plugin }, [
-    createRuntimeLens(pluginName),
-  ])
+  return loadPlugin(
+    'runtime',
+    { name: pluginName, runtime: plugin },
+    createRuntimeLens(pluginName)
+  )
 }
 
 /**
@@ -109,12 +108,12 @@ export function loadRuntimePlugin(pluginName: string, plugin: RuntimePlugin) {
 export function loadPlugin<D extends Dimension, P extends Plugin>(
   dimension: D,
   plugin: P,
-  args: any[]
+  lens: Lens
 ): ReturnType<NonNullable<P[D]>> {
   log.trace('load', { dimension: dimension, plugin: plugin.name })
   try {
     const dim: any = plugin[dimension]
-    return dim(...args)
+    return dim(lens)
   } catch (error) {
     fatal(
       stripIndent`
