@@ -1,5 +1,4 @@
 export {
-  Lens,
   RuntimeLens,
   RuntimePlugin,
   TesttimeLens,
