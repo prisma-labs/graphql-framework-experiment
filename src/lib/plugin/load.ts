@@ -51,30 +51,33 @@ function createWorktimeLens(
   layout: Layout.Layout,
   pluginName: string
 ): WorktimeLens {
-  const lens: any = createBaseLens(pluginName)
-  lens.layout = layout
-  lens.packageManager = layout.packageManager
-  return lens
+  return {
+    ...createBaseLens(pluginName),
+    layout: layout,
+    packageManager: layout.packageManager,
+    hooks: {
+      create: {},
+      dev: {
+        addToWatcherSettings: {},
+      },
+      build: {},
+      generate: {},
+    },
+  }
 }
 
 /**
  * Try to load a worktime plugin
  */
 export function loadWorktimePlugin(layout: Layout.Layout, plugin: Plugin) {
-  const hooks: WorktimeHooks = {
-    create: {},
-    dev: {
-      addToWatcherSettings: {},
-    },
-    build: {},
-    generate: {},
-  }
+  const lens = createWorktimeLens(layout, plugin.name)
 
-  loadPlugin('worktime', plugin, createWorktimeLens(layout, plugin.name))
+  loadPlugin('worktime', plugin, lens)
 
   return {
     name: plugin.name,
-    hooks: hooks,
+    // plugin will have hooked onto hooks now, and framework will call those hooks
+    hooks: lens.hooks,
   }
 }
 
@@ -86,9 +89,10 @@ export function loadTesttimePlugin(plugin: Plugin) {
 }
 
 function createRuntimeLens(pluginName: string): RuntimeLens {
-  const lens: any = createBaseLens(pluginName)
-  lens.isBuild = process.env.NEXUS_BUILD === 'true'
-  return lens
+  return {
+    ...createBaseLens(pluginName),
+    isBuild: process.env.NEXUS_BUILD === 'true',
+  }
 }
 
 /**
