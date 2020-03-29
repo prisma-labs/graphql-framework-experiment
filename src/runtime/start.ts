@@ -1,4 +1,5 @@
 import { stripIndent } from 'common-tags'
+import { EOL } from 'os'
 import { EmitAndSemanticDiagnosticsBuilderProgram } from 'typescript'
 import { stripExt } from '../lib/fs'
 import * as Layout from '../lib/layout'
@@ -101,18 +102,26 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   }
 
   if (config.pluginNames) {
+    const aliasAndPluginNames = config.pluginNames.map(pluginName => {
+      const namedImportAlias = `plugin_${Math.random()
+        .toString()
+        .slice(2, 5)}`
+      return [namedImportAlias, pluginName]
+    })
     content += '\n\n\n'
     content += stripIndent`
       // Apply runtime plugins
-      const plugins = [${config.pluginNames
-        .map(
-          pluginName =>
-            `["${pluginName}", require('nexus-plugin-${pluginName}/dist/runtime').default]`
-        )
-        .join(', ')}]
-      plugins.forEach(function (plugin) {
-        app.__use(plugin[0], plugin[1])
-      })
+      ${aliasAndPluginNames
+        .map(([namedImportAlias, pluginName]) => {
+          return `import { plugin as ${namedImportAlias} } from 'nexus-plugin-${pluginName}/dist/runtime'`
+        })
+        .join(EOL)}
+
+      ${aliasAndPluginNames
+        .map(([namedImportAlias, pluginName]) => {
+          return `app.__use('${pluginName}', ${namedImportAlias})`
+        })
+        .join(EOL)}
     `
   }
 
