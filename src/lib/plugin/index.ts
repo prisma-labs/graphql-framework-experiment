@@ -147,14 +147,19 @@ export type Lens = {
   prompt: PromptsConstructor
 }
 
+export interface RuntimeLens extends Lens {}
+
+export interface TesttimeLens extends Lens {}
+
 export interface WorktimeLens extends Lens {
+  hooks: WorktimeHooks
   layout: Layout.Layout
   packageManager: PackageManager.PackageManager
 }
 
 // prettier-ignore
-export type WorktimePlugin = (hooks: WorktimeHooks, lens: WorktimeLens) => void
+export type WorktimePlugin = (lens: WorktimeLens) => void
 // prettier-ignore
-export type RuntimePlugin = (lens: Lens) => RuntimeContributions
+export type RuntimePlugin = (lens: RuntimeLens) => RuntimeContributions
 // prettier-ignore
-export type TesttimePlugin = (lens: Lens) => TesttimeContributions
+export type TesttimePlugin = (lens: TesttimeLens) => TesttimeContributions
