@@ -193,7 +193,7 @@ export function createWatcher(options: Options): Promise<void> {
       }
       restarting = true
       clearConsole()
-      log.trace('hook', { name: 'beforeWatcherRestart' })
+      log.trace('hook', { name: 'beforeWatcherStartOrRestart' })
       for (const plugin of plugins) {
         const runnerChanges = await plugin.dev.onBeforeWatcherStartOrRestart?.(
           change
@@ -202,6 +202,10 @@ export function createWatcher(options: Options): Promise<void> {
           link.updateOptions(runnerChanges)
         }
       }
+      log.trace('hook', { name: 'beforeWatcherRestart' })
+      plugins.forEach(p => {
+        p.dev.onBeforeWatcherRestart?.()
+      })
       log.info('restarting', change as any)
       if (change.file === compiler.tsConfigPath) {
         log.trace('reinitializing TS compilation')

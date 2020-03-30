@@ -40,9 +40,8 @@ export type WorktimeHooks = {
   dev: {
     onStart?: SideEffector
     onBeforeWatcherRestart?: SideEffector
-    onBeforeWatcherStartOrRestart?: (
-      change: ChangeEvent
-    ) => MaybePromise<void | RunnerOptions>
+    //prettier-ignore
+    onBeforeWatcherStartOrRestart?: (change: ChangeEvent) => MaybePromise<void | RunnerOptions>
     onAfterWatcherRestart?: SideEffector
     onFileWatcherEvent?: Chokidar.FileWatcherEventCallback
     addToWatcherSettings: {
