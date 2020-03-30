@@ -6,6 +6,7 @@ import { TestContextCore } from '../../runtime/testing'
 import * as Logger from '../logger'
 import * as PackageManager from '../package-manager'
 import { run, runSync } from '../process'
+import { ChangeEvent, RunnerOptions } from '../watcher'
 import * as Chokidar from '../watcher/chokidar'
 export * from './import'
 export * from './load'
@@ -39,6 +40,8 @@ export type WorktimeHooks = {
   dev: {
     onStart?: SideEffector
     onBeforeWatcherRestart?: SideEffector
+    //prettier-ignore
+    onBeforeWatcherStartOrRestart?: (change: ChangeEvent) => MaybePromise<void | RunnerOptions>
     onAfterWatcherRestart?: SideEffector
     onFileWatcherEvent?: Chokidar.FileWatcherEventCallback
     addToWatcherSettings: {

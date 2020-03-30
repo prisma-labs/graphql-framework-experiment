@@ -35,9 +35,33 @@ export class Dev implements Command {
 
     log.info('start', { version: ownPackage.version })
 
+    const layoutPlugin: Plugin.WorktimeHooks = {
+      build: {},
+      create: {},
+      generate: {},
+      dev: {
+        addToWatcherSettings: {},
+        async onBeforeWatcherStartOrRestart(change) {
+          if (
+            change.type === 'init' ||
+            change.type === 'add' ||
+            change.type === 'addDir' ||
+            change.type === 'unlink' ||
+            change.type === 'unlinkDir'
+          ) {
+            log.debug('recalcLayout')
+            const layout = await Layout.create()
+            return {
+              environmentAdditions: Layout.saveDataForChildProcess(layout),
+            }
+          }
+        },
+      },
+    }
+
     await createWatcher({
-      plugins: plugins.map(p => p.hooks),
-      layout: layout,
+      plugins: [layoutPlugin].concat(plugins.map(p => p.hooks)),
+      sourceRoot: layout.sourceRoot,
     })
   }
 }

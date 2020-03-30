@@ -26,7 +26,7 @@ const tsNodeRegister = tsNode.register({
 main()
 
 async function main() {
-  const layout = await Layout.create()
+  const layout = Layout.mustLoadDataFromParentProcess()
 
   runAddToContextExtractorAsWorkerIfPossible(layout.data)
 
