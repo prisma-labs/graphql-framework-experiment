@@ -41,15 +41,19 @@ export class Dev implements Command {
       generate: {},
       dev: {
         addToWatcherSettings: {},
-        async onBeforeWatcherRestart(change) {
+        async onBeforeWatcherStartOrRestart(change) {
           if (
+            change.type === 'init' ||
             change.type === 'add' ||
             change.type === 'addDir' ||
             change.type === 'unlink' ||
             change.type === 'unlinkDir'
           ) {
+            log.debug('recalcLayout')
             const layout = await Layout.create()
-            Object.assign(process.env, Layout.saveDataForChildProcess(layout))
+            return {
+              environmentAdditions: Layout.saveDataForChildProcess(layout),
+            }
           }
         },
       },
@@ -57,7 +61,7 @@ export class Dev implements Command {
 
     await createWatcher({
       plugins: [layoutPlugin].concat(plugins.map(p => p.hooks)),
-      layout: layout,
+      sourceRoot: layout.sourceRoot,
     })
   }
 }
