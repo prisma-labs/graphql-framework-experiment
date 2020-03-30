@@ -5,14 +5,24 @@ import { Message, ModuleRequiredMessage } from './ipc'
 
 const log = rootLogger.child('dev').child('link')
 
-interface Options {
+interface ChangeableOptions {
   environmentAdditions?: Record<string, string>
+}
+
+interface Options extends ChangeableOptions {
   onRunnerImportedModule?: (data: ModuleRequiredMessage['data']) => void
   onServerListening?: () => void
 }
 
 export class Link {
   constructor(private options: Options) {}
+
+  updateOptions(options: ChangeableOptions) {
+    this.options = {
+      ...this.options,
+      ...options,
+    }
+  }
 
   async startOrRestart() {
     log.trace('startOrRestart requested')

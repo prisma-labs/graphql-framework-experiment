@@ -3,12 +3,17 @@ import { saveDataForChildProcess } from '../layout'
 import { rootLogger } from '../nexus-logger'
 import { WorktimeHooks } from '../plugin'
 import { clearConsole } from '../process'
-import { watch } from './chokidar'
+import * as Chok from './chokidar'
 import { compiler } from './compiler'
 import * as Link from './link'
 import { Opts } from './types'
 
 const log = rootLogger.child('dev').child('watcher')
+
+export interface ChangeEvent {
+  type: Chok.ChangeEvent['type'] | 'plugin'
+  file: Chok.ChangeEvent['file']
+}
 
 /**
  * Entrypoint into the watcher system.
@@ -69,7 +74,7 @@ export function createWatcher(options: Opts): Promise<void> {
       toMatch: pluginIgnoreContributions,
     })
 
-    const watcher = watch(
+    const watcher = Chok.watch(
       [options.layout.sourceRoot, ...pluginWatchContributions],
       {
         ignored: ['./node_modules', './.*'],
@@ -82,13 +87,16 @@ export function createWatcher(options: Opts): Promise<void> {
      * Core watcher listener
      */
 
-    // TODO: plugin listeners can probably be merged into the core listener
-    watcher.on('all', (_event, file) => {
-      if (isIgnoredByCoreListener(file)) {
-        return log.trace('global listener - DID NOT match file', { file })
+    // TODO: plugin listeners can pjobably be merged into the core listener
+    watcher.on('all', (changeType, changedFile) => {
+      const event = { type: changeType, file: changedFile }
+      if (isIgnoredByCoreListener(changedFile)) {
+        return log.trace('global listener - DID NOT match file', {
+          event,
+        })
       } else {
-        log.trace('global listener - matched file', { file })
-        restart(file, options.plugins)
+        log.trace('global listener - matched file', { event })
+        restart(event, options.plugins)
       }
     })
 
@@ -97,9 +105,15 @@ export function createWatcher(options: Opts): Promise<void> {
      */
 
     const devModePluginLens = {
-      restart: (file: string) => restart(file, options.plugins),
-      pause: () => watcher.pause(),
-      resume: () => watcher.resume(),
+      restart: (file: string) => {
+        return restart({ type: 'plugin', file: file }, options.plugins)
+      },
+      pause: () => {
+        return watcher.pause()
+      },
+      resume: () => {
+        return watcher.resume()
+      },
     }
 
     for (const plugin of options.plugins) {
@@ -148,22 +162,22 @@ export function createWatcher(options: Opts): Promise<void> {
     // includes awaiting completion of the returned promise. Basically this
     // library + feature request
     // https://github.com/sindresorhus/p-debounce/issues/3.
-    async function restart(file: string, plugins: WorktimeHooks[]) {
+    async function restart(change: ChangeEvent, plugins: WorktimeHooks[]) {
       if (restarting) {
         log.trace('restart already in progress')
         return
       }
       restarting = true
       clearConsole()
-      plugins.forEach(p => {
-        p.dev.onBeforeWatcherRestart?.()
-      })
-      log.info('restarting', { changed: file })
-      if (file === compiler.tsConfigPath) {
+      for (const plugin of plugins) {
+        await plugin.dev.onBeforeWatcherRestart?.(change)
+      }
+      log.info('restarting', change as any)
+      if (change.file === compiler.tsConfigPath) {
         log.trace('reinitializing TS compilation')
         compiler.init(options)
       }
-      compiler.compileChanged(file)
+      compiler.compileChanged(change.file)
       await link.startOrRestart()
       restarting = false
     }
