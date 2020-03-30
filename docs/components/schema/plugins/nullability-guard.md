@@ -9,7 +9,7 @@ This plugin helps us guard against non-null values crashing our queries in produ
 #### Example {docsify-ignore}
 
 ```ts
-import { nullabilityGuardPlugin } from 'nexus'
+import { nullabilityGuardPlugin } from '@nexus/schema'
 
 const guardPlugin = nullabilityGuardPlugin({
   onNullGuarded(ctx, info) {

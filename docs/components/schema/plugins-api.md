@@ -8,7 +8,7 @@ Nexus Schema ships with a plugin API which allows you to define your own abstrac
 ### Example
 
 ```ts
-import { plugin } from 'nexus'
+import { plugin } from '@nexus/schema'
 
 export const myErrorGuardPlugin = plugin({
   name: 'MyErrorGuardPlugin',
