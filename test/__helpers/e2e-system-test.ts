@@ -18,6 +18,7 @@ export async function e2eTestApp(
   ctx: ReturnType<typeof setupE2EContext>
 ) {
   const SERVER_LISTENING_EVENT = 'server listening'
+  const PLUGIN_CREATED_EVENT = 'Done! To get started'
   let res: SpawnResult
 
   log.warn('create app')
@@ -204,10 +205,12 @@ export async function e2eTestApp(
     })
   }
 
-  expect(res.data).toContain('Done! To get started')
+  expect(res.data).toContain(PLUGIN_CREATED_EVENT)
   expect(res.exitCode).toStrictEqual(0)
 
-  log.warn('todo build plugin')
+  log.warn('build plugin')
+  res = await pluginCtx.spawn(['yarn', 'build'])
+  expect(res.exitCode).toStrictEqual(0)
   log.warn('todo install plugin into app via file path')
   log.warn('todo with plugin, dev app')
   log.warn('todo with plugin, build app')

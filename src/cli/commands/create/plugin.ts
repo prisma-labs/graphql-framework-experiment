@@ -94,9 +94,6 @@ export default class Plugin implements Command {
           'publish:pr': 'dripip pr',
           prepack: 'yarn -s build',
         },
-        peerDependencies: {
-          'nexus-future': 'latest',
-        },
         prettier: {
           semi: false,
           singleQuote: true,
@@ -146,9 +143,9 @@ export default class Plugin implements Command {
       fs.writeAsync(
         'src/worktime.ts',
         stripIndent`
-          import { WorkimePlugin } from 'nexus-future/plugin'
+          import { WorktimePlugin } from 'nexus-future/plugin'
 
-          export const plugin:WorktimePlugin = project => {
+          export const plugin: WorktimePlugin = project => {
             project.hooks.build.onStart = async () => {
               project.log.info('Hello from ${pluginName}!')
             }
@@ -185,7 +182,7 @@ export default class Plugin implements Command {
       'yarn add --dev ' +
         [
           '@types/jest',
-          'nexus-future@latest',
+          'nexus-future@next',
           'jest',
           'jest-watch-typeahead',
           'ts-jest',
