@@ -19,9 +19,156 @@ Prisma is a next-generation developer-centric toolkit focused on making the data
 
 ## Installation
 
+**1. Install the plugin**
+
 ```cli
 npm install nexus-plugin-prisma
 ```
+
+**2. Install the Prisma CLI**
+
+```cli
+npm install --save-dev @prisma/cli
+```
+
+## Getting started
+
+There are two ways you can start with Prisma. Either from scratch, or using an existing database.
+
+#### Starting from scratch
+
+**1. Create a `schema.prisma` file**
+
+```prisma
+//schema.prisma
+
+generator prisma_client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id   Int @id @default(autoincrement())
+  name String
+}
+```
+
+**2. Add a datasource to your schema**
+
+We recommend you use Postgres but MySQL and SQLite are also supported.
+
+To add your datasource, simply copy/paste one of the block below at the top of your `schema.prisma` file
+
+**Using Postgres**
+
+```prisma
+//schema.prisma
+
+datasource db {
+  provider = "postgres"
+  url = "postgresql://USER:PASSWORD@localhost:5432/DATABASE"
+}
+```
+
+**Using MySQL**
+
+```prisma
+//schema.prisma
+
+datasource db {
+  provider = "mysql"
+  url = "mysql://USER:PASSWORD@localhost:3306/DATABASE"
+}
+```
+
+**Using SQLite**
+
+```prisma
+//schema.prisma
+
+datasource db {
+  provider = "sqlite"
+  url = "file:./dev.db"
+}
+```
+
+**3. Create a migration file**
+
+```sh
+npm run prisma2 migrate save --experimental
+```
+
+**4. Migrate your database**
+
+```sh
+npm run prisma2 migrate up --experimental
+```
+
+**5. You're all set**
+
+You're ready to start working!
+
+#### Starting from an existing database
+
+When starting from an existing database, you should use [Prisma's instrospection](https://prisma2.netlify.com/reference/tools-and-interfaces/introspection) feature.
+
+**1. Create a `schema.prisma` file**
+
+Add your database credentials to your `schema.prisma` file so that Prisma can introspect your database schema.
+
+**Using Postgres**
+
+```prisma
+//schema.prisma
+
+datasource db {
+  provider = "postgres"
+  url = "postgresql://USER:PASSWORD@localhost:5432/DATABASE"
+}
+```
+
+**Using MySQL**
+
+```prisma
+//schema.prisma
+
+datasource db {
+  provider = "mysql"
+  url = "mysql://USER:PASSWORD@localhost:3306/DATABASE"
+}
+```
+
+**Using SQLite**
+
+```prisma
+//schema.prisma
+
+datasource db {
+  provider = "sqlite"
+  url = "file:./dev.db"
+}
+```
+
+**2. Introspect your database**
+
+```
+npm run prisma2 introspect
+```
+
+**3. Generate the Prisma Client**
+
+Add the following block at the top of your `schema.prisma` file:
+
+```
+generator prisma_client {
+  provider = "prisma-client-js"
+}
+```
+
+The plugin will take care of generating the Prisma Client for you after that.
+
+**4. You're all set**
+
+You're ready to start working!
 
 ## Example
 
