@@ -25,6 +25,8 @@ export async function removeWriteAsync(
   await FS.writeAsync(filePath, fileContent)
 }
 
+const getRootDir = () => path.parse(process.cwd()).root
+
 /**
  * Search for a file in cwd or in parent directory recursively up to the root
  * directory.
@@ -35,7 +37,7 @@ export async function findFileRecurisvelyUpward(
 ): Promise<null | string> {
   let found: null | string = null
   let currentDir = opts?.cwd ?? process.cwd()
-
+  const rootDir = getRootDir()
   while (true) {
     const checkFilePath = Path.join(currentDir, fileName)
 
@@ -44,7 +46,7 @@ export async function findFileRecurisvelyUpward(
       break
     }
 
-    if (currentDir === '/') {
+    if (currentDir === rootDir) {
       break
     }
 
@@ -246,4 +248,13 @@ export function trimNodeModulesIfInPath(path: string) {
 export function stripExt(filePath: string): string {
   const { dir, name } = path.parse(filePath)
   return path.join(dir, name)
+}
+
+/**
+ * Enforces Posix Path
+ *
+ * Converts Windows '\the\path' to '/the/path'
+ */
+export function enforcePosixPath(filePath: string): string {
+  return filePath.replace(/\\/g, '/')
 }

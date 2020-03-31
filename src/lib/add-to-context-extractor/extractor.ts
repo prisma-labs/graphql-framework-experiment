@@ -2,6 +2,7 @@ import * as Path from 'path'
 import * as tsm from 'ts-morph'
 import ts from 'typescript'
 import { rootLogger } from '../nexus-logger'
+import { enforcePosixPath } from '../fs'
 
 const log = rootLogger.child('add-to-context-extractor')
 
@@ -49,8 +50,13 @@ export function extractContextTypes(
   })
 
   // flush deduped type imports
+
   contextTypeContributions.typeImports.push(...Object.values(typeImportsIndex))
 
+  // Fixes Pathing on Windows
+  contextTypeContributions.typeImports.forEach(importInfo => {
+    importInfo.modulePath = enforcePosixPath(importInfo.modulePath)
+  })
   return contextTypeContributions
 
   /**

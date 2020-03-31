@@ -1,6 +1,7 @@
 import { SimpleGit } from 'simple-git/promise'
 import stripAnsi from 'strip-ansi'
 import { SuccessfulRunResult } from '../../src/lib/process'
+import * as Path from 'path'
 
 export async function gitReset(git: SimpleGit) {
   await Promise.all([
@@ -31,9 +32,12 @@ export function stripDynamics<C extends object>(
   dynamicPattern: string,
   content: C
 ): C {
+  // TODO Needs looking in to
+  const pattern = dynamicPattern.replace(/\\/g, '/')
   return JSON.parse(
     JSON.stringify(content)
-      .split(dynamicPattern)
+      .replace(/\\\\/g, '/')
+      .split(pattern)
       .join('__DYNAMIC__')
   )
 }
