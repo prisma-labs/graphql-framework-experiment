@@ -39,78 +39,72 @@ jobs:
           git config --global user.name prisma-labs
           git config --global user.email labs@prisma.io
       - run: yarn -s test:system
-
-  publish:
-    needs: [unit-tests, system-tests]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-node@v1
-      - name: Install deps
-        run: yarn --frozen-lockfile
-      - name: Make release
-        run: |
-          yarn -s dripip preview --json > result.json
-
-          result=$(cat result.json)
-
-          echo '==> Publish Result'
-          jq '.' <<< $result
-
-          if [ "$(jq -r '.kind' <<< $result)" == 'did_not_publish' ]; then
-            echo '==> Stopping workflow because no release was made for this commit'
-            # https://developer.github.com/v3/actions/workflow_runs/#cancel-a-workflow-run
-            curl \
-              --fail \
-              --silent \
-              --show-error \
-              --request POST \
-              --url "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/cancel" \
-              --header "Content-Type: application/json" \
-              --header "Authorization: token ${{ github.token }}"
-            fi
-        env:
-          NPM_TOKEN: ${{secrets.NPM_TOKEN}}
-      - name: Save publish result
-        uses: actions/upload-artifact@v1
-        with:
-          name: published
-          path: result.json
-
-  e2e-tests:
-    needs: publish
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [10.x, 12.x]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Load publish result
-        uses: actions/download-artifact@v1
-        with:
-          name: published
-      - run: cat published/result.json | jq -r '.version'
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node-version }}
-      - name: Install deps
-        run: yarn --frozen-lockfile
-      - name: Setup global git user
-        run: |
-          # For nexus create app flow which will make an init commit 
-          git config --global user.name prisma-labs
-          git config --global user.email labs@prisma.io
-      - name: e2e test
-        env:
-          LOG_LEVEL: trace
-        run: |
-          export E2E_NEXUS_VERSION=$(cat published/result.json | jq -r '.version')
-          if [ $E2E_NEXUS_VERSION == '' ]; then
-            echo "Failed to extract version"
-            exit 1
-          fi
-
-          yarn test:e2e
+  # publish:
+  #   needs: [unit-tests, system-tests]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #       with:
+  #         fetch-depth: 0
+  #     - uses: actions/setup-node@v1
+  #     - name: Install deps
+  #       run: yarn --frozen-lockfile
+  #     - name: Make release
+  #       run: |
+  #         yarn -s dripip preview --json > result.json
+  #         result=$(cat result.json)
+  #         echo '==> Publish Result'
+  #         jq '.' <<< $result
+  #         if [ "$(jq -r '.kind' <<< $result)" == 'did_not_publish' ]; then
+  #           echo '==> Stopping workflow because no release was made for this commit'
+  #           # https://developer.github.com/v3/actions/workflow_runs/#cancel-a-workflow-run
+  #           curl \
+  #             --fail \
+  #             --silent \
+  #             --show-error \
+  #             --request POST \
+  #             --url "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/cancel" \
+  #             --header "Content-Type: application/json" \
+  #             --header "Authorization: token ${{ github.token }}"
+  #           fi
+  #       env:
+  #         NPM_TOKEN: ${{secrets.NPM_TOKEN}}
+  #     - name: Save publish result
+  #       uses: actions/upload-artifact@v1
+  #       with:
+  #         name: published
+  #         path: result.json
+  # e2e-tests:
+  #   needs: publish
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       node-version: [10.x, 12.x]
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Load publish result
+  #       uses: actions/download-artifact@v1
+  #       with:
+  #         name: published
+  #     - run: cat published/result.json | jq -r '.version'
+  #     - name: Use Node.js ${{ matrix.node-version }}
+  #       uses: actions/setup-node@v1
+  #       with:
+  #         node-version: ${{ matrix.node-version }}
+  #     - name: Install deps
+  #       run: yarn --frozen-lockfile
+  #     - name: Setup global git user
+  #       run: |
+  #         # For nexus create app flow which will make an init commit
+  #         git config --global user.name prisma-labs
+  #         git config --global user.email labs@prisma.io
+  #     - name: e2e test
+  #       env:
+  #         LOG_LEVEL: trace
+  #       run: |
+  #         export E2E_NEXUS_VERSION=$(cat published/result.json | jq -r '.version')
+  #         if [ $E2E_NEXUS_VERSION == '' ]; then
+  #           echo "Failed to extract version"
+  #           exit 1
+  #         fi
+  #         yarn test:e2e
