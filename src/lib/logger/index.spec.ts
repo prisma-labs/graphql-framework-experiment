@@ -44,7 +44,7 @@ describe('settings', () => {
     describe('context formatting', () => {
       // assumes always logging info "foo" event
       let logHeadersWidth = (
-        '● root:foo' + Prettifier.seps.context.singleLine.symbol
+        '● root:foo' + Prettifier.separators.context.singleLine.symbol
       ).length
       let terminalWidth = 0
       let terminalContextWidth = 0
@@ -72,7 +72,7 @@ describe('settings', () => {
             ...stringValueEntryWithin(
               'ke2',
               terminalContextWidth / 2 -
-                Prettifier.seps.contextEntry.singleLine.length
+                Prettifier.separators.contextEntry.singleLine.length
             ),
           })
           expect(output.memory.jsonOrRaw).toMatchSnapshot()
@@ -103,7 +103,7 @@ describe('settings', () => {
             ...stringValueEntryWithin(
               'ke2',
               terminalContextWidth / 2 -
-                Prettifier.seps.contextEntry.singleLine.length +
+                Prettifier.separators.contextEntry.singleLine.length +
                 1 /* force multi */
             ),
           })
@@ -594,7 +594,8 @@ function stringValueEntryWithin(
   size: number
 ): Record<any, any> {
   const KeyWidth =
-    keyName.length + Prettifier.seps.contextKeyVal.singleLine.symbol.length
+    keyName.length +
+    Prettifier.separators.contextKeyVal.singleLine.symbol.length
   return {
     [keyName]: stringValueWithin(size - KeyWidth),
   }
