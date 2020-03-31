@@ -34,7 +34,7 @@ interface ConfigInput {
 
 interface InternalConfig {
   projectName: string
-  nexusFutureVersionExpression: string
+  nexusVersionExpression: string
 }
 
 /**
@@ -83,18 +83,18 @@ export async function runBootstrapper(
     : undefined
   const packageManagerTypeEnvVar = process.env
     .CREATE_APP_CHOICE_PACKAGE_MANAGER_TYPE as any
-  const nexusFutureVersionExpressionEnvVar =
-    process.env.CREATE_APP_CHOICE_NEXUS_FUTURE_VERSION_EXPRESSION
+  const nexusVersionExpressionEnvVar =
+    process.env.CREATE_APP_CHOICE_NEXUS_VERSION_EXPRESSION
   log.trace('create app user choices pre-filled by env vars?', {
     packageManagerTypeEnvVar,
     databaseTypeEnvVar,
-    nexusFutureVersionExpressionEnvVar,
+    nexusVersionExpressionEnvVar: nexusVersionExpressionEnvVar,
   })
 
   const projectName = configInput?.projectName ?? CWDProjectNameOrGenerate()
 
-  const nexusFutureVersionExpression =
-    nexusFutureVersionExpressionEnvVar ?? `^${ownPackage.version}`
+  const nexusVersionExpression =
+    nexusVersionExpressionEnvVar ?? `^${ownPackage.version}`
 
   const packageManagerType =
     packageManagerTypeEnvVar ?? (await askForPackageManager())
@@ -122,7 +122,7 @@ export async function runBootstrapper(
 
   const options: InternalConfig = {
     projectName: projectName,
-    nexusFutureVersionExpression: nexusFutureVersionExpression,
+    nexusVersionExpression: nexusVersionExpression,
     ...configInput,
   }
 
@@ -134,7 +134,7 @@ export async function runBootstrapper(
   await scaffoldBaseFiles(layout, options)
 
   log.info(
-    `Installing nexus@${options.nexusFutureVersionExpression}... (this will take around ~15 seconds)`
+    `Installing nexus@${options.nexusVersionExpression}... (this will take around ~15 seconds)`
   )
   await layout.packageManager.installDeps({ require: true })
 
@@ -447,7 +447,7 @@ async function scaffoldBaseFiles(
       name: options.projectName,
       license: 'UNLICENSED',
       dependencies: {
-        nexus: options.nexusFutureVersionExpression,
+        nexus: options.nexusVersionExpression,
       },
       scripts: {
         format: "npx prettier --write './**/*.{ts,md}' '!./prisma/**/*.md'",

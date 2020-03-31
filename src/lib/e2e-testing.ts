@@ -105,7 +105,7 @@ export function setupE2EContext(config?: {
   if (config?.linkedPackageMode) {
     // Handling no-hoist problem - https://github.com/graphql-nexus/nexus/issues/432
     process.env.NEXUS_TYPEGEN_NEXUS_SCHEMA_IMPORT_PATH = `"../../nexus/node_modules/@nexus/schema"`
-    process.env.CREATE_APP_CHOICE_NEXUS_FUTURE_VERSION_EXPRESSION = `file:${getRelativePathFromTestProjectToNexusPackage()}`
+    process.env.CREATE_APP_CHOICE_NEXUS_VERSION_EXPRESSION = `file:${getRelativePathFromTestProjectToNexusPackage()}`
   }
 
   return contextAPI
