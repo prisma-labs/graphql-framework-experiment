@@ -212,11 +212,18 @@ async function askUserPluginName(): Promise<string> {
   // TODO check the npm registry to see if the name is already taken before
   // continuing.
   //
-  const { pluginName }: { pluginName: string } = await prompts({
-    type: 'text',
-    name: 'pluginName',
-    message: 'What is the name of your plugin?',
-  })
+  let pluginName: string
+  if (process.env.CREATE_PLUGIN_CHOICE_NAME) {
+    pluginName = process.env.CREATE_PLUGIN_CHOICE_NAME
+  } else {
+    const response: { pluginName: string } = await prompts({
+      type: 'text',
+      name: 'pluginName',
+      message: 'What is the name of your plugin?',
+    })
+    pluginName = response.pluginName
+  }
+
   const pluginNameNormalized = pluginName.replace(/^nexus-plugin-(.+)/, '$1')
   return pluginNameNormalized
 }
