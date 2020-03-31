@@ -222,80 +222,8 @@ export async function e2eTestApp(
 
   expect(createPluginResult.exitCode).toStrictEqual(0)
 
-  log.warn('todo link plugin')
-
-  // //
-  // // Cover using a plugin
-  // //
-
-  // log.warn('Check that prisma plugin can integrate')
-
-  // // Install a plugin
-  // const nexusPluginPrismaVersion =
-  //   process.env.NEXUS_PLUGIN_PRISMA_VERSION ?? 'latest'
-
-  // log.warn('Install', { nexusPluginPrismaVersion })
-
-  // await ctx.spawn([
-  //   'npm',
-  //   'install',
-  //   `nexus-plugin-prisma@${nexusPluginPrismaVersion}`,
-  // ])
-
-  // await ctx.fs.writeAsync(
-  //   './prisma/schema.prisma',
-  //   `
-  //     datasource db {
-  //       provider = "sqlite"
-  //       url      = "file:data.db"
-  //     }
-
-  //     generator prisma_client {
-  //       provider = "prisma-client-js"
-  //     }
-
-  //     model Foo {
-  //       id   Int    @id @default(autoincrement())
-  //       name String
-  //     }
-  //   `
-  // )
-  // await ctx.fs.writeAsync(
-  //   `./src/prisma-plugin/${CONVENTIONAL_SCHEMA_FILE_NAME}`,
-  //   `
-  //     import { schema } from 'nexus-future'
-
-  //     schema.objectType({
-  //       name: 'Foo',
-  //       definition(t) {
-  //         t.model.id()
-  //       }
-  //     })
-  //   `
-  // )
-
-  // await ctx.spawn(['npx', 'prisma2', `geneate`])
-
-  // log.warn('run dev with plugin')
-
-  // await ctx.spawnNexus(['dev'], async (data, proc) => {
-  //   if (data.includes(SERVER_LISTENING_EVENT)) {
-  //     proc.kill()
-  //   }
-  // })
-
-  // log.warn('run build with plugin')
-
-  // res = await ctx.spawnNexus(['build'], () => {})
-
-  // expect(res.data).toContain('success')
-  // expect(res.exitCode).toStrictEqual(0)
-
-  // log.warn('run built app with plugin')
-
-  // await ctx.spawn(['node', DEFAULT_BUILD_FOLDER_NAME], async (data, proc) => {
-  //   if (data.includes(SERVER_LISTENING_EVENT)) {
-  //     proc.kill()
-  //   }
-  // })
+  log.warn('todo build plugin')
+  log.warn('todo install plugin into app via file path')
+  log.warn('todo with plugin, dev app')
+  log.warn('todo with plugin, build app')
 }
