@@ -17,16 +17,21 @@ const log = rootLogger
 
 export default class Plugin implements Command {
   async parse() {
+    let needsChangeDir = false
     log.info('Scaffolding a nexus plugin')
 
     const pluginName = await askUserPluginName()
     const pluginPackageName = 'nexus-plugin-' + pluginName
-    log.info(`Creating directory ${pluginPackageName}...`)
-    const projectPath = fs.path(pluginPackageName)
-    await fs.dirAsync(projectPath)
-    process.chdir(projectPath)
+    const contents = await fs.listAsync()
+    if (contents !== undefined && contents.length > 0) {
+      log.info(`Creating directory ${pluginPackageName}...`)
+      const projectPath = fs.path(pluginPackageName)
+      await fs.dirAsync(projectPath)
+      process.chdir(projectPath)
+      needsChangeDir = true
+    }
 
-    log.info(`Scaffolding files...`)
+    log.info(`Scaffolding files`)
     await Promise.all([
       fs.writeAsync(
         'README.md',
@@ -175,7 +180,7 @@ export default class Plugin implements Command {
       ),
     ])
 
-    log.info(`Installing dev dependencies...`)
+    log.info(`Installing dev dependencies`)
     await proc.run(
       'yarn add --dev ' +
         [
@@ -192,10 +197,17 @@ export default class Plugin implements Command {
     log.info(`Initializing git repository...`)
     await createGitRepository()
 
-    log.info(stripIndent`
-        Done! To get started:
+    let message: string
+    if (needsChangeDir) {
+      message = `cd ${pluginPackageName} && yarn dev`
+    } else {
+      message = `yarn dev`
+    }
 
-               cd ${pluginPackageName} && yarn dev
+    log.info(stripIndent`
+      Done! To get started:
+
+          ${message}
     `)
   }
 }

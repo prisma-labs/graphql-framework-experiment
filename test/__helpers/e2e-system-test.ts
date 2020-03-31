@@ -1,5 +1,5 @@
 import { introspectionQuery } from 'graphql'
-import { setupE2EContext } from '../../src/lib/e2e-testing'
+import { setupE2EContext, SpawnResult } from '../../src/lib/e2e-testing'
 import { DEFAULT_BUILD_FOLDER_NAME } from '../../src/lib/layout'
 import { CONVENTIONAL_SCHEMA_FILE_NAME } from '../../src/lib/layout/schema-modules'
 import { rootLogger } from '../../src/lib/nexus-logger'
@@ -18,13 +18,12 @@ export async function e2eTestApp(
   ctx: ReturnType<typeof setupE2EContext>
 ) {
   const SERVER_LISTENING_EVENT = 'server listening'
-  let res
+  let res: SpawnResult
 
   log.warn('create app')
 
-  let createAppResult
   if (options.local) {
-    createAppResult = await ctx.localNexusCreateApp(
+    res = await ctx.localNexusCreateApp(
       {
         databaseType: 'NO_DATABASE',
         packageManagerType: 'npm',
@@ -36,7 +35,7 @@ export async function e2eTestApp(
       }
     )
   } else {
-    createAppResult = await ctx.npxNexusCreateApp(
+    res = await ctx.npxNexusCreateApp(
       {
         databaseType: 'NO_DATABASE',
         packageManagerType: 'npm',
@@ -50,7 +49,7 @@ export async function e2eTestApp(
     )
   }
 
-  expect(createAppResult.exitCode).toStrictEqual(0)
+  expect(res.exitCode).toStrictEqual(0)
 
   // Cover addToContext feature
   await ctx.fs.writeAsync(
@@ -196,31 +195,17 @@ export async function e2eTestApp(
     testProjectDir: ctx.getTmpDir('e2e-plugin'),
   })
 
-  let createPluginResult
   if (options.local) {
-    createPluginResult = await pluginCtx.localNexusCreatePlugin(
-      { name: 'foobar' },
-      (data, proc) => {
-        if (data.includes(SERVER_LISTENING_EVENT)) {
-          proc.kill()
-        }
-      }
-    )
+    res = await pluginCtx.localNexusCreatePlugin({ name: 'foobar' })
   } else {
-    createPluginResult = await pluginCtx.npxNexusCreatePlugin(
-      {
-        name: 'foobar',
-        nexusVersion: process.env.E2E_NEXUS_VERSION ?? 'latest',
-      },
-      (data, proc) => {
-        if (data.includes(SERVER_LISTENING_EVENT)) {
-          proc.kill()
-        }
-      }
-    )
+    res = await pluginCtx.npxNexusCreatePlugin({
+      name: 'foobar',
+      nexusVersion: process.env.E2E_NEXUS_VERSION ?? 'latest',
+    })
   }
 
-  expect(createPluginResult.exitCode).toStrictEqual(0)
+  expect(res.data).toContain('Done! To get started')
+  expect(res.exitCode).toStrictEqual(0)
 
   log.warn('todo build plugin')
   log.warn('todo install plugin into app via file path')

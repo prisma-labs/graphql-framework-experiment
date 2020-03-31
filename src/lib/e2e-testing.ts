@@ -37,7 +37,7 @@ export function setupE2EContext(config?: {
   rootLogger.settings({ level: 'trace' })
   process.env.LOG_LEVEL = 'trace'
 
-  const projectDir = config?.testProjectDir ?? getTmpDir('e2e-testing')
+  const projectDir = config?.testProjectDir ?? getTmpDir('e2e-app')
   const PROJ_NEXUS_BIN_PATH = Path.join(
     projectDir,
     'node_modules',
@@ -107,7 +107,7 @@ export function setupE2EContext(config?: {
     },
     npxNexusCreatePlugin(
       options: CreatePluginOptions & { nexusVersion: string },
-      expectHandler: (data: string, proc: IPty) => void
+      expectHandler: (data: string, proc: IPty) => void = () => {}
     ) {
       log.trace('npx nexus-future', { options })
       return ptySpawn(
@@ -238,26 +238,30 @@ export function ptySpawn(
 ) {
   const nodePty = requireNodePty()
 
-  return new Promise<{ exitCode: number; signal?: number; data: string }>(
-    resolve => {
-      const proc = nodePty.spawn(command, args, {
-        cols: process.stdout.columns ?? 80,
-        rows: process.stdout.rows ?? 80,
-        ...opts,
-      })
-      let buffer = ''
+  return new Promise<SpawnResult>(resolve => {
+    const proc = nodePty.spawn(command, args, {
+      cols: process.stdout.columns ?? 80,
+      rows: process.stdout.rows ?? 80,
+      ...opts,
+    })
+    let buffer = ''
 
-      proc.on('data', data => {
-        buffer += data
-        process.stdout.write(data)
-        expectHandler(stripAnsi(data), proc)
-      })
+    proc.on('data', data => {
+      buffer += data
+      process.stdout.write(data)
+      expectHandler(stripAnsi(data), proc)
+    })
 
-      proc.on('exit', (exitCode, signal) => {
-        resolve({ exitCode, signal, data: stripAnsi(buffer) })
-      })
-    }
-  )
+    proc.on('exit', (exitCode, signal) => {
+      resolve({ exitCode, signal, data: stripAnsi(buffer) })
+    })
+  })
+}
+
+export interface SpawnResult {
+  exitCode: number
+  signal?: number
+  data: string
 }
 
 /**
