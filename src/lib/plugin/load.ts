@@ -1,6 +1,7 @@
 import { stripIndent } from 'common-tags'
 import prompts from 'prompts'
 import * as Layout from '../../lib/layout'
+import { shouldGenerateArtifacts } from '../../runtime/schema/config'
 import { rootLogger } from '../nexus-logger'
 import { fatal, run, runSync } from '../process'
 import { importAllPlugins, Plugin } from './import'
@@ -91,7 +92,7 @@ export function loadTesttimePlugin(plugin: Plugin) {
 function createRuntimeLens(pluginName: string): RuntimeLens {
   return {
     ...createBaseLens(pluginName),
-    isBuild: process.env.NEXUS_BUILD === 'true',
+    shouldGenerateArtifacts: shouldGenerateArtifacts(),
   }
 }
 

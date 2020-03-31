@@ -151,7 +151,7 @@ export type Lens = {
 }
 
 export interface RuntimeLens extends Lens {
-  isBuild: boolean
+  shouldGenerateArtifacts: boolean
 }
 
 export interface TesttimeLens extends Lens {}
