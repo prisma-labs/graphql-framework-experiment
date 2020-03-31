@@ -177,7 +177,7 @@ export const createRunner = (cwd: string): typeof runSync => {
     return runSync(cmd, { ...opts, cwd })
   }
 }
-
+export const isWin = process.platform === 'win32'
 function createCommandError({
   command,
   signal,

@@ -11,6 +11,7 @@ import { GraphQLClient } from './graphql-client'
 import { rootLogger } from './nexus-logger'
 import { PackageManagerType } from './package-manager'
 import stripAnsi = require('strip-ansi')
+import { isWin } from './process'
 
 const log = rootLogger.child('e2e-testing')
 
@@ -74,7 +75,7 @@ export function setupE2EContext(config?: {
         databaseType,
       })
       return ptySpawn(
-        'npx',
+        isWin ? 'npx.cmd' : 'npx',
         [`nexus-future@${version}`],
         {
           cwd: projectDir,
@@ -94,7 +95,7 @@ export function setupE2EContext(config?: {
       expectHandler: (data: string, proc: IPty) => void = () => {}
     ) {
       return ptySpawn(
-        'node',
+        isWin ? 'node.exe' : 'node',
         [binPath, ...args],
         { cwd: projectDir },
         expectHandler
@@ -138,8 +139,10 @@ export function ptySpawn(
       let buffer = ''
 
       proc.on('data', data => {
-        buffer += data
-        process.stdout.write(data)
+        if (data) {
+          buffer += data
+          //process.stdout.write(data)
+        }
         expectHandler(stripAnsi(data), proc)
       })
 

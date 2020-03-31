@@ -3,6 +3,7 @@ import { setupE2EContext } from '../../src/lib/e2e-testing'
 import { DEFAULT_BUILD_FOLDER_NAME } from '../../src/lib/layout'
 import { CONVENTIONAL_SCHEMA_FILE_NAME } from '../../src/lib/layout/schema-modules'
 import { rootLogger } from '../../src/lib/nexus-logger'
+import { isWin } from '../../src/lib/process'
 
 const log = rootLogger.child('e2e-testing')
 
@@ -112,35 +113,38 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
 
   log.warn('run built app and query graphql api')
 
-  await ctx.spawn(['node', DEFAULT_BUILD_FOLDER_NAME], async (data, proc) => {
-    if (data.includes('server:listening')) {
-      let result: any
-      result = await ctx.client.request(`{
+  await ctx.spawn(
+    [isWin ? 'node.exe' : 'node', DEFAULT_BUILD_FOLDER_NAME],
+    async (data, proc) => {
+      if (data.includes('server:listening')) {
+        let result: any
+        result = await ctx.client.request(`{
           worlds {
             id
             name
             population
           }
         }`)
-      expect(result).toMatchSnapshot('built app query')
+        expect(result).toMatchSnapshot('built app query')
 
-      result = await ctx.client.request(introspectionQuery)
-      expect(result).toMatchSnapshot('built app introspection')
+        result = await ctx.client.request(introspectionQuery)
+        expect(result).toMatchSnapshot('built app introspection')
 
-      result = await ctx.client.request(`{ a }`)
-      expect(result).toMatchSnapshot('built app addToContext query')
+        result = await ctx.client.request(`{ a }`)
+        expect(result).toMatchSnapshot('built app addToContext query')
 
-      result = await ctx.client.request(`{ testBackingType { test } }`)
-      expect(result).toMatchSnapshot('built app backing type query')
+        result = await ctx.client.request(`{ testBackingType { test } }`)
+        expect(result).toMatchSnapshot('built app backing type query')
 
-      proc.kill()
+        proc.kill()
+      }
     }
-  })
+  )
 
   log.warn('run built app from a different CWD than the project root')
 
   await ctx.spawn(
-    ['node', ctx.fs.path(DEFAULT_BUILD_FOLDER_NAME)],
+    [isWin ? 'node.exe' : 'node', ctx.fs.path(DEFAULT_BUILD_FOLDER_NAME)],
     async (data, proc) => {
       if (data.includes('server:listening')) {
         proc.kill()
@@ -162,10 +166,14 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
 
   log.warn('Install', { nexusPluginPrismaVersion, prismaVersion })
 
-  await ctx.spawn(['npm', 'install', `prisma2@${prismaVersion}`])
+  await ctx.spawn([
+    isWin ? 'npm.cmd' : 'npm',
+    'install',
+    `prisma2@${prismaVersion}`,
+  ])
 
   await ctx.spawn([
-    'npm',
+    isWin ? 'npm.cmd' : 'npm',
     'install',
     `nexus-plugin-prisma@${nexusPluginPrismaVersion}`,
   ])
@@ -202,7 +210,7 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
     `
   )
 
-  await ctx.spawn(['npx', 'prisma2', `geneate`])
+  await ctx.spawn([isWin ? 'npx.cmd' : 'npx', 'prisma2', `geneate`])
 
   log.warn('run dev with plugin')
 
@@ -221,9 +229,12 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
 
   log.warn('run built app with plugin')
 
-  await ctx.spawn(['node', DEFAULT_BUILD_FOLDER_NAME], async (data, proc) => {
-    if (data.includes('server:listening')) {
-      proc.kill()
+  await ctx.spawn(
+    [isWin ? 'node.exe' : 'node', DEFAULT_BUILD_FOLDER_NAME],
+    async (data, proc) => {
+      if (data.includes('server:listening')) {
+        proc.kill()
+      }
     }
-  })
+  )
 }

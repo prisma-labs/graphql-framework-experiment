@@ -3,6 +3,10 @@ import { e2eTestApp } from '../__helpers/e2e-system-test'
 
 const ctx = setupE2EContext()
 
+beforeAll(() => {
+  process.env = Object.assign(process.env, { DEBUG: true })
+})
+
 test('e2e', async () => {
   const nexusVersion = process.env.E2E_NEXUS_VERSION ?? 'latest'
 

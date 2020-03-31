@@ -2,6 +2,14 @@ import * as Path from 'path'
 import { setupE2EContext } from '../../src/lib/e2e-testing'
 import { e2eTestApp } from '../__helpers/e2e-system-test'
 
+beforeAll(() => {
+  process.env = Object.assign(process.env, {
+    LINK: true,
+    DEBUG: true,
+    NEXUS_PLUGIN_PRISMA_VERSION: 'pr.72',
+  })
+})
+
 const ctx = setupE2EContext({
   linkedPackageMode: true,
 })
@@ -13,7 +21,7 @@ test('cli entrypoint create app', async () => {
   process.env.CREATE_APP_CHOICE_PACKAGE_MANAGER_TYPE = 'npm'
 
   // Create a new app
-
+  console.log(ctx.projectDir)
   const createAppResult = await ctx.spawnNexusFromPath(
     BIN_PATH,
     [],
