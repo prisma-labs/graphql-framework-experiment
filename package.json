@@ -89,7 +89,7 @@
     "prepublishOnly": "yarn -s build",
     "test": "jest --verbose --testTimeout 180000",
     "test:integration": "jest --verbose --testRegex '.+/integration/.+\\.spec\\.ts$'",
-    "test:unit": "jest --verbose --testRegex '.+/src/.+\\.spec\\.ts$'",
+    "test:unit": "jest --verbose --runInBand --testRegex '.+/src/.+\\.spec\\.ts$'",
     "test:e2e": "DEBUG=true jest --verbose --testTimeout 180000 test/e2e",
     "test:system": "LINK=true DEBUG=true NEXUS_PLUGIN_PRISMA_VERSION=pr.72 jest --verbose --testTimeout 180000 test/system",
     "dev:test": "jest --watch --testRegex '.+/src/.+\\.spec\\.ts$'",
