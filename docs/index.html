@@ -24,6 +24,7 @@
         --theme-color-purple: #6566f9;
         --theme-color-warning: #f9b965;
       }
+
       body {
         font-size: 16px;
         line-height: 2rem;
@@ -76,7 +77,7 @@
         }
       }
 
-      @media (min-width: 1600px) {
+      @media (min-width: 1650px) {
         .Row {
           width: 1400px;
           margin-left: -350px; /* (1300 - 700) / 2 */
@@ -433,6 +434,8 @@
       .markdown-section pre > code {
         font-size: 0.8rem;
         line-height: 1.75;
+        max-height: 50rem;
+        overflow-y: scroll;
       }
       .markdown-section p a:hover {
         opacity: 0.8;
