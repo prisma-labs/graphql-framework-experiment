@@ -6,11 +6,52 @@ import { rootLogger } from '../../src/lib/nexus-logger'
 
 const log = rootLogger.child('e2e-testing')
 
+interface Options {
+  local: boolean
+}
+
 /**
  * This function is shared between e2e tests and system tests
  */
-export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
+export async function e2eTestApp(
+  options: Options,
+  ctx: ReturnType<typeof setupE2EContext>
+) {
+  const SERVER_LISTENING_EVENT = 'server listening'
   let res
+
+  log.warn('create app')
+
+  let createAppResult
+  if (options.local) {
+    createAppResult = await ctx.localNexusCreateApp(
+      {
+        databaseType: 'NO_DATABASE',
+        packageManagerType: 'npm',
+      },
+      (data, proc) => {
+        if (data.includes(SERVER_LISTENING_EVENT)) {
+          proc.kill()
+        }
+      }
+    )
+  } else {
+    createAppResult = await ctx.npxNexusCreateApp(
+      {
+        databaseType: 'NO_DATABASE',
+        packageManagerType: 'npm',
+        nexusVersion: process.env.E2E_NEXUS_VERSION ?? 'latest',
+      },
+      (data, proc) => {
+        process.stdout.write(data)
+        if (data.includes(SERVER_LISTENING_EVENT)) {
+          proc.kill()
+        }
+      }
+    )
+  }
+
+  expect(createAppResult.exitCode).toStrictEqual(0)
 
   // Cover addToContext feature
   await ctx.fs.writeAsync(
@@ -78,7 +119,7 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
   log.warn('run dev & query graphql api')
 
   await ctx.spawnNexus(['dev'], async (data, proc) => {
-    if (data.includes('server listening')) {
+    if (data.includes(SERVER_LISTENING_EVENT)) {
       let result: any
       result = await ctx.client.request(`{
           worlds {
@@ -113,7 +154,7 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
   log.warn('run built app and query graphql api')
 
   await ctx.spawn(['node', DEFAULT_BUILD_FOLDER_NAME], async (data, proc) => {
-    if (data.includes('server listening')) {
+    if (data.includes(SERVER_LISTENING_EVENT)) {
       let result: any
       result = await ctx.client.request(`{
           worlds {
@@ -142,12 +183,14 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
   await ctx.spawn(
     ['node', ctx.fs.path(DEFAULT_BUILD_FOLDER_NAME)],
     async (data, proc) => {
-      if (data.includes('server listening')) {
+      if (data.includes(SERVER_LISTENING_EVENT)) {
         proc.kill()
       }
     },
     { cwd: '/' }
   )
+
+  log.warn('todo scaffold a new plugin')
 
   // //
   // // Cover using a plugin
@@ -204,7 +247,7 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
   // log.warn('run dev with plugin')
 
   // await ctx.spawnNexus(['dev'], async (data, proc) => {
-  //   if (data.includes('server listening')) {
+  //   if (data.includes(SERVER_LISTENING_EVENT)) {
   //     proc.kill()
   //   }
   // })
@@ -219,7 +262,7 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
   // log.warn('run built app with plugin')
 
   // await ctx.spawn(['node', DEFAULT_BUILD_FOLDER_NAME], async (data, proc) => {
-  //   if (data.includes('server listening')) {
+  //   if (data.includes(SERVER_LISTENING_EVENT)) {
   //     proc.kill()
   //   }
   // })
