@@ -18,13 +18,13 @@ test('cli entrypoint create app', async () => {
     BIN_PATH,
     [],
     (data, proc) => {
-      if (data.includes('server:listening')) {
+      if (data.includes('server listening')) {
         proc.kill()
       }
     }
   )
 
-  expect(createAppResult.data).toContain('server:listening')
+  expect(createAppResult.data).toContain('server listening')
   expect(createAppResult.exitCode).toStrictEqual(0)
 
   await e2eTestApp(ctx)
