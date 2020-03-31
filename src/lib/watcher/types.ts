@@ -1,5 +1,4 @@
 import { ForkOptions } from 'child_process'
-import { Layout } from '../layout'
 import * as Plugin from '../plugin'
 
 export interface Compiler {
@@ -55,9 +54,9 @@ interface StringOpts {
 }
 
 export interface Opts extends BooleanOpts, StringOpts {
-  layout: Layout
+  sourceRoot: string
   log?: any
   watch?: string
   stdio?: ForkOptions['stdio']
-  plugins: Plugin.WorkflowHooks[]
+  plugins: Plugin.WorktimeHooks[]
 }

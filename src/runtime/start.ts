@@ -1,14 +1,15 @@
 import { stripIndent } from 'common-tags'
+import { EOL } from 'os'
 import { EmitAndSemanticDiagnosticsBuilderProgram } from 'typescript'
 import { stripExt } from '../lib/fs'
 import * as Layout from '../lib/layout'
 import { rootLogger } from '../lib/nexus-logger'
 import { transpileModule } from '../lib/tsc'
 
+const log = rootLogger.child('start-module')
+
 export const START_MODULE_NAME = 'index'
 export const START_MODULE_HEADER = 'GENERATED NEXUS START MODULE'
-
-const log = rootLogger.child('start-module')
 
 type StartModuleConfig = {
   internalStage: 'build' | 'dev'
@@ -16,34 +17,50 @@ type StartModuleConfig = {
   disableArtifactGeneration?: boolean
   relativePackageJsonPath?: string
   inlineSchemaModuleImports?: boolean
-  pluginNames?: string[]
+  pluginNames: string[]
 }
 
 export function createStartModuleContent(config: StartModuleConfig): string {
   log.trace('create start module')
-  let output = `// ${START_MODULE_HEADER}` + '\n'
+  let content = `// ${START_MODULE_HEADER}` + '\n'
 
-  output += '\n\n\n'
-  output += stripIndent`
+  content += EOL + EOL + EOL
+  content += stripIndent`
     process.env.NEXUS_SHOULD_GENERATE_ARTIFACTS = '${!config.disableArtifactGeneration}'
   `
 
   if (config.internalStage === 'dev') {
-    output += '\n\n\n'
-    output += stripIndent`
+    content += EOL + EOL + EOL
+    content += stripIndent`
       process.env.NEXUS_STAGE = 'dev'
     `
   }
 
-  output += '\n\n\n'
-  output += stripIndent`
-    // Guarantee that any side-effect features run
-    require("nexus-future")
+  content += EOL + EOL + EOL
+  content += stripIndent`
+    // Run framework initialization side-effects
+    // Also, import the app for later use
+    const app = require("nexus-future").default
+  `
+
+  // todo test coverage for this feature
+  content += EOL + EOL + EOL
+  content += stripIndent`
+    // Last resort error handling
+    process.once('uncaughtException', error => {
+      app.log.fatal('uncaughtException', { error: error })
+      process.exit(1)
+    })
+
+    process.once('unhandledRejection', error => {
+      app.log.fatal('unhandledRejection', { error: error })
+      process.exit(1)
+    })
   `
 
   if (config.relativePackageJsonPath) {
-    output += '\n\n'
-    output += stripIndent`
+    content += EOL + EOL + EOL
+    content += stripIndent`
       // package.json is needed for plugin auto-import system.
       // On the Zeit Now platform, builds and dev copy source into
       // new directory. Copying follows paths found in source. Give one here
@@ -52,56 +69,63 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     `
   }
 
-  if (config.pluginNames) {
-    output += '\n\n'
-    output += stripIndent`
-    // Statically require all plugins so that tree-shaking can be done
-    ${config.pluginNames
-      .map(pluginName => `require('nexus-plugin-${pluginName}')`)
-      .join('\n')}
-    `
-  }
-
   if (config.inlineSchemaModuleImports) {
     // This MUST come after nexus-future package has been imported for its side-effects
     const staticImports = Layout.schema.printStaticImports(config.layout)
     if (staticImports !== '') {
-      output += '\n\n\n'
-      output += stripIndent`
+      content += EOL + EOL + EOL
+      content += stripIndent`
         // Import the user's schema modules
         ${staticImports}
       `
     }
   }
 
-  // TODO Despite the comment below there are still sometimes reasons to do so
-  // https://github.com/graphql-nexus/nexus-future/issues/141
-  output += '\n\n\n'
-  output += config.layout.app.exists
-    ? stripIndent`
-        // import the user's app module
-        require("./${stripExt(
-          config.layout.sourceRelative(config.layout.app.pathAbs)
-        )}")
+  if (config.layout.app.exists) {
+    content += EOL + EOL + EOL
+    content += stripIndent`
+      // Import the user's app module
+      require("./${stripExt(
+        config.layout.sourceRelative(config.layout.app.path)
+      )}")
+    `
+  }
 
-        // Boot the server for the user if they did not alreay do so manually.
-        // Users should normally not boot the server manually as doing so does not
-        // bring value to the user's codebase.
+  if (config.pluginNames.length) {
+    const aliasAndPluginNames = config.pluginNames.map(pluginName => {
+      // TODO nice camelcase identifier
+      const namedImportAlias = `plugin_${Math.random()
+        .toString()
+        .slice(2, 5)}`
+      return [namedImportAlias, pluginName]
+    })
+    content += EOL + EOL + EOL
+    content += stripIndent`
+      // Apply runtime plugins
+      ${aliasAndPluginNames
+        .map(([namedImportAlias, pluginName]) => {
+          return `import { plugin as ${namedImportAlias} } from 'nexus-plugin-${pluginName}/dist/runtime'`
+        })
+        .join(EOL)}
 
-        const app = require('nexus-future')
-        const singletonChecks = require('nexus-future/dist/runtime/singleton-checks')
+      ${aliasAndPluginNames
+        .map(([namedImportAlias, pluginName]) => {
+          return `app.__use('${pluginName}', ${namedImportAlias})`
+        })
+        .join(EOL)}
+    `
+  }
 
-        if (singletonChecks.state.is_was_server_start_called === false) {
-          app.server.start()
-        }
-        `
-    : stripIndent`
-        // Start the server
-        const app = require('nexus-future')
-        app.server.start()
-      `
+  content += EOL + EOL + EOL
+  content += stripIndent`
+    // Boot the server if the user did not already.
+    if (app.__state.isWasServerStartCalled === false) {
+      app.server.start()
+    }  
+  `
 
-  return output
+  log.trace('created', { content })
+  return content
 }
 
 export function prepareStartModule(

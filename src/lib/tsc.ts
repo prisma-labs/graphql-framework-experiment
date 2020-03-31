@@ -105,7 +105,7 @@ export function readTsConfig(layout: Layout): ts.ParsedCommandLine {
   // TODO Seems wrong. If anything, layout module should encapsulate the logic
   // of honuring outDir, if we really want that. Hmmm...
   if (inputConfig.options.outDir === undefined) {
-    inputConfig.options.outDir = layout.buildOutput
+    inputConfig.options.outDir = layout.buildOutputRelative
   }
 
   if (inputConfig.options.rootDir === undefined) {
@@ -160,7 +160,7 @@ export function compile(
 ): void {
   if (opts?.removePreviousBuild === true) {
     log.trace('remove previous build folder if present...')
-    fs.remove(layout.buildOutput)
+    fs.remove(layout.buildOutputRelative)
   }
 
   log.trace('emit transpiled modules to disk...')
@@ -244,7 +244,7 @@ export function createTSConfigContents(layout: Layout): string {
         "strict": true,
         // [1] nexus managed
         // "rootDir": "${layout.sourceRootRelative}",
-        // "outDir": "${layout.buildOutput}",
+        // "outDir": "${layout.buildOutputRelative}",
       },
       // [1] nexus managed
       // "include": "${layout.sourceRootRelative}"

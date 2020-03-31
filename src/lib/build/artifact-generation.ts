@@ -2,18 +2,16 @@ import { spawnSync } from 'child_process'
 import * as FS from 'fs-jetpack'
 import { Layout } from '../layout'
 import { rootLogger } from '../nexus-logger'
-import { fatal } from '../process'
-import { getProjectRoot } from '../project-root'
 
 const log = rootLogger.child('typegen')
 
 export async function generateArtifacts(layout: Layout): Promise<void> {
   log.trace('start')
 
-  const result = spawnSync('node', [layout.startModuleOutAbsPath], {
+  const result = spawnSync('node', [layout.startModuleOutPath], {
     stdio: 'inherit',
     encoding: 'utf8',
-    cwd: getProjectRoot(),
+    cwd: layout.projectRoot,
     env: {
       ...process.env,
       NEXUS_SHOULD_AWAIT_TYPEGEN: 'true',
@@ -22,25 +20,23 @@ export async function generateArtifacts(layout: Layout): Promise<void> {
   })
 
   if (result.error) {
-    log.trace('There was an error while trying to start the typegen process')
-    throw result.error
+    throw new Error(
+      `Error while trying to start the typegen process:\n\n${result.error}`
+    )
   }
 
   if (result.stderr) {
-    log.trace('There was an error while trying to start the typegen process')
-    fatal(result.stderr)
+    throw new Error(
+      `Error while trying to start the typegen process:\n\n${result.stderr}`
+    )
   }
 
   if (result.status !== 0) {
-    log.trace('There was an error while running the typegen process')
-    const error = new Error(`
+    throw new Error(`
       Nexus artifact generation failed with exit code "${result.status}". The following stderr was captured:
 
           ${result.stderr}
     `)
-
-    throw error
-    // todo fatal??
   }
 
   // Handling no-hoist problem

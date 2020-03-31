@@ -15,7 +15,8 @@ import {
 } from '../../runtime/start'
 import { extractContextTypesToTypeGenFile } from '../add-to-context-extractor/add-to-context-extractor'
 import { rootLogger } from '../nexus-logger'
-import { loadAllWorkflowPluginsFromPackageJson } from '../plugin'
+import { loadInstalledWorktimePlugins } from '../plugin'
+import { getInstalledRuntimePluginNames } from '../plugin/import'
 import { fatal } from '../process'
 import { generateArtifacts } from './artifact-generation'
 import {
@@ -34,11 +35,13 @@ interface BuildSettings {
 }
 
 export async function buildNexusApp(settings: BuildSettings) {
+  process.env.NEXUS_BUILD = 'true'
+
   const startTime = Date.now()
   const deploymentTarget = normalizeTarget(settings.target)
 
   const layout = await Layout.create({
-    buildOutput:
+    buildOutputRelative:
       settings.output ??
       computeBuildOutputFromTarget(deploymentTarget) ??
       undefined,
@@ -56,7 +59,7 @@ export async function buildNexusApp(settings: BuildSettings) {
     }
   }
 
-  const plugins = await loadAllWorkflowPluginsFromPackageJson(layout)
+  const plugins = await loadInstalledWorktimePlugins(layout)
 
   await findOrScaffoldTsConfig(layout)
 
@@ -67,6 +70,8 @@ export async function buildNexusApp(settings: BuildSettings) {
   let tsBuilder
   tsBuilder = createTSProgram(layout, { withCache: true })
 
+  const installedRuntimePluginNames = await getInstalledRuntimePluginNames()
+
   log.trace('Compiling a development build for typegen')
 
   tsBuilder.emit()
@@ -76,6 +81,7 @@ export async function buildNexusApp(settings: BuildSettings) {
     startModule: prepareStartModule(
       tsBuilder,
       createStartModuleContent({
+        pluginNames: installedRuntimePluginNames,
         internalStage: 'build',
         layout: layout,
         inlineSchemaModuleImports: true,
@@ -86,8 +92,14 @@ export async function buildNexusApp(settings: BuildSettings) {
   log.info('Running typegen & extracting types from addToContext calls')
 
   await Promise.all([
-    extractContextTypesToTypeGenFile(tsBuilder.getProgram()),
-    generateArtifacts(layout),
+    extractContextTypesToTypeGenFile(tsBuilder.getProgram()).catch(error => {
+      log.fatal('failed to extract context types', { error })
+      process.exit(1)
+    }),
+    generateArtifacts(layout).catch(error => {
+      log.fatal('failed to generate artifacts', { error })
+      process.exit(1)
+    }),
   ])
 
   log.info('Compiling a production build')
@@ -102,7 +114,7 @@ export async function buildNexusApp(settings: BuildSettings) {
   const packageJsonPath = layout.projectPath('package.json')
 
   const relativePackageJsonPath = FS.exists(packageJsonPath)
-    ? Path.relative(layout.buildOutput, packageJsonPath)
+    ? Path.relative(layout.buildOutputRelative, packageJsonPath)
     : undefined
 
   await writeStartModule({
@@ -112,7 +124,7 @@ export async function buildNexusApp(settings: BuildSettings) {
       createStartModuleContent({
         internalStage: 'build',
         layout: layout,
-        pluginNames: plugins.map(p => p.name),
+        pluginNames: installedRuntimePluginNames,
         relativePackageJsonPath: relativePackageJsonPath,
         disableArtifactGeneration: true,
         inlineSchemaModuleImports: true,
@@ -121,13 +133,14 @@ export async function buildNexusApp(settings: BuildSettings) {
   })
 
   log.info('success', {
-    buildOutput: layout.buildOutput,
+    buildOutput: layout.buildOutputRelative,
     time: Date.now() - startTime,
   })
 
   if (deploymentTarget) {
     logTargetPostBuildMessage(deploymentTarget)
   }
+  delete process.env.NEXUS_BUILD
 }
 
 /**
@@ -145,9 +158,9 @@ export async function writeStartModule({
   // module. For example we can alias it, or, we can rename it e.g.
   // `index_original.js`. For now we just error out and ask the user to not name
   // their module index.ts.
-  if (FS.exists(layout.startModuleInAbsPath)) {
+  if (FS.exists(layout.startModuleInPath)) {
     fatal(stripIndent`
-      Found ${layout.startModuleInAbsPath}
+      Found ${layout.startModuleInPath}
       Nexus reserves the source root module name ${START_MODULE_NAME}.js for its own use.
       Please change your app layout to not have this module.
       This is a temporary limitation that we intend to remove in the future. 
@@ -156,5 +169,5 @@ export async function writeStartModule({
   }
 
   log.trace('Writing start module to disk')
-  await FS.writeAsync(layout.startModuleOutAbsPath, startModule)
+  await FS.writeAsync(layout.startModuleOutPath, startModule)
 }

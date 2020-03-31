@@ -51,14 +51,12 @@ const LEVEL_STYLES: Record<Level.Level, { badge: string; color: Chalk }> = {
   },
 }
 
-export const seps = {
+export const separators = {
   path: {
     symbol: ':',
-    color: chalk.gray,
   },
   event: {
-    symbol: ':',
-    color: chalk.gray,
+    symbol: ' ',
   },
   context: {
     singleLine: {
@@ -110,9 +108,9 @@ export function create(options: Options) {
   return render.bind(null, options)
 }
 
-export function render(opts: Options, rec: Logger.LogRecord): string {
+export function render(opts: Options, logRecord: Logger.LogRecord): string {
   const terminalWidth = process.stdout.columns ?? 80
-  const levelLabel = Level.LEVELS_BY_NUM[rec.level].label
+  const levelLabel = Level.LEVELS_BY_NUM[logRecord.level].label
   const style = LEVEL_STYLES[levelLabel]
 
   //
@@ -183,11 +181,11 @@ export function render(opts: Options, rec: Logger.LogRecord): string {
   // render pre-context
   //
 
-  const path = rec.path.join(renderEl(seps.path))
+  const path = logRecord.path.join(renderEl(separators.path))
   const preContextWidth =
-    path.length + seps.event.symbol.length + rec.event.length
+    path.length + separators.event.symbol.length + logRecord.event.length
   const preContextRendered =
-    style.color(path) + renderEl(seps.event) + rec.event
+    style.color(path) + renderEl(separators.event) + logRecord.event
 
   //
   // render context
@@ -200,23 +198,24 @@ export function render(opts: Options, rec: Logger.LogRecord): string {
     terminalWidth -
     gutterWidth -
     preContextWidth -
-    seps.context.singleLine.symbol.length
+    separators.context.singleLine.symbol.length
   let contextColumnsConsumed = 0
 
-  const contextEntries = Object.entries(rec.context)
+  const contextEntries = Object.entries(logRecord.context)
   let widestKey = 0
   let first = true
 
   const contextEntriesRendered = contextEntries.map(([key, value]) => {
     // Track context space consumption of entry separators
-    if (!first) contextColumnsConsumed += seps.contextEntry.singleLine.length
+    if (!first)
+      contextColumnsConsumed += separators.contextEntry.singleLine.length
     else first = false
 
     // Track widest key optimistically for use in multiline layout later
     if (key.length > widestKey) widestKey = key.length
 
     contextColumnsConsumed +=
-      key.length + seps.contextKeyVal.singleLine.symbol.length
+      key.length + separators.contextKeyVal.singleLine.symbol.length
 
     const valueRendered = `${util.inspect(value, {
       breakLength: availableSinglelineContextColumns,
@@ -237,32 +236,33 @@ export function render(opts: Options, rec: Logger.LogRecord): string {
   if (contextEntries.length > 0) {
     if (contextFitsSingleLine) {
       contextRendered =
-        renderEl(seps.context.singleLine) +
+        renderEl(separators.context.singleLine) +
         contextEntriesRendered
           .map(
             ([key, value]) =>
               `${chalk.gray(key)}${renderEl(
-                seps.contextKeyVal.singleLine
+                separators.contextKeyVal.singleLine
               )}${value}`
           )
-          .join(seps.contextEntry.singleLine)
+          .join(separators.contextEntry.singleLine)
     } else {
       const spineRendered = renderEl(
-        seps.contextEntry.multiline(utils.spanSpace(gutterWidth))
+        separators.contextEntry.multiline(utils.spanSpace(gutterWidth))
       )
       contextRendered =
-        renderEl(seps.context.multiline) +
+        renderEl(separators.context.multiline) +
         '\n' +
         spineRendered +
         contextEntriesRendered
           .map(
             ([key, value]) =>
               `${chalk.gray(utils.clampSpace(widestKey, key))}${renderEl(
-                seps.contextKeyVal.multiline
+                separators.contextKeyVal.multiline
               )}${formatBlock(value, {
                 leftSpineSymbol: spineRendered,
                 excludeFirstLine: true,
-                indent: widestKey + seps.contextKeyVal.multiline.symbol.length,
+                indent:
+                  widestKey + separators.contextKeyVal.multiline.symbol.length,
               })}`
           )
           .join('\n' + spineRendered)

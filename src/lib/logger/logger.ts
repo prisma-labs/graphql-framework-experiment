@@ -12,7 +12,7 @@ export type LogRecord = {
   time: number
   pid: number
   hostname: string
-  context: Record<string, unknown>
+  context: Context
   v: number
 }
 

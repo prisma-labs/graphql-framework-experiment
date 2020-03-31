@@ -21,8 +21,7 @@
    +  }
    ```
 
-
-1. Initialize your database
+1) Initialize your database
 
 - Run `yarn prisma2 migrate save --experimental` to create your first migration file.
 - Run `yarn prisma2 migrate up --experimental` to migrate your database.

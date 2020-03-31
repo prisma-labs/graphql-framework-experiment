@@ -95,21 +95,20 @@ Use the settings to centrally configure various aspects of the various component
   ##### Example of adding a specialized kind of connection field builder {docsify-ignore}
 
   ```ts
-  import { makeSchema, connectionPlugin } from 'nexus'
+  import { settings } from 'nexus-future'
 
-  const schema = makeSchema({
-    // ... types, etc,
-    plugins: [
-      connectionPlugin({
-        typePrefix: 'Analytics',
-        nexusFieldName: 'analyticsConnection',
-        extendConnection: {
-          totalCount: { type: 'Int' },
-          avgDuration: { type: 'Int' },
+  settings.change({
+    schema: {
+      connections: {
+        analyticsConnection: {
+          typePrefix: 'Analytics',
+          extendConnection: {
+            totalCount: { type: 'Int' },
+            avgDuration: { type: 'Int' },
+          },
         },
-      }),
-      connectionPlugin({}),
-    ],
+      },
+    },
   })
   ```
 

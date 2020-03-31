@@ -9,6 +9,13 @@ import { rootLogger } from '../nexus-logger'
 
 const log = rootLogger.child('dev').child('watcher')
 
+type ChangeType = 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir'
+
+export interface ChangeEvent {
+  type: ChangeType
+  file: string
+}
+
 export type FileWatcher = chokidar.FSWatcher & {
   /**
    * Adds a file to be watched without triggering the 'add' events
@@ -19,7 +26,7 @@ export type FileWatcher = chokidar.FSWatcher & {
 }
 
 export type FileWatcherEventCallback = (
-  eventName: 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir',
+  eventName: ChangeType,
   path: string,
   stats: fs.Stats | undefined,
   watcher: {

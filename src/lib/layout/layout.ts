@@ -11,7 +11,6 @@ import {
 import { START_MODULE_NAME } from '../../runtime/start'
 import { rootLogger } from '../nexus-logger'
 import * as PackageManager from '../package-manager'
-import { getProjectRoot } from '../project-root'
 import * as Schema from './schema-modules'
 
 export const DEFAULT_BUILD_FOLDER_NAME = 'node_modules/.build'
@@ -31,11 +30,11 @@ export type ScanResult = {
   app:
     | {
         exists: true
-        pathAbs: string
+        path: string
       }
     | {
         exists: false
-        pathAbs: null
+        path: null
       }
   project: {
     name: string
@@ -68,9 +67,9 @@ export type ScanResult = {
  * the dynamic scan results.
  */
 export type Data = ScanResult & {
-  buildOutput: string
-  startModuleOutAbsPath: string
-  startModuleInAbsPath: string
+  buildOutputRelative: string
+  startModuleOutPath: string
+  startModuleInPath: string
 }
 
 /**
@@ -90,8 +89,11 @@ export type Layout = Data & {
   packageManager: PackageManager.PackageManager
 }
 
-type Options = {
-  buildOutput?: string
+interface Options {
+  /**
+   * The place to output the build, relative to project root.
+   */
+  buildOutputRelative?: string
   cwd?: string
 }
 
@@ -105,17 +107,18 @@ const optionDefaults = {
 export async function create(optionsGiven?: Options): Promise<Layout> {
   // TODO lodash merge defaults or something
   const options: Required<Options> = {
-    buildOutput: optionsGiven?.buildOutput ?? optionDefaults.buildOutput,
+    buildOutputRelative:
+      optionsGiven?.buildOutputRelative ?? optionDefaults.buildOutput,
     cwd: optionsGiven?.cwd ?? process.cwd(),
   }
   const data = await scan({ cwd: options.cwd })
   const layout = createFromData({
     ...data,
-    buildOutput: options.buildOutput,
-    startModuleInAbsPath: Path.join(data.sourceRoot, START_MODULE_NAME + '.ts'),
-    startModuleOutAbsPath: Path.join(
+    buildOutputRelative: options.buildOutputRelative,
+    startModuleInPath: Path.join(data.sourceRoot, START_MODULE_NAME + '.ts'),
+    startModuleOutPath: Path.join(
       data.projectRoot,
-      options.buildOutput,
+      options.buildOutputRelative,
       START_MODULE_NAME + '.js'
     ),
   })
@@ -175,22 +178,22 @@ export const scan = async (opts?: { cwd?: string }): Promise<ScanResult> => {
     }
   }
 
-  const projectRoot = findProjectDir(opts)
+  const projectRoot = opts?.cwd ?? findProjectDir()
 
   const result: ScanResult = {
     app:
       maybeAppModule === null
-        ? ({ exists: false, pathAbs: maybeAppModule } as const)
-        : ({ exists: true, pathAbs: maybeAppModule } as const),
-    projectRoot,
-    sourceRoot,
+        ? ({ exists: false, path: maybeAppModule } as const)
+        : ({ exists: true, path: maybeAppModule } as const),
+    projectRoot: projectRoot,
+    sourceRoot: sourceRoot,
     schemaModules: maybeSchemaModules,
     // when source and project roots are the same relative is computed as '' but
     // this is not valid path like syntax in a lot cases at least such as
     // tsconfig include field.
     sourceRootRelative: Path.relative(projectRoot, sourceRoot) || './',
     project: readProjectInfo(opts),
-    packageManagerType,
+    packageManagerType: packageManagerType,
   }
 
   if (result.app.exists === false && result.schemaModules.length === 0) {
@@ -247,16 +250,11 @@ export function findAppModule(opts?: { cwd?: string }): string | null {
  * to disk root. If not package.json is found then cwd is taken to be the
  * project root.
  *
+ * todo update jsdoc or make it true again
+ *
  */
-export function findProjectDir(opts?: { cwd?: string }): string {
-  const projectRoot = getProjectRoot()
-  const packageJsonPath = Path.join(projectRoot, 'package.json')
-
-  if (!FS.exists(packageJsonPath)) {
-    return opts?.cwd ?? process.cwd()
-  }
-
-  return projectRoot
+export function findProjectDir(): string {
+  return process.cwd()
 }
 
 /**
@@ -330,6 +328,12 @@ export function saveDataForChildProcess(
   }
 }
 
+/**
+ * Load the layout data from a serialized version stored in the environment. If
+ * it is not found then a warning will be logged and it will be recalculated.
+ * For this reason the function is async however under normal circumstances it
+ * should be as-if sync.
+ */
 export async function loadDataFromParentProcess(): Promise<Layout> {
   const savedData: undefined | string = process.env[ENV_VAR_DATA_NAME]
   if (!savedData) {

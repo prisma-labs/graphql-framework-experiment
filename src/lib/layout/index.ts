@@ -6,6 +6,7 @@ export {
   findAppModule,
   Layout,
   loadDataFromParentProcess,
+  mustLoadDataFromParentProcess,
   relativeTranspiledImportPath,
   saveDataForChildProcess,
   scanProjectType,

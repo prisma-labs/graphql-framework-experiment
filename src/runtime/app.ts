@@ -5,7 +5,6 @@ import * as Logger from '../lib/logger'
 import * as Plugin from '../lib/plugin'
 import * as Schema from './schema'
 import * as Server from './server'
-import * as singletonChecks from './singleton-checks'
 
 const log = Logger.create({ name: 'app' })
 
@@ -87,19 +86,20 @@ export type Settings = {
 
 /**
  * Crate an app instance
- * TODO extract and improve config type
  */
 export function create(): App {
-  const plugins: Plugin.RuntimeContributions[] = []
-  // Automatically use all installed plugins
-  // TODO during build step we should turn this into static imports, not unlike
-  // the schema module imports system.
-  plugins.push(...Plugin.loadAllRuntimePluginsFromPackageJsonSync())
-
-  const contextContributors: ContextContributor<any>[] = []
+  const state: {
+    plugins: Plugin.RuntimeContributions[]
+    contextContributors: ContextContributor<any>[]
+    isWasServerStartCalled: boolean
+  } = {
+    plugins: [],
+    contextContributors: [],
+    isWasServerStartCalled: false,
+  }
 
   const server = Server.create()
-  const schemaComponent = Schema.create({ plugins })
+  const schemaComponent = Schema.create()
 
   const settings: Settings = {
     change(newSettings) {
@@ -126,11 +126,11 @@ export function create(): App {
   }
 
   const api: App = {
-    log,
-    settings,
+    log: log,
+    settings: settings,
     schema: {
       addToContext(contextContributor) {
-        contextContributors.push(contextContributor)
+        state.contextContributors.push(contextContributor)
         return api
       },
       ...schemaComponent.public,
@@ -144,25 +144,34 @@ export function create(): App {
       async start() {
         // Track the start call so that we can know in entrypoint whether to run
         // or not start for the user.
-        singletonChecks.state.is_was_server_start_called = true
-              
-        const schema = await schemaComponent.private.makeSchema()
+        state.isWasServerStartCalled = true
+
+        const schema = await schemaComponent.private.makeSchema(state.plugins)
 
         if (schemaComponent.private.isSchemaEmpty()) {
           log.warn(Layout.schema.emptyExceptionMessage())
         }
 
         await server.setupAndStart({
-          schema,
-          plugins,
-          contextContributors,
-          settings,
+          settings: settings,
+          schema: schema,
+          plugins: state.plugins,
+          contextContributors: state.contextContributors,
         })
       },
       stop() {
         return server.stop()
       },
     },
+  }
+
+  // Private API :(
+  const api__: any = api
+
+  api__.__state = state
+
+  api__.__use = function(pluginName: string, plugin: Plugin.RuntimePlugin) {
+    state.plugins.push(Plugin.loadRuntimePlugin(pluginName, plugin))
   }
 
   return api

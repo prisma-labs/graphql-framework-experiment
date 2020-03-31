@@ -56,13 +56,17 @@ export default class Plugin implements Command {
 
           <br>
 
-          ## CLI Contributions
+          ## Worktime Contributions
 
           TODO
 
           <br>
 
-          ## API Contributions
+          ## Runtime Contributions
+
+          TODO
+
+          ## Testtime Contributions
 
           TODO
         `
@@ -76,47 +80,47 @@ export default class Plugin implements Command {
         typings: 'dist/index.d.ts',
         files: ['dist'],
         scripts: {
-          dev: 'tsdx watch --entry src/index.ts',
+          dev: 'tsc --watch',
           'build:doc': 'doctoc README.md --notitle',
-          'build:ts': 'tsdx build',
+          'build:ts': 'tsc',
           build: 'yarn -s build:ts && yarn -s build:doc',
-          test: 'tsdx test',
-          lint: 'tsdx lint',
-          'publish:next':
-            '[ "$(git rev-parse --abbrev-ref HEAD)" = "master" ] && yarn publish --tag next --no-git-tag-version --new-version "0.0.0-next.$(git show -s head --format=\'%h\')" && git commit -am \'chore: version\' && git push',
-          'publish:pr':
-            "PR=$(hub pr show -f '%I') && yarn publish --tag pr.${PR} --no-git-tag-version --new-version \"0.0.0-pr.${PR}.$(git show -s head --format='%h')\" && git commit -am 'chore: version' && git push ",
+          test: 'jest',
+          'publish:preview': 'dripip preview',
+          'publish:pr': 'dripip pr',
           prepack: 'yarn -s build',
         },
         peerDependencies: {
           'nexus-future': 'latest',
-        },
-        husky: {
-          hooks: {
-            'pre-commit': 'tsdx lint',
-          },
         },
         prettier: {
           semi: false,
           singleQuote: true,
           trailingComma: 'es5',
         },
+        jest: {
+          preset: 'ts-jest',
+          testEnvironment: 'node',
+          watchPlugins: [
+            'jest-watch-typeahead/filename',
+            'jest-watch-typeahead/testname',
+          ],
+        },
       }),
       fs.writeAsync('tsconfig.json', {
-        include: ['src', 'types', 'test'],
+        include: ['src', 'types'],
         compilerOptions: {
-          target: 'es5',
-          module: 'esnext',
+          target: 'ES2018',
+          module: 'CommonJS',
           lib: ['esnext'],
           importHelpers: true,
           declaration: true,
+          outDir: 'dist',
           sourceMap: true,
-          rootDir: './',
+          rootDir: 'src',
           strict: true,
           noImplicitReturns: true,
           noFallthroughCasesInSwitch: true,
           moduleResolution: 'node',
-          baseUrl: './',
           esModuleInterop: true,
         },
       }),
@@ -135,34 +139,38 @@ export default class Plugin implements Command {
         `
       ),
       fs.writeAsync(
-        'src/index.ts',
+        'src/worktime.ts',
         stripIndent`
-          import * as NexusPlugin from 'nexus-future/plugin'
+          import { WorkimePlugin } from 'nexus-future/plugin'
 
-          export const create = NexusPlugin.create(nexusFuture => {
-            nexusFuture.workflow((hooks, _context) => {
-              hooks.build.onStart = async () => {
-                nexusFuture.utils.log.info('Hello from ${pluginName}!')
-              }
-            })
+          export const plugin:WorktimePlugin = project => {
+            project.hooks.build.onStart = async () => {
+              project.log.info('Hello from ${pluginName}!')
+            }
+          }
+        `
+      ),
+      fs.writeAsync(
+        'src/runtime.ts',
+        stripIndent`
+          import { RuntimePlugin } from 'nexus-future/plugin'
 
-            nexusFuture.runtime(() => {
-              return {
-                context: {
-                  create: _req => {
-                    return {
-                      '${pluginPackageName}': 'hello world!'
-                    }
-                  },
-                  typeGen: {
-                    fields: {
-                      '${pluginPackageName}': 'string'
-                    }
+          export const plugin:RuntimePlugin = project => {
+            return {
+              context: {
+                create: _req => {
+                  return {
+                    '${pluginPackageName}': 'hello world!'
+                  }
+                },
+                typeGen: {
+                  fields: {
+                    '${pluginPackageName}': 'string'
                   }
                 }
               }
-            })
-          })
+            }
+          }
         `
       ),
     ])
@@ -172,10 +180,10 @@ export default class Plugin implements Command {
       'yarn add --dev ' +
         [
           '@types/jest',
-          'husky',
           'nexus-future@latest',
-          'tsdx',
-          'tslib',
+          'jest',
+          'jest-watch-typeahead',
+          'ts-jest',
           'typescript',
           'doctoc',
         ].join(' ')
