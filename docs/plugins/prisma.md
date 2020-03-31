@@ -25,11 +25,7 @@ Prisma is a next-generation developer-centric toolkit focused on making the data
 npm install nexus-plugin-prisma
 ```
 
-**2. Install the Prisma CLI**
-
-```cli
-npm install --save-dev @prisma/cli
-```
+> Note: `nexus-plugin-prisma` bundles the Prisma CLI. You can invoke it using `npm run prisma2` or `yarn prisma2`.
 
 ## Getting started
 
