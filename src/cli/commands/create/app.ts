@@ -149,7 +149,6 @@ export async function runBootstrapper(
 
   if (askDatabase.database) {
     deps.push(`nexus-plugin-prisma@${getPrismaPluginVersion()}`)
-    devDeps.push(`prisma2@2.0.0-preview023`)
     // This allows installing prisma without a warning being emitted about there
     // being a missing prisma schema. For more detail refer to
     // https://prisma-company.slack.com/archives/CEYCG2MCN/p1575480721184700 and

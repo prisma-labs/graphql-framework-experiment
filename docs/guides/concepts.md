@@ -1,4 +1,4 @@
-## Work Run Test
+## Work, Run, Test
 
 Nexus is a powerful tool built of multiple components that broadly fall into three categories: runtime, worktime, testtime.
 
@@ -12,4 +12,4 @@ There are a few runtime components. The one you'll deal with the most is the sch
 
 _testtime_
 
-Nexus pushes the boundaries of static typing as far as it can, but recognizes an unsatisfactory limit will be reached. Thus it embraces testing and ships with testtime components that are designed to pick up where static types drop off. While testtime components are the least developed so far, we think they will be a huge part of the value proposition, bringing levels of safetly typically associated with other [languages](https://www.idris-lang.org/) [and](https://www.haskell.org/) [tools](https://www.servant.dev/).
+Nexus pushes the boundaries of static typing as far as it can, but recognizes an unsatisfactory limit will be reached. Thus it embraces testing and ships with testtime components that are designed to pick up where static types drop off. While testtime components are the least developed so far, we think they will be a huge part of the value proposition, bringing levels of safety typically associated with other [languages](https://www.idris-lang.org/) [and](https://www.haskell.org/) [tools](https://www.servant.dev/).
