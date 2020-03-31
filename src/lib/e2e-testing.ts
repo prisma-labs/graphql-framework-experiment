@@ -14,7 +14,13 @@ import stripAnsi = require('strip-ansi')
 
 const log = rootLogger.child('e2e-testing')
 
+interface CreateAppOptions {
+  packageManagerType: PackageManagerType
+  databaseType: Database | 'NO_DATABASE'
+}
+
 export function setupE2EContext(config?: {
+  localNexusBinPath?: string
   testProjectDir?: string
   /**
    * If enabled then:
@@ -62,26 +68,43 @@ export function setupE2EContext(config?: {
         expectHandler
       )
     },
-    spawnNPXNexus(
-      packageManagerType: PackageManagerType,
-      databaseType: Database | 'NO_DATABASE',
-      version: string,
+    npxNexusCreateApp(
+      options: CreateAppOptions & { nexusVersion: string },
       expectHandler: (data: string, proc: IPty) => void
     ) {
-      log.trace('npx nexus-future', {
-        version,
-        packageManagerType,
-        databaseType,
-      })
+      log.trace('npx nexus-future', { options })
       return ptySpawn(
         'npx',
-        [`nexus-future@${version}`],
+        [`nexus-future@${options.nexusVersion}`],
         {
           cwd: projectDir,
           env: {
             ...process.env,
-            CREATE_APP_CHOICE_PACKAGE_MANAGER_TYPE: packageManagerType,
-            CREATE_APP_CHOICE_DATABASE_TYPE: databaseType,
+            CREATE_APP_CHOICE_PACKAGE_MANAGER_TYPE: options.packageManagerType,
+            CREATE_APP_CHOICE_DATABASE_TYPE: options.databaseType,
+            LOG_LEVEL: 'trace',
+          },
+        },
+        expectHandler
+      )
+    },
+    localNexusCreateApp(
+      options: CreateAppOptions,
+      expectHandler: (data: string, proc: IPty) => void = () => {}
+    ) {
+      if (!config?.localNexusBinPath)
+        throw new Error(
+          'E2E Config Error: Cannot spawn spawnLocalNexus because you did not configure config.localNexusBinPath'
+        )
+      return ptySpawn(
+        'node',
+        [config.localNexusBinPath],
+        {
+          cwd: projectDir,
+          env: {
+            ...process.env,
+            CREATE_APP_CHOICE_PACKAGE_MANAGER_TYPE: options.packageManagerType,
+            CREATE_APP_CHOICE_DATABASE_TYPE: options.databaseType,
             LOG_LEVEL: 'trace',
           },
         },
