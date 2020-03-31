@@ -43,7 +43,6 @@ export async function e2eTestApp(
         nexusVersion: process.env.E2E_NEXUS_VERSION ?? 'latest',
       },
       (data, proc) => {
-        process.stdout.write(data)
         if (data.includes(SERVER_LISTENING_EVENT)) {
           proc.kill()
         }
@@ -118,7 +117,7 @@ export async function e2eTestApp(
 
   log.warn('run dev & query graphql api')
 
-  await ctx.spawnNexus(['dev'], async (data, proc) => {
+  await ctx.nexus(['dev'], async (data, proc) => {
     if (data.includes(SERVER_LISTENING_EVENT)) {
       let result: any
       result = await ctx.client.request(`{
@@ -146,14 +145,14 @@ export async function e2eTestApp(
   // Run build
   log.warn('run build')
 
-  res = await ctx.spawnNexus(['build'], () => {})
+  res = await ctx.nexus(['build'], () => {})
 
   expect(res.data).toContain('success')
   expect(res.exitCode).toStrictEqual(0)
 
   log.warn('run built app and query graphql api')
 
-  await ctx.spawn(['node', DEFAULT_BUILD_FOLDER_NAME], async (data, proc) => {
+  await ctx.node([DEFAULT_BUILD_FOLDER_NAME], async (data, proc) => {
     if (data.includes(SERVER_LISTENING_EVENT)) {
       let result: any
       result = await ctx.client.request(`{
@@ -180,8 +179,8 @@ export async function e2eTestApp(
 
   log.warn('run built app from a different CWD than the project root')
 
-  await ctx.spawn(
-    ['node', ctx.fs.path(DEFAULT_BUILD_FOLDER_NAME)],
+  await ctx.node(
+    [ctx.fs.path(DEFAULT_BUILD_FOLDER_NAME)],
     async (data, proc) => {
       if (data.includes(SERVER_LISTENING_EVENT)) {
         proc.kill()
@@ -190,80 +189,41 @@ export async function e2eTestApp(
     { cwd: '/' }
   )
 
-  log.warn('todo scaffold a new plugin')
+  log.warn('create plugin')
 
-  // //
-  // // Cover using a plugin
-  // //
+  const pluginCtx = setupE2EContext({
+    ...ctx.settings,
+    testProjectDir: ctx.getTmpDir('e2e-plugin'),
+  })
 
-  // log.warn('Check that prisma plugin can integrate')
+  let createPluginResult
+  if (options.local) {
+    createPluginResult = await pluginCtx.localNexusCreatePlugin(
+      { name: 'foobar' },
+      (data, proc) => {
+        if (data.includes(SERVER_LISTENING_EVENT)) {
+          proc.kill()
+        }
+      }
+    )
+  } else {
+    createPluginResult = await pluginCtx.npxNexusCreatePlugin(
+      {
+        name: 'foobar',
+        nexusVersion: process.env.E2E_NEXUS_VERSION ?? 'latest',
+      },
+      (data, proc) => {
+        if (data.includes(SERVER_LISTENING_EVENT)) {
+          proc.kill()
+        }
+      }
+    )
+  }
 
-  // // Install a plugin
-  // const nexusPluginPrismaVersion =
-  //   process.env.NEXUS_PLUGIN_PRISMA_VERSION ?? 'latest'
+  expect(createPluginResult.exitCode).toStrictEqual(0)
 
-  // log.warn('Install', { nexusPluginPrismaVersion })
-
-  // await ctx.spawn([
-  //   'npm',
-  //   'install',
-  //   `nexus-plugin-prisma@${nexusPluginPrismaVersion}`,
-  // ])
-
-  // await ctx.fs.writeAsync(
-  //   './prisma/schema.prisma',
-  //   `
-  //     datasource db {
-  //       provider = "sqlite"
-  //       url      = "file:data.db"
-  //     }
-
-  //     generator prisma_client {
-  //       provider = "prisma-client-js"
-  //     }
-
-  //     model Foo {
-  //       id   Int    @id @default(autoincrement())
-  //       name String
-  //     }
-  //   `
-  // )
-  // await ctx.fs.writeAsync(
-  //   `./src/prisma-plugin/${CONVENTIONAL_SCHEMA_FILE_NAME}`,
-  //   `
-  //     import { schema } from 'nexus-future'
-
-  //     schema.objectType({
-  //       name: 'Foo',
-  //       definition(t) {
-  //         t.model.id()
-  //       }
-  //     })
-  //   `
-  // )
-
-  // await ctx.spawn(['npx', 'prisma2', `geneate`])
-
-  // log.warn('run dev with plugin')
-
-  // await ctx.spawnNexus(['dev'], async (data, proc) => {
-  //   if (data.includes(SERVER_LISTENING_EVENT)) {
-  //     proc.kill()
-  //   }
-  // })
-
-  // log.warn('run build with plugin')
-
-  // res = await ctx.spawnNexus(['build'], () => {})
-
-  // expect(res.data).toContain('success')
-  // expect(res.exitCode).toStrictEqual(0)
-
-  // log.warn('run built app with plugin')
-
-  // await ctx.spawn(['node', DEFAULT_BUILD_FOLDER_NAME], async (data, proc) => {
-  //   if (data.includes(SERVER_LISTENING_EVENT)) {
-  //     proc.kill()
-  //   }
-  // })
+  log.warn('todo build plugin')
+  log.warn('todo install plugin into app via file path')
+  log.warn('todo with plugin, dev app')
+  log.warn('todo with plugin, build app')
 }
