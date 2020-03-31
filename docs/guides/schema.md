@@ -1,6 +1,6 @@
 # Schema
 
-[issues](https://github.com/graphql-nexus/nexus-future/labels/scope%2Fschema) – [features](https://github.com/graphql-nexus/nexus-future/issues?q=is%3Aopen+label%3Ascope%2Fschema+label%3Atype%2Ffeat) ⬝ [bugs](https://github.com/graphql-nexus/nexus-future/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fschema+label%3Atype%2Fbug+)
+[issues](https://github.com/graphql-nexus/nexus/labels/scope%2Fschema) – [features](https://github.com/graphql-nexus/nexus/issues?q=is%3Aopen+label%3Ascope%2Fschema+label%3Atype%2Ffeat) ⬝ [bugs](https://github.com/graphql-nexus/nexus/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fschema+label%3Atype%2Fbug+)
 
 This is the Nexus schema component guide. Here you will find concepts explained and a survey of how to use the API. If you are not familiar with Nexus this is a good document to read. If you are familiar, then the [Schema API Docs](/api/modules/main/exports/schema) may be of more use to you.
 
@@ -8,12 +8,12 @@ This is the Nexus schema component guide. Here you will find concepts explained 
 
 ###### Importing
 
-You will use the schema component of Nexus to build your GraphQL schema. You can import it as a named export from the main module of the `nexus-future` package. If you prefer you can also import the default `app` export and then access the `schema` property.
+You will use the schema component of Nexus to build your GraphQL schema. You can import it as a named export from the main module of the `nexus` package. If you prefer you can also import the default `app` export and then access the `schema` property.
 
 <!-- prettier-ignore -->
 ```ts
-import app from 'nexus-future'        // default style
-import { schema } from 'nexus-future' // named-export style
+import app from 'nexus'        // default style
+import { schema } from 'nexus' // named-export style
 
 app.schema === schema // true
 ```
@@ -29,7 +29,7 @@ The schema component is part of the app singleton and usage of its methods affec
 As an example, the following snippet shows the addition of an object type to the GraphQL schema. Notice how the return value is not used in any way. The method is actually mutating the app state.
 
 ```ts
-import { schema } from 'nexus-future'
+import { schema } from 'nexus'
 
 schema.objectType({
   name: 'Foo',
@@ -333,11 +333,11 @@ Nexus defaults to both inputs and outputs being nullable. This means by default 
 
 There is no right or wrong answer to nullability. These are just defaults, not judgements. Understand the tradeoffs, and react to your use-case, above all.
 
-You can override the global defaults at the per-type level or per-field level. If you find yourself writing local overrides in a majority of cases then it might mean the global defaults are a bad fit for your API. In that case you ~can~ will be able to change the global defaults (see [#483](https://github.com/graphql-nexus/nexus-future/issues/483)).
+You can override the global defaults at the per-type level or per-field level. If you find yourself writing local overrides in a majority of cases then it might mean the global defaults are a bad fit for your API. In that case you ~can~ will be able to change the global defaults (see [#483](https://github.com/graphql-nexus/nexus/issues/483)).
 
 When you make an input nullable then Nexus will alter its TypeScript type inside your resolver to have `null | undefined`. `null` is for the case that the client passed in an explicit `null` while `undefined` is for the case where the client simply did not specify the input at all.
 
-If an arg has been given a default value, then it will be used when the client passes nothing, but since clients can still pass explicit `null`, resolvers must still handle nullability. If this surprises you then you may be interested in [#485](https://github.com/graphql-nexus/nexus-future/issues/485).
+If an arg has been given a default value, then it will be used when the client passes nothing, but since clients can still pass explicit `null`, resolvers must still handle nullability. If this surprises you then you may be interested in [#485](https://github.com/graphql-nexus/nexus/issues/485).
 
 ###### Example: Default Nullability Settings
 
@@ -472,7 +472,7 @@ type Query {
 
 ###### Example: Args That Have Default Values
 
-When an arg has a default you might think that then it should be nullable to the client but non-nullable within your resolver logic. However it turns out that if the client passes an _explicit_ `null` then that is considered an actual value, and hence is not subject to being assigned the default value. Thus, and then, the resolver still can observe null from the client. If you are curious about seeing this change and/or become configurable then please refer to [#485](https://github.com/graphql-nexus/nexus-future/issues/485).
+When an arg has a default you might think that then it should be nullable to the client but non-nullable within your resolver logic. However it turns out that if the client passes an _explicit_ `null` then that is considered an actual value, and hence is not subject to being assigned the default value. Thus, and then, the resolver still can observe null from the client. If you are curious about seeing this change and/or become configurable then please refer to [#485](https://github.com/graphql-nexus/nexus/issues/485).
 
 <div class="Row NexusVSDL">
 

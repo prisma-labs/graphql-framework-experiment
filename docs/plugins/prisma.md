@@ -1,6 +1,6 @@
 # Prisma
 
-[`issues`](https://github.com/graphql-nexus/nexus-future/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc+label%3Aplugin%2Fprisma) – [features](https://github.com/graphql-nexus/nexus-future/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc+label%3Aplugin%2Fprisma+label%3Atype%2Ffeat) ⬝ [bugs](https://github.com/graphql-nexus/nexus-future/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc+label%3Aplugin%2Fprisma+label%3Atype%2Fbug)
+[`issues`](https://github.com/graphql-nexus/nexus/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc+label%3Aplugin%2Fprisma) – [features](https://github.com/graphql-nexus/nexus/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc+label%3Aplugin%2Fprisma+label%3Atype%2Ffeat) ⬝ [bugs](https://github.com/graphql-nexus/nexus/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc+label%3Aplugin%2Fprisma+label%3Atype%2Fbug)
 
 Prisma is a next-generation developer-centric toolkit focused on making the data layer easy. This plugin gives you:
 
@@ -48,7 +48,7 @@ model Post {
 ```
 
 ```ts
-import { schema } from 'nexus-future'
+import { schema } from 'nexus'
 
 schema.queryType({
   definition(t) {

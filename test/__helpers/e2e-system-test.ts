@@ -16,7 +16,7 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
   await ctx.fs.writeAsync(
     `./src/add-to-context/${CONVENTIONAL_SCHEMA_FILE_NAME}`,
     `
-        import { schema } from 'nexus-future'
+        import { schema } from 'nexus'
   
         export interface B {
           foo: number
@@ -43,7 +43,7 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
   await ctx.fs.writeAsync(
     `./src/backing-types/${CONVENTIONAL_SCHEMA_FILE_NAME}`,
     `
-          import { schema } from 'nexus-future'
+          import { schema } from 'nexus'
     
           export type CustomBackingType = {
             field1: string
@@ -191,7 +191,7 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
   await ctx.fs.writeAsync(
     `./src/prisma-plugin/${CONVENTIONAL_SCHEMA_FILE_NAME}`,
     `
-      import { schema } from 'nexus-future' 
+      import { schema } from 'nexus' 
 
       schema.objectType({
         name: 'Foo',

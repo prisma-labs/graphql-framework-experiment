@@ -48,7 +48,7 @@ export type TestContext = nexusFutureTestContextRoot
  *
  * With jest
  * ```
- * import { setupTest, TestContext } from 'nexus-future/testing'
+ * import { setupTest, TestContext } from 'nexus/testing'
  *
  * let testCtx: TestContext
  *

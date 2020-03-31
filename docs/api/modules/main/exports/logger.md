@@ -1,6 +1,6 @@
 # `import { log }`
 
-[issues](https://github.com/graphql-nexus/nexus-future/labels/scope%2Flogger) - [`feature`](https://github.com/graphql-nexus/nexus-future/issues?q=is%3Aopen+label%3Ascope%2Flogger+label%3Atype%2Ffeat) [`bug`](https://github.com/graphql-nexus/nexus-future/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Flogger+label%3Atype%2Fbug+)
+[issues](https://github.com/graphql-nexus/nexus/labels/scope%2Flogger) - [`feature`](https://github.com/graphql-nexus/nexus/issues?q=is%3Aopen+label%3Ascope%2Flogger+label%3Atype%2Ffeat) [`bug`](https://github.com/graphql-nexus/nexus/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Flogger+label%3Atype%2Fbug+)
 
 Use the logger output structured information about runtime activity.
 
@@ -37,7 +37,7 @@ All logs are sent to stdout (not stderr). Logs are formatted as JSON but there i
 **Example**
 
 ```ts
-import { log } from 'nexus-future'
+import { log } from 'nexus'
 
 log.info('hello')
 ```
@@ -179,7 +179,7 @@ All runtime logs in your app (including from plugins come from either the `logge
   **Example**
 
   ```ts
-  import { log } from 'nexus-future'
+  import { log } from 'nexus'
 
   log.info('hi') //              { path: ['nexus'], ... }
   log.child('b').info('hallo') // { path: ['nexus', 'b'], ... }

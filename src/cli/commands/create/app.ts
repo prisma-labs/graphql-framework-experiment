@@ -134,7 +134,7 @@ export async function runBootstrapper(
   await scaffoldBaseFiles(layout, options)
 
   log.info(
-    `Installing nexus-future@${options.nexusFutureVersionExpression}... (this will take around ~15 seconds)`
+    `Installing nexus@${options.nexusFutureVersionExpression}... (this will take around ~15 seconds)`
   )
   await layout.packageManager.installDeps({ require: true })
 
@@ -378,7 +378,7 @@ async function helloWorldTemplate(layout: Layout.Layout) {
   await fs.writeAsync(
     layout.sourcePath(Layout.schema.CONVENTIONAL_SCHEMA_FILE_NAME),
     stripIndent`
-    import { schema } from "nexus-future";
+    import { schema } from "nexus";
 
     schema.addToContext(req => {
       return {
@@ -447,7 +447,7 @@ async function scaffoldBaseFiles(
       name: options.projectName,
       license: 'UNLICENSED',
       dependencies: {
-        'nexus-future': options.nexusFutureVersionExpression,
+        nexus: options.nexusFutureVersionExpression,
       },
       scripts: {
         format: "npx prettier --write './**/*.{ts,md}' '!./prisma/**/*.md'",

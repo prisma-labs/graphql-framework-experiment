@@ -68,14 +68,14 @@ export function setupE2EContext(config?: {
       version: string,
       expectHandler: (data: string, proc: IPty) => void
     ) {
-      log.trace('npx nexus-future', {
+      log.trace('npx nexus', {
         version,
         packageManagerType,
         databaseType,
       })
       return ptySpawn(
         'npx',
-        [`nexus-future@${version}`],
+        [`nexus@${version}`],
         {
           cwd: projectDir,
           env: {
@@ -103,8 +103,8 @@ export function setupE2EContext(config?: {
   }
 
   if (config?.linkedPackageMode) {
-    // Handling no-hoist problem - https://github.com/graphql-nexus/nexus-future/issues/432
-    process.env.NEXUS_TYPEGEN_NEXUS_SCHEMA_IMPORT_PATH = `"../../nexus-future/node_modules/@nexus/schema"`
+    // Handling no-hoist problem - https://github.com/graphql-nexus/nexus/issues/432
+    process.env.NEXUS_TYPEGEN_NEXUS_SCHEMA_IMPORT_PATH = `"../../nexus/node_modules/@nexus/schema"`
     process.env.CREATE_APP_CHOICE_NEXUS_FUTURE_VERSION_EXPRESSION = `file:${getRelativePathFromTestProjectToNexusPackage()}`
   }
 

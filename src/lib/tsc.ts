@@ -254,7 +254,7 @@ export function createTSConfigContents(layout: Layout): string {
     //
     // These settings are managed by nexus.
     // Do not edit these manually. Please refer to
-    // https://github.com/graphql-nexus/nexus-future/issues/82
+    // https://github.com/graphql-nexus/nexus/issues/82
     // Contribute feedback/use-cases if you feel strongly
     // about controlling these settings manually.
   `

@@ -90,7 +90,7 @@ export default class Plugin implements Command {
           prepack: 'yarn -s build',
         },
         peerDependencies: {
-          'nexus-future': 'latest',
+          nexus: '^0.20.0-next.1',
         },
         prettier: {
           semi: false,
@@ -141,7 +141,7 @@ export default class Plugin implements Command {
       fs.writeAsync(
         'src/worktime.ts',
         stripIndent`
-          import { WorkimePlugin } from 'nexus-future/plugin'
+          import { WorkimePlugin } from 'nexus/plugin'
 
           export const plugin:WorktimePlugin = project => {
             project.hooks.build.onStart = async () => {
@@ -153,7 +153,7 @@ export default class Plugin implements Command {
       fs.writeAsync(
         'src/runtime.ts',
         stripIndent`
-          import { RuntimePlugin } from 'nexus-future/plugin'
+          import { RuntimePlugin } from 'nexus/plugin'
 
           export const plugin:RuntimePlugin = project => {
             return {
@@ -180,7 +180,7 @@ export default class Plugin implements Command {
       'yarn add --dev ' +
         [
           '@types/jest',
-          'nexus-future@latest',
+          'nexus@0.20.0-next.1',
           'jest',
           'jest-watch-typeahead',
           'ts-jest',

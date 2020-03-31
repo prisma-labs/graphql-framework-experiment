@@ -1,4 +1,4 @@
-[issues](https://github.com/graphql-nexus/nexus-future/labels/scope%2Fplugins) – [features](https://github.com/graphql-nexus/nexus-future/issues?q=is%3Aopen+label%3Ascope%2Fplugins+label%3Atype%2Ffeat) ⬝ [bugs](https://github.com/graphql-nexus/nexus-future/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fplugins+label%3Atype%2Fbug+)
+[issues](https://github.com/graphql-nexus/nexus/labels/scope%2Fplugins) – [features](https://github.com/graphql-nexus/nexus/issues?q=is%3Aopen+label%3Ascope%2Fplugins+label%3Atype%2Ffeat) ⬝ [bugs](https://github.com/graphql-nexus/nexus/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fplugins+label%3Atype%2Fbug+)
 
 ## Here Be Dragons
 
@@ -13,13 +13,13 @@
 
 - Nexus CLI has a command to create new Nexus-plugin projects
   ```cli
-  npx nexus-future create plugin
+  npx nexus@0.20.0-next.1 create plugin
   ```
 - To write a plugin you create any of `testtime` `runtime` and `worktime` modules and import the respective plugin types to type your function. In each module export your plugin as `plugin`.
 
   ```ts
   // runtime.ts
-  import { RuntimePlugin } from 'nexus-future/plugin'
+  import { RuntimePlugin } from 'nexus/plugin'
 
   export const plugin: RuntimePlugin = project => {
     /* ... */
@@ -28,7 +28,7 @@
 
   ```ts
   // testtime.ts
-  import { TesttimePlugin } from 'nexus-future/plugin'
+  import { TesttimePlugin } from 'nexus/plugin'
 
   export const plugin: TesttimePlugin = project => {
     /* ... */
@@ -37,7 +37,7 @@
 
   ```ts
   // worktime.ts
-  import { WorktimePlugin } from 'nexus-future/plugin'
+  import { WorktimePlugin } from 'nexus/plugin'
 
   export const plugin: WorktimePlugin = project => {
     /* ... */
@@ -127,7 +127,7 @@
 ## Publishing for Consumption
 
 - You must name your plugin package `nexus-plugin-<your-plugin-name>`
-- Nexus plugin cli will rely on this convention to search install etc. plugins ([todo](https://github.com/graphql-nexus/nexus-future/issues/155))
+- Nexus plugin cli will rely on this convention to search install etc. plugins ([todo](https://github.com/graphql-nexus/nexus/issues/155))
 - Nexus relies on this pattern to auto-use plugins in a user's project
 
 ## A Code Reference

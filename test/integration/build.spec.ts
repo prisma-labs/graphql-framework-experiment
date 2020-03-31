@@ -29,7 +29,7 @@ it('can build with just a schema module', () => {
   ws.fs.write(
     CONVENTIONAL_SCHEMA_FILE_NAME,
     `
-      import app from 'nexus-future'
+      import app from 'nexus'
 
       app.schema.objectType({
         name: 'A',
@@ -49,7 +49,7 @@ it('can build with just a schema folder of modules', () => {
   ws.fs.write(
     DIR_NAME + '/a.ts',
     `
-      import app from 'nexus-future'
+      import app from 'nexus'
 
       app.schema.objectType({
         name: 'A',
@@ -69,7 +69,7 @@ it('can build with schema + app modules', () => {
   ws.fs.write(
     CONVENTIONAL_SCHEMA_FILE_NAME,
     `
-      import app from 'nexus-future'
+      import app from 'nexus'
 
       app.schema.objectType({
         name: 'A',
@@ -83,7 +83,7 @@ it('can build with schema + app modules', () => {
   ws.fs.write(
     'app.ts',
     `
-      import app from 'nexus-future'
+      import app from 'nexus'
       app.server.start()
     `
   )
@@ -97,7 +97,7 @@ it('can nest modules', () => {
   ws.fs.write(
     'app/' + CONVENTIONAL_SCHEMA_FILE_NAME,
     `
-      import app from 'nexus-future'
+      import app from 'nexus'
 
       app.schema.objectType({
         name: 'A',
@@ -111,7 +111,7 @@ it('can nest modules', () => {
   ws.fs.write(
     'graphql/app.ts',
     `
-      import app from 'nexus-future'
+      import app from 'nexus'
       app.server.start()
     `
   )
@@ -125,7 +125,7 @@ it('can build a plugin', () => {
   ws.fs.write(
     'myplugin.ts',
     `	
-      import { Plugin } from 'nexus-future'	
+      import { Plugin } from 'nexus'	
 
       export type Context = {	
         a: 1	
@@ -152,7 +152,7 @@ it('can build a plugin', () => {
   ws.fs.write(
     CONVENTIONAL_SCHEMA_FILE_NAME,
     `
-      import app from 'nexus-future'
+      import app from 'nexus'
 
       app.queryType({	
         definition(t) {	
@@ -180,7 +180,7 @@ it('can build a plugin', () => {
   ws.fs.write(
     'app.ts',
     `	
-      import app from 'nexus-future'
+      import app from 'nexus'
       import myplugin from './myplugin'	
 
       app.use(myplugin).server.start()	

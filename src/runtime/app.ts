@@ -20,13 +20,13 @@ type ContextContributor<Req> = (req: Req) => Record<string, unknown>
 
 export type App = {
   /**
-   * [API Reference](https://nexus-future.now.sh/#/references/api?id=logger)  ⌁  [Guide](https://nexus-future.now.sh/#/guides/logging)
+   * [API Reference](https://www.nexusjs.org/#/api/modules/main/exports/logger)  ⌁  [Guide](todo)
    *
    * ### todo
    */
   log: Logger.Logger
   /**
-   * [API Reference](https://nexus-future.now.sh/#/references/api?id=server)  ⌁  [Guide](todo)
+   * [API Reference](https://www.nexusjs.org/#/api/modules/main/exports/server)  ⌁  [Guide](todo)
    *
    * ### todo
    *
@@ -37,7 +37,7 @@ export type App = {
    */
   settings: Settings
   /**
-   * [API Reference](https://nexus-future.now.sh/#/references/api?id=appschema) // [Guide](todo)
+   * [API Reference](https://www.nexusjs.org/#/api/modules/main/exports/schema) // [Guide](todo)
    *
    * ### todo
    */

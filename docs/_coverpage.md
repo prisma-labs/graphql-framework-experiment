@@ -3,7 +3,7 @@
 ### Delightful GraphQL Application Framework
 
 <p>
-  <a  class="BigButton" href="https://github.com/graphql-nexus/nexus-future" target="_blank", rel="noopener">GitHub</a>
+  <a  class="BigButton" href="https://github.com/graphql-nexus/nexus" target="_blank", rel="noopener">GitHub</a>
   <span></span>
   <a class="BigButton BigButtonPrimary" href="#/README">Docs</a>
 </p>
@@ -13,7 +13,7 @@
 <br>
 
 ```cli
-npx nexus-future
+npx nexus@0.20.0-next.1
 ```
 
 <div id="TerminalContainer">

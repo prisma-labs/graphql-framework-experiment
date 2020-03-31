@@ -1,8 +1,8 @@
 ### Lay of the Land
 
 - **Website** https://nexusjs.org
-- **Discussions** https://github.com/graphql-nexus/nexus-future/discussions
-- **Issues** https://github.com/graphql-nexus/nexus-future/issues
+- **Discussions** https://github.com/graphql-nexus/nexus/discussions
+- **Issues** https://github.com/graphql-nexus/nexus/issues
 
 ### Pre-requisites
 
@@ -24,5 +24,5 @@ _TypeScript_
 ### Diving In
 
 - Go through the [tutorial](/getting-started/tutorial)
-- Start your first app by running `npx nexus-future`
+- Start your first app by running `npx nexus`
 - Explore the [examples repo](https://github.com/graphql-nexus/examples)

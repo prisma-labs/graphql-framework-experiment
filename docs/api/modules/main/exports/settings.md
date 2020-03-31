@@ -1,6 +1,6 @@
 # `import { settings }`
 
-[issues](https://github.com/graphql-nexus/nexus-future/labels/scope%2Fsettings) - [`feature`](https://github.com/graphql-nexus/nexus-future/issues?q=is%3Aopen+label%3Ascope%2Fsettings+label%3Atype%2Ffeat) [`bug`](https://github.com/graphql-nexus/nexus-future/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fsettings+label%3Atype%2Fbug+)
+[issues](https://github.com/graphql-nexus/nexus/labels/scope%2Fsettings) - [`feature`](https://github.com/graphql-nexus/nexus/issues?q=is%3Aopen+label%3Ascope%2Fsettings+label%3Atype%2Ffeat) [`bug`](https://github.com/graphql-nexus/nexus/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fsettings+label%3Atype%2Fbug+)
 
 Use the settings to centrally configure various aspects of the various components.
 
@@ -95,7 +95,7 @@ Use the settings to centrally configure various aspects of the various component
   ##### Example of adding a specialized kind of connection field builder {docsify-ignore}
 
   ```ts
-  import { settings } from 'nexus-future'
+  import { settings } from 'nexus'
 
   settings.change({
     schema: {
@@ -117,7 +117,7 @@ Use the settings to centrally configure various aspects of the various component
   If you want to include a `nodes` field, which includes the nodes of the connection flattened into an array similar to how GitHub does in their [GraphQL API](https://developer.github.com/v4/), set schema setting `includeNodesField` to `true`.
 
   ```ts
-  import { settings } from 'nexus-future'
+  import { settings } from 'nexus'
 
   settings.change({
     connections: {
@@ -224,7 +224,7 @@ Use the settings to centrally configure various aspects of the various component
 **Example**
 
 ```ts
-import { settings } from 'nexus-future'
+import { settings } from 'nexus'
 
 settings.change({
   server: {

@@ -6,7 +6,7 @@ const ctx = setupE2EContext()
 test('e2e', async () => {
   const nexusVersion = process.env.E2E_NEXUS_VERSION ?? 'latest'
 
-  // Run npx nexus-future and kill process
+  // Run npx nexus and kill process
 
   const createAppResult = await ctx.spawnNPXNexus(
     'npm',

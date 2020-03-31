@@ -68,7 +68,7 @@
 1. Scaffold Your plugin project
 
    ```cli
-   npx nexus-future create plugin
+   npx nexus@0.20.0-next.1 create plugin
    ```
 
 2. Publish it
@@ -168,7 +168,7 @@ If you don't want to use a docker, here are some links to alternative approaches
 
    ```ts
    // tests/__helpers.ts
-   import { createTestContext, TestContext } from 'nexus-future/testing'
+   import { createTestContext, TestContext } from 'nexus/testing'
 
    export function createTestContext(): TestContext {
      let ctx: TestContext

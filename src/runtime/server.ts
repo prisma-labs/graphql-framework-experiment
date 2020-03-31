@@ -94,7 +94,7 @@ export interface BaseServer {
 }
 
 /**
- * [API Reference](https://nexus-future.now.sh/#/references/api?id=server)  ⌁  [Guide](todo)
+ * [API Reference](https://www.nexusjs.org/#/api/modules/main/exports/server)  ⌁  [Guide](todo)
  *
  * ### todo
  *

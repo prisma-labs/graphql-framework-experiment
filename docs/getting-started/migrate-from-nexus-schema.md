@@ -1,18 +1,16 @@
 Versions of the `nexus` package `0.20` and below were what is now known as `@nexus/schema`. This transition of the `nexus` package from being a schema library to a framework was announced [in this GitHub issue](https://github.com/prisma-labs/nexus/issues/373). The following receipe shows how to migrate from nexus schema `0.12` to the latest version of Nexus framework.
 
-> As of right now the transition is still taking place and the package to install is `nexus-future`. That will soon become `nexus` and as soon as it does this this migration guide will be updated to reflect it.
-
 #### Dependencies
 
-1. Remove `nexus@0.12` and add `nexus-future` in its place. There is a `next` dist tag if you want every change as it lands on trunk (aka. master).
-1. Remove dependency `graphql` as `nexus-future` bundles it.
+1. Remove `nexus@0.12` and add `nexus@0.20` in its place (`^0.20.0-next.1`). There is a `next` dist tag if you want every change as it lands on trunk (aka. master).
+1. Remove dependency `graphql` as `nexus` bundles it.
 
 ```diff
 +++ package.json
    "dependencies": {
 -     "graphql": "...",
--     "nexus": "...",
-+     "nexus-future": "..."
+-     "nexus": "0.12.0",
++     "nexus": "^0.20.0-next.1"
    }
 ```
 
@@ -27,7 +25,7 @@ Nexus is based upon a singleton system. Import the `schema` component to get acc
 ```diff
 +++--- graphql/user.ts
 - import { objectType } from 'nexus'
-+ import { schema } from 'nexus-future'
++ import { schema } from 'nexus'
 
 - export const User = objectType({
 + schema.objectType({
@@ -51,7 +49,7 @@ Nexus has an API for adding to context.
 
 ```diff
 +++ app.ts
-+ import { schema } from 'nexus-future'
++ import { schema } from 'nexus'
 
 + schema.addToContext(req => {
 +   return { ... }
@@ -86,7 +84,7 @@ If you do have server logic that needs porting, and it is express based, use `se
 
 ```diff
 --- app.ts
-+ import { server } from 'nexus-future'
++ import { server } from 'nexus'
 
 + server.express.use(...)
 ```
@@ -162,7 +160,7 @@ const schema = makeSchema({
 _after_
 
 ```ts
-import { schema } from 'nexus-future'
+import { schema } from 'nexus'
 
 export type A = {
   /* ... */
@@ -178,7 +176,7 @@ schema.objectType({
 
 By default Nexus Schema has [outputs as guaranteed](https://nexus.js.org/docs/getting-started#nullability-default-values). Nexus Framework has outputs as nullable.
 
-- If you rely heavily on the Nexus Schema defaults then please wait for [#483](https://github.com/graphql-nexus/nexus-future/issues/483) so that you can turn them back on that way in the framework.
+- If you rely heavily on the Nexus Schema defaults then please wait for [#483](https://github.com/graphql-nexus/nexus/issues/483) so that you can turn them back on that way in the framework.
 - If you use the following settings in your app currently then you can migrate seamlessly to Nexus framework, since this config is now the default:
 
   ```ts
@@ -195,7 +193,7 @@ By default Nexus Schema has [outputs as guaranteed](https://nexus.js.org/docs/ge
 Nexus ships with its own logger.
 
 ```diff
-import { log } from 'nexus-future'
+import { log } from 'nexus'
 
 - console.log('hello world! %j', { population: 6_000_000 })
 + log.info('hello world!', { population: 6_000_000 })
