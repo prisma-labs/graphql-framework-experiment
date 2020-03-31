@@ -35,7 +35,7 @@ npm install --save-dev @prisma/cli
 
 There are two ways you can start with Prisma. Either from scratch, or using an existing database.
 
-#### Starting from scratch
+### From scratch
 
 **1. Create a `schema.prisma` file**
 
@@ -107,7 +107,7 @@ npm run prisma2 migrate up --experimental
 
 You're ready to start working!
 
-#### Starting from an existing database
+### From an existing database
 
 When starting from an existing database, you should use [Prisma's instrospection](https://prisma2.netlify.com/reference/tools-and-interfaces/introspection) feature.
 
