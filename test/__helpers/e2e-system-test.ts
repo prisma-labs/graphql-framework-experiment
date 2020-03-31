@@ -190,17 +190,7 @@ export async function e2eTestApp(
     { cwd: '/' }
   )
 
-  log.warn('scaffold a new plugin')
-
-  const createPluginResult = await ctx.spawnNexusFromPath(
-    BIN_PATH,
-    [],
-    (data, proc) => {
-      if (data.includes(SERVER_LISTENING_EVENT)) {
-        proc.kill()
-      }
-    }
-  )
+  log.warn('todo scaffold a new plugin')
 
   // //
   // // Cover using a plugin
