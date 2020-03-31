@@ -14,13 +14,13 @@ test('e2e', async () => {
     nexusVersion,
     (data, proc) => {
       process.stdout.write(data)
-      if (data.includes('server:listening')) {
+      if (data.includes('server listening')) {
         proc.kill()
       }
     }
   )
 
-  expect(createAppResult.data).toContain('server:listening')
+  expect(createAppResult.data).toContain('server listening')
   expect(createAppResult.exitCode).toStrictEqual(0)
 
   await e2eTestApp(ctx)
