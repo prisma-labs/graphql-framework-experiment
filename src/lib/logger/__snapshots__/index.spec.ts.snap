@@ -322,29 +322,29 @@ Array [
 
 exports[`settings pretty .color controls if pretty logs have color or not 1`] = `
 Array [
-  "● root:foo  --  qux: true
+  "● root foo  --  qux: true
 ",
 ]
 `;
 
 exports[`settings pretty .levelLabel controls if label is spelt out or not 1`] = `
 Array [
-  "✕ fatal root:foo
+  "✕ fatal root foo
 ",
-  "■ error root:foo
+  "■ error root foo
 ",
-  "▲ warn  root:foo
+  "▲ warn  root foo
 ",
-  "● info  root:foo
+  "● info  root foo
 ",
-  "○ debug root:foo
+  "○ debug root foo
 ",
 ]
 `;
 
 exports[`settings pretty context formatting multiline used if context does fit singleline (multiple key-values) 1`] = `
 Array [
-  "● root:foo
+  "● root foo
   | ke1  'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
   | ke2  'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 ",
@@ -353,7 +353,7 @@ Array [
 
 exports[`settings pretty context formatting multiline used if context does not fit singleline 1`] = `
 Array [
-  "● root:foo
+  "● root foo
   | key  'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 ",
 ]
@@ -361,14 +361,14 @@ Array [
 
 exports[`settings pretty context formatting singleline used if context does fit singleline (multiple key-values) 1`] = `
 Array [
-  "● root:foo  --  ke1: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'  ke2: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+  "● root foo  --  ke1: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'  ke2: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 ",
 ]
 `;
 
 exports[`settings pretty context formatting singleline used if context does fit singleline 1`] = `
 Array [
-  "● root:foo  --  key: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+  "● root foo  --  key: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 ",
 ]
 `;
