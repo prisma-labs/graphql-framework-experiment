@@ -1,7 +1,5 @@
 # `@nexus/schema`
 
-todo
-
 ```cli
 npm install @nexus/schema
 ```
