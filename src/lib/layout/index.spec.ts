@@ -1,3 +1,15 @@
+let mockedStdoutBuffer: string = ''
+const mockStdout = jest
+  .spyOn(process.stdout, 'write')
+  .mockImplementation(data => {
+    mockedStdoutBuffer += data
+
+    return true
+  })
+const mockExit = jest
+  .spyOn(process, 'exit')
+  .mockImplementation((() => {}) as any)
+
 import * as Layout from '.'
 import { stripDynamics } from '../../../test/__helpers/utils'
 import { rootLogger } from '../../lib/nexus-logger'
@@ -58,29 +70,17 @@ it('fails if no entrypoint and no graphql modules', async () => {
     },
   })
 
-  let mockedStdoutBuffer: string = ''
-  const mockStdout = jest
-    .spyOn(process.stdout, 'write')
-    .mockImplementation(data => {
-      mockedStdoutBuffer += data
-
-      return true
-    })
-  const mockExit = jest
-    .spyOn(process, 'exit')
-    .mockImplementation((() => {}) as any)
-
   await ctx.scan()
 
   expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
-      "■ nexus:layout:We could not find any graphql modules or app entrypoint
-      ■ nexus:layout:Please do one of the following:
+    "■ nexus:layout We could not find any graphql modules or app entrypoint
+    ■ nexus:layout Please do one of the following:
 
-        1. Create a (graphql.ts file and write your GraphQL type definitions in it.
-        2. Create a graphql directory and write your GraphQL type definitions inside files there.
-        3. Create an app entrypoint; A file called any of: app.ts, server.ts, service.ts.
-      "
-    `)
+      1. Create a (graphql.ts file and write your GraphQL type definitions in it.
+      2. Create a graphql directory and write your GraphQL type definitions inside files there.
+      3. Create an app entrypoint; A file called any of: app.ts, server.ts, service.ts.
+    "
+  `)
   expect(mockExit).toHaveBeenCalledWith(1)
 
   mockStdout.mockRestore()
