@@ -86,7 +86,7 @@ export async function runBootstrapper(
   log.trace('create app user choices pre-filled by env vars?', {
     packageManagerTypeEnvVar,
     databaseTypeEnvVar,
-    nexusVersionExpressionEnvVar: nexusVersionEnvVar,
+    nexusVersionEnvVar,
   })
 
   const projectName = configInput?.projectName ?? CWDProjectNameOrGenerate()
