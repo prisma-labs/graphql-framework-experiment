@@ -1,5 +1,5 @@
 import { introspectionQuery } from 'graphql'
-import { setupE2EContext, SpawnResult } from '../../src/lib/e2e-testing'
+import { createE2EContext, SpawnResult } from '../../src/lib/e2e-testing'
 import { DEFAULT_BUILD_FOLDER_NAME } from '../../src/lib/layout'
 import { CONVENTIONAL_SCHEMA_FILE_NAME } from '../../src/lib/layout/schema-modules'
 import { rootLogger } from '../../src/lib/nexus-logger'
@@ -15,7 +15,7 @@ interface Options {
  */
 export async function e2eTestApp(
   options: Options,
-  ctx: ReturnType<typeof setupE2EContext>
+  appProject: ReturnType<typeof createE2EContext>
 ) {
   const SERVER_LISTENING_EVENT = 'server listening'
   const PLUGIN_CREATED_EVENT = 'Done! To get started'
@@ -24,7 +24,7 @@ export async function e2eTestApp(
   log.warn('create app')
 
   if (options.local) {
-    res = await ctx.localNexusCreateApp(
+    res = await appProject.localNexusCreateApp(
       {
         databaseType: 'NO_DATABASE',
         packageManagerType: 'npm',
@@ -36,7 +36,7 @@ export async function e2eTestApp(
       }
     )
   } else {
-    res = await ctx.npxNexusCreateApp(
+    res = await appProject.npxNexusCreateApp(
       {
         databaseType: 'NO_DATABASE',
         packageManagerType: 'npm',
@@ -50,10 +50,8 @@ export async function e2eTestApp(
     )
   }
 
-  expect(res.exitCode).toStrictEqual(0)
-
   // Cover addToContext feature
-  await ctx.fs.writeAsync(
+  await appProject.fs.writeAsync(
     `./src/add-to-context/${CONVENTIONAL_SCHEMA_FILE_NAME}`,
     `
         import { schema } from 'nexus-future'
@@ -80,7 +78,7 @@ export async function e2eTestApp(
   )
 
   // Cover backing-types feature
-  await ctx.fs.writeAsync(
+  await appProject.fs.writeAsync(
     `./src/backing-types/${CONVENTIONAL_SCHEMA_FILE_NAME}`,
     `
           import { schema } from 'nexus-future'
@@ -117,10 +115,10 @@ export async function e2eTestApp(
 
   log.warn('run dev & query graphql api')
 
-  await ctx.nexus(['dev'], async (data, proc) => {
+  await appProject.nexus(['dev'], async (data, proc) => {
     if (data.includes(SERVER_LISTENING_EVENT)) {
       let result: any
-      result = await ctx.client.request(`{
+      result = await appProject.client.request(`{
           worlds {
             id
             name
@@ -129,33 +127,31 @@ export async function e2eTestApp(
         }`)
       expect(result).toMatchSnapshot('query')
 
-      result = await ctx.client.request(introspectionQuery)
+      result = await appProject.client.request(introspectionQuery)
       expect(result).toMatchSnapshot('introspection')
 
-      result = await ctx.client.request(`{ a }`)
+      result = await appProject.client.request(`{ a }`)
       expect(result).toMatchSnapshot('addToContext query')
 
-      result = await ctx.client.request(`{ testBackingType { test } }`)
+      result = await appProject.client.request(`{ testBackingType { test } }`)
       expect(result).toMatchSnapshot('backing type query')
 
       proc.kill()
     }
   })
 
-  // Run build
   log.warn('run build')
 
-  res = await ctx.nexus(['build'], () => {})
+  res = await appProject.nexus(['build'], () => {})
 
   expect(res.data).toContain('success')
-  expect(res.exitCode).toStrictEqual(0)
 
   log.warn('run built app and query graphql api')
 
-  await ctx.node([DEFAULT_BUILD_FOLDER_NAME], async (data, proc) => {
+  await appProject.node([DEFAULT_BUILD_FOLDER_NAME], async (data, proc) => {
     if (data.includes(SERVER_LISTENING_EVENT)) {
       let result: any
-      result = await ctx.client.request(`{
+      result = await appProject.client.request(`{
           worlds {
             id
             name
@@ -164,13 +160,13 @@ export async function e2eTestApp(
         }`)
       expect(result).toMatchSnapshot('built app query')
 
-      result = await ctx.client.request(introspectionQuery)
+      result = await appProject.client.request(introspectionQuery)
       expect(result).toMatchSnapshot('built app introspection')
 
-      result = await ctx.client.request(`{ a }`)
+      result = await appProject.client.request(`{ a }`)
       expect(result).toMatchSnapshot('built app addToContext query')
 
-      result = await ctx.client.request(`{ testBackingType { test } }`)
+      result = await appProject.client.request(`{ testBackingType { test } }`)
       expect(result).toMatchSnapshot('built app backing type query')
 
       proc.kill()
@@ -179,8 +175,8 @@ export async function e2eTestApp(
 
   log.warn('run built app from a different CWD than the project root')
 
-  await ctx.node(
-    [ctx.fs.path(DEFAULT_BUILD_FOLDER_NAME)],
+  await appProject.node(
+    [appProject.fs.path(DEFAULT_BUILD_FOLDER_NAME)],
     async (data, proc) => {
       if (data.includes(SERVER_LISTENING_EVENT)) {
         proc.kill()
@@ -191,27 +187,48 @@ export async function e2eTestApp(
 
   log.warn('create plugin')
 
-  const pluginCtx = setupE2EContext({
-    ...ctx.settings,
-    testProjectDir: ctx.getTmpDir('e2e-plugin'),
+  const pluginProject = createE2EContext({
+    ...appProject.settings,
+    dir: appProject.getTmpDir('e2e-plugin'),
   })
 
   if (options.local) {
-    res = await pluginCtx.localNexusCreatePlugin({ name: 'foobar' })
+    res = await pluginProject.localNexusCreatePlugin({ name: 'foobar' })
   } else {
-    res = await pluginCtx.npxNexusCreatePlugin({
+    res = await pluginProject.npxNexusCreatePlugin({
       name: 'foobar',
       nexusVersion: process.env.E2E_NEXUS_VERSION ?? 'latest',
     })
   }
 
   expect(res.data).toContain(PLUGIN_CREATED_EVENT)
-  expect(res.exitCode).toStrictEqual(0)
 
   log.warn('build plugin')
-  res = await pluginCtx.spawn(['yarn', 'build'])
-  expect(res.exitCode).toStrictEqual(0)
-  log.warn('todo install plugin into app via file path')
-  log.warn('todo with plugin, dev app')
-  log.warn('todo with plugin, build app')
+  res = await pluginProject.spawn(['yarn', 'build'])
+
+  log.warn('install plugin into app via file path')
+  await appProject.spawn(['npm', 'install', pluginProject.dir])
+
+  log.warn('with plugin, dev app')
+
+  res = await appProject.nexus(['dev'], async (data, proc) => {
+    if (data.includes(SERVER_LISTENING_EVENT)) {
+      await appProject.client.request(`{
+          worlds {
+            id
+            name
+            population
+          }
+        }`)
+      proc.kill()
+    }
+  })
+
+  expect(res.data).toContain('dev.onStart hook from foobar')
+
+  log.warn('with plugin, build app')
+  res = await appProject.nexus(['build'], () => {})
+
+  expect(res.data).toContain('build.onStart hook from foobar')
+  expect(res.data).toContain('success')
 }

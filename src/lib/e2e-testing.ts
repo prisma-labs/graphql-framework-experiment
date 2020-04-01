@@ -23,9 +23,9 @@ interface CreatePluginOptions {
   name: string
 }
 
-export function setupE2EContext(config?: {
+export function createE2EContext(config?: {
   localNexusBinPath?: string
-  testProjectDir?: string
+  dir?: string
   /**
    * If enabled then:
    *
@@ -37,7 +37,7 @@ export function setupE2EContext(config?: {
   rootLogger.settings({ level: 'trace' })
   process.env.LOG_LEVEL = 'trace'
 
-  const projectDir = config?.testProjectDir ?? getTmpDir('e2e-app')
+  const projectDir = config?.dir ?? getTmpDir('e2e-app')
   const PROJ_NEXUS_BIN_PATH = Path.join(
     projectDir,
     'node_modules',
@@ -49,11 +49,11 @@ export function setupE2EContext(config?: {
   FS.dir(projectDir)
 
   const contextAPI = {
+    dir: projectDir,
     settings: config,
     getTmpDir: getTmpDir,
     fs: FS.cwd(projectDir),
     client: new GraphQLClient('http://localhost:4000/graphql'),
-    projectDir: projectDir,
     node(
       args: string[],
       expectHandler: (data: string, proc: IPty) => void = () => {},
@@ -238,7 +238,7 @@ export function ptySpawn(
 ) {
   const nodePty = requireNodePty()
 
-  return new Promise<SpawnResult>(resolve => {
+  return new Promise<SpawnResult>((resolve, reject) => {
     const proc = nodePty.spawn(command, args, {
       cols: process.stdout.columns ?? 80,
       rows: process.stdout.rows ?? 80,
@@ -253,7 +253,20 @@ export function ptySpawn(
     })
 
     proc.on('exit', (exitCode, signal) => {
-      resolve({ exitCode, signal, data: stripAnsi(buffer) })
+      const result = {
+        exitCode: exitCode,
+        signal: signal,
+        data: stripAnsi(buffer),
+      }
+
+      if (exitCode !== 0) {
+        const error = new Error(
+          `command "${command} ${args.join(' ')}" exited ${exitCode}`
+        )
+        Object.assign(error, result)
+        reject(error)
+      }
+      resolve(result)
     })
   })
 }
