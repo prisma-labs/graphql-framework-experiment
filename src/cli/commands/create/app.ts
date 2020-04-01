@@ -131,7 +131,7 @@ export async function runBootstrapper(
   // github stars, and so on.
   const askDatabase = databaseTypeEnvVar ?? (await askForDatabase())
 
-  log.info('Scaffolding base project files')
+  log.info('Scaffolding project')
 
   await scaffoldBaseFiles(layout, options)
 
