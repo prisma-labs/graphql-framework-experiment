@@ -597,19 +597,45 @@ Defines an object which can be passed as an input value.
 - `definition`  
   See below for the various field builders available.
 
-**Example**
+##### Example
+
+<div class="Row">
 
 ```ts
 import { schema } from 'nexus'
 
 schema.inputObjectType({
-  name: 'InputType',
+  name: 'MyInput',
   definition(t) {
-    t.string('key', { required: true })
-    t.int('answer')
+    t.string('foo', { required: true })
+    t.int('bar')
+  },
+})
+
+schema.objectType({
+  name: 'Qux',
+  definition(t) {
+    t.string('toto', {
+      args: {
+        myInput: 'MyInput',
+      },
+    })
   },
 })
 ```
+
+```graphql
+input MyInput {
+  bar: Int
+  foo: String!
+}
+
+type Qux {
+  toto(myInput: MyInput): String
+}
+```
+
+</div>
 
 Unlike object types, input types do not have arguments, so they do not have resolvers or "backing types"
 
