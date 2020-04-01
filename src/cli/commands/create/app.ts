@@ -62,6 +62,11 @@ export async function runLocalHandOff(): Promise<void> {
   for (const p of plugins) {
     await p.hooks.create.onAfterBaseSetup?.({ database, connectionURI })
   }
+
+  //
+  // format project
+  //
+  await layout.packageManager.runScript('format', { require: true })
 }
 
 /**
@@ -217,12 +222,6 @@ export async function runBootstrapper(
   //
   // return to global create
   //
-
-  //
-  // format project and setup git
-  //
-
-  await layout.packageManager.runScript('format', { require: true })
 
   // Any disk changes after this point will show up as dirty working directory
   // for the user
