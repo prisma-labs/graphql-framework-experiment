@@ -80,9 +80,9 @@ export default class Plugin implements Command {
         name: pluginPackageName,
         version: '0.0.0',
         license: 'MIT',
-        main: 'dist/index.js',
+        main: 'dist/runtime.js',
         module: `dist/${pluginPackageName}.esm.js`,
-        typings: 'dist/index.d.ts',
+        description: 'A Nexus framework plugin',
         files: ['dist'],
         scripts: {
           dev: 'tsc --watch',
@@ -90,6 +90,7 @@ export default class Plugin implements Command {
           'build:ts': 'tsc',
           build: 'yarn -s build:ts && yarn -s build:doc',
           test: 'jest',
+          'publish:stable': 'dripip stable',
           'publish:preview': 'dripip preview',
           'publish:pr': 'dripip pr',
           prepack: 'yarn -s build',
@@ -146,8 +147,20 @@ export default class Plugin implements Command {
           import { WorktimePlugin } from 'nexus-future/plugin'
 
           export const plugin: WorktimePlugin = project => {
+            project.hooks.dev.onStart = async () => {
+              project.log.info('dev.onStart hook from ${pluginName}')
+            }
+            project.hooks.dev.onBeforeWatcherRestart = async () => {
+              project.log.info('dev.onBeforeWatcherRestart hook from ${pluginName}')
+            }
+            project.hooks.dev.onAfterWatcherRestart = async () => {
+              project.log.info('dev.onAfterWatcherRestart hook from ${pluginName}')
+            }
+            project.hooks.dev.onBeforeWatcherStartOrRestart = async () => {
+              project.log.info('dev.onBeforeWatcherStartOrRestart hook from ${pluginName}')
+            }
             project.hooks.build.onStart = async () => {
-              project.log.info('Hello from ${pluginName}!')
+              project.log.info('build.onStart hook from ${pluginName}')
             }
           }
         `
