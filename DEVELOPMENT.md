@@ -88,10 +88,6 @@ yarn dev:test      # watch mode
 yarn test:system
 ```
 
-- Environment variables
-
-  - `NEXUS_PLUGIN_PRISMA_VERSION` – which version of the prisma plugin to install during the plugin part of the test
-
 - Live under `/test/system`
 
 - Almost like E2E but they work with the local package code (whereas E2E would work with an actually published package).
@@ -100,9 +96,9 @@ yarn test:system
 
 - You must run `yarn build` right before running these tests.
 
-- These tests run by having the local package installed via folder-reference into the test project. This disables package hoisting. This in turn [breaks typegen](https://github.com/graphql-nexus/nexus-future/issues/432) because its import of `@nexus/schema` will be unresolvable (it looks for `node_modules/@nexus/schema` but actually needs to look at `node_modules/nexus-future/node_modules/@nexus/schema`). The system tests encode a solution to this. You should only have to think about this when actually devloping the system tests.
+- These tests run by having the local package installed via folder-reference into the test project. This disables package hoisting. This in turn [breaks typegen](https://github.com/graphql-nexus/nexus/issues/432) because its import of `@nexus/schema` will be unresolvable (it looks for `node_modules/@nexus/schema` but actually needs to look at `node_modules/nexus/node_modules/@nexus/schema`). The system tests encode a solution to this. You should only have to think about this when actually devloping the system tests.
 
-The solution to this problem is an env hook exposed by `nexus-future` called `NEXUS_TYPEGEN_NEXUS_SCHEMA_IMPORT_PATH`. when set it will cause the typegen file `node_modules/@types/nexus-typegen/index.d.ts` to have the import from-value rewritten to whatever the env var value is. This env hook lives inside the typegen component but is leveraged by the system tests suite.
+The solution to this problem is an env hook exposed by `nexus` called `NEXUS_TYPEGEN_NEXUS_SCHEMA_IMPORT_PATH`. when set it will cause the typegen file `node_modules/@types/nexus-typegen/index.d.ts` to have the import from-value rewritten to whatever the env var value is. This env hook lives inside the typegen component but is leveraged by the system tests suite.
 
 #### E2E
 

@@ -7,7 +7,7 @@ import { rootLogger } from '../../src/lib/nexus-logger'
 const log = rootLogger.child('e2e-testing')
 
 interface Options {
-  local: boolean
+  localNexusPath: null | string
 }
 
 /**
@@ -23,7 +23,7 @@ export async function e2eTestApp(
 
   log.warn('create app')
 
-  if (options.local) {
+  if (options.localNexusPath) {
     res = await appProject.localNexusCreateApp(
       {
         databaseType: 'NO_DATABASE',
@@ -54,7 +54,7 @@ export async function e2eTestApp(
   await appProject.fs.writeAsync(
     `./src/add-to-context/${CONVENTIONAL_SCHEMA_FILE_NAME}`,
     `
-        import { schema } from 'nexus-future'
+        import { schema } from 'nexus'
   
         export interface B {
           foo: number
@@ -81,7 +81,7 @@ export async function e2eTestApp(
   await appProject.fs.writeAsync(
     `./src/backing-types/${CONVENTIONAL_SCHEMA_FILE_NAME}`,
     `
-          import { schema } from 'nexus-future'
+          import { schema } from 'nexus'
     
           export type CustomBackingType = {
             field1: string
@@ -192,7 +192,7 @@ export async function e2eTestApp(
     dir: appProject.getTmpDir('e2e-plugin'),
   })
 
-  if (options.local) {
+  if (options.localNexusPath) {
     res = await pluginProject.localNexusCreatePlugin({ name: 'foobar' })
   } else {
     res = await pluginProject.npxNexusCreatePlugin({
@@ -202,6 +202,14 @@ export async function e2eTestApp(
   }
 
   expect(res.data).toContain(PLUGIN_CREATED_EVENT)
+
+  if (options.localNexusPath) {
+    // We do this so that the plugin is building against the local nexus. Imagine
+    // the plugin system is changing, the only way to allow the plugin template to
+    // be built against the changes is to work with the local nexus version, not
+    // one published to npm.
+    await pluginProject.spawn(['npm', 'install', options.localNexusPath])
+  }
 
   log.warn('build plugin')
   res = await pluginProject.spawn(['yarn', 'build'])

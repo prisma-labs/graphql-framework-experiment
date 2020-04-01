@@ -34,7 +34,6 @@ interface ConfigInput {
 
 interface InternalConfig {
   projectName: string
-  nexusFutureVersionExpression: string
 }
 
 /**
@@ -83,18 +82,16 @@ export async function runBootstrapper(
     : undefined
   const packageManagerTypeEnvVar = process.env
     .CREATE_APP_CHOICE_PACKAGE_MANAGER_TYPE as any
-  const nexusFutureVersionExpressionEnvVar =
-    process.env.CREATE_APP_CHOICE_NEXUS_FUTURE_VERSION_EXPRESSION
+  const nexusVersionEnvVar = process.env.CREATE_APP_CHOICE_NEXUS_VERSION
   log.trace('create app user choices pre-filled by env vars?', {
     packageManagerTypeEnvVar,
     databaseTypeEnvVar,
-    nexusFutureVersionExpressionEnvVar,
+    nexusVersionEnvVar,
   })
 
   const projectName = configInput?.projectName ?? CWDProjectNameOrGenerate()
 
-  const nexusFutureVersionExpression =
-    nexusFutureVersionExpressionEnvVar ?? `^${ownPackage.version}`
+  const nexusVersion = nexusVersionEnvVar ?? `${ownPackage.version}`
 
   const packageManagerType =
     packageManagerTypeEnvVar ?? (await askForPackageManager())
@@ -122,7 +119,6 @@ export async function runBootstrapper(
 
   const options: InternalConfig = {
     projectName: projectName,
-    nexusFutureVersionExpression: nexusFutureVersionExpression,
     ...configInput,
   }
 
@@ -133,10 +129,12 @@ export async function runBootstrapper(
   log.info('Scaffolding base project files...')
   await scaffoldBaseFiles(layout, options)
 
-  log.info(
-    `Installing nexus-future@${options.nexusFutureVersionExpression}... (this will take around ~15 seconds)`
-  )
-  await layout.packageManager.installDeps({ require: true })
+  log.info(`Installing nexus (this will take around ~15 seconds)`, {
+    version: nexusVersion,
+  })
+  await layout.packageManager.addDeps([`nexus@${nexusVersion}`], {
+    require: true,
+  })
 
   //
   // install additional deps
@@ -377,7 +375,7 @@ async function helloWorldTemplate(layout: Layout.Layout) {
   await fs.writeAsync(
     layout.sourcePath(Layout.schema.CONVENTIONAL_SCHEMA_FILE_NAME),
     stripIndent`
-    import { schema } from "nexus-future";
+    import { schema } from "nexus";
 
     schema.addToContext(req => {
       return {
@@ -445,9 +443,7 @@ async function scaffoldBaseFiles(
     fs.writeAsync('package.json', {
       name: options.projectName,
       license: 'UNLICENSED',
-      dependencies: {
-        'nexus-future': options.nexusFutureVersionExpression,
-      },
+      dependencies: {},
       scripts: {
         format: "npx prettier --write './**/*.{ts,md}' '!./prisma/**/*.md'",
         dev: 'nexus dev',

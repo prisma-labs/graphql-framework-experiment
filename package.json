@@ -1,10 +1,10 @@
 {
-  "name": "nexus-future",
+  "name": "nexus",
   "author": "Prisma Labs",
   "version": "0.0.0-dripip",
-  "homepage": "https://github.com/graphql-nexus/nexus-future",
-  "repository": "graphql-nexus/nexus-future",
-  "bugs": "https://github.com/graphql-nexus/nexus-future/issues",
+  "homepage": "https://github.com/graphql-nexus/nexus",
+  "repository": "graphql-nexus/nexus",
+  "bugs": "https://github.com/graphql-nexus/nexus/issues",
   "license": "MIT",
   "main": "dist/index.js",
   "files": [

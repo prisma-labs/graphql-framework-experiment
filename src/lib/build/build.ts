@@ -164,7 +164,7 @@ export async function writeStartModule({
       Nexus reserves the source root module name ${START_MODULE_NAME}.js for its own use.
       Please change your app layout to not have this module.
       This is a temporary limitation that we intend to remove in the future. 
-      For more details please see this GitHub issue: https://github.com/graphql-nexus/nexus-future/issues/139
+      For more details please see this GitHub issue: https://github.com/graphql-nexus/nexus/issues/139
     `)
   }
 

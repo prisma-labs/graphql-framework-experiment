@@ -21,7 +21,7 @@
 Kick off a new project. Say yes (`y`) to the prisma option. Choose `PostgreSQL` for the db option.
 
 ```cli
-npx nexus-future
+npx nexus@next
 ```
 
 ## Change the Data Layer

@@ -4,7 +4,7 @@
   <span>Delightful GraphQL Application Framework</span>
   <br>
   <br>
-  <img src="https://github.com/graphql-nexus/nexus-future/workflows/trunk/badge.svg">
+  <img src="https://github.com/graphql-nexus/nexus/workflows/trunk/badge.svg">
 </p>
 
 <br>
@@ -12,12 +12,12 @@
 ## Links
 
 - **Website** https://nexusjs.org
-- **Discussions** https://github.com/graphql-nexus/nexus-future/discussions
-- **Issues** https://github.com/graphql-nexus/nexus-future/issues
+- **Discussions** https://github.com/graphql-nexus/nexus/discussions
+- **Issues** https://github.com/graphql-nexus/nexus/issues
 
 ## Repo / Package Overview
 
-| Repo                                                          | NPM Package                                                  | Role             |
-| ------------------------------------------------------------- | ------------------------------------------------------------ | ---------------- |
-| [nexus-future](https://github.com/graphql-nexus/nexus-future) | [nexus-future](https://www.npmjs.com/package/nexus-future)   | Framework        |
-| [schema](https://github.com/graphql-nexus/schema)             | [@nexus/schema](https://www.npmjs.com/package/@nexus/schema) | Schema Component |
+| Repo                                              | NPM Package                                                  | Role             |
+| ------------------------------------------------- | ------------------------------------------------------------ | ---------------- |
+| [nexus](https://github.com/graphql-nexus/nexus)   | [nexus](https://www.npmjs.com/package/nexus)                 | Framework        |
+| [schema](https://github.com/graphql-nexus/schema) | [@nexus/schema](https://www.npmjs.com/package/@nexus/schema) | Schema Component |

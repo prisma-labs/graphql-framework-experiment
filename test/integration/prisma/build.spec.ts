@@ -27,7 +27,7 @@ it('can build a prisma framework project', () => {
   ws.fs.write(
     CONVENTIONAL_SCHEMA_FILE_NAME,
     `
-      import app from 'nexus-future'
+      import app from 'nexus'
 
       app.schema.objectType({
         name: 'User',

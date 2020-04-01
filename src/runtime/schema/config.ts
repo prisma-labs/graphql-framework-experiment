@@ -26,7 +26,7 @@ export function createNexusSchemaConfig(
 
   const baseConfig: NexusConfig = {
     // todo allow framework user to configure this
-    // https://github.com/graphql-nexus/nexus-future/issues/483
+    // https://github.com/graphql-nexus/nexus/issues/483
     nonNullDefaults: {
       input: false,
       output: false,
@@ -130,7 +130,7 @@ function withAutoTypegenConfig(
     }
 
     config.imports.push(
-      "import * as Logger from 'nexus-future/dist/lib/logger'",
+      "import * as Logger from 'nexus/dist/lib/logger'",
       contextTypeContribSpecToCode({
         log: 'Logger.Logger',
       })

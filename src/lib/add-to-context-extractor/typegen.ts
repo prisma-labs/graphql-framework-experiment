@@ -21,7 +21,7 @@ export async function writeContextTypeGenFile(
     .join('\n\n')
 
   const content = codeBlock`
-    import app from 'nexus-future'
+    import app from 'nexus'
 
     // Imports for types referenced by context types.
 

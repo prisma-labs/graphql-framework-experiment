@@ -1,6 +1,6 @@
 # `import { schema }`
 
-[issues](https://github.com/graphql-nexus/nexus-future/labels/scope%2Fschema) - [`features`](https://github.com/graphql-nexus/nexus-future/issues?q=is%3Aopen+label%3Ascope%2Fschema+label%3Atype%2Ffeat) [`bugs`](https://github.com/graphql-nexus/nexus-future/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fschema+label%3Atype%2Fbug+)
+[issues](https://github.com/graphql-nexus/nexus/labels/scope%2Fschema) - [`features`](https://github.com/graphql-nexus/nexus/issues?q=is%3Aopen+label%3Ascope%2Fschema+label%3Atype%2Ffeat) [`bugs`](https://github.com/graphql-nexus/nexus/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fschema+label%3Atype%2Fbug+)
 
 Use the schema to model your domain, all the data that your API will accept and return, and how all the various objects in the domain relate to one another (the "graph" in "GraphQL").
 
@@ -36,7 +36,7 @@ objectType(config: {
 **Example**
 
 ```ts
-import { schema } from 'nexus-future'
+import { schema } from 'nexus'
 
 schema.objectType({
   name: 'User',
@@ -425,7 +425,7 @@ todo
 ##### Example of using `resolve` {docsify-ignore}
 
 ```ts
-import { schema } from 'nexus-future'
+import { schema } from 'nexus'
 import { connectionFromArray } from 'graphql-relay'
 
 schema.queryType(t => {
@@ -558,7 +558,7 @@ Refer to `objectType`. This is a shorthand where `config.name` is assigned `Muta
 
 ### `subscriptionType`
 
-Not implemented, please see [#447](https://github.com/graphql-nexus/nexus-future/issues/447).
+Not implemented, please see [#447](https://github.com/graphql-nexus/nexus/issues/447).
 
 ### `inputObjectType`
 
@@ -600,7 +600,7 @@ Defines an object which can be passed as an input value.
 **Example**
 
 ```ts
-import { schema } from 'nexus-future'
+import { schema } from 'nexus'
 
 schema.inputObjectType({
   name: 'InputType',
@@ -650,7 +650,7 @@ enumType(config: NexusEnumTypeConfig): NexusEnumTypeDef
 Defining as an array of enum values:
 
 ```ts
-import { schema } from 'nexus-future
+import { schema } from 'nexus'
 
 const Episode = schema.enumType({
   name: 'Episode',
@@ -662,7 +662,7 @@ const Episode = schema.enumType({
 As an object, with a simple mapping of enum values to internal values:
 
 ```ts
-import { schema } from 'nexus-future'
+import { schema } from 'nexus'
 
 const Episode = schema.enumType({
   name: 'Episode',
@@ -704,7 +704,7 @@ interfaceType(config: NexusInterfaceTypeConfig): NexusInterfaceTypeDef
 **Example**
 
 ```ts
-import { schema } from 'nexus-future'
+import { schema } from 'nexus'
 
 schema.interfaceType({
   name: 'Node',
@@ -756,7 +756,7 @@ scalarType(config: NexusScalarTypeConfig): NexusScalarTypeDef
 **Example**
 
 ```ts
-import { schema } from 'nexus-future'
+import { schema } from 'nexus'
 
 schema.scalarType({
   name: 'Date',
@@ -798,7 +798,7 @@ export const DateTime = GraphQLDate
 If you have an existing GraphQL scalar and you'd like to expose it as a builder method, call `asNexusMethod`:
 
 ```ts
-import { schema } from 'nexus-future'
+import { schema } from 'nexus'
 import { GraphQLDate } from 'graphql-iso-date'
 
 schema.asNexusMethod(GraphQLDate, 'date')
@@ -837,7 +837,7 @@ unionType(config: NexusUnionTypeConfig): NexusUnionTypeDef
 **Example**
 
 ```ts
-import { schema } from 'nexus-future'
+import { schema } from 'nexus'
 
 schema.unionType({
   name: 'MediaType',
@@ -895,8 +895,8 @@ schema.unionType({
 Defines an argument that can be used in any object or interface type. Args can be reused in multiple locations, and it can be convenient to create your own wrappers around arguments.
 
 ```ts
-import { schema } from 'nexus-future'
-import { ScalarArgConfig } from 'nexus-future/types'
+import { schema } from 'nexus'
+import { ScalarArgConfig } from 'nexus/types'
 
 function requiredInt(opts: ScalarArgConfig<number>) {
   return schema.arg({ ...opts, required: true, type: 'Int' })
@@ -922,7 +922,7 @@ Add context to your graphql resolver functions. The objects returned by your con
 **Example**
 
 ```ts
-import { schema } from 'nexus-future'
+import { schema } from 'nexus'
 
 schema.addToContext(_req => {
   return {

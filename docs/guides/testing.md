@@ -4,7 +4,7 @@ Testing is a first-class concern of Nexus. So far we ship a few primitives to he
 
 ## Meet the Module
 
-Nexus comes with a special testing module that you can import from `nexus-future/testing`. Its primary utility is the `createTestContext` function. It is designed for running _integration_ tests. When run it will in turn boot your app (in the same process) and expose an interface for your tests to interact with it.
+Nexus comes with a special testing module that you can import from `nexus/testing`. Its primary utility is the `createTestContext` function. It is designed for running _integration_ tests. When run it will in turn boot your app (in the same process) and expose an interface for your tests to interact with it.
 
 <!-- TODO would be nice to have the TS type shown here. Use doc extraction system to do this. -->
 
@@ -17,7 +17,7 @@ Before jumping into test suites we will wrap the `createTestContext` with a patt
 
 ```ts
 // tests/__helpers.ts
-import { createTestContext, TestContext } from 'nexus-future/testing'
+import { createTestContext, TestContext } from 'nexus/testing'
 
 export function createTestContext(): TestContext {
   let ctx: TestContext

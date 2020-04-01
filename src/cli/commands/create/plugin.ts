@@ -144,7 +144,7 @@ export default class Plugin implements Command {
       fs.writeAsync(
         'src/worktime.ts',
         stripIndent`
-          import { WorktimePlugin } from 'nexus-future/plugin'
+          import { WorktimePlugin } from 'nexus/plugin'
 
           export const plugin: WorktimePlugin = project => {
             project.hooks.dev.onStart = async () => {
@@ -168,7 +168,7 @@ export default class Plugin implements Command {
       fs.writeAsync(
         'src/runtime.ts',
         stripIndent`
-          import { RuntimePlugin } from 'nexus-future/plugin'
+          import { RuntimePlugin } from 'nexus/plugin'
 
           export const plugin:RuntimePlugin = project => {
             return {
@@ -195,7 +195,7 @@ export default class Plugin implements Command {
       'yarn add --dev ' +
         [
           '@types/jest',
-          'nexus-future@next',
+          'nexus@next',
           'jest',
           'jest-watch-typeahead',
           'ts-jest',

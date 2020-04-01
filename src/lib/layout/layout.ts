@@ -294,7 +294,7 @@ export async function scanProjectType(): Promise<
   }
 
   const packageJson = FS.read(packageJsonLocation.path, 'json')
-  if (packageJson?.dependencies?.['nexus-future']) {
+  if (packageJson?.dependencies?.['nexus']) {
     return {
       type: 'NEXUS_project',
       packageJson: packageJsonLocation,

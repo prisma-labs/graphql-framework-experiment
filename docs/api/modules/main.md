@@ -3,7 +3,7 @@ The main module exports an application singleton. It is available as the default
 **Example of importing default export**
 
 ```ts
-import app from 'nexus-future'
+import app from 'nexus'
 
 app.log.info('hello world')
 
@@ -25,7 +25,7 @@ app.server.start()
 **Example of imporrting named exports**
 
 ```ts
-import { schema, server, settings, log } from 'nexus-future'
+import { schema, server, settings, log } from 'nexus'
 
 log.info('hello world')
 

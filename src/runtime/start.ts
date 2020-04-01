@@ -40,7 +40,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   content += stripIndent`
     // Run framework initialization side-effects
     // Also, import the app for later use
-    const app = require("nexus-future").default
+    const app = require("nexus").default
   `
 
   // todo test coverage for this feature
@@ -70,7 +70,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   }
 
   if (config.inlineSchemaModuleImports) {
-    // This MUST come after nexus-future package has been imported for its side-effects
+    // This MUST come after nexus package has been imported for its side-effects
     const staticImports = Layout.schema.printStaticImports(config.layout)
     if (staticImports !== '') {
       content += EOL + EOL + EOL

@@ -21,16 +21,16 @@
 
 - API
 
-- [`nexus-future`](api/modules/main)
+- [`nexus`](api/modules/main)
 
   - [`schema`](api/modules/main/exports/schema)
   - [`log`](api/modules/main/exports/logger)
   - [`server`](api/modules/main/exports/server)
   - [`settings`](api/modules/main/exports/settings)
 
-- [`nexus-future/testing`](api/modules/testing)
+- [`nexus/testing`](api/modules/testing)
 
-* [`nexus-future/plugin`](api/modules/plugin)
+* [`nexus/plugin`](api/modules/plugin)
 
 * Components Standalone
 

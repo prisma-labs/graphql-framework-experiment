@@ -40,7 +40,7 @@ export async function generateArtifacts(layout: Layout): Promise<void> {
   }
 
   // Handling no-hoist problem
-  // https://github.com/graphql-nexus/nexus-future/issues/432
+  // https://github.com/graphql-nexus/nexus/issues/432
   // todo link to website docs
 
   if (process.env.NEXUS_TYPEGEN_NEXUS_SCHEMA_IMPORT_PATH) {
@@ -70,7 +70,7 @@ export async function generateArtifacts(layout: Layout): Promise<void> {
     }
     const indexDTSUpdated = indexDTS.replace(
       importPattern,
-      `"../../nexus-future/node_modules/@nexus/schema"`
+      `"../../nexus/node_modules/@nexus/schema"`
     )
     await FS.writeAsync(indexDTSPath, indexDTSUpdated)
   }

@@ -24,7 +24,7 @@ interface CreatePluginOptions {
 }
 
 export function createE2EContext(config?: {
-  localNexusBinPath?: string
+  localNexusPath?: string
   dir?: string
   /**
    * If enabled then:
@@ -37,6 +37,9 @@ export function createE2EContext(config?: {
   rootLogger.settings({ level: 'trace' })
   process.env.LOG_LEVEL = 'trace'
 
+  const localNexusBinPath = config?.localNexusPath
+    ? Path.join(config.localNexusPath, 'dist', 'cli', 'main')
+    : null
   const projectDir = config?.dir ?? getTmpDir('e2e-app')
   const PROJ_NEXUS_BIN_PATH = Path.join(
     projectDir,
@@ -131,7 +134,7 @@ export function createE2EContext(config?: {
       log.trace('npx nexus-future', { options })
       return ptySpawn(
         'npx',
-        [`nexus-future@${options.nexusVersion}`],
+        [`nexus@${options.nexusVersion}`],
         {
           cwd: projectDir,
           env: {
@@ -148,13 +151,13 @@ export function createE2EContext(config?: {
       args: string[],
       expectHandler: (data: string, proc: IPty) => void = () => {}
     ) {
-      if (!config?.localNexusBinPath)
+      if (!localNexusBinPath)
         throw new Error(
           'E2E Config Error: Cannot run localNexus because you did not configure config.localNexusBinPath'
         )
       return ptySpawn(
         'node',
-        [config.localNexusBinPath, ...args],
+        [localNexusBinPath, ...args],
         {
           cwd: projectDir,
           env: {
@@ -169,13 +172,13 @@ export function createE2EContext(config?: {
       options: CreateAppOptions,
       expectHandler: (data: string, proc: IPty) => void = () => {}
     ) {
-      if (!config?.localNexusBinPath)
+      if (!localNexusBinPath)
         throw new Error(
           'E2E Config Error: Cannot run localNexusCreateApp because you did not configure config.localNexusBinPath'
         )
       return ptySpawn(
         'node',
-        [config.localNexusBinPath],
+        [localNexusBinPath],
         {
           cwd: projectDir,
           env: {
@@ -192,13 +195,13 @@ export function createE2EContext(config?: {
       options: CreatePluginOptions,
       expectHandler: (data: string, proc: IPty) => void = () => {}
     ) {
-      if (!config?.localNexusBinPath)
+      if (!localNexusBinPath)
         throw new Error(
           'E2E Config Error: Cannot run localNexusCreatePlugin because you did not configure config.localNexusBinPath'
         )
       return ptySpawn(
         'node',
-        [config.localNexusBinPath, 'create', 'plugin'],
+        [localNexusBinPath, 'create', 'plugin'],
         {
           cwd: projectDir,
           env: {
@@ -213,9 +216,9 @@ export function createE2EContext(config?: {
   }
 
   if (config?.linkedPackageMode) {
-    // Handling no-hoist problem - https://github.com/graphql-nexus/nexus-future/issues/432
-    process.env.NEXUS_TYPEGEN_NEXUS_SCHEMA_IMPORT_PATH = `"../../nexus-future/node_modules/@nexus/schema"`
-    process.env.CREATE_APP_CHOICE_NEXUS_FUTURE_VERSION_EXPRESSION = `file:${getRelativePathFromTestProjectToNexusPackage()}`
+    // Handling no-hoist problem - https://github.com/graphql-nexus/nexus/issues/432
+    process.env.NEXUS_TYPEGEN_NEXUS_SCHEMA_IMPORT_PATH = `"../../nexus/node_modules/@nexus/schema"`
+    process.env.CREATE_APP_CHOICE_NEXUS_VERSION = `file:${getRelativePathFromTestProjectToNexusPackage()}`
   }
 
   return contextAPI
