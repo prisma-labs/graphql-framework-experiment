@@ -23,9 +23,9 @@ interface CreatePluginOptions {
   name: string
 }
 
-export function setupE2EContext(config?: {
+export function createE2EContext(config?: {
   localNexusBinPath?: string
-  testProjectDir?: string
+  dir?: string
   /**
    * If enabled then:
    *
@@ -37,7 +37,7 @@ export function setupE2EContext(config?: {
   rootLogger.settings({ level: 'trace' })
   process.env.LOG_LEVEL = 'trace'
 
-  const projectDir = config?.testProjectDir ?? getTmpDir('e2e-app')
+  const projectDir = config?.dir ?? getTmpDir('e2e-app')
   const PROJ_NEXUS_BIN_PATH = Path.join(
     projectDir,
     'node_modules',
@@ -49,7 +49,7 @@ export function setupE2EContext(config?: {
   FS.dir(projectDir)
 
   const contextAPI = {
-    projectDir: projectDir,
+    dir: projectDir,
     settings: config,
     getTmpDir: getTmpDir,
     fs: FS.cwd(projectDir),
