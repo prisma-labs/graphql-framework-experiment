@@ -106,7 +106,7 @@ Integration between Nexus' test and database systems is young and still missing 
    const util = require('util')
    const exec = util.promisify(require('child_process').exec)
 
-   const prismaBinary = './node_modules/.bin/prisma2'
+   const prismaBinary = './node_modules/.bin/prisma'
 
    /**
     * Custom test environment for nexus and Postgres

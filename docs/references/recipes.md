@@ -23,8 +23,8 @@
 
 1) Initialize your database
 
-- Run `yarn prisma2 migrate save --experimental` to create your first migration file.
-- Run `yarn prisma2 migrate up --experimental` to migrate your database.
+- Run `yarn prisma migrate save --experimental` to create your first migration file.
+- Run `yarn prisma migrate up --experimental` to migrate your database.
 
 1. Done. Now your app has:
 

@@ -83,7 +83,7 @@ These are tips to help you with a successful project workflow
    ```json
    {
      "scripts": {
-       "generate:prisma": "prisma2 generate",
+       "generate:prisma": "prisma generate",
        "generate:nexus": "cross-env NODE_ENV=development ts-node --transpile-only path/to/schema/module",
        "generate": "npm -s run generate:prisma && npm -s run generate:nexus",
        "postinstall": "npm -s run generate"

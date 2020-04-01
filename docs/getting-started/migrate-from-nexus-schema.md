@@ -102,7 +102,7 @@ You should only be working with the `nexus` CLI. Below shows the example scripts
 -    "clean": "rm -rf dist",
 -    "build": "npm -s run clean && npm -s run generate && tsc",
 -    "generate": "npm -s run generate:prisma && npm -s run generate:nexus",
--    "generate:prisma": "prisma2 generate",
+-    "generate:prisma": "prisma generate",
 -    "generate:nexus": "ts-node --transpile-only src/schema",
 -    "postinstall": "npm -s run generate",
 -    "dev": "ts-node-dev --no-notify --respawn --transpileOnly src/server",
@@ -222,4 +222,4 @@ The Nexus plugin system has an auto-use feature. It means once you've installed 
 -   plugins: [nexusPrismaPlugin()],
 ```
 
-You should still use the Prisma CLI. Only `$ prisma2 generate` will be taken care of for you.
+You should still use the Prisma CLI. Only `$ prisma generate` will be taken care of for you.

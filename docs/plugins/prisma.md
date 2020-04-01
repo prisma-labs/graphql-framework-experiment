@@ -25,7 +25,7 @@ Prisma is a next-generation developer-centric toolkit focused on making the data
 npm install nexus-plugin-prisma
 ```
 
-> Note: `nexus-plugin-prisma` bundles the Prisma CLI. You can invoke it using `npm run prisma2` or `yarn prisma2`.
+> Note: `nexus-plugin-prisma` bundles the Prisma CLI. You can invoke it using `npm run prisma` or `yarn prisma`.
 
 ## Getting started
 
@@ -90,13 +90,13 @@ datasource db {
 **3. Create a migration file**
 
 ```sh
-npm run prisma2 migrate save --experimental
+npm run prisma migrate save --experimental
 ```
 
 **4. Migrate your database**
 
 ```sh
-npm run prisma2 migrate up --experimental
+npm run prisma migrate up --experimental
 ```
 
 **5. You're all set**
@@ -147,7 +147,7 @@ datasource db {
 **2. Introspect your database**
 
 ```
-npm run prisma2 introspect
+npm run prisma introspect
 ```
 
 **3. Generate the Prisma Client**
