@@ -14,8 +14,18 @@ import stripAnsi = require('strip-ansi')
 
 const log = rootLogger.child('e2e-testing')
 
-export function setupE2EContext(config?: {
-  testProjectDir?: string
+interface CreateAppOptions {
+  packageManagerType: PackageManagerType
+  databaseType: Database | 'NO_DATABASE'
+}
+
+interface CreatePluginOptions {
+  name: string
+}
+
+export function createE2EContext(config?: {
+  localNexusBinPath?: string
+  dir?: string
   /**
    * If enabled then:
    *
@@ -27,16 +37,30 @@ export function setupE2EContext(config?: {
   rootLogger.settings({ level: 'trace' })
   process.env.LOG_LEVEL = 'trace'
 
-  const projectDir = config?.testProjectDir ?? getTmpDir('e2e-testing')
-  const NEXUS_BIN_PATH = Path.join(projectDir, 'node_modules', '.bin', 'nexus')
+  const projectDir = config?.dir ?? getTmpDir('e2e-app')
+  const PROJ_NEXUS_BIN_PATH = Path.join(
+    projectDir,
+    'node_modules',
+    '.bin',
+    'nexus'
+  )
   log.trace('setup', { projectDir, config })
 
   FS.dir(projectDir)
 
   const contextAPI = {
+    dir: projectDir,
+    settings: config,
+    getTmpDir: getTmpDir,
     fs: FS.cwd(projectDir),
     client: new GraphQLClient('http://localhost:4000/graphql'),
-    projectDir: projectDir,
+    node(
+      args: string[],
+      expectHandler: (data: string, proc: IPty) => void = () => {},
+      opts: IPtyForkOptions = {}
+    ) {
+      return ptySpawn('node', args, { cwd: projectDir, ...opts }, expectHandler)
+    },
     spawn(
       binPathAndArgs: string[],
       expectHandler: (data: string, proc: IPty) => void = () => {},
@@ -50,53 +74,139 @@ export function setupE2EContext(config?: {
         expectHandler
       )
     },
-    spawnNexus(
+    nexus(
       args: string[],
       expectHandler: (data: string, proc: IPty) => void = () => {},
       opts: IPtyForkOptions = {}
     ) {
       return ptySpawn(
-        NEXUS_BIN_PATH,
+        PROJ_NEXUS_BIN_PATH,
         args,
         { cwd: projectDir, ...opts },
         expectHandler
       )
     },
-    spawnNPXNexus(
-      packageManagerType: PackageManagerType,
-      databaseType: Database | 'NO_DATABASE',
-      version: string,
+    npxNexus(
+      options: { nexusVersion: string },
+      args: string[],
       expectHandler: (data: string, proc: IPty) => void
     ) {
-      log.trace('npx nexus', {
-        version,
-        packageManagerType,
-        databaseType,
-      })
+      log.trace('npx nexus-future', { options })
       return ptySpawn(
         'npx',
-        [`nexus@${version}`],
+        [`nexus-future@${options.nexusVersion}`, ...args],
         {
           cwd: projectDir,
           env: {
             ...process.env,
-            CREATE_APP_CHOICE_PACKAGE_MANAGER_TYPE: packageManagerType,
-            CREATE_APP_CHOICE_DATABASE_TYPE: databaseType,
             LOG_LEVEL: 'trace',
           },
         },
         expectHandler
       )
     },
-    spawnNexusFromPath(
-      binPath: string,
+    npxNexusCreatePlugin(
+      options: CreatePluginOptions & { nexusVersion: string },
+      expectHandler: (data: string, proc: IPty) => void = () => {}
+    ) {
+      log.trace('npx nexus-future', { options })
+      return ptySpawn(
+        'npx',
+        [`nexus-future@${options.nexusVersion}`, 'create', 'plugin'],
+        {
+          cwd: projectDir,
+          env: {
+            ...process.env,
+            CREATE_PLUGIN_CHOICE_NAME: options.name,
+            LOG_LEVEL: 'trace',
+          },
+        },
+        expectHandler
+      )
+    },
+    npxNexusCreateApp(
+      options: CreateAppOptions & { nexusVersion: string },
+      expectHandler: (data: string, proc: IPty) => void
+    ) {
+      log.trace('npx nexus-future', { options })
+      return ptySpawn(
+        'npx',
+        [`nexus@${options.nexusVersion}`],
+        {
+          cwd: projectDir,
+          env: {
+            ...process.env,
+            CREATE_APP_CHOICE_PACKAGE_MANAGER_TYPE: options.packageManagerType,
+            CREATE_APP_CHOICE_DATABASE_TYPE: options.databaseType,
+            LOG_LEVEL: 'trace',
+          },
+        },
+        expectHandler
+      )
+    },
+    localNexus(
       args: string[],
       expectHandler: (data: string, proc: IPty) => void = () => {}
     ) {
+      if (!config?.localNexusBinPath)
+        throw new Error(
+          'E2E Config Error: Cannot run localNexus because you did not configure config.localNexusBinPath'
+        )
       return ptySpawn(
         'node',
-        [binPath, ...args],
-        { cwd: projectDir },
+        [config.localNexusBinPath, ...args],
+        {
+          cwd: projectDir,
+          env: {
+            ...process.env,
+            LOG_LEVEL: 'trace',
+          },
+        },
+        expectHandler
+      )
+    },
+    localNexusCreateApp(
+      options: CreateAppOptions,
+      expectHandler: (data: string, proc: IPty) => void = () => {}
+    ) {
+      if (!config?.localNexusBinPath)
+        throw new Error(
+          'E2E Config Error: Cannot run localNexusCreateApp because you did not configure config.localNexusBinPath'
+        )
+      return ptySpawn(
+        'node',
+        [config.localNexusBinPath],
+        {
+          cwd: projectDir,
+          env: {
+            ...process.env,
+            CREATE_APP_CHOICE_PACKAGE_MANAGER_TYPE: options.packageManagerType,
+            CREATE_APP_CHOICE_DATABASE_TYPE: options.databaseType,
+            LOG_LEVEL: 'trace',
+          },
+        },
+        expectHandler
+      )
+    },
+    localNexusCreatePlugin(
+      options: CreatePluginOptions,
+      expectHandler: (data: string, proc: IPty) => void = () => {}
+    ) {
+      if (!config?.localNexusBinPath)
+        throw new Error(
+          'E2E Config Error: Cannot run localNexusCreatePlugin because you did not configure config.localNexusBinPath'
+        )
+      return ptySpawn(
+        'node',
+        [config.localNexusBinPath, 'create', 'plugin'],
+        {
+          cwd: projectDir,
+          env: {
+            ...process.env,
+            CREATE_PLUGIN_CHOICE_NAME: options.name,
+            LOG_LEVEL: 'trace',
+          },
+        },
         expectHandler
       )
     },
@@ -128,26 +238,43 @@ export function ptySpawn(
 ) {
   const nodePty = requireNodePty()
 
-  return new Promise<{ exitCode: number; signal?: number; data: string }>(
-    resolve => {
-      const proc = nodePty.spawn(command, args, {
-        cols: 80,
-        rows: 80,
-        ...opts,
-      })
-      let buffer = ''
+  return new Promise<SpawnResult>((resolve, reject) => {
+    const proc = nodePty.spawn(command, args, {
+      cols: process.stdout.columns ?? 80,
+      rows: process.stdout.rows ?? 80,
+      ...opts,
+    })
+    let buffer = ''
 
-      proc.on('data', data => {
-        buffer += data
-        process.stdout.write(data)
-        expectHandler(stripAnsi(data), proc)
-      })
+    proc.on('data', data => {
+      buffer += data
+      process.stdout.write(data)
+      expectHandler(stripAnsi(data), proc)
+    })
 
-      proc.on('exit', (exitCode, signal) => {
-        resolve({ exitCode, signal, data: stripAnsi(buffer) })
-      })
-    }
-  )
+    proc.on('exit', (exitCode, signal) => {
+      const result = {
+        exitCode: exitCode,
+        signal: signal,
+        data: stripAnsi(buffer),
+      }
+
+      if (exitCode !== 0) {
+        const error = new Error(
+          `command "${command} ${args.join(' ')}" exited ${exitCode}`
+        )
+        Object.assign(error, result)
+        reject(error)
+      }
+      resolve(result)
+    })
+  })
+}
+
+export interface SpawnResult {
+  exitCode: number
+  signal?: number
+  data: string
 }
 
 /**

@@ -88,10 +88,6 @@ yarn dev:test      # watch mode
 yarn test:system
 ```
 
-- Environment variables
-
-  - `NEXUS_PLUGIN_PRISMA_VERSION` – which version of the prisma plugin to install during the plugin part of the test
-
 - Live under `/test/system`
 
 - Almost like E2E but they work with the local package code (whereas E2E would work with an actually published package).

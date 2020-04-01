@@ -17,16 +17,21 @@ const log = rootLogger
 
 export default class Plugin implements Command {
   async parse() {
+    let needsChangeDir = false
     log.info('Scaffolding a nexus plugin')
 
     const pluginName = await askUserPluginName()
     const pluginPackageName = 'nexus-plugin-' + pluginName
-    log.info(`Creating directory ${pluginPackageName}...`)
-    const projectPath = fs.path(pluginPackageName)
-    await fs.dirAsync(projectPath)
-    process.chdir(projectPath)
+    const contents = await fs.listAsync()
+    if (contents !== undefined && contents.length > 0) {
+      log.info(`Creating directory ${pluginPackageName}...`)
+      const projectPath = fs.path(pluginPackageName)
+      await fs.dirAsync(projectPath)
+      process.chdir(projectPath)
+      needsChangeDir = true
+    }
 
-    log.info(`Scaffolding files...`)
+    log.info(`Scaffolding files`)
     await Promise.all([
       fs.writeAsync(
         'README.md',
@@ -75,9 +80,9 @@ export default class Plugin implements Command {
         name: pluginPackageName,
         version: '0.0.0',
         license: 'MIT',
-        main: 'dist/index.js',
+        main: 'dist/runtime.js',
         module: `dist/${pluginPackageName}.esm.js`,
-        typings: 'dist/index.d.ts',
+        description: 'A Nexus framework plugin',
         files: ['dist'],
         scripts: {
           dev: 'tsc --watch',
@@ -85,12 +90,10 @@ export default class Plugin implements Command {
           'build:ts': 'tsc',
           build: 'yarn -s build:ts && yarn -s build:doc',
           test: 'jest',
+          'publish:stable': 'dripip stable',
           'publish:preview': 'dripip preview',
           'publish:pr': 'dripip pr',
           prepack: 'yarn -s build',
-        },
-        peerDependencies: {
-          nexus: '^0.20.0-next.1',
         },
         prettier: {
           semi: false,
@@ -141,11 +144,23 @@ export default class Plugin implements Command {
       fs.writeAsync(
         'src/worktime.ts',
         stripIndent`
-          import { WorkimePlugin } from 'nexus/plugin'
+          import { WorktimePlugin } from 'nexus/plugin'
 
-          export const plugin:WorktimePlugin = project => {
+          export const plugin: WorktimePlugin = project => {
+            project.hooks.dev.onStart = async () => {
+              project.log.info('dev.onStart hook from ${pluginName}')
+            }
+            project.hooks.dev.onBeforeWatcherRestart = async () => {
+              project.log.info('dev.onBeforeWatcherRestart hook from ${pluginName}')
+            }
+            project.hooks.dev.onAfterWatcherRestart = async () => {
+              project.log.info('dev.onAfterWatcherRestart hook from ${pluginName}')
+            }
+            project.hooks.dev.onBeforeWatcherStartOrRestart = async () => {
+              project.log.info('dev.onBeforeWatcherStartOrRestart hook from ${pluginName}')
+            }
             project.hooks.build.onStart = async () => {
-              project.log.info('Hello from ${pluginName}!')
+              project.log.info('build.onStart hook from ${pluginName}')
             }
           }
         `
@@ -175,12 +190,12 @@ export default class Plugin implements Command {
       ),
     ])
 
-    log.info(`Installing dev dependencies...`)
+    log.info(`Installing dev dependencies`)
     await proc.run(
       'yarn add --dev ' +
         [
           '@types/jest',
-          'nexus@0.20.0-next.1',
+          'nexus@next',
           'jest',
           'jest-watch-typeahead',
           'ts-jest',
@@ -192,10 +207,17 @@ export default class Plugin implements Command {
     log.info(`Initializing git repository...`)
     await createGitRepository()
 
-    log.info(stripIndent`
-        Done! To get started:
+    let message: string
+    if (needsChangeDir) {
+      message = `cd ${pluginPackageName} && yarn dev`
+    } else {
+      message = `yarn dev`
+    }
 
-               cd ${pluginPackageName} && yarn dev
+    log.info(stripIndent`
+      Done! To get started:
+
+          ${message}
     `)
   }
 }
@@ -212,11 +234,18 @@ async function askUserPluginName(): Promise<string> {
   // TODO check the npm registry to see if the name is already taken before
   // continuing.
   //
-  const { pluginName }: { pluginName: string } = await prompts({
-    type: 'text',
-    name: 'pluginName',
-    message: 'What is the name of your plugin?',
-  })
+  let pluginName: string
+  if (process.env.CREATE_PLUGIN_CHOICE_NAME) {
+    pluginName = process.env.CREATE_PLUGIN_CHOICE_NAME
+  } else {
+    const response: { pluginName: string } = await prompts({
+      type: 'text',
+      name: 'pluginName',
+      message: 'What is the name of your plugin?',
+    })
+    pluginName = response.pluginName
+  }
+
   const pluginNameNormalized = pluginName.replace(/^nexus-plugin-(.+)/, '$1')
   return pluginNameNormalized
 }

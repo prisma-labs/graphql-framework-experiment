@@ -1,19 +1,57 @@
 import { introspectionQuery } from 'graphql'
-import { setupE2EContext } from '../../src/lib/e2e-testing'
+import { createE2EContext, SpawnResult } from '../../src/lib/e2e-testing'
 import { DEFAULT_BUILD_FOLDER_NAME } from '../../src/lib/layout'
 import { CONVENTIONAL_SCHEMA_FILE_NAME } from '../../src/lib/layout/schema-modules'
 import { rootLogger } from '../../src/lib/nexus-logger'
 
 const log = rootLogger.child('e2e-testing')
 
+interface Options {
+  local: boolean
+}
+
 /**
  * This function is shared between e2e tests and system tests
  */
-export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
-  let res
+export async function e2eTestApp(
+  options: Options,
+  appProject: ReturnType<typeof createE2EContext>
+) {
+  const SERVER_LISTENING_EVENT = 'server listening'
+  const PLUGIN_CREATED_EVENT = 'Done! To get started'
+  let res: SpawnResult
+
+  log.warn('create app')
+
+  if (options.local) {
+    res = await appProject.localNexusCreateApp(
+      {
+        databaseType: 'NO_DATABASE',
+        packageManagerType: 'npm',
+      },
+      (data, proc) => {
+        if (data.includes(SERVER_LISTENING_EVENT)) {
+          proc.kill()
+        }
+      }
+    )
+  } else {
+    res = await appProject.npxNexusCreateApp(
+      {
+        databaseType: 'NO_DATABASE',
+        packageManagerType: 'npm',
+        nexusVersion: process.env.E2E_NEXUS_VERSION ?? 'latest',
+      },
+      (data, proc) => {
+        if (data.includes(SERVER_LISTENING_EVENT)) {
+          proc.kill()
+        }
+      }
+    )
+  }
 
   // Cover addToContext feature
-  await ctx.fs.writeAsync(
+  await appProject.fs.writeAsync(
     `./src/add-to-context/${CONVENTIONAL_SCHEMA_FILE_NAME}`,
     `
         import { schema } from 'nexus'
@@ -40,7 +78,7 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
   )
 
   // Cover backing-types feature
-  await ctx.fs.writeAsync(
+  await appProject.fs.writeAsync(
     `./src/backing-types/${CONVENTIONAL_SCHEMA_FILE_NAME}`,
     `
           import { schema } from 'nexus'
@@ -77,10 +115,10 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
 
   log.warn('run dev & query graphql api')
 
-  await ctx.spawnNexus(['dev'], async (data, proc) => {
-    if (data.includes('server listening')) {
+  await appProject.nexus(['dev'], async (data, proc) => {
+    if (data.includes(SERVER_LISTENING_EVENT)) {
       let result: any
-      result = await ctx.client.request(`{
+      result = await appProject.client.request(`{
           worlds {
             id
             name
@@ -89,33 +127,31 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
         }`)
       expect(result).toMatchSnapshot('query')
 
-      result = await ctx.client.request(introspectionQuery)
+      result = await appProject.client.request(introspectionQuery)
       expect(result).toMatchSnapshot('introspection')
 
-      result = await ctx.client.request(`{ a }`)
+      result = await appProject.client.request(`{ a }`)
       expect(result).toMatchSnapshot('addToContext query')
 
-      result = await ctx.client.request(`{ testBackingType { test } }`)
+      result = await appProject.client.request(`{ testBackingType { test } }`)
       expect(result).toMatchSnapshot('backing type query')
 
       proc.kill()
     }
   })
 
-  // Run build
   log.warn('run build')
 
-  res = await ctx.spawnNexus(['build'], () => {})
+  res = await appProject.nexus(['build'], () => {})
 
   expect(res.data).toContain('success')
-  expect(res.exitCode).toStrictEqual(0)
 
   log.warn('run built app and query graphql api')
 
-  await ctx.spawn(['node', DEFAULT_BUILD_FOLDER_NAME], async (data, proc) => {
-    if (data.includes('server listening')) {
+  await appProject.node([DEFAULT_BUILD_FOLDER_NAME], async (data, proc) => {
+    if (data.includes(SERVER_LISTENING_EVENT)) {
       let result: any
-      result = await ctx.client.request(`{
+      result = await appProject.client.request(`{
           worlds {
             id
             name
@@ -124,13 +160,13 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
         }`)
       expect(result).toMatchSnapshot('built app query')
 
-      result = await ctx.client.request(introspectionQuery)
+      result = await appProject.client.request(introspectionQuery)
       expect(result).toMatchSnapshot('built app introspection')
 
-      result = await ctx.client.request(`{ a }`)
+      result = await appProject.client.request(`{ a }`)
       expect(result).toMatchSnapshot('built app addToContext query')
 
-      result = await ctx.client.request(`{ testBackingType { test } }`)
+      result = await appProject.client.request(`{ testBackingType { test } }`)
       expect(result).toMatchSnapshot('built app backing type query')
 
       proc.kill()
@@ -139,88 +175,60 @@ export async function e2eTestApp(ctx: ReturnType<typeof setupE2EContext>) {
 
   log.warn('run built app from a different CWD than the project root')
 
-  await ctx.spawn(
-    ['node', ctx.fs.path(DEFAULT_BUILD_FOLDER_NAME)],
+  await appProject.node(
+    [appProject.fs.path(DEFAULT_BUILD_FOLDER_NAME)],
     async (data, proc) => {
-      if (data.includes('server listening')) {
+      if (data.includes(SERVER_LISTENING_EVENT)) {
         proc.kill()
       }
     },
     { cwd: '/' }
   )
 
-  // //
-  // // Cover using a plugin
-  // //
+  log.warn('create plugin')
 
-  // log.warn('Check that prisma plugin can integrate')
+  const pluginProject = createE2EContext({
+    ...appProject.settings,
+    dir: appProject.getTmpDir('e2e-plugin'),
+  })
 
-  // // Install a plugin
-  // const nexusPluginPrismaVersion =
-  //   process.env.NEXUS_PLUGIN_PRISMA_VERSION ?? 'latest'
+  if (options.local) {
+    res = await pluginProject.localNexusCreatePlugin({ name: 'foobar' })
+  } else {
+    res = await pluginProject.npxNexusCreatePlugin({
+      name: 'foobar',
+      nexusVersion: process.env.E2E_NEXUS_VERSION ?? 'latest',
+    })
+  }
 
-  // log.warn('Install', { nexusPluginPrismaVersion })
+  expect(res.data).toContain(PLUGIN_CREATED_EVENT)
 
-  // await ctx.spawn([
-  //   'npm',
-  //   'install',
-  //   `nexus-plugin-prisma@${nexusPluginPrismaVersion}`,
-  // ])
+  log.warn('build plugin')
+  res = await pluginProject.spawn(['yarn', 'build'])
 
-  // await ctx.fs.writeAsync(
-  //   './prisma/schema.prisma',
-  //   `
-  //     datasource db {
-  //       provider = "sqlite"
-  //       url      = "file:data.db"
-  //     }
+  log.warn('install plugin into app via file path')
+  await appProject.spawn(['npm', 'install', pluginProject.dir])
 
-  //     generator prisma_client {
-  //       provider = "prisma-client-js"
-  //     }
+  log.warn('with plugin, dev app')
 
-  //     model Foo {
-  //       id   Int    @id @default(autoincrement())
-  //       name String
-  //     }
-  //   `
-  // )
-  // await ctx.fs.writeAsync(
-  //   `./src/prisma-plugin/${CONVENTIONAL_SCHEMA_FILE_NAME}`,
-  //   `
-  //     import { schema } from 'nexus-future'
+  res = await appProject.nexus(['dev'], async (data, proc) => {
+    if (data.includes(SERVER_LISTENING_EVENT)) {
+      await appProject.client.request(`{
+          worlds {
+            id
+            name
+            population
+          }
+        }`)
+      proc.kill()
+    }
+  })
 
-  //     schema.objectType({
-  //       name: 'Foo',
-  //       definition(t) {
-  //         t.model.id()
-  //       }
-  //     })
-  //   `
-  // )
+  expect(res.data).toContain('dev.onStart hook from foobar')
 
-  // await ctx.spawn(['npx', 'prisma2', `geneate`])
+  log.warn('with plugin, build app')
+  res = await appProject.nexus(['build'], () => {})
 
-  // log.warn('run dev with plugin')
-
-  // await ctx.spawnNexus(['dev'], async (data, proc) => {
-  //   if (data.includes('server listening')) {
-  //     proc.kill()
-  //   }
-  // })
-
-  // log.warn('run build with plugin')
-
-  // res = await ctx.spawnNexus(['build'], () => {})
-
-  // expect(res.data).toContain('success')
-  // expect(res.exitCode).toStrictEqual(0)
-
-  // log.warn('run built app with plugin')
-
-  // await ctx.spawn(['node', DEFAULT_BUILD_FOLDER_NAME], async (data, proc) => {
-  //   if (data.includes('server listening')) {
-  //     proc.kill()
-  //   }
-  // })
+  expect(res.data).toContain('build.onStart hook from foobar')
+  expect(res.data).toContain('success')
 }
