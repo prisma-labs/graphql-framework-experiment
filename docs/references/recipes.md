@@ -84,7 +84,7 @@ The reccommended way to run postgres locally is with docker, because it is easy 
 1. Start a postgres server for your app:
 
    ```cli
-   docker run --detach --publish 5432:5432 --name 'postgres' postgres
+   docker run --detach --publish 5432:5432 -e POSTGRES_PASSWORD=postgres --name 'postgres' postgres:10.12
    ```
 
 2. Now you can use a connection URL like:
