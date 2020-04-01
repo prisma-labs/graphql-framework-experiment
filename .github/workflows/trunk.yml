@@ -58,9 +58,7 @@ jobs:
           result=$(cat result.json)
           echo '==> Publish Result'
           jq '.' <<< $result
-          echo ::set-output name=result::$(jq -r '.kind' <<< $result)
       - name: Save publish result
-        if: steps.release.outputs.result == 'did_publish'
         uses: actions/upload-artifact@v1
         with:
           name: published
