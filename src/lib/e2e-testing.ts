@@ -24,7 +24,7 @@ interface CreatePluginOptions {
 }
 
 export function createE2EContext(config?: {
-  localNexusBinPath?: string
+  localNexusPath?: string
   dir?: string
   /**
    * If enabled then:
@@ -37,6 +37,9 @@ export function createE2EContext(config?: {
   rootLogger.settings({ level: 'trace' })
   process.env.LOG_LEVEL = 'trace'
 
+  const localNexusBinPath = config?.localNexusPath
+    ? Path.join(config.localNexusPath, 'dist', 'cli', 'main')
+    : null
   const projectDir = config?.dir ?? getTmpDir('e2e-app')
   const PROJ_NEXUS_BIN_PATH = Path.join(
     projectDir,
@@ -148,13 +151,13 @@ export function createE2EContext(config?: {
       args: string[],
       expectHandler: (data: string, proc: IPty) => void = () => {}
     ) {
-      if (!config?.localNexusBinPath)
+      if (!localNexusBinPath)
         throw new Error(
           'E2E Config Error: Cannot run localNexus because you did not configure config.localNexusBinPath'
         )
       return ptySpawn(
         'node',
-        [config.localNexusBinPath, ...args],
+        [localNexusBinPath, ...args],
         {
           cwd: projectDir,
           env: {
@@ -169,13 +172,13 @@ export function createE2EContext(config?: {
       options: CreateAppOptions,
       expectHandler: (data: string, proc: IPty) => void = () => {}
     ) {
-      if (!config?.localNexusBinPath)
+      if (!localNexusBinPath)
         throw new Error(
           'E2E Config Error: Cannot run localNexusCreateApp because you did not configure config.localNexusBinPath'
         )
       return ptySpawn(
         'node',
-        [config.localNexusBinPath],
+        [localNexusBinPath],
         {
           cwd: projectDir,
           env: {
@@ -192,13 +195,13 @@ export function createE2EContext(config?: {
       options: CreatePluginOptions,
       expectHandler: (data: string, proc: IPty) => void = () => {}
     ) {
-      if (!config?.localNexusBinPath)
+      if (!localNexusBinPath)
         throw new Error(
           'E2E Config Error: Cannot run localNexusCreatePlugin because you did not configure config.localNexusBinPath'
         )
       return ptySpawn(
         'node',
-        [config.localNexusBinPath, 'create', 'plugin'],
+        [localNexusBinPath, 'create', 'plugin'],
         {
           cwd: projectDir,
           env: {
