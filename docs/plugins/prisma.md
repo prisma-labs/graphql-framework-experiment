@@ -11,7 +11,7 @@ Prisma is a next-generation developer-centric toolkit focused on making the data
    Nexus schema component [GraphQL type builders](/guides/schema#graphql-type-builders) are augmented with `.model` and `.crud` methods. These make it easy for you to project your Prisma models and expose operations against them in your GraphQL API. Resolvers are dynamically created for you removing the need for traditional ORMs/query builders like TypeORM, Sequelize, or Knex. Out-of-box features include pagination, filtering, and ordering. And when you do need to drop down to custom resolvers a [`Prisma Client`](https://github.com/prisma/prisma-client-js) instance on `context` is ready to go.
 
 1. **Testtime Integration**  
-   todo
+   Nexus testing component is augmented with an instance of the [`Prisma Client`](https://github.com/prisma/prisma-client-js), to help you easily seed your database for your tests.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -29,7 +29,7 @@ npm install nexus-plugin-prisma
 
 ## Getting started
 
-There are two ways you can start with Prisma. Either from scratch, or using an existing database.
+There are two ways you can start with the Prisma plugin. Either from scratch, or using an existing database.
 
 ### From scratch
 
@@ -53,6 +53,8 @@ model User {
 We recommend you use Postgres but MySQL and SQLite are also supported.
 
 To add your datasource, simply copy/paste one of the block below at the top of your `schema.prisma` file
+
+> Note: You can also pass the database credentials via a `.env` file. [Read more about it here](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-schema/prisma-schema-file#using-environment-variables)
 
 **Using Postgres**
 
@@ -105,11 +107,13 @@ You're ready to start working!
 
 ### From an existing database
 
-When starting from an existing database, you should use [Prisma's instrospection](https://prisma2.netlify.com/reference/tools-and-interfaces/introspection) feature.
+When starting from an existing database, you should use [Prisma's instrospection](https://www.prisma.io/docs/reference/tools-and-interfaces/introspection) feature.
 
 **1. Create a `schema.prisma` file**
 
-Add your database credentials to your `schema.prisma` file so that Prisma can introspect your database schema.
+Create a `schema.prisma` file and add your database credentials in it so that Prisma can introspect your database schema.
+
+> Note: You can also pass the database credentials via a `.env` file. [Read more about it here](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-schema/prisma-schema-file#using-environment-variables)
 
 **Using Postgres**
 
@@ -670,37 +674,47 @@ schema.mutationType({
 })
 ```
 
-## Prisma Features
+## Worktime Integration
 
-### Generators
+### `nexus dev`
 
-todo
+When running `nexus dev`, `nexus-plugin-prisma` will make sure your [`Prisma Client`](https://github.com/prisma/prisma-client-js) is up-to-date with your Prisma Schema by running your Prisma generators for you.
 
-### Prisma Client
+Updates to your `schema.prisma` file will also be detected and will give you hints about the next steps to properly migrate your database.
 
-todo
+### `nexus build`
 
-## Settings
-
-todo
+When running `nexus build`, `nexus-plugin-prisma` will make sure your [`Prisma Client`](https://github.com/prisma/prisma-client-js) is up-to-date with your Prisma Schema, thus making sure your application is safely accessing your database.
 
 ## Testtime Integration
 
-todo
+`nexus-plugin-prisma` augments the testing component of Nexus with an instance of the [`Prisma Client`](https://github.com/prisma/prisma-client-js), to help you easily seed your database for your tests.
 
-## Worktime Integration
-
-### `dev`
-
-todo
-
-### `build`
-
-todo
-
-todo
+To learn more about its usage, [head to the Testing section](/guides/testing?id=with-a-database).
 
 ## Runtime Integration
+
+### Access to the Prisma Client
+
+At runtime, `nexus-plugin-prisma` will add a `db` property containing an instance of the [`Prisma Client`](https://github.com/prisma/prisma-client-js) to your GraphQL resolvers context.
+
+##### Example
+
+```ts
+import { schema } from 'nexus'
+
+schema.objectType({
+  name: 'Query',
+  definition(t) {
+    t.list.field('users', {
+      type: 'User',
+      resolve(parent, args, ctx) {
+        return ctx.db.user.findMany() // <== `ctx.db` is your Prisma Client instance
+      },
+    })
+  },
+})
+```
 
 ### `t.model`
 
