@@ -13,7 +13,7 @@
 
 - Nexus CLI has a command to create new Nexus-plugin projects
   ```cli
-  npx nexus@0.20.0-next.1 create plugin
+  npx nexus@next create plugin
   ```
 - To write a plugin you create any of `testtime` `runtime` and `worktime` modules and import the respective plugin types to type your function. In each module export your plugin as `plugin`.
 

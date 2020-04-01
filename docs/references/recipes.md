@@ -68,7 +68,7 @@
 1. Scaffold Your plugin project
 
    ```cli
-   npx nexus@0.20.0-next.1 create plugin
+   npx nexus@next create plugin
    ```
 
 2. Publish it

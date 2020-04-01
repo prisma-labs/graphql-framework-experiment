@@ -13,7 +13,7 @@
 <br>
 
 ```cli
-npx nexus@0.20.0-next.1
+npx nexus@0next
 ```
 
 <div id="TerminalContainer">

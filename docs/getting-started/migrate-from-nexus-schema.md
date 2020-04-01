@@ -2,7 +2,7 @@ Versions of the `nexus` package `0.20` and below were what is now known as `@nex
 
 #### Dependencies
 
-1. Remove `nexus@0.12` and add `nexus@0.20` in its place (`^0.20.0-next.1`). There is a `next` dist tag if you want every change as it lands on trunk (aka. master).
+1. Remove `nexus@0.12` and add `nexus@next` in its place.
 1. Remove dependency `graphql` as `nexus` bundles it.
 
 ```diff
@@ -10,7 +10,7 @@ Versions of the `nexus` package `0.20` and below were what is now known as `@nex
    "dependencies": {
 -     "graphql": "...",
 -     "nexus": "0.12.0",
-+     "nexus": "^0.20.0-next.1"
++     "nexus": "next"
    }
 ```
 
