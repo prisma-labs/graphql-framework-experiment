@@ -84,7 +84,7 @@ it('makes sure a user was registered', async () => {
 
 ## With a Database
 
-Integration testing with a databsae can add a lot of complexity to your test suite. But Nexus is in a good position to help since it knows about both test and database domains of your app.
+Integration testing with a database can add a lot of complexity to your test suite. But Nexus is in a good position to help since it knows about both test and database domains of your app.
 
 Integration between Nexus' test and database systems is young and still missing many features. Below we will cover some utilities and patterns that you can copy into your project meanwhile.
 
