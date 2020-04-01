@@ -77,7 +77,7 @@ export async function runBootstrapper(
 ): Promise<void> {
   log.trace('start bootstrapper')
 
-  log.trace('checking folder is in a clean state...')
+  log.trace('checking folder is in a clean state')
   await assertIsCleanSlate()
 
   // For testing
@@ -131,12 +131,14 @@ export async function runBootstrapper(
   // github stars, and so on.
   const askDatabase = databaseTypeEnvVar ?? (await askForDatabase())
 
-  log.info('Scaffolding base project files...')
+  log.info('Scaffolding base project files')
+
   await scaffoldBaseFiles(layout, options)
 
-  log.info(`Installing nexus (this will take around ~15 seconds)`, {
-    version: nexusVersion,
+  log.info(`Installing dependencies`, {
+    nexusVersion,
   })
+
   await layout.packageManager.addDeps([`nexus@${nexusVersion}`], {
     require: true,
   })
@@ -145,12 +147,10 @@ export async function runBootstrapper(
   // install additional deps
   //
 
-  const devDeps = ['prettier', 'pretty-quick', 'husky']
+  const devDeps = ['prettier']
   const addDevDepsConfig: PackageManager.AddDepsOptions = {}
   const deps = []
   const addDepsConfig: PackageManager.AddDepsOptions = {}
-
-  log.info('Installing additional deps... (this will take around ~30 seconds)')
 
   if (askDatabase.database) {
     deps.push(`nexus-plugin-prisma@${getPrismaPluginVersion()}`)
@@ -235,7 +235,7 @@ export async function runBootstrapper(
     // terminate this dev session, they will restart it typically with e.g. `$
     // yarn dev`. This global-nexus-process-wrapping-local-nexus-process
     // is unique to bootstrapping situations.
-    log.info('Entering dev mode ...')
+    log.info('Starting dev mode')
 
     await layout.packageManager
       .runScript('dev', {
@@ -349,7 +349,7 @@ async function askForPackageManager(): Promise<
   const result: Result = await prompts({
     name: 'packageManagerType',
     type: 'select',
-    message: 'Please select which package manager you would like to use',
+    message: 'What is your preferred package manager?',
     choices,
   })
 

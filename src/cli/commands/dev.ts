@@ -49,7 +49,7 @@ export class Dev implements Command {
             change.type === 'unlink' ||
             change.type === 'unlinkDir'
           ) {
-            log.debug('recalcLayout')
+            log.trace('analyzing project layout')
             const layout = await Layout.create()
             return {
               environmentAdditions: Layout.saveDataForChildProcess(layout),
