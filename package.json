@@ -9,6 +9,7 @@
   "main": "dist/index.js",
   "files": [
     "/dist",
+    "/scripts",
     "README.md",
     "yarn.lock",
     "testing.d.ts",
@@ -86,6 +87,7 @@
     "build": "yarn -s clean && tsc -b",
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
     "postpublish": "yarn -s clean",
+    "postinstall": "node scripts/postinstall",
     "prepublishOnly": "yarn -s build",
     "test": "jest --verbose --testTimeout 180000",
     "test:integration": "jest --verbose --testRegex '.+/integration/.+\\.spec\\.ts$'",
