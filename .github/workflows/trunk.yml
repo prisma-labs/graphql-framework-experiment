@@ -50,26 +50,17 @@ jobs:
       - name: Install deps
         run: yarn --frozen-lockfile
       - name: Make release
+        id: release
+        env:
+          NPM_TOKEN: ${{secrets.NPM_TOKEN}}
         run: |
           yarn -s dripip preview --json > result.json
           result=$(cat result.json)
           echo '==> Publish Result'
           jq '.' <<< $result
-          if [ "$(jq -r '.kind' <<< $result)" == 'did_not_publish' ]; then
-            echo '==> Stopping workflow because no release was made for this commit'
-            # https://developer.github.com/v3/actions/workflow_runs/#cancel-a-workflow-run
-            curl \
-              --fail \
-              --silent \
-              --show-error \
-              --request POST \
-              --url "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/cancel" \
-              --header "Content-Type: application/json" \
-              --header "Authorization: token ${{ github.token }}"
-            fi
-        env:
-          NPM_TOKEN: ${{secrets.NPM_TOKEN}}
+          echo ::set-output name=result::$(jq -r '.kind' <<< $result)
       - name: Save publish result
+        if: steps.release.outputs.result == 'did_publish'
         uses: actions/upload-artifact@v1
         with:
           name: published
@@ -86,12 +77,18 @@ jobs:
         uses: actions/download-artifact@v1
         with:
           name: published
-      - run: cat published/result.json | jq -r '.version'
+      - name: Analyze publish result
+        id: release
+        run: |
+          cat published/result.json | jq -r '.version'
+          echo ::set-output name=result::$(jq -r '.kind' <<< $result)
       - name: Use Node.js ${{ matrix.node-version }}
+        if: steps.release.outputs.result == 'did_publish'
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
       - name: Install deps
+        if: steps.release.outputs.result == 'did_publish'
         run: yarn --frozen-lockfile
       - name: Setup global git user
         run: |
@@ -99,12 +96,9 @@ jobs:
           git config --global user.name prisma-labs
           git config --global user.email labs@prisma.io
       - name: e2e test
+        if: steps.release.outputs.result == 'did_publish'
         env:
           LOG_LEVEL: trace
         run: |
           export E2E_NEXUS_VERSION=$(cat published/result.json | jq -r '.version')
-          if [ $E2E_NEXUS_VERSION == '' ]; then
-            echo "Failed to extract version"
-            exit 1
-          fi
           yarn test:e2e
