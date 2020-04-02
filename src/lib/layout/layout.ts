@@ -8,7 +8,7 @@ import {
   findFile,
   stripExt,
 } from '../../lib/fs'
-import { START_MODULE_NAME } from '../../runtime/start'
+import { START_MODULE_NAME } from '../../runtime/start/start-module'
 import { rootLogger } from '../nexus-logger'
 import * as PackageManager from '../package-manager'
 import * as Schema from './schema-modules'
@@ -255,20 +255,6 @@ export function findAppModule(opts?: { cwd?: string }): string | null {
  */
 export function findProjectDir(): string {
   return process.cwd()
-}
-
-/**
- * Build up what the import path will be for a module in its transpiled context.
- */
-export function relativeTranspiledImportPath(
-  layout: Layout,
-  modulePath: string
-): string {
-  return './' + stripExt(calcSourceRootToModule(layout, modulePath))
-}
-
-function calcSourceRootToModule(layout: Layout, modulePath: string) {
-  return Path.relative(layout.sourceRoot, modulePath)
 }
 
 /**

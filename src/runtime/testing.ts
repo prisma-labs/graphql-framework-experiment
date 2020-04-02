@@ -3,7 +3,9 @@ import * as Lo from 'lodash'
 import { GraphQLClient } from '../lib/graphql-client'
 import * as Layout from '../lib/layout'
 import * as Plugin from '../lib/plugin'
-import * as app from './index'
+import { getInstalledRuntimePluginNames } from '../lib/plugin'
+import app from './index'
+import { createDevAppRunner } from './start'
 
 type AppClient = {
   query: GraphQLClient['request']
@@ -62,43 +64,30 @@ export type TestContext = nexusFutureTestContextRoot
  * })
  * ```
  */
+
 export async function createTestContext(): Promise<TestContext> {
   // Guarantee that development mode features are on
   process.env.NEXUS_STAGE = 'dev'
 
-  const port = await getPort({ port: getPort.makeRange(4000, 6000) })
-  const apiUrl = `http://localhost:${port}/graphql`
+  const layout = await Layout.create()
+  const pluginNames = await getInstalledRuntimePluginNames()
+  const randomPort = await getPort({ port: getPort.makeRange(4000, 6000) })
+  const appRunner = await createDevAppRunner(layout, pluginNames, {
+    server: { port: randomPort, startMessage: () => {}, playground: false },
+  })
 
-  const oldServerStart = app.server.start
-
-  app.server.start = async () => {
-    const appModule = await Layout.findAppModule()
-
-    if (appModule) {
-      require(appModule)
-    }
-
-    app.settings.change({
-      server: {
-        port,
-        playground: false,
-        startMessage: () => '',
-      },
-    })
-
-    if ((app as any).__state.isWasServerStartCalled === false) {
-      await oldServerStart()
-    } else {
-      return Promise.resolve()
-    }
+  const server = {
+    start: appRunner.start,
+    stop: appRunner.stop,
   }
 
+  const apiUrl = `http://localhost:${appRunner.port}/graphql`
   const appClient = createAppClient(apiUrl)
   const testContextCore: TestContextCore = {
     app: {
       query: appClient.query,
       server: {
-        start: app.server.start,
+        start: server.start,
         stop: app.server.stop,
       },
     },

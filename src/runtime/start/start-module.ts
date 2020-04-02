@@ -1,10 +1,11 @@
 import { stripIndent } from 'common-tags'
 import { EOL } from 'os'
+import * as Path from 'path'
 import { EmitAndSemanticDiagnosticsBuilderProgram } from 'typescript'
-import { stripExt } from '../lib/fs'
-import * as Layout from '../lib/layout'
-import { rootLogger } from '../lib/nexus-logger'
-import { transpileModule } from '../lib/tsc'
+import { stripExt } from '../../lib/fs'
+import * as Layout from '../../lib/layout'
+import { rootLogger } from '../../lib/nexus-logger'
+import { transpileModule } from '../../lib/tsc'
 
 const log = rootLogger.child('start-module')
 
@@ -14,9 +15,9 @@ export const START_MODULE_HEADER = 'GENERATED NEXUS START MODULE'
 type StartModuleConfig = {
   internalStage: 'build' | 'dev'
   layout: Layout.Layout
+  packageJsonPath?: string
   disableArtifactGeneration?: boolean
-  relativePackageJsonPath?: string
-  inlineSchemaModuleImports?: boolean
+  absoluteSchemaModuleImports?: boolean
   pluginNames: string[]
 }
 
@@ -44,49 +45,54 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   `
 
   // todo test coverage for this feature
-  content += EOL + EOL + EOL
-  content += stripIndent`
-    // Last resort error handling
-    process.once('uncaughtException', error => {
-      app.log.fatal('uncaughtException', { error: error })
-      process.exit(1)
-    })
+  // content += EOL + EOL + EOL
+  // content += stripIndent`
+  //   // Last resort error handling
+  //   process.once('uncaughtException', error => {
+  //     app.log.fatal('uncaughtException', { error: error })
+  //     process.exit(1)
+  //   })
 
-    process.once('unhandledRejection', error => {
-      app.log.fatal('unhandledRejection', { error: error })
-      process.exit(1)
-    })
-  `
+  //   process.once('unhandledRejection', error => {
+  //     app.log.fatal('unhandledRejection', { error: error })
+  //     process.exit(1)
+  //   })
+  // `
 
-  if (config.relativePackageJsonPath) {
+  if (config.packageJsonPath) {
     content += EOL + EOL + EOL
     content += stripIndent`
       // package.json is needed for plugin auto-import system.
       // On the Zeit Now platform, builds and dev copy source into
       // new directory. Copying follows paths found in source. Give one here
       // to package.json to make sure Zeit Now brings it along.
-      require('${config.relativePackageJsonPath}')
+      require('${Path.relative(
+        config.layout.buildOutputRelative,
+        config.packageJsonPath
+      )}')
     `
   }
 
-  if (config.inlineSchemaModuleImports) {
-    // This MUST come after nexus package has been imported for its side-effects
-    const staticImports = Layout.schema.printStaticImports(config.layout)
-    if (staticImports !== '') {
-      content += EOL + EOL + EOL
-      content += stripIndent`
+  // This MUST come after nexus package has been imported for its side-effects
+  const staticImports = printStaticImports(config.layout, {
+    absolutePaths: config.absoluteSchemaModuleImports,
+  })
+  if (staticImports !== '') {
+    content += EOL + EOL + EOL
+    content += stripIndent`
         // Import the user's schema modules
         ${staticImports}
       `
-    }
   }
 
   if (config.layout.app.exists) {
     content += EOL + EOL + EOL
     content += stripIndent`
       // Import the user's app module
-      require("./${stripExt(
-        config.layout.sourceRelative(config.layout.app.path)
+      require("${stripExt(
+        config.absoluteSchemaModuleImports
+          ? config.layout.app.path
+          : './' + config.layout.sourceRelative(config.layout.app.path)
       )}")
     `
   }
@@ -134,4 +140,42 @@ export function prepareStartModule(
 ): string {
   log.trace('Transpiling start module')
   return transpileModule(startModule, tsBuilder.getCompilerOptions())
+}
+
+/**
+ * Build up static import code for all schema modules in the project. The static
+ * imports are relative so that they can be calculated based on source layout
+ * but used in build layout.
+ *
+ * Note that it is assumed the module these imports will run in will be located
+ * in the source/build root.
+ */
+export function printStaticImports(
+  layout: Layout.Layout,
+  opts?: { absolutePaths?: boolean }
+): string {
+  return layout.schemaModules.reduce((script, modulePath) => {
+    const path = opts?.absolutePaths
+      ? stripExt(modulePath)
+      : relativeTranspiledImportPath(layout, modulePath)
+    return `${script}\n${printSideEffectsImport(path)}`
+  }, '')
+}
+
+function printSideEffectsImport(modulePath: string): string {
+  return `import '${modulePath}'`
+}
+
+/**
+ * Build up what the import path will be for a module in its transpiled context.
+ */
+export function relativeTranspiledImportPath(
+  layout: Layout.Layout,
+  modulePath: string
+): string {
+  return './' + stripExt(calcSourceRootToModule(layout, modulePath))
+}
+
+function calcSourceRootToModule(layout: Layout.Layout, modulePath: string) {
+  return Path.relative(layout.sourceRoot, modulePath)
 }

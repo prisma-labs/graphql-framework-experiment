@@ -12,7 +12,7 @@ import {
   createStartModuleContent,
   prepareStartModule,
   START_MODULE_NAME,
-} from '../../runtime/start'
+} from '../../runtime/start/start-module'
 import { extractContextTypesToTypeGenFile } from '../add-to-context-extractor/add-to-context-extractor'
 import { rootLogger } from '../nexus-logger'
 import { loadInstalledWorktimePlugins } from '../plugin'
@@ -84,7 +84,6 @@ export async function buildNexusApp(settings: BuildSettings) {
         pluginNames: installedRuntimePluginNames,
         internalStage: 'build',
         layout: layout,
-        inlineSchemaModuleImports: true,
       })
     ),
   })
@@ -111,10 +110,10 @@ export async function buildNexusApp(settings: BuildSettings) {
 
   compile(tsBuilder, layout, { removePreviousBuild: true })
 
-  const packageJsonPath = layout.projectPath('package.json')
+  const maybePackageJsonPath = layout.projectPath('package.json')
 
-  const relativePackageJsonPath = FS.exists(packageJsonPath)
-    ? Path.relative(layout.buildOutputRelative, packageJsonPath)
+  const packageJsonPath = FS.exists(maybePackageJsonPath)
+    ? maybePackageJsonPath
     : undefined
 
   await writeStartModule({
@@ -125,9 +124,8 @@ export async function buildNexusApp(settings: BuildSettings) {
         internalStage: 'build',
         layout: layout,
         pluginNames: installedRuntimePluginNames,
-        relativePackageJsonPath: relativePackageJsonPath,
+        packageJsonPath,
         disableArtifactGeneration: true,
-        inlineSchemaModuleImports: true,
       })
     ),
   })
