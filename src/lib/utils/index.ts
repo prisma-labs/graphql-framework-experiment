@@ -179,3 +179,16 @@ export function areWorkerThreadsAvailable(): boolean {
     throw error
   }
 }
+
+// todo extends Json
+export function repalceInObject<C extends object>(
+  dynamicPattern: string,
+  replacement: string,
+  content: C
+): C {
+  return JSON.parse(
+    JSON.stringify(content)
+      .split(dynamicPattern)
+      .join(replacement)
+  )
+}

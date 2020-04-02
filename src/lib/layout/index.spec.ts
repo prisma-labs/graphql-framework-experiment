@@ -11,10 +11,10 @@ const mockExit = jest
   .mockImplementation((() => {}) as any)
 
 import * as Layout from '.'
-import { stripDynamics } from '../../../test/__helpers/utils'
 import { rootLogger } from '../../lib/nexus-logger'
 import { MemoryFS, writeToFS } from '../../lib/testing-utils'
 import * as TestContext from '../test-context'
+import { repalceInObject } from '../utils'
 
 /**
  * Disable logger timeDiff and color to allow snapshot matching
@@ -42,7 +42,7 @@ const layoutContext = TestContext.create(
       async scan() {
         const tmpDir = opts.tmpDir()
         const data = await Layout.create({ cwd: tmpDir })
-        return stripDynamics(tmpDir, data.data)
+        return repalceInObject(tmpDir, '__DYNAMIC__', data.data)
       },
     }
   }
