@@ -92,8 +92,7 @@ function validateNow(layout: Layout): ValidatorResult {
   // Make sure there's a now.json file
   if (!maybeNowJsonPath) {
     log.trace('creating now.json because none exists yet')
-    const packageJson = fs.read('package.json', 'json')
-    const projectName = packageJson?.name ?? 'now_rename_me'
+    const projectName = layout.packageJson?.content.name ?? 'now_rename_me'
 
     const nowJsonContent = stripIndent`
       {

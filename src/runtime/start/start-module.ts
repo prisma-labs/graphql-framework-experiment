@@ -15,10 +15,9 @@ export const START_MODULE_HEADER = 'GENERATED NEXUS START MODULE'
 type StartModuleConfig = {
   internalStage: 'build' | 'dev'
   layout: Layout.Layout
-  packageJsonPath?: string
   disableArtifactGeneration?: boolean
   absoluteSchemaModuleImports?: boolean
-  pluginNames: string[]
+  runtimePluginNames: string[]
 }
 
 export function createStartModuleContent(config: StartModuleConfig): string {
@@ -45,21 +44,21 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   `
 
   // todo test coverage for this feature
-  // content += EOL + EOL + EOL
-  // content += stripIndent`
-  //   // Last resort error handling
-  //   process.once('uncaughtException', error => {
-  //     app.log.fatal('uncaughtException', { error: error })
-  //     process.exit(1)
-  //   })
+  content += EOL + EOL + EOL
+  content += stripIndent`
+    // Last resort error handling
+    process.once('uncaughtException', error => {
+      app.log.fatal('uncaughtException', { error: error })
+      process.exit(1)
+    })
 
-  //   process.once('unhandledRejection', error => {
-  //     app.log.fatal('unhandledRejection', { error: error })
-  //     process.exit(1)
-  //   })
-  // `
+    process.once('unhandledRejection', error => {
+      app.log.fatal('unhandledRejection', { error: error })
+      process.exit(1)
+    })
+  `
 
-  if (config.packageJsonPath) {
+  if (config.layout.packageJson) {
     content += EOL + EOL + EOL
     content += stripIndent`
       // package.json is needed for plugin auto-import system.
@@ -68,7 +67,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
       // to package.json to make sure Zeit Now brings it along.
       require('${Path.relative(
         config.layout.buildOutputRelative,
-        config.packageJsonPath
+        config.layout.packageJson.dir
       )}')
     `
   }
@@ -97,8 +96,8 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     `
   }
 
-  if (config.pluginNames.length) {
-    const aliasAndPluginNames = config.pluginNames.map(pluginName => {
+  if (config.runtimePluginNames.length) {
+    const aliasAndPluginNames = config.runtimePluginNames.map(pluginName => {
       // TODO nice camelcase identifier
       const namedImportAlias = `plugin_${Math.random()
         .toString()

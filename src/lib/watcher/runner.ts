@@ -9,7 +9,10 @@ import { createDevAppRunner } from '../../runtime/start'
 import { runAddToContextExtractorAsWorkerIfPossible } from '../add-to-context-extractor/add-to-context-extractor'
 import * as Layout from '../layout'
 import { rootLogger } from '../nexus-logger'
-import { getInstalledRuntimePluginNames } from '../plugin'
+import {
+  getInstalledRuntimePluginNames,
+  loadInstalledWorktimePlugins,
+} from '../plugin'
 import cfgFactory from './cfg'
 import hook from './hook'
 import * as IPC from './ipc'
@@ -120,8 +123,8 @@ async function main() {
     IPC.client.senders.moduleImported({ filePath })
   })
 
-  const pluginNames = await getInstalledRuntimePluginNames()
-  const appRunner = await createDevAppRunner(layout, pluginNames)
+  const runtimePluginNames = await getInstalledRuntimePluginNames(layout)
+  const appRunner = createDevAppRunner(layout, runtimePluginNames)
 
   return appRunner.start()
 }

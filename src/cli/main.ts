@@ -37,7 +37,7 @@ async function guardNotGlobalCLIWithLocalProject(
   packageManager: PackageManager.PackageManager
 ): Promise<void> {
   // TODO data is attainable from layout scan calculated later on... not optimal to call this twice...
-  const projectType = await Layout.scanProjectType()
+  const projectType = await Layout.scanProjectType({ cwd: process.cwd() })
 
   if (
     projectType.type === 'NEXUS_project' &&
@@ -68,7 +68,9 @@ async function guardNotGlobalCLIWithLocalProject(
  * Main function
  */
 async function main(): Promise<number> {
-  const packageManager = await PackageManager.create()
+  const packageManager = await PackageManager.create(undefined, {
+    projectRoot: process.cwd(),
+  })
   await guardNotGlobalCLIWithLocalProject(packageManager)
 
   // create a new CLI with our subcommands

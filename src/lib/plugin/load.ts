@@ -33,7 +33,7 @@ function createBaseLens(pluginName: string): Lens {
 export async function loadInstalledWorktimePlugins(
   layout: Layout.Layout
 ): Promise<{ name: string; hooks: WorktimeHooks }[]> {
-  const plugins = await importAllPlugins()
+  const plugins = await importAllPlugins(layout)
   const worktimePlugins = plugins.filter(plugin => plugin.worktime)
   const contributions = worktimePlugins.map(plugin => {
     return loadWorktimePlugin(layout, plugin)
@@ -43,8 +43,8 @@ export async function loadInstalledWorktimePlugins(
 }
 
 //prettier-ignore
-export async function loadInstalledTesttimePlugins(): Promise<TesttimeContributions[]> {
-  const plugins = await importAllPlugins()
+export async function loadInstalledTesttimePlugins(layout: Layout.Layout): Promise<TesttimeContributions[]> {
+  const plugins = await importAllPlugins(layout)
   return plugins.filter(plugin => plugin.testtime).map(loadTesttimePlugin)
 }
 

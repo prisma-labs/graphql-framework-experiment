@@ -6,7 +6,8 @@
  * module provides utilities for working in code with the package managers in an
  * agnostic way.
  */
-import * as fsHelpers from './fs'
+import * as fs from 'fs-jetpack'
+import * as path from 'path'
 import * as proc from './process'
 import { OmitFirstArg } from './utils'
 
@@ -19,16 +20,16 @@ export type PackageManagerType = 'yarn' | 'npm'
  * Detect if the project is yarn or npm based. Detection is based on the kind of
  * lock file present. If nothing is found, npm is assumed.
  */
-export async function detectProjectPackageManager(opts?: {
-  cwd?: string
+export async function detectProjectPackageManager(opts: {
+  projectRoot: string
 }): Promise<PackageManagerType> {
   const packageManagerFound = await Promise.race([
-    fsHelpers
-      .findFileRecurisvelyUpward(YARN_LOCK_FILE_NAME, opts)
-      .then(maybeFilePath => (maybeFilePath !== null ? 'yarn' : null)),
-    fsHelpers
-      .findFileRecurisvelyUpward(NPM_LOCK_FILE_NAME, opts)
-      .then(maybeFilePath => (maybeFilePath !== null ? 'npm' : null)),
+    fs
+      .existsAsync(path.join(opts.projectRoot, YARN_LOCK_FILE_NAME))
+      .then(result => (result === 'file' ? 'yarn' : null)),
+    fs
+      .existsAsync(path.join(opts.projectRoot, NPM_LOCK_FILE_NAME))
+      .then(result => (result === 'file' ? 'npm' : null)),
   ])
 
   return packageManagerFound === null ? 'npm' : packageManagerFound
@@ -142,14 +143,16 @@ export type PackageManager = {
  * running IO to detect the project's package manager.
  */
 export function create<T extends undefined | PackageManagerType>(
-  givenPackageManagerType?: T
+  givenPackageManagerType: T | undefined,
+  opts: { projectRoot: string }
 ): T extends undefined ? Promise<PackageManager> : PackageManager
 
 export function create(
-  givenPackageManagerType?: undefined | PackageManagerType
+  givenPackageManagerType: undefined | PackageManagerType,
+  opts: { projectRoot: string }
 ): Promise<PackageManager> | PackageManager {
   return givenPackageManagerType === undefined
-    ? detectProjectPackageManager().then(createDo)
+    ? detectProjectPackageManager(opts).then(createDo)
     : createDo(givenPackageManagerType)
 }
 

@@ -58,10 +58,9 @@ export async function buildNexusApp(settings: BuildSettings) {
       process.exit(1)
     }
   }
+  await findOrScaffoldTsConfig(layout)
 
   const plugins = await loadInstalledWorktimePlugins(layout)
-
-  await findOrScaffoldTsConfig(layout)
 
   for (const p of plugins) {
     await p.hooks.build.onStart?.()
@@ -70,7 +69,9 @@ export async function buildNexusApp(settings: BuildSettings) {
   let tsBuilder
   tsBuilder = createTSProgram(layout, { withCache: true })
 
-  const installedRuntimePluginNames = await getInstalledRuntimePluginNames()
+  const installedRuntimePluginNames = await getInstalledRuntimePluginNames(
+    layout
+  )
 
   log.trace('Compiling a development build for typegen')
 
@@ -81,7 +82,7 @@ export async function buildNexusApp(settings: BuildSettings) {
     startModule: prepareStartModule(
       tsBuilder,
       createStartModuleContent({
-        pluginNames: installedRuntimePluginNames,
+        runtimePluginNames: installedRuntimePluginNames,
         internalStage: 'build',
         layout: layout,
       })
@@ -110,12 +111,6 @@ export async function buildNexusApp(settings: BuildSettings) {
 
   compile(tsBuilder, layout, { removePreviousBuild: true })
 
-  const maybePackageJsonPath = layout.projectPath('package.json')
-
-  const packageJsonPath = FS.exists(maybePackageJsonPath)
-    ? maybePackageJsonPath
-    : undefined
-
   await writeStartModule({
     layout: layout,
     startModule: prepareStartModule(
@@ -123,8 +118,7 @@ export async function buildNexusApp(settings: BuildSettings) {
       createStartModuleContent({
         internalStage: 'build',
         layout: layout,
-        pluginNames: installedRuntimePluginNames,
-        packageJsonPath,
+        runtimePluginNames: installedRuntimePluginNames,
         disableArtifactGeneration: true,
       })
     ),

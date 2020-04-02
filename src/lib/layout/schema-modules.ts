@@ -22,8 +22,8 @@ export function emptyExceptionMessage() {
  * Find all modules called schema modules or directories having the trigger
  * name. This does not grab the child modules of the directory instances!
  */
-export function findDirOrModules(opts?: { cwd?: string }): string[] {
-  const localFS = fs.cwd(opts?.cwd ?? process.cwd())
+export function findDirOrModules(opts: { projectRoot: string }): string[] {
+  const localFS = fs.cwd(opts.projectRoot)
   // TODO async
   const files = localFS.find({
     files: true,

@@ -120,6 +120,12 @@ export async function runBootstrapper(
       isAnonymous: false,
     },
     packageManagerType: packageManagerType,
+    packageJson: {
+      // todo
+      path: fs.path('package.json'),
+      dir: fs.path(),
+      content: {},
+    },
   })
 
   const options: InternalConfig = {

@@ -70,7 +70,7 @@ export async function createTestContext(): Promise<TestContext> {
   process.env.NEXUS_STAGE = 'dev'
 
   const layout = await Layout.create()
-  const pluginNames = await getInstalledRuntimePluginNames()
+  const pluginNames = await getInstalledRuntimePluginNames(layout)
   const randomPort = await getPort({ port: getPort.makeRange(4000, 6000) })
   const appRunner = await createDevAppRunner(layout, pluginNames, {
     server: { port: randomPort, startMessage: () => {}, playground: false },
@@ -93,7 +93,9 @@ export async function createTestContext(): Promise<TestContext> {
     },
   }
 
-  const testContextContributions = await Plugin.loadInstalledTesttimePlugins()
+  const testContextContributions = await Plugin.loadInstalledTesttimePlugins(
+    layout
+  )
 
   for (const testContextContribution of testContextContributions) {
     Lo.merge(testContextCore, testContextContribution)

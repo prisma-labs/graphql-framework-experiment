@@ -6,7 +6,7 @@ import { createStartModuleContent } from './start-module'
 
 export function createDevAppRunner(
   layout: Layout.Layout,
-  pluginNames: string[],
+  runtimePluginNames: string[],
   opts?: {
     server?: Server.ExtraSettingsInput
   }
@@ -19,7 +19,7 @@ export function createDevAppRunner(
     internalStage: 'dev',
     layout,
     absoluteSchemaModuleImports: true,
-    pluginNames,
+    runtimePluginNames,
   })
   const transpiledStartModule = transpileModule(startModule, {
     target: ts.ScriptTarget.ES5,
