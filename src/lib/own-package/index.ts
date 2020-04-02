@@ -1,7 +1,3 @@
-interface PackageJson {
-  name: string
-  version: string
-  dependencies?: Record<string, string>
-}
+import { PackageJson } from 'type-fest'
 
 export const ownPackage: PackageJson = require('../../../package.json')

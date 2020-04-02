@@ -31,6 +31,7 @@ let message = `
 │                                                             │
 │   ${gray}This post-install notice will be removed on July 1 2020${reset}   │
 └─────────────────────────────────────────────────────────────┘
+
 `
 
 process.stdout.write(message)
