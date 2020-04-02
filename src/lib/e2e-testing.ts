@@ -70,7 +70,6 @@ export function createE2EContext(config?: {
       return spawn(PROJ_NEXUS_BIN_PATH, args, { cwd: projectDir, ...opts })
     },
     npxNexus(options: { nexusVersion: string }, args: string[]) {
-      log.trace('npx nexus-future', { options })
       return spawn('npx', [`nexus-future@${options.nexusVersion}`, ...args], {
         cwd: projectDir,
         env: {
@@ -82,7 +81,6 @@ export function createE2EContext(config?: {
     npxNexusCreatePlugin(
       options: CreatePluginOptions & { nexusVersion: string }
     ) {
-      log.trace('npx nexus-future', { options })
       return spawn(
         'npx',
         [`nexus-future@${options.nexusVersion}`, 'create', 'plugin'],
@@ -97,7 +95,6 @@ export function createE2EContext(config?: {
       )
     },
     npxNexusCreateApp(options: CreateAppOptions & { nexusVersion: string }) {
-      log.trace('npx nexus-future', { options })
       return spawn('npx', [`nexus@${options.nexusVersion}`], {
         cwd: projectDir,
         env: {
@@ -176,7 +173,6 @@ export function spawn(
   opts: IPtyForkOptions
 ): ConnectableObservable<string> {
   const nodePty = requireNodePty()
-
   const subject = new Subject<string>()
   const ob = new Observable<string>(sub => {
     const proc = nodePty.spawn(command, args, {
@@ -184,20 +180,16 @@ export function spawn(
       rows: process.stdout.rows ?? 80,
       ...opts,
     })
-    // let buffer = ''
 
     proc.on('data', data => {
       process.stdout.write(data)
       sub.next(stripAnsi(data))
-      // buffer += data
-      // expectHandler(stripAnsi(data), proc)
     })
 
     proc.on('exit', (exitCode, signal) => {
       const result = {
         exitCode: exitCode,
         signal: signal,
-        // data: stripAnsi(buffer),
       }
 
       if (exitCode !== 0) {
