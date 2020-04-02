@@ -16,7 +16,7 @@ type StartModuleConfig = {
   internalStage: 'build' | 'dev'
   layout: Layout.Layout
   disableArtifactGeneration?: boolean
-  absoluteSchemaModuleImports?: boolean
+  absoluteModuleImports?: boolean
   runtimePluginNames: string[]
 }
 
@@ -74,7 +74,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
 
   // This MUST come after nexus package has been imported for its side-effects
   const staticImports = printStaticImports(config.layout, {
-    absolutePaths: config.absoluteSchemaModuleImports,
+    absolutePaths: config.absoluteModuleImports,
   })
   if (staticImports !== '') {
     content += EOL + EOL + EOL
@@ -89,7 +89,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     content += stripIndent`
       // Import the user's app module
       require("${stripExt(
-        config.absoluteSchemaModuleImports
+        config.absoluteModuleImports
           ? config.layout.app.path
           : './' + config.layout.sourceRelative(config.layout.app.path)
       )}")

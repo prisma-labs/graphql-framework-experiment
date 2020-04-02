@@ -18,7 +18,7 @@ export function createDevAppRunner(
   const startModule = createStartModuleContent({
     internalStage: 'dev',
     layout,
-    absoluteSchemaModuleImports: true,
+    absoluteModuleImports: true,
     runtimePluginNames,
   })
   const transpiledStartModule = transpileModule(startModule, {
