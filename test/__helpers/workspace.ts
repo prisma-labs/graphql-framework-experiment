@@ -1,7 +1,7 @@
 import * as jetpack from 'fs-jetpack'
 import * as path from 'path'
 import createGit, { SimpleGit } from 'simple-git/promise'
-import { createRunner } from '../../src/utils'
+import { createRunner } from '../../src/lib/process'
 import { gitRepo, gitReset } from './utils'
 
 type Workspace = {
