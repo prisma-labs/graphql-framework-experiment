@@ -1,7 +1,6 @@
 import Chalk from 'chalk'
 import * as fs from 'fs-jetpack'
-import { Layout, relativeTranspiledImportPath } from '.'
-import { baseIgnores, stripExt } from '../../lib/fs'
+import { baseIgnores } from '../../lib/fs'
 
 export const MODULE_NAME = 'graphql'
 export const CONVENTIONAL_SCHEMA_FILE_NAME = MODULE_NAME + '.ts'
@@ -23,8 +22,8 @@ export function emptyExceptionMessage() {
  * Find all modules called schema modules or directories having the trigger
  * name. This does not grab the child modules of the directory instances!
  */
-export function findDirOrModules(opts?: { cwd?: string }): string[] {
-  const localFS = fs.cwd(opts?.cwd ?? process.cwd())
+export function findDirOrModules(opts: { projectRoot: string }): string[] {
+  const localFS = fs.cwd(opts.projectRoot)
   // TODO async
   const files = localFS.find({
     files: true,
@@ -37,34 +36,4 @@ export function findDirOrModules(opts?: { cwd?: string }): string[] {
   })
 
   return files.map(f => localFS.path(f))
-}
-
-/**
- * Import schema modules for their side-effects.
- *
- * There is an IO cost here to go find all modules dynamically, so do not use in production.
- */
-export async function importModules(layout: Layout): Promise<void> {
-  layout.schemaModules.forEach(modulePath => {
-    require(stripExt(modulePath))
-  })
-}
-
-/**
- * Build up static import code for all schema modules in the project. The static
- * imports are relative so that they can be calculated based on source layout
- * but used in build layout.
- *
- * Note that it is assumed the module these imports will run in will be located
- * in the source/build root.
- */
-export function printStaticImports(layout: Layout): string {
-  return layout.schemaModules.reduce((script, modulePath) => {
-    const relPath = relativeTranspiledImportPath(layout, modulePath)
-    return `${script}\n${printSideEffectsImport(relPath)}`
-  }, '')
-}
-
-function printSideEffectsImport(modulePath: string): string {
-  return `import '${modulePath}'`
 }

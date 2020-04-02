@@ -12,7 +12,7 @@ const log = rootLogger.child('cli').child('entrypoint')
 export class __Default implements Command {
   async parse() {
     log.trace('start')
-    const projectType = await Layout.scanProjectType()
+    const projectType = await Layout.scanProjectType({ cwd: process.cwd() })
     switch (projectType.type) {
       case 'new':
         log.trace(

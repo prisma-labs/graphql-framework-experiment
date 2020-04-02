@@ -1,9 +1,9 @@
 import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import * as Path from 'path'
+import * as Layout from '../layout/layout'
 import { PackageJson } from 'type-fest'
 import { RuntimePlugin, TesttimePlugin, WorktimePlugin } from '.'
-import { findProjectDir } from '../layout/layout'
 import { rootLogger } from '../nexus-logger'
 import { fatal } from '../process'
 import { requireModule } from '../utils'
@@ -20,9 +20,10 @@ export interface Plugin {
 /**
  *
  */
-export async function getInstalledRuntimePluginNames(): Promise<string[]> {
-  const packageJson = await readUsersPackageJson()
-  const pluginDepNames = extractPluginNames(packageJson)
+export async function getInstalledRuntimePluginNames(
+  layout: Layout.Layout
+): Promise<string[]> {
+  const pluginDepNames = extractPluginNames(layout.packageJson?.content ?? null)
   const runtimePluginDepNames = pluginDepNames.filter(depName => {
     return (
       null !==
@@ -36,9 +37,10 @@ export async function getInstalledRuntimePluginNames(): Promise<string[]> {
 /**
  * Load all nexus plugins installed into the project
  */
-export async function importAllPlugins(): Promise<Plugin[]> {
-  const packageJson = await readUsersPackageJson()
-  const plugins = doImportAllPlugins(packageJson)
+export async function importAllPlugins(
+  layout: Layout.Layout
+): Promise<Plugin[]> {
+  const plugins = doImportAllPlugins(layout.packageJson?.content ?? null)
   return plugins
 }
 
@@ -98,14 +100,6 @@ export function parsePluginName(packageName: string): null | string {
   const pluginName = matchResult[1]
 
   return pluginName
-}
-
-/**
- *
- */
-async function readUsersPackageJson(): Promise<null | PackageJson> {
-  const packageJsonPath = Path.join(findProjectDir(), 'package.json')
-  return (await fs.readAsync(packageJsonPath, 'json')) ?? null
 }
 
 /**

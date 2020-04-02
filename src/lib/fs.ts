@@ -31,10 +31,10 @@ export async function removeWriteAsync(
  */
 export async function findFileRecurisvelyUpward(
   fileName: string,
-  opts?: { cwd?: string }
+  opts: { projectRoot: string }
 ): Promise<null | string> {
   let found: null | string = null
-  let currentDir = opts?.cwd ?? process.cwd()
+  let currentDir = opts.projectRoot
 
   while (true) {
     const checkFilePath = Path.join(currentDir, fileName)
@@ -60,10 +60,10 @@ export async function findFileRecurisvelyUpward(
  */
 export function findDirContainingFileRecurisvelyUpwardSync(
   fileName: string,
-  opts?: { cwd?: string }
+  opts: { cwd: string }
 ): { path: string; dir: string } | null {
   let found: { path: string; dir: string } | null = null
-  let currentDir = opts?.cwd ?? process.cwd()
+  let currentDir = opts.cwd
   const localFS = FS.cwd(currentDir)
 
   while (true) {
@@ -184,11 +184,12 @@ export function sourceFilePathFromTranspiledPath({
 
 export function findFile(
   fileNames: string | string[],
-  config?: { ignore?: string[]; cwd?: string }
+  config: { ignore?: string[]; projectRoot: string }
 ): null | string {
-  const cwd = config?.cwd ?? process.cwd()
   const paths = Array.isArray(fileNames) ? fileNames : [fileNames]
-  const localFs = fs.cwd(cwd)
+  const projectRoot = config.projectRoot
+  const localFs = fs.cwd(projectRoot)
+
   const foundFiles = localFs.find({
     matching: [
       ...paths,
@@ -200,7 +201,7 @@ export function findFile(
 
   // TODO: What if several files were found?
   if (foundFiles.length > 0) {
-    return path.join(cwd, foundFiles[0])
+    return path.join(projectRoot, foundFiles[0])
   }
 
   return null

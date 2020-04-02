@@ -12,7 +12,7 @@ import {
   createStartModuleContent,
   prepareStartModule,
   START_MODULE_NAME,
-} from '../../runtime/start'
+} from '../../runtime/start/start-module'
 import { extractContextTypesToTypeGenFile } from '../add-to-context-extractor/add-to-context-extractor'
 import { rootLogger } from '../nexus-logger'
 import { loadInstalledWorktimePlugins } from '../plugin'
@@ -58,10 +58,9 @@ export async function buildNexusApp(settings: BuildSettings) {
       process.exit(1)
     }
   }
+  await findOrScaffoldTsConfig(layout)
 
   const plugins = await loadInstalledWorktimePlugins(layout)
-
-  await findOrScaffoldTsConfig(layout)
 
   for (const p of plugins) {
     await p.hooks.build.onStart?.()
@@ -70,7 +69,9 @@ export async function buildNexusApp(settings: BuildSettings) {
   let tsBuilder
   tsBuilder = createTSProgram(layout, { withCache: true })
 
-  const installedRuntimePluginNames = await getInstalledRuntimePluginNames()
+  const installedRuntimePluginNames = await getInstalledRuntimePluginNames(
+    layout
+  )
 
   log.trace('Compiling a development build for typegen')
 
@@ -81,10 +82,9 @@ export async function buildNexusApp(settings: BuildSettings) {
     startModule: prepareStartModule(
       tsBuilder,
       createStartModuleContent({
-        pluginNames: installedRuntimePluginNames,
+        runtimePluginNames: installedRuntimePluginNames,
         internalStage: 'build',
         layout: layout,
-        inlineSchemaModuleImports: true,
       })
     ),
   })
@@ -111,12 +111,6 @@ export async function buildNexusApp(settings: BuildSettings) {
 
   compile(tsBuilder, layout, { removePreviousBuild: true })
 
-  const packageJsonPath = layout.projectPath('package.json')
-
-  const relativePackageJsonPath = FS.exists(packageJsonPath)
-    ? Path.relative(layout.buildOutputRelative, packageJsonPath)
-    : undefined
-
   await writeStartModule({
     layout: layout,
     startModule: prepareStartModule(
@@ -124,10 +118,8 @@ export async function buildNexusApp(settings: BuildSettings) {
       createStartModuleContent({
         internalStage: 'build',
         layout: layout,
-        pluginNames: installedRuntimePluginNames,
-        relativePackageJsonPath: relativePackageJsonPath,
+        runtimePluginNames: installedRuntimePluginNames,
         disableArtifactGeneration: true,
-        inlineSchemaModuleImports: true,
       })
     ),
   })

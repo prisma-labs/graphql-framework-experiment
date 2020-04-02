@@ -8,7 +8,7 @@ import {
   findFile,
   stripExt,
 } from '../../lib/fs'
-import { START_MODULE_NAME } from '../../runtime/start'
+import { START_MODULE_NAME } from '../../runtime/start/start-module'
 import { rootLogger } from '../nexus-logger'
 import * as PackageManager from '../package-manager'
 import * as Schema from './schema-modules'
@@ -45,6 +45,11 @@ export type ScanResult = {
   projectRoot: string
   schemaModules: string[]
   packageManagerType: PackageManager.PackageManager['type']
+  packageJson: null | {
+    dir: string
+    path: string
+    content: PackageJson
+  }
   // schema:
   //   | {
   //       exists: boolean
@@ -150,7 +155,9 @@ export function createFromData(layoutData: Data): Layout {
     projectPath(...subPaths: string[]): string {
       return Path.join(layoutData.projectRoot, ...subPaths)
     },
-    packageManager: PackageManager.create(layoutData.packageManagerType),
+    packageManager: PackageManager.create(layoutData.packageManagerType, {
+      projectRoot: layoutData.projectRoot,
+    }),
   }
 }
 
@@ -160,25 +167,17 @@ export function createFromData(layoutData: Data): Layout {
  */
 export const scan = async (opts?: { cwd?: string }): Promise<ScanResult> => {
   log.trace('starting scan...')
-  const packageManagerType = await PackageManager.detectProjectPackageManager(
-    opts
-  )
-  const maybeAppModule = findAppModule(opts)
-  const maybeSchemaModules = Schema.findDirOrModules(opts)
-
-  // TODO do not assume app module is at source root?
-  let sourceRoot: string
-  if (maybeAppModule) {
-    sourceRoot = Path.dirname(maybeAppModule)
-  } else {
-    if (maybeSchemaModules.length !== 0) {
-      sourceRoot = Path.dirname(getShallowestPath(maybeSchemaModules))
-    } else {
-      sourceRoot = opts?.cwd ?? process.cwd()
-    }
-  }
-
   const projectRoot = opts?.cwd ?? findProjectDir()
+  const packageManagerType = await PackageManager.detectProjectPackageManager({
+    projectRoot,
+  })
+  const packageJson = findPackageJson({ projectRoot })
+  const maybeAppModule = findAppModule({ projectRoot })
+  const maybeSchemaModules = Schema.findDirOrModules({ projectRoot })
+  // TODO do not assume app module is at source root?
+  const sourceRoot = getSourceRoot(maybeAppModule, maybeSchemaModules, {
+    projectRoot,
+  })
 
   const result: ScanResult = {
     app:
@@ -194,6 +193,7 @@ export const scan = async (opts?: { cwd?: string }): Promise<ScanResult> => {
     sourceRootRelative: Path.relative(projectRoot, sourceRoot) || './',
     project: readProjectInfo(opts),
     packageManagerType: packageManagerType,
+    packageJson,
   }
 
   if (result.app.exists === false && result.schemaModules.length === 0) {
@@ -233,7 +233,7 @@ const checks = {
 /**
  * Find the (optional) app module in the user's project.
  */
-export function findAppModule(opts?: { cwd?: string }): string | null {
+export function findAppModule(opts: { projectRoot: string }): string | null {
   log.trace('looking for app module')
   const path = findFile(ENTRYPOINT_FILE_NAMES, opts)
   log.trace('done looking for app module')
@@ -258,25 +258,13 @@ export function findProjectDir(): string {
 }
 
 /**
- * Build up what the import path will be for a module in its transpiled context.
- */
-export function relativeTranspiledImportPath(
-  layout: Layout,
-  modulePath: string
-): string {
-  return './' + stripExt(calcSourceRootToModule(layout, modulePath))
-}
-
-function calcSourceRootToModule(layout: Layout, modulePath: string) {
-  return Path.relative(layout.sourceRoot, modulePath)
-}
-
-/**
  * Detect whether or not CWD is inside a nexus project. nexus project is
  * defined as there being a package.json in or above CWD with nexus as a
  * direct dependency.
  */
-export async function scanProjectType(): Promise<
+export async function scanProjectType(opts: {
+  cwd: string
+}): Promise<
   | { type: 'unknown' | 'new' }
   | {
       type: 'NEXUS_project' | 'node_project'
@@ -284,7 +272,7 @@ export async function scanProjectType(): Promise<
       packageJsonLocation: { path: string; dir: string }
     }
 > {
-  const packageJsonLocation = findPackageJson()
+  const packageJsonLocation = findPackageJsonRecursivelyUpward(opts)
 
   if (packageJsonLocation === null) {
     if (await isEmptyCWD()) {
@@ -379,12 +367,53 @@ function readProjectInfo(opts?: { cwd?: string }): ScanResult['project'] {
  * Find the package.json file path. Looks recursively upward to disk root.
  * Starts looking in CWD If no package.json found along search, returns null.
  */
-function findPackageJson(opts?: { cwd?: string }) {
+function findPackageJsonRecursivelyUpward(opts: { cwd: string }) {
   return findDirContainingFileRecurisvelyUpwardSync('package.json', opts)
+}
+
+/**
+ *
+ */
+function findPackageJson(opts: {
+  projectRoot: string
+}): ScanResult['packageJson'] {
+  const packageJsonPath = FS.path(opts.projectRoot, 'package.json')
+
+  try {
+    const content = FS.read(packageJsonPath, 'json')
+
+    return {
+      content,
+      path: packageJsonPath,
+      dir: Path.dirname(packageJsonPath),
+    }
+  } catch {
+    return null
+  }
 }
 
 function getShallowestPath(paths: string[]) {
   return paths.sort((a, b) => {
     return a.split(Path.sep).length - b.split(Path.sep).length
   })[0]
+}
+
+function getSourceRoot(
+  maybeAppModule: string | null,
+  maybeSchemaModules: string[],
+  opts: { projectRoot: string }
+) {
+  let sourceRoot: string
+
+  if (maybeAppModule) {
+    sourceRoot = Path.dirname(maybeAppModule)
+  } else {
+    if (maybeSchemaModules.length !== 0) {
+      sourceRoot = Path.dirname(getShallowestPath(maybeSchemaModules))
+    } else {
+      sourceRoot = opts.projectRoot
+    }
+  }
+
+  return sourceRoot
 }

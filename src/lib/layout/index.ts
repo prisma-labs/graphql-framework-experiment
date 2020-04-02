@@ -7,7 +7,6 @@ export {
   Layout,
   loadDataFromParentProcess,
   mustLoadDataFromParentProcess,
-  relativeTranspiledImportPath,
   saveDataForChildProcess,
   scanProjectType,
 } from './layout'
@@ -19,15 +18,11 @@ import {
   CONVENTIONAL_SCHEMA_FILE_NAME,
   DIR_NAME,
   emptyExceptionMessage,
-  importModules,
   MODULE_NAME,
-  printStaticImports,
 } from './schema-modules'
 
 export const schema = {
   emptyExceptionMessage,
-  importModules,
-  printStaticImports,
   DIR_NAME,
   MODULE_NAME,
   CONVENTIONAL_SCHEMA_FILE_NAME,

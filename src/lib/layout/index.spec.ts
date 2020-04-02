@@ -115,6 +115,10 @@ it('finds nested graphql modules', async () => {
         "path": "__DYNAMIC__/src/app.ts",
       },
       "buildOutputRelative": "node_modules/.build",
+      "packageJson": Object {
+        "dir": "__DYNAMIC__",
+        "path": "__DYNAMIC__/package.json",
+      },
       "packageManagerType": "npm",
       "project": Object {
         "isAnonymous": true,
@@ -230,6 +234,10 @@ it('app.ts takes precedence over server.ts & service.ts', async () => {
         "path": "__DYNAMIC__/app.ts",
       },
       "buildOutputRelative": "node_modules/.build",
+      "packageJson": Object {
+        "dir": "__DYNAMIC__",
+        "path": "__DYNAMIC__/package.json",
+      },
       "packageManagerType": "npm",
       "project": Object {
         "isAnonymous": true,
@@ -261,6 +269,10 @@ it('server.ts takes precedence over service.ts', async () => {
         "path": "__DYNAMIC__/server.ts",
       },
       "buildOutputRelative": "node_modules/.build",
+      "packageJson": Object {
+        "dir": "__DYNAMIC__",
+        "path": "__DYNAMIC__/package.json",
+      },
       "packageManagerType": "npm",
       "project": Object {
         "isAnonymous": true,

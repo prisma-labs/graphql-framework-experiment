@@ -4,7 +4,7 @@ import * as fs from 'fs-jetpack'
 import * as path from 'path'
 import { PackageJson } from 'type-fest'
 import { DEFAULT_BUILD_FOLDER_NAME, Layout } from '../../lib/layout'
-import { START_MODULE_NAME } from '../../runtime/start'
+import { START_MODULE_NAME } from '../../runtime/start/start-module'
 import { rootLogger } from '../nexus-logger'
 import { fatal } from '../process'
 import { findConfigFile } from '../tsc'
@@ -92,8 +92,7 @@ function validateNow(layout: Layout): ValidatorResult {
   // Make sure there's a now.json file
   if (!maybeNowJsonPath) {
     log.trace('creating now.json because none exists yet')
-    const packageJson = fs.read('package.json', 'json')
-    const projectName = packageJson?.name ?? 'now_rename_me'
+    const projectName = layout.packageJson?.content.name ?? 'now_rename_me'
 
     const nowJsonContent = stripIndent`
       {

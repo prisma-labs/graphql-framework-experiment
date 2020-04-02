@@ -4,22 +4,22 @@ require('../tty-linker')
   .create()
   .child.install()
 
-import * as path from 'path'
 import * as tsNode from 'ts-node'
-import { Script } from 'vm'
-import { createStartModuleContent } from '../../runtime/start'
+import { createDevAppRunner } from '../../runtime/start'
 import { runAddToContextExtractorAsWorkerIfPossible } from '../add-to-context-extractor/add-to-context-extractor'
 import * as Layout from '../layout'
 import { rootLogger } from '../nexus-logger'
-import { getInstalledRuntimePluginNames } from '../plugin'
+import {
+  getInstalledRuntimePluginNames,
+  loadInstalledWorktimePlugins,
+} from '../plugin'
 import cfgFactory from './cfg'
 import hook from './hook'
 import * as IPC from './ipc'
-import Module = require('module')
 
 const log = rootLogger.child('dev').child('runner')
 
-const tsNodeRegister = tsNode.register({
+tsNode.register({
   transpileOnly: true,
 })
 
@@ -123,59 +123,8 @@ async function main() {
     IPC.client.senders.moduleImported({ filePath })
   })
 
-  const pluginNames = await getInstalledRuntimePluginNames()
-  const startModuleFileName = layout.sourceRoot + '/index.ts'
-  const startModule = tsNodeRegister.compile(
-    createStartModuleContent({
-      pluginNames: pluginNames,
-      internalStage: 'dev',
-      layout: layout,
-      inlineSchemaModuleImports: true,
-    }),
-    startModuleFileName
-  )
+  const runtimePluginNames = await getInstalledRuntimePluginNames(layout)
+  const appRunner = createDevAppRunner(layout, runtimePluginNames)
 
-  emulatedEval(startModule, startModuleFileName)
-}
-
-/**
- * Eval something with the module system mutated to appear is if the thing being
- * evaled was the module that the module system booted within.
- */
-function emulatedEval(script: string, filepath: string): void {
-  // Update the environment to make it look as if this module is running in the
-  // user's app. A reference for some of the magic going on here is
-  // https://github.com/patrick-steele-idem/app-module-path-node.
-
-  const cwd = process.cwd()
-  const global_: any = global
-  const module_: any = module
-  const Module_: any = Module
-
-  global_.__filename = filepath
-  global_.__dirname = cwd
-
-  const moduleReplacement = new Module(filepath)
-  moduleReplacement.filename = filepath
-  moduleReplacement.paths = Module_._nodeModulePaths(cwd)
-
-  // Changig this will make the reuires in the startModule that is evaluated
-  // within this module later work. Otherwise they will require relative to
-  // where this module is located, inside the Nexus package, then erroring.
-  module.filename = filepath
-  module.paths.length = 0
-  module.paths.push(...moduleReplacement.paths)
-  // Present in JS, not typed in TS
-  module_.path = path.dirname(filepath)
-
-  // Without these the following run in conext attempt will fail
-  global_.exports = moduleReplacement.exports
-  global_.module = moduleReplacement
-  global_.require = moduleReplacement.require.bind(moduleReplacement)
-
-  const startModuleScript = new Script(script, {
-    filename: filepath,
-  })
-
-  startModuleScript.runInThisContext()
+  return appRunner.start()
 }
