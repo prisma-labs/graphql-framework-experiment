@@ -90,7 +90,6 @@
     "postinstall": "node scripts/postinstall",
     "prepublishOnly": "yarn -s build",
     "test": "jest --verbose --testTimeout 180000",
-    "test:integration": "jest --verbose --testRegex '.+/integration/.+\\.spec\\.ts$'",
     "test:unit": "jest --verbose --testRegex '.+/src/.+\\.spec\\.ts$'",
     "test:e2e": "DEBUG=true jest --verbose --testTimeout 180000 test/e2e",
     "test:system": "LINK=true DEBUG=true jest --verbose --testTimeout 180000 test/system",
