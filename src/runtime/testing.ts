@@ -69,6 +69,7 @@ export async function createTestContext(): Promise<TestContext> {
   // Guarantee that development mode features are on
   process.env.NEXUS_STAGE = 'dev'
 
+  // todo figure out some caching system here, e.g. imagine jest --watch mode
   const layout = await Layout.create()
   const pluginNames = await getInstalledRuntimePluginNames(layout)
   const randomPort = await getPort({ port: getPort.makeRange(4000, 6000) })
