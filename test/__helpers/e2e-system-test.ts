@@ -1,6 +1,6 @@
 import { introspectionQuery } from 'graphql'
 import { ConnectableObservable, Subscription } from 'rxjs'
-import { scan, takeWhile } from 'rxjs/operators'
+import { refCount, scan, takeWhile } from 'rxjs/operators'
 import { createE2EContext } from '../../src/lib/e2e-testing'
 import { DEFAULT_BUILD_FOLDER_NAME } from '../../src/lib/layout'
 import { CONVENTIONAL_SCHEMA_FILE_NAME } from '../../src/lib/layout/schema-modules'
@@ -37,8 +37,8 @@ export async function e2eTestApp(
         databaseType: 'NO_DATABASE',
         packageManagerType: 'npm',
       })
-      .refCount()
       .pipe(
+        refCount(),
         takeWhile((val: string) => {
           return !val.includes(SERVER_LISTENING_EVENT)
         })
@@ -51,8 +51,8 @@ export async function e2eTestApp(
         packageManagerType: 'npm',
         nexusVersion: process.env.E2E_NEXUS_VERSION ?? 'latest',
       })
-      .refCount()
       .pipe(
+        refCount(),
         takeWhile((val: string) => {
           return !val.includes(SERVER_LISTENING_EVENT)
         })
@@ -154,8 +154,7 @@ export async function e2eTestApp(
 
   output = await app
     .nexus(['build'])
-    .refCount()
-    .pipe(bufferOutput)
+    .pipe(refCount(), bufferOutput)
     .toPromise()
 
   expect(output).toContain('success')
@@ -191,8 +190,7 @@ export async function e2eTestApp(
 
   await app
     .node([app.fs.path(DEFAULT_BUILD_FOLDER_NAME)], { cwd: '/' })
-    .refCount()
-    .pipe(takeUntilServerListening)
+    .pipe(refCount(), takeUntilServerListening)
     .toPromise()
 
   log.warn('create plugin')
@@ -214,8 +212,7 @@ export async function e2eTestApp(
         name: 'foobar',
         nexusVersion: process.env.E2E_NEXUS_VERSION ?? 'latest',
       })
-      .refCount()
-      .pipe(bufferOutput)
+      .pipe(refCount(), bufferOutput)
       .toPromise()
   }
 
@@ -245,8 +242,7 @@ export async function e2eTestApp(
 
   await app
     .spawn(['npm', 'install', pluginProject.dir])
-    .refCount()
-    .pipe(bufferOutput)
+    .pipe(refCount(), bufferOutput)
     .toPromise()
 
   log.warn('with plugin, dev app')
@@ -272,8 +268,7 @@ export async function e2eTestApp(
 
   output = await app
     .nexus(['build'])
-    .refCount()
-    .pipe(bufferOutput)
+    .pipe(refCount(), bufferOutput)
     .toPromise()
 
   expect(output).toContain('build.onStart hook from foobar')
