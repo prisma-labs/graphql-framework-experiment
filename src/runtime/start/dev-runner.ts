@@ -30,13 +30,13 @@ export function createDevAppRunner(
   const app = require('../../index')
 
   app.settings.change({
-    server: {
-      ...opts?.server,
-    },
+    server: opts?.server,
   })
 
   return {
-    start: () => eval(transpiledStartModule),
+    start: () => {
+      return eval(transpiledStartModule)
+    },
     stop: () => app.server.stop(),
     port: app.settings.current.server.port,
   }

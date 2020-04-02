@@ -6,6 +6,7 @@ import { stripExt } from '../../lib/fs'
 import * as Layout from '../../lib/layout'
 import { rootLogger } from '../../lib/nexus-logger'
 import { transpileModule } from '../../lib/tsc'
+import { resolveFrom } from './resolve-from'
 
 const log = rootLogger.child('start-module')
 
@@ -40,7 +41,11 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   content += stripIndent`
     // Run framework initialization side-effects
     // Also, import the app for later use
-    const app = require("nexus").default
+    const app = require("${
+      config.absoluteModuleImports
+        ? resolveFrom('nexus', config.layout.projectRoot)
+        : 'nexus'
+    }").default
   `
 
   // todo test coverage for this feature
@@ -65,10 +70,14 @@ export function createStartModuleContent(config: StartModuleConfig): string {
       // On the Zeit Now platform, builds and dev copy source into
       // new directory. Copying follows paths found in source. Give one here
       // to package.json to make sure Zeit Now brings it along.
-      require('${Path.relative(
-        config.layout.buildOutputRelative,
-        config.layout.packageJson.dir
-      )}')
+      require('${
+        config.absoluteModuleImports
+          ? config.layout.packageJson.path
+          : Path.relative(
+              config.layout.buildOutputRelative,
+              config.layout.packageJson.path
+            )
+      }')
     `
   }
 
@@ -109,7 +118,14 @@ export function createStartModuleContent(config: StartModuleConfig): string {
       // Apply runtime plugins
       ${aliasAndPluginNames
         .map(([namedImportAlias, pluginName]) => {
-          return `import { plugin as ${namedImportAlias} } from 'nexus-plugin-${pluginName}/dist/runtime'`
+          return `import { plugin as ${namedImportAlias} } from '${
+            config.absoluteModuleImports
+              ? resolveFrom(
+                  `nexus-plugin-${pluginName}`,
+                  config.layout.projectRoot
+                )
+              : `nexus-plugin-${pluginName}/dist/runtime`
+          }'`
         })
         .join(EOL)}
 
