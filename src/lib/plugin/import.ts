@@ -24,13 +24,15 @@ export async function getInstalledRuntimePluginNames(
   layout: Layout.Layout
 ): Promise<string[]> {
   const pluginDepNames = extractPluginNames(layout.packageJson?.content ?? null)
-  const runtimePluginDepNames = pluginDepNames.filter(depName => {
+  const runtimePluginDepNames = pluginDepNames.filter((depName) => {
     return (
       null !==
       requireModule({ depName: depName + '/dist/runtime', optional: true })
     )
   })
-  const runtimePluginNames = runtimePluginDepNames.map(x => parsePluginName(x)!)
+  const runtimePluginNames = runtimePluginDepNames.map(
+    (x) => parsePluginName(x)!
+  )
   return runtimePluginNames
 }
 
@@ -61,7 +63,7 @@ function doImportAllPlugins(packageJson: null | PackageJson): Plugin[] {
     })
   }
 
-  const plugins = pluginDepNames.map(depName => {
+  const plugins = pluginDepNames.map((depName) => {
     const pluginName = parsePluginName(depName)! // guaranteed by extract above
     let plugin: Plugin = {
       name: pluginName,
@@ -108,7 +110,7 @@ export function parsePluginName(packageName: string): null | string {
 function extractPluginNames(packageJson: null | PackageJson): string[] {
   const deps = packageJson?.dependencies ?? {}
   const depNames = Object.keys(deps)
-  const pluginDepNames = depNames.filter(depName =>
+  const pluginDepNames = depNames.filter((depName) =>
     depName.match(/^nexus-plugin-.+/)
   )
   return pluginDepNames

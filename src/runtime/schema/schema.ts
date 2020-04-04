@@ -116,7 +116,7 @@ export function create(): SchemaInternal {
       isSchemaEmpty: () => {
         return __types.length === 0
       },
-      makeSchema: async plugins => {
+      makeSchema: async (plugins) => {
         const nexusSchemaConfig = createNexusSchemaConfig(
           plugins,
           state.settings

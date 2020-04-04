@@ -10,7 +10,7 @@ const log = rootLogger.child('compiler')
 const diagnosticHost: ts.FormatDiagnosticsHost = {
   getNewLine: () => ts.sys.newLine,
   getCurrentDirectory: () => process.cwd(),
-  getCanonicalFileName: path => path,
+  getCanonicalFileName: (path) => path,
 }
 
 export function findConfigFile(

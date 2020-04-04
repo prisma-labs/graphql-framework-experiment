@@ -106,11 +106,9 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   }
 
   if (config.runtimePluginNames.length) {
-    const aliasAndPluginNames = config.runtimePluginNames.map(pluginName => {
+    const aliasAndPluginNames = config.runtimePluginNames.map((pluginName) => {
       // TODO nice camelcase identifier
-      const namedImportAlias = `plugin_${Math.random()
-        .toString()
-        .slice(2, 5)}`
+      const namedImportAlias = `plugin_${Math.random().toString().slice(2, 5)}`
       return [namedImportAlias, pluginName]
     })
     content += EOL + EOL + EOL

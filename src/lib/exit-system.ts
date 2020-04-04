@@ -76,14 +76,14 @@ export async function exit(exitCode: number): Promise<void> {
 
   try {
     await Promise.race([
-      new Promise(res => {
+      new Promise((res) => {
         // todo send SIGKILL to process tree...
         setTimeout(() => {
           log.warn('time expired before all before-exit teardowns completed')
           res()
         }, process._exitSystem.settings.timeLimit)
       }),
-      Promise.all(process._exitSystem.beforeExiters.map(f => f())),
+      Promise.all(process._exitSystem.beforeExiters.map((f) => f())),
     ])
   } catch (e) {
     console.error(e)

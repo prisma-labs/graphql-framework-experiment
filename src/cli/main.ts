@@ -14,17 +14,17 @@ import * as Commands from './commands'
 dotenv.config()
 ExitSystem.install()
 
-process.on('uncaughtException', e => {
+process.on('uncaughtException', (e) => {
   console.error(e)
   ExitSystem.exit(1)
 })
 
-process.on('unhandledRejection', e => {
+process.on('unhandledRejection', (e) => {
   console.error(e)
   ExitSystem.exit(1)
 })
 
-main().then(exitCode => {
+main().then((exitCode) => {
   ExitSystem.exit(exitCode)
 })
 

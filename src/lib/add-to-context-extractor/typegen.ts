@@ -17,7 +17,7 @@ export async function writeContextTypeGenFile(
   contextTypes: ExtractedContectTypes
 ) {
   const addToContextInterfaces = contextTypes.types
-    .map(result => `interface Context ${result}`)
+    .map((result) => `interface Context ${result}`)
     .join('\n\n')
 
   const content = codeBlock`
@@ -26,7 +26,7 @@ export async function writeContextTypeGenFile(
     // Imports for types referenced by context types.
 
     ${contextTypes.typeImports
-      .map(ti => renderImport({ names: [ti.name], from: ti.modulePath }))
+      .map((ti) => renderImport({ names: [ti.name], from: ti.modulePath }))
       .join('\n')}
 
     // Tap into Nexus' global context interface. Make all local context interfaces merge into it.

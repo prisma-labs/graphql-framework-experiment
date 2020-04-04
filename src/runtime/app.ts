@@ -170,7 +170,7 @@ export function create(): App {
 
   api__.__state = state
 
-  api__.__use = function(pluginName: string, plugin: Plugin.RuntimePlugin) {
+  api__.__use = function (pluginName: string, plugin: Plugin.RuntimePlugin) {
     state.plugins.push(Plugin.loadRuntimePlugin(pluginName, plugin))
   }
 

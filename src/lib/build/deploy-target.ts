@@ -17,7 +17,7 @@ const log = rootLogger.child(__filename)
 const SUPPORTED_DEPLOY_TARGETS = ['now', 'heroku'] as const
 
 export const formattedSupportedDeployTargets = SUPPORTED_DEPLOY_TARGETS.map(
-  t => `"${t}"`
+  (t) => `"${t}"`
 ).join(', ')
 
 type SupportedTargets = typeof SUPPORTED_DEPLOY_TARGETS[number]
@@ -119,7 +119,7 @@ function validateNow(layout: Layout): ValidatorResult {
     if (
       !nowJson.builds ||
       !nowJson.builds.find(
-        build =>
+        (build) =>
           build.src === startModulePath && build.use === '@now/node-server'
       )
     ) {
@@ -145,7 +145,7 @@ function validateNow(layout: Layout): ValidatorResult {
     }
 
     // Make sure the now.json file has the right `routes` values
-    if (!nowJson.routes?.find(route => route.dest === startModulePath)) {
+    if (!nowJson.routes?.find((route) => route.dest === startModulePath)) {
       log.error(
         `We could not find a route property that redirects to your api in your \`now.json\` file.`
       )

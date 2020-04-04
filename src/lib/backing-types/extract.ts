@@ -20,7 +20,7 @@ export function extract(filePaths: (string | undefined)[]): BackingTypes {
 
     const typeNames = getMatches(fileContent, defaultTSTypeMatcher, 1)
 
-    typeNames.forEach(typeName => {
+    typeNames.forEach((typeName) => {
       backingTypes[typeName] = filePath
     })
   }

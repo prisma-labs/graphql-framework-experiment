@@ -25,7 +25,7 @@ export async function write(
   } else {
     output = `\
  export type BackingTypes =
-${typeNames.map(t => `  | '${t}'`).join('\n')}
+${typeNames.map((t) => `  | '${t}'`).join('\n')}
 `
   }
 

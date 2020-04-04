@@ -26,10 +26,10 @@ export async function detectProjectPackageManager(opts: {
   const packageManagerFound = await Promise.race([
     fs
       .existsAsync(path.join(opts.projectRoot, YARN_LOCK_FILE_NAME))
-      .then(result => (result === 'file' ? 'yarn' : null)),
+      .then((result) => (result === 'file' ? 'yarn' : null)),
     fs
       .existsAsync(path.join(opts.projectRoot, NPM_LOCK_FILE_NAME))
-      .then(result => (result === 'file' ? 'npm' : null)),
+      .then((result) => (result === 'file' ? 'npm' : null)),
   ])
 
   return packageManagerFound === null ? 'npm' : packageManagerFound

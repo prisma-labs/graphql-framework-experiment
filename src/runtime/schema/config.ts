@@ -119,7 +119,7 @@ function withAutoTypegenConfig(
       if (p.context.typeGen.imports) {
         config.imports.push(
           ...p.context.typeGen.imports.map(
-            im => `import * as ${im.as} from '${im.from}'`
+            (im) => `import * as ${im.as} from '${im.from}'`
           )
         )
       }

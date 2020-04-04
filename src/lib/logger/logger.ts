@@ -45,7 +45,7 @@ export function create(
 
   function updateContextAndPropagate(newContext: Context) {
     state.pinnedAndParentContext = newContext
-    state.children.forEach(child => {
+    state.children.forEach((child) => {
       child.onNewParentContext(state.pinnedAndParentContext)
     })
   }

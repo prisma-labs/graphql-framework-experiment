@@ -45,7 +45,7 @@ export function createWatcher(options: Options): Promise<void> {
         watcher.addSilently(data.filePath)
       },
       onServerListening() {
-        options.plugins.forEach(p => {
+        options.plugins.forEach((p) => {
           p.dev.onAfterWatcherRestart?.()
         })
 
@@ -155,7 +155,7 @@ export function createWatcher(options: Options): Promise<void> {
       }
     }
 
-    watcher.on('error', error => {
+    watcher.on('error', (error) => {
       log.error('file watcher encountered an error', { error })
     })
 
@@ -203,7 +203,7 @@ export function createWatcher(options: Options): Promise<void> {
         }
       }
       log.trace('hook', { name: 'beforeWatcherRestart' })
-      plugins.forEach(p => {
+      plugins.forEach((p) => {
         p.dev.onBeforeWatcherRestart?.()
       })
       log.info('restarting', change as any)
@@ -226,7 +226,7 @@ function createPathMatcher(params: {
   toIgnore?: string[]
 }): (files: string | string[]) => boolean {
   const toAllow = params?.toMatch ?? []
-  const toIgnore = params?.toIgnore?.map(pattern => '!' + pattern) ?? []
+  const toIgnore = params?.toIgnore?.map((pattern) => '!' + pattern) ?? []
   const matchers = [...toAllow, ...toIgnore]
 
   return anymatch(matchers)

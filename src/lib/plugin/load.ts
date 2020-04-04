@@ -34,8 +34,8 @@ export async function loadInstalledWorktimePlugins(
   layout: Layout.Layout
 ): Promise<{ name: string; hooks: WorktimeHooks }[]> {
   const plugins = await importAllPlugins(layout)
-  const worktimePlugins = plugins.filter(plugin => plugin.worktime)
-  const contributions = worktimePlugins.map(plugin => {
+  const worktimePlugins = plugins.filter((plugin) => plugin.worktime)
+  const contributions = worktimePlugins.map((plugin) => {
     return loadWorktimePlugin(layout, plugin)
   })
 

@@ -55,9 +55,7 @@ export function spanSpace(num: number): string {
  * Create a string of the given length and character
  */
 export function spanChar(num: number, char: string): string {
-  return range(num)
-    .map(constant(char))
-    .join('')
+  return range(num).map(constant(char)).join('')
 }
 
 /**
@@ -78,7 +76,7 @@ export function casesHandled(x: never): never {
  * Create a function that will only ever return the given value when called.
  */
 export function constant<T>(x: T): () => T {
-  return function() {
+  return function () {
     return x
   }
 }
@@ -113,9 +111,7 @@ export function generateProjectName(): string {
   return createCodeNameGenerator()
     .generate(['alliterative', 'random'], ['adjectives', 'animals'])
     .map((word: string | number) =>
-      String(word)
-        .replace(' ', '-')
-        .toLowerCase()
+      String(word).replace(' ', '-').toLowerCase()
     )
     .join('-')
 }
@@ -187,8 +183,6 @@ export function repalceInObject<C extends object>(
   content: C
 ): C {
   return JSON.parse(
-    JSON.stringify(content)
-      .split(dynamicPattern)
-      .join(replacement)
+    JSON.stringify(content).split(dynamicPattern).join(replacement)
   )
 }

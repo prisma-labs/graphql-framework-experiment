@@ -1,7 +1,7 @@
 let mockedStdoutBuffer: string = ''
 const mockStdout = jest
   .spyOn(process.stdout, 'write')
-  .mockImplementation(data => {
+  .mockImplementation((data) => {
     mockedStdoutBuffer += data
 
     return true

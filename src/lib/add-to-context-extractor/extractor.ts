@@ -35,11 +35,11 @@ export function extractContextTypes(
 
   const appSourceFiles = program
     .getSourceFiles()
-    .filter(sf => !sf.fileName.match(/node_modules/))
+    .filter((sf) => !sf.fileName.match(/node_modules/))
 
   log.trace('got app source files', {
     count: appSourceFiles.length,
-    files: appSourceFiles.map(sf => sf.fileName),
+    files: appSourceFiles.map((sf) => sf.fileName),
   })
 
   appSourceFiles.forEach(visit)
@@ -141,16 +141,16 @@ export function extractContextTypes(
               log.trace('found intersection', {
                 types: t
                   .getIntersectionTypes()
-                  .map(t =>
+                  .map((t) =>
                     t.getText(undefined, ts.TypeFormatFlags.NoTruncation)
                   ),
               })
               const infos = t
                 .getIntersectionTypes()
-                .map(t => extractTypeImportInfoFromType(t)!)
-                .filter(info => info !== null)
+                .map((t) => extractTypeImportInfoFromType(t)!)
+                .filter((info) => info !== null)
               if (infos.length) {
-                infos.forEach(info => {
+                infos.forEach((info) => {
                   typeImportsIndex[info.name] = info
                 })
               }
