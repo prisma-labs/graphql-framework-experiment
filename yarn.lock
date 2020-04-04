@@ -1864,7 +1864,7 @@ dir-glob@^3.0.1:
   dependencies:
     path-type "^4.0.0"
 
-docsify-cli@^4.4.0:
+docsify-cli@4.4.0:
   version "4.4.0"
   resolved "https://registry.yarnpkg.com/docsify-cli/-/docsify-cli-4.4.0.tgz#ca68b4941207f7d1ceffb4bc9f01043657077e0a"
   integrity sha512-Ve3aUIGbjPpcjRtb3QHJQ9wI0fETMve1bBdTIztWfPnAJ2tOAYO7XUDHe9864RheGOli5s8iI3BviY6CS1ZImA==
@@ -1895,7 +1895,7 @@ docsify-server-renderer@>=4:
     node-fetch "^2.6.0"
     resolve-pathname "^3.0.0"
 
-docsify@>=3, docsify@^4.10.2, docsify@^4.11.2:
+docsify@4.11.3, docsify@>=3, docsify@^4.10.2:
   version "4.11.3"
   resolved "https://registry.yarnpkg.com/docsify/-/docsify-4.11.3.tgz#d79af6f92d48d2c1857b7f76df333db4fd6d19ec"
   integrity sha512-o9AvGb4vZOlmorg/58Kj6tNdfBaoSQUJZSFC6fJsfLjGFt45kiXhA2UmALnnVk5sol0WgSzxZlcZw6tu1gVu4Q==
@@ -1972,7 +1972,7 @@ dotenv@^8.2.0:
   resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-8.2.0.tgz#97e619259ada750eea3e4ea3e26bceea5424b16a"
   integrity sha512-8sJ78ElpbDJBHNeBzUbUVLsqKdccaa/BXF1uPTw3GrvQTBgrQrtObr2mUrE38vzYd8cEv+m/JBfDLioYcfXoaw==
 
-dripip@^0.8.0:
+dripip@0.8.0:
   version "0.8.0"
   resolved "https://registry.yarnpkg.com/dripip/-/dripip-0.8.0.tgz#f75d8606efcf615c21401f00e546d6480426c3bb"
   integrity sha512-m8pZLDveyEdXyK4zTzHfniCdQni8KnRskagrg30a46oIbvFi/IKbvqh4XqQHB4buVA2NCa4PO7uDm5P1Lk0AIg==
@@ -4102,7 +4102,7 @@ node-notifier@^6.0.0:
     shellwords "^0.1.1"
     which "^1.3.1"
 
-node-pty@^0.9.0:
+node-pty@0.9.0:
   version "0.9.0"
   resolved "https://registry.yarnpkg.com/node-pty/-/node-pty-0.9.0.tgz#8f9bcc0d1c5b970a3184ffd533d862c7eb6590a6"
   integrity sha512-MBnCQl83FTYOu7B4xWw10AW77AAh7ThCE1VXEv+JeWj8mSpGo+0bwgsV+b23ljBFwEM9OmsOv3kM27iUPPm84g==
