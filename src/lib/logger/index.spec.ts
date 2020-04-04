@@ -440,19 +440,12 @@ describe('.child', () => {
   })
 
   it('log output includes path field showing the logger namespacing', () => {
-    log
-      .child('b')
-      .child('c')
-      .child('d')
-      .info('foo')
+    log.child('b').child('c').child('d').info('foo')
     expect(output.memory.json[0].path).toEqual(['root', 'b', 'c', 'd'])
   })
 
   it('inherits context from parent', () => {
-    log
-      .addToContext({ foo: 'bar' })
-      .child('tim')
-      .info('hi')
+    log.addToContext({ foo: 'bar' }).child('tim').info('hi')
     expect(output.memory.json[0].context).toEqual({ foo: 'bar' })
   })
 
@@ -474,10 +467,7 @@ describe('.child', () => {
 
   it('inherits level from parent', () => {
     expect(log.settings.level).toBe('debug')
-    log
-      .settings({ level: 'trace' })
-      .child('tim')
-      .trace('hi')
+    log.settings({ level: 'trace' }).child('tim').trace('hi')
     // The fact that we get output for trace log from child means it honored the
     // setLevel.
     expect(output.memory.jsonOrRaw).toMatchSnapshot()

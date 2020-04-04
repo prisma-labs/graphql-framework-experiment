@@ -67,7 +67,7 @@ export function create() {
         }
       },
       unforward(uncp: nodecp.ChildProcess) {
-        const i = cps.findIndex(cp => cp === uncp)
+        const i = cps.findIndex((cp) => cp === uncp)
         if (i > -1) {
           cps.splice(i, 1)
         }
@@ -95,7 +95,7 @@ export function create() {
         }
 
         // subsribe to row/column changes
-        process.on('message', message => {
+        process.on('message', (message) => {
           if (message && message.type === 'tty_resize') {
             process.stdout.rows = message.rows
             process.stdout.columns = message.columns

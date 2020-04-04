@@ -35,20 +35,20 @@ export function generateHelpForCommandIndex(
   subCommands: { name: string; description: string }[]
 ): string {
   const maxSubCommandNameLength = Math.max(
-    ...subCommands.map(s => s.name.length)
+    ...subCommands.map((s) => s.name.length)
   )
 
   return `
 ${chalk.bold('Usage:')}
     
 ${chalk.gray('$')} nexus ${commandName} [${subCommands
-    .map(c => c.name)
+    .map((c) => c.name)
     .join('|')}]
 
 ${chalk.bold('Commands:')}
 
 ${subCommands
-  .map(c => `  ${c.name.padEnd(maxSubCommandNameLength)}  ${c.description}`)
+  .map((c) => `  ${c.name.padEnd(maxSubCommandNameLength)}  ${c.description}`)
   .join('\n')}
   `
 }
@@ -73,7 +73,9 @@ ${chalk.gray('$')} nexus ${commandName} [options]
 ${chalk.bold('Options:')}
 
 ${optionsWithHelp
-  .map(c => `  --${c.name}${c.alias ? `, -${c.alias}` : ''}   ${c.description}`)
+  .map(
+    (c) => `  --${c.name}${c.alias ? `, -${c.alias}` : ''}   ${c.description}`
+  )
   .join('\n')}
   `
 }

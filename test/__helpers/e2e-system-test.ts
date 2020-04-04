@@ -152,10 +152,7 @@ export async function e2eTestApp(
 
   log.warn('run build')
 
-  output = await app
-    .nexus(['build'])
-    .pipe(refCount(), bufferOutput)
-    .toPromise()
+  output = await app.nexus(['build']).pipe(refCount(), bufferOutput).toPromise()
 
   expect(output).toContain('success')
 
@@ -266,10 +263,7 @@ export async function e2eTestApp(
 
   log.warn('with plugin, build app')
 
-  output = await app
-    .nexus(['build'])
-    .pipe(refCount(), bufferOutput)
-    .toPromise()
+  output = await app.nexus(['build']).pipe(refCount(), bufferOutput).toPromise()
 
   expect(output).toContain('build.onStart hook from foobar')
   expect(output).toContain('success')

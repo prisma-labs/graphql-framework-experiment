@@ -15,10 +15,7 @@ import {
   CWDProjectNameOrGenerate,
 } from '../../../lib/utils'
 
-const log = rootLogger
-  .child('cli')
-  .child('create')
-  .child('app')
+const log = rootLogger.child('cli').child('create').child('app')
 
 const SQLITE_DEFAULT_CONNECTION_URI = 'file:./dev.db'
 
@@ -204,7 +201,7 @@ export async function runBootstrapper(
       envAdditions: { NEXUS_CREATE_HANDOFF: 'true' },
       require: true,
     })
-    .catch(error => {
+    .catch((error) => {
       console.error(error.message)
       process.exit(error.exitCode ?? 1)
     })
@@ -249,7 +246,7 @@ export async function runBootstrapper(
         envAdditions: { NEXUS_CREATE_HANDOFF: 'true' },
         require: true,
       })
-      .catch(error => {
+      .catch((error) => {
         console.error(error.message)
         process.exit(error.exitCode ?? 1)
       })

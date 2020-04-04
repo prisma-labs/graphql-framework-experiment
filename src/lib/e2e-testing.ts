@@ -174,14 +174,14 @@ export function spawn(
 ): ConnectableObservable<string> {
   const nodePty = requireNodePty()
   const subject = new Subject<string>()
-  const ob = new Observable<string>(sub => {
+  const ob = new Observable<string>((sub) => {
     const proc = nodePty.spawn(command, args, {
       cols: process.stdout.columns ?? 80,
       rows: process.stdout.rows ?? 80,
       ...opts,
     })
 
-    proc.on('data', data => {
+    proc.on('data', (data) => {
       process.stdout.write(data)
       sub.next(stripAnsi(data))
     })

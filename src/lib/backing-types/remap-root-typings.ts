@@ -31,7 +31,7 @@ export function withRemappedRootTypings(
           )
           if (suggestions.length > 0) {
             log.warn(
-              `Did you mean ${suggestions.map(s => `"${s}"`).join(', ')} ?`
+              `Did you mean ${suggestions.map((s) => `"${s}"`).join(', ')} ?`
             )
           }
           return

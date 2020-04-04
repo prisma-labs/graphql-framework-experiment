@@ -91,7 +91,7 @@ export function watch(
   const originalOnListener = watcher.on.bind(watcher)
 
   // Use `function` to bind originalOnListener to the right context
-  watcher.on = function(event: string, listener: (...args: any[]) => void) {
+  watcher.on = function (event: string, listener: (...args: any[]) => void) {
     const debouncedListener = simpleDebounce(listener)
 
     if (event === 'all') {
@@ -109,7 +109,7 @@ export function watch(
     })
   }
 
-  watcher.addSilently = path => {
+  watcher.addSilently = (path) => {
     programmaticallyWatchedFiles.push(path)
     watcher.add(path)
   }

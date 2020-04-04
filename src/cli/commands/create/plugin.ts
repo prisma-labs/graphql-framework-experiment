@@ -10,10 +10,7 @@ import { rootLogger } from '../../../lib/nexus-logger'
 import * as proc from '../../../lib/process'
 import { createGitRepository } from '../../../lib/utils'
 
-const log = rootLogger
-  .child('cli')
-  .child('create')
-  .child('plugin')
+const log = rootLogger.child('cli').child('create').child('plugin')
 
 export default class Plugin implements Command {
   async parse() {

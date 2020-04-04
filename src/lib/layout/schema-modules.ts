@@ -35,5 +35,5 @@ export function findDirOrModules(opts: { projectRoot: string }): string[] {
     ],
   })
 
-  return files.map(f => localFS.path(f))
+  return files.map((f) => localFS.path(f))
 }

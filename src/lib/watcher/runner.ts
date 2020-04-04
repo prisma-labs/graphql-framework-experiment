@@ -1,8 +1,6 @@
 // Not using ECMA modules b/c TS autoformat moves it down but we need it first
 // for side-effects.
-require('../tty-linker')
-  .create()
-  .child.install()
+require('../tty-linker').create().child.install()
 
 import * as tsNode from 'ts-node'
 import { createDevAppRunner } from '../../runtime/start'
@@ -69,7 +67,7 @@ async function main() {
   // Error handler that displays a notification and logs the stack to stderr:
 
   let caught = false
-  process.on('uncaughtException', function(err) {
+  process.on('uncaughtException', function (err) {
     // Handle exepection only once
     if (caught) return
     caught = true
@@ -93,7 +91,7 @@ async function main() {
   // could be anything, sadly.
   //
   let rejected = false
-  process.on('unhandledRejection', function(err: any) {
+  process.on('unhandledRejection', function (err: any) {
     // Handle exepection only once
     if (rejected) return
     rejected = true
@@ -119,7 +117,7 @@ async function main() {
   })
 
   // Hook into require() and notify the parent process about required files
-  hook(cfg, module, filePath => {
+  hook(cfg, module, (filePath) => {
     IPC.client.senders.moduleImported({ filePath })
   })
 

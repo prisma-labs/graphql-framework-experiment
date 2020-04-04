@@ -1,6 +1,6 @@
 const vm = require('vm')
 
-export default function(
+export default function (
   cfg: { vm: boolean },
   appRunner: NodeModule,
   callback: (file: string) => void
@@ -23,7 +23,7 @@ export default function(
   function patch(obj: any, method: string, optionsArgIndex: number) {
     const orig = obj[method]
     if (!orig) return
-    obj[method] = function() {
+    obj[method] = function () {
       const opts = arguments[optionsArgIndex]
       let file = null
       if (opts) {
@@ -38,7 +38,7 @@ export default function(
    * (Re-)install hooks for all registered file extensions.
    */
   function updateHooks() {
-    Object.keys(require.extensions).forEach(function(ext) {
+    Object.keys(require.extensions).forEach(function (ext) {
       const fn = require.extensions[ext]
 
       if (typeof fn === 'function' && fn.name !== 'nodeDevHook') {

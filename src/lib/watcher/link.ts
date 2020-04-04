@@ -64,7 +64,7 @@ export class Link {
   private kill() {
     log.trace('kill child')
 
-    return new Promise<StopResult>(res => {
+    return new Promise<StopResult>((res) => {
       if (!this.childProcess) {
         log.trace('child already killed')
         return res(null)
@@ -119,15 +119,15 @@ export class Link {
       }
     })
 
-    this.childProcess.stdout.on('data', data => {
+    this.childProcess.stdout.on('data', (data) => {
       process.stdout.write(data)
     })
 
-    this.childProcess.stderr.on('data', data => {
+    this.childProcess.stderr.on('data', (data) => {
       process.stderr.write(data)
     })
 
-    this.childProcess.once('error', error => {
+    this.childProcess.once('error', (error) => {
       log.warn('runner errored out, respawning', { error })
       this.startOrRestart()
     })

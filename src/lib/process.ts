@@ -109,7 +109,7 @@ export async function run(
       stdout += String(chunk)
     }
 
-    child.once('error', error => {
+    child.once('error', (error) => {
       const richError = createCommandError({
         command: commandRaw,
         underlyingError: error,

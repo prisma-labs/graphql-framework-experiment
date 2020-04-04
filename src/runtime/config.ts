@@ -199,7 +199,7 @@ function registerTsExt(): { unregister: () => void } {
   require.extensions['.ts'] = (m: any, filename) => {
     const _compile = m._compile
 
-    m._compile = function(code: string, fileName: string) {
+    m._compile = function (code: string, fileName: string) {
       const transpiledModule = transpileModule(code, {
         target: ScriptTarget.ES5,
       })
@@ -310,7 +310,7 @@ function createSecretLoader(stage: string): SecretLoader {
   }
 
   return {
-    secret: secretName => {
+    secret: (secretName) => {
       const loadedSecrets = loadSecrets()
 
       if (!loadedSecrets?.secrets[secretName]) {

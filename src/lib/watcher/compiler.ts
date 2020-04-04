@@ -17,44 +17,42 @@ let sourceMapSupportPath = require
 let tsHandler: any = null
 let tmpDir = '.ts-node'
 const extensions = ['.ts', '.tsx']
-const empty = function() {}
+const empty = function () {}
 const cwd = process.cwd()
-const compilationInstanceStamp = Math.random()
-  .toString()
-  .slice(2)
+const compilationInstanceStamp = Math.random().toString().slice(2)
 
 export const compiler: Compiler = {
   allowJs: false,
   tsConfigPath: '',
-  getCompilationId: function() {
+  getCompilationId: function () {
     return compilationInstanceStamp
   },
-  createCompiledDir: function() {
+  createCompiledDir: function () {
     fsJetPack.dir(compiler.getCompiledDir())
   },
-  getCompiledDir: function() {
+  getCompiledDir: function () {
     return path.join(tmpDir, 'compiled').replace(/\\/g, '/')
   },
-  getCompileReqFilePath: function() {
+  getCompileReqFilePath: function () {
     return path.join(
       compiler.getCompiledDir(),
       compiler.getCompilationId() + '.req'
     )
   },
-  getCompilerReadyFilePath: function() {
+  getCompilerReadyFilePath: function () {
     return path
       .join(os.tmpdir(), 'ts-node-dev-ready-' + compilationInstanceStamp)
       .replace(/\\/g, '/')
   },
-  getChildHookPath: function() {
+  getChildHookPath: function () {
     return path
       .join(os.tmpdir(), 'ts-node-dev-hook-' + compilationInstanceStamp + '.js')
       .replace(/\\/g, '/')
   },
-  writeReadyFile: function() {
+  writeReadyFile: function () {
     fsJetPack.write(compiler.getCompilerReadyFilePath(), '')
   },
-  writeChildHookFile: function(options: Opts) {
+  writeChildHookFile: function (options: Opts) {
     let fileDataPath = require.resolve('./child-require-hook')
     let fileData = fsJetPack.read(fileDataPath)!
 
@@ -112,7 +110,7 @@ export const compiler: Compiler = {
     )
     fsJetPack.write(compiler.getChildHookPath(), fileData)
   },
-  init: function(options) {
+  init: function (options) {
     log.trace('init')
     const project = options['project']
     compiler.tsConfigPath =
@@ -188,7 +186,7 @@ export const compiler: Compiler = {
     tsHandler = require.extensions['.ts']
     compiler.writeChildHookFile(options)
   },
-  compileChanged: function(fileName) {
+  compileChanged: function (fileName) {
     const ext = path.extname(fileName)
     if (extensions.indexOf(ext) < 0) return
     try {
@@ -205,7 +203,7 @@ export const compiler: Compiler = {
       console.error(e)
     }
   },
-  compile: function(params) {
+  compile: function (params) {
     log.trace('compile start', { compile: params.compile })
     const fileName = params.compile
     let code = fsJetPack.read(fileName)!

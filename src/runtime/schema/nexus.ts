@@ -59,31 +59,31 @@ export function createNexusSingleton() {
     return typeDef
   }
 
-  const inputObjectType: typeof Nexus.inputObjectType = config => {
+  const inputObjectType: typeof Nexus.inputObjectType = (config) => {
     const typeDef = Nexus.inputObjectType(config)
     __types.push(typeDef)
     return typeDef
   }
 
-  const queryType: typeof Nexus.queryType = config => {
+  const queryType: typeof Nexus.queryType = (config) => {
     const typeDef = Nexus.queryType(config)
     __types.push(typeDef)
     return typeDef
   }
 
-  const mutationType: typeof Nexus.mutationType = config => {
+  const mutationType: typeof Nexus.mutationType = (config) => {
     const typeDef = Nexus.mutationType(config)
     __types.push(typeDef)
     return typeDef
   }
 
-  const extendType: typeof Nexus.extendType = config => {
+  const extendType: typeof Nexus.extendType = (config) => {
     const typeDef = Nexus.extendType(config)
     __types.push(typeDef)
     return typeDef
   }
 
-  const extendInputType: typeof Nexus.extendInputType = config => {
+  const extendInputType: typeof Nexus.extendInputType = (config) => {
     const typeDef = Nexus.extendInputType(config)
     __types.push(typeDef)
     return typeDef

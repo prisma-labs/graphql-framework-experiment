@@ -211,7 +211,7 @@ export const scan = async (opts?: { cwd?: string }): Promise<ScanResult> => {
 // todo once user can configure these for their project, settle on only one of
 // these, since user will be able to easily change it
 const ENTRYPOINT_MODULE_NAMES = ['app', 'server', 'service']
-const ENTRYPOINT_FILE_NAMES = ENTRYPOINT_MODULE_NAMES.map(n => n + '.ts')
+const ENTRYPOINT_FILE_NAMES = ENTRYPOINT_MODULE_NAMES.map((n) => n + '.ts')
 
 const checks = {
   no_app_or_schema_modules: {

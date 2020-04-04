@@ -109,10 +109,8 @@ export async function hardWriteFile(filePath: string, data: string) {
  */
 export function getTmpDir(prefix: string = '') {
   const tmpDirPath = NodeFS.realpathSync(OS.tmpdir())
-  const id = Math.random()
-    .toString()
-    .slice(2)
-  const dirName = [prefix, id].filter(x => x).join('-')
+  const id = Math.random().toString().slice(2)
+  const dirName = [prefix, id].filter((x) => x).join('-')
 
   // https://github.com/nodejs/node/issues/11422
   const tmpDir = Path.join(tmpDirPath, dirName)
@@ -195,7 +193,7 @@ export function findFile(
       ...paths,
       '!node_modules/**/*',
       '!.yalc/**/*',
-      ...(config?.ignore?.map(i => `!${i}`) ?? []),
+      ...(config?.ignore?.map((i) => `!${i}`) ?? []),
     ],
   })
 
@@ -219,11 +217,11 @@ export async function findFiles(
     matching: [
       ...paths,
       ...baseIgnores,
-      ...(config?.ignore?.map(i => `!${i}`) ?? []),
+      ...(config?.ignore?.map((i) => `!${i}`) ?? []),
     ],
   })
 
-  return files.map(f => (path.isAbsolute(f) ? f : localFS.path(f)))
+  return files.map((f) => (path.isAbsolute(f) ? f : localFS.path(f)))
 }
 
 export const baseIgnores = ['!node_modules/**/*', '!.*/**/*']

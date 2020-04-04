@@ -60,7 +60,7 @@ export class Dev implements Command {
     }
 
     await createWatcher({
-      plugins: [layoutPlugin].concat(plugins.map(p => p.hooks)),
+      plugins: [layoutPlugin].concat(plugins.map((p) => p.hooks)),
       sourceRoot: layout.sourceRoot,
     })
   }

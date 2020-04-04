@@ -118,11 +118,11 @@ function setupExpress(
 
   express.use(
     opts.path,
-    createExpressGraphql(req => {
+    createExpressGraphql((req) => {
       return {
         ...opts,
         context: settingsGiven.context(req),
-        customFormatErrorFn: error => {
+        customFormatErrorFn: (error) => {
           const colorlessMessage = stripAnsi(error.message)
 
           if (process.env.NEXUS_STAGE === 'dev') {
@@ -211,7 +211,7 @@ function setupExpress(
 
   return {
     start: () =>
-      new Promise<void>(res => {
+      new Promise<void>((res) => {
         http.listen({ port: opts.port, host: opts.host }, () => {
           // - We do not support listening on unix domain sockets so string
           //   value will never be present here.
@@ -227,7 +227,7 @@ function setupExpress(
       }),
     stop: () =>
       new Promise<void>((res, rej) => {
-        http.close(err => {
+        http.close((err) => {
           if (err) {
             rej(err)
           } else {
@@ -297,10 +297,10 @@ function contextFactory(
   contextContributors: ContextContributor<any>[],
   plugins: Plugin.RuntimeContributions[]
 ): ContextCreator {
-  const createContext: ContextCreator = req => {
+  const createContext: ContextCreator = (req) => {
     let context: Record<string, any> = {}
 
-      // TODO HACK
+    // TODO HACK
     ;(req as any).log = log.child('request')
 
     // Integrate context from plugins
