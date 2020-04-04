@@ -1,8 +1,10 @@
 types:
-  # By default types specified in commitizen/conventional-commit-types is used.
-  # See: https://github.com/commitizen/conventional-commit-types/blob/v2.2.0/index.json
+  - deps
+  - improve
+  # defaults
   - feat
   - fix
+  - improvement
   - docs
   - style
   - refactor
@@ -12,5 +14,3 @@ types:
   - ci
   - chore
   - revert
-  # custom
-  - improve
