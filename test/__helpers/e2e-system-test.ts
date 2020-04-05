@@ -22,7 +22,7 @@ export async function e2eTestApp(
   const takeUntilServerListening = takeWhile(
     (data: string) => !data.includes(SERVER_LISTENING_EVENT)
   )
-  const bufferOutput = scan((buffer, data: string) => buffer + data, '')
+  const bufferOutput = scan((buffer: string, data: string) => buffer + data, '')
   const SERVER_LISTENING_EVENT = 'server listening'
   let sub: Subscription
   let proc: ConnectableObservable<string>
@@ -35,7 +35,7 @@ export async function e2eTestApp(
     await app
       .localNexusCreateApp({
         databaseType: 'NO_DATABASE',
-        packageManagerType: 'npm',
+        packageManagerType: 'yarn',
       })
       .pipe(
         refCount(),
@@ -48,7 +48,7 @@ export async function e2eTestApp(
     await app
       .npxNexusCreateApp({
         databaseType: 'NO_DATABASE',
-        packageManagerType: 'npm',
+        packageManagerType: 'yarn',
         nexusVersion: process.env.E2E_NEXUS_VERSION ?? 'latest',
       })
       .pipe(
@@ -221,7 +221,7 @@ export async function e2eTestApp(
     // be built against the changes is to work with the local nexus version, not
     // one published to npm.
     await pluginProject
-      .spawn(['npm', 'install', options.localNexusPath])
+      .spawn(['yarn', 'add', '-D', options.localNexusPath])
       .refCount()
       .pipe(bufferOutput)
       .toPromise()
@@ -238,7 +238,7 @@ export async function e2eTestApp(
   log.warn('install plugin into app via file path')
 
   await app
-    .spawn(['npm', 'install', pluginProject.dir])
+    .spawn(['yarn', 'add', pluginProject.dir])
     .pipe(refCount(), bufferOutput)
     .toPromise()
 
