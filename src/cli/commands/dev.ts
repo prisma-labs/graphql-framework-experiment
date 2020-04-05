@@ -24,7 +24,7 @@ export class Dev implements Command {
     /**
      * Load config before loading plugins which may rely on env vars being defined
      */
-    const layout = await Layout.createLayout()
+    const layout = await Layout.create()
     const plugins = await Plugin.loadInstalledWorktimePlugins(layout)
 
     await findOrScaffoldTsConfig(layout)
@@ -50,7 +50,7 @@ export class Dev implements Command {
             change.type === 'unlinkDir'
           ) {
             log.trace('analyzing project layout')
-            const layout = await Layout.createLayout()
+            const layout = await Layout.create()
             return {
               environmentAdditions: Layout.saveDataForChildProcess(layout),
             }

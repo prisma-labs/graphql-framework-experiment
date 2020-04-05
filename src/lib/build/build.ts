@@ -39,7 +39,7 @@ export async function buildNexusApp(settings: BuildSettings) {
   const startTime = Date.now()
   const deploymentTarget = normalizeTarget(settings.target)
 
-  const layout = await Layout.createLayout({
+  const layout = await Layout.create({
     buildOutputRelative:
       settings.output ??
       computeBuildOutputFromTarget(deploymentTarget) ??

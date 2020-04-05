@@ -14,7 +14,7 @@ export class Doctor implements Command {
  */
 async function tsconfig() {
   console.log(chalk.bold('-- tsconfig.json --'))
-  const layout = await Layout.createLayout()
+  const layout = await Layout.create()
   const result = await findOrScaffoldTsConfig(layout, {
     exitAfterError: false,
   })

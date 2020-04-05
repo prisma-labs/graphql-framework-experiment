@@ -108,7 +108,7 @@ const optionDefaults = {
 /**
  * Perform a layout scan and return results with attached helper functions.
  */
-export async function createLayout(optionsGiven?: Options): Promise<Layout> {
+export async function create(optionsGiven?: Options): Promise<Layout> {
   // TODO lodash merge defaults or something
   const options: Required<Options> = {
     buildOutputRelative:
@@ -329,7 +329,7 @@ export async function loadDataFromParentProcess(): Promise<Layout> {
     log.trace(
       'WARNING an attempt to load saved layout data was made but no serialized data was found in the environment. This may represent a bug. Layout is being re-calculated as a fallback solution. This should result in the same layout data (if not, another probably bug, compounding confusion) but at least adds latentency to user experience.'
     )
-    return createLayout({}) // todo no build output...
+    return create({}) // todo no build output...
   } else {
     return createFromData(JSON.parse(savedData) as Data)
   }

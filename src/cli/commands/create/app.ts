@@ -510,7 +510,7 @@ async function loadDataFromParentProcess(): Promise<ParentData> {
     )
 
     return {
-      layout: await Layout.createLayout({}),
+      layout: await Layout.create({}),
       database: 'SQLite',
       connectionURI: SQLITE_DEFAULT_CONNECTION_URI,
     }

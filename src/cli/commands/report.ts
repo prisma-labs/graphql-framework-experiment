@@ -1,6 +1,6 @@
 import { EOL } from 'os'
 import { arg, Command, isError } from '../../lib/cli'
-import { createLayout } from '../../lib/layout'
+import { create } from '../../lib/layout'
 import { rootLogger } from '../../lib/nexus-logger'
 import { fatal } from '../../lib/process'
 import { getNexusReport } from '../../lib/report'
@@ -20,7 +20,7 @@ export class Report implements Command {
       fatal('')
     }
 
-    const layout = await createLayout()
+    const layout = await create()
     const report = getNexusReport(layout)
 
     if (args['--json']) {

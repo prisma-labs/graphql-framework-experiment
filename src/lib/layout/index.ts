@@ -1,6 +1,6 @@
 export {
+  create,
   createFromData,
-  createLayout,
   Data,
   DEFAULT_BUILD_FOLDER_NAME,
   findAppModule,
