@@ -115,7 +115,7 @@ export async function create(optionsGiven?: Options): Promise<Layout> {
       optionsGiven?.buildOutputRelative ?? optionDefaults.buildOutput,
     cwd: optionsGiven?.cwd ?? process.cwd(),
   }
-  const data = await scanUsersProjectLayout({ cwd: options.cwd })
+  const data = await scan({ cwd: options.cwd })
   const layout = createFromData({
     ...data,
     buildOutputRelative: options.buildOutputRelative,
@@ -164,9 +164,7 @@ export function createFromData(layoutData: Data): Layout {
  * Analyze the user's project files/folders for how conventions are being used
  * and where key modules exist.
  */
-export const scanUsersProjectLayout = async (opts?: {
-  cwd?: string
-}): Promise<ScanResult> => {
+export const scan = async (opts?: { cwd?: string }): Promise<ScanResult> => {
   log.trace('starting scan...')
   const projectRoot = opts?.cwd ?? findProjectDir()
   const packageManagerType = await PackageManager.detectProjectPackageManager({
