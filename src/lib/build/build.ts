@@ -1,6 +1,5 @@
 import { stripIndent } from 'common-tags'
 import * as FS from 'fs-jetpack'
-import * as Path from 'path'
 import * as Layout from '../../lib/layout'
 import {
   compile,
@@ -40,7 +39,7 @@ export async function buildNexusApp(settings: BuildSettings) {
   const startTime = Date.now()
   const deploymentTarget = normalizeTarget(settings.target)
 
-  const layout = await Layout.create({
+  const layout = await Layout.createLayout({
     buildOutputRelative:
       settings.output ??
       computeBuildOutputFromTarget(deploymentTarget) ??

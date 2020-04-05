@@ -6,7 +6,6 @@ import { PackageJson } from 'type-fest'
 import {
   findDirContainingFileRecurisvelyUpwardSync,
   findFile,
-  stripExt,
 } from '../../lib/fs'
 import { START_MODULE_NAME } from '../../runtime/start/start-module'
 import { rootLogger } from '../nexus-logger'
@@ -109,14 +108,14 @@ const optionDefaults = {
 /**
  * Perform a layout scan and return results with attached helper functions.
  */
-export async function create(optionsGiven?: Options): Promise<Layout> {
+export async function createLayout(optionsGiven?: Options): Promise<Layout> {
   // TODO lodash merge defaults or something
   const options: Required<Options> = {
     buildOutputRelative:
       optionsGiven?.buildOutputRelative ?? optionDefaults.buildOutput,
     cwd: optionsGiven?.cwd ?? process.cwd(),
   }
-  const data = await scan({ cwd: options.cwd })
+  const data = await scanUsersProjectLayout({ cwd: options.cwd })
   const layout = createFromData({
     ...data,
     buildOutputRelative: options.buildOutputRelative,
@@ -165,7 +164,9 @@ export function createFromData(layoutData: Data): Layout {
  * Analyze the user's project files/folders for how conventions are being used
  * and where key modules exist.
  */
-export const scan = async (opts?: { cwd?: string }): Promise<ScanResult> => {
+export const scanUsersProjectLayout = async (opts?: {
+  cwd?: string
+}): Promise<ScanResult> => {
   log.trace('starting scan...')
   const projectRoot = opts?.cwd ?? findProjectDir()
   const packageManagerType = await PackageManager.detectProjectPackageManager({
@@ -328,7 +329,7 @@ export async function loadDataFromParentProcess(): Promise<Layout> {
     log.trace(
       'WARNING an attempt to load saved layout data was made but no serialized data was found in the environment. This may represent a bug. Layout is being re-calculated as a fallback solution. This should result in the same layout data (if not, another probably bug, compounding confusion) but at least adds latentency to user experience.'
     )
-    return create({}) // todo no build output...
+    return createLayout({}) // todo no build output...
   } else {
     return createFromData(JSON.parse(savedData) as Data)
   }
