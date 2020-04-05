@@ -11,19 +11,10 @@ assignees: ''
 <!-- 1. Remove sections/details you do not complete -->
 <!-- 2. Add sections/details useful to you          -->
 
-|                    |                      |
-| ------------------ | -------------------- |
-| repro              | [link](https://todo) |
-| `node` version     | `...`                |
-| `nexus` version    | `...`                |
-| OS and its version | `...`                |
+#### Nexus Report <!-- Copy the result of `$ nexus report` to this section -->
 
-#### Description
+#### Screenshot
 
-<!-- Screenshots are often good -->
+#### Description <!-- If screenshot not obvious enough -->
 
-...
-
-#### Repro Steps
-
-1. ...
+#### Repro <!-- Steps or repo link -->

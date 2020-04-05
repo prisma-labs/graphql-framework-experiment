@@ -41,7 +41,7 @@ const layoutContext = TestContext.create(
       },
       async scan() {
         const tmpDir = opts.tmpDir()
-        const data = await Layout.create({ cwd: tmpDir })
+        const data = await Layout.createLayout({ cwd: tmpDir })
         return repalceInObject(tmpDir, '__DYNAMIC__', data.data)
       },
     }
