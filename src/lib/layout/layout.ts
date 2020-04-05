@@ -6,7 +6,6 @@ import { PackageJson } from 'type-fest'
 import {
   findDirContainingFileRecurisvelyUpwardSync,
   findFile,
-  stripExt,
 } from '../../lib/fs'
 import { START_MODULE_NAME } from '../../runtime/start/start-module'
 import { rootLogger } from '../nexus-logger'

@@ -1,9 +1,7 @@
 import { stripIndent } from 'common-tags'
-import * as fs from 'fs-jetpack'
-import * as Path from 'path'
-import * as Layout from '../layout/layout'
 import { PackageJson } from 'type-fest'
 import { RuntimePlugin, TesttimePlugin, WorktimePlugin } from '.'
+import * as Layout from '../layout/layout'
 import { rootLogger } from '../nexus-logger'
 import { fatal } from '../process'
 import { requireModule } from '../utils'
@@ -107,7 +105,7 @@ export function parsePluginName(packageName: string): null | string {
 /**
  *
  */
-function extractPluginNames(packageJson: null | PackageJson): string[] {
+export function extractPluginNames(packageJson: null | PackageJson): string[] {
   const deps = packageJson?.dependencies ?? {}
   const depNames = Object.keys(deps)
   const pluginDepNames = depNames.filter((depName) =>

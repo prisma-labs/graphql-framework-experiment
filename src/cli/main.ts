@@ -78,6 +78,7 @@ async function main(): Promise<number> {
     dev: new Commands.Dev(),
     build: new Commands.Build(),
     doctor: new Commands.Doctor(),
+    report: new Commands.Report(),
     create: {
       app: new Commands.Create.App(),
       plugin: new Commands.Create.Plugin(),

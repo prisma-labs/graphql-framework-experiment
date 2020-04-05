@@ -1,6 +1,5 @@
 import { stripIndent } from 'common-tags'
 import * as FS from 'fs-jetpack'
-import * as Path from 'path'
 import * as Layout from '../../lib/layout'
 import {
   compile,
