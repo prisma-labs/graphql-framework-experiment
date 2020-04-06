@@ -1,5 +1,5 @@
 ---
-name: 3. Docs
+name: Docs
 about: Feedback or ideas about the documentation
 title: ''
 labels: type/docs

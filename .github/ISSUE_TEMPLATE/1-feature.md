@@ -1,8 +1,8 @@
 ---
-name: 5. Something Else
-about: Feedback, support, docs, performance, ...
+name: Feature
+about: You have an idea for a new capability or a refinement to an existing one
 title: ''
-labels: ''
+labels: type/feat
 assignees: ''
 ---
 
@@ -11,8 +11,6 @@ assignees: ''
 <!-- 1. Remove sections/details you do not complete -->
 <!-- 2. Add sections/details useful to you          -->
 
-#### What
+#### Perceived Problem
 
-#### Why
-
-#### How
+#### Ideas / Proposed Solution(s)
