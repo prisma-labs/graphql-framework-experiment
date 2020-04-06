@@ -2,12 +2,12 @@ import * as NexusSchema from '@nexus/schema'
 import * as HTTP from 'http'
 import * as Layout from '../../lib/layout'
 import * as Logger from '../../lib/logger'
-import { RuntimeContributions } from '../../lib/plugin'
 import {
-  createStatefulNexusSchema,
-  StatefulNexusSchemaBuilders,
+  createNexusSchemaStateful,
+  NexusSchemaStatefulBuilders,
   writeTypegen,
-} from '../../lib/stateful-nexus-schema'
+} from '../../lib/nexus-schema-stateful'
+import { RuntimeContributions } from '../../lib/plugin'
 import { log } from './logger'
 import {
   changeSettings,
@@ -22,7 +22,7 @@ interface Request extends HTTP.IncomingMessage {
 
 export type ContextContributor<Req> = (req: Req) => Record<string, unknown>
 
-export interface Schema extends StatefulNexusSchemaBuilders {
+export interface Schema extends NexusSchemaStatefulBuilders {
   addToContext: <Req = Request>(
     contextContributor: ContextContributor<Req>
   ) => void
@@ -50,7 +50,7 @@ interface SchemaInternal {
 }
 
 export function create(): SchemaInternal {
-  const statefulNexusSchema = createStatefulNexusSchema()
+  const statefulNexusSchema = createNexusSchemaStateful()
 
   const state: SchemaInternal['private']['state'] = {
     settings: {},
@@ -74,8 +74,8 @@ export function create(): SchemaInternal {
         const {
           schema,
           missingTypes,
-          typegenConfig,
-        } = statefulNexusSchema.makeSchema(nexusSchemaConfig)
+          finalConfig,
+        } = statefulNexusSchema.makeSchemaInternal(nexusSchemaConfig)
         if (nexusSchemaConfig.shouldGenerateArtifacts === true) {
           const devModeLayout = await Layout.loadDataFromParentProcess()
 
@@ -87,7 +87,7 @@ export function create(): SchemaInternal {
 
           const typegenPromise = writeTypegen(
             schema,
-            typegenConfig,
+            finalConfig,
             state.settings.rootTypingsGlobPattern,
             devModeLayout
           )

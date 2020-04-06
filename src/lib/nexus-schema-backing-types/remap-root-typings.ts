@@ -1,5 +1,4 @@
 import * as NexusSchema from '@nexus/schema'
-import * as Schema from '../../runtime/schema'
 import { suggestionList } from '../levenstein'
 import { rootLogger } from '../nexus-logger'
 import { BackingTypes } from './types'

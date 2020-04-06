@@ -1,25 +1,24 @@
 import * as NexusSchema from '@nexus/schema'
 import { AllTypeDefs } from '@nexus/schema/dist/core'
 import * as CustomTypes from './custom-types'
-import { makeSchemaWithoutTypegen, NexusSchemaWithMetadata } from './utils'
 
 // todo use this as return type of constructor
 export interface StatefulNexusSchema {
   state: {
     types: NexusSchemaTypeDef[]
   }
-  builders: StatefulNexusSchemaBuilders
+  builders: NexusSchemaStatefulBuilders
 }
 
 // prettier-ignore
-export interface StatefulNexusSchemaBuilders {
+export interface NexusSchemaStatefulBuilders {
   queryType: typeof NexusSchema.queryType
   mutationType: typeof NexusSchema.mutationType
-  objectType: ReturnType<typeof createStatefulNexusSchema>['builders']['objectType']
-  enumType: ReturnType<typeof createStatefulNexusSchema>['builders']['enumType']
-  scalarType: ReturnType<typeof createStatefulNexusSchema>['builders']['scalarType']
-  unionType: ReturnType<typeof createStatefulNexusSchema>['builders']['unionType']
-  interfaceType: ReturnType<typeof createStatefulNexusSchema>['builders']['interfaceType']
+  objectType: ReturnType<typeof createNexusSchemaStateful>['builders']['objectType']
+  enumType: ReturnType<typeof createNexusSchemaStateful>['builders']['enumType']
+  scalarType: ReturnType<typeof createNexusSchemaStateful>['builders']['scalarType']
+  unionType: ReturnType<typeof createNexusSchemaStateful>['builders']['unionType']
+  interfaceType: ReturnType<typeof createNexusSchemaStateful>['builders']['interfaceType']
   inputObjectType: typeof NexusSchema.inputObjectType
   arg: typeof NexusSchema.arg
   intArg: typeof NexusSchema.intArg
@@ -36,17 +35,14 @@ type NexusSchemaTypeDef =
   | NexusSchema.core.NexusExtendInputTypeDef<any>
   | NexusSchema.core.NexusExtendTypeDef<any>
 
-export function createStatefulNexusSchema() {
+export function createNexusSchemaStateful() {
   const state: StatefulNexusSchema['state'] = {
     types: [],
   }
 
-  function makeSchema(
-    config: NexusSchema.core.SchemaConfig
-  ): NexusSchemaWithMetadata {
+  function makeSchemaInternal(config: NexusSchema.core.SchemaConfig) {
     config.types.push(state.types)
-
-    return makeSchemaWithoutTypegen(config)
+    return NexusSchema.core.makeSchemaInternal(config)
   }
 
   function objectType<TypeName extends string>(
@@ -127,7 +123,7 @@ export function createStatefulNexusSchema() {
   const booleanArg = NexusSchema.booleanArg
 
   return {
-    makeSchema: makeSchema,
+    makeSchemaInternal: makeSchemaInternal,
     state: state,
     builders: {
       queryType,

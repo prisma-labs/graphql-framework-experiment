@@ -1,7 +1,7 @@
 import * as FS from 'fs-jetpack'
 import * as Path from 'path'
-import { MemoryFS, writeToFS } from '../../lib/testing-utils'
 import * as TestContext from '../test-context'
+import { MemoryFS, writeToFS } from '../testing-utils'
 import { extractAndWrite } from './extract-and-write'
 import { BackingTypes } from './types'
 import { DEFAULT_RELATIVE_BACKING_TYPES_TYPEGEN_PATH } from './write'
