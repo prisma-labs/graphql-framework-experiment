@@ -18,6 +18,10 @@ Use the settings to centrally configure various aspects of the various component
   }
   playground?: boolean
   schema?: {
+    nullable?: {
+      outputs?: boolean
+      intputs?: boolean
+    }
     connections?: {} // TODO
     generateGraphQLSDLFile?: false | string
     rootTypingsGlobPattern?: string
@@ -70,6 +74,20 @@ Use the settings to centrally configure various aspects of the various component
   **Default**
 
   `/graphql`
+
+* `schema.nullable.inputs`
+  Should passing arguments be optional for clients by default?
+
+  **Default**
+
+  `true`
+
+* `schema.nullable.outputs`
+  Should the data requested by clients _not_ be guaranteed to be returned by default?
+
+  **Default**
+
+  `true`
 
 * `schema.generateGraphQLSDLFile`
   Should a [GraphQL SDL file](https://www.prisma.io/blog/graphql-sdl-schema-definition-language-6755bcb9ce51) be generated when the app is built and to where?
