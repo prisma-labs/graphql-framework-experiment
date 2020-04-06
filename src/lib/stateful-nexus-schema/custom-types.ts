@@ -5,7 +5,7 @@
  */
 
 import * as NexusSchema from '@nexus/schema'
-import * as BackingTypes from '../../lib/backing-types'
+import * as BackingTypes from '../backing-types'
 
 type RootTyping =
   | BackingTypes.GetNexusFutureGen<'types'>

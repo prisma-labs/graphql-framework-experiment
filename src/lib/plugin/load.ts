@@ -1,7 +1,7 @@
 import { stripIndent } from 'common-tags'
 import prompts from 'prompts'
 import * as Layout from '../../lib/layout'
-import { shouldGenerateArtifacts } from '../../runtime/schema/config'
+import { shouldGenerateArtifacts } from '../../runtime/schema/settings'
 import { rootLogger } from '../nexus-logger'
 import { fatal, run, runSync } from '../process'
 import { importAllPlugins, Plugin } from './import'

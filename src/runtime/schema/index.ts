@@ -1,2 +1,2 @@
-export { AllNexusTypeDefs } from './nexus'
-export { create, Schema, SettingsData, SettingsInput } from './schema'
+export { create, Schema } from './schema'
+export { SettingsData, SettingsInput } from './settings'

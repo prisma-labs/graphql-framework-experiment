@@ -1,71 +1,39 @@
 import * as NexusSchema from '@nexus/schema'
+import * as HTTP from 'http'
 import * as Layout from '../../lib/layout'
+import * as Logger from '../../lib/logger'
 import { RuntimeContributions } from '../../lib/plugin'
-import { ConnectionConfig, createNexusSchemaConfig } from './config'
-import { createNexusSingleton } from './nexus'
-import { writeTypegen } from './utils'
+import {
+  createStatefulNexusSchema,
+  StatefulNexusSchemaBuilders,
+  writeTypegen,
+} from '../../lib/stateful-nexus-schema'
+import { log } from './logger'
+import {
+  changeSettings,
+  mapSettingsToNexusSchemaConfig,
+  SettingsData,
+  SettingsInput,
+} from './settings'
 
-export type SettingsInput = {
-  /**
-   * todo
-   */
-  connections?: {
-    /**
-     * todo
-     */
-    default?: ConnectionConfig | false
-    // Extra undefined below is forced by it being above, forced via `?:`.
-    // This is a TS limitation, cannot express void vs missing semantics,
-    // being tracked here: https://github.com/microsoft/TypeScript/issues/13195
-    [typeName: string]: ConnectionConfig | undefined | false
-  }
-  /**
-   * Should a [GraphQL SDL file](https://www.prisma.io/blog/graphql-sdl-schema-definition-language-6755bcb9ce51) be generated when the app is built and to where?
-   *
-   * A relative path is interpreted as being relative to the project directory.
-   * Intermediary folders are created automatically if they do not exist
-   * already.
-   *
-   * @default false
-   */
-  generateGraphQLSDLFile?: false | string
-  /**
-   * A glob pattern which will be used to find the files from which to extract the backing types used in the `rootTyping` option of `schema.(objectType|interfaceType|unionType|enumType)`
-   *
-   * @default "./**\/*.ts"
-   *
-   * @example "./**\/*.backing.ts"
-   */
-  rootTypingsGlobPattern?: string
+interface Request extends HTTP.IncomingMessage {
+  log: Logger.Logger
 }
 
-export type SettingsData = SettingsInput
+export type ContextContributor<Req> = (req: Req) => Record<string, unknown>
 
-export type Schema = {
-  // addToContext: <T extends {}>(
-  //   contextContributor: ContextContributor<T>
-  // ) => App
-  queryType: typeof NexusSchema.queryType
-  mutationType: typeof NexusSchema.mutationType
-  objectType: ReturnType<typeof createNexusSingleton>['objectType']
-  enumType: ReturnType<typeof createNexusSingleton>['enumType']
-  scalarType: ReturnType<typeof createNexusSingleton>['scalarType']
-  unionType: ReturnType<typeof createNexusSingleton>['unionType']
-  interfaceType: ReturnType<typeof createNexusSingleton>['interfaceType']
-  inputObjectType: typeof NexusSchema.inputObjectType
-  arg: typeof NexusSchema.arg
-  intArg: typeof NexusSchema.intArg
-  stringArg: typeof NexusSchema.stringArg
-  booleanArg: typeof NexusSchema.booleanArg
-  floatArg: typeof NexusSchema.floatArg
-  idArg: typeof NexusSchema.idArg
-  extendType: typeof NexusSchema.extendType
-  extendInputType: typeof NexusSchema.extendInputType
+export interface Schema extends StatefulNexusSchemaBuilders {
+  addToContext: <Req = Request>(
+    contextContributor: ContextContributor<Req>
+  ) => void
 }
 
-type SchemaInternal = {
+interface SchemaInternal {
   private: {
-    isSchemaEmpty(): boolean
+    state: {
+      settings: SettingsData
+      contextContributors: ContextContributor<any>[]
+    }
     /**
      * Create the Nexus GraphQL Schema. If NEXUS_SHOULD_AWAIT_TYPEGEN=true then the typegen
      * disk write is awaited upon.
@@ -82,48 +50,32 @@ type SchemaInternal = {
 }
 
 export function create(): SchemaInternal {
-  const {
-    queryType,
-    mutationType,
-    objectType,
-    inputObjectType,
-    enumType,
-    scalarType,
-    unionType,
-    interfaceType,
-    arg,
-    intArg,
-    stringArg,
-    booleanArg,
-    floatArg,
-    idArg,
-    extendType,
-    extendInputType,
-    makeSchema,
-    __types,
-  } = createNexusSingleton()
+  const statefulNexusSchema = createStatefulNexusSchema()
 
-  type State = {
-    settings: SettingsData
-  }
-
-  const state: State = {
+  const state: SchemaInternal['private']['state'] = {
     settings: {},
+    contextContributors: [],
   }
 
   const api: SchemaInternal = {
-    private: {
-      isSchemaEmpty: () => {
-        return __types.length === 0
+    public: {
+      ...statefulNexusSchema.builders,
+      addToContext(contextContributor) {
+        state.contextContributors.push(contextContributor)
       },
+    },
+    private: {
+      state: state,
       makeSchema: async (plugins) => {
-        const nexusSchemaConfig = createNexusSchemaConfig(
+        const nexusSchemaConfig = mapSettingsToNexusSchemaConfig(
           plugins,
           state.settings
         )
-        const { schema, missingTypes, typegenConfig } = makeSchema(
-          nexusSchemaConfig
-        )
+        const {
+          schema,
+          missingTypes,
+          typegenConfig,
+        } = statefulNexusSchema.makeSchema(nexusSchemaConfig)
         if (nexusSchemaConfig.shouldGenerateArtifacts === true) {
           const devModeLayout = await Layout.loadDataFromParentProcess()
 
@@ -156,51 +108,18 @@ export function create(): SchemaInternal {
          */
         NexusSchema.core.assertNoMissingTypes(schema, missingTypes)
 
+        if (statefulNexusSchema.state.types.length === 0) {
+          log.warn(Layout.schema.emptyExceptionMessage())
+        }
+
         return schema
       },
       settings: {
         data: state.settings,
         change(newSettings) {
-          if (newSettings.generateGraphQLSDLFile) {
-            state.settings.generateGraphQLSDLFile =
-              newSettings.generateGraphQLSDLFile
-          }
-
-          if (newSettings.rootTypingsGlobPattern) {
-            state.settings.rootTypingsGlobPattern =
-              newSettings.rootTypingsGlobPattern
-          }
-
-          if (newSettings.connections) {
-            state.settings.connections = state.settings.connections ?? {}
-            const { types, ...connectionPluginConfig } = newSettings.connections
-            if (types) {
-              state.settings.connections.types =
-                state.settings.connections.types ?? {}
-              Object.assign(state.settings.connections.types, types)
-            }
-            Object.assign(state.settings.connections, connectionPluginConfig)
-          }
+          changeSettings(state.settings, newSettings)
         },
       },
-    },
-    public: {
-      queryType,
-      mutationType,
-      objectType,
-      inputObjectType,
-      enumType,
-      scalarType,
-      unionType,
-      interfaceType,
-      arg,
-      intArg,
-      stringArg,
-      booleanArg,
-      floatArg,
-      idArg,
-      extendType,
-      extendInputType,
     },
   }
 
