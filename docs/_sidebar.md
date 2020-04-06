@@ -36,6 +36,7 @@
 
 * [`@nexus/schema`](components/schema/about)
   - [API](components/schema/api)
+  - [SDL Converter ⤤](https://nexus.js.org/converter)
   - [Plugins API](components/schema/plugins-api)
   - [Plugins](components/schema/plugins)
     - [Connection](components/schema/plugins/connection)
