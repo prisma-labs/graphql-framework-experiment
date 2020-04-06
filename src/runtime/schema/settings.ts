@@ -108,8 +108,8 @@ export function mapSettingsToNexusSchemaConfig(
 ): NexusSchemaConfig {
   const baseConfig: NexusSchemaConfig = {
     nonNullDefaults: {
-      input: !settings.defaults?.nullable?.inputs,
-      output: !settings.defaults?.nullable?.outputs,
+      input: !(settings.defaults?.nullable?.inputs ?? true),
+      output: !(settings.defaults?.nullable?.outputs ?? true),
     },
     outputs: {
       schema: getOutputSchemaPath(settings),
