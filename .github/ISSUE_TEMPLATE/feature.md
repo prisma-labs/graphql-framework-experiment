@@ -13,8 +13,4 @@ assignees: ''
 
 #### Perceived Problem
 
-- ...
-
 #### Ideas / Proposed Solution(s)
-
-- ...
