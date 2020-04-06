@@ -18,11 +18,9 @@ Use the settings to centrally configure various aspects of the various component
   }
   playground?: boolean
   schema?: {
-    defaults?: {
-      nullable?: {
-        outputs?: boolean
-        intputs?: boolean
-      }
+    nullable?: {
+      outputs?: boolean
+      intputs?: boolean
     }
     connections?: {} // TODO
     generateGraphQLSDLFile?: false | string
