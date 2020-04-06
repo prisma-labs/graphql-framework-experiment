@@ -9,7 +9,7 @@ import { Param1 } from '../../lib/utils'
 import { log } from './logger'
 import { SettingsData, SettingsInput } from './schema'
 
-type NexusConfig = NexusSchema.core.SchemaConfig
+type NexusSchemaConfig = NexusSchema.core.SchemaConfig
 
 export const NEXUS_DEFAULT_TYPEGEN_PATH = fs.path(
   'node_modules',
@@ -21,18 +21,14 @@ export const NEXUS_DEFAULT_TYPEGEN_PATH = fs.path(
 export function createNexusSchemaConfig(
   frameworkPlugins: Plugin.RuntimeContributions[],
   settings: SettingsData
-): NexusConfig {
-  const outputSchemaPath = getOutputSchemaPath(settings)
-
-  const baseConfig: NexusConfig = {
-    // todo allow framework user to configure this
-    // https://github.com/graphql-nexus/nexus/issues/483
+): NexusSchemaConfig {
+  const baseConfig: NexusSchemaConfig = {
     nonNullDefaults: {
       input: false,
       output: false,
     },
     outputs: {
-      schema: outputSchemaPath,
+      schema: getOutputSchemaPath(settings),
       typegen: NEXUS_DEFAULT_TYPEGEN_PATH,
     },
     typegenAutoConfig: {
@@ -60,7 +56,7 @@ export function createNexusSchemaConfig(
 }
 
 function withAutoTypegenConfig(
-  nexusConfig: NexusConfig,
+  nexusConfig: NexusSchemaConfig,
   plugins: Plugin.RuntimeContributions[]
 ) {
   // Integrate plugin typegenAutoConfig contributions

@@ -1,6 +1,6 @@
 import * as NexusSchema from '@nexus/schema'
-import * as BackingTypes from '../../lib/backing-types'
-import { Layout } from '../../lib/layout'
+import * as BackingTypes from '../backing-types'
+import { Layout } from '../layout'
 
 export type NexusSchemaWithMetadata = {
   schema: ReturnType<typeof NexusSchema.core.makeSchemaInternal>['schema']
@@ -27,12 +27,12 @@ export async function writeTypegen(
   schema: NexusSchema.core.NexusGraphQLSchema,
   typegenConfig: NexusSchema.core.TypegenMetadataConfig,
   rootTypingsGlobPattern: string | undefined,
-  devModeLayout: Layout
+  layout: Layout
 ): Promise<void> {
   const backingTypes = await BackingTypes.extractAndWrite(
     rootTypingsGlobPattern,
     {
-      extractCwd: devModeLayout.sourceRoot,
+      extractCwd: layout.sourceRoot,
     }
   )
   const schemaWithRemappedBackingTypes = BackingTypes.withRemappedRootTypings(

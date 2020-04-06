@@ -1,9 +1,15 @@
 import * as NexusSchema from '@nexus/schema'
+import * as HTTP from 'http'
 import * as Layout from '../../lib/layout'
+import * as Logger from '../../lib/logger'
 import { RuntimeContributions } from '../../lib/plugin'
+import {
+  createStatefulNexusSchema,
+  SchemaTypeBuilders,
+  writeTypegen,
+} from '../../lib/stateful-nexus-schema'
 import { ConnectionConfig, createNexusSchemaConfig } from './config'
-import { createNexusSingleton } from './nexus'
-import { writeTypegen } from './utils'
+import { log } from './logger'
 
 export type SettingsInput = {
   /**
@@ -41,31 +47,22 @@ export type SettingsInput = {
 
 export type SettingsData = SettingsInput
 
-export type Schema = {
-  // addToContext: <T extends {}>(
-  //   contextContributor: ContextContributor<T>
-  // ) => App
-  queryType: typeof NexusSchema.queryType
-  mutationType: typeof NexusSchema.mutationType
-  objectType: ReturnType<typeof createNexusSingleton>['objectType']
-  enumType: ReturnType<typeof createNexusSingleton>['enumType']
-  scalarType: ReturnType<typeof createNexusSingleton>['scalarType']
-  unionType: ReturnType<typeof createNexusSingleton>['unionType']
-  interfaceType: ReturnType<typeof createNexusSingleton>['interfaceType']
-  inputObjectType: typeof NexusSchema.inputObjectType
-  arg: typeof NexusSchema.arg
-  intArg: typeof NexusSchema.intArg
-  stringArg: typeof NexusSchema.stringArg
-  booleanArg: typeof NexusSchema.booleanArg
-  floatArg: typeof NexusSchema.floatArg
-  idArg: typeof NexusSchema.idArg
-  extendType: typeof NexusSchema.extendType
-  extendInputType: typeof NexusSchema.extendInputType
+type Request = HTTP.IncomingMessage & { log: Logger.Logger }
+
+export type ContextContributor<Req> = (req: Req) => Record<string, unknown>
+
+export interface Schema extends SchemaTypeBuilders {
+  addToContext: <Req = Request>(
+    contextContributor: ContextContributor<Req>
+  ) => void
 }
 
 type SchemaInternal = {
   private: {
-    isSchemaEmpty(): boolean
+    state: {
+      settings: SettingsData
+      contextContributors: ContextContributor<any>[]
+    }
     /**
      * Create the Nexus GraphQL Schema. If NEXUS_SHOULD_AWAIT_TYPEGEN=true then the typegen
      * disk write is awaited upon.
@@ -82,40 +79,22 @@ type SchemaInternal = {
 }
 
 export function create(): SchemaInternal {
-  const {
-    queryType,
-    mutationType,
-    objectType,
-    inputObjectType,
-    enumType,
-    scalarType,
-    unionType,
-    interfaceType,
-    arg,
-    intArg,
-    stringArg,
-    booleanArg,
-    floatArg,
-    idArg,
-    extendType,
-    extendInputType,
-    makeSchema,
-    __types,
-  } = createNexusSingleton()
+  const { makeSchema, __types, ...builders } = createStatefulNexusSchema()
 
-  type State = {
-    settings: SettingsData
-  }
-
-  const state: State = {
+  const state: SchemaInternal['private']['state'] = {
     settings: {},
+    contextContributors: [],
   }
 
   const api: SchemaInternal = {
-    private: {
-      isSchemaEmpty: () => {
-        return __types.length === 0
+    public: {
+      ...builders,
+      addToContext(contextContributor) {
+        state.contextContributors.push(contextContributor)
       },
+    },
+    private: {
+      state: state,
       makeSchema: async (plugins) => {
         const nexusSchemaConfig = createNexusSchemaConfig(
           plugins,
@@ -156,6 +135,10 @@ export function create(): SchemaInternal {
          */
         NexusSchema.core.assertNoMissingTypes(schema, missingTypes)
 
+        if (__types.length === 0) {
+          log.warn(Layout.schema.emptyExceptionMessage())
+        }
+
         return schema
       },
       settings: {
@@ -183,24 +166,6 @@ export function create(): SchemaInternal {
           }
         },
       },
-    },
-    public: {
-      queryType,
-      mutationType,
-      objectType,
-      inputObjectType,
-      enumType,
-      scalarType,
-      unionType,
-      interfaceType,
-      arg,
-      intArg,
-      stringArg,
-      booleanArg,
-      floatArg,
-      idArg,
-      extendType,
-      extendInputType,
     },
   }
 
