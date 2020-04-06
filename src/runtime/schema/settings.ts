@@ -7,9 +7,67 @@ import { mustLoadDataFromParentProcess } from '../../lib/layout/layout'
 import * as Plugin from '../../lib/plugin'
 import { Param1 } from '../../lib/utils'
 import { log } from './logger'
-import { SettingsData, SettingsInput } from './schema'
 
 type NexusSchemaConfig = NexusSchema.core.SchemaConfig
+
+export type SettingsInput = {
+  /**
+   * todo
+   */
+  connections?: {
+    /**
+     * todo
+     */
+    default?: ConnectionConfig | false
+    // Extra undefined below is forced by it being above, forced via `?:`.
+    // This is a TS limitation, cannot express void vs missing semantics,
+    // being tracked here: https://github.com/microsoft/TypeScript/issues/13195
+    [typeName: string]: ConnectionConfig | undefined | false
+  }
+  /**
+   * Should a [GraphQL SDL file](https://www.prisma.io/blog/graphql-sdl-schema-definition-language-6755bcb9ce51) be generated when the app is built and to where?
+   *
+   * A relative path is interpreted as being relative to the project directory.
+   * Intermediary folders are created automatically if they do not exist
+   * already.
+   *
+   * @default false
+   */
+  generateGraphQLSDLFile?: false | string
+  /**
+   * A glob pattern which will be used to find the files from which to extract the backing types used in the `rootTyping` option of `schema.(objectType|interfaceType|unionType|enumType)`
+   *
+   * @default "./**\/*.ts"
+   *
+   * @example "./**\/*.backing.ts"
+   */
+  rootTypingsGlobPattern?: string
+}
+
+export type SettingsData = SettingsInput
+
+export function changeSettings(
+  state: SettingsData,
+  newSettings: SettingsInput
+) {
+  if (newSettings.generateGraphQLSDLFile) {
+    state.generateGraphQLSDLFile = newSettings.generateGraphQLSDLFile
+  }
+
+  if (newSettings.rootTypingsGlobPattern) {
+    state.rootTypingsGlobPattern = newSettings.rootTypingsGlobPattern
+  }
+
+  if (newSettings.connections) {
+    state.connections = state.connections ?? {}
+    const { types, ...connectionPluginConfig } = newSettings.connections
+    if (types) {
+      state.connections.types = state.connections.types ?? {}
+      Object.assign(state.connections.types, types)
+    }
+    Object.assign(state.connections, connectionPluginConfig)
+  }
+}
 
 export const NEXUS_DEFAULT_TYPEGEN_PATH = fs.path(
   'node_modules',
@@ -18,7 +76,7 @@ export const NEXUS_DEFAULT_TYPEGEN_PATH = fs.path(
   'index.d.ts'
 )
 
-export function createNexusSchemaConfig(
+export function mapSettingsToNexusSchemaConfig(
   frameworkPlugins: Plugin.RuntimeContributions[],
   settings: SettingsData
 ): NexusSchemaConfig {

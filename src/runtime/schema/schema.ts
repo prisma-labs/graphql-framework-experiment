@@ -8,46 +8,17 @@ import {
   SchemaTypeBuilders,
   writeTypegen,
 } from '../../lib/stateful-nexus-schema'
-import { ConnectionConfig, createNexusSchemaConfig } from './config'
 import { log } from './logger'
+import {
+  changeSettings,
+  mapSettingsToNexusSchemaConfig,
+  SettingsData,
+  SettingsInput,
+} from './settings'
 
-export type SettingsInput = {
-  /**
-   * todo
-   */
-  connections?: {
-    /**
-     * todo
-     */
-    default?: ConnectionConfig | false
-    // Extra undefined below is forced by it being above, forced via `?:`.
-    // This is a TS limitation, cannot express void vs missing semantics,
-    // being tracked here: https://github.com/microsoft/TypeScript/issues/13195
-    [typeName: string]: ConnectionConfig | undefined | false
-  }
-  /**
-   * Should a [GraphQL SDL file](https://www.prisma.io/blog/graphql-sdl-schema-definition-language-6755bcb9ce51) be generated when the app is built and to where?
-   *
-   * A relative path is interpreted as being relative to the project directory.
-   * Intermediary folders are created automatically if they do not exist
-   * already.
-   *
-   * @default false
-   */
-  generateGraphQLSDLFile?: false | string
-  /**
-   * A glob pattern which will be used to find the files from which to extract the backing types used in the `rootTyping` option of `schema.(objectType|interfaceType|unionType|enumType)`
-   *
-   * @default "./**\/*.ts"
-   *
-   * @example "./**\/*.backing.ts"
-   */
-  rootTypingsGlobPattern?: string
+interface Request extends HTTP.IncomingMessage {
+  log: Logger.Logger
 }
-
-export type SettingsData = SettingsInput
-
-type Request = HTTP.IncomingMessage & { log: Logger.Logger }
 
 export type ContextContributor<Req> = (req: Req) => Record<string, unknown>
 
@@ -57,7 +28,7 @@ export interface Schema extends SchemaTypeBuilders {
   ) => void
 }
 
-type SchemaInternal = {
+interface SchemaInternal {
   private: {
     state: {
       settings: SettingsData
@@ -96,7 +67,7 @@ export function create(): SchemaInternal {
     private: {
       state: state,
       makeSchema: async (plugins) => {
-        const nexusSchemaConfig = createNexusSchemaConfig(
+        const nexusSchemaConfig = mapSettingsToNexusSchemaConfig(
           plugins,
           state.settings
         )
@@ -144,26 +115,7 @@ export function create(): SchemaInternal {
       settings: {
         data: state.settings,
         change(newSettings) {
-          if (newSettings.generateGraphQLSDLFile) {
-            state.settings.generateGraphQLSDLFile =
-              newSettings.generateGraphQLSDLFile
-          }
-
-          if (newSettings.rootTypingsGlobPattern) {
-            state.settings.rootTypingsGlobPattern =
-              newSettings.rootTypingsGlobPattern
-          }
-
-          if (newSettings.connections) {
-            state.settings.connections = state.settings.connections ?? {}
-            const { types, ...connectionPluginConfig } = newSettings.connections
-            if (types) {
-              state.settings.connections.types =
-                state.settings.connections.types ?? {}
-              Object.assign(state.settings.connections.types, types)
-            }
-            Object.assign(state.settings.connections, connectionPluginConfig)
-          }
+          changeSettings(state.settings, newSettings)
         },
       },
     },
