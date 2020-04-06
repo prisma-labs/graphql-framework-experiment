@@ -74,8 +74,8 @@ export function create(): SchemaInternal {
         const {
           schema,
           missingTypes,
-          typegenConfig,
-        } = statefulNexusSchema.makeSchema(nexusSchemaConfig)
+          finalConfig,
+        } = statefulNexusSchema.makeSchemaInternal(nexusSchemaConfig)
         if (nexusSchemaConfig.shouldGenerateArtifacts === true) {
           const devModeLayout = await Layout.loadDataFromParentProcess()
 
@@ -87,7 +87,7 @@ export function create(): SchemaInternal {
 
           const typegenPromise = writeTypegen(
             schema,
-            typegenConfig,
+            finalConfig,
             state.settings.rootTypingsGlobPattern,
             devModeLayout
           )

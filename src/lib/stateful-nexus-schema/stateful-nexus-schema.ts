@@ -1,7 +1,6 @@
 import * as NexusSchema from '@nexus/schema'
 import { AllTypeDefs } from '@nexus/schema/dist/core'
 import * as CustomTypes from './custom-types'
-import { makeSchemaWithoutTypegen, NexusSchemaWithMetadata } from './utils'
 
 // todo use this as return type of constructor
 export interface StatefulNexusSchema {
@@ -41,12 +40,9 @@ export function createStatefulNexusSchema() {
     types: [],
   }
 
-  function makeSchema(
-    config: NexusSchema.core.SchemaConfig
-  ): NexusSchemaWithMetadata {
+  function makeSchemaInternal(config: NexusSchema.core.SchemaConfig) {
     config.types.push(state.types)
-
-    return makeSchemaWithoutTypegen(config)
+    return NexusSchema.core.makeSchemaInternal(config)
   }
 
   function objectType<TypeName extends string>(
@@ -127,7 +123,7 @@ export function createStatefulNexusSchema() {
   const booleanArg = NexusSchema.booleanArg
 
   return {
-    makeSchema: makeSchema,
+    makeSchemaInternal: makeSchemaInternal,
     state: state,
     builders: {
       queryType,
