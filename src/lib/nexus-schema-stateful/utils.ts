@@ -1,6 +1,6 @@
 import * as NexusSchema from '@nexus/schema'
-import * as BackingTypes from '../backing-types'
 import { Layout } from '../layout'
+import * as BackingTypes from '../nexus-schema-backing-types'
 
 export async function writeTypegen(
   schema: NexusSchema.core.NexusGraphQLSchema,
