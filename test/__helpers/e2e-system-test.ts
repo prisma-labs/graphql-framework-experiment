@@ -125,70 +125,12 @@ export async function e2eTestApp(
 
   log.warn('run dev & query graphql api')
 
-  proc = app.nexus(['dev'])
-  sub = proc.connect()
+  await buildApp()
 
-  await proc.pipe(takeUntilServerListening).toPromise()
+  log.warn('Build and dev again with an app.ts entrypoint')
+  await app.fs.writeAsync('./src/app.ts', '')
 
-  response = await app.client.request(`{
-      worlds {
-        id
-        name
-        population
-      }
-    }`)
-  expect(response).toMatchSnapshot('query')
-
-  response = await app.client.request(introspectionQuery)
-  expect(response).toMatchSnapshot('introspection')
-
-  response = await app.client.request(`{ a }`)
-  expect(response).toMatchSnapshot('addToContext query')
-
-  response = await app.client.request(`{ testBackingType { test } }`)
-  expect(response).toMatchSnapshot('backing type query')
-
-  sub.unsubscribe()
-
-  log.warn('run build')
-
-  output = await app.nexus(['build']).pipe(refCount(), bufferOutput).toPromise()
-
-  expect(output).toContain('success')
-
-  log.warn('run built app and query graphql api')
-
-  proc = app.node([DEFAULT_BUILD_FOLDER_NAME])
-  sub = proc.connect()
-
-  await proc.pipe(takeUntilServerListening).toPromise()
-
-  response = await app.client.request(`{
-      worlds {
-        id
-        name
-        population
-      }
-    }`)
-  expect(response).toMatchSnapshot('built app query')
-
-  response = await app.client.request(introspectionQuery)
-  expect(response).toMatchSnapshot('built app introspection')
-
-  response = await app.client.request(`{ a }`)
-  expect(response).toMatchSnapshot('built app addToContext query')
-
-  response = await app.client.request(`{ testBackingType { test } }`)
-  expect(response).toMatchSnapshot('built app backing type query')
-
-  sub.unsubscribe()
-
-  log.warn('run built app from a different CWD than the project root')
-
-  await app
-    .node([app.fs.path(DEFAULT_BUILD_FOLDER_NAME)], { cwd: '/' })
-    .pipe(refCount(), takeUntilServerListening)
-    .toPromise()
+  await buildApp()
 
   log.warn('create plugin')
 
@@ -267,4 +209,73 @@ export async function e2eTestApp(
 
   expect(output).toContain('build.onStart hook from foobar')
   expect(output).toContain('success')
+
+  async function buildApp() {
+    proc = app.nexus(['dev'])
+    sub = proc.connect()
+
+    await proc.pipe(takeUntilServerListening).toPromise()
+
+    response = await app.client.request(`{
+      worlds {
+        id
+        name
+        population
+      }
+    }`)
+    expect(response).toMatchSnapshot('query')
+
+    response = await app.client.request(introspectionQuery)
+    expect(response).toMatchSnapshot('introspection')
+
+    response = await app.client.request(`{ a }`)
+    expect(response).toMatchSnapshot('addToContext query')
+
+    response = await app.client.request(`{ testBackingType { test } }`)
+    expect(response).toMatchSnapshot('backing type query')
+
+    sub.unsubscribe()
+
+    log.warn('run build')
+
+    output = await app
+      .nexus(['build'])
+      .pipe(refCount(), bufferOutput)
+      .toPromise()
+    expect(output).toContain('success')
+
+    log.warn('run built app and query graphql api')
+
+    proc = app.node([DEFAULT_BUILD_FOLDER_NAME])
+    sub = proc.connect()
+
+    await proc.pipe(takeUntilServerListening).toPromise()
+
+    response = await app.client.request(`{
+      worlds {
+        id
+        name
+        population
+      }
+    }`)
+    expect(response).toMatchSnapshot('built app query')
+
+    response = await app.client.request(introspectionQuery)
+    expect(response).toMatchSnapshot('built app introspection')
+
+    response = await app.client.request(`{ a }`)
+    expect(response).toMatchSnapshot('built app addToContext query')
+
+    response = await app.client.request(`{ testBackingType { test } }`)
+    expect(response).toMatchSnapshot('built app backing type query')
+
+    sub.unsubscribe()
+
+    log.warn('run built app from a different CWD than the project root')
+
+    await app
+      .node([app.fs.path(DEFAULT_BUILD_FOLDER_NAME)], { cwd: '/' })
+      .pipe(refCount(), takeUntilServerListening)
+      .toPromise()
+  }
 }
