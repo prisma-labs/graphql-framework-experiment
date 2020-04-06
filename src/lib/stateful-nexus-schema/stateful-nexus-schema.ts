@@ -3,14 +3,23 @@ import { AllTypeDefs } from '@nexus/schema/dist/core'
 import * as CustomTypes from './custom-types'
 import { makeSchemaWithoutTypegen, NexusSchemaWithMetadata } from './utils'
 
-export interface SchemaTypeBuilders {
+// todo use this as return type of constructor
+export interface StatefulNexusSchema {
+  state: {
+    types: NexusSchemaTypeDef[]
+  }
+  builders: StatefulNexusSchemaBuilders
+}
+
+// prettier-ignore
+export interface StatefulNexusSchemaBuilders {
   queryType: typeof NexusSchema.queryType
   mutationType: typeof NexusSchema.mutationType
-  objectType: ReturnType<typeof createStatefulNexusSchema>['objectType']
-  enumType: ReturnType<typeof createStatefulNexusSchema>['enumType']
-  scalarType: ReturnType<typeof createStatefulNexusSchema>['scalarType']
-  unionType: ReturnType<typeof createStatefulNexusSchema>['unionType']
-  interfaceType: ReturnType<typeof createStatefulNexusSchema>['interfaceType']
+  objectType: ReturnType<typeof createStatefulNexusSchema>['builders']['objectType']
+  enumType: ReturnType<typeof createStatefulNexusSchema>['builders']['enumType']
+  scalarType: ReturnType<typeof createStatefulNexusSchema>['builders']['scalarType']
+  unionType: ReturnType<typeof createStatefulNexusSchema>['builders']['unionType']
+  interfaceType: ReturnType<typeof createStatefulNexusSchema>['builders']['interfaceType']
   inputObjectType: typeof NexusSchema.inputObjectType
   arg: typeof NexusSchema.arg
   intArg: typeof NexusSchema.intArg
@@ -22,29 +31,29 @@ export interface SchemaTypeBuilders {
   extendInputType: typeof NexusSchema.extendInputType
 }
 
-export type AllNexusTypeDefs =
+type NexusSchemaTypeDef =
   | AllTypeDefs
   | NexusSchema.core.NexusExtendInputTypeDef<any>
   | NexusSchema.core.NexusExtendTypeDef<any>
 
 export function createStatefulNexusSchema() {
-  const __types: AllNexusTypeDefs[] = []
+  const state: StatefulNexusSchema['state'] = {
+    types: [],
+  }
 
   function makeSchema(
     config: NexusSchema.core.SchemaConfig
   ): NexusSchemaWithMetadata {
-    config.types.push(__types)
+    config.types.push(state.types)
 
     return makeSchemaWithoutTypegen(config)
   }
-
-  function writeTypegen() {}
 
   function objectType<TypeName extends string>(
     config: CustomTypes.NexusObjectTypeConfig<TypeName>
   ): NexusSchema.core.NexusObjectTypeDef<TypeName> {
     const typeDef = NexusSchema.objectType(config)
-    __types.push(typeDef)
+    state.types.push(typeDef)
     return typeDef
   }
 
@@ -52,7 +61,7 @@ export function createStatefulNexusSchema() {
     config: CustomTypes.NexusInterfaceTypeConfig<TypeName>
   ): NexusSchema.core.NexusInterfaceTypeDef<TypeName> {
     const typeDef = NexusSchema.interfaceType(config)
-    __types.push(typeDef)
+    state.types.push(typeDef)
     return typeDef
   }
 
@@ -60,7 +69,7 @@ export function createStatefulNexusSchema() {
     config: CustomTypes.NexusUnionTypeConfig<TypeName>
   ): NexusSchema.core.NexusUnionTypeDef<TypeName> {
     const typeDef = NexusSchema.unionType(config)
-    __types.push(typeDef)
+    state.types.push(typeDef)
     return typeDef
   }
 
@@ -68,7 +77,7 @@ export function createStatefulNexusSchema() {
     config: CustomTypes.NexusScalarTypeConfig<TypeName>
   ): NexusSchema.core.NexusScalarTypeDef<TypeName> {
     const typeDef = NexusSchema.scalarType(config)
-    __types.push(typeDef)
+    state.types.push(typeDef)
     return typeDef
   }
 
@@ -76,37 +85,37 @@ export function createStatefulNexusSchema() {
     config: CustomTypes.NexusEnumTypeConfig<TypeName>
   ): NexusSchema.core.NexusEnumTypeDef<TypeName> {
     const typeDef = NexusSchema.enumType(config)
-    __types.push(typeDef)
+    state.types.push(typeDef)
     return typeDef
   }
 
   const inputObjectType: typeof NexusSchema.inputObjectType = (config) => {
     const typeDef = NexusSchema.inputObjectType(config)
-    __types.push(typeDef)
+    state.types.push(typeDef)
     return typeDef
   }
 
   const queryType: typeof NexusSchema.queryType = (config) => {
     const typeDef = NexusSchema.queryType(config)
-    __types.push(typeDef)
+    state.types.push(typeDef)
     return typeDef
   }
 
   const mutationType: typeof NexusSchema.mutationType = (config) => {
     const typeDef = NexusSchema.mutationType(config)
-    __types.push(typeDef)
+    state.types.push(typeDef)
     return typeDef
   }
 
   const extendType: typeof NexusSchema.extendType = (config) => {
     const typeDef = NexusSchema.extendType(config)
-    __types.push(typeDef)
+    state.types.push(typeDef)
     return typeDef
   }
 
   const extendInputType: typeof NexusSchema.extendInputType = (config) => {
     const typeDef = NexusSchema.extendInputType(config)
-    __types.push(typeDef)
+    state.types.push(typeDef)
     return typeDef
   }
 
@@ -118,23 +127,25 @@ export function createStatefulNexusSchema() {
   const booleanArg = NexusSchema.booleanArg
 
   return {
-    queryType,
-    mutationType,
-    objectType,
-    inputObjectType,
-    unionType,
-    interfaceType,
-    enumType,
-    scalarType,
-    arg,
-    intArg,
-    stringArg,
-    idArg,
-    floatArg,
-    booleanArg,
-    extendType,
-    extendInputType,
-    makeSchema,
-    __types,
+    makeSchema: makeSchema,
+    state: state,
+    builders: {
+      queryType,
+      mutationType,
+      objectType,
+      inputObjectType,
+      unionType,
+      interfaceType,
+      enumType,
+      scalarType,
+      arg,
+      intArg,
+      stringArg,
+      idArg,
+      floatArg,
+      booleanArg,
+      extendType,
+      extendInputType,
+    },
   }
 }

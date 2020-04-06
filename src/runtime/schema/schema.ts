@@ -5,7 +5,7 @@ import * as Logger from '../../lib/logger'
 import { RuntimeContributions } from '../../lib/plugin'
 import {
   createStatefulNexusSchema,
-  SchemaTypeBuilders,
+  StatefulNexusSchemaBuilders,
   writeTypegen,
 } from '../../lib/stateful-nexus-schema'
 import { log } from './logger'
@@ -22,7 +22,7 @@ interface Request extends HTTP.IncomingMessage {
 
 export type ContextContributor<Req> = (req: Req) => Record<string, unknown>
 
-export interface Schema extends SchemaTypeBuilders {
+export interface Schema extends StatefulNexusSchemaBuilders {
   addToContext: <Req = Request>(
     contextContributor: ContextContributor<Req>
   ) => void
@@ -50,7 +50,7 @@ interface SchemaInternal {
 }
 
 export function create(): SchemaInternal {
-  const { makeSchema, __types, ...builders } = createStatefulNexusSchema()
+  const statefulNexusSchema = createStatefulNexusSchema()
 
   const state: SchemaInternal['private']['state'] = {
     settings: {},
@@ -59,7 +59,7 @@ export function create(): SchemaInternal {
 
   const api: SchemaInternal = {
     public: {
-      ...builders,
+      ...statefulNexusSchema.builders,
       addToContext(contextContributor) {
         state.contextContributors.push(contextContributor)
       },
@@ -71,9 +71,11 @@ export function create(): SchemaInternal {
           plugins,
           state.settings
         )
-        const { schema, missingTypes, typegenConfig } = makeSchema(
-          nexusSchemaConfig
-        )
+        const {
+          schema,
+          missingTypes,
+          typegenConfig,
+        } = statefulNexusSchema.makeSchema(nexusSchemaConfig)
         if (nexusSchemaConfig.shouldGenerateArtifacts === true) {
           const devModeLayout = await Layout.loadDataFromParentProcess()
 
@@ -106,7 +108,7 @@ export function create(): SchemaInternal {
          */
         NexusSchema.core.assertNoMissingTypes(schema, missingTypes)
 
-        if (__types.length === 0) {
+        if (statefulNexusSchema.state.types.length === 0) {
           log.warn(Layout.schema.emptyExceptionMessage())
         }
 
