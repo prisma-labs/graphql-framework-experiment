@@ -333,7 +333,7 @@ Nexus defaults to both inputs and outputs being nullable. This means by default 
 
 There is no right or wrong answer to nullability. These are just defaults, not judgements. Understand the tradeoffs, and react to your use-case, above all.
 
-You can override the global defaults at the per-type level or per-field level. If you find yourself writing local overrides in a majority of cases then it might mean the global defaults are a bad fit for your API. In that case you ~can~ will be able to change the global defaults (see [#483](https://github.com/graphql-nexus/nexus/issues/483)).
+You can override the global defaults at the per-type level or per-field level. If you find yourself writing local overrides in a majority of cases then it might mean the global defaults are a bad fit for your API. In that case you can change the global defaults.
 
 When you make an input nullable then Nexus will alter its TypeScript type inside your resolver to have `null | undefined`. `null` is for the case that the client passed in an explicit `null` while `undefined` is for the case where the client simply did not specify the input at all.
 
@@ -361,6 +361,44 @@ schema.queryType({
 ```graphql
 type Query {
   echo(message: String): String
+}
+```
+
+</div>
+
+###### Example: Nullability Flipped at Global Level
+
+<div class="Row NexusVSDL">
+
+```ts
+settings.change({
+  schema: {
+    defaults: {
+      nullable: {
+        outputs: false,
+        inputs: false,
+      },
+    },
+  },
+})
+
+schema.queryType({
+  definition(t) {
+    t.string('echo', {
+      args: {
+        message: 'String',
+      },
+      resolve(_root, args) {
+        return args.message
+      },
+    })
+  },
+})
+```
+
+```graphql
+type Query {
+  echo(message: String): String!
 }
 ```
 
