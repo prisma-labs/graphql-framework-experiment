@@ -22,7 +22,7 @@ it('defaults to inputs being nullable by defualt', () => {
 })
 
 it('inputs can be made required by default', () => {
-  schema.private.settings.change({ defaults: { nullable: { inputs: false } } })
+  schema.private.settings.change({ nullable: { inputs: false } })
   expect(
     mapSettingsToNexusSchemaConfig([], schema.private.settings.data)
       .nonNullDefaults?.input
@@ -30,7 +30,7 @@ it('inputs can be made required by default', () => {
 })
 
 it('outputs can be made guaranteed by default', () => {
-  schema.private.settings.change({ defaults: { nullable: { outputs: false } } })
+  schema.private.settings.change({ nullable: { outputs: false } })
   expect(
     mapSettingsToNexusSchemaConfig([], schema.private.settings.data)
       .nonNullDefaults?.output

@@ -77,14 +77,14 @@ Use the settings to centrally configure various aspects of the various component
 
   `/graphql`
 
-* `schema.defaults.nullable.inputs`
+* `schema.nullable.inputs`
   Should passing arguments be optional for clients by default?
 
   **Default**
 
   `true`
 
-* `schema.defaults.nullable.outputs`
+* `schema.nullable.outputs`
   Should the data requested by clients _not_ be guaranteed to be returned by default?
 
   **Default**

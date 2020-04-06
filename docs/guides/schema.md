@@ -373,11 +373,9 @@ type Query {
 ```ts
 settings.change({
   schema: {
-    defaults: {
-      nullable: {
-        outputs: false,
-        inputs: false,
-      },
+    nullable: {
+      outputs: false,
+      inputs: false,
     },
   },
 })
