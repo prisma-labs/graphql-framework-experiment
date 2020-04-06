@@ -11,6 +11,25 @@ import { log } from './logger'
 type NexusSchemaConfig = NexusSchema.core.SchemaConfig
 
 export type SettingsInput = {
+  defaults?: {
+    /**
+     *  See the [Nullability Guide](https://www.nexusjs.org/#/guides/schema?id=nullability-in-principal) for more details.
+     */
+    nullable?: {
+      /**
+       * Should passing arguments be optional for clients by default?
+       *
+       * @default true
+       */
+      inputs?: boolean
+      /**
+       * Should the data requested by clients _not_ be guaranteed to be returned by default?
+       *
+       * @default true
+       */
+      outputs?: boolean
+    }
+  }
   /**
    * todo
    */
@@ -50,6 +69,13 @@ export function changeSettings(
   state: SettingsData,
   newSettings: SettingsInput
 ) {
+  if (newSettings.defaults) {
+    if (state.defaults === undefined) {
+      state.defaults = {}
+    }
+    Lo.merge(state.defaults, newSettings.defaults)
+  }
+
   if (newSettings.generateGraphQLSDLFile) {
     state.generateGraphQLSDLFile = newSettings.generateGraphQLSDLFile
   }
@@ -82,8 +108,8 @@ export function mapSettingsToNexusSchemaConfig(
 ): NexusSchemaConfig {
   const baseConfig: NexusSchemaConfig = {
     nonNullDefaults: {
-      input: false,
-      output: false,
+      input: !settings.defaults?.nullable?.inputs,
+      output: !settings.defaults?.nullable?.outputs,
     },
     outputs: {
       schema: getOutputSchemaPath(settings),
