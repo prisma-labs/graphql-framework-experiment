@@ -1,5 +1,5 @@
 ---
-name: Something Else
+name: 5. Something Else
 about: Feedback, support, docs, performance, ...
 title: ''
 labels: ''
@@ -13,12 +13,6 @@ assignees: ''
 
 #### What
 
-- ...
-
 #### Why
 
-- ...
-
 #### How
-
-- ...

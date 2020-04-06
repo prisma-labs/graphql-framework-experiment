@@ -1,5 +1,5 @@
 ---
-name: Bug
+name: 2. Bug
 about: You encountered something that is not working the way it should
 title: ''
 labels: type/bug
