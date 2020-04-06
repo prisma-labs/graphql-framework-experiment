@@ -97,11 +97,12 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     content += EOL + EOL + EOL
     content += stripIndent`
       // Import the user's app module
-      require("${stripExt(
+      require("${
         config.absoluteModuleImports
-          ? config.layout.app.path
-          : './' + config.layout.sourceRelative(config.layout.app.path)
-      )}")
+          ? stripExt(config.layout.app.path)
+          : './' +
+            stripExt(config.layout.sourceRelative(config.layout.app.path))
+      }")
     `
   }
 
