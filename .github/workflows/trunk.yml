@@ -70,7 +70,6 @@ jobs:
       matrix:
         node-version: [10.x, 12.x]
     steps:
-      - uses: actions/checkout@v2
       - name: Load publish result
         uses: actions/download-artifact@v1
         with:
@@ -80,6 +79,8 @@ jobs:
         run: |
           cat published/result.json | jq -r '.version'
           echo ::set-output name=result::$(jq -r '.kind' <<< $result)
+      - uses: actions/checkout@v2
+        if: steps.release.outputs.result == 'did_publish'
       - name: Use Node.js ${{ matrix.node-version }}
         if: steps.release.outputs.result == 'did_publish'
         uses: actions/setup-node@v1
@@ -89,6 +90,7 @@ jobs:
         if: steps.release.outputs.result == 'did_publish'
         run: yarn --frozen-lockfile
       - name: Setup global git user
+        if: steps.release.outputs.result == 'did_publish'
         run: |
           # For nexus create app flow which will make an init commit
           git config --global user.name prisma-labs
