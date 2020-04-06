@@ -39,7 +39,7 @@ Nexus is based upon a singleton system. Import the `schema` component to get acc
 - import { User } from './graphql/user'
 - import { makeSchema } from 'nexus'
 
-- const schmea = makeSchema({ types: [User] })
+- const schema = makeSchema({ types: [User] })
 ...
 ```
 
