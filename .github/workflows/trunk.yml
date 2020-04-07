@@ -55,9 +55,8 @@ jobs:
           NPM_TOKEN: ${{secrets.NPM_TOKEN}}
         run: |
           yarn -s dripip preview --json > result.json
-          result=$(cat result.json)
           echo '==> Publish Result'
-          jq '.' <<< $result
+          jq '.' < result.json
       - name: Save publish result
         uses: actions/upload-artifact@v1
         with:
@@ -77,8 +76,8 @@ jobs:
       - name: Analyze publish result
         id: release
         run: |
-          cat published/result.json | jq -r '.version'
-          cat published/result.json | jq -r '.'
+          jq -r '.version' < published/result.json 
+          jq -r '.' < published/result.json 
           echo ::set-output name=result::$(jq -r '.kind' < published/result.json)
       - uses: actions/checkout@v2
         if: steps.release.outputs.result == 'did_publish'
