@@ -85,8 +85,8 @@
     "release:preview": "dripip preview",
     "release:pr": "dripip pr",
     "format": "prettier --write '*/**/*.ts'",
-    "build": "yarn -s clean && tsc -b",
-    "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "build": "yarn -s clean && node scripts/build-module-facades && tsc -b",
+    "clean": "git clean -fX && rm -rf dist",
     "postpublish": "yarn -s clean",
     "postinstall": "node scripts/postinstall",
     "prepublishOnly": "yarn -s build",
@@ -95,7 +95,7 @@
     "test:e2e": "DEBUG=true jest --verbose --testTimeout 360000 test/e2e",
     "test:system": "LINK=true DEBUG=true jest --verbose --testTimeout 360000 test/system",
     "dev:test": "jest --watch --testRegex '.+/src/.+\\.spec\\.ts$'",
-    "dev": "tsc -b -w"
+    "dev": "yarn -s clean && node scripts/build-module-facades && tsc -b -w"
   },
   "prettier": {
     "semi": false,

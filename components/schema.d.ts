@@ -1,1 +1,1 @@
-export * from '../dist/components/schema'
+export * from './dist/components/schema'
