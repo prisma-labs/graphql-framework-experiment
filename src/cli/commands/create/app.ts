@@ -59,11 +59,6 @@ export async function runLocalHandOff(): Promise<void> {
   for (const p of plugins) {
     await p.hooks.create.onAfterBaseSetup?.({ database, connectionURI })
   }
-
-  //
-  // format project
-  //
-  await layout.packageManager.runScript('format', { require: true })
 }
 
 /**
@@ -447,7 +442,7 @@ async function scaffoldBaseFiles(
       license: 'UNLICENSED',
       dependencies: {},
       scripts: {
-        format: "npx prettier --write './**/*.{ts,md}' '!./prisma/**/*.md'",
+        format: "npx prettier --write './**/*.{ts,md}'",
         dev: 'nexus dev',
         build: 'nexus build',
         start: 'node node_modules/.build',
@@ -458,6 +453,8 @@ async function scaffoldBaseFiles(
         trailingComma: 'all',
       },
     } as PackageJson),
+
+    fs.writeAsync('.prettierignore', './prisma/**/*.md'),
 
     fs.writeAsync('tsconfig.json', createTSConfigContents(layout)),
 
