@@ -164,6 +164,16 @@ export async function e2eKitchenSink(app: E2EContext) {
 
   log.warn('with plugin, dev app')
 
+  await app.fs.writeAsync(
+    './src/app.ts',
+    `
+    import { use } from 'nexus'
+    import { plugin } from 'nexus-plugin-foobar'
+
+    use(plugin())
+  `
+  )
+
   proc = app.nexus(['dev'])
   sub = proc.connect()
 
