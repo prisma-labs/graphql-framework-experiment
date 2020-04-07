@@ -78,7 +78,7 @@ jobs:
         id: release
         run: |
           cat published/result.json | jq -r '.version'
-          cat published/result.json | jq -r
+          cat published/result.json | jq -r '.'
           echo ::set-output name=result::$(jq -r '.kind' <<< $result)
       - uses: actions/checkout@v2
         if: steps.release.outputs.result == 'did_publish'
