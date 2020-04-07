@@ -99,7 +99,16 @@ export function importPluginDimension<D extends Dimension>(
       )
     }
 
-    return plugin(manifest.settings)
+    const innerPlugin = plugin(manifest.settings)
+
+    if (typeof innerPlugin !== 'function') {
+      fatal(
+        `Nexus plugin "${manifest.name}" does not export a valid ${dimension} plugin`,
+        { plugin: manifest }
+      )
+    }
+
+    return innerPlugin
   } catch (error) {
     fatal(
       stripIndent`
