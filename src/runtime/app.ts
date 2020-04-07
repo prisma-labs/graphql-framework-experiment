@@ -4,6 +4,7 @@ import * as Plugin from '../lib/plugin'
 import * as Schema from './schema'
 import * as Server from './server'
 import app from '.'
+import { stripIndent } from 'common-tags'
 
 const log = Logger.create({ name: 'app' })
 
@@ -116,7 +117,10 @@ export function create(): App {
     schema: schemaComponent.public,
     use(plugin) {
       if (__state.isWasServerStartCalled === true) {
-        log.warn('You should add plugins before you start your server')
+        log.warn(stripIndent`
+          A plugin was ignored because it was loaded after the server was started
+          Make sure to call \`use\` before you call \`server.start\`
+        `)
       }
 
       __state.plugins.push(plugin)
