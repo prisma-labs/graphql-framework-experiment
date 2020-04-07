@@ -28,13 +28,6 @@ interface CreatePluginOptions {
 export function createE2EContext(config?: {
   localNexusPath?: string
   dir?: string
-  /**
-   * If enabled then:
-   *
-   * 1. The generated typegen imports will be re-written to not expect @nexus/schema to be hoisted
-   * 2. The Nexus version scaffolded by create app flow in the app's package.json is a path to literally this package on disk.
-   */
-  linkedPackageMode?: boolean
 }) {
   rootLogger.settings({ level: 'trace' })
   process.env.LOG_LEVEL = 'trace'
@@ -149,22 +142,11 @@ export function createE2EContext(config?: {
     },
   }
 
-  if (config?.linkedPackageMode) {
-    // Handling no-hoist problem - https://github.com/graphql-nexus/nexus/issues/432
-    process.env.NEXUS_TYPEGEN_NEXUS_SCHEMA_IMPORT_PATH = `"../../nexus/node_modules/@nexus/schema"`
-    process.env.CREATE_APP_CHOICE_NEXUS_VERSION = `file:${getRelativePathFromTestProjectToNexusPackage()}`
+  if (config?.localNexusPath) {
+    process.env.CREATE_APP_CHOICE_NEXUS_VERSION = `file:${config.localNexusPath}`
   }
 
   return contextAPI
-
-  //
-  // helpers
-  //
-
-  function getRelativePathFromTestProjectToNexusPackage() {
-    const nexusPackagePath = Path.join(__dirname, '../../')
-    return Path.join('..', Path.relative(projectDir, nexusPackagePath))
-  }
 }
 
 export function spawn(

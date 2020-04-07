@@ -4,7 +4,6 @@ import { e2eTestApp } from '../__helpers/e2e-system-test'
 
 const localNexusPath = Path.join(__dirname, '..', '..')
 const ctx = createE2EContext({
-  linkedPackageMode: true,
   localNexusPath: localNexusPath,
 })
 
