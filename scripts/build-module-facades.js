@@ -11,40 +11,42 @@
  *
  *    import { ... } from 'nexus/dist/testing'
  *
- * Whatever modules are written here should be ignored in .gitignore.
+ * Whatever modules are written here should be:
+ *
+ *    1. ignored in .gitignore.
+ *    2. added to the package.json files array
  */
 
 const fs = require('fs-jetpack')
+const os = require('os')
+const lo = require('lodash')
+const path = require('path')
 const { stripIndent } = require('common-tags')
 
-// testing
+// prettier-ignore
+const facades = [
+  ['testing.d.ts', "export * from './dist/testing'"],
+  ['testing.js', "module.exports = require('./dist/testing')"],
+  ['plugin.d.ts', "export * from './dist/plugin'"],
+  ['plugin.js', "module.exports = require('./dist/plugin')"]
+]
 
-fs.write(
-  'testing.d.ts',
-  stripIndent`
-    export * from './dist/testing'
-  `
-)
+// Write facade files
 
-fs.write(
-  'testing.js',
-  stripIndent`
-    module.exports = require('./dist/testing')
-  `
-)
+for (const facade of facades) {
+  fs.write(facade[0], facade[1])
+}
 
-// plugin
+// Handle package.json files array
 
-fs.write(
-  'plugin.d.ts',
-  stripIndent`
-    export * from './dist/plugin'
-  `
-)
+const packageJsonPath = path.join(__dirname, '..', 'package.json')
+const packageJson = fs.read(packageJsonPath, 'json')
 
-fs.write(
-  'plugin.js',
-  stripIndent`
-    module.exports = require('./dist/plugin')
-  `
-)
+packageJson.files = lo.uniq([
+  ...packageJson.files,
+  ...facades.map((facade) => facade[0]),
+])
+
+const packageJsonString = JSON.stringify(packageJson, null, 2) + os.EOL
+
+fs.write(packageJsonPath, packageJsonString)
