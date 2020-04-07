@@ -28,7 +28,9 @@ const facades = [
   ['testing.d.ts', "export * from './dist/testing'"],
   ['testing.js', "module.exports = require('./dist/testing')"],
   ['plugin.d.ts', "export * from './dist/plugin'"],
-  ['plugin.js', "module.exports = require('./dist/plugin')"]
+  ['plugin.js', "module.exports = require('./dist/plugin')"],
+  ['components/schema.d.ts', "export * from './dist/components/schema'"],
+  ['components/schema.js', "module.exports = require('./dist/components/schema')"],
 ]
 
 // Write facade files
