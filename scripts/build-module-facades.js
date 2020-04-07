@@ -25,12 +25,14 @@ const { stripIndent } = require('common-tags')
 
 // prettier-ignore
 const facades = [
-  ['testing.d.ts', "export * from './dist/testing'"],
-  ['testing.js', "module.exports = require('./dist/testing')"],
-  ['plugin.d.ts', "export * from './dist/plugin'"],
-  ['plugin.js', "module.exports = require('./dist/plugin')"],
-  ['components/schema.d.ts', "export * from '../dist/components/schema'"],
-  ['components/schema.js', "module.exports = require('../dist/components/schema')"],
+  ['testing.d.ts',            "export * from './dist/testing'"                        + os.EOL],
+  ['testing.js',              "module.exports = require('./dist/testing')"            + os.EOL],
+
+  ['plugin.d.ts',             "export * from './dist/plugin'"                         + os.EOL],
+  ['plugin.js',               "module.exports = require('./dist/plugin')"             + os.EOL],
+
+  ['components/schema.d.ts',  "export * from '../dist/components/schema'"             + os.EOL],
+  ['components/schema.js',    "module.exports = require('../dist/components/schema')" + os.EOL],
 ]
 
 // Write facade files
