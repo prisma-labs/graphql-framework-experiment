@@ -69,6 +69,7 @@ jobs:
       matrix:
         node-version: [10.x, 12.x]
     steps:
+      - uses: actions/checkout@v2
       - name: Load publish result
         uses: actions/download-artifact@v1
         with:
@@ -79,8 +80,6 @@ jobs:
           jq -r '.version' < published/result.json 
           jq -r '.' < published/result.json 
           echo ::set-output name=result::$(jq -r '.kind' < published/result.json)
-      - uses: actions/checkout@v2
-        if: steps.release.outputs.result == 'did_publish'
       - name: Use Node.js ${{ matrix.node-version }}
         if: steps.release.outputs.result == 'did_publish'
         uses: actions/setup-node@v1
