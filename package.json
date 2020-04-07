@@ -15,7 +15,9 @@
     "testing.d.ts",
     "testing.js",
     "plugin.d.ts",
-    "plugin.js"
+    "plugin.js",
+    "components/schema.d.ts",
+    "components/schema.js"
   ],
   "bin": {
     "nexus": "dist/cli/main.js"
