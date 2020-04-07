@@ -118,7 +118,6 @@ export function createNexusSchemaStateful() {
   const booleanArg = NexusSchema.booleanArg
 
   return {
-    makeSchemaInternal: makeSchemaInternal,
     state: state,
     builders: {
       queryType,
