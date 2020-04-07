@@ -17,7 +17,11 @@ import {
   SettingsInput,
 } from './settings'
 
-// Export this so that context typegen can import it...
+// Export this so that context typegen can import it, for example if users do
+// this:
+//
+//    schema.addToContext(req => ({ req }))
+//
 // todo seems very brittle
 // todo request being exposed on context should be done by the framework
 export interface Request extends HTTP.IncomingMessage {
