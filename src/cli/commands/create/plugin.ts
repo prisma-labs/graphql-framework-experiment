@@ -143,7 +143,7 @@ export default class Plugin implements Command {
         stripIndent`
           import { WorktimePlugin } from 'nexus/plugin'
 
-          export const plugin: WorktimePlugin = project => {
+          export const plugin: WorktimePlugin = () => project => {
             project.hooks.dev.onStart = async () => {
               project.log.info('dev.onStart hook from ${pluginName}')
             }
@@ -165,27 +165,41 @@ export default class Plugin implements Command {
       fs.writeAsync(
         'src/runtime.ts',
         stripIndent`
-          import { RuntimePlugin } from 'nexus/plugin'
+        import { PluginEntrypoint } from 'nexus/plugin'
 
-          export const plugin:RuntimePlugin = project => {
-            return {
-              context: {
-                create: _req => {
-                  return {
-                    '${pluginPackageName}': 'hello world!'
-                  }
-                },
-                typeGen: {
-                  fields: {
-                    '${pluginPackageName}': 'string'
-                  }
-                }
-              }
-            }
+        export const plugin: PluginEntrypoint = () => ({
+          packageJsonPath: require.resolve('../package.json'),
+          runtime: {
+            module: require.resolve('./runtime'),
+            export: 'plugin'
+          },
+          worktime: {
+            module: require.resolve('./worktime'),
+            export: 'plugin'
           }
+        })
         `
       ),
     ])
+
+    fs.writeAsync(
+      'src/index.ts',
+      stripIndent`
+      import { PluginEntrypoint } from 'nexus/plugin'
+
+      export const plugin: PluginEntrypoint = {
+        packageJsonPath: require.resolve('../package.json'),
+        runtime: {
+          module: require.resolve('./runtime'),
+          export: 'plugin'
+        },
+        worktime: {
+          module: require.resolve('./worktime'),
+          export: 'plugin'
+        },
+      }
+    `
+    )
 
     log.info(`Installing dev dependencies`)
     await proc.run(

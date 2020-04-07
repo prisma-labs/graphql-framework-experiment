@@ -80,7 +80,7 @@ export interface PluginWithoutSettings {
    * }
    * ```
    */
-  worktime: DimensionEntrypoint
+  worktime?: DimensionEntrypoint
   /**
    * An object pointing to the file responsible for the "testtime" dimension of your plugin.
    *
@@ -93,7 +93,7 @@ export interface PluginWithoutSettings {
    * }
    * ```
    */
-  testtime: DimensionEntrypoint
+  testtime?: DimensionEntrypoint
   //settingsType?: DimensionEntrypoint
   //frameworkVersion?: string // valid npm version expression
 }
