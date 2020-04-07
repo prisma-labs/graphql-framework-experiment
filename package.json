@@ -84,7 +84,7 @@
     "release:pr": "dripip pr",
     "format": "prettier --write '*/**/*.ts'",
     "build": "yarn -s clean && tsc -b",
-    "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "clean": "git clean -fX && rm -rf dist",
     "postpublish": "yarn -s clean",
     "postinstall": "node scripts/postinstall",
     "prepublishOnly": "yarn -s build",
