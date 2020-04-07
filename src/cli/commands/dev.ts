@@ -6,6 +6,7 @@ import * as Plugin from '../../lib/plugin'
 import { fatal } from '../../lib/process'
 import { findOrScaffoldTsConfig } from '../../lib/tsc'
 import { createWatcher } from '../../lib/watcher'
+import { createDevAppRunner } from '../../runtime/start'
 
 const log = rootLogger.child('dev')
 
@@ -25,7 +26,7 @@ export class Dev implements Command {
      * Load config before loading plugins which may rely on env vars being defined
      */
     const layout = await Layout.create()
-    const plugins = await Plugin.loadInstalledWorktimePlugins(layout)
+    const plugins = await Plugin.loadWorktimePlugins(layout)
 
     await findOrScaffoldTsConfig(layout)
 

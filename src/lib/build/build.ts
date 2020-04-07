@@ -14,8 +14,7 @@ import {
 } from '../../runtime/start/start-module'
 import { extractContextTypesToTypeGenFile } from '../add-to-context-extractor/add-to-context-extractor'
 import { rootLogger } from '../nexus-logger'
-import { loadInstalledWorktimePlugins } from '../plugin'
-import { getInstalledRuntimePluginNames } from '../plugin/import'
+import * as Plugin from '../plugin'
 import { fatal } from '../process'
 import { generateArtifacts } from './artifact-generation'
 import {
@@ -59,7 +58,11 @@ export async function buildNexusApp(settings: BuildSettings) {
   }
   await findOrScaffoldTsConfig(layout)
 
-  const plugins = await loadInstalledWorktimePlugins(layout)
+  const manifests = await Plugin.readAllPluginManifestsFromConfig(layout)
+  const plugins = await Plugin.loadWorktimePluginFromManifests(
+    manifests,
+    layout
+  )
 
   for (const p of plugins) {
     await p.hooks.build.onStart?.()
@@ -67,10 +70,6 @@ export async function buildNexusApp(settings: BuildSettings) {
 
   let tsBuilder
   tsBuilder = createTSProgram(layout, { withCache: true })
-
-  const installedRuntimePluginNames = await getInstalledRuntimePluginNames(
-    layout
-  )
 
   log.trace('Compiling a development build for typegen')
 
@@ -81,7 +80,7 @@ export async function buildNexusApp(settings: BuildSettings) {
     startModule: prepareStartModule(
       tsBuilder,
       createStartModuleContent({
-        runtimePluginNames: installedRuntimePluginNames,
+        plugins: manifests,
         internalStage: 'build',
         layout: layout,
       })
@@ -117,7 +116,7 @@ export async function buildNexusApp(settings: BuildSettings) {
       createStartModuleContent({
         internalStage: 'build',
         layout: layout,
-        runtimePluginNames: installedRuntimePluginNames,
+        plugins: manifests,
         disableArtifactGeneration: true,
       })
     ),

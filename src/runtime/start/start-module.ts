@@ -5,6 +5,7 @@ import { EmitAndSemanticDiagnosticsBuilderProgram } from 'typescript'
 import { stripExt } from '../../lib/fs'
 import * as Layout from '../../lib/layout'
 import { rootLogger } from '../../lib/nexus-logger'
+import * as Plugin from '../../lib/plugin'
 import { transpileModule } from '../../lib/tsc'
 import { resolveFrom } from './resolve-from'
 
@@ -18,7 +19,8 @@ type StartModuleConfig = {
   layout: Layout.Layout
   disableArtifactGeneration?: boolean
   absoluteModuleImports?: boolean
-  runtimePluginNames: string[]
+  disableServer?: boolean
+  plugins: Plugin.Manifest[]
 }
 
 export function createStartModuleContent(config: StartModuleConfig): string {
@@ -29,6 +31,12 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   content += stripIndent`
     process.env.NEXUS_SHOULD_GENERATE_ARTIFACTS = '${!config.disableArtifactGeneration}'
   `
+
+  if (config.disableServer) {
+    content += stripIndent`
+      process.env.NEXUS_DISABLE_SERVER = 'true'
+    `
+  }
 
   if (config.internalStage === 'dev') {
     content += EOL + EOL + EOL
@@ -106,31 +114,20 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     `
   }
 
-  if (config.runtimePluginNames.length) {
-    const aliasAndPluginNames = config.runtimePluginNames.map((pluginName) => {
-      // TODO nice camelcase identifier
-      const namedImportAlias = `plugin_${Math.random().toString().slice(2, 5)}`
-      return [namedImportAlias, pluginName]
-    })
+  if (config.plugins.length) {
     content += EOL + EOL + EOL
     content += stripIndent`
-      // Apply runtime plugins
-      ${aliasAndPluginNames
-        .map(([namedImportAlias, pluginName]) => {
-          return `import { plugin as ${namedImportAlias} } from '${
+      // Statically import runtime plugins for tree-shaking
+      ${config.plugins
+        .filter((p) => p.runtime !== undefined)
+        .map((plugin, index) => {
+          return `import { ${
+            plugin.runtime!.export
+          } as plugin_${index} } from '${
             config.absoluteModuleImports
-              ? resolveFrom(
-                  `nexus-plugin-${pluginName}`,
-                  config.layout.projectRoot
-                )
-              : `nexus-plugin-${pluginName}/dist/runtime`
+              ? plugin.runtime!.module
+              : relativeModuleImport(plugin.name, plugin.runtime!.module)
           }'`
-        })
-        .join(EOL)}
-
-      ${aliasAndPluginNames
-        .map(([namedImportAlias, pluginName]) => {
-          return `app.__use('${pluginName}', ${namedImportAlias})`
         })
         .join(EOL)}
     `
@@ -143,6 +140,12 @@ export function createStartModuleContent(config: StartModuleConfig): string {
       app.server.start()
     }  
   `
+
+  if (config.disableServer) {
+    content += stripIndent`
+      process.env.NEXUS_DISABLE_SERVER = 'false'
+    `
+  }
 
   log.trace('created', { content })
   return content
@@ -192,4 +195,14 @@ export function relativeTranspiledImportPath(
 
 function calcSourceRootToModule(layout: Layout.Layout, modulePath: string) {
   return Path.relative(layout.sourceRoot, modulePath)
+}
+
+function relativeModuleImport(
+  moduleName: string,
+  absoluteModuleImport: string
+) {
+  const moduleNamePos = absoluteModuleImport.lastIndexOf(moduleName)
+  const relativeModuleImport = absoluteModuleImport.substring(moduleNamePos)
+
+  return stripExt(relativeModuleImport)
 }

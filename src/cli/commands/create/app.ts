@@ -55,7 +55,7 @@ export async function runLocalHandOff(): Promise<void> {
 
   const parentData = await loadDataFromParentProcess()
   const layout = await Layout.create()
-  const plugins = await Plugin.loadInstalledWorktimePlugins(layout)
+  const plugins = await Plugin.loadWorktimePlugins(layout)
   log.trace('plugins', { plugins })
 
   // TODO select a template

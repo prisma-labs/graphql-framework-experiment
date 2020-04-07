@@ -16,3 +16,5 @@ export const schema = app.schema
 export const server = app.server
 
 export const settings = app.settings
+
+export const use = app.use

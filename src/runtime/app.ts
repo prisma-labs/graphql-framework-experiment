@@ -3,6 +3,7 @@ import * as Logger from '../lib/logger'
 import * as Plugin from '../lib/plugin'
 import * as Schema from './schema'
 import * as Server from './server'
+import app from '.'
 
 const log = Logger.create({ name: 'app' })
 
@@ -31,6 +32,8 @@ export interface App {
    * ### todo
    */
   schema: Schema.Schema
+
+  use(plugin: Plugin.Plugin): void
 }
 
 type SettingsInput = {
@@ -63,20 +66,24 @@ export type Settings = {
   change(newSetting: SettingsInput): void
 }
 
+export type InternalApp = App & {
+  __state: {
+    plugins: Plugin.Plugin[]
+    isWasServerStartCalled: boolean
+  }
+}
+
 /**
  * Crate an app instance
  */
 export function create(): App {
-  const state: {
-    plugins: Plugin.RuntimeContributions[]
-    isWasServerStartCalled: boolean
-  } = {
+  const __state: InternalApp['__state'] = {
     plugins: [],
     isWasServerStartCalled: false,
   }
 
   const server = Server.create()
-  const schema = Schema.create()
+  const schemaComponent = Schema.create()
 
   const settings: Settings = {
     change(newSettings) {
@@ -84,7 +91,7 @@ export function create(): App {
         log.settings(newSettings.logger)
       }
       if (newSettings.schema) {
-        schema.private.settings.change(newSettings.schema)
+        schemaComponent.private.settings.change(newSettings.schema)
       }
       if (newSettings.server) {
         Object.assign(settings.current.server, newSettings.server)
@@ -92,20 +99,28 @@ export function create(): App {
     },
     current: {
       logger: log.settings,
-      schema: schema.private.settings.data,
+      schema: schemaComponent.private.settings.data,
       server: Server.defaultExtraSettings,
     },
     original: Lo.cloneDeep({
       logger: log.settings,
-      schema: schema.private.settings.data,
+      schema: schemaComponent.private.settings.data,
       server: Server.defaultExtraSettings,
     }),
   }
 
-  const api: App = {
+  const api: InternalApp = {
+    __state,
     log: log,
     settings: settings,
-    schema: schema.public,
+    schema: schemaComponent.public,
+    use(plugin) {
+      if (__state.isWasServerStartCalled === true) {
+        log.warn('You should add plugins before you start your server')
+      }
+
+      __state.plugins.push(plugin)
+    },
     server: {
       express: server.express,
       /**
@@ -113,32 +128,31 @@ export function create(): App {
        * for you. You should not normally need to call this function yourself.
        */
       async start() {
-        const graphqlSchema = await schema.private.makeSchema(state.plugins)
-
         // Track the start call so that we can know in entrypoint whether to run
         // or not start for the user.
-        state.isWasServerStartCalled = true
+        __state.isWasServerStartCalled = true
+
+        if (process.env.NEXUS_DISABLE_SERVER === 'true') {
+          return
+        }
+
+        const plugins = await Plugin.loadRuntimePluginsFromManifests(
+          __state.plugins
+        )
+        const graphqlSchema = await schemaComponent.private.makeSchema(plugins)
 
         await server.setupAndStart({
           settings: settings,
           schema: graphqlSchema,
-          plugins: state.plugins,
-          contextContributors: schema.private.state.contextContributors,
+          plugins,
+          contextContributors:
+            schemaComponent.private.state.contextContributors,
         })
       },
       stop() {
         return server.stop()
       },
     },
-  }
-
-  // Private API :(
-  const api__: any = api
-
-  api__.__state = state
-
-  api__.__use = function (pluginName: string, plugin: Plugin.RuntimePlugin) {
-    state.plugins.push(Plugin.loadRuntimePlugin(pluginName, plugin))
   }
 
   return api

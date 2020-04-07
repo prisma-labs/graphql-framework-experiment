@@ -3,12 +3,14 @@ import * as Layout from '../../lib/layout'
 import { transpileModule } from '../../lib/tsc'
 import * as Server from '../server'
 import { createStartModuleContent } from './start-module'
+import * as Plugin from '../../lib/plugin'
 
 export function createDevAppRunner(
   layout: Layout.Layout,
-  runtimePluginNames: string[],
+  plugins: Plugin.Manifest[],
   opts?: {
     server?: Server.ExtraSettingsInput
+    disableServer?: boolean
   }
 ): {
   start: () => Promise<void>
@@ -19,7 +21,8 @@ export function createDevAppRunner(
     internalStage: 'dev',
     layout,
     absoluteModuleImports: true,
-    runtimePluginNames,
+    plugins,
+    disableServer: opts?.disableServer,
   })
   const transpiledStartModule = transpileModule(startModule, {
     target: ts.ScriptTarget.ES5,

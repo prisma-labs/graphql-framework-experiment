@@ -6,7 +6,7 @@
 import os from 'os'
 import { PackageJson } from 'type-fest'
 import { Layout } from './layout'
-import { extractPluginNames } from './plugin'
+import * as Plugin from '../lib/plugin'
 
 interface Report {
   nexus: string
@@ -25,7 +25,7 @@ interface Report {
 /**
  * Extract diagnostics about the Nexus project.
  */
-export function getNexusReport(layout: Layout): Report {
+export async function getNexusReport(layout: Layout): Promise<Report> {
   const pj = layout.packageJson?.content
   const deps = pj?.dependencies ?? {}
   const otherDeps = Object.fromEntries(
@@ -33,11 +33,13 @@ export function getNexusReport(layout: Layout): Report {
       return ent[0] !== 'nexus' && !ent[0].startsWith('nexus-plugin')
     })
   )
+  // TODO: Plugin name is not great in report here
+  const pluginManifests = await Plugin.readAllPluginManifestsFromConfig(layout)
 
   return {
     node: process.version,
     nexus: deps.nexus ?? 'undefined',
-    plugins: extractPluginNames(deps),
+    plugins: pluginManifests.map((m) => m.name),
     os: {
       platform: os.platform(),
       release: os.release(),
