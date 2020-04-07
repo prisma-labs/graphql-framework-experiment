@@ -83,7 +83,7 @@
     "release:preview": "dripip preview",
     "release:pr": "dripip pr",
     "format": "prettier --write '*/**/*.ts'",
-    "build": "yarn -s clean && tsc -b",
+    "build": "yarn -s clean && node scripts/build-module-facades && tsc -b",
     "clean": "git clean -fX && rm -rf dist",
     "postpublish": "yarn -s clean",
     "postinstall": "node scripts/postinstall",
