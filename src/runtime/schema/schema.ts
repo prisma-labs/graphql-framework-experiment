@@ -1,4 +1,5 @@
 import * as NexusSchema from '@nexus/schema'
+import { makeSchemaInternal } from '@nexus/schema/dist/core'
 import * as HTTP from 'http'
 import * as Layout from '../../lib/layout'
 import * as Logger from '../../lib/logger'
@@ -71,11 +72,13 @@ export function create(): SchemaInternal {
           plugins,
           state.settings
         )
-        const {
-          schema,
-          missingTypes,
-          finalConfig,
-        } = statefulNexusSchema.makeSchemaInternal(nexusSchemaConfig)
+
+        nexusSchemaConfig.types.push(...statefulNexusSchema.state.types)
+
+        const { schema, missingTypes, finalConfig } = makeSchemaInternal(
+          nexusSchemaConfig
+        )
+
         if (nexusSchemaConfig.shouldGenerateArtifacts === true) {
           const devModeLayout = await Layout.loadDataFromParentProcess()
 
