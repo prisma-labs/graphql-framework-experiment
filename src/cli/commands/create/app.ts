@@ -457,11 +457,6 @@ async function scaffoldBaseFiles(
         singleQuote: true,
         trailingComma: 'all',
       },
-      husky: {
-        hooks: {
-          'pre-commit': 'pretty-quick --staged',
-        },
-      },
     } as PackageJson),
 
     fs.writeAsync('tsconfig.json', createTSConfigContents(layout)),
