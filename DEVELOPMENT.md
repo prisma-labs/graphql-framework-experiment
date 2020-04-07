@@ -191,10 +191,12 @@ yarn test:e2e
 
 Refer to https://github.com/graphql-nexus/examples
 
-#### Working with create command
+#### Developing `create app`
 
-In any example you can use this workflow:
+The strategy is to use a file path for the nexus dependency.
+
+The pattern is thus:
 
 ```
-rm -rf test-create && mcd test-create && ../node_modules/.bin/nexus create
+CREATE_APP_CHOICE_NEXUS_VERSION='<path/to/nexus>' node <path/to/nexus>/dist/cli/main.js create app
 ```
