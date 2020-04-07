@@ -1,4 +1,5 @@
 import * as NexusSchema from '@nexus/schema'
+import { makeSchemaInternal } from '@nexus/schema/dist/core'
 import * as HTTP from 'http'
 import * as Layout from '../../lib/layout'
 import * as Logger from '../../lib/logger'
@@ -16,7 +17,10 @@ import {
   SettingsInput,
 } from './settings'
 
-interface Request extends HTTP.IncomingMessage {
+// Export this so that context typegen can import it...
+// todo seems very brittle
+// todo request being exposed on context should be done by the framework
+export interface Request extends HTTP.IncomingMessage {
   log: Logger.Logger
 }
 
@@ -71,11 +75,12 @@ export function create(): SchemaInternal {
           plugins,
           state.settings
         )
-        const {
-          schema,
-          missingTypes,
-          finalConfig,
-        } = statefulNexusSchema.makeSchemaInternal(nexusSchemaConfig)
+        nexusSchemaConfig.types.push(...statefulNexusSchema.state.types)
+
+        const { schema, missingTypes, finalConfig } = makeSchemaInternal(
+          nexusSchemaConfig
+        )
+
         if (nexusSchemaConfig.shouldGenerateArtifacts === true) {
           const devModeLayout = await Layout.loadDataFromParentProcess()
 

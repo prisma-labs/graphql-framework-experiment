@@ -40,11 +40,6 @@ export function createNexusSchemaStateful() {
     types: [],
   }
 
-  function makeSchemaInternal(config: NexusSchema.core.SchemaConfig) {
-    config.types.push(state.types)
-    return NexusSchema.core.makeSchemaInternal(config)
-  }
-
   function objectType<TypeName extends string>(
     config: CustomTypes.NexusObjectTypeConfig<TypeName>
   ): NexusSchema.core.NexusObjectTypeDef<TypeName> {
@@ -123,7 +118,6 @@ export function createNexusSchemaStateful() {
   const booleanArg = NexusSchema.booleanArg
 
   return {
-    makeSchemaInternal: makeSchemaInternal,
     state: state,
     builders: {
       queryType,
