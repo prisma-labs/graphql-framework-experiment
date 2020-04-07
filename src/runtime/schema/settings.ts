@@ -214,6 +214,8 @@ function withAutoTypegenConfig(
       })
     )
 
+    config.nexusSchemaImportId = 'nexus/components/schema'
+
     log.trace('built up Nexus typegenConfig', { config })
     return config
   }
@@ -249,10 +251,15 @@ function processConnectionsConfig(
   settings: SettingsInput
 ): NexusSchema.core.NexusPlugin[] {
   if (settings.connections === undefined) {
-    return [defaultConnectionPlugin({})]
+    return [
+      defaultConnectionPlugin({
+        nexusSchemaImportId: 'nexus/components/schema',
+      }),
+    ]
   }
 
   const instances: NexusSchema.core.NexusPlugin[] = []
+
   const {
     default: defaultTypeConfig,
     ...customTypesConfig
@@ -262,6 +269,7 @@ function processConnectionsConfig(
     if (config) {
       instances.push(
         NexusSchema.connectionPlugin({
+          nexusSchemaImportId: 'nexus/components/schema',
           nexusFieldName: name,
           ...config,
         })
