@@ -77,7 +77,7 @@ export default class Plugin implements Command {
         name: pluginPackageName,
         version: '0.0.0',
         license: 'MIT',
-        main: 'dist/runtime.js',
+        main: 'dist/index.js',
         module: `dist/${pluginPackageName}.esm.js`,
         description: 'A Nexus framework plugin',
         files: ['dist'],
@@ -165,29 +165,35 @@ export default class Plugin implements Command {
       fs.writeAsync(
         'src/runtime.ts',
         stripIndent`
-        import { PluginEntrypoint } from 'nexus/plugin'
+          import { RuntimePlugin } from 'nexus/plugin'
 
-        export const plugin: PluginEntrypoint = () => ({
-          packageJsonPath: require.resolve('../package.json'),
-          runtime: {
-            module: require.resolve('./runtime'),
-            export: 'plugin'
-          },
-          worktime: {
-            module: require.resolve('./worktime'),
-            export: 'plugin'
+          export const plugin: RuntimePlugin = () => project => {
+            return {
+              context: {
+                create: _req => {
+                  return {
+                    '${pluginPackageName}': 'hello world!'
+                  }
+                },
+                typeGen: {
+                  fields: {
+                    '${pluginPackageName}': 'string'
+                  }
+                }
+              }
+            }
           }
-        })
         `
       ),
     ])
 
+    // TODO: use `pluginName` instead of hardcoded "plugin"
     fs.writeAsync(
       'src/index.ts',
       stripIndent`
       import { PluginEntrypoint } from 'nexus/plugin'
 
-      export const plugin: PluginEntrypoint = {
+      export const plugin: PluginEntrypoint = () => ({
         packageJsonPath: require.resolve('../package.json'),
         runtime: {
           module: require.resolve('./runtime'),
@@ -197,7 +203,7 @@ export default class Plugin implements Command {
           module: require.resolve('./worktime'),
           export: 'plugin'
         },
-      }
+      })
     `
     )
 
