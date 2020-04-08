@@ -548,8 +548,10 @@ type ParentData = {
 
 async function loadDataFromParentProcess(): Promise<ParentData> {
   if (process.env[ENV_PARENT_DATA]) {
-    return JSON.parse(process.env[ENV_PARENT_DATA]!)
+    const data = JSON.parse(process.env[ENV_PARENT_DATA]!)
+    log.trace('loaded parent data', { data })
   }
+  log.trace('no parent data found to load')
   return {}
 }
 
