@@ -49,7 +49,7 @@ export async function e2ePrismaApp(app: E2EContext) {
     }`)
 
   // todo add sort arg to api (requires prisma plugin change)
-  response.sort((a: any, b: any) => (a.id < b.id ? -1 : 1))
+  response.worlds.sort((a: any, b: any) => (a.id < b.id ? -1 : 1))
   expect(response).toMatchSnapshot('query')
 
   response = await app.client.request(introspectionQuery)
