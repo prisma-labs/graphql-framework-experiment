@@ -1,6 +1,8 @@
-// const ctx = createE2EContext({ localNexus: null })
+import { createE2EContext } from '../../src/lib/e2e-testing'
+import { e2ePrismaApp } from '../__helpers/e2e'
 
-test.todo('e2e create prisma app')
-// , async () => {
-//   await e2ePrismaApp(ctx)
-// })
+const ctx = createE2EContext({ localNexus: null })
+
+test('create prisma app', async () => {
+  await e2ePrismaApp(ctx)
+})
