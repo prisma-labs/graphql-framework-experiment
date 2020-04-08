@@ -1,7 +1,7 @@
 export { readAllPluginManifestsFromConfig } from './import'
 export {
   loadRuntimePlugins,
-  loadRuntimePluginsFromEntrypoints as loadRuntimePluginsFromManifests,
+  loadRuntimePluginsFromEntrypoints,
   loadTesttimePlugins,
   loadTesttimePluginsFromManifests,
   loadWorktimePluginFromManifests,

@@ -140,7 +140,7 @@ export function create(): App {
           return
         }
 
-        const plugins = await Plugin.loadRuntimePluginsFromManifests(
+        const plugins = await Plugin.loadRuntimePluginsFromEntrypoints(
           __state.plugins
         )
         const graphqlSchema = await schemaComponent.private.makeSchema(plugins)
