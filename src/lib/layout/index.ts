@@ -2,7 +2,7 @@ export {
   create,
   createFromData,
   Data,
-  DEFAULT_BUILD_FOLDER_NAME,
+  DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT,
   findAppModule,
   Layout,
   loadDataFromParentProcess,

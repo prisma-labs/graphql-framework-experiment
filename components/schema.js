@@ -1,1 +1,1 @@
-module.exports = require('./dist/components/schema')
+module.exports = require('../dist/components/schema')
