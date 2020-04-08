@@ -41,7 +41,7 @@ export async function e2eKitchenSink(app: E2EContext) {
 
   // Cover addToContext feature
   await app.fs.writeAsync(
-    `./src/add-to-context/${CONVENTIONAL_SCHEMA_FILE_NAME}`,
+    `./api/add-to-context/${CONVENTIONAL_SCHEMA_FILE_NAME}`,
     `
         import { schema } from 'nexus'
 
@@ -68,7 +68,7 @@ export async function e2eKitchenSink(app: E2EContext) {
 
   // Cover backing-types feature
   await app.fs.writeAsync(
-    `./src/backing-types/${CONVENTIONAL_SCHEMA_FILE_NAME}`,
+    `./api/backing-types/${CONVENTIONAL_SCHEMA_FILE_NAME}`,
     `
           import { schema } from 'nexus'
 
@@ -106,8 +106,8 @@ export async function e2eKitchenSink(app: E2EContext) {
 
   await buildApp()
 
-  log.warn('Build and dev again with an app.ts entrypoint')
-  await app.fs.writeAsync('./src/app.ts', '')
+  log.warn('Build and dev again without an app.ts entrypoint')
+  await app.fs.removeAsync('./src/app.ts')
 
   await buildApp()
 
