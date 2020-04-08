@@ -234,7 +234,10 @@ export async function findOrScaffoldTsConfig(
   return 'success'
 }
 
-export function createTSConfigContents(layout: Layout): string {
+export function createTSConfigContents(paths: {
+  sourceRootRelative: string
+  buildOutputRelative: string
+}): string {
   return stripIndent`
     {
       "compilerOptions": {
@@ -243,11 +246,11 @@ export function createTSConfigContents(layout: Layout): string {
         "lib": ["esnext"],
         "strict": true,
         // [1] nexus managed
-        // "rootDir": "${layout.sourceRootRelative}",
-        // "outDir": "${layout.buildOutputRelative}",
+        // "rootDir": "${paths.sourceRootRelative}",
+        // "outDir": "${paths.buildOutputRelative}",
       },
       // [1] nexus managed
-      // "include": "${layout.sourceRootRelative}"
+      // "include": "${paths.sourceRootRelative}"
     }
 
     // [1] nexus managed

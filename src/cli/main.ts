@@ -68,7 +68,7 @@ async function guardNotGlobalCLIWithLocalProject(
  * Main function
  */
 async function main(): Promise<number> {
-  const packageManager = await PackageManager.create(undefined, {
+  const packageManager = await PackageManager.createPackageManager(undefined, {
     projectRoot: process.cwd(),
   })
   await guardNotGlobalCLIWithLocalProject(packageManager)

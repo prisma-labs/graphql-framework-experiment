@@ -3,7 +3,10 @@ import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import * as path from 'path'
 import { PackageJson } from 'type-fest'
-import { DEFAULT_BUILD_FOLDER_NAME, Layout } from '../../lib/layout'
+import {
+  DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT,
+  Layout,
+} from '../../lib/layout'
 import { START_MODULE_NAME } from '../../runtime/start/start-module'
 import { rootLogger } from '../nexus-logger'
 import { fatal } from '../process'
@@ -46,7 +49,7 @@ export function normalizeTarget(
 
 const TARGET_TO_BUILD_OUTPUT: Record<SupportedTargets, string> = {
   now: 'dist',
-  heroku: DEFAULT_BUILD_FOLDER_NAME,
+  heroku: DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT,
 }
 
 export function computeBuildOutputFromTarget(target: SupportedTargets | null) {

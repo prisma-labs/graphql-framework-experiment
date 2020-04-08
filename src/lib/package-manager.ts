@@ -142,18 +142,18 @@ export type PackageManager = {
  * statics with the package manager type. Creation is async since it requires
  * running IO to detect the project's package manager.
  */
-export function create<T extends undefined | PackageManagerType>(
-  givenPackageManagerType: T | undefined,
+export function createPackageManager<T extends void | PackageManagerType>(
+  packageManagerType: T | void,
   opts: { projectRoot: string }
-): T extends undefined ? Promise<PackageManager> : PackageManager
+): T extends void ? Promise<PackageManager> : PackageManager
 
-export function create(
-  givenPackageManagerType: undefined | PackageManagerType,
+export function createPackageManager(
+  packageManagerType: void | PackageManagerType,
   opts: { projectRoot: string }
 ): Promise<PackageManager> | PackageManager {
-  return givenPackageManagerType === undefined
+  return packageManagerType === undefined
     ? detectProjectPackageManager(opts).then(createDo)
-    : createDo(givenPackageManagerType)
+    : createDo(packageManagerType)
 }
 
 function createDo(pmt: PackageManagerType): PackageManager {

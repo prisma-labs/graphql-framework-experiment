@@ -12,7 +12,8 @@ import { rootLogger } from '../nexus-logger'
 import * as PackageManager from '../package-manager'
 import * as Schema from './schema-modules'
 
-export const DEFAULT_BUILD_FOLDER_NAME = 'node_modules/.build'
+export const DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT =
+  'node_modules/.build'
 
 const log = rootLogger.child('layout')
 
@@ -102,7 +103,7 @@ interface Options {
 }
 
 const optionDefaults = {
-  buildOutput: DEFAULT_BUILD_FOLDER_NAME,
+  buildOutput: DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT,
 }
 
 /**
@@ -154,9 +155,12 @@ export function createFromData(layoutData: Data): Layout {
     projectPath(...subPaths: string[]): string {
       return Path.join(layoutData.projectRoot, ...subPaths)
     },
-    packageManager: PackageManager.create(layoutData.packageManagerType, {
-      projectRoot: layoutData.projectRoot,
-    }),
+    packageManager: PackageManager.createPackageManager(
+      layoutData.packageManagerType,
+      {
+        projectRoot: layoutData.projectRoot,
+      }
+    ),
   }
 }
 

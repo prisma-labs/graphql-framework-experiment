@@ -92,8 +92,8 @@
     "prepublishOnly": "yarn -s build",
     "test": "jest --verbose --testTimeout 360000",
     "test:unit": "jest --verbose --testRegex '.+/src/.+\\.spec\\.ts$'",
-    "test:e2e": "DEBUG=true jest --verbose --testTimeout 360000 test/e2e",
-    "test:system": "LINK=true DEBUG=true jest --verbose --testTimeout 360000 test/system",
+    "test:e2e": "LOG_PRETTY=true DEBUG=true jest --verbose --testTimeout 360000 test/e2e",
+    "test:system": "LOG_PRETTY=true LINK=true DEBUG=true jest --verbose --testTimeout 360000 test/system",
     "dev:test": "jest --watch --testRegex '.+/src/.+\\.spec\\.ts$'",
     "dev": "yarn -s clean && node scripts/build-module-facades && tsc -b -w"
   },
