@@ -201,25 +201,29 @@ import { log } from 'nexus'
 
 #### Prisma
 
-If you were a [`nexus-prisma`](https://github.com/prisma-labs/nexus-prisma) user, you will now become a [`nexus-plugin-prisma`](https://github.com/graphql-nexus/plugin-prisma) user.
+If you were a [`nexus-prisma`](https://github.com/prisma-labs/nexus-prisma) user, you will now become a [`nexus-plugin-prisma`](https://github.com/graphql-nexus/plugin-prisma) user. Install the plugin, and enable it in your project.
 
-The Nexus plugin system has an auto-use feature. It means once you've installed your Nexus plugin you're done, your app will already use it at runtime.
 
 ```diff
 ---+++package.json
   dependencies: {
 -   "nexus-prisma": "...",
 -   "@prisma/client": "...",
+-   "@prisma/cli": "..."
 +   "nexus-plugin-prisma": "...",
-+   "@prisma/cli": "..."
 ```
 
 ```diff
----app.ts
+---+++app.ts
 - import { nexusPrismaPlugin } from 'nexus-prisma'
 
 - makeSchema({
 -   plugins: [nexusPrismaPlugin()],
+
++ import { use } from 'nexus'
++ import { prisma } from 'nexus-plugin-prisma'
+
++ use(prisma())
 ```
 
 You should still use the Prisma CLI. Only `$ prisma generate` will be taken care of for you.

@@ -21,7 +21,7 @@
   // runtime.ts
   import { RuntimePlugin } from 'nexus/plugin'
 
-  export const plugin: RuntimePlugin = project => {
+  export const plugin: RuntimePlugin = () => project => {
     /* ... */
   }
   ```
@@ -30,7 +30,7 @@
   // testtime.ts
   import { TesttimePlugin } from 'nexus/plugin'
 
-  export const plugin: TesttimePlugin = project => {
+  export const plugin: TesttimePlugin = () => project => {
     /* ... */
   }
   ```
@@ -39,7 +39,7 @@
   // worktime.ts
   import { WorktimePlugin } from 'nexus/plugin'
 
-  export const plugin: WorktimePlugin = project => {
+  export const plugin: WorktimePlugin = () => project => {
     /* ... */
   }
   ```
@@ -47,7 +47,7 @@
 - The `project` parameter gives you access to utils and core components
 
   ```ts
-  export const plugin: TesttimePlugin = project => {
+  export const plugin: TesttimePlugin = () => project => {
     project.utils.log.trace('hello')
   }
   ```
@@ -55,7 +55,7 @@
 - With runtime plugins you can pass configuration to Nexus and contribute toward the graphql resolver context:
 
   ```ts
-  export const plugin: RuntimePlugin = (project => {
+  export const plugin: RuntimePlugin = () => project => {
     return {
       context: {
         create: req => {
@@ -69,7 +69,7 @@
             }
           }
         },
-        nexus: {
+        schema: {
           // ...
         }
       }
@@ -80,7 +80,7 @@
 - With worktime plugins you can hook onto various events grouped by subsystem:
 
   ```ts
-  export const plugin:WorktimePlugin = project => {
+  export const plugin: WorktimePlugin = () => project => {
     // Not all hooks shown here
     project.hooks.build.onStart = async () => { ... }
     project.hooks.create.onAfterBaseSetup = async () => { ... }
@@ -99,13 +99,101 @@
 - Some worktime hooks give you contextual information to reflect upon:
 
   ```ts
-  export default nexusPlugin.create(project => {
-    project.worktime(hooks => {
-      hooks.db.plan.onStart = async hctx => {
-        project.log.info(hctx.migrationName)
-      }
-    })
+  export const plugin: WorktimePlugin = () => project => {
+    project.hooks.db.plan.onStart = async ctx => {
+      project.log.info(ctx.migrationName)
+    }
   })
+  ```
+
+- Finally, for your plugin to be consumed by Nexus, you need to export an entrypoint which references your runtime or worktime or testtime plugin.
+
+  **This entrypoint is what needs to be imported by users.**
+  
+  We recommend you named export the entrypoint after the suffix `nexus-plugin-(*)` of your npm package name.
+
+  For instance, if your plugin is named `nexus-plugin-fancy-plugin`, your entrypoint should be named export `fancyPlugin`
+
+  ```ts
+  import { PluginEntrypoint } from 'nexus/plugin'
+
+  export const fancyPlugin: PluginEntrypoint = () => ({
+    packageJsonPath: require.resolve('../package.json'),
+    runtime?: {
+      module: require.resolve('./runtime'),
+      export: 'plugin'
+    },
+    worktime?: {
+      module: require.resolve('./worktime'),
+      export: 'plugin'
+    },
+    testtime?: {
+      module: require.resolve('./testtime'),
+      export: 'plugin'
+    },
+  })
+  ```
+
+## Adding settings to your plugin
+
+- Create a `settings.ts` file and export a type `Settings` containing your settings
+
+  ```ts
+  // settings.ts
+  export type Settings = {
+    myCustomOption?: boolean
+  }
+  ```
+
+- Import the `Settings` type in your entrypoint, and pass it as generic to `PluginEntrypoint`.
+
+  > Note: You must return the settings untouched in your entrypoint.
+  > The framework is then responsible for passing the settings to your runtime/worktime/testtime plugins .
+
+  ```ts
+  //entrypoint.ts
+  import { PluginEntrypoint } from 'nexus/plugin'
+  import { Settings } from './settings'
+
+  export const fancyPlugin: PluginEntrypoint<Settings> = settings => ({
+    settings,
+    ...
+  })
+  ```
+
+- Repeat the operation for your runtime/worktime/testtime plugins.
+
+  ```ts
+  // runtime.ts
+  import { RuntimePlugin } from 'nexus/plugin'
+  import { Settings } from './settings'
+
+  export const plugin: RuntimePlugin<Settings> = settings => project => {
+    // ...
+  }
+  ```
+
+- By default, settings will always be optional.
+
+  **We strongly recommend you keep it that way and find defaults for each of your settings.** This is in order to keep the framework zero-config as much as possible. If you really need required settings though, you can enable them in the following way:
+
+  ```ts
+  // entrypoint.ts
+  import { PluginEntrypoint } from 'nexus/plugin'
+  import { Settings } from './settings'
+
+  export const fancyPlugin: PluginEntrypoint<Settings, 'required'> = settings => ({
+    settings,
+    // ...
+  })
+
+  // runtime.ts
+  import { RuntimePlugin } from 'nexus/plugin'
+  import { Settings } from './settings'
+
+  export const plugin: RuntimePlugin<Settings, 'required'> = settings => project => {
+    // ...
+  }
   ```
 
 ## Wholistic
