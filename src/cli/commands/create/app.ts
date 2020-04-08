@@ -63,7 +63,7 @@ export async function runLocalHandOff(): Promise<void> {
   for (const p of plugins) {
     await p.hooks.create.onAfterBaseSetup?.({
       database: parentData.database,
-      connectionURI: parentData.database,
+      connectionURI: parentData.connectionURI,
     })
   }
 }
