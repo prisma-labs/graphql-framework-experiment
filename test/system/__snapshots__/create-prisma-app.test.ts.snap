@@ -1043,13 +1043,11 @@ exports[`create prisma app: query 1`] = `
 Object {
   "worlds": Array [
     Object {
-      "id": 1,
-      "name": "Mars",
+      "name": "Earth",
       "population": 0,
     },
     Object {
-      "id": 2,
-      "name": "Earth",
+      "name": "Mars",
       "population": 6000000000,
     },
   ],

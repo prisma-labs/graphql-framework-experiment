@@ -48,8 +48,14 @@ export async function e2ePrismaApp(app: E2EContext) {
       }
     }`)
 
-  // todo add sort arg to api (requires prisma plugin change)
-  response.worlds.sort((a: any, b: any) => (a.id < b.id ? -1 : 1))
+  // todo change prisma plugin to seed its data in a deterministic order
+  //      (we could just not select id field above but that just hides the issue)
+  // todo change prisma plugin to support api sorting
+  response.worlds
+    .sort((world1: any, world2: any) => (world1.name < world2.name ? -1 : 1))
+    .forEach((world: any) => {
+      delete world.id
+    })
   expect(response).toMatchSnapshot('query')
 
   response = await app.client.request(introspectionQuery)
