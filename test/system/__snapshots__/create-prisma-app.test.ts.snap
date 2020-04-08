@@ -1044,11 +1044,11 @@ Object {
   "worlds": Array [
     Object {
       "name": "Earth",
-      "population": 0,
+      "population": 6000000000,
     },
     Object {
       "name": "Mars",
-      "population": 6000000000,
+      "population": 0,
     },
   ],
 }
