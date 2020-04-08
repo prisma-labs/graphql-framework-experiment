@@ -11,7 +11,10 @@ const log = rootLogger.child('e2e-testing')
  * Smoketest the user journey through create app with prisma SQLite databsae.
  */
 export async function e2ePrismaApp(app: E2EContext) {
+  process.env.LINK = 'true'
+
   log.warn('create prisma app')
+
   let sub: Subscription
   let proc: ConnectableObservable<string>
   let output: string
