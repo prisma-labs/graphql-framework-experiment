@@ -6,9 +6,9 @@ import { createStartModuleContent } from './start-module'
 
 export function createDevAppRunner(
   layout: Layout.Layout,
-  runtimePluginNames: string[],
   opts?: {
     server?: Server.ExtraSettingsInput
+    disableServer?: boolean
   }
 ): {
   start: () => Promise<void>
@@ -19,7 +19,8 @@ export function createDevAppRunner(
     internalStage: 'dev',
     layout,
     absoluteModuleImports: true,
-    runtimePluginNames,
+    plugins: [], // No need to statically require runtime plugins in dev (no need to tree-shake)
+    disableServer: opts?.disableServer,
   })
   const transpiledStartModule = transpileModule(startModule, {
     target: ts.ScriptTarget.ES5,

@@ -77,7 +77,7 @@ export default class Plugin implements Command {
         name: pluginPackageName,
         version: '0.0.0',
         license: 'MIT',
-        main: 'dist/runtime.js',
+        main: 'dist/index.js',
         module: `dist/${pluginPackageName}.esm.js`,
         description: 'A Nexus framework plugin',
         files: ['dist'],
@@ -143,7 +143,7 @@ export default class Plugin implements Command {
         stripIndent`
           import { WorktimePlugin } from 'nexus/plugin'
 
-          export const plugin: WorktimePlugin = project => {
+          export const plugin: WorktimePlugin = () => project => {
             project.hooks.dev.onStart = async () => {
               project.log.info('dev.onStart hook from ${pluginName}')
             }
@@ -167,7 +167,7 @@ export default class Plugin implements Command {
         stripIndent`
           import { RuntimePlugin } from 'nexus/plugin'
 
-          export const plugin:RuntimePlugin = project => {
+          export const plugin: RuntimePlugin = () => project => {
             return {
               context: {
                 create: _req => {
@@ -186,6 +186,26 @@ export default class Plugin implements Command {
         `
       ),
     ])
+
+    // TODO: use `pluginName` instead of hardcoded "plugin"
+    fs.writeAsync(
+      'src/index.ts',
+      stripIndent`
+      import { PluginEntrypoint } from 'nexus/plugin'
+
+      export const plugin: PluginEntrypoint = () => ({
+        packageJsonPath: require.resolve('../package.json'),
+        runtime: {
+          module: require.resolve('./runtime'),
+          export: 'plugin'
+        },
+        worktime: {
+          module: require.resolve('./worktime'),
+          export: 'plugin'
+        },
+      })
+    `
+    )
 
     log.info(`Installing dev dependencies`)
     await proc.run(

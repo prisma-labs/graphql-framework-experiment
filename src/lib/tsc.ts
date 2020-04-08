@@ -33,7 +33,7 @@ export function findConfigFile(fileName: string, opts: { required: boolean }) {
     fileName
   )
 
-  log.trace('config file serach result', { fileName, configPath, opts })
+  log.trace('config file search result', { fileName, configPath, opts })
 
   if (!configPath) {
     if (opts.required === true) {

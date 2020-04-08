@@ -107,7 +107,7 @@ export async function e2eKitchenSink(app: E2EContext) {
   await buildApp()
 
   log.warn('Build and dev again without an app.ts entrypoint')
-  await app.fs.removeAsync('./src/app.ts')
+  await app.fs.removeAsync('./api/app.ts')
 
   await buildApp()
 
@@ -163,6 +163,16 @@ export async function e2eKitchenSink(app: E2EContext) {
     .toPromise()
 
   log.warn('with plugin, dev app')
+
+  await app.fs.writeAsync(
+    './api/app.ts',
+    `
+    import { use } from 'nexus'
+    import { plugin } from 'nexus-plugin-foobar'
+
+    use(plugin())
+  `
+  )
 
   proc = app.nexus(['dev'])
   sub = proc.connect()

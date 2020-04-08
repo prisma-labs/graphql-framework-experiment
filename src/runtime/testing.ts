@@ -3,7 +3,6 @@ import * as Lo from 'lodash'
 import { GraphQLClient } from '../lib/graphql-client'
 import * as Layout from '../lib/layout'
 import * as Plugin from '../lib/plugin'
-import { getInstalledRuntimePluginNames } from '../lib/plugin'
 import app from './index'
 import { createDevAppRunner } from './start'
 
@@ -71,9 +70,9 @@ export async function createTestContext(): Promise<TestContext> {
 
   // todo figure out some caching system here, e.g. imagine jest --watch mode
   const layout = await Layout.create()
-  const pluginNames = await getInstalledRuntimePluginNames(layout)
+  const pluginManifests = await Plugin.readAllPluginManifestsFromConfig(layout)
   const randomPort = await getPort({ port: getPort.makeRange(4000, 6000) })
-  const appRunner = await createDevAppRunner(layout, pluginNames, {
+  const appRunner = await createDevAppRunner(layout, {
     server: { port: randomPort, startMessage: () => {}, playground: false },
   })
 
@@ -94,8 +93,8 @@ export async function createTestContext(): Promise<TestContext> {
     },
   }
 
-  const testContextContributions = await Plugin.loadInstalledTesttimePlugins(
-    layout
+  const testContextContributions = await Plugin.loadTesttimePluginsFromManifests(
+    pluginManifests
   )
 
   for (const testContextContribution of testContextContributions) {

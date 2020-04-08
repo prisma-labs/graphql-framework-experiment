@@ -126,7 +126,7 @@ export function mapSettingsToNexusSchemaConfig(
 
   // Merge the plugin nexus plugins
   for (const frameworkPlugin of frameworkPlugins) {
-    const schemaPlugins = frameworkPlugin.nexus?.plugins ?? []
+    const schemaPlugins = frameworkPlugin.schema?.plugins ?? []
     baseConfig.plugins!.push(...schemaPlugins)
   }
 
@@ -144,8 +144,8 @@ function withAutoTypegenConfig(
   // Integrate plugin typegenAutoConfig contributions
   const typegenAutoConfigFromPlugins = {}
   for (const p of plugins) {
-    if (p.nexus?.typegenAutoConfig) {
-      Lo.merge(typegenAutoConfigFromPlugins, p.nexus.typegenAutoConfig)
+    if (p.schema?.typegenAutoConfig) {
+      Lo.merge(typegenAutoConfigFromPlugins, p.schema.typegenAutoConfig)
     }
   }
 

@@ -21,7 +21,7 @@ export class Report implements Command {
     }
 
     const layout = await create()
-    const report = getNexusReport(layout)
+    const report = await getNexusReport(layout)
 
     if (args['--json']) {
       console.log(JSON.stringify(report))
