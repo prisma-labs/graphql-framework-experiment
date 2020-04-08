@@ -30,6 +30,11 @@ export type E2EContext = ReturnType<typeof createE2EContext>
 interface Config {
   dir?: string
   /**
+   * The port that the server will listen on and tht graphql client will make
+   * requests at.
+   */
+  serverPort?: number
+  /**
    * The absolute path to a source checkout of Nexus. The Nexus checkout should
    * be built as well.
    *
@@ -49,6 +54,10 @@ export function createE2EContext(config: Config) {
   rootLogger.settings({ level: 'trace' })
   process.env.LOG_LEVEL = 'trace'
 
+  if (config.serverPort) {
+    process.env.PORT = String(config.serverPort)
+  }
+
   const localNexusBinPath = config.localNexus
     ? Path.join(config.localNexus.path, 'dist', 'cli', 'main')
     : null
@@ -59,7 +68,9 @@ export function createE2EContext(config: Config) {
     '.bin',
     'nexus'
   )
-  log.trace('setup', { projectDir, options: config })
+  ;(beforeAll as any)(() => {
+    log.trace('setup', { projectDir, options: config })
+  })
 
   FS.dir(projectDir)
 
@@ -73,7 +84,7 @@ export function createE2EContext(config: Config) {
     config: config,
     getTmpDir: getTmpDir,
     fs: FS.cwd(projectDir),
-    client: new GraphQLClient('http://localhost:4000/graphql'),
+    client: new GraphQLClient(`http://localhost:${config.serverPort}/graphql`),
     node(args: string[], opts: IPtyForkOptions = {}) {
       return spawn('node', args, { cwd: projectDir, ...opts })
     },
@@ -85,7 +96,7 @@ export function createE2EContext(config: Config) {
       return spawn(PROJ_NEXUS_BIN_PATH, args, { cwd: projectDir, ...opts })
     },
     npxNexus(options: { nexusVersion: string }, args: string[]) {
-      return spawn('npx', [`nexus-future@${options.nexusVersion}`, ...args], {
+      return spawn('npx', [`nexus@${options.nexusVersion}`, ...args], {
         cwd: projectDir,
         env: {
           ...process.env,
@@ -98,7 +109,7 @@ export function createE2EContext(config: Config) {
     ) {
       return spawn(
         'npx',
-        [`nexus-future@${options.nexusVersion}`, 'create', 'plugin'],
+        [`nexus@${options.nexusVersion}`, 'create', 'plugin'],
         {
           cwd: projectDir,
           env: {

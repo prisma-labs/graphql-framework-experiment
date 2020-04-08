@@ -1,18 +1,18 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`cli entrypoint create app: addToContext query 1`] = `
+exports[`kitchen sink: addToContext query 1`] = `
 Object {
   "a": 2,
 }
 `;
 
-exports[`cli entrypoint create app: addToContext query 2`] = `
+exports[`kitchen sink: addToContext query 2`] = `
 Object {
   "a": 2,
 }
 `;
 
-exports[`cli entrypoint create app: backing type query 1`] = `
+exports[`kitchen sink: backing type query 1`] = `
 Object {
   "testBackingType": Object {
     "test": "abcdef",
@@ -20,7 +20,7 @@ Object {
 }
 `;
 
-exports[`cli entrypoint create app: backing type query 2`] = `
+exports[`kitchen sink: backing type query 2`] = `
 Object {
   "testBackingType": Object {
     "test": "abcdef",
@@ -28,19 +28,19 @@ Object {
 }
 `;
 
-exports[`cli entrypoint create app: built app addToContext query 1`] = `
+exports[`kitchen sink: built app addToContext query 1`] = `
 Object {
   "a": 2,
 }
 `;
 
-exports[`cli entrypoint create app: built app addToContext query 2`] = `
+exports[`kitchen sink: built app addToContext query 2`] = `
 Object {
   "a": 2,
 }
 `;
 
-exports[`cli entrypoint create app: built app backing type query 1`] = `
+exports[`kitchen sink: built app backing type query 1`] = `
 Object {
   "testBackingType": Object {
     "test": "abcdef",
@@ -48,7 +48,7 @@ Object {
 }
 `;
 
-exports[`cli entrypoint create app: built app backing type query 2`] = `
+exports[`kitchen sink: built app backing type query 2`] = `
 Object {
   "testBackingType": Object {
     "test": "abcdef",
@@ -56,7 +56,7 @@ Object {
 }
 `;
 
-exports[`cli entrypoint create app: built app introspection 1`] = `
+exports[`kitchen sink: built app introspection 1`] = `
 Object {
   "__schema": Object {
     "directives": Array [
@@ -1140,7 +1140,7 @@ In some cases, you need to provide options to alter GraphQL's execution behavior
 }
 `;
 
-exports[`cli entrypoint create app: built app introspection 2`] = `
+exports[`kitchen sink: built app introspection 2`] = `
 Object {
   "__schema": Object {
     "directives": Array [
@@ -2224,7 +2224,7 @@ In some cases, you need to provide options to alter GraphQL's execution behavior
 }
 `;
 
-exports[`cli entrypoint create app: built app query 1`] = `
+exports[`kitchen sink: built app query 1`] = `
 Object {
   "worlds": Array [
     Object {
@@ -2241,7 +2241,7 @@ Object {
 }
 `;
 
-exports[`cli entrypoint create app: built app query 2`] = `
+exports[`kitchen sink: built app query 2`] = `
 Object {
   "worlds": Array [
     Object {
@@ -2258,7 +2258,7 @@ Object {
 }
 `;
 
-exports[`cli entrypoint create app: introspection 1`] = `
+exports[`kitchen sink: introspection 1`] = `
 Object {
   "__schema": Object {
     "directives": Array [
@@ -3342,7 +3342,7 @@ In some cases, you need to provide options to alter GraphQL's execution behavior
 }
 `;
 
-exports[`cli entrypoint create app: introspection 2`] = `
+exports[`kitchen sink: introspection 2`] = `
 Object {
   "__schema": Object {
     "directives": Array [
@@ -4426,7 +4426,7 @@ In some cases, you need to provide options to alter GraphQL's execution behavior
 }
 `;
 
-exports[`cli entrypoint create app: query 1`] = `
+exports[`kitchen sink: query 1`] = `
 Object {
   "worlds": Array [
     Object {
@@ -4443,7 +4443,7 @@ Object {
 }
 `;
 
-exports[`cli entrypoint create app: query 2`] = `
+exports[`kitchen sink: query 2`] = `
 Object {
   "worlds": Array [
     Object {
