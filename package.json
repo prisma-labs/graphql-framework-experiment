@@ -93,7 +93,7 @@
     "test": "LOG_PRETTY=true DEBUG=true jest --verbose --testTimeout 360000",
     "test:unit": "jest --verbose --testRegex '.+/src/.+\\.spec\\.ts$'",
     "test:e2e": "yarn -s jest test/e2e",
-    "test:system": "LINK=true yarn -s test test/system",
+    "test:system": "yarn -s test test/system",
     "dev:test": "jest --watch --testRegex '.+/src/.+\\.spec\\.ts$'",
     "dev": "yarn -s clean && node scripts/build-module-facades && tsc -b -w"
   },
