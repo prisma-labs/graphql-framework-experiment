@@ -52,12 +52,6 @@ export async function e2ePrismaApp(app: E2EContext) {
   response = await app.client.request(introspectionQuery)
   expect(response).toMatchSnapshot('introspection')
 
-  response = await app.client.request(`{ a }`)
-  expect(response).toMatchSnapshot('addToContext query')
-
-  response = await app.client.request(`{ testBackingType { test } }`)
-  expect(response).toMatchSnapshot('backing type query')
-
   sub.unsubscribe()
 
   log.warn('run build')
