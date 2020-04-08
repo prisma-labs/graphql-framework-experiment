@@ -86,6 +86,8 @@ yarn dev:test      # watch mode
 
 ```
 yarn test:system
+yarn test system/create-prisma
+yarn test system/kitchen
 ```
 
 - Live under `/test/system`
@@ -98,8 +100,10 @@ yarn test:system
 
 #### E2E
 
-```bash
+```
 yarn test:e2e
+yarn test e2e/create-prisma
+yarn test e2e/kitchen
 ```
 
 - Environment variables

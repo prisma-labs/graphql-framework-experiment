@@ -24,6 +24,7 @@ jobs:
     strategy:
       matrix:
         node-version: [10.x, 12.x]
+        test-case: [kitchen-sink, prisma-create-app]
     steps:
       - uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
@@ -38,4 +39,4 @@ jobs:
           # For nexus create app flow which will make an init commit 
           git config --global user.name prisma-labs
           git config --global user.email labs@prisma.io
-      - run: yarn -s test:system
+      - run: yarn -s test system/${{matrix.test-case}}
