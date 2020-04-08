@@ -25,15 +25,32 @@ interface CreatePluginOptions {
   name: string
 }
 
-export function createE2EContext(config?: {
-  localNexusPath?: string
+export type E2EContext = ReturnType<typeof createE2EContext>
+
+interface Config {
   dir?: string
-}) {
+  /**
+   * The absolute path to a source checkout of Nexus. The Nexus checkout should
+   * be built as well.
+   *
+   * If this is present then the e2e test can run it for app creation instead
+   * of npx. Also the created plugin later in the test can be made to use this
+   * Nexus instead of the pubished one.
+   */
+  localNexus: null | {
+    path: string
+    createAppWithThis: boolean
+    createPluginWithThis: boolean
+    pluginLinksToThis: boolean
+  }
+}
+
+export function createE2EContext(config: Config) {
   rootLogger.settings({ level: 'trace' })
   process.env.LOG_LEVEL = 'trace'
 
-  const localNexusBinPath = config?.localNexusPath
-    ? Path.join(config.localNexusPath, 'dist', 'cli', 'main')
+  const localNexusBinPath = config.localNexus
+    ? Path.join(config.localNexus.path, 'dist', 'cli', 'main')
     : null
   const projectDir = config?.dir ?? getTmpDir('e2e-app')
   const PROJ_NEXUS_BIN_PATH = Path.join(
@@ -42,13 +59,18 @@ export function createE2EContext(config?: {
     '.bin',
     'nexus'
   )
-  log.trace('setup', { projectDir, config })
+  log.trace('setup', { projectDir, options: config })
 
   FS.dir(projectDir)
 
   const contextAPI = {
+    usingLocalNexus: config.localNexus,
+    /**
+     * Ignore this if usingLocalNexus is set.
+     */
+    useNexusVersion: process.env.E2E_NEXUS_VERSION ?? 'latest',
     dir: projectDir,
-    settings: config,
+    config: config,
     getTmpDir: getTmpDir,
     fs: FS.cwd(projectDir),
     client: new GraphQLClient('http://localhost:4000/graphql'),
@@ -98,52 +120,47 @@ export function createE2EContext(config?: {
         },
       })
     },
-    localNexus(args: string[]) {
-      if (!localNexusBinPath)
-        throw new Error(
-          'E2E Config Error: Cannot run localNexus because you did not configure config.localNexusBinPath'
-        )
-      return spawn('node', [localNexusBinPath, ...args], {
-        cwd: projectDir,
-        env: {
-          ...process.env,
-          LOG_LEVEL: 'trace',
-        },
-      })
-    },
-    localNexusCreateApp(options: CreateAppOptions) {
-      if (!localNexusBinPath)
-        throw new Error(
-          'E2E Config Error: Cannot run localNexusCreateApp because you did not configure config.localNexusBinPath'
-        )
-      return spawn('node', [localNexusBinPath], {
-        cwd: projectDir,
-        env: {
-          ...process.env,
-          CREATE_APP_CHOICE_PACKAGE_MANAGER_TYPE: options.packageManagerType,
-          CREATE_APP_CHOICE_DATABASE_TYPE: options.databaseType,
-          LOG_LEVEL: 'trace',
-        },
-      })
-    },
-    localNexusCreatePlugin(options: CreatePluginOptions) {
-      if (!localNexusBinPath)
-        throw new Error(
-          'E2E Config Error: Cannot run localNexusCreatePlugin because you did not configure config.localNexusBinPath'
-        )
-      return spawn('node', [localNexusBinPath, 'create', 'plugin'], {
-        cwd: projectDir,
-        env: {
-          ...process.env,
-          CREATE_PLUGIN_CHOICE_NAME: options.name,
-          LOG_LEVEL: 'trace',
-        },
-      })
-    },
+    localNexus: config.localNexus
+      ? (args: string[]) => {
+          return spawn('node', [localNexusBinPath!, ...args], {
+            cwd: projectDir,
+            env: {
+              ...process.env,
+              LOG_LEVEL: 'trace',
+            },
+          })
+        }
+      : null,
+    localNexusCreateApp: config.localNexus
+      ? (options: CreateAppOptions) => {
+          return spawn('node', [localNexusBinPath!], {
+            cwd: projectDir,
+            env: {
+              ...process.env,
+              CREATE_APP_CHOICE_PACKAGE_MANAGER_TYPE:
+                options.packageManagerType,
+              CREATE_APP_CHOICE_DATABASE_TYPE: options.databaseType,
+              LOG_LEVEL: 'trace',
+            },
+          })
+        }
+      : null,
+    localNexusCreatePlugin: config.localNexus
+      ? (options: CreatePluginOptions) => {
+          return spawn('node', [localNexusBinPath!, 'create', 'plugin'], {
+            cwd: projectDir,
+            env: {
+              ...process.env,
+              CREATE_PLUGIN_CHOICE_NAME: options.name,
+              LOG_LEVEL: 'trace',
+            },
+          })
+        }
+      : null,
   }
 
-  if (config?.localNexusPath) {
-    process.env.CREATE_APP_CHOICE_NEXUS_VERSION = `file:${config.localNexusPath}`
+  if (config.localNexus) {
+    process.env.CREATE_APP_CHOICE_NEXUS_VERSION = `file:${config.localNexus.path}`
   }
 
   return contextAPI

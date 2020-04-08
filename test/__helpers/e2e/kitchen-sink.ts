@@ -1,43 +1,19 @@
 import { introspectionQuery } from 'graphql'
 import { ConnectableObservable, Subscription } from 'rxjs'
-import { refCount, scan, takeWhile } from 'rxjs/operators'
-import { createE2EContext } from '../../src/lib/e2e-testing'
-import { DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT } from '../../src/lib/layout'
-import { CONVENTIONAL_SCHEMA_FILE_NAME } from '../../src/lib/layout/schema-modules'
-import { rootLogger } from '../../src/lib/nexus-logger'
+import { refCount } from 'rxjs/operators'
+import { createE2EContext, E2EContext } from '../../../src/lib/e2e-testing'
+import { DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT } from '../../../src/lib/layout'
+import { CONVENTIONAL_SCHEMA_FILE_NAME } from '../../../src/lib/layout/schema-modules'
+import { rootLogger } from '../../../src/lib/nexus-logger'
+import { bufferOutput, takeUntilServerListening } from './utils'
 
 const log = rootLogger.child('e2e-testing')
 
-interface Options {
-  /**
-   * The absolute path to a source checkout of Nexus. The Nexus checkout should
-   * be built as well.
-   *
-   * If this is present then the e2e test will run it for app creation instead
-   * of npx. Also the created plugin later in the test will be made to use this
-   * Nexus instead of the pubished one.
-   */
-  localNexus:
-    | false
-    | {
-        path: string
-        createAppWithThis: boolean
-        pluginLinksToThis: boolean
-      }
-}
-
 /**
- * This function is shared between e2e tests and system tests
+ * Test creating an app, creating a plugin, and then using that plugin in the
+ * app. Along the way build and dev are tested multiple times, and more.
  */
-export async function e2eTestApp(
-  options: Options,
-  app: ReturnType<typeof createE2EContext>
-) {
-  const takeUntilServerListening = takeWhile(
-    (data: string) => !data.includes(SERVER_LISTENING_EVENT)
-  )
-  const bufferOutput = scan((buffer: string, data: string) => buffer + data, '')
-  const SERVER_LISTENING_EVENT = 'server listening'
+export async function e2eKitchenSink(app: E2EContext) {
   let sub: Subscription
   let proc: ConnectableObservable<string>
   let output: string
@@ -45,32 +21,21 @@ export async function e2eTestApp(
 
   log.warn('create app')
 
-  if (options.localNexus) {
-    await app
-      .localNexusCreateApp({
-        databaseType: 'NO_DATABASE',
-        packageManagerType: 'yarn',
-      })
-      .pipe(
-        refCount(),
-        takeWhile((val: string) => {
-          return !val.includes(SERVER_LISTENING_EVENT)
-        })
-      )
+  if (app.usingLocalNexus?.createAppWithThis) {
+    await app.localNexusCreateApp!({
+      databaseType: 'NO_DATABASE',
+      packageManagerType: 'yarn',
+    })
+      .pipe(refCount(), takeUntilServerListening)
       .toPromise()
   } else {
     await app
       .npxNexusCreateApp({
         databaseType: 'NO_DATABASE',
         packageManagerType: 'yarn',
-        nexusVersion: process.env.E2E_NEXUS_VERSION ?? 'latest',
+        nexusVersion: app.useNexusVersion,
       })
-      .pipe(
-        refCount(),
-        takeWhile((val: string) => {
-          return !val.includes(SERVER_LISTENING_EVENT)
-        })
-      )
+      .pipe(refCount(), takeUntilServerListening)
       .toPromise()
   }
 
@@ -149,13 +114,12 @@ export async function e2eTestApp(
   log.warn('create plugin')
 
   const pluginProject = createE2EContext({
-    ...app.settings,
+    ...app.config,
     dir: app.getTmpDir('e2e-plugin'),
   })
 
-  if (options.localNexus) {
-    output = await pluginProject
-      .localNexusCreatePlugin({ name: 'foobar' })
+  if (app.usingLocalNexus?.createPluginWithThis) {
+    output = await pluginProject.localNexusCreatePlugin!({ name: 'foobar' })
       .refCount()
       .pipe(bufferOutput)
       .toPromise()
@@ -171,13 +135,13 @@ export async function e2eTestApp(
 
   expect(output).toContain('Done! To get started')
 
-  if (options.localNexus) {
+  if (app.usingLocalNexus?.pluginLinksToThis) {
     // We do this so that the plugin is building against the local nexus. Imagine
     // the plugin system is changing, the only way to allow the plugin template to
     // be built against the changes is to work with the local nexus version, not
     // one published to npm.
     await pluginProject
-      .spawn(['yarn', 'add', '-D', options.localNexus])
+      .spawn(['yarn', 'add', '-D', app.usingLocalNexus.path])
       .refCount()
       .pipe(bufferOutput)
       .toPromise()

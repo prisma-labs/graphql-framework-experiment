@@ -1,6 +1,6 @@
 import * as path from 'path'
 import { createE2EContext } from '../../src/lib/e2e-testing'
-import { e2eKitchenSink } from '../__helpers/e2e/kitchen-sink'
+import { e2ePrismaApp } from '../__helpers/e2e'
 
 const ctx = createE2EContext({
   localNexus: {
@@ -11,6 +11,6 @@ const ctx = createE2EContext({
   },
 })
 
-test('cli entrypoint create app', async () => {
-  await e2eKitchenSink(ctx)
+test('e2e', async () => {
+  await e2ePrismaApp(ctx)
 })
