@@ -332,8 +332,8 @@ async function askForPackageManager(): Promise<
     title: string
     value: PackageManager.PackageManagerType
   }[] = [
-    { title: 'npm', value: 'npm' },
     { title: 'yarn', value: 'yarn' },
+    { title: 'npm', value: 'npm' },
   ]
 
   type Result = { packageManagerType: PackageManager.PackageManagerType }
@@ -550,6 +550,7 @@ async function loadDataFromParentProcess(): Promise<ParentData> {
   if (process.env[ENV_PARENT_DATA]) {
     const data = JSON.parse(process.env[ENV_PARENT_DATA]!)
     log.trace('loaded parent data', { data })
+    return data
   }
   log.trace('no parent data found to load')
   return {}
