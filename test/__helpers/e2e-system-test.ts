@@ -2,14 +2,28 @@ import { introspectionQuery } from 'graphql'
 import { ConnectableObservable, Subscription } from 'rxjs'
 import { refCount, scan, takeWhile } from 'rxjs/operators'
 import { createE2EContext } from '../../src/lib/e2e-testing'
-import { DEFAULT_BUILD_FOLDER_NAME } from '../../src/lib/layout'
+import { DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT } from '../../src/lib/layout'
 import { CONVENTIONAL_SCHEMA_FILE_NAME } from '../../src/lib/layout/schema-modules'
 import { rootLogger } from '../../src/lib/nexus-logger'
 
 const log = rootLogger.child('e2e-testing')
 
 interface Options {
-  localNexusPath: null | string
+  /**
+   * The absolute path to a source checkout of Nexus. The Nexus checkout should
+   * be built as well.
+   *
+   * If this is present then the e2e test will run it for app creation instead
+   * of npx. Also the created plugin later in the test will be made to use this
+   * Nexus instead of the pubished one.
+   */
+  localNexus:
+    | false
+    | {
+        path: string
+        createAppWithThis: boolean
+        pluginLinksToThis: boolean
+      }
 }
 
 /**
@@ -31,7 +45,7 @@ export async function e2eTestApp(
 
   log.warn('create app')
 
-  if (options.localNexusPath) {
+  if (options.localNexus) {
     await app
       .localNexusCreateApp({
         databaseType: 'NO_DATABASE',
@@ -139,7 +153,7 @@ export async function e2eTestApp(
     dir: app.getTmpDir('e2e-plugin'),
   })
 
-  if (options.localNexusPath) {
+  if (options.localNexus) {
     output = await pluginProject
       .localNexusCreatePlugin({ name: 'foobar' })
       .refCount()
@@ -157,13 +171,13 @@ export async function e2eTestApp(
 
   expect(output).toContain('Done! To get started')
 
-  if (options.localNexusPath) {
+  if (options.localNexus) {
     // We do this so that the plugin is building against the local nexus. Imagine
     // the plugin system is changing, the only way to allow the plugin template to
     // be built against the changes is to work with the local nexus version, not
     // one published to npm.
     await pluginProject
-      .spawn(['yarn', 'add', '-D', options.localNexusPath])
+      .spawn(['yarn', 'add', '-D', options.localNexus])
       .refCount()
       .pipe(bufferOutput)
       .toPromise()
@@ -246,7 +260,7 @@ export async function e2eTestApp(
 
     log.warn('run built app and query graphql api')
 
-    proc = app.node([DEFAULT_BUILD_FOLDER_NAME])
+    proc = app.node([DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT])
     sub = proc.connect()
 
     await proc.pipe(takeUntilServerListening).toPromise()
@@ -274,7 +288,9 @@ export async function e2eTestApp(
     log.warn('run built app from a different CWD than the project root')
 
     await app
-      .node([app.fs.path(DEFAULT_BUILD_FOLDER_NAME)], { cwd: '/' })
+      .node([app.fs.path(DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT)], {
+        cwd: '/',
+      })
       .pipe(refCount(), takeUntilServerListening)
       .toPromise()
   }
