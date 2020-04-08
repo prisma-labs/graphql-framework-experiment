@@ -156,8 +156,6 @@ function withAutoTypegenConfig(
   )
   nexusConfig.typegenAutoConfig = undefined
 
-  console.log({ typegen: typegenAutoConfigObject.sources })
-
   function contextTypeContribSpecToCode(
     ctxTypeContribSpec: Record<string, string>
   ): string {

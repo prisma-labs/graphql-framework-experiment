@@ -21,10 +21,11 @@ const log = rootLogger.child('plugin')
  * Try to load a runtime plugin
  */
 export function loadRuntimePlugin(
-  pluginName: string,
+  manifest: Manifest,
   plugin: InnerRuntimePlugin
 ) {
-  return plugin(createRuntimeLens(pluginName))
+  log.trace('loading runtime plugin', { name: manifest.name })
+  return plugin(createRuntimeLens(manifest.name))
 }
 
 export async function loadRuntimePlugins(layout: Layout.Layout) {
@@ -39,7 +40,7 @@ export async function loadRuntimePluginsFromEntrypoints(plugins: Plugin[]) {
   const importedPlugins = importPluginsDimension('runtime', manifests)
 
   return importedPlugins.map(({ manifest, plugin }) =>
-    loadRuntimePlugin(manifest.name, plugin)
+    loadRuntimePlugin(manifest, plugin)
   )
 }
 
@@ -58,9 +59,7 @@ export async function loadWorktimePluginFromManifests(
   return importPluginsDimension(
     'worktime',
     manifests
-  ).map(({ plugin, manifest }) =>
-    loadWorktimePlugin(layout, manifest.name, plugin)
-  )
+  ).map(({ plugin, manifest }) => loadWorktimePlugin(layout, manifest, plugin))
 }
 
 /**
@@ -68,15 +67,16 @@ export async function loadWorktimePluginFromManifests(
  */
 export function loadWorktimePlugin(
   layout: Layout.Layout,
-  pluginName: string,
+  manifest: Manifest,
   plugin: InnerWorktimePlugin
 ) {
-  const lens = createWorktimeLens(layout, pluginName)
+  log.trace('loading worktime plugin', { name: manifest.name })
+  const lens = createWorktimeLens(layout, manifest.name)
 
   plugin(lens)
 
   return {
-    name: pluginName,
+    name: manifest,
     // plugin will have hooked onto hooks now, and framework will call those hooks
     hooks: lens.hooks,
   }
@@ -94,15 +94,16 @@ export async function loadTesttimePluginsFromManifests(manifests: Manifest[]) {
   return importPluginsDimension(
     'testtime',
     manifests
-  ).map(({ manifest, plugin }) => loadTesttimePlugin(manifest.name, plugin))
+  ).map(({ manifest, plugin }) => loadTesttimePlugin(manifest, plugin))
 }
 
 /**
  * Try to load a testtime plugin
  */
 export function loadTesttimePlugin(
-  pluginName: string,
+  manifest: Manifest,
   plugin: InnerTesttimePlugin
 ) {
-  return plugin(createBaseLens(pluginName))
+  log.trace('loading testtime plugin', { name: manifest.name })
+  return plugin(createBaseLens(manifest.name))
 }

@@ -25,29 +25,29 @@ export async function readAllPluginManifestsFromConfig(
 
   await runner.start()
 
-  const validPlugins = validatePlugins((app as InternalApp).__state.plugins)
+  const plugins = validatePlugins((app as InternalApp).__state.plugins)
 
-  log.trace('loaded plugins', { validPlugins })
+  log.trace('loaded plugin entrypoints', { validPlugins: plugins })
 
-  return validPlugins.map(pluginToManifest)
+  return plugins.map(pluginToManifest)
 }
 
-export function pluginToManifest(manifest: Plugin): Manifest {
+export function pluginToManifest(plugin: Plugin): Manifest {
   try {
-    const packageJson = require(manifest.packageJsonPath) as PackageJson
+    const packageJson = require(plugin.packageJsonPath) as PackageJson
 
     if (!packageJson.name) {
       fatal(
         `One of your plugin has a missing required \`name\` property in its package.json`,
         {
-          packageJsonPath: manifest.packageJsonPath,
+          packageJsonPath: plugin.packageJsonPath,
           packageJson,
         }
       )
     }
 
     return {
-      ...manifest,
+      ...plugin,
       name: packageJson.name,
       packageJson,
     }
@@ -58,7 +58,7 @@ export function pluginToManifest(manifest: Plugin): Manifest {
 
        ${error.stack ?? error}
     `,
-      { plugin: manifest }
+      { plugin: plugin }
     )
   }
 }
@@ -78,19 +78,19 @@ export function importPluginDimension<D extends Dimension>(
     )
   }
 
-  const exportInfo = manifest[dimension]!
+  const dimensionEntrypoint = manifest[dimension]!
 
   try {
-    const importedPlugin = require(exportInfo.module)
+    const dimensionModule = require(dimensionEntrypoint.module)
 
-    if (!importedPlugin[exportInfo.export]) {
+    if (!dimensionModule[dimensionEntrypoint.export]) {
       fatal(
-        `Nexus plugin "${manifest.name}" has no export \`${exportInfo.export}\` in ${exportInfo.module}`,
+        `Nexus plugin "${manifest.name}" has no export \`${dimensionEntrypoint.export}\` in ${dimensionEntrypoint.module}`,
         { plugin: manifest }
       )
     }
 
-    const plugin = importedPlugin[exportInfo.export]
+    const plugin = dimensionModule[dimensionEntrypoint.export]
 
     if (typeof plugin !== 'function') {
       fatal(
@@ -121,29 +121,6 @@ export function importPluginDimension<D extends Dimension>(
   }
 }
 
-export function isValidManifest(plugin: any): plugin is Plugin<any> {
-  const hasPackageJsonPath = 'packageJsonPath' in plugin
-
-  return hasPackageJsonPath
-}
-
-export function validatePlugins(manifests: Plugin<any>[]) {
-  const invalidManifests = manifests.filter((m) => !isValidManifest(m))
-
-  if (invalidManifests.length > 0) {
-    log.warn(
-      `Some invalid plugins were passed to Nexus. They are being ignored.`,
-      {
-        invalidPlugins: invalidManifests,
-      }
-    )
-  }
-
-  const validManifests = manifests.filter(isValidManifest)
-
-  return validManifests
-}
-
 /**
  * Import the dimension of several plugins given their manifests
  */
@@ -160,4 +137,27 @@ export function importPluginsDimension<D extends Dimension>(
       manifest,
       plugin: importPluginDimension(dimension, manifest),
     }))
+}
+
+export function isValidPlugin(plugin: any): plugin is Plugin<any> {
+  const hasPackageJsonPath = 'packageJsonPath' in plugin
+
+  return hasPackageJsonPath
+}
+
+export function validatePlugins(plugins: Plugin<any>[]) {
+  const invalids = plugins.filter((m) => !isValidPlugin(m))
+
+  if (invalids.length > 0) {
+    log.warn(
+      `Some invalid plugins were passed to Nexus. They are being ignored.`,
+      {
+        invalidPlugins: invalids,
+      }
+    )
+  }
+
+  const valids = plugins.filter(isValidPlugin)
+
+  return valids
 }

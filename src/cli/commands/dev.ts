@@ -6,7 +6,6 @@ import * as Plugin from '../../lib/plugin'
 import { fatal } from '../../lib/process'
 import { findOrScaffoldTsConfig } from '../../lib/tsc'
 import { createWatcher } from '../../lib/watcher'
-import { createDevAppRunner } from '../../runtime/start'
 
 const log = rootLogger.child('dev')
 
