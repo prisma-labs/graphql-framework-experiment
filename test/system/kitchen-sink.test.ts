@@ -1,6 +1,6 @@
 import * as path from 'path'
 import { createE2EContext } from '../../src/lib/e2e-testing'
-import { e2eKitchenSink } from '../__helpers/e2e/kitchen-sink'
+import { e2eKitchenSink } from '../__helpers/e2e'
 
 const ctx = createE2EContext({
   localNexus: {
