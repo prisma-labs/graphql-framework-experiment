@@ -107,7 +107,7 @@ export async function e2eKitchenSink(app: E2EContext) {
   await buildApp()
 
   log.warn('Build and dev again without an app.ts entrypoint')
-  await app.fs.removeAsync('./src/app.ts')
+  await app.fs.removeAsync('./api/app.ts')
 
   await buildApp()
 
