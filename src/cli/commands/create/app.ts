@@ -53,7 +53,7 @@ export async function run(configInput?: Partial<ConfigInput>): Promise<void> {
 export async function runLocalHandOff(): Promise<void> {
   log.trace('start local handoff')
 
-  const { connectionURI, database } = await loadDataFromParentProcess()
+  const parentData = await loadDataFromParentProcess()
   const layout = await Layout.create()
   const plugins = await Plugin.loadInstalledWorktimePlugins(layout)
   log.trace('plugins', { plugins })
@@ -61,7 +61,10 @@ export async function runLocalHandOff(): Promise<void> {
   // TODO select a template
 
   for (const p of plugins) {
-    await p.hooks.create.onAfterBaseSetup?.({ database, connectionURI })
+    await p.hooks.create.onAfterBaseSetup?.({
+      database: parentData.database,
+      connectionURI: parentData.database,
+    })
   }
 }
 
@@ -544,24 +547,10 @@ type ParentData = {
 }
 
 async function loadDataFromParentProcess(): Promise<ParentData> {
-  if (!process.env[ENV_PARENT_DATA]) {
-    log.warn(
-      'We could not retrieve neccessary data from nexus. Falling back to SQLite database.'
-    )
-
-    return {
-      database: 'SQLite',
-      connectionURI: SQLITE_DEFAULT_CONNECTION_URI,
-    }
+  if (process.env[ENV_PARENT_DATA]) {
+    return JSON.parse(process.env[ENV_PARENT_DATA]!)
   }
-
-  const deserializedParentData: ParentData = JSON.parse(
-    process.env[ENV_PARENT_DATA]!
-  )
-
-  return {
-    ...deserializedParentData,
-  }
+  return {}
 }
 
 function saveDataForChildProcess(data: ParentData): void {

@@ -7,7 +7,7 @@ import { CONVENTIONAL_SCHEMA_FILE_NAME } from '../../../src/lib/layout/schema-mo
 import { rootLogger } from '../../../src/lib/nexus-logger'
 import { bufferOutput, takeUntilServerListening } from './utils'
 
-const log = rootLogger.child('e2e-testing')
+const log = rootLogger.child('e2e').child('kitchen-sink')
 
 /**
  * Test creating an app, creating a plugin, and then using that plugin in the
