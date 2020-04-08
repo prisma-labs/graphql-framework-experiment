@@ -117,7 +117,7 @@ async function main() {
     IPC.client.senders.moduleImported({ filePath })
   })
 
-  const appRunner = createDevAppRunner(layout, [])
+  const appRunner = createDevAppRunner(layout)
 
   return appRunner.start()
 }

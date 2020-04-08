@@ -1,13 +1,14 @@
+import { stripIndent } from 'common-tags'
 import * as tsNode from 'ts-node'
+import { PackageJson } from 'type-fest'
 import app from '../../index'
 import { InternalApp } from '../../runtime/app'
 import * as Start from '../../runtime/start'
 import * as Layout from '../layout'
-import { Dimension, DimensionToPlugin, Plugin, Manifest } from './types'
 import { rootLogger } from '../nexus-logger'
-import { PackageJson } from 'type-fest'
 import { fatal } from '../process'
-import { stripIndent } from 'common-tags'
+import { partition } from '../utils'
+import { Dimension, DimensionToPlugin, Manifest, Plugin } from './types'
 
 const log = rootLogger.child('plugin')
 
@@ -19,7 +20,7 @@ export async function readAllPluginManifestsFromConfig(
   })
 
   // Run app to load plugins
-  const runner = Start.createDevAppRunner(layout, [], {
+  const runner = Start.createDevAppRunner(layout, {
     disableServer: true,
   })
 
@@ -131,33 +132,39 @@ export function importPluginsDimension<D extends Dimension>(
   manifest: Manifest
   plugin: DimensionToPlugin<D>
 }[] {
-  return manifests
-    .filter((manifest) => manifest[dimension] !== undefined)
-    .map((manifest) => ({
+  const output: { manifest: Manifest; plugin: DimensionToPlugin<D> }[] = []
+
+  for (const manifest of manifests) {
+    if (manifest[dimension] === undefined) {
+      continue
+    }
+
+    output.push({
       manifest,
       plugin: importPluginDimension(dimension, manifest),
-    }))
+    })
+  }
+
+  return output
 }
 
-export function isValidPlugin(plugin: any): plugin is Plugin<any> {
+export function isValidPlugin(plugin: any): plugin is Plugin {
   const hasPackageJsonPath = 'packageJsonPath' in plugin
 
   return hasPackageJsonPath
 }
 
-export function validatePlugins(plugins: Plugin<any>[]) {
-  const invalids = plugins.filter((m) => !isValidPlugin(m))
+export function validatePlugins(plugins: Plugin[]) {
+  const [validPlugins, invalidPlugins] = partition(plugins, isValidPlugin)
 
-  if (invalids.length > 0) {
+  if (invalidPlugins.length > 0) {
     log.warn(
       `Some invalid plugins were passed to Nexus. They are being ignored.`,
       {
-        invalidPlugins: invalids,
+        invalidPlugins: invalidPlugins,
       }
     )
   }
 
-  const valids = plugins.filter(isValidPlugin)
-
-  return valids
+  return validPlugins
 }

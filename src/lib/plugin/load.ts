@@ -35,8 +35,7 @@ export async function loadRuntimePlugins(layout: Layout.Layout) {
 }
 
 export async function loadRuntimePluginsFromEntrypoints(plugins: Plugin[]) {
-  const validManifests = validatePlugins(plugins)
-  const manifests = validManifests.map(pluginToManifest)
+  const manifests = validatePlugins(plugins).map(pluginToManifest)
   const importedPlugins = importPluginsDimension('runtime', manifests)
 
   return importedPlugins.map(({ manifest, plugin }) =>

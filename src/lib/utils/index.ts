@@ -186,3 +186,23 @@ export function repalceInObject<C extends object>(
     JSON.stringify(content).split(dynamicPattern).join(replacement)
   )
 }
+
+/**
+ * Creates an array of elements split into two groups.
+ * The first of which contains elements predicate returns truthy for, the second of which contains elements predicate returns falsey for.
+ * The predicate is invoked with one argument: (value).
+ */
+export function partition<T>(
+  array: Array<T>,
+  predicate: (value: T) => boolean
+): [Array<T>, Array<T>] {
+  const partitioned: [Array<T>, Array<T>] = [[], []]
+
+  for (const value of array) {
+    const partitionIndex: 0 | 1 = predicate(value) ? 0 : 1
+
+    partitioned[partitionIndex].push(value)
+  }
+
+  return partitioned
+}

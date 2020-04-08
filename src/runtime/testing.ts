@@ -72,7 +72,7 @@ export async function createTestContext(): Promise<TestContext> {
   const layout = await Layout.create()
   const pluginManifests = await Plugin.readAllPluginManifestsFromConfig(layout)
   const randomPort = await getPort({ port: getPort.makeRange(4000, 6000) })
-  const appRunner = await createDevAppRunner(layout, pluginManifests, {
+  const appRunner = await createDevAppRunner(layout, {
     server: { port: randomPort, startMessage: () => {}, playground: false },
   })
 
