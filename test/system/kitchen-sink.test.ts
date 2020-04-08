@@ -3,6 +3,7 @@ import { createE2EContext } from '../../src/lib/e2e-testing'
 import { e2eKitchenSink } from '../__helpers/e2e'
 
 const ctx = createE2EContext({
+  serverPort: 5001,
   localNexus: {
     path: path.join(__dirname, '..', '..'),
     createAppWithThis: true,
@@ -11,6 +12,6 @@ const ctx = createE2EContext({
   },
 })
 
-test('cli entrypoint create app', async () => {
+test('kitchen sink', async () => {
   await e2eKitchenSink(ctx)
 })

@@ -3,6 +3,7 @@ import { createE2EContext } from '../../src/lib/e2e-testing'
 import { e2ePrismaApp } from '../__helpers/e2e'
 
 const ctx = createE2EContext({
+  serverPort: 5002,
   localNexus: {
     path: path.join(__dirname, '..', '..'),
     createAppWithThis: true,
