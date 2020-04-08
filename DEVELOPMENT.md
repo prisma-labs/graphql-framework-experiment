@@ -85,7 +85,6 @@ yarn dev:test      # watch mode
 #### System
 
 ```
-yarn test:system
 yarn test system/create-prisma
 yarn test system/kitchen
 ```
@@ -101,7 +100,6 @@ yarn test system/kitchen
 #### E2E
 
 ```
-yarn test:e2e
 yarn test e2e/create-prisma
 yarn test e2e/kitchen
 ```
