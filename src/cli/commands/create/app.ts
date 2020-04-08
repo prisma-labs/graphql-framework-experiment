@@ -209,14 +209,30 @@ async function getNexusVersion(): Promise<string> {
 }
 
 async function getDatabaseSelection(): Promise<DatabaseSelection> {
-  const databaseTypeEnvVar = (process.env
-    .CREATE_APP_CHOICE_DATABASE_TYPE as any)
-    ? parseDatabaseChoice(process.env.CREATE_APP_CHOICE_DATABASE_TYPE as any)
-    : undefined
+  const envar = process.env.CREATE_APP_CHOICE_DATABASE_TYPE as
+    | Database
+    | 'NO_DATABASE'
+    | undefined
 
-  const selectedDatabase = databaseTypeEnvVar ?? (await askForDatabase())
+  if (envar) {
+    if (envar === 'NO_DATABASE') {
+      return null
+    }
+    if (envar === 'SQLite') {
+      return {
+        database: true,
+        choice: envar,
+        connectionURI: SQLITE_DEFAULT_CONNECTION_URI,
+      }
+    }
+    return {
+      database: true,
+      choice: envar,
+      connectionURI: undefined,
+    }
+  }
 
-  return selectedDatabase
+  return await askForDatabase()
 }
 
 // TODO this data should come from db driver
@@ -571,22 +587,4 @@ function getPrismaPluginVersion(): string {
     prismaPluginVersion = 'latest'
   }
   return prismaPluginVersion
-}
-
-function parseDatabaseChoice(
-  database: Database | 'NO_DATABASE'
-): DatabaseSelection {
-  if (database === 'NO_DATABASE') {
-    return null
-  }
-
-  if (database === 'SQLite') {
-    return {
-      database: true,
-      choice: database,
-      connectionURI: SQLITE_DEFAULT_CONNECTION_URI,
-    }
-  }
-
-  return { database: true, choice: database, connectionURI: undefined }
 }
