@@ -68,9 +68,8 @@ export function createE2EContext(config: Config) {
     '.bin',
     'nexus'
   )
-  ;(beforeAll as any)(() => {
-    log.trace('setup', { projectDir, options: config })
-  })
+
+  log.trace('setup', { projectDir, config })
 
   FS.dir(projectDir)
 
