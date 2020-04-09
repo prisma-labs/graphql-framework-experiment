@@ -1,11 +1,11 @@
 import * as NexusSchema from '@nexus/schema'
 import * as Prompts from 'prompts'
-import * as Layout from '../../layout'
-import * as Utils from '../../utils'
 import * as Testing from '../../../runtime/testing'
+import * as Layout from '../../layout'
 import * as Logger from '../../logger'
 import * as PackageManager from '../../package-manager'
 import * as Process from '../../process'
+import * as Utils from '../../utils'
 import * as Watcher from '../../watcher'
 import * as Chokidar from '../../watcher/chokidar'
 
@@ -127,7 +127,6 @@ export type RuntimeContributions<C extends {} = any> = {
     }
     create: (req: Express.Request) => C
   }
-  // todo schema property name
   schema?: {
     typegenAutoConfig?: NexusSchema.core.SchemaConfig['typegenAutoConfig']
     plugins?: NexusSchema.core.SchemaConfig['plugins']
