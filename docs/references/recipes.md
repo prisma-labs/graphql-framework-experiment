@@ -5,6 +5,14 @@
    ```cli
    npm install nexus-plugin-prisma
    ```
+1. Enable the plugin
+
+  ```ts
+  import { use } from 'nexus'
+  import { prisma } from 'nexus-plugin-prisma'
+
+  use(prisma())
+  ```
 
 1. Add a `schema.prisma` file. Add a datasource. Here we're working with SQLite. Add Prisma Client.
 

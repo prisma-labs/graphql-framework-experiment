@@ -27,6 +27,15 @@ npm install nexus-plugin-prisma
 
 > Note: `nexus-plugin-prisma` bundles the Prisma CLI. You can invoke it using `npm run prisma` or `yarn prisma`.
 
+**2. Enable the plugin**
+
+```ts
+import { use } from 'nexus'
+import { prisma } from 'nexus-plugin-prisma'
+
+use(prisma())
+```
+
 ## Getting started
 
 There are two ways you can start with the Prisma plugin. Either from scratch, or using an existing database.
