@@ -428,13 +428,15 @@ todo
 import { schema } from 'nexus'
 import { connectionFromArray } from 'graphql-relay'
 
-schema.queryType((t) => {
-  t.connection('users', {
-    type: 'User',
-    async resolve(root, args, ctx, info) {
-      return connectionFromArray(await ctx.resolveUserNodes(), args)
-    },
-  })
+schema.queryType({
+  definition(t) {
+    t.connection('users', {
+      type: 'User',
+      async resolve(root, args, ctx, info) {
+        return connectionFromArray(await ctx.resolveUserNodes(), args)
+      },
+    })
+  },
 })
 ```
 
