@@ -17,6 +17,14 @@ import stripAnsi = require('strip-ansi')
 const log = rootLogger.child('e2e-testing')
 
 interface CreateAppOptions {
+  /**
+   * Sets the NEXUS_PLUGIN_PRISMA_VERSION envar.
+   *
+   * Only useful if _not_ using NO_DATABASE for `databaseType`.
+   *
+   * @defualt 'latest'
+   */
+  prismaPluginVersion?: string
   packageManagerType: PackageManagerType
   databaseType: Database | 'NO_DATABASE'
 }
@@ -113,6 +121,7 @@ export function createE2EContext(config: Config) {
         cwd: projectDir,
         env: {
           ...process.env,
+          NEXUS_PLUGIN_PRISMA_VERSION: options.prismaPluginVersion ?? 'latest',
           CREATE_APP_CHOICE_PACKAGE_MANAGER_TYPE: options.packageManagerType,
           CREATE_APP_CHOICE_DATABASE_TYPE: options.databaseType,
           LOG_LEVEL: 'trace',
@@ -136,6 +145,7 @@ export function createE2EContext(config: Config) {
             cwd: projectDir,
             env: {
               ...process.env,
+              NEXUS_PLUGIN_PRISMA_VERSION: options.prismaPluginVersion ?? 'latest',
               CREATE_APP_CHOICE_PACKAGE_MANAGER_TYPE: options.packageManagerType,
               CREATE_APP_CHOICE_DATABASE_TYPE: options.databaseType,
               LOG_LEVEL: 'trace',
