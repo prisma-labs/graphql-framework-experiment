@@ -22,7 +22,7 @@ export async function e2ePrismaApp(app: E2EContext) {
 
   if (app.usingLocalNexus?.createAppWithThis) {
     await app.localNexusCreateApp!({
-      prismaPluginVersion: 'pr.97',
+      prismaPluginVersion: 'next',
       databaseType: 'SQLite',
       packageManagerType: 'yarn',
     })
@@ -31,7 +31,7 @@ export async function e2ePrismaApp(app: E2EContext) {
   } else {
     await app
       .npxNexusCreateApp({
-        prismaPluginVersion: 'pr.97',
+        prismaPluginVersion: 'next',
         databaseType: 'SQLite',
         packageManagerType: 'yarn',
         nexusVersion: app.useNexusVersion,
