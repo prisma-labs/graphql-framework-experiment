@@ -53,7 +53,18 @@ export type ExtraSettingsInput = {
    */
   host?: string
   /**
-   * todo
+   * Should GraphQL Playground be hosted by the server?
+   *
+   * @default `false` in production, `true` otherwise
+   *
+   * @remarks
+   *
+   * Useful during development as a visual client to interact with your API. In
+   * production, without some kind of security/access control, you will almost
+   * certainly want this disabled.
+   *
+   * To learn more about GraphQL Playgorund see
+   * https://github.com/prisma-labs/graphql-playground
    */
   playground?: boolean
   /**
