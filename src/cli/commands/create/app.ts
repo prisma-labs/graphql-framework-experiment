@@ -126,6 +126,8 @@ export async function runBootstrapper(
       database: database.choice,
       connectionURI: database.connectionURI,
     })
+    // Allow the plugin to be enabled so that nexus can run the `onAfterBaseSetup` hook
+    await scaffoldTemplate(templates.prisma(internalConfig))
   } else {
     await scaffoldTemplate(templates.helloWorld(internalConfig))
   }
@@ -379,7 +381,9 @@ interface Template {
   files: { path: string; content: string }[]
 }
 
-const templates: Record<string, TemplateCreator> = {
+type TemplateName = 'helloWorld' | 'prisma'
+
+const templates: Record<TemplateName, TemplateCreator> = {
   helloWorld(internalConfig) {
     return {
       files: [
@@ -441,6 +445,20 @@ const templates: Record<string, TemplateCreator> = {
       ],
     }
   },
+  prisma(internalConfig) {
+    return {
+      files: [{
+        path: path.join(internalConfig.sourceRoot, 'app.ts'),
+        content: stripIndent`
+          import { use } from 'nexus'
+          import { prisma } from 'nexus-plugin-prisma'
+          
+          // Enable the Prisma plugin
+          use(prisma())
+        `
+      }]
+    }
+  }
 }
 
 /**
