@@ -10,8 +10,9 @@
 - [Concepts](guides/concepts)
 - [Schema](guides/schema)
 - [Testing](guides/testing)
-- [Project Structure](getting-started/project-structure)
+- [Conventions](guides/conventions)
 - [Error Handling](guides/error-handling)
+- [Plugins](guides/plugins)
 - [Recipes](references/recipes)
 - [Writing Plugins](guides/writing-plugins)
 
@@ -27,6 +28,7 @@
   - [`log`](api/modules/main/exports/logger)
   - [`server`](api/modules/main/exports/server)
   - [`settings`](api/modules/main/exports/settings)
+  - [`use`](api/modules/main/exports/use)
 
 - [`nexus/testing`](api/modules/testing)
 
