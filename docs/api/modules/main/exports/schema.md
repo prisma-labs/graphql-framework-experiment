@@ -428,7 +428,7 @@ todo
 import { schema } from 'nexus'
 import { connectionFromArray } from 'graphql-relay'
 
-schema.queryType(t => {
+schema.queryType((t) => {
   t.connection('users', {
     type: 'User',
     async resolve(root, args, ctx, info) {
@@ -870,7 +870,7 @@ schema.unionType({
   description: 'Any container type that can be rendered into the feed',
   definition(t) {
     t.members('Post', 'Image', 'Card')
-    t.resolveType(item => item.name)
+    t.resolveType((item) => item.name)
   },
 })
 ```
@@ -950,7 +950,7 @@ Add context to your graphql resolver functions. The objects returned by your con
 ```ts
 import { schema } from 'nexus'
 
-schema.addToContext(_req => {
+schema.addToContext((_req) => {
   return {
     greeting: 'Howdy!',
   }
@@ -964,6 +964,24 @@ schema.queryType({
       },
     })
   },
+})
+```
+
+### `use`
+
+Add schema plugins to your app. These plugins represent a subset of what framework plugins ([`app.use`](/)) can do. This is useful when, for example, a schema plugin you would like to use has not integrated into any framework plugin. You can find a list of schema plugins [here](/components/schema/plugins).
+
+##### Example
+
+```ts
+import { schema } from 'nexus'
+import somePlugin from 'some-plugin'
+
+schema.use(somePlugin())
+
+schema.use({
+  name: 'my inline schema plugin',
+  // ...
 })
 ```
 
