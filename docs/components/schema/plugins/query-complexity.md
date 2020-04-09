@@ -53,19 +53,12 @@ Another way is with the complexity estimator, which is a function that returns a
 Augmented complexity estimator function signature:
 
 ```ts
-type QueryComplexityEstimatorArgs<
-  TypeName extends string,
-  FieldName extends string
-> = {
+type QueryComplexityEstimatorArgs<TypeName extends string, FieldName extends string> = {
   // The root type the field belongs too
   type: RootValue<TypeName>
 
   // The GraphQLField that is being evaluated
-  field: GraphQLField<
-    RootValue<TypeName>,
-    GetGen<'context'>,
-    ArgsValue<TypeName, FieldName>
-  >
+  field: GraphQLField<RootValue<TypeName>, GetGen<'context'>, ArgsValue<TypeName, FieldName>>
 
   // The input arguments of the field
   args: ArgsValue<TypeName, FieldName>
@@ -74,9 +67,7 @@ type QueryComplexityEstimatorArgs<
   childComplexity: number
 }
 
-type QueryComplexityEstimator = (
-  options: QueryComplexityEstimatorArgs
-) => number | void
+type QueryComplexityEstimator = (options: QueryComplexityEstimatorArgs) => number | void
 ```
 
 And you can use it like so:

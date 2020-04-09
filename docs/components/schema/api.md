@@ -37,11 +37,7 @@ export const schema = makeSchema({
 The `plugins` property is an array for adding "Plugins", or ways of extending/changing the runtime behavior of Nexus and GraphQL. Unlike the `types` property, this must be an array, and the order of the plugins matters because this influences the order of any resolver "middleware" the plugin may optionally provide.
 
 ```ts
-import {
-  makeSchema,
-  nullabilityGuard,
-  fieldAuthorizePlugin,
-} from '@nexus/schema'
+import { makeSchema, nullabilityGuard, fieldAuthorizePlugin } from '@nexus/schema'
 import * as types from './allNexusTypes'
 
 export const schema = makeSchema({
@@ -77,17 +73,14 @@ makeSchema({
     typegen: path.join(__dirname, 'generated/nexusTypes.gen.ts'),
   },
   typegenAutoConfig: {
-    headers: [
-      'import { ConnectionFieldOpts } from "@packages/api-graphql/src/extensions/connectionType"',
-    ],
+    headers: ['import { ConnectionFieldOpts } from "@packages/api-graphql/src/extensions/connectionType"'],
     sources: [
       // Automatically finds any interface/type/class named similarly to the and infers it
       // the "source" type of that resolver.
       {
         source: '@packages/types/src/db.ts',
         alias: 'dbt',
-        typeMatch: name =>
-          new RegExp(`(?:interface|type|class)\\s+(${name}s?)\\W`, 'g'),
+        typeMatch: (name) => new RegExp(`(?:interface|type|class)\\s+(${name}s?)\\W`, 'g'),
       },
       // We also need to import this source in order to provide it as the `contextType` below.
       {
@@ -155,7 +148,7 @@ Optional, allows you to override the `printSchema` when outputting the generated
 ```ts
 makeSchema({
   // ...
-  customPrintSchemaFn: schema => {
+  customPrintSchemaFn: (schema) => {
     return printSchema(schema, { commentDescriptions: true })
   },
 })
@@ -228,10 +221,7 @@ export interface TypegenConfigSourceModule {
    *   ]
    *
    */
-  typeMatch?: (
-    type: GraphQLNamedType,
-    defaultRegex: RegExp
-  ) => RegExp | RegExp[]
+  typeMatch?: (type: GraphQLNamedType, defaultRegex: RegExp) => RegExp | RegExp[]
   /**
    * A list of typesNames or regular expressions matching type names
    * that should be resolved by this import. Provide an empty array if you

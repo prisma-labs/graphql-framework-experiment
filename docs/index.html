@@ -4,18 +4,12 @@
     <meta charset="UTF-8" />
     <title>Nexus</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-    <meta
-      name="description"
-      content="Delightful GraphQL Application Framework"
-    />
+    <meta name="description" content="Delightful GraphQL Application Framework" />
     <meta
       name="viewport"
       content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
     />
-    <link
-      rel="stylesheet"
-      href="//cdn.jsdelivr.net/npm/docsify@latest/lib/themes/vue.css"
-    />
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@latest/lib/themes/vue.css" />
     <style>
       :root {
         --theme-color: #42b983;
@@ -503,16 +497,12 @@
     <script>
       window.$docsify = {
         plugins: [
-          function(hook) {
+          function (hook) {
             hook.doneEach(() => {
               document.querySelector('.app-name-link').href = '#/README'
-              document
-                .querySelectorAll("pre[data-lang='cli'] code")
-                .forEach(el => {
-                  el.innerHTML =
-                    '<span class="cli-prompt">❯ </span>' +
-                    el.textContent.replace('$ ', '')
-                })
+              document.querySelectorAll("pre[data-lang='cli'] code").forEach((el) => {
+                el.innerHTML = '<span class="cli-prompt">❯ </span>' + el.textContent.replace('$ ', '')
+              })
             })
           },
         ],
@@ -531,16 +521,14 @@
           renderer: {
             // wrap text nodes inside spans otherwise they prevent
             // first-child guard in [1] from working in all cases.
-            paragraph: x => {
+            paragraph: (x) => {
               return (
                 '<p>' +
                 $.parseHTML(x)
-                  .map(el => {
-                    return el.nodeType === 3
-                      ? $.parseHTML(`<span>${$(el).text()}</span>`)[0]
-                      : el
+                  .map((el) => {
+                    return el.nodeType === 3 ? $.parseHTML(`<span>${$(el).text()}</span>`)[0] : el
                   })
-                  .map(el => {
+                  .map((el) => {
                     var tmp = document.createElement('div')
                     tmp.appendChild(el)
                     return tmp.innerHTML

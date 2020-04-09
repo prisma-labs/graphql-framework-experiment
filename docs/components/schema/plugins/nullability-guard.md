@@ -15,9 +15,9 @@ const guardPlugin = nullabilityGuardPlugin({
   onNullGuarded(ctx, info) {
     // This could report to a service like Sentry, or log internally - up to you!
     console.error(
-      `Error: Saw a null value for non-null field ${info.parentType.name}.${
-        info.fieldName
-      } ${root ? `(${root.id || root._id})` : ''}`
+      `Error: Saw a null value for non-null field ${info.parentType.name}.${info.fieldName} ${
+        root ? `(${root.id || root._id})` : ''
+      }`
     )
   },
   // A map of `typeNames` to the values we want to replace with if a "null" value

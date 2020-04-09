@@ -14,7 +14,7 @@ let readyFile
 let exitChild = false
 let sourceMapSupportPath
 
-const waitForFile = fileName => {
+const waitForFile = (fileName) => {
   const start = new Date().getTime()
   while (true) {
     const exists = fs.existsSync(fileName)
@@ -43,11 +43,11 @@ const compile = (code, fileName) => {
 }
 
 function registerExtensions(extensions) {
-  extensions.forEach(function(ext) {
+  extensions.forEach(function (ext) {
     const old = require.extensions[ext] || require.extensions['.js']
-    require.extensions[ext] = function(m, fileName) {
+    require.extensions[ext] = function (m, fileName) {
       const _compile = m._compile
-      m._compile = function(code, fileName) {
+      m._compile = function (code, fileName) {
         return _compile.call(this, compile(code, fileName), fileName)
       }
       return old(m, fileName)
@@ -62,7 +62,7 @@ function isFileInNodeModules(fileName) {
 function registerJsExtension() {
   const old = require.extensions['.js']
   if (allowJs || preferTs) {
-    require.extensions['.js'] = function(m, fileName) {
+    require.extensions['.js'] = function (m, fileName) {
       let tsCode = undefined
       let tsFileName = undefined
       if (preferTs && !isFileInNodeModules(fileName)) {
@@ -74,11 +74,11 @@ function registerJsExtension() {
       const _compile = m._compile
       const isIgnored =
         ignore &&
-        ignore.reduce(function(res, ignore) {
+        ignore.reduce(function (res, ignore) {
           return res || ignore.test(fileName)
         }, false)
       if (tsCode !== undefined || (allowJs && !isIgnored)) {
-        m._compile = function(code, fileName) {
+        m._compile = function (code, fileName) {
           if (tsCode !== undefined) {
             code = tsCode
             fileName = tsFileName
@@ -108,7 +108,7 @@ if (readyFile) {
 }
 
 if (exitChild) {
-  process.on('SIGTERM', function() {
+  process.on('SIGTERM', function () {
     console.log('Child got SIGTERM, exiting.')
     process.exit()
   })

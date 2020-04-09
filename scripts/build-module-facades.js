@@ -46,10 +46,7 @@ for (const facade of facades) {
 const packageJsonPath = path.join(__dirname, '..', 'package.json')
 const packageJson = fs.read(packageJsonPath, 'json')
 
-packageJson.files = lo.uniq([
-  ...packageJson.files,
-  ...facades.map((facade) => facade[0]),
-])
+packageJson.files = lo.uniq([...packageJson.files, ...facades.map((facade) => facade[0])])
 
 const packageJsonString = JSON.stringify(packageJson, null, 2) + os.EOL
 

@@ -85,7 +85,7 @@
     "release:stable": "dripip stable",
     "release:preview": "dripip preview",
     "release:pr": "dripip pr",
-    "format": "prettier --write '*/**/*.ts'",
+    "format": "prettier --write '.'",
     "build": "yarn -s clean && node scripts/build-module-facades && tsc -b",
     "clean": "git clean -fX && rm -rf dist",
     "postpublish": "yarn -s clean",

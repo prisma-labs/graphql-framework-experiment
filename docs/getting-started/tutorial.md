@@ -103,10 +103,7 @@ Now, let's give `Earth` its moon!
 
 ```graphql
 mutation addMoonToEarth {
-  updateOneWorld(
-    where: { name: "Earth" }
-    data: { moons: { create: { name: "moon" } } }
-  ) {
+  updateOneWorld(where: { name: "Earth" }, data: { moons: { create: { name: "moon" } } }) {
     name
     moons {
       name

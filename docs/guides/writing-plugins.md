@@ -21,7 +21,7 @@
   // runtime.ts
   import { RuntimePlugin } from 'nexus/plugin'
 
-  export const plugin: RuntimePlugin = () => project => {
+  export const plugin: RuntimePlugin = () => (project) => {
     /* ... */
   }
   ```
@@ -30,7 +30,7 @@
   // testtime.ts
   import { TesttimePlugin } from 'nexus/plugin'
 
-  export const plugin: TesttimePlugin = () => project => {
+  export const plugin: TesttimePlugin = () => (project) => {
     /* ... */
   }
   ```
@@ -39,7 +39,7 @@
   // worktime.ts
   import { WorktimePlugin } from 'nexus/plugin'
 
-  export const plugin: WorktimePlugin = () => project => {
+  export const plugin: WorktimePlugin = () => (project) => {
     /* ... */
   }
   ```
@@ -47,7 +47,7 @@
 - The `project` parameter gives you access to utils and core components
 
   ```ts
-  export const plugin: TesttimePlugin = () => project => {
+  export const plugin: TesttimePlugin = () => (project) => {
     project.utils.log.trace('hello')
   }
   ```
@@ -109,7 +109,7 @@
 - Finally, for your plugin to be consumed by Nexus, you need to export an entrypoint which references your runtime or worktime or testtime plugin.
 
   **This entrypoint is what needs to be imported by users.**
-  
+
   We recommend you named export the entrypoint after the suffix `nexus-plugin-(*)` of your npm package name.
 
   For instance, if your plugin is named `nexus-plugin-fancy-plugin`, your entrypoint should be named export `fancyPlugin`
@@ -119,17 +119,17 @@
 
   export const fancyPlugin: PluginEntrypoint = () => ({
     packageJsonPath: require.resolve('../package.json'),
-    runtime?: {
+    runtime: {
       module: require.resolve('./runtime'),
-      export: 'plugin'
+      export: 'plugin',
     },
-    worktime?: {
+    worktime: {
       module: require.resolve('./worktime'),
-      export: 'plugin'
+      export: 'plugin',
     },
-    testtime?: {
+    testtime: {
       module: require.resolve('./testtime'),
-      export: 'plugin'
+      export: 'plugin',
     },
   })
   ```
@@ -168,7 +168,7 @@
   import { RuntimePlugin } from 'nexus/plugin'
   import { Settings } from './settings'
 
-  export const plugin: RuntimePlugin<Settings> = settings => project => {
+  export const plugin: RuntimePlugin<Settings> = (settings) => (project) => {
     // ...
   }
   ```
@@ -182,7 +182,7 @@
   import { PluginEntrypoint } from 'nexus/plugin'
   import { Settings } from './settings'
 
-  export const fancyPlugin: PluginEntrypoint<Settings, 'required'> = settings => ({
+  export const fancyPlugin: PluginEntrypoint<Settings, 'required'> = (settings) => ({
     settings,
     // ...
   })
@@ -191,7 +191,7 @@
   import { RuntimePlugin } from 'nexus/plugin'
   import { Settings } from './settings'
 
-  export const plugin: RuntimePlugin<Settings, 'required'> = settings => project => {
+  export const plugin: RuntimePlugin<Settings, 'required'> = (settings) => (project) => {
     // ...
   }
   ```
