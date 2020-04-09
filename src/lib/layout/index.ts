@@ -14,12 +14,7 @@ export {
 // todo refactor with TS 3.8 namespace re-export
 // once https://github.com/prettier/prettier/issues/7263
 
-import {
-  CONVENTIONAL_SCHEMA_FILE_NAME,
-  DIR_NAME,
-  emptyExceptionMessage,
-  MODULE_NAME,
-} from './schema-modules'
+import { CONVENTIONAL_SCHEMA_FILE_NAME, DIR_NAME, emptyExceptionMessage, MODULE_NAME } from './schema-modules'
 
 export const schema = {
   emptyExceptionMessage,

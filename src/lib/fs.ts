@@ -17,10 +17,7 @@ export function removeWrite(filePath: string, fileContent: string): void {
   FS.write(filePath, fileContent)
 }
 
-export async function removeWriteAsync(
-  filePath: string,
-  fileContent: string
-): Promise<void> {
+export async function removeWriteAsync(filePath: string, fileContent: string): Promise<void> {
   await FS.removeAsync(filePath)
   await FS.writeAsync(filePath, fileContent)
 }
@@ -118,10 +115,7 @@ export function getTmpDir(prefix: string = '') {
   return tmpDir
 }
 
-export const writeCachedFile = async (
-  filePath: string,
-  fileContent: string
-): Promise<void> => {
+export const writeCachedFile = async (filePath: string, fileContent: string): Promise<void> => {
   const alreadyExistingFallbackFileContents = fs.read(filePath)
 
   if (alreadyExistingFallbackFileContents === undefined) {
@@ -130,25 +124,21 @@ export const writeCachedFile = async (
   } else if (alreadyExistingFallbackFileContents !== fileContent) {
     log.trace(
       'there is a file already present on disk but its content does not match, replacing old with new %s',
-      { filePath }
+      {
+        filePath,
+      }
     )
     log.trace(alreadyExistingFallbackFileContents)
     log.trace(fileContent)
     await fs.writeAsync(filePath, fileContent)
   } else {
-    log.trace(
-      'there is a file already present on disk and its content matches, therefore doing nothing'
-    )
+    log.trace('there is a file already present on disk and its content matches, therefore doing nothing')
   }
 }
 
 // build/index.js => index.ts
 
-export function getTranspiledPath(
-  projectDir: string,
-  filePath: string,
-  outDir: string
-) {
+export function getTranspiledPath(projectDir: string, filePath: string, outDir: string) {
   const pathFromRootToFile = path.relative(projectDir, filePath)
   const jsFileName = path.basename(pathFromRootToFile, '.ts') + '.js'
   const pathToJsFile = path.join(path.dirname(pathFromRootToFile), jsFileName)
@@ -189,12 +179,7 @@ export function findFile(
   const localFs = fs.cwd(projectRoot)
 
   const foundFiles = localFs.find({
-    matching: [
-      ...paths,
-      '!node_modules/**/*',
-      '!.yalc/**/*',
-      ...(config?.ignore?.map((i) => `!${i}`) ?? []),
-    ],
+    matching: [...paths, '!node_modules/**/*', '!.yalc/**/*', ...(config?.ignore?.map((i) => `!${i}`) ?? [])],
   })
 
   // TODO: What if several files were found?
@@ -214,11 +199,7 @@ export async function findFiles(
   const localFS = fs.cwd(cwd)
 
   const files = await localFS.findAsync({
-    matching: [
-      ...paths,
-      ...baseIgnores,
-      ...(config?.ignore?.map((i) => `!${i}`) ?? []),
-    ],
+    matching: [...paths, ...baseIgnores, ...(config?.ignore?.map((i) => `!${i}`) ?? [])],
   })
 
   return files.map((f) => (path.isAbsolute(f) ? f : localFS.path(f)))
@@ -228,9 +209,7 @@ export const baseIgnores = ['!node_modules/**/*', '!.*/**/*']
 
 export function trimNodeModulesIfInPath(path: string) {
   if (path.includes('node_modules')) {
-    return path.substring(
-      path.indexOf('node_modules') + 'node_modules'.length + 1
-    )
+    return path.substring(path.indexOf('node_modules') + 'node_modules'.length + 1)
   }
 
   return path

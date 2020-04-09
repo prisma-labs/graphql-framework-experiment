@@ -17,24 +17,24 @@ export class __Default implements Command {
       case 'new':
         log.trace(
           'detected CWD is empty and not within an existing nexus project, delegating to create sub-command',
-          { cwd: process.cwd() }
+          {
+            cwd: process.cwd(),
+          }
         )
         await runCreateApp({
           projectName: CWDProjectNameOrGenerate(),
         })
         break
       case 'NEXUS_project':
-        log.trace(
-          'detected CWD is within a nexus project, delegating to dev mode',
-          { cwd: process.cwd() }
-        )
+        log.trace('detected CWD is within a nexus project, delegating to dev mode', {
+          cwd: process.cwd(),
+        })
         await new Dev().parse([])
         break
       case 'node_project':
-        log.trace(
-          'detected CWD is within a node but not nexus project, aborting',
-          { cwd: process.cwd() }
-        )
+        log.trace('detected CWD is within a node but not nexus project, aborting', {
+          cwd: process.cwd(),
+        })
         console.log(
           "Looks like you are inside a node but not nexus project. Please either add nexus to this project's dependencies and re-run this command or navigate to a new empty folder that does not have a package.json file present in an anecestor directory."
         )
@@ -44,10 +44,10 @@ export class __Default implements Command {
         // We can get the user on the happy path by asking them for a project
         // name and then changing into that directory.
         const projectName = generateProjectName()
-        log.info(
-          `creating project directory where all subsequent work will occur`,
-          { cwd: process.cwd(), projectName: projectName }
-        )
+        log.info(`creating project directory where all subsequent work will occur`, {
+          cwd: process.cwd(),
+          projectName: projectName,
+        })
         await fs.dirAsync(projectName)
         process.chdir(fs.path(projectName))
         await runCreateApp({

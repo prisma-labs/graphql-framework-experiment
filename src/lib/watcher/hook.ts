@@ -1,10 +1,6 @@
 const vm = require('vm')
 
-export default function (
-  cfg: { vm: boolean },
-  appRunner: NodeModule,
-  callback: (file: string) => void
-) {
+export default function (cfg: { vm: boolean }, appRunner: NodeModule, callback: (file: string) => void) {
   // Hook into Node's `require(...)`
   updateHooks()
 

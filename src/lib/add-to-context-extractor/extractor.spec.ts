@@ -300,9 +300,7 @@ it.todo('truncates import paths when detected to be an external package')
 // })
 
 it.todo('props with union types where one union member is a type reference')
-it.todo(
-  'props with union intersection types where one intersection member is a type reference'
-)
+it.todo('props with union intersection types where one intersection member is a type reference')
 
 it('dedupes imports', () => {
   expect(

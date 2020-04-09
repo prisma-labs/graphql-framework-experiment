@@ -17,9 +17,7 @@ const localCtx = TestContext.create((opts: TestContext.TmpDirContribution) => {
         extractCwd: cwd,
         writeCwd: cwd,
       })
-      const normalizedBackingTypes = Object.entries(backingTypes).reduce<
-        BackingTypes
-      >((acc, backingType) => {
+      const normalizedBackingTypes = Object.entries(backingTypes).reduce<BackingTypes>((acc, backingType) => {
         const [typeName, filePath] = backingType
 
         acc[typeName] = Path.relative(cwd, filePath)
@@ -27,10 +25,7 @@ const localCtx = TestContext.create((opts: TestContext.TmpDirContribution) => {
         return acc
       }, {})
 
-      const typegenPath = Path.join(
-        cwd,
-        DEFAULT_RELATIVE_BACKING_TYPES_TYPEGEN_PATH
-      )
+      const typegenPath = Path.join(cwd, DEFAULT_RELATIVE_BACKING_TYPES_TYPEGEN_PATH)
       const typegen = FS.read(typegenPath)
 
       return { backingTypes: normalizedBackingTypes, typegen }

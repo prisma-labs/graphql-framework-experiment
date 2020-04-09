@@ -13,25 +13,15 @@ const diagnosticHost: ts.FormatDiagnosticsHost = {
   getCanonicalFileName: (path) => path,
 }
 
-export function findConfigFile(
-  fileName: string,
-  opts: { required: true }
-): string
-export function findConfigFile(
-  fileName: string,
-  opts: { required: false }
-): string | null
+export function findConfigFile(fileName: string, opts: { required: true }): string
+export function findConfigFile(fileName: string, opts: { required: false }): string | null
 
 /**
  * Find a config file. If required but not found, then an error is raised. If
  * not required and not found then null is returned.
  */
 export function findConfigFile(fileName: string, opts: { required: boolean }) {
-  const configPath = ts.findConfigFile(
-    /*searchPath*/ process.cwd(),
-    ts.sys.fileExists,
-    fileName
-  )
+  const configPath = ts.findConfigFile(/*searchPath*/ process.cwd(), ts.sys.fileExists, fileName)
 
   log.trace('config file search result', { fileName, configPath, opts })
 
@@ -55,12 +45,7 @@ export function readTsConfig(layout: Layout): ts.ParsedCommandLine {
   const tsConfigContent = ts.readConfigFile(tsConfigPath, ts.sys.readFile)
 
   if (tsConfigContent.error) {
-    throw new Error(
-      ts.formatDiagnosticsWithColorAndContext(
-        [tsConfigContent.error],
-        diagnosticHost
-      )
-    )
+    throw new Error(ts.formatDiagnosticsWithColorAndContext([tsConfigContent.error], diagnosticHost))
   }
 
   /**
@@ -171,21 +156,14 @@ export function compile(
     return
   }
 
-  const allDiagnostics = ts
-    .getPreEmitDiagnostics(program.getProgram())
-    .concat(emitResult.diagnostics)
+  const allDiagnostics = ts.getPreEmitDiagnostics(program.getProgram()).concat(emitResult.diagnostics)
 
   if (allDiagnostics.length > 0) {
-    throw new Error(
-      ts.formatDiagnosticsWithColorAndContext(allDiagnostics, diagnosticHost)
-    )
+    throw new Error(ts.formatDiagnosticsWithColorAndContext(allDiagnostics, diagnosticHost))
   }
 }
 
-export function transpileModule(
-  input: string,
-  compilerOptions: ts.CompilerOptions
-): string {
+export function transpileModule(input: string, compilerOptions: ts.CompilerOptions): string {
   return ts.transpileModule(input, { compilerOptions }).outputText
 }
 
@@ -201,15 +179,8 @@ export async function findOrScaffoldTsConfig(
 
   if (tsConfigPath) {
     if (path.dirname(tsConfigPath) !== layout.projectRoot) {
-      log.error(
-        `Your tsconfig.json file needs to be in your project root directory`
-      )
-      log.error(
-        `Found ${tsConfigPath}, expected ${path.join(
-          layout.projectRoot,
-          'tsconfig.json'
-        )}`
-      )
+      log.error(`Your tsconfig.json file needs to be in your project root directory`)
+      log.error(`Found ${tsConfigPath}, expected ${path.join(layout.projectRoot, 'tsconfig.json')}`)
       if (options.exitAfterError) {
         process.exit(1)
       } else {

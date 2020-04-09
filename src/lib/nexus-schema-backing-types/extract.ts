@@ -4,10 +4,7 @@ import { BackingTypes } from './types'
 
 const log = rootLogger.child('backing-types')
 
-export const defaultTSTypeMatcher = new RegExp(
-  `export\\s+(?:interface|type|class|enum)\\s+(\\w+)`,
-  'g'
-)
+export const defaultTSTypeMatcher = new RegExp(`export\\s+(?:interface|type|class|enum)\\s+(\\w+)`, 'g')
 
 export function extract(filePaths: (string | undefined)[]): BackingTypes {
   const backingTypes: Record<string, string> = {}

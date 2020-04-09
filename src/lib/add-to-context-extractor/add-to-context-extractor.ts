@@ -14,9 +14,7 @@ const log = rootLogger.child('add-to-context-extractor')
  * not available by default. If workers are not available then extraction falls
  * back to running in this process, possibly blocking with with intensive CPU work.
  */
-export function runAddToContextExtractorAsWorkerIfPossible(
-  layoutData: Layout.Layout['data']
-) {
+export function runAddToContextExtractorAsWorkerIfPossible(layoutData: Layout.Layout['data']) {
   log.trace('starting context type extraction')
   let hasWorkerThreads = areWorkerThreadsAvailable()
 
@@ -42,9 +40,7 @@ export async function extractContextTypesToTypeGenFile(program: ts.Program) {
 /**
  * Run the extractor in a worker.
  */
-export function runAddToContextExtractorAsWorker(
-  layoutData: Layout.Layout['data']
-) {
+export function runAddToContextExtractorAsWorker(layoutData: Layout.Layout['data']) {
   // avoid import error in node 10.x
   const { Worker } = require('worker_threads')
   const worker = new Worker(Path.join(__dirname, './worker.js'), {
@@ -62,9 +58,6 @@ export function runAddToContextExtractorAsWorker(
   })
 
   worker.on('error', (error: Error) => {
-    log.warn(
-      'We could not extract your context types from `schema.addToContext`',
-      { error }
-    )
+    log.warn('We could not extract your context types from `schema.addToContext`', { error })
   })
 }

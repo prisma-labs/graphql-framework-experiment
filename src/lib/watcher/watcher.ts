@@ -70,30 +70,23 @@ export function createWatcher(options: Options): Promise<void> {
     // schema anywhere except in migrations ignore it, that is hard right now.
 
     const pluginWatchContributions = options.plugins.reduce(
-      (patterns, p) =>
-        patterns.concat(p.dev.addToWatcherSettings.watchFilePatterns ?? []),
+      (patterns, p) => patterns.concat(p.dev.addToWatcherSettings.watchFilePatterns ?? []),
       [] as string[]
     )
 
     const pluginIgnoreContributions = options.plugins.reduce(
-      (patterns, p) =>
-        patterns.concat(
-          p.dev.addToWatcherSettings.listeners?.app?.ignoreFilePatterns ?? []
-        ),
+      (patterns, p) => patterns.concat(p.dev.addToWatcherSettings.listeners?.app?.ignoreFilePatterns ?? []),
       [] as string[]
     )
     const isIgnoredByCoreListener = createPathMatcher({
       toMatch: pluginIgnoreContributions,
     })
 
-    const watcher = Chok.watch(
-      [options.sourceRoot, ...pluginWatchContributions],
-      {
-        ignored: ['./node_modules', './.*'],
-        ignoreInitial: true,
-        cwd: process.cwd(), // prevent globbed files and required files from being watched twice
-      }
-    )
+    const watcher = Chok.watch([options.sourceRoot, ...pluginWatchContributions], {
+      ignored: ['./node_modules', './.*'],
+      ignoreInitial: true,
+      cwd: process.cwd(), // prevent globbed files and required files from being watched twice
+    })
 
     /**
      * Core watcher listener
@@ -131,23 +124,14 @@ export function createWatcher(options: Options): Promise<void> {
     for (const plugin of options.plugins) {
       if (plugin.dev.onFileWatcherEvent) {
         const isMatchedByPluginListener = createPathMatcher({
-          toMatch:
-            plugin.dev.addToWatcherSettings.listeners?.plugin
-              ?.allowFilePatterns,
-          toIgnore:
-            plugin.dev.addToWatcherSettings.listeners?.plugin
-              ?.ignoreFilePatterns,
+          toMatch: plugin.dev.addToWatcherSettings.listeners?.plugin?.allowFilePatterns,
+          toIgnore: plugin.dev.addToWatcherSettings.listeners?.plugin?.ignoreFilePatterns,
         })
 
         watcher.on('all', (event, file, stats) => {
           if (isMatchedByPluginListener(file)) {
             log.trace('plugin listener - matched file', { file })
-            plugin.dev.onFileWatcherEvent!(
-              event,
-              file,
-              stats,
-              devModePluginLens
-            )
+            plugin.dev.onFileWatcherEvent!(event, file, stats, devModePluginLens)
           } else {
             log.trace('plugin listener - DID NOT match file', { file })
           }
@@ -183,10 +167,7 @@ export function createWatcher(options: Options): Promise<void> {
     // includes awaiting completion of the returned promise. Basically this
     // library + feature request
     // https://github.com/sindresorhus/p-debounce/issues/3.
-    async function restart(
-      change: PostInitChangeEvent,
-      plugins: WorktimeHooks[]
-    ) {
+    async function restart(change: PostInitChangeEvent, plugins: WorktimeHooks[]) {
       if (restarting) {
         log.trace('restart already in progress')
         return
@@ -195,9 +176,7 @@ export function createWatcher(options: Options): Promise<void> {
       clearConsole()
       log.trace('hook', { name: 'beforeWatcherStartOrRestart' })
       for (const plugin of plugins) {
-        const runnerChanges = await plugin.dev.onBeforeWatcherStartOrRestart?.(
-          change
-        )
+        const runnerChanges = await plugin.dev.onBeforeWatcherStartOrRestart?.(change)
         if (runnerChanges) {
           link.updateOptions(runnerChanges)
         }

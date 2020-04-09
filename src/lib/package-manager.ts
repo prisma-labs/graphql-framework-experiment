@@ -38,20 +38,14 @@ export async function detectProjectPackageManager(opts: {
 /**
  * Render the running of the given command as coming from the local bin.
  */
-export function renderRunBin(
-  pmt: PackageManagerType,
-  commandString: string
-): string {
+export function renderRunBin(pmt: PackageManagerType, commandString: string): string {
   return pmt === 'npm' ? `npx ${commandString}` : `yarn -s ${commandString}`
 }
 
 /**
  * Render running of the given script defined in package.json.
  */
-export function renderRunScript(
-  pmt: PackageManagerType,
-  scriptName: string
-): string {
+export function renderRunScript(pmt: PackageManagerType, scriptName: string): string {
   return pmt === 'npm' ? `npm run -s ${scriptName}` : `yarn -s ${scriptName}`
 }
 
@@ -82,13 +76,8 @@ export function runScript(
 /**
  * Run package installation.
  */
-export function installDeps(
-  pmt: PackageManagerType,
-  options?: proc.RunOptions
-): ReturnType<typeof proc.run> {
-  return pmt === 'npm'
-    ? proc.run('npm install', options)
-    : proc.run('yarn install', options)
+export function installDeps(pmt: PackageManagerType, options?: proc.RunOptions): ReturnType<typeof proc.run> {
+  return pmt === 'npm' ? proc.run('npm install', options) : proc.run('yarn install', options)
 }
 
 export type AddDepsOptions = { dev?: boolean } & proc.RunOptions

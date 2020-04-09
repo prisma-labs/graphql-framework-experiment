@@ -113,10 +113,7 @@ export function create(opts?: Options): RootLogger {
     if (process.env.LOG_LEVEL) {
       level = parseFromEnvironment<Level.Level>('LOG_LEVEL', Level.parser)
     } else {
-      level =
-        process.env.NODE_ENV === 'production'
-          ? Level.LEVELS.info.label
-          : Level.LEVELS.debug.label
+      level = process.env.NODE_ENV === 'production' ? Level.LEVELS.info.label : Level.LEVELS.debug.label
     }
   }
 
@@ -127,10 +124,7 @@ export function create(opts?: Options): RootLogger {
   logger.settings = ((newSettings: SettingsInput) => {
     if ('pretty' in newSettings) {
       // @ts-ignore
-      logger.settings.pretty = processSettingInputPretty(
-        newSettings.pretty,
-        logger.settings.pretty
-      )
+      logger.settings.pretty = processSettingInputPretty(newSettings.pretty, logger.settings.pretty)
     }
 
     if ('level' in newSettings) {
@@ -188,9 +182,9 @@ function parseFromEnvironment<T>(
     throw new Error(
       `Could not parse environment variable ${key} into ${
         parser.info.typeName
-      }. The environment variable was: ${format(
-        envVarValue
-      )}. A valid environment variable must be like: ${parser.info.valid}`
+      }. The environment variable was: ${format(envVarValue)}. A valid environment variable must be like: ${
+        parser.info.valid
+      }`
     )
   }
 
@@ -206,10 +200,7 @@ function processSettingInputPretty(
 ): SettingsData['pretty'] {
   // todo no semantic to "unset back to default"
   // consider using `null` for that purpose...
-  const color =
-    (typeof pretty === 'object' ? pretty.color : undefined) ??
-    previous?.color ??
-    true
+  const color = (typeof pretty === 'object' ? pretty.color : undefined) ?? previous?.color ?? true
 
   const enabled =
     (typeof pretty === 'object' ? pretty.enabled : undefined) ??
@@ -222,14 +213,9 @@ function processSettingInputPretty(
       : process.stdout.isTTY)
 
   const levelLabel =
-    (typeof pretty === 'object' ? pretty.levelLabel : undefined) ??
-    previous?.levelLabel ??
-    false
+    (typeof pretty === 'object' ? pretty.levelLabel : undefined) ?? previous?.levelLabel ?? false
 
-  const timeDiff =
-    (typeof pretty === 'object' ? pretty.timeDiff : undefined) ??
-    previous?.timeDiff ??
-    true
+  const timeDiff = (typeof pretty === 'object' ? pretty.timeDiff : undefined) ?? previous?.timeDiff ?? true
 
   if (pretty === undefined) {
     return { enabled, color, levelLabel, timeDiff }

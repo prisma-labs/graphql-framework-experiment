@@ -149,18 +149,11 @@ export async function e2eKitchenSink(app: E2EContext) {
 
   log.warn('build plugin')
 
-  await pluginProject
-    .spawn(['yarn', 'build'])
-    .refCount()
-    .pipe(bufferOutput)
-    .toPromise()
+  await pluginProject.spawn(['yarn', 'build']).refCount().pipe(bufferOutput).toPromise()
 
   log.warn('install plugin into app via file path')
 
-  await app
-    .spawn(['yarn', 'add', pluginProject.dir])
-    .pipe(refCount(), bufferOutput)
-    .toPromise()
+  await app.spawn(['yarn', 'add', pluginProject.dir]).pipe(refCount(), bufferOutput).toPromise()
 
   log.warn('with plugin, dev app')
 
@@ -226,10 +219,7 @@ export async function e2eKitchenSink(app: E2EContext) {
 
     log.warn('run build')
 
-    output = await app
-      .nexus(['build'])
-      .pipe(refCount(), bufferOutput)
-      .toPromise()
+    output = await app.nexus(['build']).pipe(refCount(), bufferOutput).toPromise()
     expect(output).toContain('success')
 
     log.warn('run built app and query graphql api')

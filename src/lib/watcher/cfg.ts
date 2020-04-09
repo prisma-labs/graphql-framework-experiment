@@ -19,9 +19,7 @@ export default function (opts?: Omit<Opts, 'eval'>) {
     c.respawn = true
   }
 
-  const ignoreWatch = [
-    ...(opts && opts['ignore-watch'] ? opts['ignore-watch'] : []),
-  ]
+  const ignoreWatch = [...(opts && opts['ignore-watch'] ? opts['ignore-watch'] : [])]
   const ignore = ignoreWatch.concat(ignoreWatch.map(resolvePath))
 
   return {

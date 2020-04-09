@@ -13,10 +13,7 @@ export const DEFAULT_RELATIVE_BACKING_TYPES_TYPEGEN_PATH = Path.join(
   'index.d.ts'
 )
 
-export async function write(
-  backingTypes: BackingTypes,
-  opts?: { cwd?: string }
-) {
+export async function write(backingTypes: BackingTypes, opts?: { cwd?: string }) {
   const typeNames = Object.keys(backingTypes)
   let output: string = ''
 

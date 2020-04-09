@@ -26,10 +26,7 @@ export interface LoadedConfig {
   environment_mapping?: Record<string, string>
 }
 
-type EnvironmentWithSecretLoader =
-  | ((load: SecretLoader) => Environment | undefined)
-  | Environment
-  | undefined
+type EnvironmentWithSecretLoader = ((load: SecretLoader) => Environment | undefined) | Environment | undefined
 
 interface Environment {
   NEXUS_DATABASE_URL?: string
@@ -80,9 +77,7 @@ export function readConfig(): Config | null {
   return validatedConfig
 }
 
-export function loadConfig(
-  inputStage: StageNames | undefined
-): LoadedConfig | null {
+export function loadConfig(inputStage: StageNames | undefined): LoadedConfig | null {
   const config = readConfig()
   const stage = normalizeStage(inputStage)
 
@@ -98,10 +93,7 @@ export function loadConfig(
   }
 }
 
-export function processConfig(
-  loadedConfig: LoadedConfig,
-  stage: StageNames | undefined
-): void {
+export function processConfig(loadedConfig: LoadedConfig, stage: StageNames | undefined): void {
   processEnvFromConfig(loadedConfig, stage)
   processEnvMappingFromConfig(loadedConfig)
 }
@@ -113,10 +105,7 @@ function normalizeStage(inputStage: string | undefined): StageNames {
   return inputStage ?? process.env.NODE_ENV ?? 'development'
 }
 
-function processEnvFromConfig(
-  loadedConfig: LoadedConfig,
-  inputStage: string | undefined
-): void {
+function processEnvFromConfig(loadedConfig: LoadedConfig, inputStage: string | undefined): void {
   const stage = normalizeStage(inputStage)
   const loadedEnv = loadedConfig.environment
 
@@ -130,18 +119,15 @@ function processEnvFromConfig(
       log.trace('setting env var', { envName, envValue: loadedEnv[envName] })
       process.env[envName] = loadedEnv[envName]
     } else {
-      log.trace(
-        'env var is not loaded from config as its already set to value',
-        { envName, envValue: process.env[envName] }
-      )
+      log.trace('env var is not loaded from config as its already set to value', {
+        envName,
+        envValue: process.env[envName],
+      })
     }
   }
 }
 
-function loadEnvironment(
-  environments: Config['environments'],
-  stage: StageNames
-): Environment | undefined {
+function loadEnvironment(environments: Config['environments'], stage: StageNames): Environment | undefined {
   if (!environments || !environments[stage]) {
     return undefined
   }
@@ -170,10 +156,10 @@ function processEnvMappingFromConfig(loadedConfig: LoadedConfig): void {
     }
 
     if (!process.env[sourceEnvName]) {
-      log.trace(
-        'could not map env var source to target beause source not set',
-        { sourceEnvName, targetEnvName }
-      )
+      log.trace('could not map env var source to target beause source not set', {
+        sourceEnvName,
+        targetEnvName,
+      })
       return
     }
 
@@ -216,9 +202,7 @@ function registerTsExt(): { unregister: () => void } {
   }
 }
 
-export function loadAndProcessConfig(
-  inputStage: StageNames | undefined
-): LoadedConfig | null {
+export function loadAndProcessConfig(inputStage: StageNames | undefined): LoadedConfig | null {
   const stage = normalizeStage(inputStage)
   const config = loadConfig(stage)
 
@@ -229,10 +213,7 @@ export function loadAndProcessConfig(
   return config
 }
 
-function printStaticEnvSetter(
-  envName: string,
-  value: string | undefined
-): string {
+function printStaticEnvSetter(envName: string, value: string | undefined): string {
   if (!value) {
     return ''
   }
@@ -244,10 +225,7 @@ function printStaticEnvSetter(
   `
 }
 
-function printStaticEnvMapping(
-  source: string,
-  target: string | undefined
-): string {
+function printStaticEnvMapping(source: string, target: string | undefined): string {
   if (!target) {
     return ''
   }
@@ -259,10 +237,7 @@ function printStaticEnvMapping(
   `
 }
 
-export function printStaticEnvSetters(
-  config: LoadedConfig,
-  stage: StageNames
-): string {
+export function printStaticEnvSetters(config: LoadedConfig, stage: StageNames): string {
   let output: string = ''
   const env = config.environment
 
@@ -291,14 +266,9 @@ type SecretLoader = {
 }
 
 function createSecretLoader(stage: string): SecretLoader {
-  const secretsByStageCache: Record<
-    string,
-    { secrets: Record<string, string>; file: string }
-  > = {}
+  const secretsByStageCache: Record<string, { secrets: Record<string, string>; file: string }> = {}
   const loadSecrets = () => {
-    const result = secretsByStageCache[stage]
-      ? secretsByStageCache[stage]
-      : tryLoadSecrets(stage)
+    const result = secretsByStageCache[stage] ? secretsByStageCache[stage] : tryLoadSecrets(stage)
 
     if (!result) {
       log.warn(`We could not load your secret(s) for environment \`${stage}\``)
@@ -314,12 +284,8 @@ function createSecretLoader(stage: string): SecretLoader {
       const loadedSecrets = loadSecrets()
 
       if (!loadedSecrets?.secrets[secretName]) {
-        log.warn(
-          `We could not load your secret \`${secretName}\` for environment \`${stage}\``
-        )
-        log.warn(
-          `${loadedSecrets?.file} does not export any secret called \`${secretName}\``
-        )
+        log.warn(`We could not load your secret \`${secretName}\` for environment \`${stage}\``)
+        log.warn(`${loadedSecrets?.file} does not export any secret called \`${secretName}\``)
         return undefined
       }
 
@@ -336,30 +302,25 @@ function createSecretLoader(stage: string): SecretLoader {
         return loadedSecrets.secrets
       }
 
-      const pickedSecrets = Object.entries(loadedSecrets.secrets).reduce<
-        Record<string, string>
-      >((acc, [secretName, secretValue]) => {
-        if (secretsNames.includes(secretName)) {
-          acc[secretName] = secretValue
-        } else {
-          log.warn(
-            `We could not load your secret \`${secretName}\` for environment \`${stage}\``
-          )
-          log.warn(
-            `${loadedSecrets?.file} does not export any secret called \`${secretName}\``
-          )
-        }
-        return acc
-      }, {})
+      const pickedSecrets = Object.entries(loadedSecrets.secrets).reduce<Record<string, string>>(
+        (acc, [secretName, secretValue]) => {
+          if (secretsNames.includes(secretName)) {
+            acc[secretName] = secretValue
+          } else {
+            log.warn(`We could not load your secret \`${secretName}\` for environment \`${stage}\``)
+            log.warn(`${loadedSecrets?.file} does not export any secret called \`${secretName}\``)
+          }
+          return acc
+        },
+        {}
+      )
 
       return pickedSecrets
     },
   }
 }
 
-function tryLoadSecrets(
-  stage: string
-): { secrets: Record<string, string>; file: string } | null {
+function tryLoadSecrets(stage: string): { secrets: Record<string, string>; file: string } | null {
   const secretFileName = `${stage}.env`
   let secretPath = path.join('.secrets', secretFileName)
   let secretContent = fs.read(secretPath)
@@ -377,9 +338,7 @@ function tryLoadSecrets(
   return null
 }
 
-export function loadEnvironmentFromConfig(
-  inputStage: string | undefined
-): Environment | null {
+export function loadEnvironmentFromConfig(inputStage: string | undefined): Environment | null {
   const config = loadConfig(inputStage)
 
   if (!config) {

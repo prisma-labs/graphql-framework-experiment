@@ -7,15 +7,10 @@
 import * as NexusSchema from '@nexus/schema'
 import * as BackingTypes from '../nexus-schema-backing-types'
 
-type RootTyping =
-  | BackingTypes.GetNexusFutureGen<'types'>
-  | NexusSchema.core.RootTypingImport
+type RootTyping = BackingTypes.GetNexusFutureGen<'types'> | NexusSchema.core.RootTypingImport
 
 export interface NexusObjectTypeConfig<TypeName extends string>
-  extends Exclude<
-    NexusSchema.core.NexusObjectTypeConfig<TypeName>,
-    'rootTyping'
-  > {
+  extends Exclude<NexusSchema.core.NexusObjectTypeConfig<TypeName>, 'rootTyping'> {
   /**
    * Root type information for this type.
    * By default, types are extracted for any .ts file in your project. You can configure that from the `schema.rootTypingsGlobPattern` setting
@@ -33,10 +28,7 @@ export interface NexusObjectTypeConfig<TypeName extends string>
 }
 
 export interface NexusInterfaceTypeConfig<TypeName extends string>
-  extends Exclude<
-    NexusSchema.core.NexusInterfaceTypeConfig<TypeName>,
-    'rootTyping'
-  > {
+  extends Exclude<NexusSchema.core.NexusInterfaceTypeConfig<TypeName>, 'rootTyping'> {
   /**
    * Root type information for this type.
    * By default, types are extracted for any .ts file in your project. You can configure that from the `schema.rootTypingsGlobPattern` setting
@@ -54,10 +46,7 @@ export interface NexusInterfaceTypeConfig<TypeName extends string>
 }
 
 export interface NexusUnionTypeConfig<TypeName extends string>
-  extends Exclude<
-    NexusSchema.core.NexusUnionTypeConfig<TypeName>,
-    'rootTyping'
-  > {
+  extends Exclude<NexusSchema.core.NexusUnionTypeConfig<TypeName>, 'rootTyping'> {
   /**
    * Root type information for this type.
    * By default, types are extracted for any .ts file in your project. You can configure that from the `schema.rootTypingsGlobPattern` setting
@@ -93,10 +82,7 @@ export interface NexusEnumTypeConfig<TypeName extends string>
 }
 
 export interface NexusScalarTypeConfig<TypeName extends string>
-  extends Exclude<
-    NexusSchema.core.NexusScalarTypeConfig<TypeName>,
-    'rootTyping'
-  > {
+  extends Exclude<NexusSchema.core.NexusScalarTypeConfig<TypeName>, 'rootTyping'> {
   /**
    * Root type information for this type.
    * By default, types are extracted for any .ts file in your project. You can configure that from the `schema.rootTypingsGlobPattern` setting

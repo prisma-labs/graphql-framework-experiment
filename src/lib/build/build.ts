@@ -1,12 +1,7 @@
 import { stripIndent } from 'common-tags'
 import * as FS from 'fs-jetpack'
 import * as Layout from '../../lib/layout'
-import {
-  compile,
-  createTSProgram,
-  deleteTSIncrementalFile,
-  findOrScaffoldTsConfig,
-} from '../../lib/tsc'
+import { compile, createTSProgram, deleteTSIncrementalFile, findOrScaffoldTsConfig } from '../../lib/tsc'
 import {
   createStartModuleContent,
   prepareStartModule,
@@ -39,10 +34,7 @@ export async function buildNexusApp(settings: BuildSettings) {
   const deploymentTarget = normalizeTarget(settings.target)
 
   const layout = await Layout.create({
-    buildOutputRelative:
-      settings.output ??
-      computeBuildOutputFromTarget(deploymentTarget) ??
-      undefined,
+    buildOutputRelative: settings.output ?? computeBuildOutputFromTarget(deploymentTarget) ?? undefined,
   })
 
   /**
@@ -59,10 +51,7 @@ export async function buildNexusApp(settings: BuildSettings) {
   await findOrScaffoldTsConfig(layout)
 
   const manifests = await Plugin.readAllPluginManifestsFromConfig(layout)
-  const plugins = await Plugin.loadWorktimePluginFromManifests(
-    manifests,
-    layout
-  )
+  const plugins = await Plugin.loadWorktimePluginFromManifests(manifests, layout)
 
   for (const p of plugins) {
     await p.hooks.build.onStart?.()

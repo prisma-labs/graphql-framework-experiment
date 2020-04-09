@@ -63,10 +63,7 @@ export type SettingsInput = {
 
 export type SettingsData = SettingsInput
 
-export function changeSettings(
-  state: SettingsData,
-  newSettings: SettingsInput
-) {
+export function changeSettings(state: SettingsData, newSettings: SettingsInput) {
   if (newSettings.nullable) {
     if (state.nullable === undefined) {
       state.nullable = {}
@@ -93,12 +90,7 @@ export function changeSettings(
   }
 }
 
-export const NEXUS_DEFAULT_TYPEGEN_PATH = fs.path(
-  'node_modules',
-  '@types',
-  'typegen-nexus',
-  'index.d.ts'
-)
+export const NEXUS_DEFAULT_TYPEGEN_PATH = fs.path('node_modules', '@types', 'typegen-nexus', 'index.d.ts')
 
 export function mapSettingsToNexusSchemaConfig(
   frameworkPlugins: Plugin.RuntimeContributions[],
@@ -137,10 +129,7 @@ export function mapSettingsToNexusSchemaConfig(
   return finalConfig
 }
 
-function withAutoTypegenConfig(
-  nexusConfig: NexusSchemaConfig,
-  plugins: Plugin.RuntimeContributions[]
-) {
+function withAutoTypegenConfig(nexusConfig: NexusSchemaConfig, plugins: Plugin.RuntimeContributions[]) {
   // Integrate plugin typegenAutoConfig contributions
   const typegenAutoConfigFromPlugins = {}
   for (const p of plugins) {
@@ -149,16 +138,10 @@ function withAutoTypegenConfig(
     }
   }
 
-  const typegenAutoConfigObject = Lo.merge(
-    {},
-    typegenAutoConfigFromPlugins,
-    nexusConfig.typegenAutoConfig!
-  )
+  const typegenAutoConfigObject = Lo.merge({}, typegenAutoConfigFromPlugins, nexusConfig.typegenAutoConfig!)
   nexusConfig.typegenAutoConfig = undefined
 
-  function contextTypeContribSpecToCode(
-    ctxTypeContribSpec: Record<string, string>
-  ): string {
+  function contextTypeContribSpecToCode(ctxTypeContribSpec: Record<string, string>): string {
     return stripIndents`
       interface Context {
         ${Object.entries(ctxTypeContribSpec)
@@ -176,9 +159,7 @@ function withAutoTypegenConfig(
   // curreent use-case, fairly basic, integrated into the auto system, here:
   // https://github.com/prisma-labs/nexus/issues/323
   nexusConfig.typegenConfig = async (schema, outputPath) => {
-    const configurator = await NexusSchema.core.typegenAutoConfig(
-      typegenAutoConfigObject
-    )
+    const configurator = await NexusSchema.core.typegenAutoConfig(typegenAutoConfigObject)
     const config = await configurator(schema, outputPath)
 
     // Initialize
@@ -196,15 +177,11 @@ function withAutoTypegenConfig(
 
       if (p.context.typeGen.imports) {
         config.imports.push(
-          ...p.context.typeGen.imports.map(
-            (im) => `import * as ${im.as} from '${im.from}'`
-          )
+          ...p.context.typeGen.imports.map((im) => `import * as ${im.as} from '${im.from}'`)
         )
       }
 
-      config.imports.push(
-        contextTypeContribSpecToCode(p.context.typeGen.fields)
-      )
+      config.imports.push(contextTypeContribSpecToCode(p.context.typeGen.fields))
     }
 
     config.imports.push(
@@ -232,14 +209,10 @@ export function shouldGenerateArtifacts(): boolean {
 }
 
 export function shouldExitAfterGenerateArtifacts(): boolean {
-  return process.env.NEXUS_SHOULD_EXIT_AFTER_GENERATE_ARTIFACTS === 'true'
-    ? true
-    : false
+  return process.env.NEXUS_SHOULD_EXIT_AFTER_GENERATE_ARTIFACTS === 'true' ? true : false
 }
 
-type ConnectionPluginConfig = NonNullable<
-  Param1<typeof NexusSchema.connectionPlugin>
->
+type ConnectionPluginConfig = NonNullable<Param1<typeof NexusSchema.connectionPlugin>>
 
 export type ConnectionConfig = Omit<ConnectionPluginConfig, 'nexusFieldName'>
 
@@ -247,9 +220,7 @@ export type ConnectionConfig = Omit<ConnectionPluginConfig, 'nexusFieldName'>
  * Process the schema connection settings into nexus schema relay connection
  * plugins.
  */
-function processConnectionsConfig(
-  settings: SettingsInput
-): NexusSchema.core.NexusPlugin[] {
+function processConnectionsConfig(settings: SettingsInput): NexusSchema.core.NexusPlugin[] {
   if (settings.connections === undefined) {
     return [
       defaultConnectionPlugin({
@@ -260,10 +231,7 @@ function processConnectionsConfig(
 
   const instances: NexusSchema.core.NexusPlugin[] = []
 
-  const {
-    default: defaultTypeConfig,
-    ...customTypesConfig
-  } = settings.connections
+  const { default: defaultTypeConfig, ...customTypesConfig } = settings.connections
 
   for (const [name, config] of Object.entries(customTypesConfig)) {
     if (config) {
@@ -284,9 +252,7 @@ function processConnectionsConfig(
   return instances
 }
 
-function defaultConnectionPlugin(
-  configBase: ConnectionConfig
-): NexusSchema.core.NexusPlugin {
+function defaultConnectionPlugin(configBase: ConnectionConfig): NexusSchema.core.NexusPlugin {
   return NexusSchema.connectionPlugin({
     ...configBase,
     nexusFieldName: 'connection',
@@ -302,10 +268,7 @@ function getOutputSchemaPath(settings: SettingsInput) {
   // Process graphQL SDL output setting
   let outputSchema: string | false
 
-  if (
-    settings.generateGraphQLSDLFile === undefined ||
-    settings.generateGraphQLSDLFile === false
-  ) {
+  if (settings.generateGraphQLSDLFile === undefined || settings.generateGraphQLSDLFile === false) {
     outputSchema = false
   } else {
     if (isAbsolute(settings.generateGraphQLSDLFile)) {

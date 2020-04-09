@@ -23,10 +23,7 @@ export function createRuntimeLens(pluginName: string): RuntimeLens {
   }
 }
 
-export function createWorktimeLens(
-  layout: Layout.Layout,
-  pluginName: string
-): WorktimeLens {
+export function createWorktimeLens(layout: Layout.Layout, pluginName: string): WorktimeLens {
   return {
     ...createBaseLens(pluginName),
     layout: layout,

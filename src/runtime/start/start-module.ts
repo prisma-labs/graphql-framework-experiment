@@ -50,9 +50,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     // Run framework initialization side-effects
     // Also, import the app for later use
     const app = require("${
-      config.absoluteModuleImports
-        ? resolveFrom('nexus', config.layout.projectRoot)
-        : 'nexus'
+      config.absoluteModuleImports ? resolveFrom('nexus', config.layout.projectRoot) : 'nexus'
     }").default
   `
 
@@ -81,10 +79,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
       require('${
         config.absoluteModuleImports
           ? config.layout.packageJson.path
-          : Path.relative(
-              config.layout.buildOutputRelative,
-              config.layout.packageJson.path
-            )
+          : Path.relative(config.layout.buildOutputRelative, config.layout.packageJson.path)
       }')
     `
   }
@@ -108,8 +103,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
       require("${
         config.absoluteModuleImports
           ? stripExt(config.layout.app.path)
-          : './' +
-            stripExt(config.layout.sourceRelative(config.layout.app.path))
+          : './' + stripExt(config.layout.sourceRelative(config.layout.app.path))
       }")
     `
   }
@@ -121,9 +115,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
       ${config.plugins
         .filter((p) => p.runtime !== undefined)
         .map((plugin, index) => {
-          return `import { ${
-            plugin.runtime!.export
-          } as plugin_${index} } from '${
+          return `import { ${plugin.runtime!.export} as plugin_${index} } from '${
             config.absoluteModuleImports
               ? plugin.runtime!.module
               : relativeModuleImport(plugin.name, plugin.runtime!.module)
@@ -167,14 +159,9 @@ export function prepareStartModule(
  * Note that it is assumed the module these imports will run in will be located
  * in the source/build root.
  */
-export function printStaticImports(
-  layout: Layout.Layout,
-  opts?: { absolutePaths?: boolean }
-): string {
+export function printStaticImports(layout: Layout.Layout, opts?: { absolutePaths?: boolean }): string {
   return layout.schemaModules.reduce((script, modulePath) => {
-    const path = opts?.absolutePaths
-      ? stripExt(modulePath)
-      : relativeTranspiledImportPath(layout, modulePath)
+    const path = opts?.absolutePaths ? stripExt(modulePath) : relativeTranspiledImportPath(layout, modulePath)
     return `${script}\n${printSideEffectsImport(path)}`
   }, '')
 }
@@ -186,10 +173,7 @@ function printSideEffectsImport(modulePath: string): string {
 /**
  * Build up what the import path will be for a module in its transpiled context.
  */
-export function relativeTranspiledImportPath(
-  layout: Layout.Layout,
-  modulePath: string
-): string {
+export function relativeTranspiledImportPath(layout: Layout.Layout, modulePath: string): string {
   return './' + stripExt(calcSourceRootToModule(layout, modulePath))
 }
 
@@ -197,10 +181,7 @@ function calcSourceRootToModule(layout: Layout.Layout, modulePath: string) {
   return Path.relative(layout.sourceRoot, modulePath)
 }
 
-function relativeModuleImport(
-  moduleName: string,
-  absoluteModuleImport: string
-) {
+function relativeModuleImport(moduleName: string, absoluteModuleImport: string) {
   const moduleNamePos = absoluteModuleImport.lastIndexOf(moduleName)
   const relativeModuleImport = absoluteModuleImport.substring(moduleNamePos)
 

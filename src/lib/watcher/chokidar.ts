@@ -39,16 +39,11 @@ export type FileWatcherEventCallback = (
 type FileWatcherOptions = chokidar.WatchOptions
 const SILENTABLE_EVENTS = ['add', 'addDir'] as const
 
-function isSilentableEvent(
-  event: any
-): event is typeof SILENTABLE_EVENTS[number] {
+function isSilentableEvent(event: any): event is typeof SILENTABLE_EVENTS[number] {
   return SILENTABLE_EVENTS.includes(event)
 }
 
-export function watch(
-  paths: string | ReadonlyArray<string>,
-  options?: FileWatcherOptions
-): FileWatcher {
+export function watch(paths: string | ReadonlyArray<string>, options?: FileWatcherOptions): FileWatcher {
   log.trace('starting', { paths, ...options })
   const watcher = chokidar.watch(paths, options) as FileWatcher
   const programmaticallyWatchedFiles: string[] = []
@@ -56,10 +51,7 @@ export function watch(
   let lastPendingExecution: null | (() => void) = null
 
   const wasFileAddedSilently = (event: string, file: string): boolean => {
-    if (
-      programmaticallyWatchedFiles.includes(file) &&
-      isSilentableEvent(event)
-    ) {
+    if (programmaticallyWatchedFiles.includes(file) && isSilentableEvent(event)) {
       log.trace('ignoring file addition because was added silently', {
         file,
       })
@@ -71,9 +63,7 @@ export function watch(
   }
 
   /** Execute watcher listener when watcher is not paused, and save last pending execution to be run when watcher.resume() is called */
-  const simpleDebounce = (
-    fn: (...args: any[]) => void
-  ): ((...args: any[]) => void) => {
+  const simpleDebounce = (fn: (...args: any[]) => void): ((...args: any[]) => void) => {
     const decoratedFn = (...args: any[]) => {
       if (watcherPaused) {
         lastPendingExecution = () => {

@@ -134,17 +134,11 @@ export function render(opts: Options, logRecord: Logger.LogRecord): string {
       elapsedTime = Math.round(elapsedTime / 1000 / 60)
       unit = 'm'
       // 1h-24h (exclusive)
-    } else if (
-      elapsedTime >= 1000 * 60 * 60 &&
-      elapsedTime < 1000 * 60 * 60 * 24
-    ) {
+    } else if (elapsedTime >= 1000 * 60 * 60 && elapsedTime < 1000 * 60 * 60 * 24) {
       elapsedTime = Math.round(elapsedTime / 1000 / 60 / 60)
       unit = 'h'
       // 1d-999d (exclusive)
-    } else if (
-      elapsedTime >= 1000 * 60 * 60 &&
-      elapsedTime < 1000 * 60 * 60 * 24
-    ) {
+    } else if (elapsedTime >= 1000 * 60 * 60 && elapsedTime < 1000 * 60 * 60 * 24) {
       elapsedTime = Math.round(elapsedTime / 1000 / 60 / 60 / 24)
       unit = 'd'
     } else {
@@ -165,27 +159,20 @@ export function render(opts: Options, logRecord: Logger.LogRecord): string {
   // render gutter
   //
 
-  const levelLabelSized = opts.levelLabel
-    ? ' ' + utils.clampSpace(5, levelLabel) + ' '
-    : ' '
+  const levelLabelSized = opts.levelLabel ? ' ' + utils.clampSpace(5, levelLabel) + ' ' : ' '
 
-  const gutterRendered = `${timeDiffRendered}${style.color(
-    `${style.badge}${levelLabelSized}`
-  )}`
+  const gutterRendered = `${timeDiffRendered}${style.color(`${style.badge}${levelLabelSized}`)}`
 
   // pre-emptyive measurement for potential multiline context indentation later on
-  const gutterWidth =
-    timeDiff.length + style.badge.length + levelLabelSized.length
+  const gutterWidth = timeDiff.length + style.badge.length + levelLabelSized.length
 
   //
   // render pre-context
   //
 
   const path = logRecord.path.join(renderEl(separators.path))
-  const preContextWidth =
-    path.length + separators.event.symbol.length + logRecord.event.length
-  const preContextRendered =
-    style.color(path) + renderEl(separators.event) + logRecord.event
+  const preContextWidth = path.length + separators.event.symbol.length + logRecord.event.length
+  const preContextRendered = style.color(path) + renderEl(separators.event) + logRecord.event
 
   //
   // render context
@@ -195,10 +182,7 @@ export function render(opts: Options, logRecord: Logger.LogRecord): string {
   // 1. the headers section
   // 2. the headers/context separator
   const availableSinglelineContextColumns =
-    terminalWidth -
-    gutterWidth -
-    preContextWidth -
-    separators.context.singleLine.symbol.length
+    terminalWidth - gutterWidth - preContextWidth - separators.context.singleLine.symbol.length
   let contextColumnsConsumed = 0
 
   const contextEntries = Object.entries(logRecord.context)
@@ -207,15 +191,13 @@ export function render(opts: Options, logRecord: Logger.LogRecord): string {
 
   const contextEntriesRendered = contextEntries.map(([key, value]) => {
     // Track context space consumption of entry separators
-    if (!first)
-      contextColumnsConsumed += separators.contextEntry.singleLine.length
+    if (!first) contextColumnsConsumed += separators.contextEntry.singleLine.length
     else first = false
 
     // Track widest key optimistically for use in multiline layout later
     if (key.length > widestKey) widestKey = key.length
 
-    contextColumnsConsumed +=
-      key.length + separators.contextKeyVal.singleLine.symbol.length
+    contextColumnsConsumed += key.length + separators.contextKeyVal.singleLine.symbol.length
 
     const valueRendered = `${util.inspect(value, {
       breakLength: availableSinglelineContextColumns,
@@ -229,8 +211,7 @@ export function render(opts: Options, logRecord: Logger.LogRecord): string {
     return [key, valueRendered]
   })
 
-  const contextFitsSingleLine =
-    contextColumnsConsumed <= availableSinglelineContextColumns
+  const contextFitsSingleLine = contextColumnsConsumed <= availableSinglelineContextColumns
 
   let contextRendered = ''
   if (contextEntries.length > 0) {
@@ -238,17 +219,10 @@ export function render(opts: Options, logRecord: Logger.LogRecord): string {
       contextRendered =
         renderEl(separators.context.singleLine) +
         contextEntriesRendered
-          .map(
-            ([key, value]) =>
-              `${chalk.gray(key)}${renderEl(
-                separators.contextKeyVal.singleLine
-              )}${value}`
-          )
+          .map(([key, value]) => `${chalk.gray(key)}${renderEl(separators.contextKeyVal.singleLine)}${value}`)
           .join(separators.contextEntry.singleLine)
     } else {
-      const spineRendered = renderEl(
-        separators.contextEntry.multiline(utils.spanSpace(gutterWidth))
-      )
+      const spineRendered = renderEl(separators.contextEntry.multiline(utils.spanSpace(gutterWidth)))
       contextRendered =
         renderEl(separators.context.multiline) +
         '\n' +
@@ -261,8 +235,7 @@ export function render(opts: Options, logRecord: Logger.LogRecord): string {
               )}${formatBlock(value, {
                 leftSpineSymbol: spineRendered,
                 excludeFirstLine: true,
-                indent:
-                  widestKey + separators.contextKeyVal.multiline.symbol.length,
+                indent: widestKey + separators.contextKeyVal.multiline.symbol.length,
               })}`
           )
           .join('\n' + spineRendered)
@@ -301,19 +274,14 @@ function formatBlock(
 ): string {
   const [first, ...rest] = block.split('\n')
   if (rest.length === 0) return first
-  const linesToProcess =
-    opts.excludeFirstLine === true ? rest : (rest.unshift(first), rest)
+  const linesToProcess = opts.excludeFirstLine === true ? rest : (rest.unshift(first), rest)
   const prefix =
-    typeof opts.leftSpineSymbol === 'string'
-      ? opts.leftSpineSymbol
-      : opts.leftSpineSymbol?.symbol ?? ''
+    typeof opts.leftSpineSymbol === 'string' ? opts.leftSpineSymbol : opts.leftSpineSymbol?.symbol ?? ''
   const indent = opts.indent !== undefined ? utils.spanSpace(opts.indent) : ''
   const linesProcessed = opts.excludeFirstLine === true ? [first] : []
   for (const line of linesToProcess) {
     const prefixRendered =
-      typeof opts.leftSpineSymbol === 'object'
-        ? opts.leftSpineSymbol?.color?.(prefix) ?? prefix
-        : prefix
+      typeof opts.leftSpineSymbol === 'object' ? opts.leftSpineSymbol?.color?.(prefix) ?? prefix : prefix
     linesProcessed.push(prefixRendered + indent + line)
   }
   return linesProcessed.join('\n')

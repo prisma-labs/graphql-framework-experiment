@@ -43,9 +43,7 @@ describe('settings', () => {
   describe('pretty', () => {
     describe('context formatting', () => {
       // assumes always logging info "foo" event
-      let logHeadersWidth = (
-        '● root:foo' + Prettifier.separators.context.singleLine.symbol
-      ).length
+      let logHeadersWidth = ('● root:foo' + Prettifier.separators.context.singleLine.symbol).length
       let terminalWidth = 0
       let terminalContextWidth = 0
 
@@ -62,23 +60,18 @@ describe('settings', () => {
             ...stringValueEntryWithin('key', terminalContextWidth),
           })
           expect(output.memory.jsonOrRaw).toMatchSnapshot()
-          expect(
-            trimTrailingNewline(output.memory.raw[0]).length
-          ).toBeLessThanOrEqual(terminalWidth)
+          expect(trimTrailingNewline(output.memory.raw[0]).length).toBeLessThanOrEqual(terminalWidth)
         })
         it('used if context does fit singleline (multiple key-values)', () => {
           log.info('foo', {
             ...stringValueEntryWithin('ke1', terminalContextWidth / 2),
             ...stringValueEntryWithin(
               'ke2',
-              terminalContextWidth / 2 -
-                Prettifier.separators.contextEntry.singleLine.length
+              terminalContextWidth / 2 - Prettifier.separators.contextEntry.singleLine.length
             ),
           })
           expect(output.memory.jsonOrRaw).toMatchSnapshot()
-          expect(
-            trimTrailingNewline(output.memory.raw[0]).length
-          ).toBeLessThanOrEqual(terminalWidth)
+          expect(trimTrailingNewline(output.memory.raw[0]).length).toBeLessThanOrEqual(terminalWidth)
         })
         // it('objects are formatted by util.inspect compact: yes', () => {
         //   if (!process.version.match(/^v12/)) return
@@ -90,10 +83,7 @@ describe('settings', () => {
       describe('multiline', () => {
         it('used if context does not fit singleline', () => {
           log.info('foo', {
-            ...stringValueEntryWithin(
-              'key',
-              terminalContextWidth + 1 /* force multi */
-            ),
+            ...stringValueEntryWithin('key', terminalContextWidth + 1 /* force multi */),
           })
           expect(output.memory.jsonOrRaw).toMatchSnapshot()
         })
@@ -128,9 +118,7 @@ describe('settings', () => {
 
     describe('.enabled', () => {
       it('can be disabled', () => {
-        expect(
-          Logger.create({ pretty: { enabled: false } }).settings.pretty.enabled
-        ).toEqual(false)
+        expect(Logger.create({ pretty: { enabled: false } }).settings.pretty.enabled).toEqual(false)
       })
       it('persists across peer field changes', () => {
         const l = Logger.create({ pretty: { enabled: false } })
@@ -185,23 +173,18 @@ describe('settings', () => {
         expect(output.memory.jsonOrRaw).toMatchSnapshot()
       })
       it('can be disabled', () => {
-        expect(
-          Logger.create({ pretty: { enabled: false, color: false } }).settings
-            .pretty.color
-        ).toEqual(false)
+        expect(Logger.create({ pretty: { enabled: false, color: false } }).settings.pretty.color).toEqual(
+          false
+        )
       })
       it('is true by default', () => {
-        expect(
-          Logger.create({ pretty: { enabled: true } }).settings.pretty
-        ).toEqual({
+        expect(Logger.create({ pretty: { enabled: true } }).settings.pretty).toEqual({
           enabled: true,
           color: true,
           levelLabel: false,
           timeDiff: true,
         })
-        expect(
-          Logger.create({ pretty: { enabled: false } }).settings.pretty
-        ).toEqual({
+        expect(Logger.create({ pretty: { enabled: false } }).settings.pretty).toEqual({
           enabled: false,
           color: true,
           levelLabel: false,
@@ -226,14 +209,10 @@ describe('settings', () => {
         expect(Logger.create().settings.pretty.levelLabel).toEqual(false)
       })
       it('can be enabled', () => {
-        expect(
-          Logger.create({ pretty: { levelLabel: true } }).settings.pretty
-            .levelLabel
-        ).toEqual(true)
-        expect(
-          Logger.create().settings({ pretty: { levelLabel: true } }).settings
-            .pretty.levelLabel
-        ).toEqual(true)
+        expect(Logger.create({ pretty: { levelLabel: true } }).settings.pretty.levelLabel).toEqual(true)
+        expect(Logger.create().settings({ pretty: { levelLabel: true } }).settings.pretty.levelLabel).toEqual(
+          true
+        )
       })
       it('persists across peer field changes', () => {
         const l = Logger.create({ pretty: { levelLabel: true } })
@@ -579,13 +558,8 @@ function stringValueWithin(size: number): string {
   return value
 }
 
-function stringValueEntryWithin(
-  keyName: string,
-  size: number
-): Record<any, any> {
-  const KeyWidth =
-    keyName.length +
-    Prettifier.separators.contextKeyVal.singleLine.symbol.length
+function stringValueEntryWithin(keyName: string, size: number): Record<any, any> {
+  const KeyWidth = keyName.length + Prettifier.separators.contextKeyVal.singleLine.symbol.length
   return {
     [keyName]: stringValueWithin(size - KeyWidth),
   }

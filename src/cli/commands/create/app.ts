@@ -11,10 +11,7 @@ import * as PackageManager from '../../../lib/package-manager'
 import * as Plugin from '../../../lib/plugin'
 import * as proc from '../../../lib/process'
 import { createTSConfigContents } from '../../../lib/tsc'
-import {
-  createGitRepository,
-  CWDProjectNameOrGenerate,
-} from '../../../lib/utils'
+import { createGitRepository, CWDProjectNameOrGenerate } from '../../../lib/utils'
 
 const log = rootLogger.child('cli').child('create').child('app')
 
@@ -71,9 +68,7 @@ export async function runLocalHandOff(): Promise<void> {
 /**
  * TODO
  */
-export async function runBootstrapper(
-  configInput?: Partial<ConfigInput>
-): Promise<void> {
+export async function runBootstrapper(configInput?: Partial<ConfigInput>): Promise<void> {
   log.trace('start bootstrapper')
 
   await assertIsCleanSlate()
@@ -190,19 +185,13 @@ export async function runBootstrapper(
   }
 }
 
-async function getPackageManager(
-  projectRoot: string
-): Promise<PackageManager.PackageManager> {
+async function getPackageManager(projectRoot: string): Promise<PackageManager.PackageManager> {
   const packageManagerTypeEnvVar = process.env
     .CREATE_APP_CHOICE_PACKAGE_MANAGER_TYPE as PackageManager.PackageManagerType | void
 
-  const packageManagerType =
-    packageManagerTypeEnvVar ?? (await askForPackageManager())
+  const packageManagerType = packageManagerTypeEnvVar ?? (await askForPackageManager())
 
-  const packageManager = PackageManager.createPackageManager(
-    packageManagerType,
-    { projectRoot }
-  )
+  const packageManager = PackageManager.createPackageManager(packageManagerType, { projectRoot })
 
   return packageManager
 }
@@ -214,10 +203,7 @@ async function getNexusVersion(): Promise<string> {
 }
 
 async function getDatabaseSelection(): Promise<DatabaseSelection> {
-  const envar = process.env.CREATE_APP_CHOICE_DATABASE_TYPE as
-    | Database
-    | 'NO_DATABASE'
-    | undefined
+  const envar = process.env.CREATE_APP_CHOICE_DATABASE_TYPE as Database | 'NO_DATABASE' | undefined
 
   if (envar) {
     if (envar === 'NO_DATABASE') {
@@ -327,9 +313,7 @@ async function askForDatabase(): Promise<DatabaseSelection> {
  * TODO if we detect that yarn is installed on the user's machine then we should
  * default to that, otherwise default to npm.
  */
-async function askForPackageManager(): Promise<
-  PackageManager.PackageManagerType
-> {
+async function askForPackageManager(): Promise<PackageManager.PackageManagerType> {
   const choices: {
     title: string
     value: PackageManager.PackageManagerType
@@ -358,10 +342,7 @@ async function assertIsCleanSlate() {
   const contents = await fs.listAsync()
 
   if (contents !== undefined && contents.length > 0) {
-    proc.fatal(
-      'Cannot create a new nexus project here because the directory is not empty:\n %s',
-      contents
-    )
+    proc.fatal('Cannot create a new nexus project here because the directory is not empty:\n %s', contents)
   }
 }
 
@@ -388,10 +369,7 @@ const templates: Record<TemplateName, TemplateCreator> = {
     return {
       files: [
         {
-          path: path.join(
-            internalConfig.sourceRoot,
-            Layout.schema.CONVENTIONAL_SCHEMA_FILE_NAME
-          ),
+          path: path.join(internalConfig.sourceRoot, Layout.schema.CONVENTIONAL_SCHEMA_FILE_NAME),
           content: stripIndent`
             import { schema } from "nexus";
       
@@ -475,13 +453,7 @@ async function scaffoldBaseFiles(options: InternalConfig) {
     // We put both to setup vscode debugger config with an entrypoint that is
     // unlikely to change.
     fs.writeAsync(appEntrypointPath, ''),
-    fs.writeAsync(
-      path.join(
-        options.sourceRoot,
-        Layout.schema.CONVENTIONAL_SCHEMA_FILE_NAME
-      ),
-      ''
-    ),
+    fs.writeAsync(path.join(options.sourceRoot, Layout.schema.CONVENTIONAL_SCHEMA_FILE_NAME), ''),
     // An exhaustive .gitignore tailored for Node can be found here:
     // https://github.com/github/gitignore/blob/master/Node.gitignore
     // We intentionally stay minimal here, as we want the default ignore file
@@ -520,10 +492,7 @@ async function scaffoldBaseFiles(options: InternalConfig) {
     fs.writeAsync(
       'tsconfig.json',
       createTSConfigContents({
-        sourceRootRelative: path.relative(
-          options.projectRoot,
-          options.sourceRoot
-        ),
+        sourceRootRelative: path.relative(options.projectRoot, options.sourceRoot),
         buildOutputRelative: path.join(
           options.projectRoot,
           Layout.DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT
@@ -545,10 +514,7 @@ async function scaffoldBaseFiles(options: InternalConfig) {
               "protocol": "inspector",
               "runtimeExecutable": "\${workspaceRoot}/node_modules/.bin/nexus",
               "runtimeArgs": ["dev"],
-              "args": ["${path.relative(
-                options.projectRoot,
-                appEntrypointPath
-              )}"],
+              "args": ["${path.relative(options.projectRoot, appEntrypointPath)}"],
               "sourceMaps": true,
               "console": "integratedTerminal"
             }

@@ -98,8 +98,7 @@ export interface PluginWithoutSettings {
   //frameworkVersion?: string // valid npm version expression
 }
 
-export interface PluginWithRequiredSettings<Settings>
-  extends PluginWithoutSettings {
+export interface PluginWithRequiredSettings<Settings> extends PluginWithoutSettings {
   /**
    * The settings passed to your plugin. It is mandatory to pass these settings untouched.
    * Nexus is reponsible for passing these settings to your plugin.
@@ -107,8 +106,7 @@ export interface PluginWithRequiredSettings<Settings>
   settings: Settings
 }
 
-export interface PluginWithOptionalSettings<Settings>
-  extends PluginWithoutSettings {
+export interface PluginWithOptionalSettings<Settings> extends PluginWithoutSettings {
   /**
    * The settings passed to your plugin. It is mandatory to pass these settings untouched.
    * Nexus is reponsible for passing these settings to your plugin.
@@ -145,10 +143,7 @@ export type DimensionToLens<D extends Dimension> = {
 export type InnerWorktimePlugin = (lens: WorktimeLens) => void
 export type InnerRuntimePlugin = (lens: RuntimeLens) => RuntimeContributions
 export type InnerTesttimePlugin = (lens: TesttimeLens) => TesttimeContributions
-export type InnerPlugin =
-  | InnerRuntimePlugin
-  | InnerWorktimePlugin
-  | InnerTesttimePlugin
+export type InnerPlugin = InnerRuntimePlugin | InnerWorktimePlugin | InnerTesttimePlugin
 
 /**
  * Interface of a runtime plugin. This **should not** be the entrypoint of your plugin.

@@ -107,10 +107,7 @@ export interface Server extends BaseServer {
   express: ExpressInstance
 }
 
-function setupExpress(
-  express: Express,
-  settingsGiven: SettingsInput
-): BaseServer {
+function setupExpress(express: Express, settingsGiven: SettingsInput): BaseServer {
   const http = HTTP.createServer()
   const opts = { ...defaultExtraSettings, ...settingsGiven }
 
@@ -128,12 +125,9 @@ function setupExpress(
           if (process.env.NEXUS_STAGE === 'dev') {
             resolverLogger.error(error.stack ?? error.message)
           } else {
-            resolverLogger.error(
-              'An exception occured in one of your resolver',
-              {
-                error: error.stack ? stripAnsi(error.stack) : colorlessMessage,
-              }
-            )
+            resolverLogger.error('An exception occured in one of your resolver', {
+              error: error.stack ? stripAnsi(error.stack) : colorlessMessage,
+            })
           }
 
           error.message = colorlessMessage

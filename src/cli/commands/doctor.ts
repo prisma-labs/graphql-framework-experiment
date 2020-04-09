@@ -19,8 +19,6 @@ async function tsconfig() {
     exitAfterError: false,
   })
   if (result === 'success') {
-    console.log(
-      chalk`{green OK:} "tsconfig.json" is present and in the right directory`
-    )
+    console.log(chalk`{green OK:} "tsconfig.json" is present and in the right directory`)
   }
 }

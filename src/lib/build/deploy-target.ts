@@ -3,10 +3,7 @@ import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import * as path from 'path'
 import { PackageJson } from 'type-fest'
-import {
-  DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT,
-  Layout,
-} from '../../lib/layout'
+import { DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT, Layout } from '../../lib/layout'
 import { START_MODULE_NAME } from '../../runtime/start/start-module'
 import { rootLogger } from '../nexus-logger'
 import { fatal } from '../process'
@@ -19,9 +16,7 @@ const log = rootLogger.child(__filename)
  */
 const SUPPORTED_DEPLOY_TARGETS = ['now', 'heroku'] as const
 
-export const formattedSupportedDeployTargets = SUPPORTED_DEPLOY_TARGETS.map(
-  (t) => `"${t}"`
-).join(', ')
+export const formattedSupportedDeployTargets = SUPPORTED_DEPLOY_TARGETS.map((t) => `"${t}"`).join(', ')
 
 type SupportedTargets = typeof SUPPORTED_DEPLOY_TARGETS[number]
 
@@ -29,9 +24,7 @@ type SupportedTargets = typeof SUPPORTED_DEPLOY_TARGETS[number]
  * Take user input of a deploy target, validate it, and parse it into a
  * normalized form.
  */
-export function normalizeTarget(
-  inputDeployTarget: string | undefined
-): SupportedTargets | null {
+export function normalizeTarget(inputDeployTarget: string | undefined): SupportedTargets | null {
   if (!inputDeployTarget) {
     return null
   }
@@ -61,18 +54,12 @@ export function computeBuildOutputFromTarget(target: SupportedTargets | null) {
 }
 
 type ValidatorResult = { valid: boolean }
-const TARGET_VALIDATORS: Record<
-  SupportedTargets,
-  (layout: Layout) => ValidatorResult
-> = {
+const TARGET_VALIDATORS: Record<SupportedTargets, (layout: Layout) => ValidatorResult> = {
   now: validateNow,
   heroku: validateHeroku,
 }
 
-export function validateTarget(
-  target: SupportedTargets,
-  layout: Layout
-): ValidatorResult {
+export function validateTarget(target: SupportedTargets, layout: Layout): ValidatorResult {
   const validator = TARGET_VALIDATORS[target]
   return validator(layout)
 }
@@ -112,50 +99,35 @@ function validateNow(layout: Layout): ValidatorResult {
     `
     const nowJsonPath = path.join(layout.projectRoot, 'now.json')
     fs.write(nowJsonPath, nowJsonContent)
-    log.warn(
-      `No \`now.json\` file were found. We scaffolded one for you in ${nowJsonPath}`
-    )
+    log.warn(`No \`now.json\` file were found. We scaffolded one for you in ${nowJsonPath}`)
   } else {
     const nowJson: NowJson = fs.read(maybeNowJsonPath, 'json')
 
     // Make sure the now.json file has the right `builds` values
     if (
       !nowJson.builds ||
-      !nowJson.builds.find(
-        (build) =>
-          build.src === startModulePath && build.use === '@now/node-server'
-      )
+      !nowJson.builds.find((build) => build.src === startModulePath && build.use === '@now/node-server')
     ) {
       log.error(`We could not find a proper builder in your \`now.json\` file`)
       log.error(`Found: "builds": ${JSON.stringify(nowJson.builds)}`)
-      log.error(
-        `Expected: "builds": [{ src: "${startModulePath}", use: '@now/node-server' }, ...]`
-      )
+      log.error(`Expected: "builds": [{ src: "${startModulePath}", use: '@now/node-server' }, ...]`)
       console.log('\n')
       isValid = false
     }
 
     // Make sure the now.json file has a `routes` property
     if (!nowJson.routes) {
-      log.error(
-        `We could not find a \`routes\` property in your \`now.json\` file.`
-      )
-      log.error(
-        `Expected: "routes": [{ "src": "/.*", "dest": "${startModulePath}" }]`
-      )
+      log.error(`We could not find a \`routes\` property in your \`now.json\` file.`)
+      log.error(`Expected: "routes": [{ "src": "/.*", "dest": "${startModulePath}" }]`)
       console.log('\n')
       isValid = false
     }
 
     // Make sure the now.json file has the right `routes` values
     if (!nowJson.routes?.find((route) => route.dest === startModulePath)) {
-      log.error(
-        `We could not find a route property that redirects to your api in your \`now.json\` file.`
-      )
+      log.error(`We could not find a route property that redirects to your api in your \`now.json\` file.`)
       log.error(`Found: "routes": ${JSON.stringify(nowJson.routes)}`)
-      log.error(
-        `Expected: "routes": [{ src: '/.*', dest: "${startModulePath}" }, ...]`
-      )
+      log.error(`Expected: "routes": [{ src: '/.*', dest: "${startModulePath}" }, ...]`)
       console.log('\n')
       isValid = false
     }
@@ -190,16 +162,12 @@ function validateHeroku(layout: Layout): ValidatorResult {
 
     // Warn if version used by heroku is different than local one
     if (packageJsonContent.engines?.node) {
-      const packageJsonNodeVersion = Number(
-        packageJsonContent.engines.node.split('.')[0]
-      )
+      const packageJsonNodeVersion = Number(packageJsonContent.engines.node.split('.')[0])
       if (packageJsonNodeVersion !== nodeMajorVersion) {
         log.warn(
           `Your local node version is different than the one that will be used by heroku (defined in your \`package.json\` file in the "engines" property).`
         )
-        log.warn(
-          `Local version: ${nodeMajorVersion}. Heroku version: ${packageJsonNodeVersion}`
-        )
+        log.warn(`Local version: ${nodeMajorVersion}. Heroku version: ${packageJsonNodeVersion}`)
         console.log()
       }
     }
@@ -215,10 +183,7 @@ function validateHeroku(layout: Layout): ValidatorResult {
     }
 
     // Make sure the build script is using nexus build
-    if (
-      packageJsonContent.scripts?.build &&
-      !packageJsonContent.scripts.build.includes('nexus build')
-    ) {
+    if (packageJsonContent.scripts?.build && !packageJsonContent.scripts.build.includes('nexus build')) {
       log.error(
         'Please make sure your `build` script in your `package.json` file runs the command `nexus build -d heroku`'
       )
@@ -236,14 +201,8 @@ function validateHeroku(layout: Layout): ValidatorResult {
     }
 
     // Make sure the start script starts the built server
-    if (
-      !packageJsonContent.scripts?.start?.includes(
-        `node ${layout.buildOutputRelative}`
-      )
-    ) {
-      log.error(
-        `Please make sure your \`start\` script points to your built server`
-      )
+    if (!packageJsonContent.scripts?.start?.includes(`node ${layout.buildOutputRelative}`)) {
+      log.error(`Please make sure your \`start\` script points to your built server`)
       log.error(`Found: "${packageJsonContent.scripts?.start}"`)
       log.error(`Expected: "node ${layout.buildOutputRelative}"`)
       console.log()

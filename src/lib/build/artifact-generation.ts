@@ -19,15 +19,11 @@ export async function generateArtifacts(layout: Layout): Promise<void> {
   })
 
   if (result.error) {
-    throw new Error(
-      `Error while trying to start the typegen process:\n\n${result.error}`
-    )
+    throw new Error(`Error while trying to start the typegen process:\n\n${result.error}`)
   }
 
   if (result.stderr) {
-    throw new Error(
-      `Error while trying to start the typegen process:\n\n${result.stderr}`
-    )
+    throw new Error(`Error while trying to start the typegen process:\n\n${result.stderr}`)
   }
 
   if (result.status !== 0) {

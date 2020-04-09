@@ -10,12 +10,7 @@ import {
 } from '../../lib/nexus-schema-stateful'
 import { RuntimeContributions } from '../../lib/plugin'
 import { log } from './logger'
-import {
-  changeSettings,
-  mapSettingsToNexusSchemaConfig,
-  SettingsData,
-  SettingsInput,
-} from './settings'
+import { changeSettings, mapSettingsToNexusSchemaConfig, SettingsData, SettingsInput } from './settings'
 
 // Export this so that context typegen can import it, for example if users do
 // this:
@@ -38,9 +33,7 @@ export interface Schema extends NexusSchemaStatefulBuilders {
   /**
    * todo link to website docs
    */
-  addToContext: <Req = Request>(
-    contextContributor: ContextContributor<Req>
-  ) => void
+  addToContext: <Req = Request>(contextContributor: ContextContributor<Req>) => void
 }
 
 interface SchemaInternal {
@@ -54,9 +47,7 @@ interface SchemaInternal {
      * Create the Nexus GraphQL Schema. If NEXUS_SHOULD_AWAIT_TYPEGEN=true then the typegen
      * disk write is awaited upon.
      */
-    makeSchema: (
-      plugins: RuntimeContributions[]
-    ) => Promise<NexusSchema.core.NexusGraphQLSchema>
+    makeSchema: (plugins: RuntimeContributions[]) => Promise<NexusSchema.core.NexusGraphQLSchema>
     settings: {
       data: SettingsData
       change: (newSettings: SettingsInput) => void
@@ -90,18 +81,13 @@ export function create(): SchemaInternal {
     private: {
       state: state,
       makeSchema: async (plugins) => {
-        const nexusSchemaConfig = mapSettingsToNexusSchemaConfig(
-          plugins,
-          state.settings
-        )
+        const nexusSchemaConfig = mapSettingsToNexusSchemaConfig(plugins, state.settings)
 
         nexusSchemaConfig.types.push(...statefulNexusSchema.state.types)
 
         nexusSchemaConfig.plugins!.push(...state.schemaPlugins)
 
-        const { schema, missingTypes, finalConfig } = makeSchemaInternal(
-          nexusSchemaConfig
-        )
+        const { schema, missingTypes, finalConfig } = makeSchemaInternal(nexusSchemaConfig)
 
         if (nexusSchemaConfig.shouldGenerateArtifacts === true) {
           const devModeLayout = await Layout.loadDataFromParentProcess()

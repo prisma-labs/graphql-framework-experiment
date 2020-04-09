@@ -10,9 +10,7 @@ const getCompiledPath = require('./get-compiled-path').default
 
 const log = rootLogger.child('dev').child('compiler')
 
-let sourceMapSupportPath = require
-  .resolve('source-map-support')
-  .replace(/\\/g, '/')
+let sourceMapSupportPath = require.resolve('source-map-support').replace(/\\/g, '/')
 
 let tsHandler: any = null
 let tmpDir = '.ts-node'
@@ -34,20 +32,13 @@ export const compiler: Compiler = {
     return path.join(tmpDir, 'compiled').replace(/\\/g, '/')
   },
   getCompileReqFilePath: function () {
-    return path.join(
-      compiler.getCompiledDir(),
-      compiler.getCompilationId() + '.req'
-    )
+    return path.join(compiler.getCompiledDir(), compiler.getCompilationId() + '.req')
   },
   getCompilerReadyFilePath: function () {
-    return path
-      .join(os.tmpdir(), 'ts-node-dev-ready-' + compilationInstanceStamp)
-      .replace(/\\/g, '/')
+    return path.join(os.tmpdir(), 'ts-node-dev-ready-' + compilationInstanceStamp).replace(/\\/g, '/')
   },
   getChildHookPath: function () {
-    return path
-      .join(os.tmpdir(), 'ts-node-dev-hook-' + compilationInstanceStamp + '.js')
-      .replace(/\\/g, '/')
+    return path.join(os.tmpdir(), 'ts-node-dev-hook-' + compilationInstanceStamp + '.js').replace(/\\/g, '/')
   },
   writeReadyFile: function () {
     fsJetPack.write(compiler.getCompilerReadyFilePath(), '')
@@ -79,19 +70,13 @@ export const compiler: Compiler = {
               .map((ignore: string) => 'new RegExp("' + ignore + '")')
               .join(', ') +
             ']'
-      fileData = fileData.replace(
-        'let ignore = [/node_modules/]',
-        'let ignore = ' + ignoreVal
-      )
+      fileData = fileData.replace('let ignore = [/node_modules/]', 'let ignore = ' + ignoreVal)
     }
     fileData = fileData.replace(
       'let compilationId',
       'let compilationId = "' + compiler.getCompilationId() + '"'
     )
-    fileData = fileData.replace(
-      'let compiledDir',
-      'let compiledDir = "' + compiler.getCompiledDir() + '"'
-    )
+    fileData = fileData.replace('let compiledDir', 'let compiledDir = "' + compiler.getCompiledDir() + '"')
     fileData = fileData.replace(
       './get-compiled-path',
       path.join(__dirname, 'get-compiled-path').replace(/\\/g, '/')
@@ -104,17 +89,13 @@ export const compiler: Compiler = {
       'let sourceMapSupportPath',
       'let sourceMapSupportPath = "' + sourceMapSupportPath + '"'
     )
-    fileData = fileData.replace(
-      /__dirname/,
-      '"' + __dirname.replace(/\\/g, '/') + '"'
-    )
+    fileData = fileData.replace(/__dirname/, '"' + __dirname.replace(/\\/g, '/') + '"')
     fsJetPack.write(compiler.getChildHookPath(), fileData)
   },
   init: function (options) {
     log.trace('init')
     const project = options['project']
-    compiler.tsConfigPath =
-      resolveSync(cwd, typeof project === 'string' ? project : undefined) || ''
+    compiler.tsConfigPath = resolveSync(cwd, typeof project === 'string' ? project : undefined) || ''
 
     const originalJsHandler = require.extensions['.js']
     require.extensions['.ts'] = empty
@@ -122,17 +103,13 @@ export const compiler: Compiler = {
     tmpDir = options['cache-directory']
       ? path.resolve(options['cache-directory'])
       : fs.mkdtempSync(path.join(os.tmpdir(), '.ts-node'))
-    const compilerOptionsArg =
-      options['compilerOptions'] || options['compiler-options']
+    const compilerOptionsArg = options['compilerOptions'] || options['compiler-options']
     let compilerOptions
     if (compilerOptionsArg) {
       try {
         compilerOptions = JSON.parse(compilerOptionsArg)
       } catch (e) {
-        console.log(
-          'Could not parse compilerOptions',
-          options['compilerOptions']
-        )
+        console.log('Could not parse compilerOptions', options['compilerOptions'])
         console.log(e)
       }
     }
@@ -151,8 +128,7 @@ export const compiler: Compiler = {
       skipProject: options['skip-project'],
       skipIgnore: options['skip-ignore'],
       ignore: ignore as string[],
-      ignoreDiagnostics:
-        options['ignoreDiagnostics'] || options['ignore-diagnostics'],
+      ignoreDiagnostics: options['ignoreDiagnostics'] || options['ignore-diagnostics'],
       logError: options['logError'],
       preferTsExts: options['prefer-ts-exts'],
       compilerOptions: compilerOptions,
@@ -193,11 +169,7 @@ export const compiler: Compiler = {
       const code = fsJetPack.read(fileName)!
       compiler.compile({
         compile: fileName,
-        compiledPath: getCompiledPath(
-          code,
-          fileName,
-          compiler.getCompiledDir()
-        ),
+        compiledPath: getCompiledPath(code, fileName, compiler.getCompiledDir()),
       })
     } catch (e) {
       console.error(e)

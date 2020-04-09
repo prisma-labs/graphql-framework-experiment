@@ -13,9 +13,7 @@ export function emptyExceptionMessage() {
   // schema files setup correctly but they are empty"
   return `Your GraphQL schema is empty. This is normal if you have not defined any GraphQL types yet. But if you did, check that the file name follows the convention: all ${Chalk.yellow(
     CONVENTIONAL_SCHEMA_FILE_NAME
-  )} modules or direct child modules within a ${Chalk.yellow(
-    DIR_NAME
-  )} directory are automatically imported.`
+  )} modules or direct child modules within a ${Chalk.yellow(DIR_NAME)} directory are automatically imported.`
 }
 
 /**
@@ -28,11 +26,7 @@ export function findDirOrModules(opts: { projectRoot: string }): string[] {
   const files = localFS.find({
     files: true,
     recursive: true,
-    matching: [
-      CONVENTIONAL_SCHEMA_FILE_NAME,
-      `**/${MODULE_NAME}/**/*.ts`,
-      ...baseIgnores,
-    ],
+    matching: [CONVENTIONAL_SCHEMA_FILE_NAME, `**/${MODULE_NAME}/**/*.ts`, ...baseIgnores],
   })
 
   return files.map((f) => localFS.path(f))

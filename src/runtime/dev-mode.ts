@@ -48,13 +48,8 @@ function sendSignalToDevModeMaster(signal: string) {
  * parse the dev mode environment variable
  */
 function parseIsDevMode(): boolean {
-  if (
-    process.env[DEV_MODE_ENV_VAR_NAME] !== undefined &&
-    process.env[DEV_MODE_ENV_VAR_NAME] !== 'true'
-  ) {
-    fatal(
-      `${DEV_MODE_ENV_VAR_NAME} was found set to an unsupported vaue. Must be undefined or "true".`
-    )
+  if (process.env[DEV_MODE_ENV_VAR_NAME] !== undefined && process.env[DEV_MODE_ENV_VAR_NAME] !== 'true') {
+    fatal(`${DEV_MODE_ENV_VAR_NAME} was found set to an unsupported vaue. Must be undefined or "true".`)
   }
 
   return process.env[DEV_MODE_ENV_VAR_NAME] === 'true'

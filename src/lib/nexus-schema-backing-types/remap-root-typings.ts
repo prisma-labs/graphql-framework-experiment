@@ -14,35 +14,26 @@ export function withRemappedRootTypings(
   schema: NexusSchema.core.NexusGraphQLSchema,
   backingTypes: BackingTypes
 ): NexusSchema.core.NexusGraphQLSchema {
-  Object.entries(schema.extensions.nexus.config.rootTypings).forEach(
-    ([typeName, rootType]) => {
-      if (typeof rootType === 'string') {
-        const filePath = backingTypes[rootType]
+  Object.entries(schema.extensions.nexus.config.rootTypings).forEach(([typeName, rootType]) => {
+    if (typeof rootType === 'string') {
+      const filePath = backingTypes[rootType]
 
-        if (!filePath) {
-          const suggestions = suggestionList(
-            rootType,
-            Object.keys(backingTypes)
-          )
+      if (!filePath) {
+        const suggestions = suggestionList(rootType, Object.keys(backingTypes))
 
-          log.warn(
-            `We could not find the backing type '${rootType}' used in '${typeName}'`
-          )
-          if (suggestions.length > 0) {
-            log.warn(
-              `Did you mean ${suggestions.map((s) => `"${s}"`).join(', ')} ?`
-            )
-          }
-          return
+        log.warn(`We could not find the backing type '${rootType}' used in '${typeName}'`)
+        if (suggestions.length > 0) {
+          log.warn(`Did you mean ${suggestions.map((s) => `"${s}"`).join(', ')} ?`)
         }
+        return
+      }
 
-        schema.extensions.nexus.config.rootTypings[typeName] = {
-          name: rootType,
-          path: filePath,
-        }
+      schema.extensions.nexus.config.rootTypings[typeName] = {
+        name: rootType,
+        path: filePath,
       }
     }
-  )
+  })
 
   return schema
 }

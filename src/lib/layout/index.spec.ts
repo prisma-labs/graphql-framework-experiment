@@ -1,14 +1,10 @@
 let mockedStdoutBuffer: string = ''
-const mockStdout = jest
-  .spyOn(process.stdout, 'write')
-  .mockImplementation((data) => {
-    mockedStdoutBuffer += data
+const mockStdout = jest.spyOn(process.stdout, 'write').mockImplementation((data) => {
+  mockedStdoutBuffer += data
 
-    return true
-  })
-const mockExit = jest
-  .spyOn(process, 'exit')
-  .mockImplementation((() => {}) as any)
+  return true
+})
+const mockExit = jest.spyOn(process, 'exit').mockImplementation((() => {}) as any)
 
 import * as Layout from '.'
 import { rootLogger } from '../../lib/nexus-logger'
@@ -31,22 +27,20 @@ rootLogger.settings({
  * Helpers
  */
 
-const layoutContext = TestContext.create(
-  (opts: TestContext.TmpDirContribution) => {
-    return {
-      setup(vfs: MemoryFS) {
-        const tmpDir = opts.tmpDir()
+const layoutContext = TestContext.create((opts: TestContext.TmpDirContribution) => {
+  return {
+    setup(vfs: MemoryFS) {
+      const tmpDir = opts.tmpDir()
 
-        writeToFS(tmpDir, vfs)
-      },
-      async scan() {
-        const tmpDir = opts.tmpDir()
-        const data = await Layout.create({ cwd: tmpDir })
-        return repalceInObject(tmpDir, '__DYNAMIC__', data.data)
-      },
-    }
+      writeToFS(tmpDir, vfs)
+    },
+    async scan() {
+      const tmpDir = opts.tmpDir()
+      const data = await Layout.create({ cwd: tmpDir })
+      return repalceInObject(tmpDir, '__DYNAMIC__', data.data)
+    },
   }
-)
+})
 
 const ctx = TestContext.compose(TestContext.tmpDir, layoutContext)
 
@@ -56,9 +50,7 @@ it('fails if empty file tree', async () => {
   try {
     await ctx.scan()
   } catch (err) {
-    expect(err.message).toContain(
-      "Path you want to find stuff in doesn't exist"
-    )
+    expect(err.message).toContain("Path you want to find stuff in doesn't exist")
   }
 })
 

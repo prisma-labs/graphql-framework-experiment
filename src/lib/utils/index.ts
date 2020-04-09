@@ -4,9 +4,7 @@ export type CallbackRegistrer<F> = (f: F) => void
 
 export type SideEffector = () => MaybePromise
 
-export type Param1<F> = F extends (p: infer P, ...args: any[]) => any
-  ? P
-  : never
+export type Param1<F> = F extends (p: infer P, ...args: any[]) => any ? P : never
 
 export type DeepPartial<T extends Record<string, any>> = {
   [P in keyof T]?: T[P] extends Record<string, any> ? DeepPartial<T[P]> : T[P]
@@ -95,10 +93,7 @@ export function range(times: number): number[] {
 import * as Path from 'path'
 import Git from 'simple-git/promise'
 
-export type OmitFirstArg<Func> = Func extends (
-  firstArg: any,
-  ...args: infer Args
-) => infer Ret
+export type OmitFirstArg<Func> = Func extends (firstArg: any, ...args: infer Args) => infer Ret
   ? (...args: Args) => Ret
   : never
 
@@ -110,9 +105,7 @@ const createCodeNameGenerator = require('codename')
 export function generateProjectName(): string {
   return createCodeNameGenerator()
     .generate(['alliterative', 'random'], ['adjectives', 'animals'])
-    .map((word: string | number) =>
-      String(word).replace(' ', '-').toLowerCase()
-    )
+    .map((word: string | number) => String(word).replace(' ', '-').toLowerCase())
     .join('-')
 }
 
@@ -120,9 +113,7 @@ export function generateProjectName(): string {
  * Get the name of the CWD or if at disk root and thus making it impossible to
  * extract a meaningful name, generate one.
  */
-export function CWDProjectNameOrGenerate(
-  opts: { cwd: string } = { cwd: process.cwd() }
-): string {
+export function CWDProjectNameOrGenerate(opts: { cwd: string } = { cwd: process.cwd() }): string {
   return Path.basename(opts.cwd) || generateProjectName()
 }
 
@@ -137,10 +128,7 @@ export async function createGitRepository() {
   await git.raw(['commit', '-m', 'initial commit'])
 }
 
-export function requireModule(config: {
-  depName: string
-  optional: boolean
-}): null | unknown {
+export function requireModule(config: { depName: string; optional: boolean }): null | unknown {
   const depPath = process.env.LINK
     ? Path.join(process.cwd(), '/node_modules/', config.depName)
     : config.depName
@@ -182,9 +170,7 @@ export function repalceInObject<C extends object>(
   replacement: string,
   content: C
 ): C {
-  return JSON.parse(
-    JSON.stringify(content).split(dynamicPattern).join(replacement)
-  )
+  return JSON.parse(JSON.stringify(content).split(dynamicPattern).join(replacement))
 }
 
 /**
@@ -192,10 +178,7 @@ export function repalceInObject<C extends object>(
  * The first of which contains elements predicate returns truthy for, the second of which contains elements predicate returns falsey for.
  * The predicate is invoked with one argument: (value).
  */
-export function partition<T>(
-  array: Array<T>,
-  predicate: (value: T) => boolean
-): [Array<T>, Array<T>] {
+export function partition<T>(array: Array<T>, predicate: (value: T) => boolean): [Array<T>, Array<T>] {
   const partitioned: [Array<T>, Array<T>] = [[], []]
 
   for (const value of array) {

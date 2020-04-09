@@ -21,9 +21,7 @@ export interface ExtractedContectTypes {
 /**
  * Extract types from all `addToContext` calls.
  */
-export function extractContextTypes(
-  program: ts.Program
-): ExtractedContectTypes {
+export function extractContextTypes(program: ts.Program): ExtractedContectTypes {
   const typeImportsIndex: Record<string, TypeImportInfo> = {}
 
   const checker = program.getTypeChecker()
@@ -33,9 +31,7 @@ export function extractContextTypes(
     types: [],
   }
 
-  const appSourceFiles = program
-    .getSourceFiles()
-    .filter((sf) => !sf.fileName.match(/node_modules/))
+  const appSourceFiles = program.getSourceFiles().filter((sf) => !sf.fileName.match(/node_modules/))
 
   log.trace('got app source files', {
     count: appSourceFiles.length,
@@ -80,9 +76,7 @@ export function extractContextTypes(
 
         // Get the argument passed to addToContext so we can extract its type
         if (n.arguments.length === 0) {
-          log.trace(
-            'no args passed to call, the user should see a static type error, stopping extraction'
-          )
+          log.trace('no args passed to call, the user should see a static type error, stopping extraction')
           return
         }
         if (n.arguments.length > 1) {
@@ -110,9 +104,7 @@ export function extractContextTypes(
           )
         }
         const contextAdderSig = contextAdderSigs[0]
-        const ContextAdderRetType = checker.getReturnTypeOfSignature(
-          contextAdderSig
-        )
+        const ContextAdderRetType = checker.getReturnTypeOfSignature(contextAdderSig)
         const ContextAdderRetTypeString = checker.typeToString(
           ContextAdderRetType,
           undefined,
@@ -141,9 +133,7 @@ export function extractContextTypes(
               log.trace('found intersection', {
                 types: t
                   .getIntersectionTypes()
-                  .map((t) =>
-                    t.getText(undefined, ts.TypeFormatFlags.NoTruncation)
-                  ),
+                  .map((t) => t.getText(undefined, ts.TypeFormatFlags.NoTruncation)),
               })
               const infos = t
                 .getIntersectionTypes()
@@ -189,8 +179,7 @@ function extractTypeImportInfoFromType(t: tsm.Type): null | TypeImportInfo {
   log.trace('found name?', { name })
   if (!name) return null
   const d = sym.getDeclarations()?.[0]
-  if (!d)
-    throw new Error('A type with a symbol but the symbol has no declaration')
+  if (!d) throw new Error('A type with a symbol but the symbol has no declaration')
   const sourceFile = d.getSourceFile()
   const { modulePath, isNode } = getAbsoluteImportPath(sourceFile)
   return {
@@ -203,10 +192,7 @@ function extractTypeImportInfoFromType(t: tsm.Type): null | TypeImportInfo {
 
 function getAbsoluteImportPath(sourceFile: tsm.SourceFile) {
   let isNode = false
-  let modulePath = Path.join(
-    Path.dirname(sourceFile.getFilePath()),
-    sourceFile.getBaseNameWithoutExtension()
-  )
+  let modulePath = Path.join(Path.dirname(sourceFile.getFilePath()), sourceFile.getBaseNameWithoutExtension())
 
   const nodeModule = modulePath.match(/node_modules\/@types\/node\/(.+)/)?.[1]
   if (nodeModule) {

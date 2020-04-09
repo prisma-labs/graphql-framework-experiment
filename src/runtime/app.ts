@@ -140,17 +140,14 @@ export function create(): App {
           return
         }
 
-        const plugins = await Plugin.loadRuntimePluginsFromEntrypoints(
-          __state.plugins
-        )
+        const plugins = await Plugin.loadRuntimePluginsFromEntrypoints(__state.plugins)
         const graphqlSchema = await schemaComponent.private.makeSchema(plugins)
 
         await server.setupAndStart({
           settings: settings,
           schema: graphqlSchema,
           plugins,
-          contextContributors:
-            schemaComponent.private.state.contextContributors,
+          contextContributors: schemaComponent.private.state.contextContributors,
         })
       },
       stop() {

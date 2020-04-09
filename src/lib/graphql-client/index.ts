@@ -1,13 +1,7 @@
 // Borrowed from `graphql-request`
 
 import fetch, { Headers, Response } from 'node-fetch'
-import {
-  ClientError,
-  GraphQLError,
-  Headers as HttpHeaders,
-  Options,
-  Variables,
-} from './types'
+import { ClientError, GraphQLError, Headers as HttpHeaders, Options, Variables } from './types'
 
 export { ClientError } from './types'
 
@@ -50,8 +44,7 @@ export class GraphQLClient {
       const { headers, status } = response
       return { ...result, headers, status }
     } else {
-      const errorResult =
-        typeof result === 'string' ? { error: result } : result
+      const errorResult = typeof result === 'string' ? { error: result } : result
       throw new ClientError(
         { ...errorResult, status: response.status, headers: response.headers },
         { query, variables }
@@ -59,10 +52,7 @@ export class GraphQLClient {
     }
   }
 
-  async request<T extends any>(
-    query: string,
-    variables?: Variables
-  ): Promise<T> {
+  async request<T extends any>(query: string, variables?: Variables): Promise<T> {
     const { headers, ...others } = this.options
 
     const body = JSON.stringify({
@@ -82,12 +72,8 @@ export class GraphQLClient {
     if (response.ok && !result.errors && result.data) {
       return result.data
     } else {
-      const errorResult =
-        typeof result === 'string' ? { error: result } : result
-      throw new ClientError(
-        { ...errorResult, status: response.status },
-        { query, variables }
-      )
+      const errorResult = typeof result === 'string' ? { error: result } : result
+      throw new ClientError({ ...errorResult, status: response.status }, { query, variables })
     }
   }
 
@@ -125,11 +111,7 @@ export async function rawRequest<T extends any>(
   return client.rawRequest<T>(query, variables)
 }
 
-export async function request<T extends any>(
-  url: string,
-  query: string,
-  variables?: Variables
-): Promise<T> {
+export async function request<T extends any>(url: string, query: string, variables?: Variables): Promise<T> {
   const client = new GraphQLClient(url)
 
   return client.request<T>(query, variables)

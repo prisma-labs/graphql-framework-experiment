@@ -13,9 +13,7 @@ export const NEXUS_DEFAULT_RUNTIME_CONTEXT_TYPEGEN_PATH = fs.path(
 /**
  * Output the context types to a typegen file.
  */
-export async function writeContextTypeGenFile(
-  contextTypes: ExtractedContectTypes
-) {
+export async function writeContextTypeGenFile(contextTypes: ExtractedContectTypes) {
   const addToContextInterfaces = contextTypes.types
     .map((result) => `interface Context ${result}`)
     .join('\n\n')
@@ -37,11 +35,7 @@ export async function writeContextTypeGenFile(
 
     // The context types extracted from the app.
 
-    ${
-      addToContextInterfaces.length > 0
-        ? addToContextInterfaces
-        : `interface Context {}`
-    }
+    ${addToContextInterfaces.length > 0 ? addToContextInterfaces : `interface Context {}`}
   `
 
   await hardWriteFile(NEXUS_DEFAULT_RUNTIME_CONTEXT_TYPEGEN_PATH, content)

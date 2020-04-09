@@ -3,17 +3,13 @@ import { stripIndent } from 'common-tags'
 import * as FS from 'fs-jetpack'
 import * as Path from 'path'
 import { PackageJson } from 'type-fest'
-import {
-  findDirContainingFileRecurisvelyUpwardSync,
-  findFile,
-} from '../../lib/fs'
+import { findDirContainingFileRecurisvelyUpwardSync, findFile } from '../../lib/fs'
 import { START_MODULE_NAME } from '../../runtime/start/start-module'
 import { rootLogger } from '../nexus-logger'
 import * as PackageManager from '../package-manager'
 import * as Schema from './schema-modules'
 
-export const DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT =
-  'node_modules/.build'
+export const DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT = 'node_modules/.build'
 
 const log = rootLogger.child('layout')
 
@@ -112,8 +108,7 @@ const optionDefaults = {
 export async function create(optionsGiven?: Options): Promise<Layout> {
   // TODO lodash merge defaults or something
   const options: Required<Options> = {
-    buildOutputRelative:
-      optionsGiven?.buildOutputRelative ?? optionDefaults.buildOutput,
+    buildOutputRelative: optionsGiven?.buildOutputRelative ?? optionDefaults.buildOutput,
     cwd: optionsGiven?.cwd ?? process.cwd(),
   }
   const data = await scan({ cwd: options.cwd })
@@ -121,11 +116,7 @@ export async function create(optionsGiven?: Options): Promise<Layout> {
     ...data,
     buildOutputRelative: options.buildOutputRelative,
     startModuleInPath: Path.join(data.sourceRoot, START_MODULE_NAME + '.ts'),
-    startModuleOutPath: Path.join(
-      data.projectRoot,
-      options.buildOutputRelative,
-      START_MODULE_NAME + '.js'
-    ),
+    startModuleOutPath: Path.join(data.projectRoot, options.buildOutputRelative, START_MODULE_NAME + '.js'),
   })
 
   /**
@@ -155,12 +146,9 @@ export function createFromData(layoutData: Data): Layout {
     projectPath(...subPaths: string[]): string {
       return Path.join(layoutData.projectRoot, ...subPaths)
     },
-    packageManager: PackageManager.createPackageManager(
-      layoutData.packageManagerType,
-      {
-        projectRoot: layoutData.projectRoot,
-      }
-    ),
+    packageManager: PackageManager.createPackageManager(layoutData.packageManagerType, {
+      projectRoot: layoutData.projectRoot,
+    }),
   }
 }
 
@@ -311,9 +299,7 @@ async function isEmptyCWD(): Promise<boolean> {
 
 const ENV_VAR_DATA_NAME = 'NEXUS_LAYOUT'
 
-export function saveDataForChildProcess(
-  layout: Layout
-): { NEXUS_LAYOUT: string } {
+export function saveDataForChildProcess(layout: Layout): { NEXUS_LAYOUT: string } {
   return {
     [ENV_VAR_DATA_NAME]: JSON.stringify(layout.data),
   }
@@ -377,9 +363,7 @@ function findPackageJsonRecursivelyUpward(opts: { cwd: string }) {
 /**
  *
  */
-function findPackageJson(opts: {
-  projectRoot: string
-}): ScanResult['packageJson'] {
+function findPackageJson(opts: { projectRoot: string }): ScanResult['packageJson'] {
   const packageJsonPath = FS.path(opts.projectRoot, 'package.json')
 
   try {

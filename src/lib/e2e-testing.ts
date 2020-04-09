@@ -62,12 +62,7 @@ export function createE2EContext(config: Config) {
     ? Path.join(config.localNexus.path, 'dist', 'cli', 'main')
     : null
   const projectDir = config?.dir ?? getTmpDir('e2e-app')
-  const PROJ_NEXUS_BIN_PATH = Path.join(
-    projectDir,
-    'node_modules',
-    '.bin',
-    'nexus'
-  )
+  const PROJ_NEXUS_BIN_PATH = Path.join(projectDir, 'node_modules', '.bin', 'nexus')
 
   log.trace('setup', { projectDir, config })
 
@@ -103,21 +98,15 @@ export function createE2EContext(config: Config) {
         },
       })
     },
-    npxNexusCreatePlugin(
-      options: CreatePluginOptions & { nexusVersion: string }
-    ) {
-      return spawn(
-        'npx',
-        [`nexus@${options.nexusVersion}`, 'create', 'plugin'],
-        {
-          cwd: projectDir,
-          env: {
-            ...process.env,
-            CREATE_PLUGIN_CHOICE_NAME: options.name,
-            LOG_LEVEL: 'trace',
-          },
-        }
-      )
+    npxNexusCreatePlugin(options: CreatePluginOptions & { nexusVersion: string }) {
+      return spawn('npx', [`nexus@${options.nexusVersion}`, 'create', 'plugin'], {
+        cwd: projectDir,
+        env: {
+          ...process.env,
+          CREATE_PLUGIN_CHOICE_NAME: options.name,
+          LOG_LEVEL: 'trace',
+        },
+      })
     },
     npxNexusCreateApp(options: CreateAppOptions & { nexusVersion: string }) {
       return spawn('npx', [`nexus@${options.nexusVersion}`], {
@@ -147,8 +136,7 @@ export function createE2EContext(config: Config) {
             cwd: projectDir,
             env: {
               ...process.env,
-              CREATE_APP_CHOICE_PACKAGE_MANAGER_TYPE:
-                options.packageManagerType,
+              CREATE_APP_CHOICE_PACKAGE_MANAGER_TYPE: options.packageManagerType,
               CREATE_APP_CHOICE_DATABASE_TYPE: options.databaseType,
               LOG_LEVEL: 'trace',
             },
@@ -176,11 +164,7 @@ export function createE2EContext(config: Config) {
   return contextAPI
 }
 
-export function spawn(
-  command: string,
-  args: string[],
-  opts: IPtyForkOptions
-): ConnectableObservable<string> {
+export function spawn(command: string, args: string[], opts: IPtyForkOptions): ConnectableObservable<string> {
   const nodePty = requireNodePty()
   const subject = new Subject<string>()
   const ob = new Observable<string>((sub) => {
@@ -202,9 +186,7 @@ export function spawn(
       }
 
       if (exitCode !== 0) {
-        const error = new Error(
-          `command "${command} ${args.join(' ')}" exited ${exitCode}`
-        )
+        const error = new Error(`command "${command} ${args.join(' ')}" exited ${exitCode}`)
         Object.assign(error, result)
         sub.error(error)
       } else {
@@ -217,28 +199,20 @@ export function spawn(
     }
   })
 
-  const multicasted = ob.pipe(multicast(subject)) as ConnectableObservable<
-    string
-  >
+  const multicasted = ob.pipe(multicast(subject)) as ConnectableObservable<string>
 
   return multicasted
 }
 
 interface NodePty {
-  spawn: (
-    file: string,
-    args: string[] | string,
-    options: IPtyForkOptions | IWindowsPtyForkOptions
-  ) => IPty
+  spawn: (file: string, args: string[] | string, options: IPtyForkOptions | IWindowsPtyForkOptions) => IPty
 }
 
 function requireNodePty(): NodePty {
   try {
     return require('node-pty') as NodePty
   } catch (e) {
-    rootLogger.error(
-      'Could not require `node-pty`. Please install it as a dev dependency'
-    )
+    rootLogger.error('Could not require `node-pty`. Please install it as a dev dependency')
     throw e
   }
 }

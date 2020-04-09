@@ -55,6 +55,7 @@
     "typescript": "^3.7.2"
   },
   "devDependencies": {
+    "@prisma-labs/prettier-config": "^0.1.0",
     "@types/anymatch": "1.3.1",
     "@types/common-tags": "1.8.0",
     "@types/jest": "25.2.1",
@@ -94,19 +95,5 @@
     "test:unit": "jest --verbose --testRegex '.+/src/.+\\.spec\\.ts$'",
     "dev:test": "jest --watch --testRegex '.+/src/.+\\.spec\\.ts$'",
     "dev": "yarn -s clean && node scripts/build-module-facades && tsc -b -w"
-  },
-  "prettier": {
-    "semi": false,
-    "singleQuote": true,
-    "overrides": [
-      {
-        "files": [
-          "prisma.md"
-        ],
-        "options": {
-          "printWidth": 35
-        }
-      }
-    ]
   }
 }

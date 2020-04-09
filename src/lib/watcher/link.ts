@@ -93,9 +93,7 @@ export class Link {
     log.trace('spawn child')
 
     if (this.childProcess) {
-      throw new Error(
-        'attempt to spawn while previous child process still exists'
-      )
+      throw new Error('attempt to spawn while previous child process still exists')
     }
 
     this.childProcess = nodecp.fork(require.resolve('./runner'), [], {

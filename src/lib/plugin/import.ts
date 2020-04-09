@@ -12,9 +12,7 @@ import { Dimension, DimensionToPlugin, Manifest, Plugin } from './types'
 
 const log = rootLogger.child('plugin')
 
-export async function readAllPluginManifestsFromConfig(
-  layout: Layout.Layout
-): Promise<Manifest[]> {
+export async function readAllPluginManifestsFromConfig(layout: Layout.Layout): Promise<Manifest[]> {
   tsNode.register({
     transpileOnly: true,
   })
@@ -38,13 +36,10 @@ export function pluginToManifest(plugin: Plugin): Manifest {
     const packageJson = require(plugin.packageJsonPath) as PackageJson
 
     if (!packageJson.name) {
-      fatal(
-        `One of your plugin has a missing required \`name\` property in its package.json`,
-        {
-          packageJsonPath: plugin.packageJsonPath,
-          packageJson,
-        }
-      )
+      fatal(`One of your plugin has a missing required \`name\` property in its package.json`, {
+        packageJsonPath: plugin.packageJsonPath,
+        packageJson,
+      })
     }
 
     return {
@@ -73,10 +68,9 @@ export function importPluginDimension<D extends Dimension>(
 ): DimensionToPlugin<D> {
   // Should be guaranteed by importPluginDimensions
   if (!manifest[dimension]) {
-    fatal(
-      `We could not find the ${dimension} dimension of the Nexus plugin "${manifest.name}"`,
-      { plugin: manifest }
-    )
+    fatal(`We could not find the ${dimension} dimension of the Nexus plugin "${manifest.name}"`, {
+      plugin: manifest,
+    })
   }
 
   const dimensionEntrypoint = manifest[dimension]!
@@ -94,19 +88,17 @@ export function importPluginDimension<D extends Dimension>(
     const plugin = dimensionModule[dimensionEntrypoint.export]
 
     if (typeof plugin !== 'function') {
-      fatal(
-        `Nexus plugin "${manifest.name}" does not export a valid ${dimension} plugin`,
-        { plugin: manifest }
-      )
+      fatal(`Nexus plugin "${manifest.name}" does not export a valid ${dimension} plugin`, {
+        plugin: manifest,
+      })
     }
 
     const innerPlugin = plugin(manifest.settings)
 
     if (typeof innerPlugin !== 'function') {
-      fatal(
-        `Nexus plugin "${manifest.name}" does not export a valid ${dimension} plugin`,
-        { plugin: manifest }
-      )
+      fatal(`Nexus plugin "${manifest.name}" does not export a valid ${dimension} plugin`, {
+        plugin: manifest,
+      })
     }
 
     return innerPlugin
@@ -158,12 +150,9 @@ export function validatePlugins(plugins: Plugin[]) {
   const [validPlugins, invalidPlugins] = partition(plugins, isValidPlugin)
 
   if (invalidPlugins.length > 0) {
-    log.warn(
-      `Some invalid plugins were passed to Nexus. They are being ignored.`,
-      {
-        invalidPlugins: invalidPlugins,
-      }
-    )
+    log.warn(`Some invalid plugins were passed to Nexus. They are being ignored.`, {
+      invalidPlugins: invalidPlugins,
+    })
   }
 
   return validPlugins

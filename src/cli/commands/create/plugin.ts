@@ -100,10 +100,7 @@ export default class Plugin implements Command {
         jest: {
           preset: 'ts-jest',
           testEnvironment: 'node',
-          watchPlugins: [
-            'jest-watch-typeahead/filename',
-            'jest-watch-typeahead/testname',
-          ],
+          watchPlugins: ['jest-watch-typeahead/filename', 'jest-watch-typeahead/testname'],
         },
       }),
       fs.writeAsync('tsconfig.json', {
@@ -210,15 +207,9 @@ export default class Plugin implements Command {
     log.info(`Installing dev dependencies`)
     await proc.run(
       'yarn add --dev ' +
-        [
-          '@types/jest',
-          'nexus@next',
-          'jest',
-          'jest-watch-typeahead',
-          'ts-jest',
-          'typescript',
-          'doctoc',
-        ].join(' ')
+        ['@types/jest', 'nexus@next', 'jest', 'jest-watch-typeahead', 'ts-jest', 'typescript', 'doctoc'].join(
+          ' '
+        )
     )
 
     log.info(`Initializing git repository...`)

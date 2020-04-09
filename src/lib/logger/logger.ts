@@ -50,11 +50,7 @@ export function create(
     })
   }
 
-  function forwardToPino(
-    level: Level,
-    event: string,
-    localContext: undefined | Context
-  ) {
+  function forwardToPino(level: Level, event: string, localContext: undefined | Context) {
     // Avoid mutating the passed local context
     const context = localContext
       ? Lo.merge({}, state.pinnedAndParentContext, localContext)
@@ -102,11 +98,7 @@ export function create(
       return logger
     },
     child: (name: string): Logger => {
-      const { logger: child, link } = create(
-        rootState,
-        path.concat([name]),
-        state.pinnedAndParentContext
-      )
+      const { logger: child, link } = create(rootState, path.concat([name]), state.pinnedAndParentContext)
       state.children.push(link)
       return child
     },

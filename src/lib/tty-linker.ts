@@ -25,10 +25,7 @@ export function create() {
   return {
     parent: {
       serialize() {
-        if (
-          process.stdout.columns === undefined ||
-          process.stdout.rows === undefined
-        ) {
+        if (process.stdout.columns === undefined || process.stdout.rows === undefined) {
           throw new Error(
             'Cannot serialize columns and/or rows data for process.stdout because they are undefined. This probably means there is no TTY. Yet an attempt to serialize TTY info is being made.'
           )
@@ -49,9 +46,7 @@ export function create() {
             lo.debounce(
               () => {
                 if (process.stdout.isTTY === false) {
-                  throw new Error(
-                    'Cannot forward process.stdout rows/columns because it has no TTY itself.'
-                  )
+                  throw new Error('Cannot forward process.stdout rows/columns because it has no TTY itself.')
                 }
                 for (const cp of cps) {
                   cp.send(createTTYResizeMessage())

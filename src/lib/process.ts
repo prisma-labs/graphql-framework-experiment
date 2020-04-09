@@ -29,23 +29,14 @@ export type RunOptions = Omit<SpawnSyncOptions, 'encoding'> & {
 }
 
 // TODO conditional type over require option
-export function runSync(
-  commandRaw: string,
-  options?: RunOptions
-): SuccessfulRunResult {
+export function runSync(commandRaw: string, options?: RunOptions): SuccessfulRunResult {
   const command = parseCommandString(commandRaw)
-  const env = options?.envAdditions
-    ? { ...process.env, ...options.envAdditions }
-    : process.env
-  const { stderr, stdout, status: exitCode, signal } = spawnSync(
-    command.name,
-    command.args,
-    {
-      ...options,
-      encoding: 'utf8',
-      env,
-    }
-  )
+  const env = options?.envAdditions ? { ...process.env, ...options.envAdditions } : process.env
+  const { stderr, stdout, status: exitCode, signal } = spawnSync(command.name, command.args, {
+    ...options,
+    encoding: 'utf8',
+    env,
+  })
 
   const error = isFailedExitCode(exitCode)
     ? createCommandError({
@@ -65,14 +56,9 @@ export function runSync(
   }
 }
 
-export async function run(
-  commandRaw: string,
-  options?: RunOptions
-): Promise<SuccessfulRunResult> {
+export async function run(commandRaw: string, options?: RunOptions): Promise<SuccessfulRunResult> {
   const command = parseCommandString(commandRaw)
-  const env = options?.envAdditions
-    ? { ...process.env, ...options.envAdditions }
-    : process.env
+  const env = options?.envAdditions ? { ...process.env, ...options.envAdditions } : process.env
 
   const child = spawn(command.name, command.args, {
     ...options,
@@ -244,10 +230,7 @@ function isFailedExitCode(exitCode: null | number): boolean {
 export function isProcessFromProjectBin(packageJsonPath: string): boolean {
   const processBinPath = process.argv[1]
   const processBinDirPath = Path.dirname(processBinPath)
-  const projectBinDirPath = Path.join(
-    Path.dirname(packageJsonPath),
-    'node_modules/.bin'
-  )
+  const projectBinDirPath = Path.join(Path.dirname(packageJsonPath), 'node_modules/.bin')
   return processBinDirPath !== projectBinDirPath
 }
 
