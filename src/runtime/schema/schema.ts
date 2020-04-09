@@ -96,6 +96,7 @@ export function create(): SchemaInternal {
         )
 
         nexusSchemaConfig.types.push(...statefulNexusSchema.state.types)
+
         nexusSchemaConfig.plugins!.push(...state.schemaPlugins)
 
         const { schema, missingTypes, finalConfig } = makeSchemaInternal(

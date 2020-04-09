@@ -1,3 +1,4 @@
+import { plugin } from '@nexus/schema'
 import { create } from './schema'
 import { mapSettingsToNexusSchemaConfig } from './settings'
 
@@ -35,4 +36,12 @@ it('outputs can be made guaranteed by default', () => {
     mapSettingsToNexusSchemaConfig([], schema.private.settings.data)
       .nonNullDefaults?.output
   ).toEqual(true)
+})
+
+describe('use', () => {
+  it('incrementally adds plugins', () => {
+    schema.public.use(plugin({ name: 'foo' }))
+    schema.public.use(plugin({ name: 'bar' }))
+    expect(schema.private.state.schemaPlugins.length).toEqual(2)
+  })
 })
