@@ -27,10 +27,21 @@ Start by updating our data layer to model information about moons. We don't want
 +   id    Int    @id
 +   name  String
 +   world World
++   world World  @relation(fields: [id], references: [id])
 + }
 ```
 
-Nexus reacts to changes in your Prisma schema. By saving the above, your dev database will be automatically migrated and Prisma Client regenerated. You literally now just move on to updating your GraphQL API.
+Nexus reacts to changes in your Prisma schema. By saving the above, you will see a prompt in dev mode about applying your database changes.
+
+```
+   0 ● nexus:plugin:nexus-plugin-prisma We detected a change in your Prisma Schema file.
+   0 ● nexus:plugin:nexus-plugin-prisma If you're using Prisma Migrate, follow the step below:
+   0 ● nexus:plugin:nexus-plugin-prisma 1. Run yarn -s prisma migrate save --experimental to create a migration file.
+   0 ● nexus:plugin:nexus-plugin-prisma 2. Run yarn -s prisma migrate up --experimental to apply your migration.
+? Press Y to restart once your migration is applied › (Y)
+```
+
+Once done, you can move on to updating your API layer.
 
 ## Change the API Layer
 
@@ -39,7 +50,7 @@ We have data about `Earth` from before, but now we need to update it with inform
 We're going to need to expose the `moons` world field to clients
 
 ```diff
-+++ src/graphql.ts
++++ api/graphql.ts
   schema.objectType({
     name: "World",
     definition(t) {
@@ -55,7 +66,7 @@ Upon doing this however, we will see a warning in our dev mode logs:
 
 ```
  Warning: Your GraphQL `World` object definition is projecting a field `moons` with `Moon` as output type, but `Moon` is not defined in your GraphQL Schema
- Warning: in /Users/jasonkuhrt/foobar/src/graphql.ts:10:13
+ Warning: in /Users/jasonkuhrt/foobar/api/graphql.ts:10:13
 
    6 definition(t) {
    7 t.model.id();
@@ -67,7 +78,7 @@ Upon doing this however, we will see a warning in our dev mode logs:
 The feedback is pretty clear already but to restate: The problem is that we're project a Prisma model field (`moons`) that is a connection to another Prisma model (`Moon`) that has not been projected on our API layer. So let's do that now:
 
 ```diff
-+++ src/graphql.ts
++++ api/graphql.ts
 +schema.objectType({
 +  name:'Moon',
 +  definition(t){
@@ -87,7 +98,7 @@ Once you have projected `Moon` from your data layer to your API layer, you will 
 If you go to your GraphQL Playground now you will see that your GraphQL schema now contains your Moon data shape too. But of course we still need to update `Earth` with data about _its_ moon. To achieve that we're going to expose CRUD actions that clients can use to update `Earth`.
 
 ```diff
-+++ src/graphql.ts
++++ api/graphql.ts
 +schema.mutationType({
 +  definition(t){
 +    t.crud.updateOneWorld()
@@ -131,19 +142,78 @@ You should see a result like:
 
 ## Deploy
 
-We will Deploy to Heroku
+We will Deploy to Heroku.
 
-For this step, create an account at [Heroku](https://www.heroku.com/) and [setup the CLI](https://devcenter.heroku.com/articles/heroku-cli).
+Before deploying let's change the playground server setting such that Playground will be enabled in production.
 
-1.  Create a new app: `heroku apps:create`
-2.  Attach your project to the app: `heroku git:remote --app <app-name>`
-3.  Add a postgres database to it: `heroku addons:create heroku-postgresql --app <app-name>`
-4.  Get the postgres database credentials: `heroku pg:credentials:url --app <app-name>`
-5.  Export the connection URL into your shell `export DATABASE_URL="<connection-url>"`
-6.  Create a migration file: `npm run prisma migrate save --experimental`
-7.  Migrate your database: `npm run prisma migrate up --experimental`
-8.  Deploy using the git push to master workflow. See your app running in the cloud!
+<p class="NextIs Warn" />
+
+> We're doing this so we can easily try out our deployed app. Neither the GraphQL Playground UI nor the GraphQL API itself are secured. This is not intended to demonstrate a production-ready setup.
+
+```diff
++++ api/app.ts
++ import { settings, use } from 'nexus'
+import { prisma } from 'nexus-plugin-prisma'
+
+use(prisma())
+
++settings.change({
++  server: {
++    playground: true
++  }
++})
+```
+
+Then, create an account at [Heroku](https://www.heroku.com/) (if you don't already have one) and [setup the CLI](https://devcenter.heroku.com/articles/heroku-cli).
+
+1.  Create a new Heroku app
+
+    ```cli
+    heroku create
+    ```
+
+1.  Add a postgres database to it
+
+    ```cli
+    heroku addons:create heroku-postgresql --app <app-name>
+    ```
+
+1.  Find the postgres databse connection URL
+
+    ```cli
+    heroku pg:credentials:url --app <app-name>
+    ```
+
+    Copy it into `prisma/.env` to give Prisma access.
+
+1.  Migrate the heroku postgres databse
+
+    ```cli
+    npm run prisma migrate save --experimental
+    ```
+
+    ```cli
+    npm run prisma migrate up --experimental
+    ```
+
+1.  Deploy your Nexus app
+
+    ```cli
+    git push heroku master
+    ```
+
+1.  Open your hosted playground
+
+    ```cli
+    heroku open
+    ```
+
+1.  Try running the mutation from above, but now against your heroku database.
 
 ## Next Steps
 
-A good next step might be to read through some of the guides. Happy coding! 🙌
+A good next step might be to read through some of the guides.
+
+Some good ones for new comers include the [`Concepts`](/guides/concepts) guide that gives an overview about how to think about Nexus, and the [`Schema`](/guides/schema) guide that goes through the ins and outs of building a GraphQL schema in Nexus.
+
+Happy coding! 🙌
