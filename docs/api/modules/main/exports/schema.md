@@ -969,7 +969,7 @@ schema.queryType({
 
 ### `use`
 
-Add schema plugins to your app. These plugins represent a subset of what framework plugins ([`app.use`](/)) can do. This is useful when, for example, a schema plugin you would like to use has not integrated into any framework plugin. You can find a list of schema plugins [here](/components/schema/plugins).
+Add schema plugins to your app. These plugins represent a subset of what framework plugins ([`app.use`](/api/modules/main/exports/use)) can do. This is useful when, for example, a schema plugin you would like to use has not integrated into any framework plugin. You can find a list of schema plugins [here](/components/schema/plugins).
 
 ##### Example
 
@@ -980,7 +980,8 @@ import somePlugin from 'some-plugin'
 schema.use(somePlugin())
 
 schema.use({
-  name: 'my inline schema plugin',
+  name: 'myPlugin',
+  description: 'my inline schema plugin',
   // ...
 })
 ```
