@@ -23,4 +23,6 @@ use(prisma())
 
 To discover plugins, simply look to the sidebar listing on this website.
 
-To get an overview of what Nexus plugin _are_ refer to the [plugin guide](/guides/plugins).
+To get an overview of what Nexus plugin _are_ refer to the [Plugins guide](/guides/plugins).
+
+To learn how to write your own plugins refer to the [Writing Plugins guide](/guides/writing-plugins).
