@@ -31,6 +31,13 @@ export interface Request extends HTTP.IncomingMessage {
 export type ContextContributor<Req> = (req: Req) => Record<string, unknown>
 
 export interface Schema extends NexusSchemaStatefulBuilders {
+  /**
+   * todo link to website docs
+   */
+  use: (schemaPlugin: NexusSchema.core.NexusPlugin) => void
+  /**
+   * todo link to website docs
+   */
   addToContext: <Req = Request>(
     contextContributor: ContextContributor<Req>
   ) => void
@@ -40,6 +47,7 @@ interface SchemaInternal {
   private: {
     state: {
       settings: SettingsData
+      schemaPlugins: NexusSchema.core.NexusPlugin[]
       contextContributors: ContextContributor<any>[]
     }
     /**
@@ -61,6 +69,7 @@ export function create(): SchemaInternal {
   const statefulNexusSchema = createNexusSchemaStateful()
 
   const state: SchemaInternal['private']['state'] = {
+    schemaPlugins: [],
     settings: {},
     contextContributors: [],
   }
@@ -68,6 +77,12 @@ export function create(): SchemaInternal {
   const api: SchemaInternal = {
     public: {
       ...statefulNexusSchema.builders,
+      use(plugin) {
+        // todo if caleld after app start, raise a warning (dev), error (prod)
+        // this will require the component having access to some of the
+        // framework state.
+        state.schemaPlugins.push(plugin)
+      },
       addToContext(contextContributor) {
         state.contextContributors.push(contextContributor)
       },
@@ -81,6 +96,7 @@ export function create(): SchemaInternal {
         )
 
         nexusSchemaConfig.types.push(...statefulNexusSchema.state.types)
+        nexusSchemaConfig.plugins!.push(...state.schemaPlugins)
 
         const { schema, missingTypes, finalConfig } = makeSchemaInternal(
           nexusSchemaConfig
