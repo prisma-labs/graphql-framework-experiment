@@ -432,7 +432,6 @@ const templates: Record<TemplateName, TemplateCreator> = {
           import { use } from 'nexus'
           import { prisma } from 'nexus-plugin-prisma'
           
-          // Enable the Prisma plugin
           use(prisma())
         `,
         },
