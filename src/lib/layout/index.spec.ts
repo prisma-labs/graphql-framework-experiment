@@ -70,7 +70,7 @@ it('fails if no entrypoint and no graphql modules', async () => {
 
       1. Create a (graphql.ts file and write your GraphQL type definitions in it.
       2. Create a graphql directory and write your GraphQL type definitions inside files there.
-      3. Create an app entrypoint; A file called any of: app.ts, server.ts, service.ts.
+      3. Create an app.ts file.
     "
   `)
   expect(mockExit).toHaveBeenCalledWith(1)
@@ -159,36 +159,6 @@ it('finds app.ts entrypoint', async () => {
   `)
 })
 
-it('finds server.ts entrypoint', async () => {
-  ctx.setup({
-    'server.ts': '',
-  })
-
-  const result = await ctx.scan()
-
-  expect(result.app).toMatchInlineSnapshot(`
-    Object {
-      "exists": true,
-      "path": "__DYNAMIC__/server.ts",
-    }
-  `)
-})
-
-it('finds service.ts entrypoint', async () => {
-  ctx.setup({
-    'service.ts': '',
-  })
-
-  const result = await ctx.scan()
-
-  expect(result.app).toMatchInlineSnapshot(`
-    Object {
-      "exists": true,
-      "path": "__DYNAMIC__/service.ts",
-    }
-  `)
-})
-
 it('set app.exists = false if no entrypoint', async () => {
   await ctx.setup({
     graphql: {
@@ -202,80 +172,6 @@ it('set app.exists = false if no entrypoint', async () => {
     Object {
       "exists": false,
       "path": null,
-    }
-  `)
-})
-
-it.todo(
-  'user seeings note if multiple entrypoints found, gets feedback about which will be considered entrypoint'
-)
-
-// TODO: Currently works but seems like it's only thanks to lexical sort
-it('app.ts takes precedence over server.ts & service.ts', async () => {
-  ctx.setup({
-    'service.ts': '',
-    'app.ts': '',
-  })
-
-  const result = await ctx.scan()
-
-  expect(result).toMatchInlineSnapshot(`
-    Object {
-      "app": Object {
-        "exists": true,
-        "path": "__DYNAMIC__/app.ts",
-      },
-      "buildOutputRelative": "node_modules/.build",
-      "packageJson": Object {
-        "dir": "__DYNAMIC__",
-        "path": "__DYNAMIC__/package.json",
-      },
-      "packageManagerType": "npm",
-      "project": Object {
-        "isAnonymous": true,
-        "name": "anonymous",
-      },
-      "projectRoot": "__DYNAMIC__",
-      "schemaModules": Array [],
-      "sourceRoot": "__DYNAMIC__",
-      "sourceRootRelative": "./",
-      "startModuleInPath": "__DYNAMIC__/index.ts",
-      "startModuleOutPath": "__DYNAMIC__/node_modules/.build/index.js",
-    }
-  `)
-})
-
-// TODO: Currently works but seems like it's only thanks to lexical sort
-it('server.ts takes precedence over service.ts', async () => {
-  ctx.setup({
-    'server.ts': '',
-    'service.ts': '',
-  })
-
-  const result = await ctx.scan()
-
-  expect(result).toMatchInlineSnapshot(`
-    Object {
-      "app": Object {
-        "exists": true,
-        "path": "__DYNAMIC__/server.ts",
-      },
-      "buildOutputRelative": "node_modules/.build",
-      "packageJson": Object {
-        "dir": "__DYNAMIC__",
-        "path": "__DYNAMIC__/package.json",
-      },
-      "packageManagerType": "npm",
-      "project": Object {
-        "isAnonymous": true,
-        "name": "anonymous",
-      },
-      "projectRoot": "__DYNAMIC__",
-      "schemaModules": Array [],
-      "sourceRoot": "__DYNAMIC__",
-      "sourceRootRelative": "./",
-      "startModuleInPath": "__DYNAMIC__/index.ts",
-      "startModuleOutPath": "__DYNAMIC__/node_modules/.build/index.js",
     }
   `)
 })

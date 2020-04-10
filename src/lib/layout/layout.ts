@@ -201,8 +201,8 @@ export const scan = async (opts?: { cwd?: string }): Promise<ScanResult> => {
 // todo allow user to configure these for their project
 // todo once user can configure these for their project, settle on only one of
 // these, since user will be able to easily change it
-const ENTRYPOINT_MODULE_NAMES = ['app', 'server', 'service']
-const ENTRYPOINT_FILE_NAMES = ENTRYPOINT_MODULE_NAMES.map((n) => n + '.ts')
+const CONVENTIONAL_ENTRYPOINT_MODULE_NAME = 'app'
+const CONVENTIONAL_ENTRYPOINT_FILE_NAME = `${CONVENTIONAL_ENTRYPOINT_MODULE_NAME}.ts`
 
 const checks = {
   no_app_or_schema_modules: {
@@ -211,11 +211,11 @@ const checks = {
     explanations: {
       problem: `We could not find any ${Schema.MODULE_NAME} modules or app entrypoint`,
       solution: stripIndent`
-      Please do one of the following:
+        Please do one of the following:
 
-        1. Create a (${Chalk.yellow(Schema.CONVENTIONAL_SCHEMA_FILE_NAME)} file and write your GraphQL type definitions in it.
-        2. Create a ${Chalk.yellow(Schema.DIR_NAME)} directory and write your GraphQL type definitions inside files there.
-        3. Create an app entrypoint; A file called any of: ${ENTRYPOINT_FILE_NAMES.map(f => Chalk.yellow(f)).join(', ')}.
+          1. Create a (${Chalk.yellow(Schema.CONVENTIONAL_SCHEMA_FILE_NAME)} file and write your GraphQL type definitions in it.
+          2. Create a ${Chalk.yellow(Schema.DIR_NAME)} directory and write your GraphQL type definitions inside files there.
+          3. Create an ${Chalk.yellow(CONVENTIONAL_ENTRYPOINT_FILE_NAME)} file.
     `,
     }
   },
@@ -226,7 +226,7 @@ const checks = {
  */
 export function findAppModule(opts: { projectRoot: string }): string | null {
   log.trace('looking for app module')
-  const path = findFile(ENTRYPOINT_FILE_NAMES, opts)
+  const path = findFile(CONVENTIONAL_ENTRYPOINT_FILE_NAME, opts)
   log.trace('done looking for app module')
 
   return path
