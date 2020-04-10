@@ -66,7 +66,7 @@ Use the settings to centrally configure various aspects of the various component
 
   - Is `NEXUS_HOST` environment variable set? Then that.
   - Is `HOST` environment variable set? Then that.
-  - Else `0.0.0.0`
+  - Else the [Node HTTP server listen default](https://nodejs.org/api/net.html#net_server_listen_port_host_backlog_callback) which is `'::'` if IPv6 is present otherwise `'0.0.0.0'` for IPv4.
 
 * `server.path`  
   The path on which the GraphQL API should be served.

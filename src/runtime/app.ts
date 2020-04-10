@@ -1,10 +1,9 @@
+import { stripIndent } from 'common-tags'
 import * as Lo from 'lodash'
 import * as Logger from '../lib/logger'
 import * as Plugin from '../lib/plugin'
 import * as Schema from './schema'
 import * as Server from './server'
-import app from '.'
-import { stripIndent } from 'common-tags'
 
 const log = Logger.create({ name: 'app' })
 
@@ -101,12 +100,12 @@ export function create(): App {
     current: {
       logger: log.settings,
       schema: schemaComponent.private.settings.data,
-      server: Server.defaultExtraSettings,
+      server: Server.defaultExtraSettingsInput,
     },
     original: Lo.cloneDeep({
       logger: log.settings,
       schema: schemaComponent.private.settings.data,
-      server: Server.defaultExtraSettings,
+      server: Server.defaultExtraSettingsInput,
     }),
   }
 
