@@ -2,13 +2,13 @@ Nexus imposes a few requirements about how you structure your codebase.
 
 ## Schema Module(s)
 
-**Pattern**
+##### Pattern
 
 A `graphql` module or directory of modules `graphql.ts` `graphql/*.ts`.
 
 This may be repeated multiple times in your source tree.
 
-**About**
+##### About
 
 This convention is optional if entrypoint is present, required otherwise.
 
@@ -18,10 +18,10 @@ In dev mode the modules are synchronously found and imported when the server sta
 
 ## Entrypoint
 
-**Pattern**
+##### Pattern
 
 A module, anywhere in your source directory, named `app.ts`.
 
-**About**
+##### About
 
 This convention is optional if schema modules are present, required otherwise.

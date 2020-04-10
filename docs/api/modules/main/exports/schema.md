@@ -11,7 +11,7 @@ Use the schema to model your domain, all the data that your API will accept and 
 The most common kind of type in most GraphQL schemas. of a GraphQL schema are object types, a type you can
 fetch from your schema, with fields:
 
-**Signature**
+##### Signature
 
 ```ts
 objectType(config: {
@@ -33,7 +33,7 @@ objectType(config: {
 
 - `rootTyping` <code class="TypeRef">[NexusGenBackingTypes](#s-nexusgenbackingtypes)</code>
 
-**Example**
+##### Example
 
 ```ts
 import { schema } from 'nexus'
@@ -63,7 +63,7 @@ schema.objectType({
 
 #### `t.field`
 
-**Signature**
+##### Signature
 
 ```ts
 (
@@ -86,7 +86,7 @@ t.float
 
 Field builder specialization for GraphQL scalar types: `string`, `boolean`, `int`, `float`, `id`. They are like `t.field` but omit the `config.type` property and accept a resolver as their second parameter as an alternative to full-on field config.
 
-**Signature**
+##### Signature
 
 ```ts
 (name: string, param?: UntypedFieldConfig | Resolver) => void
@@ -100,7 +100,7 @@ Use this to express a list of some other type. All field builders are available 
 
 todo
 
-**Signature**
+##### Signature
 
 ```ts
 (...interfaceNames: string[]) => void
@@ -110,7 +110,7 @@ todo
 
 Modify a field added via an interface.
 
-**Signature**
+##### Signature
 
 ```ts
 (fieldName: string, modifications: todo) => void
@@ -122,7 +122,7 @@ todo
 
 This field builder helps you implement paginated associations between types in your schema. The contributions that it makes to your GraphQL schema adhear to the [Relay Connection Specification](https://facebook.github.io/relay/graphql/connections.htm#sec-Node). In other words it allows you the API author to write the minimum logic required to create spec-compliant relay connections for your API clients.
 
-**Signature**
+##### Signature
 
 <!-- prettier-ignore -->
 ```ts
@@ -178,17 +178,17 @@ This field builder helps you implement paginated associations between types in y
 
     Unlike with `nodes` approach, this approach makes no assumptions about values for the `edges` `cursor` `pageInfo` properties.
 
-    **Optionality**
+    ##### Optionality
 
     Forbidden if `nodes` given. Required otherwise.
 
   - `nodes` <code class="TypeRef" >[NodeResolver](#graphqltype)</code>
 
-    **Optionality**
+    ##### Optionality
 
     Forbidden if `resolve` given. Required otherwise.
 
-    **Remarks**
+    ##### Remarks
 
     When you use this approach (instead of `resolve`), Nexus makes some assumptions about the structure of the connection. You are only required to return a list of nodes to resolve based on the connection, and then we will automatically infer the `hasNextPage`, `hasPreviousPage`, and `cursor` values for you.
 
@@ -215,32 +215,32 @@ This field builder helps you implement paginated associations between types in y
   * `additionalArgs` <code class="TypeRef" >[Args](#args)</code>  
     Additional arguments to use for just this field.
 
-    **Default**
+    ##### Default
 
     `undefined`
 
-    **Remarks**
+    ##### Remarks
 
     When used, the `additionalArgs` in app settings `schema.connections` will not be inherited. If you do wish to inherit them, enable that with `inheritAdditionalArgs`.
 
   * `inheritAdditionalArgs`  
     Whether to inherit the `additionalArgs` from app settings `schema.connections`
 
-    **Default**
+    ##### Default
 
     `true` if `additionalArgs` is not set, `false` otherwise.
 
   * `disableForwardPagination`  
     If `true` then `first` and `after` args are _not_ present. When disabled, `last` arg becomes required, unless you disable `strictArgs`.
 
-    **Default**
+    ##### Default
 
     `false`
 
   - `disableBackwardPagination`  
     If `true` then `last` and `before` args are _not_ present. When disabled, `first` arg becomes required, unless you disable `strictArgs`.
 
-    **Default**
+    ##### Default
 
     `false`
 
@@ -254,14 +254,14 @@ This field builder helps you implement paginated associations between types in y
       - meaning, `!disableForwardPagination && disableBackwardPagination`
       - then, `first` arg is required
 
-    **Default**
+    ##### Default
 
     `true`
 
   - `validateArgs`  
     Custom logic to validate the args. Throw an error to signal validation failure.
 
-    **Signature**
+    ##### Signature
 
     <p class="OneLineSignature"></p>
 
@@ -269,14 +269,14 @@ This field builder helps you implement paginated associations between types in y
     (args: Args, info: ResolverInfo) => void
     ```
 
-    **Default**
+    ##### Default
 
     Validates that client passes a `first` or a `last` arg, and not both.
 
   - `extendConnection`
     Dynamically add additional fields to the GraphQL connection object. Similar to `extendEdge`.
 
-    **Signature**
+    ##### Signature
 
     <p class="OneLineSignature"></p>
 
@@ -284,11 +284,11 @@ This field builder helps you implement paginated associations between types in y
     (t: TypeBuilder) => void
     ```
 
-    **Default**
+    ##### Default
 
     `undefined`
 
-    **Remarks**
+    ##### Remarks
 
     Because this customizes the GraphQL connection object type, the _name_ of the type will necessarially be changed as well. If it didn't, it would conflict with the non-extended connection type in your schema (if any). The following pattern will be used to name the GraphQL object type:
 
@@ -298,7 +298,7 @@ This field builder helps you implement paginated associations between types in y
     {camelCaseJoin: <typeName><fieldName>}_Connection
     ```
 
-    **Example**
+    ##### Example
 
     ```ts
     schema.queryType({
@@ -327,7 +327,7 @@ This field builder helps you implement paginated associations between types in y
   - `extendEdge`  
     Dynamically add additional fields to the GraphQL edge object. Similar to `extendConnection`.
 
-    **Signature**
+    ##### Signature
 
     <p class="OneLineSignature"></p>
 
@@ -335,11 +335,11 @@ This field builder helps you implement paginated associations between types in y
     (t: TypeBuilder) => void
     ```
 
-    **Default**
+    ##### Default
 
     `undefined`
 
-    **Remarks**
+    ##### Remarks
 
     Because this customizes the GraphQL edge object type, the _name_ of the type will necessarially be changed as well. If it didn't, it would conflict with the non-extended edge type in your schema (if any). The following pattern will be used to name the GraphQL object type:
 
@@ -349,7 +349,7 @@ This field builder helps you implement paginated associations between types in y
     {camelCaseJoin: <typeName><fieldName>}_Edge
     ```
 
-    **Example**
+    ##### Example
 
     ```ts
     schema.queryType({
@@ -378,7 +378,7 @@ This field builder helps you implement paginated associations between types in y
   * `pageInfoFromNodes`  
     Override the default algorithm to determine `hasNextPage` and `hasPreviousPage` page info fields. Often needed when using `cursorFromNode`. See `nodes` for what default algorithm is.
 
-    **Signature**
+    ##### Signature
 
     ```ts
     (
@@ -392,14 +392,14 @@ This field builder helps you implement paginated associations between types in y
     }
     ```
 
-    **Default**
+    ##### Default
 
     `undefined`
 
   * `cursorFromNode`
     Approach we use to transform a node into a cursor
 
-    **Signature**
+    ##### Signature
 
     ```ts
     (
@@ -414,7 +414,7 @@ This field builder helps you implement paginated associations between types in y
     ) => MaybePromise<string>
     ```
 
-    **Default**
+    ##### Default
 
     `'nodeField'`
 
@@ -568,7 +568,7 @@ Not implemented, please see [#447](https://github.com/graphql-nexus/nexus/issues
 
 Defines an object which can be passed as an input value.
 
-**Signature**
+##### Signature
 
 <!-- prettier-ignore -->
 ```ts
@@ -585,14 +585,14 @@ Defines an object which can be passed as an input value.
 - `description`  
   The description of this object. Tools like GraphQL Playground can display this content.
 
-  **Default**
+  ##### Default
 
   `undefined`
 
 - `nonNullDefaults`  
   todo
 
-  **Default**
+  ##### Default
 
   `undefined`
 
@@ -657,13 +657,13 @@ todo
 
 [GraphQL Docs for Enum Types](https://graphql.org/learn/schema/#enumeration-types)
 
-**Signature**
+##### Signature
 
 ```ts
 enumType(config: NexusEnumTypeConfig): NexusEnumTypeDef
 ```
 
-**`NexusEnumTypeConfig` options**
+##### `NexusEnumTypeConfig` options
 
 - `name` **(required)**: Name of your type
 
@@ -673,7 +673,7 @@ enumType(config: NexusEnumTypeConfig): NexusEnumTypeDef
 
 - `rootTyping` _(optional)_: Root type information for this type. By default, types are extracted for any .ts file in your project. You can configure that from the `schema.rootTypingsGlobPattern` setting
 
-**Example**
+##### Example
 
 Defining as an array of enum values:
 
@@ -710,13 +710,13 @@ In Nexus, you do not need to redefine the interface fields on the
 implementing object types, instead you may use `.implements(interfaceName)`
 and all of the interface fields will be added to the type.
 
-**Signature**
+##### Signature
 
 ```ts
 interfaceType(config: NexusInterfaceTypeConfig): NexusInterfaceTypeDef
 ```
 
-**`NexusInterfaceTypeConfig` options**
+##### `NexusInterfaceTypeConfig` options
 
 - `name` **(required)**: Name of your type
 
@@ -729,7 +729,7 @@ interfaceType(config: NexusInterfaceTypeConfig): NexusInterfaceTypeDef
 
 - `rootTyping` _(optional)_: Root type information for this type. By default, types are extracted for any .ts file in your project. You can configure that from the `schema.rootTypingsGlobPattern` setting
 
-**Example**
+##### Example
 
 ```ts
 import { schema } from 'nexus'
@@ -757,13 +757,13 @@ If you need to modify the description or resolver defined by an interface, you c
 
 Nexus allows you to provide an `asNexusMethod` property which will make the scalar available as a builtin on the definition block object. We automatically generate and merge the types so you get type-safety just like the scalar types specified in the spec:
 
-**Signature**
+##### Signature
 
 ```ts
 scalarType(config: NexusScalarTypeConfig): NexusScalarTypeDef
 ```
 
-**`NexusScalarTypeConfig` options**
+##### `NexusScalarTypeConfig` options
 
 - `name` **(required)**: Name of your type
 
@@ -781,7 +781,7 @@ scalarType(config: NexusScalarTypeConfig): NexusScalarTypeDef
 
 - `rootTyping` _(optional)_: Root type information for this type. By default, types are extracted for any .ts file in your project. You can configure that from the `schema.rootTypingsGlobPattern` setting
 
-**Example**
+##### Example
 
 ```ts
 import { schema } from 'nexus'
@@ -805,7 +805,7 @@ schema.scalarType({
 })
 ```
 
-**Example of Upload scalar**
+##### Example of Upload scalar
 
 ```ts
 import { GraphQLUpload } from 'graphql-upload'
@@ -813,7 +813,7 @@ import { GraphQLUpload } from 'graphql-upload'
 export const Upload = GraphQLUpload
 ```
 
-**Example of DateTime scalar**
+##### Example of DateTime scalar
 
 ```ts
 import { GraphQLDate } from 'graphql-iso-date'
@@ -821,7 +821,7 @@ import { GraphQLDate } from 'graphql-iso-date'
 export const DateTime = GraphQLDate
 ```
 
-**Example of exposing scalar as builder method**
+##### Example of exposing scalar as builder method
 
 If you have an existing GraphQL scalar and you'd like to expose it as a builder method, call `asNexusMethod`:
 
@@ -846,13 +846,13 @@ schema.objectType({
 Union types are very similar to interfaces, but they don't get to specify any
 common fields between the types.
 
-**Signature**
+##### Signature
 
 ```ts
 unionType(config: NexusUnionTypeConfig): NexusUnionTypeDef
 ```
 
-**`NexusUnionTypeConfig` options**
+##### `NexusUnionTypeConfig` options
 
 - `name` **(required)**: Name of your type
 
@@ -862,7 +862,7 @@ unionType(config: NexusUnionTypeConfig): NexusUnionTypeDef
 
 - `rootTyping` _(optional)_: Root type information for this type. By default, types are extracted for any .ts file in your project. You can configure that from the `schema.rootTypingsGlobPattern` setting
 
-**Example**
+##### Example
 
 ```ts
 import { schema } from 'nexus'
@@ -881,7 +881,7 @@ schema.unionType({
 
 [GraphQL Docs on Arguments](https://graphql.org/learn/schema/#arguments)
 
-**Signature**
+##### Signature
 
 <!-- prettier-ignore -->
 ```ts
@@ -918,7 +918,7 @@ schema.unionType({
 - `description`  
   The description to annotate the GraphQL SDL
 
-**Example**
+##### Example
 
 Defines an argument that can be used in any object or interface type. Args can be reused in multiple locations, and it can be convenient to create your own wrappers around arguments.
 
@@ -947,7 +947,7 @@ Sugar for creating arguments of type `Int` `String` `Float` `ID` `Boolean`.
 
 Add context to your graphql resolver functions. The objects returned by your context contributor callbacks will be shallow-merged into `ctx`. The `ctx` type will also accurately reflect the types you return from callbacks passed to `addToContext`.
 
-**Example**
+##### Example
 
 ```ts
 import { schema } from 'nexus'

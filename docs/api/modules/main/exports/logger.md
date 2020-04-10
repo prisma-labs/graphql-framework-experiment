@@ -10,7 +10,7 @@ It is recommended that your app only sends to stdout via the Nexus logging syste
 
 All logs are sent to stdout (not stderr). Logs are formatted as JSON but there is a pretty mode for development.
 
-**Signature**
+##### Signature
 
 ```ts
 <logLevel>(event: string, context?: Record<string, unknown>) => void
@@ -20,7 +20,7 @@ All logs are sent to stdout (not stderr). Logs are formatted as JSON but there i
 
   The event name of this log. Maps to the `event` property in the output JSON.
 
-  **Remarks**
+  ##### Remarks
 
   The log api is designed to get you thinking about logs in terms of events with structured data instead of strings of interpolated data. This approach gets you significantly more leverage out of your logs once they hit your logging platform, e.g. [ELK](https://www.elastic.co/what-is/elk-stack)
 
@@ -28,13 +28,13 @@ All logs are sent to stdout (not stderr). Logs are formatted as JSON but there i
 
   Contextual information about this log. The object passed here is deeply merged under the log's `context` property.
 
-  **Example**
+  ##### Example
 
   ```ts
   log.info('hello', { user: 'Toto' }) // { "context": { "user": "Toto"  }, ... }
   ```
 
-**Example**
+##### Example
 
 ```ts
 import { log } from 'nexus'
@@ -72,7 +72,7 @@ Add context to the logger. All subsequent logs will have this information includ
 
 Use this if you have some information that you wish all logs to include in their context.
 
-**Signature**
+##### Signature
 
 <p class="OneLineSignature"></p>
 
@@ -81,7 +81,7 @@ Use this if you have some information that you wish all logs to include in their
 (context: Record<string, unknown>) => Logger
 ```
 
-**Example**
+##### Example
 
 ```ts
 log.addToContext({ user: 'Toto' })
@@ -91,7 +91,7 @@ log.warn('bye')
 // { "context": { "user": "Toto"  }, "event": "bye", ... }
 ```
 
-**Example of local scalar precedence**
+##### Example of local scalar precedence
 
 ```ts
 log.addToContext({ user: { name: 'Toto', age: 10 })
@@ -109,7 +109,7 @@ Context added by children is deeply merged using [lodash merge](https://lodash.c
 
 Context added to parents is immediately visible to all existing children.
 
-**Signature**
+##### Signature
 
 <p class="OneLineSignature"></p>
 
@@ -118,7 +118,7 @@ Context added to parents is immediately visible to all existing children.
 (name: string) => Logger
 ```
 
-**Example**
+##### Example
 
 ```ts
 log.addToContext({ user: 'Toto' })
@@ -135,7 +135,7 @@ foo.info('foo')
 // { "context": { "user": "Toto", "foo": "foo"  }, path: ["app", "foo"], "event": "foo", ... }
 ```
 
-**Remarks**
+##### Remarks
 
 You can create child loggers recursively starting from the root logger. A child logger extends their parent's component path and inherits their parent's context. Children can add context that is visible to themselves and their descedents.
 
@@ -147,7 +147,7 @@ All runtime logs in your app (including from plugins come from either the `logge
 
 #### `I` `JSONLog`
 
-**Type**
+##### Type
 
 ```ts
 {
@@ -176,7 +176,7 @@ All runtime logs in your app (including from plugins come from either the `logge
 - `path`  
   The fully qualified name of the logger.
 
-  **Example**
+  ##### Example
 
   ```ts
   import { log } from 'nexus'
@@ -191,7 +191,7 @@ All runtime logs in your app (including from plugins come from either the `logge
 - `event`  
   The name of this log event.
 
-**Example**
+##### Example
 
 ```json
 {
