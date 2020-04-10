@@ -20,12 +20,8 @@ In dev mode the modules are synchronously found and imported when the server sta
 
 **Pattern**
 
-A module, anywhere in your source directory, named one of: `app.ts` `server.ts` `service.ts`.
-
-Your app must have exactly one of, or none of, these.
+A module, anywhere in your source directory, named `app.ts`.
 
 **About**
 
 This convention is optional if schema modules are present, required otherwise.
-
-If your app defines this module, Nexus will boot from it.
