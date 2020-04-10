@@ -4,6 +4,7 @@ import * as GraphQL from 'graphql'
 import * as HTTP from 'http'
 import * as Net from 'net'
 import stripAnsi from 'strip-ansi'
+import {} from 'type-fest'
 import * as Logger from '../lib/logger'
 import * as Plugin from '../lib/plugin'
 import * as App from './app'
@@ -18,11 +19,18 @@ type ContextContributor<T extends {}> = (req: Request) => T
 const log = Logger.create({ name: 'server' })
 const resolverLogger = log.child('graphql')
 
+type DefaultExtraSettingsInput = Required<Omit<ExtraSettingsInput, 'host'>> & Pick<ExtraSettingsInput, 'host'>
+
+function prettifyHost(host: string): string {
+  return host === '::' ? 'localhost' : host
+}
+
 /**
  * The default server options. These are merged with whatever you provide. Your
  * settings take precedence over these.
  */
-export const defaultExtraSettings: Required<ExtraSettingsInput> = {
+export const defaultExtraSettingsInput: DefaultExtraSettingsInput = {
+  host: process.env.NEXUS_HOST || process.env.HOST || undefined,
   port:
     typeof process.env.NEXUS_PORT === 'string'
       ? parseInt(process.env.NEXUS_PORT, 10)
@@ -32,12 +40,8 @@ export const defaultExtraSettings: Required<ExtraSettingsInput> = {
       : process.env.NODE_ENV === 'production'
       ? 80
       : 4000,
-  host: process.env.NEXUS_HOST || process.env.HOST || 'localhost',
   startMessage: ({ port, host }): void => {
-    const prettyHost = host === '127.0.0.1' ? 'localhost' : host
-    log.info('listening', {
-      url: `http://${prettyHost}:${port}`,
-    })
+    log.info('listening', { url: `http://${prettifyHost(host)}:${port}` })
   },
   playground: process.env.NODE_ENV === 'production' ? false : true,
   path: '/graphql',
@@ -81,7 +85,7 @@ export type ExtraSettingsInput = {
   startMessage?: (address: { port: number; host: string; ip: string }) => void
 }
 
-export type ExtraSettingsData = Required<ExtraSettingsInput>
+export type ExtraSettingsData = DefaultExtraSettingsInput
 
 /**
  * The available server options to configure how your app runs its server.
@@ -118,18 +122,18 @@ export interface Server extends BaseServer {
   express: ExpressInstance
 }
 
-function setupExpress(express: Express, settingsGiven: SettingsInput): BaseServer {
+function setupExpress(express: Express, settings: SettingsInput): BaseServer {
   const http = HTTP.createServer()
-  const opts = { ...defaultExtraSettings, ...settingsGiven }
+  const settingsMerged = { ...defaultExtraSettingsInput, ...settings }
 
   http.on('request', express)
 
   express.use(
-    opts.path,
+    settingsMerged.path,
     createExpressGraphql((req) => {
       return {
-        ...opts,
-        context: settingsGiven.context(req),
+        ...settingsMerged,
+        context: settingsMerged.context(req),
         customFormatErrorFn: (error) => {
           const colorlessMessage = stripAnsi(error.message)
 
@@ -149,7 +153,7 @@ function setupExpress(express: Express, settingsGiven: SettingsInput): BaseServe
     })
   )
 
-  if (opts.playground) {
+  if (settingsMerged.playground) {
     express.get('/', (_req, res) => {
       res.send(`
         <!DOCTYPE html>
@@ -204,7 +208,7 @@ function setupExpress(express: Express, settingsGiven: SettingsInput): BaseServe
           </div>
           <script>window.addEventListener('load', function (event) {
               GraphQLPlayground.init(document.getElementById('root'), {
-                endpoint: '${opts.path}'
+                endpoint: '${settingsMerged.path}'
               })
             })</script>
         </body>
@@ -217,12 +221,12 @@ function setupExpress(express: Express, settingsGiven: SettingsInput): BaseServe
   return {
     start: () =>
       new Promise<void>((res) => {
-        http.listen({ port: opts.port, host: opts.host }, () => {
+        http.listen({ port: settingsMerged.port, host: settingsMerged.host }, () => {
           // - We do not support listening on unix domain sockets so string
           //   value will never be present here.
           // - We are working within the listen callback so address will not be null
           const address = http.address()! as Net.AddressInfo
-          opts.startMessage({
+          settingsMerged.startMessage({
             port: address.port,
             host: address.address,
             ip: address.address,
