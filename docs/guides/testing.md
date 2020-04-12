@@ -16,45 +16,57 @@ Nexus comes with a special testing module that you can import from `nexus/testin
 Before jumping into test suites we will wrap the `createTestContext` with a pattern that more tightly integrates it into `jest`. Nexus will probably ship something like as follows or better in the future, but for now you can copy this into your projects:
 
 ```ts
-// tests/__helpers.ts
-import { createTestContext as originalCreateTestContext, TestContext } from 'nexus/testing'
+// tests/environment.js
+const NodeEnvironment = require('jest-environment-node')
+const { createTestContext } = require('nexus/testing')
 
-export function createTestContext(): TestContext {
-  let ctx: TestContext
+module.exports = class CustomEnvironment extends NodeEnvironment {
+  nexus = null
 
-  beforeAll(async () => {
-    ctx = await createTestContext()
-    await ctx.app.server.start()
-  })
+  async setup() {
+    await super.setup()
+    this.nexus = await createTestContext()
+    await this.nexus.app.server.start()
+    this.global.nexus = this.nexus
+  }
 
-  afterAll(async () => {
-    await ctx.app.server.stop()
-  })
-
-  // @ts-ignore
-  return ctx
+  async teardown() {
+    await super.teardown()
+    await this.nexus.app.server.stop()
+  }
 }
 ```
 
-We'll use this in other test suites roughly like so:
+```ts
+// tests/environment.ts
+import { TestContext } from 'nexus/testing'
+
+declare global {
+  export const nexus: TestContext
+}
+```
+
+```json
+{
+  "jest": {
+    "testEnvironment": "./tests/environment"
+  }
+}
+```
+
+Now simply use the `nexus` global in your tests to interact with your running app.
 
 ```ts
 // tests/foo.spec.ts
-import { createTestContext } from './__helpers'
-
-const ctx = createTestContext()
-
-it('foo', () => {
-  // use `ctx` in here
+it('foo', async () => {
+  expect(
+    await nexus.app.query(`
+      ...
+    `)
+  ).toMatchInlineSnapshot(`
+    ...
+  `)
 })
-```
-
-Removing boilerplate away from your test code is a win and staying DRY about it across multiple test suites helps. But do note that `ctx` is not usable outside of jest blocks (`it` `before` `after` `...`). If you try to you'll find it to be `undefined`.
-
-```ts
-import { createTestContext } from './__helpers'
-
-const { app } = createTestContext() // Error!
 ```
 
 ## Without a database
