@@ -17,11 +17,12 @@ export function createDevAppRunner(
 } {
   const startModule = createStartModuleContent({
     internalStage: 'dev',
-    layout,
+    layout: layout,
     absoluteModuleImports: true,
     plugins: [], // No need to statically require runtime plugins in dev (no need to tree-shake)
     disableServer: opts?.disableServer,
   })
+
   const transpiledStartModule = transpileModule(startModule, {
     target: ts.ScriptTarget.ES5,
     module: ts.ModuleKind.CommonJS,

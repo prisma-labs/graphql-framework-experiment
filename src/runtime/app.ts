@@ -131,13 +131,13 @@ export function create(): App {
        * for you. You should not normally need to call this function yourself.
        */
       async start() {
-        // Track the start call so that we can know in entrypoint whether to run
-        // or not start for the user.
-        __state.isWasServerStartCalled = true
-
         if (process.env.NEXUS_DISABLE_SERVER === 'true') {
           return
         }
+
+        // Track the start call so that we can know in entrypoint whether to run
+        // or not start for the user.
+        __state.isWasServerStartCalled = true
 
         const plugins = await Plugin.loadRuntimePluginsFromEntrypoints(__state.plugins)
         const graphqlSchema = await schemaComponent.private.makeSchema(plugins)
