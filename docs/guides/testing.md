@@ -17,7 +17,7 @@ Before jumping into test suites we will wrap the `createTestContext` with a patt
 
 ```ts
 // tests/__helpers.ts
-import { createTestContext, TestContext } from 'nexus/testing'
+import { createTestContext as originalCreateTestContext, TestContext } from 'nexus/testing'
 
 export function createTestContext(): TestContext {
   let ctx: TestContext
@@ -31,6 +31,7 @@ export function createTestContext(): TestContext {
     await ctx.app.server.stop()
   })
 
+  // @ts-ignore
   return ctx
 }
 ```
