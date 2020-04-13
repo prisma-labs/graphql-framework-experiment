@@ -24,10 +24,9 @@ Start by updating our data layer to model information about moons. We don't want
   }
 
 + model Moon {
-+   id    Int    @id
-+   name  String
-+   world World
-+   world World  @relation(fields: [id], references: [id])
++   worldId Int    @id @default(autoincrement())
++   name    String
++   world   World  @relation(fields: [worldId], references: [id])
 + }
 ```
 
