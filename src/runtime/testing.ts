@@ -33,14 +33,14 @@ export interface TestContextCore {
 }
 
 declare global {
-  interface nexusFutureTestContextApp extends TestContextAppCore {}
+  interface NexusTestContextApp extends TestContextAppCore {}
 
-  interface nexusFutureTestContextRoot {
-    app: nexusFutureTestContextApp
+  interface NexusTestContextRoot {
+    app: NexusTestContextApp
   }
 }
 
-export type TestContext = nexusFutureTestContextRoot
+export type TestContext = NexusTestContextRoot
 
 /**
  * Setup a test context providing utilities to query against your GraphQL API

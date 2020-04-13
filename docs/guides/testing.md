@@ -23,7 +23,7 @@ export function createTestContext(): TestContext {
   let ctx: TestContext
 
   beforeAll(async () => {
-    ctx = await createTestContext()
+    ctx = await originalCreateTestContext()
     await ctx.app.server.start()
   })
 
