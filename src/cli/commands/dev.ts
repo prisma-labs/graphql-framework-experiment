@@ -10,7 +10,7 @@ import { createWatcher } from '../../lib/watcher'
 const log = rootLogger.child('dev')
 
 const DEV_ARGS = {
-  '--inspect-brk': Number,
+  '--inspect-brk': String,
 }
 
 export class Dev implements Command {
@@ -60,6 +60,7 @@ export class Dev implements Command {
     }
 
     await createWatcher({
+      inspectBrk: args["--inspect-brk"],
       plugins: [layoutPlugin].concat(plugins.map((p) => p.hooks)),
       sourceRoot: layout.sourceRoot,
     })

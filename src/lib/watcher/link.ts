@@ -12,6 +12,10 @@ interface ChangeableOptions {
 interface Options extends ChangeableOptions {
   onRunnerImportedModule?: (data: ModuleRequiredMessage['data']) => void
   onServerListening?: () => void
+  /**
+   * Host and/or port on which the debugger should listen to
+   */
+  inspectBrk?: string
 }
 
 export class Link {
@@ -96,7 +100,17 @@ export class Link {
       throw new Error('attempt to spawn while previous child process still exists')
     }
 
-    this.childProcess = nodecp.fork(require.resolve('./runner'), [], {
+    const forkCmd: string[] = []
+
+    if (this.options.inspectBrk) {
+      forkCmd.push(`--inspect-brk=${this.options.inspectBrk}`)
+    }
+
+    forkCmd.push(require.resolve('./runner'))
+
+    const [firstArg, ...rest] = forkCmd
+
+    this.childProcess = nodecp.fork(firstArg, rest, {
       cwd: process.cwd(),
       stdio: 'pipe',
       env: {
