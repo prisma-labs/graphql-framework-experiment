@@ -49,9 +49,9 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   content += stripIndent`
     // Run framework initialization side-effects
     // Also, import the app for later use
-    const app = require("${
+    const app = ${renderRequire(
       config.absoluteModuleImports ? resolveFrom('nexus', config.layout.projectRoot) : 'nexus'
-    }").default
+    )}.default
   `
 
   // todo test coverage for this feature
@@ -76,11 +76,11 @@ export function createStartModuleContent(config: StartModuleConfig): string {
       // On the Zeit Now platform, builds and dev copy source into
       // new directory. Copying follows paths found in source. Give one here
       // to package.json to make sure Zeit Now brings it along.
-      require('${
+      ${renderRequire(
         config.absoluteModuleImports
           ? config.layout.packageJson.path
           : Path.relative(config.layout.buildOutputRelative, config.layout.packageJson.path)
-      }')
+      )}
     `
   }
 
@@ -100,26 +100,26 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     content += EOL + EOL + EOL
     content += stripIndent`
       // Import the user's app module
-      require("${
+      ${renderRequire(
         config.absoluteModuleImports
           ? stripExt(config.layout.app.path)
           : './' + stripExt(config.layout.sourceRelative(config.layout.app.path))
-      }")
+      )}
     `
   }
 
   if (config.plugins.length) {
     content += EOL + EOL + EOL
     content += stripIndent`
-      // Statically import runtime plugins for tree-shaking
+      // Statically require runtime plugins for tree-shaking
       ${config.plugins
         .filter((p) => p.runtime !== undefined)
-        .map((plugin, index) => {
-          return `import { ${plugin.runtime!.export} as plugin_${index} } from '${
+        .map((plugin) => {
+          return renderRequire(
             config.absoluteModuleImports
               ? plugin.runtime!.module
               : relativeModuleImport(plugin.name, plugin.runtime!.module)
-          }'`
+          )
         })
         .join(EOL)}
     `
@@ -186,4 +186,8 @@ function relativeModuleImport(moduleName: string, absoluteModuleImport: string) 
   const relativeModuleImport = absoluteModuleImport.substring(moduleNamePos)
 
   return stripExt(relativeModuleImport)
+}
+
+function renderRequire(moduleId: string) {
+  return `require('${moduleId}')`
 }
