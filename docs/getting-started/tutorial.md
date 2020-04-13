@@ -184,7 +184,6 @@ Then, create an account at [Heroku](https://www.heroku.com/) (if you don't alrea
     ```
 
     Copy it into `prisma/.env` to give Prisma access.
-    Commit this change into your repo.
 
 1.  Migrate the heroku postgres databse
 
@@ -196,6 +195,13 @@ Then, create an account at [Heroku](https://www.heroku.com/) (if you don't alrea
 
     ```cli
     npx prisma migrate up --experimental
+    ```
+
+1.  Commit your changes to Git    
+    
+    ```cli
+    git add .
+    git commit -m "updates for deployment to Heroku"
     ```
 
 1.  Deploy your Nexus app
