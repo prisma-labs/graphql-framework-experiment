@@ -13,6 +13,7 @@
 - [Conventions](guides/conventions)
 - [Error Handling](guides/error-handling)
 - [Plugins](guides/plugins)
+- [Debugging](guides/debugging)
 - [Recipes](references/recipes)
 - [Writing Plugins](guides/writing-plugins)
 
