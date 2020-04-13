@@ -175,25 +175,28 @@ Then, create an account at [Heroku](https://www.heroku.com/) (if you don't alrea
 1.  Add a postgres database to it
 
     ```cli
-    heroku addons:create heroku-postgresql --app <app-name>
+    heroku addons:create heroku-postgresql
     ```
 
 1.  Find the postgres databse connection URL
 
     ```cli
-    heroku pg:credentials:url --app <app-name>
+    heroku pg:credentials:url
     ```
 
     Copy it into `prisma/.env` to give Prisma access.
+    Commit this change into your repo.
 
 1.  Migrate the heroku postgres databse
 
     ```cli
-    npm run prisma migrate save --experimental
+    yarn prisma migrate up --experimental
     ```
 
+    Or if using `npm`:
+
     ```cli
-    npm run prisma migrate up --experimental
+    npx prisma migrate up --experimental
     ```
 
 1.  Deploy your Nexus app
