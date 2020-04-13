@@ -51,6 +51,7 @@ export function createWatcher(options: Options): Promise<void> {
 
         watcher.resume()
       },
+      inspectBrk: options.inspectBrk,
     })
 
     process.onBeforeExit(() => {

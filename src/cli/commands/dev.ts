@@ -60,6 +60,7 @@ export class Dev implements Command {
     }
 
     await createWatcher({
+      inspectBrk: args["--inspect-brk"],
       plugins: [layoutPlugin].concat(plugins.map((p) => p.hooks)),
       sourceRoot: layout.sourceRoot,
     })

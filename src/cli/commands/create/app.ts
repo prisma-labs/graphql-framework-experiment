@@ -509,7 +509,7 @@ async function scaffoldBaseFiles(options: InternalConfig) {
             {
               "type": "node",
               "request": "launch",
-              "name": "Debug nexus App",
+              "name": "Debug Nexus App",
               "protocol": "inspector",
               "runtimeExecutable": "\${workspaceRoot}/node_modules/.bin/nexus",
               "runtimeArgs": ["dev"],
