@@ -13,9 +13,9 @@ interface Options extends ChangeableOptions {
   onRunnerImportedModule?: (data: ModuleRequiredMessage['data']) => void
   onServerListening?: () => void
   /**
-   * Port on which the debugger should listen to 
+   * Host and/or port on which the debugger should listen to
    */
-  inspectBrk?: number
+  inspectBrk?: string
 }
 
 export class Link {
@@ -103,7 +103,7 @@ export class Link {
     const forkCmd: string[] = []
 
     if (this.options.inspectBrk) {
-      forkCmd.push(`--inspect-brk=${this.options.inspectBrk.toString()}`)
+      forkCmd.push(`--inspect-brk=${this.options.inspectBrk}`)
     }
 
     forkCmd.push(require.resolve('./runner'))

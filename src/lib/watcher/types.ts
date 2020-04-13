@@ -60,7 +60,7 @@ export interface Opts extends BooleanOpts, StringOpts {
   stdio?: ForkOptions['stdio']
   plugins: Plugin.WorktimeHooks[]
   /**
-   * Port on which the debugger should listen to
+   * Host and/or port on which the debugger should listen to
    */
-  inspectBrk?: number
+  inspectBrk?: string
 }
