@@ -20,10 +20,10 @@ Before jumping into test suites we will wrap the `createTestContext` with a patt
 import { createTestContext as originalCreateTestContext, TestContext } from 'nexus/testing'
 
 export function createTestContext(): TestContext {
-  let ctx: TestContext
+  let ctx = {} as TestContext
 
   beforeAll(async () => {
-    ctx = await originalCreateTestContext()
+    Object.assign(ctx, await originalCreateTestContext())
     await ctx.app.server.start()
   })
 
@@ -31,7 +31,6 @@ export function createTestContext(): TestContext {
     await ctx.app.server.stop()
   })
 
-  // @ts-ignore
   return ctx
 }
 ```
