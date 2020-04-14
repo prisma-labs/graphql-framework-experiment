@@ -40,7 +40,7 @@ _source root_
 
 Source Root is the base from which your source code layout starts. So, all of your app code must live within the source root. Your JavaScript build output will mirror it.
 
-Source Root is defined by setting `compilerOptions.rootDir` and adding its value also to the `includes` array.
+Source Root is defined by setting `compilerOptions.rootDir` and adding its value also to the `includes` array. For detail into why it works like this see [microsoft/TypeScript#9858](https://github.com/microsoft/TypeScript/issues/9858#issuecomment-533287263) and this [StackOverflow answer](https://stackoverflow.com/questions/57333825/can-you-pull-in-excludes-includes-options-in-typescript-compiler-api).
 
 If you do not specify `compilerOptions.rootDir` then source root is taken to be project root, and the `includes` array may be empty.
 
