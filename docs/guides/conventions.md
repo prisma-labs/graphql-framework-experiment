@@ -25,3 +25,15 @@ A module, anywhere in your source directory, named `app.ts`.
 ##### About
 
 This convention is optional if schema modules are present, required otherwise.
+
+## Project Layout
+
+Nexus considers the folder containing a `tsconfig.json` to be the project root.
+
+Nexus honours settings within `tsconfig.json`.
+
+Nexus requires that the value of `compilerOptions.rootDir` to be within the `includes` array. Together, these define the source root. All of your app code must live within the source root.
+
+If you do not specify `compilerOptions.rootDir` then source root is taken to be project root.
+
+You can control the build output with `compilerOptions.outDir`. You can override its value with `nexus build --out`. By default build output goes into `node_modules/.build`.

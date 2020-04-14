@@ -3,6 +3,7 @@ import { stripIndent } from 'common-tags'
 import * as FS from 'fs-jetpack'
 import * as Path from 'path'
 import { PackageJson } from 'type-fest'
+import * as ts from 'typescript'
 import { findDirContainingFileRecurisvelyUpwardSync, findFile } from '../../lib/fs'
 import { START_MODULE_NAME } from '../../runtime/start/start-module'
 import { rootLogger } from '../nexus-logger'
@@ -105,18 +106,22 @@ const optionDefaults = {
 /**
  * Perform a layout scan and return results with attached helper functions.
  */
-export async function create(optionsGiven?: Options): Promise<Layout> {
+export async function create(options?: Options): Promise<Layout> {
   // TODO lodash merge defaults or something
-  const options: Required<Options> = {
-    buildOutputRelative: optionsGiven?.buildOutputRelative ?? optionDefaults.buildOutput,
-    cwd: optionsGiven?.cwd ?? process.cwd(),
+  const optionsMerged: Required<Options> = {
+    buildOutputRelative: options?.buildOutputRelative ?? optionDefaults.buildOutput,
+    cwd: options?.cwd ?? process.cwd(),
   }
-  const data = await scan({ cwd: options.cwd })
+  const data = await scan({ cwd: optionsMerged.cwd })
   const layout = createFromData({
     ...data,
-    buildOutputRelative: options.buildOutputRelative,
+    buildOutputRelative: optionsMerged.buildOutputRelative,
     startModuleInPath: Path.join(data.sourceRoot, START_MODULE_NAME + '.ts'),
-    startModuleOutPath: Path.join(data.projectRoot, options.buildOutputRelative, START_MODULE_NAME + '.js'),
+    startModuleOutPath: Path.join(
+      data.projectRoot,
+      optionsMerged.buildOutputRelative,
+      START_MODULE_NAME + '.js'
+    ),
   })
 
   /**
@@ -152,23 +157,79 @@ export function createFromData(layoutData: Data): Layout {
   }
 }
 
+const diagnosticHost: ts.FormatDiagnosticsHost = {
+  getNewLine: () => ts.sys.newLine,
+  getCurrentDirectory: () => process.cwd(),
+  getCanonicalFileName: (path) => path,
+}
+
 /**
  * Analyze the user's project files/folders for how conventions are being used
  * and where key modules exist.
  */
 export const scan = async (opts?: { cwd?: string }): Promise<ScanResult> => {
-  log.trace('starting scan...')
-  const projectRoot = opts?.cwd ?? findProjectDir()
-  const packageManagerType = await PackageManager.detectProjectPackageManager({
+  log.trace('starting scan')
+
+  const tsconfigPath = ts.findConfigFile(/*searchPath*/ process.cwd(), ts.sys.fileExists, 'tsconfig.json')
+
+  if (!tsconfigPath) {
+    // todo offer to generate one
+    throw new Error('A Nexus project must have a tsconfig.json file.')
+  }
+
+  const projectRoot = Path.dirname(tsconfigPath)
+
+  const tsconfigContent = ts.readConfigFile(tsconfigPath, ts.sys.readFile)
+
+  if (tsconfigContent.error) {
+    throw new Error(ts.formatDiagnosticsWithColorAndContext([tsconfigContent.error], diagnosticHost))
+  }
+
+  let sourceRoot = projectRoot
+
+  if (tsconfigContent.config.compilerOptions?.rootDir) {
+    sourceRoot = tsconfigContent.config.compilerOptions.rootDir
+  }
+
+  if (tsconfigContent.config.include === undefined) {
+    tsconfigContent.config.include = []
+  }
+
+  tsconfigContent.config.include.push(sourceRoot)
+
+  // Target ES5 output by default (instead of ES3).
+  if (tsconfigContent.config.compilerOptions.target === undefined) {
+    tsconfigContent.config.compilerOptions.target = ts.ScriptTarget.ES5
+  }
+
+  // Target CommonJS modules by default (instead of magically switching to ES6 when the target is ES6).
+  if (tsconfigContent.config.compilerOptions.module === undefined) {
+    tsconfigContent.config.compilerOptions.module = ts.ModuleKind.CommonJS
+  }
+
+  // todo make part of scan result
+  let outDir = optionDefaults.buildOutput
+  if (tsconfigContent.config.compilerOptions.outDir !== undefined) {
+    outDir = tsconfigContent.config.compilerOptions.outDir
+  }
+
+  const tsconfig = ts.parseJsonConfigFileContent(
+    tsconfigContent.config,
+    ts.sys,
     projectRoot,
-  })
+    undefined,
+    tsconfigPath
+  )
+
+  console.log(tsconfig)
+
+  const packageManagerType = await PackageManager.detectProjectPackageManager({ projectRoot })
   const packageJson = findPackageJson({ projectRoot })
   const maybeAppModule = findAppModule({ projectRoot })
   const maybeSchemaModules = Schema.findDirOrModules({ projectRoot })
-  // TODO do not assume app module is at source root?
-  const sourceRoot = getSourceRoot(maybeAppModule, maybeSchemaModules, {
-    projectRoot,
-  })
+  // const sourceRoot = getSourceRoot(maybeAppModule, maybeSchemaModules, {
+  //   projectRoot,
+  // })
 
   const result: ScanResult = {
     app:
@@ -184,7 +245,7 @@ export const scan = async (opts?: { cwd?: string }): Promise<ScanResult> => {
     sourceRootRelative: Path.relative(projectRoot, sourceRoot) || './',
     project: readProjectInfo(opts),
     packageManagerType: packageManagerType,
-    packageJson,
+    packageJson: packageJson,
   }
 
   if (result.app.exists === false && result.schemaModules.length === 0) {
@@ -193,7 +254,7 @@ export const scan = async (opts?: { cwd?: string }): Promise<ScanResult> => {
     process.exit(1)
   }
 
-  log.trace('...completed scan', { result })
+  log.trace('completed scan', { result })
   return result
 }
 

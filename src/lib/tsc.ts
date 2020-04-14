@@ -56,9 +56,13 @@ export function readTsConfig(layout: Layout): ts.ParsedCommandLine {
    * Note that the reason this is not part of the post-parse fixing (which is
    * type-safe) is that TS API will execute on files/include/exlcude during the
    * parse phase. So we need to work our conventions for this config BEFORE the
-   * parse. More detail cabout this nuance can be found in this Stack-Overflow thread:
+   * parse. More detail about this nuance can be found in this Stack-Overflow thread:
    *
    * https://stackoverflow.com/questions/57333825/can-you-pull-in-excludes-includes-options-in-typescript-compiler-api
+   *
+   * And this issue:
+   *
+   * https://github.com/microsoft/TypeScript/issues/9858#issuecomment-533287263
    *
    */
   if (tsConfigContent.config.include === undefined) {
@@ -100,14 +104,16 @@ export function readTsConfig(layout: Layout): ts.ParsedCommandLine {
   return inputConfig
 }
 
+interface ProgramOptions {
+  withCache?: boolean
+}
+
 export function createTSProgram(
   layout: Layout,
-  opts?: {
-    withCache?: boolean
-  }
+  options?: ProgramOptions
 ): ts.EmitAndSemanticDiagnosticsBuilderProgram {
   const tsConfig = readTsConfig(layout)
-  const cacheOptions = opts?.withCache
+  const cacheOptions = options?.withCache
     ? {
         tsBuildInfoFile: getTSIncrementalFilePath(layout),
         incremental: true,
@@ -124,6 +130,18 @@ export function createTSProgram(
     },
   })
 
+  // console.log(program.getCompilerOptions())
+  // console.log(
+  //   program
+  //     .getSourceFiles()
+  //     .filter((f) => !f.fileName.match('node_modules'))
+  //     .map((f) => f.fileName)
+  // )
+  // console.log(
+  //   ts.formatDiagnosticsWithColorAndContext(program.getConfigFileParsingDiagnostics(), diagnosticHost)
+  // )
+  // console.log(ts.formatDiagnosticsWithColorAndContext(program.getGlobalDiagnostics(), diagnosticHost))
+  // console.log(ts.formatDiagnosticsWithColorAndContext(program.getOptionsDiagnostics(), diagnosticHost))
   return program
 }
 
