@@ -40,12 +40,12 @@ export async function extractContextTypesToTypeGenFile(program: ts.Program) {
 /**
  * Run the extractor in a worker.
  */
-export function runAddToContextExtractorAsWorker(layoutData: Layout.Layout['data']) {
+export function runAddToContextExtractorAsWorker(layoutData: Layout.Data) {
   // avoid import error in node 10.x
   const { Worker } = require('worker_threads')
-  const worker = new Worker(Path.join(__dirname, './worker.js'), {
+  const worker = new Worker(Path.join(__dirname, 'worker.js'), {
     workerData: {
-      layout: layoutData,
+      layoutData,
     },
   })
 

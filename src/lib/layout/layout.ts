@@ -3,12 +3,12 @@ import { stripIndent } from 'common-tags'
 import * as FS from 'fs-jetpack'
 import * as Path from 'path'
 import { PackageJson } from 'type-fest'
-import * as ts from 'typescript'
 import { findDirContainingFileRecurisvelyUpwardSync, findFile } from '../../lib/fs'
 import { START_MODULE_NAME } from '../../runtime/start/start-module'
 import { rootLogger } from '../nexus-logger'
 import * as PackageManager from '../package-manager'
 import * as Schema from './schema-modules'
+import { readOrScaffoldTsconfig, TsConfigJson } from './tsconfig'
 
 export const DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT = 'node_modules/.build'
 
@@ -38,9 +38,9 @@ export type ScanResult = {
     isAnonymous: boolean
   }
   sourceRoot: string
-  sourceRootRelative: string
   projectRoot: string
   schemaModules: string[]
+  tsConfigJson: TsConfigJson
   packageManagerType: PackageManager.PackageManager['type']
   packageJson: null | {
     dir: string
@@ -157,79 +157,21 @@ export function createFromData(layoutData: Data): Layout {
   }
 }
 
-const diagnosticHost: ts.FormatDiagnosticsHost = {
-  getNewLine: () => ts.sys.newLine,
-  getCurrentDirectory: () => process.cwd(),
-  getCanonicalFileName: (path) => path,
-}
-
 /**
  * Analyze the user's project files/folders for how conventions are being used
  * and where key modules exist.
  */
-export const scan = async (opts?: { cwd?: string }): Promise<ScanResult> => {
+export async function scan(opts?: { cwd?: string }): Promise<ScanResult> {
   log.trace('starting scan')
 
-  const tsconfigPath = ts.findConfigFile(/*searchPath*/ process.cwd(), ts.sys.fileExists, 'tsconfig.json')
-
-  if (!tsconfigPath) {
-    // todo offer to generate one
-    throw new Error('A Nexus project must have a tsconfig.json file.')
-  }
-
-  const projectRoot = Path.dirname(tsconfigPath)
-
-  const tsconfigContent = ts.readConfigFile(tsconfigPath, ts.sys.readFile)
-
-  if (tsconfigContent.error) {
-    throw new Error(ts.formatDiagnosticsWithColorAndContext([tsconfigContent.error], diagnosticHost))
-  }
-
-  let sourceRoot = projectRoot
-
-  if (tsconfigContent.config.compilerOptions?.rootDir) {
-    sourceRoot = tsconfigContent.config.compilerOptions.rootDir
-  }
-
-  if (tsconfigContent.config.include === undefined) {
-    tsconfigContent.config.include = []
-  }
-
-  tsconfigContent.config.include.push(sourceRoot)
-
-  // Target ES5 output by default (instead of ES3).
-  if (tsconfigContent.config.compilerOptions.target === undefined) {
-    tsconfigContent.config.compilerOptions.target = ts.ScriptTarget.ES5
-  }
-
-  // Target CommonJS modules by default (instead of magically switching to ES6 when the target is ES6).
-  if (tsconfigContent.config.compilerOptions.module === undefined) {
-    tsconfigContent.config.compilerOptions.module = ts.ModuleKind.CommonJS
-  }
-
-  // todo make part of scan result
-  let outDir = optionDefaults.buildOutput
-  if (tsconfigContent.config.compilerOptions.outDir !== undefined) {
-    outDir = tsconfigContent.config.compilerOptions.outDir
-  }
-
-  const tsconfig = ts.parseJsonConfigFileContent(
-    tsconfigContent.config,
-    ts.sys,
-    projectRoot,
-    undefined,
-    tsconfigPath
-  )
-
-  console.log(tsconfig)
-
+  const projectRoot = process.cwd()
   const packageManagerType = await PackageManager.detectProjectPackageManager({ projectRoot })
-  const packageJson = findPackageJson({ projectRoot })
+  const maybePackageJson = findPackageJson({ projectRoot })
   const maybeAppModule = findAppModule({ projectRoot })
   const maybeSchemaModules = Schema.findDirOrModules({ projectRoot })
-  // const sourceRoot = getSourceRoot(maybeAppModule, maybeSchemaModules, {
-  //   projectRoot,
-  // })
+  const tsConfigJson = await readOrScaffoldTsconfig({
+    projectRoot,
+  })
 
   const result: ScanResult = {
     app:
@@ -237,15 +179,12 @@ export const scan = async (opts?: { cwd?: string }): Promise<ScanResult> => {
         ? ({ exists: false, path: maybeAppModule } as const)
         : ({ exists: true, path: maybeAppModule } as const),
     projectRoot: projectRoot,
-    sourceRoot: sourceRoot,
+    sourceRoot: Path.join(projectRoot, tsConfigJson.compilerOptions.rootDir),
     schemaModules: maybeSchemaModules,
-    // when source and project roots are the same relative is computed as '' but
-    // this is not valid path like syntax in a lot cases at least such as
-    // tsconfig include field.
-    sourceRootRelative: Path.relative(projectRoot, sourceRoot) || './',
     project: readProjectInfo(opts),
+    tsConfigJson: tsConfigJson,
     packageManagerType: packageManagerType,
-    packageJson: packageJson,
+    packageJson: maybePackageJson,
   }
 
   if (result.app.exists === false && result.schemaModules.length === 0) {
@@ -258,10 +197,7 @@ export const scan = async (opts?: { cwd?: string }): Promise<ScanResult> => {
   return result
 }
 
-// todo make rest of codebase reference this source of truth
 // todo allow user to configure these for their project
-// todo once user can configure these for their project, settle on only one of
-// these, since user will be able to easily change it
 const CONVENTIONAL_ENTRYPOINT_MODULE_NAME = 'app'
 const CONVENTIONAL_ENTRYPOINT_FILE_NAME = `${CONVENTIONAL_ENTRYPOINT_MODULE_NAME}.ts`
 

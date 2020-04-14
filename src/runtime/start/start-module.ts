@@ -24,7 +24,6 @@ type StartModuleConfig = {
 }
 
 export function createStartModuleContent(config: StartModuleConfig): string {
-  log.trace('create start module')
   let content = `// ${START_MODULE_HEADER}` + '\n'
 
   content += EOL + EOL + EOL
@@ -139,7 +138,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     `
   }
 
-  log.trace('created', { content })
+  log.trace('created start module', { content })
   return content
 }
 
