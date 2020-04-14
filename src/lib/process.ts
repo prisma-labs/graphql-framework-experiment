@@ -234,11 +234,11 @@ export function isProcessFromProjectBin(packageJsonPath: string): boolean {
   const realProcessBinPath = fs.realpathSync(process.argv[1])
   
   if (!fs.existsSync(projectBinPath)) {
-    log.trace('Nexus project bin path not found. A global CLI could be used with a wrong version', {
+    log.warn('Nexus project bin path not found. A global CLI could be used with a wrong version', {
       projectBinPath,
       processBinPath: realProcessBinPath,
     })
-    
+
     return true
   }
 
