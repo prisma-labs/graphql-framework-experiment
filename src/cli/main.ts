@@ -39,7 +39,7 @@ async function guardNotGlobalCLIWithLocalProject(
   // TODO data is attainable from layout scan calculated later on... not optimal to call this twice...
   const projectType = await Layout.scanProjectType({ cwd: process.cwd() })
 
-  if (projectType.type === 'NEXUS_project' && isProcessFromProjectBin(projectType.packageJsonLocation.path)) {
+  if (projectType.type === 'NEXUS_project' && isProcessFromProjectBin(projectType.packageJsonLocation.path) === false) {
     // TODO make npm aware
     fatal(stripIndent`
         You are using the nexus cli from a location other than this project.

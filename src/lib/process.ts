@@ -1,5 +1,6 @@
 import { spawn, spawnSync, SpawnSyncOptions } from 'child_process'
 import { stripIndent } from 'common-tags'
+import * as fs from 'fs'
 import * as Path from 'path'
 import { format } from 'util'
 import { log } from './nexus-logger'
@@ -228,10 +229,22 @@ function isFailedExitCode(exitCode: null | number): boolean {
  * @param packageJsonPath
  */
 export function isProcessFromProjectBin(packageJsonPath: string): boolean {
-  const processBinPath = process.argv[1]
-  const processBinDirPath = Path.dirname(processBinPath)
-  const projectBinDirPath = Path.join(Path.dirname(packageJsonPath), 'node_modules/.bin')
-  return processBinDirPath !== projectBinDirPath
+  // TODO: Find better heuristic to find nexus bin
+  const projectBinPath = Path.join(Path.dirname(packageJsonPath), 'node_modules', '.bin', 'nexus')
+  const realProcessBinPath = fs.realpathSync(process.argv[1])
+  
+  if (!fs.existsSync(projectBinPath)) {
+    log.trace('Nexus project bin path not found. A global CLI could be used with a wrong version', {
+      projectBinPath,
+      processBinPath: realProcessBinPath,
+    })
+    
+    return true
+  }
+
+  const realProjectBinPath = fs.realpathSync(projectBinPath)
+
+  return realProjectBinPath === realProcessBinPath
 }
 
 export function clearConsole() {
