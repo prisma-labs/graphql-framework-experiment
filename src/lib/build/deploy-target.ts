@@ -91,7 +91,7 @@ function validateNow(layout: Layout): ValidatorResult {
         "builds": [
           {
             "src": "${startModulePath}",
-            "use": "@now/node-server"
+            "use": "@now/node"
           }
         ],
         "routes": [{ "src": "/.*", "dest": "${startModulePath}" }]
@@ -106,11 +106,11 @@ function validateNow(layout: Layout): ValidatorResult {
     // Make sure the now.json file has the right `builds` values
     if (
       !nowJson.builds ||
-      !nowJson.builds.find((build) => build.src === startModulePath && build.use === '@now/node-server')
+      !nowJson.builds.find((build) => build.src === startModulePath && build.use === '@now/node')
     ) {
       log.error(`We could not find a proper builder in your \`now.json\` file`)
       log.error(`Found: "builds": ${JSON.stringify(nowJson.builds)}`)
-      log.error(`Expected: "builds": [{ src: "${startModulePath}", use: '@now/node-server' }, ...]`)
+      log.error(`Expected: "builds": [{ src: "${startModulePath}", use: '@now/node' }, ...]`)
       console.log('\n')
       isValid = false
     }
