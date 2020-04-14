@@ -28,12 +28,24 @@ This convention is optional if schema modules are present, required otherwise.
 
 ## Project Layout
 
+Nexus honours settings within `tsconfig.json`. This ensures that Nexus and your IDE perform matching static analysis.
+
+_project root_
+
+Project Root is the CWD (current working directory) for all CLI invocatons.
+
 Nexus considers the folder containing a `tsconfig.json` to be the project root.
 
-Nexus honours settings within `tsconfig.json`.
+_source root_
 
-Nexus requires that the value of `compilerOptions.rootDir` to be within the `includes` array. Together, these define the source root. All of your app code must live within the source root.
+Source Root is the base from which your source code layout starts. So, all of your app code must live within the source root. Your JavaScript build output will mirror it.
 
-If you do not specify `compilerOptions.rootDir` then source root is taken to be project root.
+Source Root is defined by setting `compilerOptions.rootDir` and adding its value also to the `includes` array.
+
+If you do not specify `compilerOptions.rootDir` then source root is taken to be project root, and the `includes` array may be empty.
+
+Nexus requires that the `includes` array does not contain any modules source the source root.
+
+_out root_
 
 You can control the build output with `compilerOptions.outDir`. You can override its value with `nexus build --out`. By default build output goes into `node_modules/.build`.
