@@ -128,7 +128,6 @@ export function tsconfigTemplate(input: { sourceRootRelative: string; outRootRel
         lib: ['esnext'],
         strict: true,
         rootDir: sourceRelative,
-        outDir: input.outRootRelative,
       },
       include: [sourceRelative],
     },
