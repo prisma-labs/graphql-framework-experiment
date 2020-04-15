@@ -4,8 +4,10 @@ import { rootLogger } from '../../lib/nexus-logger'
 import { ownPackage } from '../../lib/own-package'
 import * as Plugin from '../../lib/plugin'
 import { fatal } from '../../lib/process'
-import { findOrScaffoldTsConfig } from '../../lib/tsc'
+import { findOrScaffoldTsConfig, transpileModule } from '../../lib/tsc'
 import { createWatcher } from '../../lib/watcher'
+import { createStartModuleContent } from '../../runtime/start'
+import * as ts from 'typescript'
 
 const log = rootLogger.child('dev')
 
@@ -25,11 +27,12 @@ export class Dev implements Command {
      * Load config before loading plugins which may rely on env vars being defined
      */
     const layout = await Layout.create()
-    const plugins = await Plugin.loadWorktimePlugins(layout)
+    const plugins = await Plugin.readAllPluginManifestsFromConfig(layout)
+    const worktimePlugins = await Plugin.loadWorktimePlugins(layout)
 
     await findOrScaffoldTsConfig(layout)
 
-    for (const p of plugins) {
+    for (const p of worktimePlugins) {
       await p.hooks.dev.onStart?.()
     }
 
@@ -59,10 +62,23 @@ export class Dev implements Command {
       },
     }
 
+    const startModule = createStartModuleContent({
+      internalStage: 'dev',
+      plugins,
+      layout,
+      absoluteModuleImports: true,
+    })
+    const transpiledStartModule = transpileModule(startModule, {
+      target: ts.ScriptTarget.ES5,
+      module: ts.ModuleKind.CommonJS,
+    })
+
     await createWatcher({
-      inspectBrk: args["--inspect-brk"],
-      plugins: [layoutPlugin].concat(plugins.map((p) => p.hooks)),
+      entrypointScript: transpiledStartModule,
       sourceRoot: layout.sourceRoot,
+      cwd: process.cwd(),
+      plugins: [layoutPlugin].concat(worktimePlugins.map((p) => p.hooks)),
+      inspectBrk: args['--inspect-brk'],
     })
   }
 }

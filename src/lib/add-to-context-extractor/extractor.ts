@@ -12,7 +12,7 @@ interface TypeImportInfo {
   isNode: boolean
 }
 
-export interface ExtractedContectTypes {
+export interface ExtractedContextTypes {
   typeImports: TypeImportInfo[]
   // types: Record<string, string>[]
   types: string[]
@@ -21,12 +21,12 @@ export interface ExtractedContectTypes {
 /**
  * Extract types from all `addToContext` calls.
  */
-export function extractContextTypes(program: ts.Program): ExtractedContectTypes {
+export function extractContextTypes(program: ts.Program): ExtractedContextTypes {
   const typeImportsIndex: Record<string, TypeImportInfo> = {}
 
   const checker = program.getTypeChecker()
 
-  const contextTypeContributions: ExtractedContectTypes = {
+  const contextTypeContributions: ExtractedContextTypes = {
     typeImports: [],
     types: [],
   }
