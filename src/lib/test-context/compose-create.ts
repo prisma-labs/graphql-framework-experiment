@@ -51,8 +51,13 @@ export function compose<A, R1 extends Contrib, R2 extends Contrib>(
   g: R2 | ((arg: R1) => R2)
 ): R1 & R2
 export function compose(...ctxs: Array<Contrib | ContribCreator>): Contrib {
-  return ctxs.reduce<Contrib>((acc, ctx) => {
-    Object.assign(acc, typeof ctx === 'function' ? ctx(acc) : ctx)
-    return acc
-  }, {})
+  const state = {}
+
+  beforeEach(async () => {
+    for (const ctx of ctxs) {
+      Object.assign(state, typeof ctx === 'function' ? await ctx(state) : ctx)
+    }
+  })
+
+  return state
 }

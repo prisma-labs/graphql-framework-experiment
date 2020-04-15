@@ -1,6 +1,6 @@
 import * as fs from 'fs-jetpack'
 import * as Path from 'path'
-import * as TypeFest from 'type-fest'
+import { TsConfigJson } from 'type-fest'
 import * as ts from 'typescript'
 import { rootLogger } from '../nexus-logger'
 import { DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT } from './layout'
@@ -13,18 +13,10 @@ const diagnosticHost: ts.FormatDiagnosticsHost = {
   getCanonicalFileName: (path) => path,
 }
 
-export interface TsConfigJson extends TypeFest.TsConfigJson {
-  compilerOptions: {
-    outDir: string
-    rootDir: string
-  }
-  include: string[]
-}
-
 export async function readOrScaffoldTsconfig(input: {
   projectRoot: string
   overrides?: { outRoot?: string }
-}): Promise<TsConfigJson> {
+}): Promise<ts.ParsedCommandLine> {
   let tsconfigPath = ts.findConfigFile(input.projectRoot, ts.sys.fileExists, 'tsconfig.json')
 
   if (!tsconfigPath) {
@@ -43,10 +35,14 @@ export async function readOrScaffoldTsconfig(input: {
   const tsconfigContent = ts.readConfigFile(tsconfigPath, ts.sys.readFile)
 
   if (tsconfigContent.error) {
-    throw new Error(ts.formatDiagnosticsWithColorAndContext([tsconfigContent.error], diagnosticHost))
+    log.fatal(
+      'Unable to read your tsconifg.json\n\n' +
+        ts.formatDiagnosticsWithColorAndContext([tsconfigContent.error], diagnosticHost)
+    )
+    process.exit(1)
   }
 
-  const tscfg = tsconfigContent.config
+  const tscfg: TsConfigJson = tsconfigContent.config
 
   // setup zero values
 
@@ -56,19 +52,38 @@ export async function readOrScaffoldTsconfig(input: {
 
   if (!tscfg.include) {
     tscfg.include = []
+  } else if (!Array.isArray(tscfg.include)) {
+    // If the include is present but not array it must mean a mal-formed tsconfig.
+    // Exit early, if we contintue we will have a runtime error when we try .push on a non-array.
+    // todo testme once we're not relying on mock process exit
+    checkNoTsConfigErrors(ts.parseJsonConfigFileContent(tscfg, ts.sys, projectRoot, undefined, tsconfigPath))
+  }
+
+  // Lint
+
+  if (tscfg.compilerOptions.tsBuildInfoFile) {
+    delete tscfg.compilerOptions.tsBuildInfoFile
+    log.warn(
+      'You have set compilerOptions.tsBuildInfoFile in your tsconfig.json but it will be ignored by Nexus. Nexus manages this value internally.'
+    )
+  }
+
+  if (tscfg.compilerOptions.incremental) {
+    delete tscfg.compilerOptions.incremental
+    log.warn(
+      'You have set compilerOptions.incremental in your tsconfig.json but it will be ignored by Nexus. Nexus manages this value internally.'
+    )
   }
 
   // setup source root
 
   if (!tscfg.compilerOptions!.rootDir) {
     tscfg.compilerOptions!.rootDir = '.'
-    // todo scaffold
     log.warn(`Please set your tsconfig.json compilerOptions.rootDir to "${tscfg.compilerOptions!.rootDir}"`)
   }
 
-  if (!tscfg.include.includes(tscfg.compilerOptions!.rootDir)) {
-    tscfg.include.push(tscfg.compilerOptions!.rootDir)
-    // todo scaffold
+  if (!tscfg.include.includes(tscfg.compilerOptions!.rootDir!)) {
+    tscfg.include.push(tscfg.compilerOptions!.rootDir!)
     log.warn(`Please set your tsconfig.json include to have "${tscfg.compilerOptions!.rootDir}"`)
   }
 
@@ -84,11 +99,22 @@ export async function readOrScaffoldTsconfig(input: {
 
   const tsconfig = ts.parseJsonConfigFileContent(tscfg, ts.sys, projectRoot, undefined, tsconfigPath)
 
-  // todo validate that no source modules fall outside source root
+  checkNoTsConfigErrors(tsconfig)
 
-  log.trace('read', { tsconfig: tsconfig.raw })
+  log.trace('read', { tsconfig: tsconfig })
 
-  return tsconfig.raw
+  return tsconfig
+}
+
+function checkNoTsConfigErrors(tsconfig: ts.ParsedCommandLine) {
+  if (tsconfig.errors.length > 0) {
+    // Kinds of errors include type validations like if include field is an array.
+    log.fatal(
+      'Your tsconfig.json is invalid\n\n' +
+        ts.formatDiagnosticsWithColorAndContext(tsconfig.errors, diagnosticHost)
+    )
+    process.exit(1)
+  }
 }
 
 export function tsconfigTemplate(input: { sourceRootRelative: string; outRootRelative: string }): string {

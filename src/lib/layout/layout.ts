@@ -3,12 +3,13 @@ import { stripIndent } from 'common-tags'
 import * as FS from 'fs-jetpack'
 import * as Path from 'path'
 import { PackageJson } from 'type-fest'
+import { ParsedCommandLine } from 'typescript'
 import { findDirContainingFileRecurisvelyUpwardSync, findFile } from '../../lib/fs'
 import { START_MODULE_NAME } from '../../runtime/start/start-module'
 import { rootLogger } from '../nexus-logger'
 import * as PackageManager from '../package-manager'
 import * as Schema from './schema-modules'
-import { readOrScaffoldTsconfig, TsConfigJson } from './tsconfig'
+import { readOrScaffoldTsconfig } from './tsconfig'
 
 export const DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT = 'node_modules/.build'
 
@@ -40,7 +41,7 @@ export type ScanResult = {
   sourceRoot: string
   projectRoot: string
   schemaModules: string[]
-  tsConfigJson: TsConfigJson
+  tsConfigJson: ParsedCommandLine
   packageManagerType: PackageManager.PackageManager['type']
   packageJson: null | {
     dir: string
@@ -164,7 +165,7 @@ export function createFromData(layoutData: Data): Layout {
 export async function scan(opts?: { cwd?: string }): Promise<ScanResult> {
   log.trace('starting scan')
 
-  const projectRoot = process.cwd()
+  const projectRoot = opts?.cwd ?? process.cwd()
   const packageManagerType = await PackageManager.detectProjectPackageManager({ projectRoot })
   const maybePackageJson = findPackageJson({ projectRoot })
   const maybeAppModule = findAppModule({ projectRoot })
@@ -179,7 +180,7 @@ export async function scan(opts?: { cwd?: string }): Promise<ScanResult> {
         ? ({ exists: false, path: maybeAppModule } as const)
         : ({ exists: true, path: maybeAppModule } as const),
     projectRoot: projectRoot,
-    sourceRoot: Path.join(projectRoot, tsConfigJson.compilerOptions.rootDir),
+    sourceRoot: tsConfigJson.options.rootDir!,
     schemaModules: maybeSchemaModules,
     project: readProjectInfo(opts),
     tsConfigJson: tsConfigJson,

@@ -16,8 +16,6 @@ export function createTSProgram(
   layout: Layout,
   options?: ProgramOptions
 ): ts.EmitAndSemanticDiagnosticsBuilderProgram {
-  console.log(layout.tsConfigJson)
-  // todo If user has configured these settings tell him that they are managed by Nexus
   const compilerCacheOptions = options?.withCache
     ? {
         tsBuildInfoFile: getTSIncrementalFilePath(layout),
@@ -27,27 +25,24 @@ export function createTSProgram(
 
   log.trace('Create TypeScript program')
 
-  const program = ts.createIncrementalProgram({
+  const builder = ts.createIncrementalProgram({
     rootNames: layout.schemaModules.concat(layout.app.exists ? [layout.app.path] : []),
     options: {
       ...compilerCacheOptions,
-      ...layout.tsConfigJson.compilerOptions,
+      ...layout.tsConfigJson.options,
     },
   })
 
-  // console.log(program.getCompilerOptions())
-  // console.log(
-  //   program
-  //     .getSourceFiles()
-  //     .filter((f) => !f.fileName.match('node_modules'))
-  //     .map((f) => f.fileName)
-  // )
-  // console.log(
-  //   ts.formatDiagnosticsWithColorAndContext(program.getConfigFileParsingDiagnostics(), diagnosticHost)
-  // )
-  // console.log(ts.formatDiagnosticsWithColorAndContext(program.getGlobalDiagnostics(), diagnosticHost))
-  // console.log(ts.formatDiagnosticsWithColorAndContext(program.getOptionsDiagnostics(), diagnosticHost))
-  return program
+  const errors = ts.getPreEmitDiagnostics(builder.getProgram())
+
+  // todo testme
+  if (errors.length) {
+    // Kind of errors here include when an import is from somewhere outside rootDir (and outDir is specified).
+    log.fatal('Your app is invalid\n\n' + ts.formatDiagnosticsWithColorAndContext(errors, diagnosticHost))
+    process.exit(1)
+  }
+
+  return builder
 }
 
 export function deleteTSIncrementalFile(layout: Layout) {
@@ -67,7 +62,7 @@ interface CompileOptions {
  * compile a program. Throws an error if the program does not type check.
  */
 export function compile(
-  program: ts.EmitAndSemanticDiagnosticsBuilderProgram,
+  builder: ts.EmitAndSemanticDiagnosticsBuilderProgram,
   layout: Layout,
   options?: CompileOptions
 ): void {
@@ -77,14 +72,15 @@ export function compile(
   }
 
   log.trace('emit transpiled modules')
-  const emitResult = program.emit()
+
+  const emitResult = builder.emit()
   log.trace('done', { filesEmitted: emitResult.emittedFiles?.length ?? 0 })
 
   if (options?.skipTSErrors === true) {
     return
   }
 
-  const allDiagnostics = ts.getPreEmitDiagnostics(program.getProgram()).concat(emitResult.diagnostics)
+  const allDiagnostics = ts.getPreEmitDiagnostics(builder.getProgram()).concat(emitResult.diagnostics)
 
   if (allDiagnostics.length > 0) {
     throw new Error(ts.formatDiagnosticsWithColorAndContext(allDiagnostics, diagnosticHost))
