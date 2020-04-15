@@ -15,8 +15,8 @@ Use the settings to centrally configure various aspects of the various component
     port?: number
     host?: string
     path?: string
+    playground?: boolean
   }
-  playground?: boolean
   schema?: {
     nullable?: {
       outputs?: boolean
