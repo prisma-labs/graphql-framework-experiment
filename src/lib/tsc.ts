@@ -33,12 +33,23 @@ export function createTSProgram(
     },
   })
 
-  const errors = ts.getPreEmitDiagnostics(builder.getProgram())
-
+  // If the program has imports to modules outside the source root then TS out root will be forced
+  // into an unexpected layout, and consequently the start module imports will fail. Check for this
+  // specific kind of error now. All other error checking will be deferred until after typegen has been run however.
   // todo testme
-  if (errors.length) {
-    // Kind of errors here include when an import is from somewhere outside rootDir (and outDir is specified).
-    log.fatal('Your app is invalid\n\n' + ts.formatDiagnosticsWithColorAndContext(errors, diagnosticHost))
+  const SOURCE_ROOT_MUST_CONTAIN_ALL_SOURCE_FILES_ERROR_CODE = 6059
+  const errors = ts.getPreEmitDiagnostics(builder.getProgram())
+  const maybeSourceRootMustContainAllSourceFilesError = errors.find(
+    (error) => error.code === SOURCE_ROOT_MUST_CONTAIN_ALL_SOURCE_FILES_ERROR_CODE
+  )
+  if (maybeSourceRootMustContainAllSourceFilesError) {
+    log.fatal(
+      'Your app is invalid\n\n' +
+        ts.formatDiagnosticsWithColorAndContext(
+          [maybeSourceRootMustContainAllSourceFilesError],
+          diagnosticHost
+        )
+    )
     process.exit(1)
   }
 

@@ -101,7 +101,7 @@ export async function readOrScaffoldTsconfig(input: {
 
   checkNoTsConfigErrors(tsconfig)
 
-  log.trace('read', { tsconfig: tsconfig })
+  log.trace('finished read')
 
   return tsconfig
 }

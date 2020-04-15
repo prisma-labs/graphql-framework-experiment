@@ -1,5 +1,6 @@
 import * as Path from 'path'
 import ts from 'typescript'
+import type { Worker } from 'worker_threads'
 import * as Layout from '../../lib/layout'
 import { createTSProgram } from '../../lib/tsc'
 import { rootLogger } from '../nexus-logger'
@@ -43,21 +44,29 @@ export async function extractContextTypesToTypeGenFile(program: ts.Program) {
 export function runAddToContextExtractorAsWorker(layoutData: Layout.Data) {
   // avoid import error in node 10.x
   const { Worker } = require('worker_threads')
-  const worker = new Worker(Path.join(__dirname, 'worker.js'), {
+  const worker: Worker = new Worker(Path.join(__dirname, 'worker.js'), {
     workerData: {
       layoutData,
     },
   })
 
+  worker.once('online', () => {
+    log.trace('worker online')
+  })
+
+  worker.once('exit', (exitCode) => {
+    log.trace('worker exited', { exitCode })
+  })
+
   worker.once('message', (contextTypes: ExtractedContectTypes) => {
-    log.trace('finished context type extraction', { contextTypes })
+    log.trace('worker finished context type extraction', { contextTypes })
 
     // Let the Node.js main thread exit, even though the Worker
     // is still running:
     worker.unref()
   })
 
-  worker.on('error', (error: Error) => {
+  worker.on('error', (error) => {
     log.warn('We could not extract your context types from `schema.addToContext`', { error })
   })
 }
