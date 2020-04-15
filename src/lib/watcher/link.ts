@@ -10,15 +10,29 @@ interface ChangeableOptions {
 }
 
 interface Options extends ChangeableOptions {
+  entrypointScript: string
   onRunnerImportedModule?: (data: ModuleRequiredMessage['data']) => void
-  onServerListening?: () => void
+  onServerListening?: () => Promise<void>
+  onRunnerStdioMessage?: (e: { stdio: 'stdout' | 'stderr'; data: string }) => void
   /**
    * Host and/or port on which the debugger should listen to
    */
   inspectBrk?: string
 }
 
+type StopResult = null | {
+  code: null | number
+  signal: null | NodeJS.Signals
+}
+
+type State = 'default' | 'running' | 'stopping' | 'stopped'
+
 export class Link {
+  private ttyLinker = TTYLinker.create()
+  private state: State = 'default'
+  private stoppedResult: StopResult | null = null
+  private childProcess: null | nodecp.ChildProcessWithoutNullStreams = null
+
   constructor(private options: Options) {}
 
   updateOptions(options: ChangeableOptions) {
@@ -29,72 +43,65 @@ export class Link {
   }
 
   async startOrRestart() {
-    log.trace('startOrRestart requested')
+    log.trace('startOrRestart requested', { state: this.state })
 
-    if (this.startingOrRestarting) {
-      log.trace('already a startOrRestartPending in progress')
+    if (this.childProcess) {
+      await this.stop()
+    }
+
+    this.spawnRunner()
+  }
+
+  async stop() {
+    log.trace('stop requested', { state: this.state })
+
+    if (this.state === 'stopped') {
+      log.trace('child is already stopped', { state: this.state })
       return
     }
 
-    this.stopped = false
-    this.stopping = null
-    this.startingOrRestarting = true
-    if (this.childProcess) {
-      await this.kill()
+    if (this.state === 'stopping') {
+      log.trace('child is already stopping', { state: this.state })
+      return
     }
-    this.startingOrRestarting = false
-    // may have been stopped while killing previous
-    if (!this.stopped) {
-      this.spawnRunner()
-    }
+
+    await this.kill()
   }
 
-  stop() {
-    log.trace('stop requested')
-
-    if (this.stopped) {
-      log.trace('already stopped')
-      if (this.stopping === null) {
-        throw new Error('invariant violation, stopped but no stopping promise')
-      }
-      return this.stopping
+  private async kill(): Promise<StopResult> {
+    if (this.state === 'stopped') {
+      return this.stoppedResult
     }
 
-    this.stopped = true
-    this.stopping = this.kill()
-    return this.stopping
-  }
-
-  private kill() {
-    log.trace('kill child')
+    this.state = 'stopping'
+    log.trace('killing child', { state: this.state })
 
     return new Promise<StopResult>((res) => {
       if (!this.childProcess) {
-        log.trace('child already killed')
+        log.trace('child already killed', { state: this.state })
         return res(null)
       }
+
       this.childProcess.kill('SIGKILL')
       this.childProcess.once('exit', (code, signal) => {
-        log.trace('killed child', { code, signal })
-        this.ttyLinker.parent.unforward(this.childProcess!)
-        this.childProcess = null
+        log.trace('child killed', { state: this.state, code, signal })
+        this.cleanChildProcess()
         res({ code, signal })
       })
     })
   }
 
-  private ttyLinker = TTYLinker.create()
+  private cleanChildProcess() {
+    this.ttyLinker.parent.unforward(this.childProcess!)
+    this.childProcess = null
+    this.state = 'stopped'
+  }
 
-  private stopped: boolean = true
-
-  private stopping: null | Promise<StopResult> = null
-
-  private startingOrRestarting: boolean = false
-
-  private childProcess: null | nodecp.ChildProcessWithoutNullStreams = null
-
-  private spawnRunner() {
-    log.trace('spawn child')
+  private spawnRunner(): void {
+    if (this.state !== 'stopped' && this.state !== 'default') {
+      log.trace('cannot start the runner if it is not stopped', { state: this.state })
+      return
+    }
 
     if (this.childProcess) {
       throw new Error('attempt to spawn while previous child process still exists')
@@ -117,8 +124,11 @@ export class Link {
         ...process.env,
         ...this.options.environmentAdditions,
         ...this.ttyLinker.parent.serialize(),
+        ENTRYPOINT_SCRIPT: this.options.entrypointScript,
       },
     }) as nodecp.ChildProcessWithoutNullStreams
+
+    log.trace('spawn child', { pid: this.childProcess.pid })
 
     this.ttyLinker.parent.forward(this.childProcess)
 
@@ -133,20 +143,24 @@ export class Link {
 
     this.childProcess.stdout.on('data', (data) => {
       process.stdout.write(data)
+      this.options.onRunnerStdioMessage?.({ stdio: 'stdout', data: data.toString() })
     })
 
     this.childProcess.stderr.on('data', (data) => {
       process.stderr.write(data)
+      this.options.onRunnerStdioMessage?.({ stdio: 'stderr', data: data.toString() })
     })
 
     this.childProcess.once('error', (error) => {
       log.warn('runner errored out, respawning', { error })
       this.startOrRestart()
     })
-  }
-}
 
-type StopResult = null | {
-  code: null | number
-  signal: null | NodeJS.Signals
+    this.childProcess.once('exit', (code, signal) => {
+      log.trace('child killed itself', { state: this.state, code, signal })
+      this.cleanChildProcess()
+    })
+
+    this.state = 'running'
+  }
 }

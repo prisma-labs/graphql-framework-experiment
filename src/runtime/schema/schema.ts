@@ -1,6 +1,7 @@
 import * as NexusSchema from '@nexus/schema'
 import { makeSchemaInternal } from '@nexus/schema/dist/core'
 import * as HTTP from 'http'
+import { runAddToContextExtractorAsWorkerIfPossible } from '../../lib/add-to-context-extractor/add-to-context-extractor'
 import * as Layout from '../../lib/layout'
 import * as Logger from '../../lib/logger'
 import {
@@ -98,6 +99,8 @@ export function create(): SchemaInternal {
             )
           }
 
+          const contextExtractionPromise = runAddToContextExtractorAsWorkerIfPossible(devModeLayout.data)
+
           const typegenPromise = writeTypegen(
             schema,
             finalConfig,
@@ -107,7 +110,7 @@ export function create(): SchemaInternal {
 
           // Await promise only if needed. Otherwise let it run in the background
           if (process.env.NEXUS_SHOULD_AWAIT_TYPEGEN === 'true') {
-            await typegenPromise
+            await Promise.all([typegenPromise, contextExtractionPromise])
           }
 
           if (nexusSchemaConfig.shouldExitAfterGenerateArtifacts) {
