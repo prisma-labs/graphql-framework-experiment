@@ -1,7 +1,7 @@
 type Contrib = Record<string, any>
-type ContribCreator = (...args: any[]) => Contrib
+type ContribCreator<A, R extends Contrib> = (args: A) => R
 
-export function create(contextContribution: ContribCreator): ContribCreator {
+export function create<A, R extends Contrib>(contextContribution: (arg: A) => R): ContribCreator<A, R> {
   return contextContribution
 }
 
@@ -50,7 +50,7 @@ export function compose<A, R1 extends Contrib, R2 extends Contrib>(
   f: R1 | ((arg: A) => R1),
   g: R2 | ((arg: R1) => R2)
 ): R1 & R2
-export function compose(...ctxs: Array<Contrib | ContribCreator>): Contrib {
+export function compose(...ctxs: Array<Contrib | ContribCreator<any, any>>): Contrib {
   return ctxs.reduce<Contrib>((acc, ctx) => {
     Object.assign(acc, typeof ctx === 'function' ? ctx(acc) : ctx)
     return acc
