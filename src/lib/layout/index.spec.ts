@@ -90,7 +90,6 @@ describe('tsconfig', () => {
             "esnext",
           ],
           "module": "commonjs",
-          "outDir": "node_modules/.build",
           "rootDir": ".",
           "strict": true,
           "target": "es2016",
