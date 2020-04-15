@@ -1,1 +1,1 @@
-export { writeStartModule } from './build'
+export { buildNexusApp, writeStartModule } from './build'
