@@ -35,7 +35,7 @@ export function extractContextTypes(program: ts.Program): ExtractedContectTypes 
 
   log.trace('got app source files', {
     count: appSourceFiles.length,
-    files: appSourceFiles.map((sf) => sf.fileName),
+    // files: appSourceFiles.map((sf) => sf.fileName),
   })
 
   appSourceFiles.forEach(visit)

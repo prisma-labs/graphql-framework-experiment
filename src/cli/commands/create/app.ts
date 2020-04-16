@@ -5,12 +5,12 @@ import prompts from 'prompts'
 import { PackageJson } from 'type-fest'
 import { Command } from '../../../lib/cli'
 import * as Layout from '../../../lib/layout'
+import { tsconfigTemplate } from '../../../lib/layout/tsconfig'
 import { rootLogger } from '../../../lib/nexus-logger'
 import { ownPackage } from '../../../lib/own-package'
 import * as PackageManager from '../../../lib/package-manager'
 import * as Plugin from '../../../lib/plugin'
 import * as proc from '../../../lib/process'
-import { createTSConfigContents } from '../../../lib/tsc'
 import { createGitRepository, CWDProjectNameOrGenerate } from '../../../lib/utils'
 
 const log = rootLogger.child('cli').child('create').child('app')
@@ -490,12 +490,9 @@ async function scaffoldBaseFiles(options: InternalConfig) {
 
     fs.writeAsync(
       'tsconfig.json',
-      createTSConfigContents({
+      tsconfigTemplate({
         sourceRootRelative: path.relative(options.projectRoot, options.sourceRoot),
-        buildOutputRelative: path.join(
-          options.projectRoot,
-          Layout.DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT
-        ),
+        outRootRelative: Layout.DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT,
       })
     ),
 

@@ -16,7 +16,7 @@ Versions of the `nexus` package `0.20` and below were what is now known as `@nex
 
 #### Project Layout
 
-Not much to do but your source must include a `graphql` module or directory, and/or `app`/`server`/`service` entrypoint. More details in the [convention guide](/guides/conventions). Nexus will give informative feedback if you get this wrong.
+Not much to do but your source must include a `graphql` module or directory, and/or `app` entrypoint. More details in the [convention guide](/guides/project-layout#conventions). Nexus will give informative feedback if you get this wrong.
 
 #### Type Defs (aka. schema)
 

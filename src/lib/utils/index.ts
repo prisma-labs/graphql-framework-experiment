@@ -173,6 +173,10 @@ export function repalceInObject<C extends object>(
   return JSON.parse(JSON.stringify(content).split(dynamicPattern).join(replacement))
 }
 
+export function replaceEvery(str: string, dynamicPattern: string, replacement: string): string {
+  return str.split(dynamicPattern).join(replacement)
+}
+
 /**
  * Creates an array of elements split into two groups.
  * The first of which contains elements predicate returns truthy for, the second of which contains elements predicate returns falsey for.

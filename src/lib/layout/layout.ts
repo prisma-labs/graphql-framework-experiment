@@ -3,11 +3,13 @@ import { stripIndent } from 'common-tags'
 import * as FS from 'fs-jetpack'
 import * as Path from 'path'
 import { PackageJson } from 'type-fest'
+import { ParsedCommandLine } from 'typescript'
 import { findDirContainingFileRecurisvelyUpwardSync, findFile } from '../../lib/fs'
 import { START_MODULE_NAME } from '../../runtime/start/start-module'
 import { rootLogger } from '../nexus-logger'
 import * as PackageManager from '../package-manager'
 import * as Schema from './schema-modules'
+import { readOrScaffoldTsconfig } from './tsconfig'
 
 export const DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT = 'node_modules/.build'
 
@@ -37,9 +39,9 @@ export type ScanResult = {
     isAnonymous: boolean
   }
   sourceRoot: string
-  sourceRootRelative: string
   projectRoot: string
   schemaModules: string[]
+  tsConfigJson: ParsedCommandLine
   packageManagerType: PackageManager.PackageManager['type']
   packageJson: null | {
     dir: string
@@ -105,18 +107,22 @@ const optionDefaults = {
 /**
  * Perform a layout scan and return results with attached helper functions.
  */
-export async function create(optionsGiven?: Options): Promise<Layout> {
+export async function create(options?: Options): Promise<Layout> {
   // TODO lodash merge defaults or something
-  const options: Required<Options> = {
-    buildOutputRelative: optionsGiven?.buildOutputRelative ?? optionDefaults.buildOutput,
-    cwd: optionsGiven?.cwd ?? process.cwd(),
+  const optionsMerged: Required<Options> = {
+    buildOutputRelative: options?.buildOutputRelative ?? optionDefaults.buildOutput,
+    cwd: options?.cwd ?? process.cwd(),
   }
-  const data = await scan({ cwd: options.cwd })
+  const data = await scan({ cwd: optionsMerged.cwd })
   const layout = createFromData({
     ...data,
-    buildOutputRelative: options.buildOutputRelative,
+    buildOutputRelative: optionsMerged.buildOutputRelative,
     startModuleInPath: Path.join(data.sourceRoot, START_MODULE_NAME + '.ts'),
-    startModuleOutPath: Path.join(data.projectRoot, options.buildOutputRelative, START_MODULE_NAME + '.js'),
+    startModuleOutPath: Path.join(
+      data.projectRoot,
+      optionsMerged.buildOutputRelative,
+      START_MODULE_NAME + '.js'
+    ),
   })
 
   /**
@@ -156,17 +162,15 @@ export function createFromData(layoutData: Data): Layout {
  * Analyze the user's project files/folders for how conventions are being used
  * and where key modules exist.
  */
-export const scan = async (opts?: { cwd?: string }): Promise<ScanResult> => {
-  log.trace('starting scan...')
-  const projectRoot = opts?.cwd ?? findProjectDir()
-  const packageManagerType = await PackageManager.detectProjectPackageManager({
-    projectRoot,
-  })
-  const packageJson = findPackageJson({ projectRoot })
+export async function scan(opts?: { cwd?: string }): Promise<ScanResult> {
+  log.trace('starting scan')
+
+  const projectRoot = opts?.cwd ?? process.cwd()
+  const packageManagerType = await PackageManager.detectProjectPackageManager({ projectRoot })
+  const maybePackageJson = findPackageJson({ projectRoot })
   const maybeAppModule = findAppModule({ projectRoot })
   const maybeSchemaModules = Schema.findDirOrModules({ projectRoot })
-  // TODO do not assume app module is at source root?
-  const sourceRoot = getSourceRoot(maybeAppModule, maybeSchemaModules, {
+  const tsConfigJson = await readOrScaffoldTsconfig({
     projectRoot,
   })
 
@@ -176,15 +180,12 @@ export const scan = async (opts?: { cwd?: string }): Promise<ScanResult> => {
         ? ({ exists: false, path: maybeAppModule } as const)
         : ({ exists: true, path: maybeAppModule } as const),
     projectRoot: projectRoot,
-    sourceRoot: sourceRoot,
+    sourceRoot: tsConfigJson.options.rootDir!,
     schemaModules: maybeSchemaModules,
-    // when source and project roots are the same relative is computed as '' but
-    // this is not valid path like syntax in a lot cases at least such as
-    // tsconfig include field.
-    sourceRootRelative: Path.relative(projectRoot, sourceRoot) || './',
     project: readProjectInfo(opts),
+    tsConfigJson: tsConfigJson,
     packageManagerType: packageManagerType,
-    packageJson,
+    packageJson: maybePackageJson,
   }
 
   if (result.app.exists === false && result.schemaModules.length === 0) {
@@ -193,14 +194,11 @@ export const scan = async (opts?: { cwd?: string }): Promise<ScanResult> => {
     process.exit(1)
   }
 
-  log.trace('...completed scan', { result })
+  log.trace('completed scan', { result })
   return result
 }
 
-// todo make rest of codebase reference this source of truth
 // todo allow user to configure these for their project
-// todo once user can configure these for their project, settle on only one of
-// these, since user will be able to easily change it
 const CONVENTIONAL_ENTRYPOINT_MODULE_NAME = 'app'
 const CONVENTIONAL_ENTRYPOINT_FILE_NAME = `${CONVENTIONAL_ENTRYPOINT_MODULE_NAME}.ts`
 

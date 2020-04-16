@@ -2,12 +2,11 @@ import chalk from 'chalk'
 import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import * as path from 'path'
-import { PackageJson } from 'type-fest'
 import { DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT, Layout } from '../../lib/layout'
 import { START_MODULE_NAME } from '../../runtime/start/start-module'
+import { findDirContainingFileRecurisvelyUpwardSync } from '../fs'
 import { rootLogger } from '../nexus-logger'
 import { fatal } from '../process'
-import { findConfigFile } from '../tsc'
 
 const log = rootLogger.child(__filename)
 
@@ -75,12 +74,12 @@ interface NowJson {
  * Validate the user's now configuration file.
  */
 function validateNow(layout: Layout): ValidatorResult {
-  const maybeNowJsonPath = findConfigFile('now.json', { required: false })
+  const maybeNowJson = findDirContainingFileRecurisvelyUpwardSync('now.json', { cwd: layout.projectRoot })
   const startModulePath = `${layout.buildOutputRelative}/${START_MODULE_NAME}.js`
   let isValid = true
 
   // Make sure there's a now.json file
-  if (!maybeNowJsonPath) {
+  if (!maybeNowJson) {
     log.trace('creating now.json because none exists yet')
     const projectName = layout.packageJson?.content.name ?? 'now_rename_me'
 
@@ -101,7 +100,7 @@ function validateNow(layout: Layout): ValidatorResult {
     fs.write(nowJsonPath, nowJsonContent)
     log.warn(`No \`now.json\` file were found. We scaffolded one for you in ${nowJsonPath}`)
   } else {
-    const nowJson: NowJson = fs.read(maybeNowJsonPath, 'json')
+    const nowJson: NowJson = fs.read(maybeNowJson.path, 'json')
 
     // Make sure the now.json file has the right `builds` values
     if (
@@ -138,20 +137,17 @@ function validateNow(layout: Layout): ValidatorResult {
 
 function validateHeroku(layout: Layout): ValidatorResult {
   const nodeMajorVersion = Number(process.versions.node.split('.')[0])
-  const packageJsonPath = findConfigFile('package.json', { required: false })
   let isValid = true
 
   // Make sure there's a package.json file
-  if (!packageJsonPath) {
+  if (!layout.packageJson) {
     log.error('We could not find a `package.json` file.')
     console.log()
     isValid = false
   } else {
-    const packageJsonContent = fs.read(packageJsonPath, 'json') as PackageJson
-
     // Make sure there's an engine: { node: <version> } property set
     // TODO: scaffold the `engines` property automatically
-    if (!packageJsonContent.engines?.node) {
+    if (!layout.packageJson.content.engines?.node) {
       log.error('An `engines` property is needed in your `package.json` file.')
       log.error(
         `Please add the following to your \`package.json\` file: "engines": { "node": "${nodeMajorVersion}.x" }`
@@ -160,9 +156,11 @@ function validateHeroku(layout: Layout): ValidatorResult {
       isValid = false
     }
 
+    const pcfg = layout.packageJson.content
+
     // Warn if version used by heroku is different than local one
-    if (packageJsonContent.engines?.node) {
-      const packageJsonNodeVersion = Number(packageJsonContent.engines.node.split('.')[0])
+    if (pcfg.engines?.node) {
+      const packageJsonNodeVersion = Number(pcfg.engines.node.split('.')[0])
       if (packageJsonNodeVersion !== nodeMajorVersion) {
         log.warn(
           `Your local node version is different than the one that will be used by heroku (defined in your \`package.json\` file in the "engines" property).`
@@ -173,7 +171,7 @@ function validateHeroku(layout: Layout): ValidatorResult {
     }
 
     // Make sure there's a build script
-    if (!packageJsonContent.scripts?.build) {
+    if (!pcfg.scripts?.build) {
       log.error('A `build` script is needed in your `package.json` file.')
       log.error(
         `Please add the following to your \`package.json\` file: "scripts": { "build": "nexus build -d heroku" }`
@@ -183,7 +181,7 @@ function validateHeroku(layout: Layout): ValidatorResult {
     }
 
     // Make sure the build script is using nexus build
-    if (packageJsonContent.scripts?.build && !packageJsonContent.scripts.build.includes('nexus build')) {
+    if (pcfg.scripts?.build && !pcfg.scripts.build.includes('nexus build')) {
       log.error(
         'Please make sure your `build` script in your `package.json` file runs the command `nexus build -d heroku`'
       )
@@ -192,7 +190,7 @@ function validateHeroku(layout: Layout): ValidatorResult {
     }
 
     // Make sure there's a start script
-    if (!packageJsonContent.scripts?.start) {
+    if (!pcfg.scripts?.start) {
       log.error(
         `Please add the following to your \`package.json\` file: "scripts": { "start": "node ${layout.buildOutputRelative}" }`
       )
@@ -201,9 +199,9 @@ function validateHeroku(layout: Layout): ValidatorResult {
     }
 
     // Make sure the start script starts the built server
-    if (!packageJsonContent.scripts?.start?.includes(`node ${layout.buildOutputRelative}`)) {
+    if (!pcfg.scripts?.start?.includes(`node ${layout.buildOutputRelative}`)) {
       log.error(`Please make sure your \`start\` script points to your built server`)
-      log.error(`Found: "${packageJsonContent.scripts?.start}"`)
+      log.error(`Found: "${pcfg.scripts?.start}"`)
       log.error(`Expected: "node ${layout.buildOutputRelative}"`)
       console.log()
       isValid = false

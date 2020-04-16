@@ -1,7 +1,7 @@
 import { stripIndent } from 'common-tags'
 import * as FS from 'fs-jetpack'
 import * as Layout from '../../lib/layout'
-import { compile, createTSProgram, deleteTSIncrementalFile, findOrScaffoldTsConfig } from '../../lib/tsc'
+import { compile, createTSProgram, deleteTSIncrementalFile } from '../../lib/tsc'
 import {
   createStartModuleContent,
   prepareStartModule,
@@ -48,7 +48,6 @@ export async function buildNexusApp(settings: BuildSettings) {
       process.exit(1)
     }
   }
-  await findOrScaffoldTsConfig(layout)
 
   const manifests = await Plugin.readAllPluginManifestsFromConfig(layout)
   const plugins = await Plugin.loadWorktimePluginFromManifests(manifests, layout)
@@ -96,7 +95,7 @@ export async function buildNexusApp(settings: BuildSettings) {
   // run of TypeScript should make re-building up this one cheap.
   tsBuilder = createTSProgram(layout, { withCache: true })
 
-  compile(tsBuilder, layout, { removePreviousBuild: true })
+  compile(tsBuilder, layout, { removePreviousBuild: false })
 
   await writeStartModule({
     layout: layout,
