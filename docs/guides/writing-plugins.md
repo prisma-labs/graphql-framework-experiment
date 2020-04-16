@@ -59,7 +59,7 @@
     return {
       context: {
         create: req => {
-          returm {
+          return {
             token: req.headers.authorization.match(/^Bearer (.+)$/)?[1] ?? null
             }
           },
