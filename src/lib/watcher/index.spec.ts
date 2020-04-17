@@ -1,10 +1,10 @@
 import * as path from 'path'
-import { createWatcher } from '../../../dist/lib/watcher'
 import * as ExitSystem from '../exit-system'
 import { rootLogger } from '../nexus-logger'
 import * as TestContext from '../test-context'
 import { FSSpec, writeFSSpec } from '../testing-utils'
 import { Event } from './types'
+import { createWatcher } from './watcher'
 
 ExitSystem.install()
 process.env.DEBUG = 'true'
