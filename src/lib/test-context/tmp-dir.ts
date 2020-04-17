@@ -1,5 +1,4 @@
 import * as fs from 'fs-jetpack'
-import { FSJetpack } from 'fs-jetpack/types'
 import { getTmpDir } from '../fs'
 import { create } from './compose-create'
 
