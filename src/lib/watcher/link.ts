@@ -28,12 +28,16 @@ type StopResult = null | {
 type State = 'init' | 'running' | 'stopping' | 'stopped'
 
 export class Link {
-  private ttyLinker = TTYLinker.create()
+  private ttyLinker: null | TTYLinker.TTYLinker = null
   private state: State = 'init'
   private stoppedResult: StopResult | null = null
   private childProcess: null | nodecp.ChildProcessWithoutNullStreams = null
 
-  constructor(private options: Options) {}
+  constructor(private options: Options) {
+    if (process.stdout.isTTY) {
+      this.ttyLinker = TTYLinker.create()
+    }
+  }
 
   updateOptions(options: ChangeableOptions) {
     this.options = {
@@ -92,7 +96,7 @@ export class Link {
   }
 
   private teardownChildProcess() {
-    this.ttyLinker.parent.unforward(this.childProcess!)
+    this.ttyLinker?.parent.unforward(this.childProcess!)
     this.childProcess = null
     this.state = 'stopped'
   }
@@ -123,14 +127,14 @@ export class Link {
       env: {
         ...process.env,
         ...this.options.environmentAdditions,
-        ...this.ttyLinker.parent.serialize(),
+        ...this.ttyLinker?.parent.serialize() ?? {},
         ENTRYPOINT_SCRIPT: this.options.entrypointScript,
       },
     }) as nodecp.ChildProcessWithoutNullStreams
 
     log.trace('spawn child', { pid: this.childProcess.pid, state: this.state })
 
-    this.ttyLinker.parent.forward(this.childProcess)
+    this.ttyLinker?.parent.forward(this.childProcess)
 
     this.childProcess.on('message', (msg: Message) => {
       if (msg.type === 'module_imported') {
