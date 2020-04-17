@@ -58,17 +58,20 @@ const watcherContext = TestContext.create(
 
 const ctx = TestContext.compose(TestContext.tmpDir, TestContext.fs, watcherContext)
 
-it('restarts when a file is changed', async () => {
+async function testSimpleCase(params: {
+  entrypoint: string
+  additionalInitialFiles?: FSSpec
+  fsUpdate: () => void
+}) {
   ctx.write({
-    'entrypoint.ts': `process.stdout.write('toto')`,
+    'entrypoint.ts': params.entrypoint,
+    ...(params.additionalInitialFiles ?? {}),
   })
 
   const { watcher, bufferedEvents } = await ctx.createWatcher()
 
   setTimeout(() => {
-    ctx.write({
-      'entrypoint.ts': `process.stdout.write('titi')`,
-    })
+    params.fsUpdate()
   }, 1000)
 
   setTimeout(async () => {
@@ -77,10 +80,23 @@ it('restarts when a file is changed', async () => {
 
   await watcher.start()
 
+  return { bufferedEvents }
+}
+
+it('restarts when a file is changed', async () => {
+  const { bufferedEvents } = await testSimpleCase({
+    entrypoint: `process.stdout.write('hello')`,
+    fsUpdate: () => {
+      ctx.write({
+        'entrypoint.ts': `process.stdout.write('world')`,
+      })
+    },
+  })
+
   expect(bufferedEvents).toMatchInlineSnapshot(`
     Array [
       Object {
-        "data": "toto",
+        "data": "hello",
         "stdio": "stdout",
         "type": "runner_stdio",
       },
@@ -90,7 +106,7 @@ it('restarts when a file is changed', async () => {
         "type": "restart",
       },
       Object {
-        "data": "titi",
+        "data": "world",
         "stdio": "stdout",
         "type": "runner_stdio",
       },
@@ -99,26 +115,17 @@ it('restarts when a file is changed', async () => {
 })
 
 it('restarts when a file is added', async () => {
-  ctx.write({
-    'entrypoint.ts': `process.stdout.write('titi')`,
+  const { bufferedEvents } = await testSimpleCase({
+    entrypoint: `process.stdout.write('hello')`,
+    fsUpdate: () => {
+      ctx.write({ 'new_file.ts': `` })
+    },
   })
-
-  const { watcher, bufferedEvents } = await ctx.createWatcher()
-
-  setTimeout(() => {
-    ctx.write({ 'new_file.ts': `` })
-  }, 1000)
-
-  setTimeout(async () => {
-    await watcher.stop()
-  }, 2000)
-
-  await watcher.start()
 
   expect(bufferedEvents).toMatchInlineSnapshot(`
     Array [
       Object {
-        "data": "titi",
+        "data": "hello",
         "stdio": "stdout",
         "type": "runner_stdio",
       },
@@ -128,7 +135,39 @@ it('restarts when a file is added', async () => {
         "type": "restart",
       },
       Object {
-        "data": "titi",
+        "data": "hello",
+        "stdio": "stdout",
+        "type": "runner_stdio",
+      },
+    ]
+  `)
+})
+
+it('restarts when a file is deleted', async () => {
+  const { bufferedEvents } = await testSimpleCase({
+    entrypoint: `process.stdout.write('hello')`,
+    additionalInitialFiles: {
+      'other_file.ts': '',
+    },
+    fsUpdate: () => {
+      ctx.fs.remove('other_file.ts')
+    },
+  })
+
+  expect(bufferedEvents).toMatchInlineSnapshot(`
+    Array [
+      Object {
+        "data": "hello",
+        "stdio": "stdout",
+        "type": "runner_stdio",
+      },
+      Object {
+        "file": "other_file.ts",
+        "reason": "unlink",
+        "type": "restart",
+      },
+      Object {
+        "data": "hello",
         "stdio": "stdout",
         "type": "runner_stdio",
       },
@@ -137,21 +176,12 @@ it('restarts when a file is added', async () => {
 })
 
 it('restarts when a file has an error', async () => {
-  ctx.write({
-    'entrypoint.ts': `throw new Error('there is an error')`,
+  const { bufferedEvents } = await testSimpleCase({
+    entrypoint: `throw new Error('there is an error')`,
+    fsUpdate: () => {
+      ctx.write({ 'entrypoint.ts': `process.stdout.write('error fixed')` })
+    },
   })
-
-  const { watcher, bufferedEvents } = await ctx.createWatcher()
-
-  setTimeout(() => {
-    ctx.write({ 'entrypoint.ts': `process.stdout.write('error fixed')` })
-  }, 1000)
-
-  setTimeout(async () => {
-    await watcher.stop()
-  }, 2000)
-
-  await watcher.start()
 
   expect(bufferedEvents[0].type).toBe('runner_stdio')
   expect((bufferedEvents[0] as any).data).toContain('Error: there is an error')
@@ -167,6 +197,27 @@ it('restarts when a file has an error', async () => {
       },
       Object {
         "data": "error fixed",
+        "stdio": "stdout",
+        "type": "runner_stdio",
+      },
+    ]
+  `)
+})
+
+it('restarts when a dir is added', async () => {
+  const { bufferedEvents } = await testSimpleCase({
+    entrypoint: `process.stdout.write('hello')`,
+    fsUpdate: () => {
+      ctx.write({
+        new_dir: {},
+      })
+    },
+  })
+
+  expect(bufferedEvents).toMatchInlineSnapshot(`
+    Array [
+      Object {
+        "data": "hello",
         "stdio": "stdout",
         "type": "runner_stdio",
       },
@@ -208,5 +259,39 @@ it('handles lots of restarts', async () => {
       "stdio": "stdout",
       "type": "runner_stdio",
     }
+  `)
+})
+
+it('does not watch node_modules, even if required', async () => {
+  const { bufferedEvents } = await testSimpleCase({
+    entrypoint: `require('${ctx.fs.path('node_modules', 'some_file.ts')}')`,
+    additionalInitialFiles: {
+      node_modules: {
+        'some_file.ts': `process.stdout.write('test')`,
+      },
+    },
+    fsUpdate: () => {
+      ctx.write({
+        node_modules: {
+          'some_file.ts': `process.stdout.write('should not reload')`,
+        },
+      })
+    },
+  })
+  ctx.write({
+    'entrypoint.ts': `require('${ctx.fs.path('node_modules', 'some_file.ts')}')`,
+    node_modules: {
+      'some_file.ts': `process.stdout.write('test')`,
+    },
+  })
+
+  expect(bufferedEvents).toMatchInlineSnapshot(`
+    Array [
+      Object {
+        "data": "test",
+        "stdio": "stdout",
+        "type": "runner_stdio",
+      },
+    ]
   `)
 })
