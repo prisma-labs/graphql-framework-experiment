@@ -21,8 +21,13 @@ export async function readAllPluginManifestsFromConfig(layout: Layout.Layout): P
   const runner = Start.createDevAppRunner(layout, {
     disableServer: true,
   })
-
-  await runner.start()
+  try {
+    await runner.start()
+  } catch (e) {
+    fatal('We could not load your plugins because your application has an error', {
+      error: e,
+    })
+  }
 
   const plugins = validatePlugins((app as InternalApp).__state.plugins)
 

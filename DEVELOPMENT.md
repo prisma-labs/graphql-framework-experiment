@@ -82,6 +82,8 @@ yarn dev:test      # watch mode
 
 - Unit tests run in CI against every commit.
 
+- /!\ Make sure you have compiled `nexus` with `yarn build` before running the watcher unit tests
+
 #### System
 
 ```

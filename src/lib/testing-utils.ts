@@ -8,12 +8,15 @@ export type FSSpec = {
 
 export function writeFSSpec(cwd: string, spec: FSSpec) {
   Object.entries(spec).forEach(([fileOrDirName, fileContentOrDir]) => {
-    const subPath = path.join(cwd, fileOrDirName)
+    const fileOrDirPath = path.join(cwd, fileOrDirName)
 
     if (typeof fileContentOrDir === 'string') {
-      fs.write(subPath, fileContentOrDir)
+      fs.write(fileOrDirPath, fileContentOrDir)
     } else {
-      writeFSSpec(subPath, { ...fileContentOrDir })
+      if (Object.keys(fileContentOrDir).length === 0) {
+        fs.dir(fileOrDirPath)
+      }
+      writeFSSpec(fileOrDirPath, fileContentOrDir)
     }
   })
 }
