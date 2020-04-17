@@ -12,6 +12,10 @@ import * as Commands from './commands'
 
 const log = rootLogger
 
+/**
+ *
+ */
+
 // use envar to boost perf, skip costly detection work
 if (!process.env.GLOBAL_LOCAL_HANDOFF) {
   const depName = 'nexus'
@@ -32,10 +36,10 @@ if (!process.env.GLOBAL_LOCAL_HANDOFF) {
         stripIndent`
         You ran a global version of the Nexus CLI against your Nexus project. But your local project does not currently present within your node_modules.
 
-        Please run yarn install and then try your command again.
+        Please install your dependencies and then try your command again.
 
-        Location of your global CLI: ${execLayout.paths.thisProcessBinDir}
-        Location of your locatl CLI (after installing): ${execLayout.paths.projectBinDir}
+        Location of your global CLI: ${execLayout.thisProcessToolBin.path}
+        Location of your local CLI (should be, after installing): ${execLayout.project!.toolBinPath}
         `
       )
       process.exit(1)
