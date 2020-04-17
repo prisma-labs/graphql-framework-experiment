@@ -29,12 +29,15 @@ export interface RunnerOptions {
   environmentAdditions?: Record<string, string>
 }
 
+export interface Watcher {
+  start: () => Promise<void>
+  stop: () => Promise<void>
+}
+
 /**
  * Entrypoint into the watcher system.
  */
-export async function createWatcher(
-  options: Options
-): Promise<{ start: () => Promise<void>; stop: () => Promise<void> }> {
+export async function createWatcher(options: Options): Promise<Watcher> {
   // Setup the client (runner / server (watcher) system
   const link = new Link.Link({
     entrypointScript: options.entrypointScript,
