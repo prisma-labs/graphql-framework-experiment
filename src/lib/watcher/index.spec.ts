@@ -5,6 +5,7 @@ import { rootLogger } from '../nexus-logger'
 import * as TestContext from '../test-context'
 import { FSSpec, writeFSSpec } from '../testing-utils'
 import { Event } from './types'
+import * as Lo from 'lodash'
 
 ExitSystem.install()
 process.env.DEBUG = 'true'
@@ -132,5 +133,80 @@ it('restarts when a file is added', async () => {
         "type": "runner_stdio",
       },
     ]
+  `)
+})
+
+it('restarts when a file has an error', async () => {
+  ctx.write({
+    'entrypoint.ts': `throw new Error('there is an error')`,
+  })
+
+  const { watcher, bufferedEvents } = await ctx.createWatcher()
+
+  setTimeout(() => {
+    ctx.write({ 'entrypoint.ts': `process.stdout.write('error fixed')` })
+  }, 1000)
+
+  setTimeout(async () => {
+    await watcher.stop()
+  }, 2000)
+
+  await watcher.start()
+
+  expect(bufferedEvents[0].type).toBe('runner_stdio')
+  expect((bufferedEvents[0] as any).data).toContain('Error: there is an error')
+
+  bufferedEvents.shift()
+
+  expect(bufferedEvents).toMatchInlineSnapshot(`
+    Array [
+      Object {
+        "file": "entrypoint.ts",
+        "reason": "change",
+        "type": "restart",
+      },
+      Object {
+        "data": "error fixed",
+        "stdio": "stdout",
+        "type": "runner_stdio",
+      },
+    ]
+  `)
+})
+
+it('handles lots of restarts', async () => {
+  ctx.write({
+    'entrypoint.ts': ``,
+  })
+
+  const { watcher, bufferedEvents } = await ctx.createWatcher()
+  const amountOfRestarts = 20
+  const msBetweenEachRestarts = 50
+  const msAfterAllRestarts = amountOfRestarts * msBetweenEachRestarts
+
+  Lo.times(amountOfRestarts, (i) => {
+    setTimeout(() => {
+      ctx.write({ 'entrypoint.ts': ' '.repeat(i) })
+    }, msBetweenEachRestarts * i)
+  })
+
+  setTimeout(() => {
+    ctx.write({ 'entrypoint.ts': `process.stdout.write('done!')` })
+  }, msAfterAllRestarts + 200)
+
+  setTimeout(async () => {
+    await watcher.stop()
+  }, msAfterAllRestarts + 1000)
+
+  await watcher.start()
+
+  const printEvent = bufferedEvents.find((e) => e.type === 'runner_stdio' && e.data === 'done!')
+
+  expect(printEvent).toMatchInlineSnapshot(`
+    Object {
+      "data": "done!",
+      "stdio": "stdout",
+      "type": "runner_stdio",
+    }
   `)
 })
