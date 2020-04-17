@@ -18,6 +18,10 @@ function createTTYResizeMessage(): ServerMessage {
   }
 }
 
+const TTY_LINKER_ENABLED_ENV_VAR = 'TTY_LINKER_ENABLED'
+
+export type TTYLinker = ReturnType<typeof create>
+
 export function create() {
   const cps: nodecp.ChildProcess[] = []
   let forwardingOn = false
@@ -30,9 +34,11 @@ export function create() {
             'Cannot serialize columns and/or rows data for process.stdout because they are undefined. This probably means there is no TTY. Yet an attempt to serialize TTY info is being made.'
           )
         }
+
         return {
           TTY_COLUMNS: String(process.stdout.columns),
           TTY_ROWS: String(process.stdout.rows),
+          [TTY_LINKER_ENABLED_ENV_VAR]: String(process.stdout.isTTY),
         }
       },
       forward(cp: nodecp.ChildProcess) {
@@ -69,9 +75,13 @@ export function create() {
       },
     },
     child: {
-      install() {
+      install(opts: { force: boolean }) {
+        if (!process.env[TTY_LINKER_ENABLED_ENV_VAR] && opts.force === false) {
+          return
+        }
+
         // yes there is a tty
-        require('tty').isatty = (fd: number) => true
+        require('tty').isatty = () => true
         process.stdout.isTTY = true
         process.stderr.isTTY = true
 
