@@ -46,7 +46,9 @@
         flex-grow: 1;
       }
 
-      /* Component TwpUp */
+      /* Component TightRow */
+      /* Component Row */
+      /* Component Collapsable */
 
       @media (max-width: 1300px) {
         .Row.Collapsable {
@@ -78,21 +80,25 @@
         }
       }
 
+      .TightRow,
       .Row {
         display: flex;
         margin-top: 1.2em;
         margin-bottom: 1.2em;
         flex-wrap: wrap;
       }
+      .TightRow > *,
       .Row > * {
         /* margin-top: 0 !important; */
         /* margin-bottom: 0 !important; */
         flex-grow: 1;
         /* align-self: flex-start; */
       }
+      .TightRow > *:not(:last-child),
       .Row > *:not(:last-child) {
         margin-right: 0.55em;
       }
+      .TightRow > *:not(:first-child),
       .Row > *:not(:first-child) {
         margin-left: 0.55em;
       }

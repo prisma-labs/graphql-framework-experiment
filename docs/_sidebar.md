@@ -16,6 +16,7 @@
 - [Debugging](guides/debugging)
 - [Recipes](references/recipes)
 - [Writing Plugins](guides/writing-plugins)
+- [CLI](guides/cli)
 
 - Plugins
 
