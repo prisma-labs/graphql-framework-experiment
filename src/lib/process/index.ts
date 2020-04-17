@@ -1,17 +1,16 @@
 import { spawn, spawnSync, SpawnSyncOptions } from 'child_process'
 import { stripIndent } from 'common-tags'
-import * as fs from 'fs'
 import * as path from 'path'
 import { format } from 'util'
-import { findFileRecurisvelyUpwardSync } from './fs'
-import { log } from './nexus-logger'
+import { findFileRecurisvelyUpwardSync } from '../fs'
+import { log } from '../nexus-logger'
 
 /**
  * Log a meaningful semantic error message sans stack track and then crash
  * the program with exit code 1. Parameters are a passthrough to `console.error`.
  */
 export function fatal(template: string, ...vars: unknown[]): never {
-  log.error(format(template, ...vars))
+  log.fatal(format(template, ...vars))
   process.exit(1)
 }
 
@@ -236,172 +235,6 @@ export function clearConsole() {
   process.stdout.write('\x1Bc')
 }
 
-type ExecScenario = {
-  /**
-   * Tells you if this process was executed within a Node proejct.
-   */
-  nodeProject: boolean
-  /**
-   * Tells you if this process was executed within an app project.
-   */
-  toolProject: boolean
-  /**
-   * Tells you if the local nexus bin is installed or not.
-   */
-  toolCurrentlyPresentInNodeModules: boolean
-  /**
-   * Tells you if the current process was run from the local bin version or not.
-   */
-  runningLocalTool: boolean
-  /**
-   * Information about the project if present
-   */
-  project: null | {
-    dir: string
-    nodeModulesDir: string
-    binDir: string
-    toolBinPath: string
-    /**
-     * Only present when the project is actually a tool project with dependencies installed.
-     */
-    toolBinRealPath: null | string
-  }
-  /**
-   * Information about this process bin
-   */
-  thisProcessToolBin: {
-    name: string
-    path: string
-    dir: string
-    realPath: string
-    realDir: string
-  }
-}
-
-/**
- * Detect the layout of the bin used for this process, and if there is a local
- * version available.
- */
-export function detectExecLayout(tool: { depName: string }): ExecScenario {
-  let thisProcessBinPath = process.argv[1]
-
-  // Node CLI supports omitting the ".js" ext like this: $ node a/b/c/foo
-  // Handle that case otherwise the realpathSync below will fail.
-  if (path.extname(thisProcessBinPath) !== '.js') {
-    if (fs.existsSync(thisProcessBinPath + '.js')) {
-      thisProcessBinPath += '.js'
-    }
-  }
-
-  // todo try-catch? can we guarantee this? If not, what is the fallback?
-  const thisProcessBinRealPath = fs.realpathSync(thisProcessBinPath)
-  const thisProcessBinDir = path.dirname(thisProcessBinPath)
-  const thisProcessBinRealDir = path.dirname(thisProcessBinRealPath)
-  const thisProcessBinName = path.basename(thisProcessBinPath)
-  const thisProcessToolBin = {
-    name: thisProcessBinName,
-    path: thisProcessBinPath,
-    dir: thisProcessBinDir,
-    realPath: thisProcessBinRealPath,
-    realDir: thisProcessBinRealDir,
-  }
-  let projectDir = null
-
-  try {
-    projectDir = findFileRecurisvelyUpwardSync('package.json', { cwd: process.cwd() })?.dir
-  } catch (e) {}
-
-  if (!projectDir) {
-    return {
-      nodeProject: false,
-      toolProject: false,
-      toolCurrentlyPresentInNodeModules: false,
-      runningLocalTool: false,
-      thisProcessToolBin,
-      project: null,
-    }
-  }
-
-  const projectNodeModulesDir = path.join(projectDir, 'node_modules')
-  const projectBinDir = path.join(projectNodeModulesDir, '.bin')
-  const projectToolBinPath = path.join(projectBinDir, thisProcessToolBin.name)
-  const project = {
-    dir: projectDir,
-    binDir: projectBinDir,
-    nodeModulesDir: projectNodeModulesDir,
-    toolBinPath: projectToolBinPath,
-    toolBinRealPath: null,
-  }
-
-  let isToolProject = null
-  try {
-    isToolProject = typeof require('./package.json')?.dependencies?.[tool.depName] === 'string'
-  } catch (e) {}
-
-  if (!isToolProject) {
-    return {
-      nodeProject: true,
-      toolProject: false,
-      toolCurrentlyPresentInNodeModules: false,
-      runningLocalTool: false,
-      thisProcessToolBin,
-      project,
-    }
-  }
-
-  let projectToolBinRealPath = null
-  try {
-    projectToolBinRealPath = fs.realpathSync(projectToolBinPath)
-  } catch (e) {}
-
-  if (!projectToolBinRealPath) {
-    return {
-      nodeProject: true,
-      toolProject: true,
-      toolCurrentlyPresentInNodeModules: false,
-      runningLocalTool: false,
-      thisProcessToolBin,
-      project,
-    }
-  }
-
-  Object.assign(project, {
-    toolBinRealPath: projectToolBinRealPath,
-  })
-
-  /**
-   * Use real path to check if local tool version is being used. This is because
-   * some OS's follow symlinks in argv[1] while others do not. Since we create
-   * the path to the local tool bin and we don't know (check) which OS we're
-   * currently running on, we need some way to normalize both sides so that the
-   * check between our constructed path and the process info from OS are
-   * comparable at all. Otherwise for example we could end up in a situation
-   * like this (bad):
-   *
-   *    node_modules/.bin/nexus === node_modules/nexus/dist/cli/main.js
-   */
-
-  if (thisProcessToolBin.realPath !== project.toolBinRealPath) {
-    return {
-      nodeProject: true,
-      toolProject: true,
-      toolCurrentlyPresentInNodeModules: true,
-      runningLocalTool: false,
-      thisProcessToolBin,
-      project,
-    }
-  }
-
-  return {
-    nodeProject: true,
-    toolProject: true,
-    toolCurrentlyPresentInNodeModules: true,
-    runningLocalTool: true,
-    thisProcessToolBin,
-    project,
-  }
-}
-
 /**
  * Handoff execution from a global to local version of a package.
  *
@@ -430,3 +263,5 @@ export function globalLocalHandoff(input: { localPackageDir: string; globalPacka
 
   require(path.join(input.localPackageDir, path.relative(globalProjectDir, input.globalPackageFilename)))
 }
+
+export * from './detect-exec-layout'
