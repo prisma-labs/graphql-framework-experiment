@@ -23,7 +23,7 @@ if (!process.env.GLOBAL_LOCAL_HANDOFF) {
     depName,
   })
 
-  if (execLayout.toolProject && !execLayout.runningLocalBin) {
+  if (execLayout.toolProject && !execLayout.runningLocalTool) {
     if (execLayout.toolCurrentlyPresentInNodeModules) {
       globalLocalHandoff({
         localPackageDir: path.join(execLayout.project!.nodeModulesDir, depName),

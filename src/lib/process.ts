@@ -252,7 +252,7 @@ type ExecScenario = {
   /**
    * Tells you if the current process was run from the local bin version or not.
    */
-  runningLocalBin: boolean
+  runningLocalTool: boolean
   /**
    * Information about the project if present
    */
@@ -261,25 +261,36 @@ type ExecScenario = {
     nodeModulesDir: string
     binDir: string
     toolBinPath: string
+    toolBinRealPath: string
   }
   /**
    * Information about this process bin
    */
   thisProcessToolBin: {
+    name: string
     path: string
     dir: string
-    name: string
+    realPath: string
+    realDir: string
   }
 }
 
+/**
+ * Detect the layout of the bin used for this process, and if there is a local
+ * version available.
+ */
 export function detectExecLayout(tool: { depName: string }): ExecScenario {
   const thisProcessBinPath = process.argv[1]
+  const thisProcessBinRealPath = fs.realpathSync(process.argv[1])
   const thisProcessBinDir = path.dirname(thisProcessBinPath)
+  const thisProcessBinRealDir = path.dirname(thisProcessBinRealPath)
   const thisProcessBinName = path.basename(thisProcessBinPath)
   const thisProcessToolBin = {
     name: thisProcessBinName,
     path: thisProcessBinPath,
     dir: thisProcessBinDir,
+    realPath: thisProcessBinRealPath,
+    realDir: thisProcessBinRealDir,
   }
   let projectDir = null
 
@@ -292,7 +303,7 @@ export function detectExecLayout(tool: { depName: string }): ExecScenario {
       nodeProject: false,
       toolProject: false,
       toolCurrentlyPresentInNodeModules: false,
-      runningLocalBin: false,
+      runningLocalTool: false,
       thisProcessToolBin,
       project: null,
     }
@@ -301,24 +312,26 @@ export function detectExecLayout(tool: { depName: string }): ExecScenario {
   const projectNodeModulesDir = path.join(projectDir, 'node_modules')
   const projectBinDir = path.join(projectNodeModulesDir, '.bin')
   const projectToolBinPath = path.join(projectBinDir, thisProcessToolBin.name)
+  const projectToolBinRealPath = fs.realpathSync(projectToolBinPath)
   const project = {
     dir: projectDir,
     binDir: projectBinDir,
     toolBinPath: projectToolBinPath,
+    toolBinRealPath: projectToolBinRealPath,
     nodeModulesDir: projectNodeModulesDir,
   }
 
-  let isAppProject = null
+  let isToolProject = null
   try {
-    isAppProject = typeof require('./package.json')?.dependencies?.[tool.depName] === 'string'
+    isToolProject = typeof require('./package.json')?.dependencies?.[tool.depName] === 'string'
   } catch (e) {}
 
-  if (!isAppProject) {
+  if (!isToolProject) {
     return {
       nodeProject: true,
       toolProject: false,
       toolCurrentlyPresentInNodeModules: false,
-      runningLocalBin: false,
+      runningLocalTool: false,
       thisProcessToolBin,
       project,
     }
@@ -331,18 +344,30 @@ export function detectExecLayout(tool: { depName: string }): ExecScenario {
       nodeProject: true,
       toolProject: true,
       toolCurrentlyPresentInNodeModules: false,
-      runningLocalBin: false,
+      runningLocalTool: false,
       thisProcessToolBin,
       project,
     }
   }
 
-  if (thisProcessBinDir !== projectBinDir) {
+  /**
+   * Use real path to check if local tool version is being used. This is because
+   * some OS's follow symlinks in argv[1] while others do not. Since we create
+   * the path to the local tool bin and we don't know (check) which OS we're
+   * currently running on, we need some way to normalize both sides so that the
+   * check between our constructed path and the process info from OS are
+   * comparable at all. Otherwise for example we could end up in a situation
+   * like this (bad):
+   *
+   *    node_modules/.bin/nexus === node_modules/nexus/dist/cli/main.js
+   */
+
+  if (thisProcessToolBin.realPath !== project.toolBinRealPath) {
     return {
       nodeProject: true,
       toolProject: true,
       toolCurrentlyPresentInNodeModules: true,
-      runningLocalBin: false,
+      runningLocalTool: false,
       thisProcessToolBin,
       project,
     }
@@ -352,7 +377,7 @@ export function detectExecLayout(tool: { depName: string }): ExecScenario {
     nodeProject: true,
     toolProject: true,
     toolCurrentlyPresentInNodeModules: true,
-    runningLocalBin: true,
+    runningLocalTool: true,
     thisProcessToolBin,
     project,
   }
