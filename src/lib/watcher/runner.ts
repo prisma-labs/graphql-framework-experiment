@@ -1,6 +1,6 @@
 // Not using ECMA modules b/c TS autoformat moves it down but we need it first
 // for side-effects.
-require('../tty-linker').create().child.install({ force: false })
+require('../tty-linker').create().child.install()
 
 import * as tsNode from 'ts-node'
 import { rootLogger } from '../nexus-logger'

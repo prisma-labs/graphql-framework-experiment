@@ -22,6 +22,14 @@ const TTY_LINKER_ENABLED_ENV_VAR = 'TTY_LINKER_ENABLED'
 
 export type TTYLinker = ReturnType<typeof create>
 
+interface ChildInstallOptions {
+  /**
+   * By default install only does anything if `process.env.TTY_LINKER_ENABLED` is truthy.
+   * Use this to always install.
+   */
+  force: boolean
+}
+
 export function create() {
   const cps: nodecp.ChildProcess[] = []
   let forwardingOn = false
@@ -75,7 +83,7 @@ export function create() {
       },
     },
     child: {
-      install(opts: { force: boolean }) {
+      install(opts: ChildInstallOptions = { force: false }) {
         if (!process.env[TTY_LINKER_ENABLED_ENV_VAR] && opts.force === false) {
           return
         }
