@@ -284,9 +284,15 @@ type ExecScenario = {
  */
 export function detectExecLayout(tool: { depName: string }): ExecScenario {
   let thisProcessBinPath = process.argv[1]
-  if (!path.extname(thisProcessBinPath)) {
-    thisProcessBinPath += '.js'
+
+  // Node CLI supports omitting the ".js" ext like this: $ node a/b/c/foo
+  // Handle that case otherwise the realpathSync below will fail.
+  if (path.extname(thisProcessBinPath) !== '.js') {
+    if (fs.existsSync(thisProcessBinPath + '.js')) {
+      thisProcessBinPath += '.js'
+    }
   }
+
   // todo try-catch? can we guarantee this? If not, what is the fallback?
   const thisProcessBinRealPath = fs.realpathSync(thisProcessBinPath)
   const thisProcessBinDir = path.dirname(thisProcessBinPath)
