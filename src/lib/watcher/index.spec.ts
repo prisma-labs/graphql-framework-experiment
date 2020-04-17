@@ -3,7 +3,7 @@ import { createWatcher } from '../../../dist/lib/watcher'
 import * as ExitSystem from '../exit-system'
 import { rootLogger } from '../nexus-logger'
 import * as TestContext from '../test-context'
-import { MemoryFS, writeToFS } from '../testing-utils'
+import { FSSpec, writeFSSpec } from '../testing-utils'
 import { Event } from './types'
 
 process.env.DEBUG = 'true'
@@ -30,10 +30,10 @@ const watcherContext = TestContext.create(
       setup() {
         ExitSystem.install()
       },
-      write(vfs: MemoryFS) {
+      write(vfs: FSSpec) {
         const tmpDir = opts.tmpDir()
 
-        writeToFS(tmpDir, vfs)
+        writeFSSpec(tmpDir, vfs)
       },
       async createWatcher() {
         const bufferedEvents: Event[] = []
