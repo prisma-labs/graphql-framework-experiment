@@ -261,7 +261,10 @@ type ExecScenario = {
     nodeModulesDir: string
     binDir: string
     toolBinPath: string
-    toolBinRealPath: string
+    /**
+     * Only present when the project is actually a tool project with dependencies installed.
+     */
+    toolBinRealPath: null | string
   }
   /**
    * Information about this process bin
@@ -312,13 +315,12 @@ export function detectExecLayout(tool: { depName: string }): ExecScenario {
   const projectNodeModulesDir = path.join(projectDir, 'node_modules')
   const projectBinDir = path.join(projectNodeModulesDir, '.bin')
   const projectToolBinPath = path.join(projectBinDir, thisProcessToolBin.name)
-  const projectToolBinRealPath = fs.realpathSync(projectToolBinPath)
   const project = {
     dir: projectDir,
     binDir: projectBinDir,
-    toolBinPath: projectToolBinPath,
-    toolBinRealPath: projectToolBinRealPath,
     nodeModulesDir: projectNodeModulesDir,
+    toolBinPath: projectToolBinPath,
+    toolBinRealPath: null,
   }
 
   let isToolProject = null
@@ -337,9 +339,12 @@ export function detectExecLayout(tool: { depName: string }): ExecScenario {
     }
   }
 
-  let toolCurrentlyPresentInNodeModules = fs.existsSync(path.join(project.nodeModulesDir, tool.depName))
+  let projectToolBinRealPath = null
+  try {
+    projectToolBinRealPath = fs.realpathSync(projectToolBinPath)
+  } catch (e) {}
 
-  if (!toolCurrentlyPresentInNodeModules) {
+  if (!projectToolBinRealPath) {
     return {
       nodeProject: true,
       toolProject: true,
@@ -349,6 +354,10 @@ export function detectExecLayout(tool: { depName: string }): ExecScenario {
       project,
     }
   }
+
+  Object.assign(project, {
+    toolBinRealPath: projectToolBinRealPath,
+  })
 
   /**
    * Use real path to check if local tool version is being used. This is because

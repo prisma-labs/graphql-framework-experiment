@@ -38,8 +38,8 @@ if (!process.env.GLOBAL_LOCAL_HANDOFF) {
 
         Please install your dependencies and then try your command again.
 
-        Location of your global CLI: ${execLayout.thisProcessToolBin.path}
-        Location of your local CLI (should be, after installing): ${execLayout.project!.toolBinPath}
+        Location of your global CLI (you invoked this): ${execLayout.thisProcessToolBin.realPath}
+        Location of your local CLI will be here: ${execLayout.project!.toolBinPath}
         `
       )
       process.exit(1)
