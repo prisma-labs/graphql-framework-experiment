@@ -4,7 +4,7 @@ import * as fs from 'fs-jetpack'
 import * as path from 'path'
 import { DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT, Layout } from '../../lib/layout'
 import { START_MODULE_NAME } from '../../runtime/start/start-module'
-import { findDirContainingFileRecurisvelyUpwardSync } from '../fs'
+import { findFileRecurisvelyUpwardSync } from '../fs'
 import { rootLogger } from '../nexus-logger'
 import { fatal } from '../process'
 
@@ -74,7 +74,7 @@ interface NowJson {
  * Validate the user's now configuration file.
  */
 function validateNow(layout: Layout): ValidatorResult {
-  const maybeNowJson = findDirContainingFileRecurisvelyUpwardSync('now.json', { cwd: layout.projectRoot })
+  const maybeNowJson = findFileRecurisvelyUpwardSync('now.json', { cwd: layout.projectRoot })
   const startModulePath = `${layout.buildOutputRelative}/${START_MODULE_NAME}.js`
   let isValid = true
 

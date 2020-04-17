@@ -4,7 +4,7 @@ import * as FS from 'fs-jetpack'
 import * as Path from 'path'
 import { PackageJson } from 'type-fest'
 import { ParsedCommandLine } from 'typescript'
-import { findDirContainingFileRecurisvelyUpwardSync, findFile } from '../../lib/fs'
+import { findFile, findFileRecurisvelyUpwardSync } from '../../lib/fs'
 import { START_MODULE_NAME } from '../../runtime/start/start-module'
 import { rootLogger } from '../nexus-logger'
 import * as PackageManager from '../package-manager'
@@ -355,7 +355,7 @@ function readProjectInfo(opts?: { cwd?: string }): ScanResult['project'] {
  * Starts looking in CWD If no package.json found along search, returns null.
  */
 function findPackageJsonRecursivelyUpward(opts: { cwd: string }) {
-  return findDirContainingFileRecurisvelyUpwardSync('package.json', opts)
+  return findFileRecurisvelyUpwardSync('package.json', opts)
 }
 
 /**

@@ -1,15 +1,38 @@
 #!/usr/bin/env node
 
-import { stripIndent } from 'common-tags'
 import * as dotenv from 'dotenv'
-import * as Path from 'path'
+import * as path from 'path'
 import { isError } from 'util'
 import { CLI, HelpError } from '../lib/cli'
 import * as ExitSystem from '../lib/exit-system'
-import * as Layout from '../lib/layout'
-import * as PackageManager from '../lib/package-manager'
-import { fatal, isProcessFromProjectBin } from '../lib/process'
+import { detectExecLayout, globalLocalHandoff } from '../lib/process'
 import * as Commands from './commands'
+
+// use envar to boost perf, skip costly detection work
+if (!process.env.GLOBAL_LOCAL_HANDOFF) {
+  const execLayout = detectExecLayout({
+    binName: 'nexus',
+    depName: 'nexus',
+  })
+
+  if (!execLayout.runningLocalBin) {
+    if (execLayout.toolCurrentlyPresentInNodeModules) {
+      globalLocalHandoff({
+        localPackageDir: path.join(execLayout.paths.projectDir!, 'node_modules', 'nexus'),
+        globalPackageFilename: __filename,
+      })
+    } else {
+      // todo tell user they are running global nexus and local vesion is not
+      // available to handoff too
+      // todo tell user this is for their safety, so that they run the framework
+      // code that they expect
+      // todo tell user to run npm/yarn install
+      // todo tell user to re-run their cmd npm/yarn <whatever user ran>
+      // const packageManager = await createPackageManager(undefined, { projectRoot })
+      process.exit(1)
+    }
+  }
+}
 
 dotenv.config()
 ExitSystem.install()
@@ -24,76 +47,34 @@ process.on('unhandledRejection', (e) => {
   ExitSystem.exit(1)
 })
 
-main().then((exitCode) => {
-  ExitSystem.exit(exitCode)
+const cli = new CLI({
+  dev: new Commands.Dev(),
+  build: new Commands.Build(),
+  report: new Commands.Report(),
+  create: {
+    app: new Commands.Create.App(),
+    plugin: new Commands.Create.Plugin(),
+    __default: 'app',
+  },
+  __default: new Commands.__Default(),
 })
 
-/**
- * Check that this nexus process is being run from a locally installed
- * version unless there is no local project or the local project does not have
- * nexus installed.
- */
-async function guardNotGlobalCLIWithLocalProject(
-  packageManager: PackageManager.PackageManager
-): Promise<void> {
-  // TODO data is attainable from layout scan calculated later on... not optimal to call this twice...
-  const projectType = await Layout.scanProjectType({ cwd: process.cwd() })
-
-  if (projectType.type === 'NEXUS_project' && isProcessFromProjectBin(projectType.packageJsonLocation.path)) {
-    // TODO make npm aware
-    fatal(stripIndent`
-        You are using the nexus cli from a location other than this project.
-
-        Location of the nexus CLI you executed:      ${process.argv[1]}
-        Location of the nexus CLI for this project:  ${Path.join(
-          projectType.packageJsonLocation.dir,
-          'node_modules',
-          '.bin',
-          'nexus'
-        )}
-        
-        Please use the nexus CLI for this project:
-
-            ${packageManager.renderRunBin('nexus ' + process.argv.slice(2).join(' '))}
-      `)
-  }
-}
-
-/**
- * Main function
- */
-async function main(): Promise<number> {
-  const packageManager = await PackageManager.createPackageManager(undefined, {
-    projectRoot: process.cwd(),
-  })
-  await guardNotGlobalCLIWithLocalProject(packageManager)
-
-  // create a new CLI with our subcommands
-  const cli = new CLI({
-    dev: new Commands.Dev(),
-    build: new Commands.Build(),
-    report: new Commands.Report(),
-    create: {
-      app: new Commands.Create.App(),
-      plugin: new Commands.Create.Plugin(),
-      __default: 'app',
-    },
-    __default: new Commands.__Default(),
-  })
-
-  // parse the arguments
-  const result = await cli.parse(process.argv.slice(2))
-
-  if (result instanceof HelpError) {
-    console.error(result.message)
-    return 1
-  } else if (isError(result)) {
-    console.error(result)
-    return 1
-  } else {
-    if (result !== undefined) {
-      console.log(result)
+cli
+  .parse(process.argv.slice(2))
+  .then((result) => {
+    if (result instanceof HelpError) {
+      console.error(result.message)
+      return 1
+    } else if (isError(result)) {
+      console.error(result)
+      return 1
+    } else {
+      if (result !== undefined) {
+        console.log(result)
+      }
+      return 0
     }
-    return 0
-  }
-}
+  })
+  .then((exitCode) => {
+    ExitSystem.exit(exitCode)
+  })

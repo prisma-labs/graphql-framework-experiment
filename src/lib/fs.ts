@@ -55,7 +55,7 @@ export async function findFileRecurisvelyUpward(
  * Search for a file in cwd or in parent directory recursively up to the root
  * directory.
  */
-export function findDirContainingFileRecurisvelyUpwardSync(
+export function findFileRecurisvelyUpwardSync(
   fileName: string,
   opts: { cwd: string }
 ): { path: string; dir: string } | null {

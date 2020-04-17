@@ -1,7 +1,9 @@
 import { spawn, spawnSync, SpawnSyncOptions } from 'child_process'
 import { stripIndent } from 'common-tags'
-import * as Path from 'path'
+import * as fs from 'fs'
+import * as path from 'path'
 import { format } from 'util'
+import { findFileRecurisvelyUpwardSync } from './fs'
 import { log } from './nexus-logger'
 
 /**
@@ -223,17 +225,6 @@ function isFailedExitCode(exitCode: null | number): boolean {
   return typeof exitCode === 'number' && exitCode !== 0
 }
 
-/**
- * Check if this process was created from the bin of the given project or not.
- * @param packageJsonPath
- */
-export function isProcessFromProjectBin(packageJsonPath: string): boolean {
-  const processBinPath = process.argv[1]
-  const processBinDirPath = Path.dirname(processBinPath)
-  const projectBinDirPath = Path.join(Path.dirname(packageJsonPath), 'node_modules/.bin')
-  return processBinDirPath !== projectBinDirPath
-}
-
 export function clearConsole() {
   /**
    * For convenience, we disable clearing the console when debugging
@@ -243,4 +234,167 @@ export function clearConsole() {
   }
 
   process.stdout.write('\x1Bc')
+}
+
+type ExecScenario = {
+  /**
+   * Tells you if this process was executed within a Node proejct.
+   */
+  nodeProject: boolean
+  /**
+   * Tells you if this process was executed within an app project.
+   */
+  toolProject: boolean
+  /**
+   * Tells you if the local nexus bin is installed or not.
+   */
+  toolCurrentlyPresentInNodeModules: boolean
+  /**
+   * Tells you if the current process was run from the local bin version or not.
+   */
+  runningLocalBin: boolean
+  /**
+   * Information about the found paths.
+   */
+  paths: {
+    thisProcessBinDir: string
+    projectDir: null | string
+    projectBinDir: null | string
+  }
+}
+
+export function detectExecLayout(tool: { binName: string; depName: string }): ExecScenario {
+  const thisProcessBinDir = path.dirname(process.argv[1])
+  let projectDir = null
+
+  try {
+    projectDir = findFileRecurisvelyUpwardSync('package.json', { cwd: process.cwd() })?.dir
+  } catch (e) {}
+
+  if (!projectDir) {
+    return {
+      nodeProject: false,
+      toolProject: false,
+      toolCurrentlyPresentInNodeModules: false,
+      runningLocalBin: false,
+      paths: {
+        thisProcessBinDir,
+        projectBinDir: null,
+        projectDir: null,
+      },
+    }
+  }
+
+  const projectNodeModulesDir = path.join(projectDir, 'node_modules')
+  const projectBinDir = path.join(projectNodeModulesDir, '.bin')
+
+  let isAppProject = null
+  try {
+    isAppProject = typeof require('./package.json')?.dependencies?.[tool.depName] === 'string'
+  } catch (e) {}
+
+  if (!isAppProject) {
+    return {
+      nodeProject: true,
+      toolProject: false,
+      toolCurrentlyPresentInNodeModules: false,
+      runningLocalBin: false,
+      paths: {
+        thisProcessBinDir,
+        projectDir,
+        projectBinDir,
+      },
+    }
+  }
+
+  let toolCurrentlyPresentInNodeModules = fs.existsSync(path.join(projectNodeModulesDir, tool.depName))
+
+  if (!toolCurrentlyPresentInNodeModules) {
+    return {
+      nodeProject: true,
+      toolProject: true,
+      toolCurrentlyPresentInNodeModules: false,
+      runningLocalBin: false,
+      paths: {
+        thisProcessBinDir,
+        projectDir,
+        projectBinDir,
+      },
+    }
+  }
+
+  if (thisProcessBinDir !== projectBinDir) {
+    return {
+      nodeProject: true,
+      toolProject: true,
+      toolCurrentlyPresentInNodeModules: true,
+      runningLocalBin: false,
+      paths: {
+        thisProcessBinDir,
+        projectDir,
+        projectBinDir,
+      },
+    }
+  }
+
+  return {
+    nodeProject: true,
+    toolProject: true,
+    toolCurrentlyPresentInNodeModules: true,
+    runningLocalBin: true,
+    paths: {
+      thisProcessBinDir,
+      projectDir,
+      projectBinDir,
+    },
+  }
+}
+
+/**
+ * Handoff execution from a global to local version of a package.
+ *
+ * If the givne global module path is not a real node package (defined as being
+ * unable to locate its package.json file) then an error will be thrown.
+ *
+ * An environment variable called `GLOBAL_LOCAL_HANDOFF` will be set to
+ * `"true"`. Use this to short-circuit startup logic.
+ */
+export function globalLocalHandoff(input: { localPackageDir: string; globalPackageFilename: string }) {
+  if (process.env.GLOBAL_LOCAL_HANDOFF) {
+    console.warn('warning: multiple calls to `globalLocalHandoff`, this should not happen.')
+  }
+
+  process.env.GLOBAL_LOCAL_HANDOFF = 'true'
+
+  const globalProjectDir = findFilenameProjectDir(input.globalPackageFilename)
+
+  if (!globalProjectDir) {
+    throw new Error(
+      `Could not perform handoff to local package version becuase the given global package does not appear to actually be a package:\n\n${input.globalPackageFilename}`
+    )
+  }
+
+  require(path.join(input.localPackageDir, path.relative(globalProjectDir, input.globalPackageFilename)))
+}
+
+/**
+ * Given a module file path find the path to the project dir containing it
+ * defined as the first ancestor dir with a package.json.
+ *
+ * @return
+ *
+ * `null` if no ancestor dir has a package.json file, otherwise the path to
+ * project dir.
+ */
+export function findFilenameProjectDir(filename: string): null | string {
+  let dir = path.dirname(filename)
+  while (true) {
+    if (fs.existsSync(path.join(dir, 'package.json'))) {
+      return dir
+    }
+    if (dir === '') {
+      return null
+    }
+    dir = path.dirname(dir)
+  }
 }
