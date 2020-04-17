@@ -1,5 +1,4 @@
-import * as fs from 'fs'
-import * as FsJetpack from 'fs-jetpack'
+import * as FS from 'fs-jetpack'
 import * as Path from 'path'
 
 // In-memory file tree
@@ -12,11 +11,7 @@ export function writeToFS(cwd: string, vfs: MemoryFS) {
     const absolutePath = Path.join(cwd, path)
 
     if (typeof fileContentOrDir === 'string') {
-      if (!fs.existsSync(Path.dirname(absolutePath))) {
-        FsJetpack.dir(Path.dirname(absolutePath))
-      }
-
-      fs.writeFileSync(absolutePath, fileContentOrDir)
+      FS.write(absolutePath, fileContentOrDir)
     } else {
       writeToFS(absolutePath, fileContentOrDir)
     }

@@ -111,9 +111,7 @@ it('restarts when a file is added', async () => {
   const { watcher, bufferedEvents } = await ctx.createWatcher()
 
   setTimeout(() => {
-    ctx.write({
-      'new_file.ts': ``,
-    })
+    ctx.write({ 'new_file.ts': `` })
   }, 1000)
 
   setTimeout(async () => {
