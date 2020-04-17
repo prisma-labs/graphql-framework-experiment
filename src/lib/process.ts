@@ -366,7 +366,9 @@ export function globalLocalHandoff(input: { localPackageDir: string; globalPacka
 
   process.env.GLOBAL_LOCAL_HANDOFF = 'true'
 
-  const globalProjectDir = findFilenameProjectDir(input.globalPackageFilename)
+  const globalProjectDir = findFileRecurisvelyUpwardSync('package.json', {
+    cwd: path.dirname(input.globalPackageFilename),
+  })?.dir
 
   if (!globalProjectDir) {
     throw new Error(
@@ -375,26 +377,4 @@ export function globalLocalHandoff(input: { localPackageDir: string; globalPacka
   }
 
   require(path.join(input.localPackageDir, path.relative(globalProjectDir, input.globalPackageFilename)))
-}
-
-/**
- * Given a module file path find the path to the project dir containing it
- * defined as the first ancestor dir with a package.json.
- *
- * @return
- *
- * `null` if no ancestor dir has a package.json file, otherwise the path to
- * project dir.
- */
-export function findFilenameProjectDir(filename: string): null | string {
-  let dir = path.dirname(filename)
-  while (true) {
-    if (fs.existsSync(path.join(dir, 'package.json'))) {
-      return dir
-    }
-    if (dir === '') {
-      return null
-    }
-    dir = path.dirname(dir)
-  }
 }
