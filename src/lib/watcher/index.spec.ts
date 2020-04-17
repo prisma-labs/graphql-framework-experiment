@@ -1,3 +1,4 @@
+import * as Lo from 'lodash'
 import * as path from 'path'
 import { createWatcher } from '../../../dist/lib/watcher'
 import * as ExitSystem from '../exit-system'
@@ -5,7 +6,6 @@ import { rootLogger } from '../nexus-logger'
 import * as TestContext from '../test-context'
 import { FSSpec, writeFSSpec } from '../testing-utils'
 import { Event } from './types'
-import * as Lo from 'lodash'
 
 ExitSystem.install()
 process.env.DEBUG = 'true'
@@ -208,14 +208,54 @@ it('restarts when a dir is added', async () => {
   const { bufferedEvents } = await testSimpleCase({
     entrypoint: `process.stdout.write('hello')`,
     fsUpdate: () => {
-      ctx.write({
-        new_dir: {},
-      })
+      ctx.fs.dir('new_dir')
     },
   })
 
   expect(bufferedEvents).toMatchInlineSnapshot(`
     Array [
+      Object {
+        "data": "hello",
+        "stdio": "stdout",
+        "type": "runner_stdio",
+      },
+      Object {
+        "file": "new_dir",
+        "reason": "addDir",
+        "type": "restart",
+      },
+      Object {
+        "data": "hello",
+        "stdio": "stdout",
+        "type": "runner_stdio",
+      },
+    ]
+  `)
+})
+
+it('restarts when a dir is removed', async () => {
+  const { bufferedEvents } = await testSimpleCase({
+    entrypoint: `process.stdout.write('hello')`,
+    additionalInitialFiles: {
+      dir: {},
+    },
+    fsUpdate: () => {
+      ctx.fs.remove('dir')
+    },
+  })
+
+  expect(bufferedEvents).toMatchInlineSnapshot(`
+    Array [
+      Object {
+        "data": "hello",
+        "stdio": "stdout",
+        "type": "runner_stdio",
+      },
+      Object {
+        "file": "dir",
+        "reason": "unlinkDir",
+        "type": "restart",
+      },
       Object {
         "data": "hello",
         "stdio": "stdout",
