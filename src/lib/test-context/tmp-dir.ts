@@ -1,11 +1,9 @@
 import * as fs from 'fs-jetpack'
-import { FSJetpack } from 'fs-jetpack/types'
 import { getTmpDir } from '../fs'
 import { create } from './compose-create'
 
 export interface TmpDirContribution {
   tmpDir: string
-  fs: FSJetpack
 }
 
 export const tmpDir = create(
@@ -14,6 +12,6 @@ export const tmpDir = create(
 
     fs.dir(tmpDir)
 
-    return { tmpDir, fs: fs.cwd(tmpDir) }
+    return { tmpDir }
   }
 )

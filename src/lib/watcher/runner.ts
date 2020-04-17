@@ -3,11 +3,7 @@
 require('../tty-linker').create().child.install()
 
 import * as tsNode from 'ts-node'
-import { createDevAppRunner } from '../../runtime/start'
-import { runAddToContextExtractorAsWorkerIfPossible } from '../add-to-context-extractor/add-to-context-extractor'
-import * as Layout from '../layout'
 import { rootLogger } from '../nexus-logger'
-import cfgFactory from './cfg'
 import hook from './hook'
 import * as IPC from './ipc'
 
@@ -20,41 +16,12 @@ tsNode.register({
 main()
 
 async function main() {
-  const layout = Layout.mustLoadDataFromParentProcess()
-
-  runAddToContextExtractorAsWorkerIfPossible(layout.data)
-
-  // Remove app-runner.js from the argv array
-  // todo why?
-  process.argv.splice(1, 1)
+  if (!process.env.ENTRYPOINT_SCRIPT) {
+    throw new Error('process.env.ENTRYPOINT_SCRIPT needs to be defined')
+  }
 
   // Enable dev mode code paths for IPC interaction
   process.env.NEXUS_DEV_MODE = 'true'
-
-  const cfg = cfgFactory()
-
-  // Set NODE_ENV to 'development' unless already set
-  if (!process.env.NODE_ENV) process.env.NODE_ENV = 'development'
-
-  if (process.env.NODE_DEV_PRELOAD) {
-    require(process.env.NODE_DEV_PRELOAD)
-  }
-
-  // // Listen SIGTERM and exit unless there is another listener
-  // process.on('SIGTERM', function() {
-  //   if (process.listeners('SIGTERM').length === 1) {
-  //     log.trace('Child got SIGTERM, exiting')
-  //     process.exit(0)
-  //   }
-  // })
-
-  // Overwrite child_process.fork() so that we can hook into forked processes
-  // too. We also need to relay messages about required files to the parent.
-  // childProcess.fork = function(modulePath: string, args: any, options: any) {
-  //   const child = fork(__filename, [modulePath].concat(args), options)
-  //   // ipc.relay(child)
-  //   return child
-  // }
 
   // TODO perhaps we should move these unhandled error/rejections
   // to start module because we probably want them just as much from production as
@@ -113,11 +80,9 @@ async function main() {
   })
 
   // Hook into require() and notify the parent process about required files
-  hook(cfg, module, (filePath) => {
+  hook(module, (filePath) => {
     IPC.client.senders.moduleImported({ filePath })
   })
 
-  const appRunner = createDevAppRunner(layout)
-
-  return appRunner.start()
+  eval(process.env.ENTRYPOINT_SCRIPT)
 }

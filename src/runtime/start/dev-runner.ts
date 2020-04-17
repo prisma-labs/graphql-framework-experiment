@@ -4,17 +4,28 @@ import { transpileModule } from '../../lib/tsc'
 import * as Server from '../server'
 import { createStartModuleContent } from './start-module'
 
+export interface DevRunner {
+  /**
+   * Start the application. Will throw an error if the eval'd code throws
+   */
+  start: () => Promise<void>
+  /**
+   * Stop the application
+   */
+  stop: () => Promise<void>
+  /**
+   * Port on which the application was run
+   */
+  port: number
+}
+
 export function createDevAppRunner(
   layout: Layout.Layout,
   opts?: {
     server?: Server.ExtraSettingsInput
     disableServer?: boolean
   }
-): {
-  start: () => Promise<void>
-  stop: () => Promise<void>
-  port: number
-} {
+): DevRunner {
   const startModule = createStartModuleContent({
     internalStage: 'dev',
     layout: layout,

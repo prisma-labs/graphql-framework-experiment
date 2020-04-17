@@ -1,16 +1,14 @@
 const vm = require('vm')
 
-export default function (cfg: { vm: boolean }, appRunner: NodeModule, callback: (file: string) => void) {
+export default function (appRunner: NodeModule, callback: (file: string) => void) {
   // Hook into Node's `require(...)`
   updateHooks()
 
   // Patch the vm module to watch files executed via one of these methods:
-  if (cfg.vm) {
-    patch(vm, 'createScript', 1)
-    patch(vm, 'runInThisContext', 1)
-    patch(vm, 'runInNewContext', 2)
-    patch(vm, 'runInContext', 2)
-  }
+  patch(vm, 'createScript', 1)
+  patch(vm, 'runInThisContext', 1)
+  patch(vm, 'runInNewContext', 2)
+  patch(vm, 'runInContext', 2)
 
   /**
    * Patch the specified method to watch the file at the given argument

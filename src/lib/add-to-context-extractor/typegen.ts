@@ -1,7 +1,7 @@
 import { codeBlock } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import { hardWriteFile } from '../fs'
-import { ExtractedContectTypes } from './extractor'
+import { ExtractedContextTypes } from './extractor'
 
 export const NEXUS_DEFAULT_RUNTIME_CONTEXT_TYPEGEN_PATH = fs.path(
   'node_modules',
@@ -13,7 +13,7 @@ export const NEXUS_DEFAULT_RUNTIME_CONTEXT_TYPEGEN_PATH = fs.path(
 /**
  * Output the context types to a typegen file.
  */
-export async function writeContextTypeGenFile(contextTypes: ExtractedContectTypes) {
+export async function writeContextTypeGenFile(contextTypes: ExtractedContextTypes) {
   const addToContextInterfaces = contextTypes.types
     .map((result) => `interface Context ${result}`)
     .join('\n\n')

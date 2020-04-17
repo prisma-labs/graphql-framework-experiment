@@ -9,7 +9,7 @@ import { rootLogger } from '../nexus-logger'
 
 const log = rootLogger.child('dev').child('watcher')
 
-type ChangeType = 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir'
+export type ChangeType = 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir'
 
 export interface ChangeEvent {
   type: ChangeType
@@ -33,7 +33,7 @@ export type FileWatcherEventCallback = (
     restart: (file: string) => void
     pause: () => void
     resume: () => void
-  } //TODO: add stop and start methods
+  }
 ) => void
 
 type FileWatcherOptions = chokidar.WatchOptions

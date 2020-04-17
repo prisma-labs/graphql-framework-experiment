@@ -5,7 +5,7 @@ import * as Layout from '../../lib/layout'
 import { createTSProgram } from '../../lib/tsc'
 import { rootLogger } from '../nexus-logger'
 import { areWorkerThreadsAvailable } from '../utils'
-import { extractContextTypes, ExtractedContectTypes } from './extractor'
+import { extractContextTypes, ExtractedContextTypes } from './extractor'
 import { writeContextTypeGenFile } from './typegen'
 
 const log = rootLogger.child('add-to-context-extractor')
@@ -15,18 +15,20 @@ const log = rootLogger.child('add-to-context-extractor')
  * not available by default. If workers are not available then extraction falls
  * back to running in this process, possibly blocking with with intensive CPU work.
  */
-export function runAddToContextExtractorAsWorkerIfPossible(layoutData: Layout.Layout['data']) {
+export function runAddToContextExtractorAsWorkerIfPossible(
+  layoutData: Layout.Layout['data']
+): Promise<ExtractedContextTypes> {
   log.trace('starting context type extraction')
   let hasWorkerThreads = areWorkerThreadsAvailable()
 
   if (hasWorkerThreads) {
     log.trace('Worker threads available')
-    runAddToContextExtractorAsWorker(layoutData)
+    return runAddToContextExtractorAsWorker(layoutData)
   } else {
     log.trace('Worker threads unavailable. Fallbacking to main process')
     const layout = Layout.createFromData(layoutData)
     const builder = createTSProgram(layout, { withCache: true })
-    extractContextTypesToTypeGenFile(builder.getProgram())
+    return extractContextTypesToTypeGenFile(builder.getProgram())
   }
 }
 
@@ -36,37 +38,42 @@ export function runAddToContextExtractorAsWorkerIfPossible(layoutData: Layout.La
 export async function extractContextTypesToTypeGenFile(program: ts.Program) {
   const contextTypes = extractContextTypes(program)
   await writeContextTypeGenFile(contextTypes)
+  return contextTypes
 }
 
 /**
  * Run the extractor in a worker.
  */
-export function runAddToContextExtractorAsWorker(layoutData: Layout.Data) {
-  // avoid import error in node 10.x
-  const { Worker } = require('worker_threads')
-  const worker: Worker = new Worker(Path.join(__dirname, 'worker.js'), {
-    workerData: {
-      layoutData,
-    },
-  })
+export function runAddToContextExtractorAsWorker(layoutData: Layout.Data): Promise<ExtractedContextTypes> {
+  return new Promise((resolve, reject) => {
+    // avoid import error in node 10.x
+    const { Worker } = require('worker_threads')
+    const worker: Worker = new Worker(Path.join(__dirname, 'worker.js'), {
+      workerData: {
+        layoutData,
+      },
+    })
 
-  worker.once('online', () => {
-    log.trace('worker online')
-  })
+    worker.once('online', () => {
+      log.trace('worker online')
+    })
 
-  worker.once('exit', (exitCode) => {
-    log.trace('worker exited', { exitCode })
-  })
+    worker.once('exit', (exitCode) => {
+      log.trace('worker exited', { exitCode })
+    })
 
-  worker.once('message', (contextTypes: ExtractedContectTypes) => {
-    log.trace('worker finished context type extraction', { contextTypes })
+    worker.once('message', (contextTypes: ExtractedContextTypes) => {
+      log.trace('worker finished context type extraction', { contextTypes })
 
-    // Let the Node.js main thread exit, even though the Worker
-    // is still running:
-    worker.unref()
-  })
+      // Let the Node.js main thread exit, even though the Worker
+      // is still running:
+      worker.unref()
+      resolve(contextTypes)
+    })
 
-  worker.on('error', (error) => {
-    log.warn('We could not extract your context types from `schema.addToContext`', { error })
+    worker.on('error', (error) => {
+      log.warn('We could not extract your context types from `schema.addToContext`', { error })
+      reject(error)
+    })
   })
 }
