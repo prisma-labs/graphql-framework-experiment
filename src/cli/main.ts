@@ -19,9 +19,11 @@ const log = rootLogger
 // use envar to boost perf, skip costly detection work
 if (!process.env.GLOBAL_LOCAL_HANDOFF) {
   const depName = 'nexus'
+  log.trace('execLayout start')
   const execLayout = detectExecLayout({
     depName,
   })
+  log.trace('execLayout done', { execLayout })
 
   if (execLayout.toolProject && !execLayout.runningLocalTool) {
     if (execLayout.toolCurrentlyPresentInNodeModules) {
