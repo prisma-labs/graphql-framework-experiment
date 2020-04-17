@@ -25,11 +25,11 @@ type StopResult = null | {
   signal: null | NodeJS.Signals
 }
 
-type State = 'default' | 'running' | 'stopping' | 'stopped'
+type State = 'init' | 'running' | 'stopping' | 'stopped'
 
 export class Link {
   private ttyLinker = TTYLinker.create()
-  private state: State = 'default'
+  private state: State = 'init'
   private stoppedResult: StopResult | null = null
   private childProcess: null | nodecp.ChildProcessWithoutNullStreams = null
 
@@ -85,20 +85,20 @@ export class Link {
       this.childProcess.kill('SIGKILL')
       this.childProcess.once('exit', (code, signal) => {
         log.trace('child killed', { state: this.state, code, signal })
-        this.cleanChildProcess()
+        this.teardownChildProcess()
         res({ code, signal })
       })
     })
   }
 
-  private cleanChildProcess() {
+  private teardownChildProcess() {
     this.ttyLinker.parent.unforward(this.childProcess!)
     this.childProcess = null
     this.state = 'stopped'
   }
 
   private spawnRunner(): void {
-    if (this.state !== 'stopped' && this.state !== 'default') {
+    if (this.state !== 'stopped' && this.state !== 'init') {
       log.trace('cannot start the runner if it is not stopped', { state: this.state })
       return
     }
@@ -128,7 +128,7 @@ export class Link {
       },
     }) as nodecp.ChildProcessWithoutNullStreams
 
-    log.trace('spawn child', { pid: this.childProcess.pid })
+    log.trace('spawn child', { pid: this.childProcess.pid, state: this.state })
 
     this.ttyLinker.parent.forward(this.childProcess)
 
@@ -158,7 +158,7 @@ export class Link {
 
     this.childProcess.once('exit', (code, signal) => {
       log.trace('child killed itself', { state: this.state, code, signal })
-      this.cleanChildProcess()
+      this.teardownChildProcess()
     })
 
     this.state = 'running'
