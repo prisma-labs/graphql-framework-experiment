@@ -35,6 +35,7 @@ const watcherContext = TestContext.create(
       },
       async createWatcher() {
         const bufferedEvents: Event[] = []
+        await new Promise((res) => setTimeout(res, 10))
         const watcher = await createWatcher({
           entrypointScript: `require('${path.join(opts.tmpDir, 'entrypoint')}')`,
           sourceRoot: opts.tmpDir,
