@@ -72,11 +72,11 @@ async function testSimpleCase(params: {
 
   setTimeout(() => {
     params.fsUpdate()
-  }, 500)
+  }, 1000)
 
   setTimeout(async () => {
     await watcher.stop()
-  }, 1000)
+  }, 2000)
 
   await watcher.start()
 
