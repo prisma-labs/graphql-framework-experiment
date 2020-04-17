@@ -6,6 +6,7 @@ import * as TestContext from '../test-context'
 import { FSSpec, writeFSSpec } from '../testing-utils'
 import { Event } from './types'
 
+ExitSystem.install()
 process.env.DEBUG = 'true'
 
 /**
@@ -27,20 +28,17 @@ rootLogger.settings({
 const watcherContext = TestContext.create(
   (opts: TestContext.TmpDirContribution & TestContext.FsContribution) => {
     return {
-      setup() {
-        ExitSystem.install()
-      },
       write(vfs: FSSpec) {
-        const tmpDir = opts.tmpDir()
+        const tmpDir = opts.tmpDir
 
         writeFSSpec(tmpDir, vfs)
       },
       async createWatcher() {
         const bufferedEvents: Event[] = []
         const watcher = await createWatcher({
-          entrypointScript: `require('${path.join(opts.tmpDir(), 'entrypoint')}')`,
-          sourceRoot: ctx.tmpDir(),
-          cwd: ctx.tmpDir(),
+          entrypointScript: `require('${path.join(opts.tmpDir, 'entrypoint')}')`,
+          sourceRoot: opts.tmpDir,
+          cwd: opts.tmpDir,
           plugins: [],
           events: (e) => {
             bufferedEvents.push(e)
@@ -59,8 +57,6 @@ const watcherContext = TestContext.create(
 const ctx = TestContext.compose(TestContext.tmpDir, TestContext.fs, watcherContext)
 
 it('restarts when a file is changed', async () => {
-  ctx.setup()
-
   ctx.write({
     'entrypoint.ts': `process.stdout.write('toto')`,
   })
@@ -101,9 +97,6 @@ it('restarts when a file is changed', async () => {
 })
 
 it('restarts when a file is added', async () => {
-  console.log(ctx.tmpDir())
-  ctx.setup()
-
   ctx.write({
     'entrypoint.ts': `process.stdout.write('titi')`,
   })
