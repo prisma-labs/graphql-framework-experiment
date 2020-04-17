@@ -55,7 +55,7 @@ const layoutContext = TestContext.create((input: TestContext.TmpDirContribution)
   }
 })
 
-const ctx = TestContext.compose(TestContext.tmpDir, layoutContext)
+const ctx = TestContext.compose(TestContext.tmpDir, TestContext.fs, layoutContext)
 
 /**
  * Tests

@@ -1,5 +1,5 @@
 import { create } from './compose-create'
-import * as fsJetPack from 'fs-jetpack'
+import * as FS from 'fs-jetpack'
 import { FSJetpack } from 'fs-jetpack/types'
 
 export interface FsContribution {
@@ -9,7 +9,7 @@ export interface FsContribution {
 export const fs = create(
   (opts: { tmpDir: string }): FsContribution => {
     return {
-      fs: fsJetPack.cwd(opts.tmpDir),
+      fs: FS.cwd(opts.tmpDir),
     }
   }
 )
