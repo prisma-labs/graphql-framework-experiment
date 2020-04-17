@@ -117,11 +117,6 @@ it('restarts when a file is added', async () => {
   expect(bufferedEvents).toMatchInlineSnapshot(`
     Array [
       Object {
-        "file": "",
-        "reason": "addDir",
-        "type": "restart",
-      },
-      Object {
         "data": "titi",
         "stdio": "stdout",
         "type": "runner_stdio",
