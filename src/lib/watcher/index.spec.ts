@@ -72,11 +72,11 @@ async function testSimpleCase(params: {
 
   setTimeout(() => {
     params.fsUpdate()
-  }, 1000)
+  }, 500)
 
   setTimeout(async () => {
     await watcher.stop()
-  }, 2000)
+  }, 1000)
 
   await watcher.start()
 
@@ -271,19 +271,20 @@ it('handles lots of restarts', async () => {
   })
 
   const { watcher, bufferedEvents } = await ctx.createWatcher()
-  const amountOfRestarts = 20
+  const initialDelay = 500
+  const amountOfRestarts = 15
   const msBetweenEachRestarts = 50
-  const msAfterAllRestarts = amountOfRestarts * msBetweenEachRestarts
+  const msAfterAllRestarts = initialDelay + amountOfRestarts * msBetweenEachRestarts
 
   Lo.times(amountOfRestarts, (i) => {
     setTimeout(() => {
       ctx.write({ 'entrypoint.ts': ' '.repeat(i) })
-    }, msBetweenEachRestarts * i)
+    }, initialDelay + msBetweenEachRestarts * i)
   })
 
   setTimeout(() => {
     ctx.write({ 'entrypoint.ts': `process.stdout.write('done!')` })
-  }, msAfterAllRestarts + 200)
+  }, msAfterAllRestarts + 500)
 
   setTimeout(async () => {
     await watcher.stop()
