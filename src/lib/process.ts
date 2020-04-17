@@ -283,8 +283,12 @@ type ExecScenario = {
  * version available.
  */
 export function detectExecLayout(tool: { depName: string }): ExecScenario {
-  const thisProcessBinPath = process.argv[1]
-  const thisProcessBinRealPath = fs.realpathSync(process.argv[1])
+  let thisProcessBinPath = process.argv[1]
+  if (!path.extname(thisProcessBinPath)) {
+    thisProcessBinPath += '.js'
+  }
+  // todo try-catch? can we guarantee this? If not, what is the fallback?
+  const thisProcessBinRealPath = fs.realpathSync(thisProcessBinPath)
   const thisProcessBinDir = path.dirname(thisProcessBinPath)
   const thisProcessBinRealDir = path.dirname(thisProcessBinRealPath)
   const thisProcessBinName = path.basename(thisProcessBinPath)
