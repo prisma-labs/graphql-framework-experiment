@@ -254,17 +254,33 @@ type ExecScenario = {
    */
   runningLocalBin: boolean
   /**
-   * Information about the found paths.
+   * Information about the project if present
    */
-  paths: {
-    thisProcessBinDir: string
-    projectDir: null | string
-    projectBinDir: null | string
+  project: null | {
+    dir: string
+    nodeModulesDir: string
+    binDir: string
+    toolBinPath: string
+  }
+  /**
+   * Information about this process bin
+   */
+  thisProcessToolBin: {
+    path: string
+    dir: string
+    name: string
   }
 }
 
-export function detectExecLayout(tool: { binName: string; depName: string }): ExecScenario {
-  const thisProcessBinDir = path.dirname(process.argv[1])
+export function detectExecLayout(tool: { depName: string }): ExecScenario {
+  const thisProcessBinPath = process.argv[1]
+  const thisProcessBinDir = path.dirname(thisProcessBinPath)
+  const thisProcessBinName = path.basename(thisProcessBinPath)
+  const thisProcessToolBin = {
+    name: thisProcessBinName,
+    path: thisProcessBinPath,
+    dir: thisProcessBinDir,
+  }
   let projectDir = null
 
   try {
@@ -277,16 +293,20 @@ export function detectExecLayout(tool: { binName: string; depName: string }): Ex
       toolProject: false,
       toolCurrentlyPresentInNodeModules: false,
       runningLocalBin: false,
-      paths: {
-        thisProcessBinDir,
-        projectBinDir: null,
-        projectDir: null,
-      },
+      thisProcessToolBin,
+      project: null,
     }
   }
 
   const projectNodeModulesDir = path.join(projectDir, 'node_modules')
   const projectBinDir = path.join(projectNodeModulesDir, '.bin')
+  const projectToolBinPath = path.join(projectBinDir, thisProcessToolBin.name)
+  const project = {
+    dir: projectDir,
+    binDir: projectBinDir,
+    toolBinPath: projectToolBinPath,
+    nodeModulesDir: projectNodeModulesDir,
+  }
 
   let isAppProject = null
   try {
@@ -299,15 +319,12 @@ export function detectExecLayout(tool: { binName: string; depName: string }): Ex
       toolProject: false,
       toolCurrentlyPresentInNodeModules: false,
       runningLocalBin: false,
-      paths: {
-        thisProcessBinDir,
-        projectDir,
-        projectBinDir,
-      },
+      thisProcessToolBin,
+      project,
     }
   }
 
-  let toolCurrentlyPresentInNodeModules = fs.existsSync(path.join(projectNodeModulesDir, tool.depName))
+  let toolCurrentlyPresentInNodeModules = fs.existsSync(path.join(project.nodeModulesDir, tool.depName))
 
   if (!toolCurrentlyPresentInNodeModules) {
     return {
@@ -315,11 +332,8 @@ export function detectExecLayout(tool: { binName: string; depName: string }): Ex
       toolProject: true,
       toolCurrentlyPresentInNodeModules: false,
       runningLocalBin: false,
-      paths: {
-        thisProcessBinDir,
-        projectDir,
-        projectBinDir,
-      },
+      thisProcessToolBin,
+      project,
     }
   }
 
@@ -329,11 +343,8 @@ export function detectExecLayout(tool: { binName: string; depName: string }): Ex
       toolProject: true,
       toolCurrentlyPresentInNodeModules: true,
       runningLocalBin: false,
-      paths: {
-        thisProcessBinDir,
-        projectDir,
-        projectBinDir,
-      },
+      thisProcessToolBin,
+      project,
     }
   }
 
@@ -342,11 +353,8 @@ export function detectExecLayout(tool: { binName: string; depName: string }): Ex
     toolProject: true,
     toolCurrentlyPresentInNodeModules: true,
     runningLocalBin: true,
-    paths: {
-      thisProcessBinDir,
-      projectDir,
-      projectBinDir,
-    },
+    thisProcessToolBin,
+    project,
   }
 }
 

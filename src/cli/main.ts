@@ -1,34 +1,43 @@
 #!/usr/bin/env node
 
+import { stripIndent } from 'common-tags'
 import * as dotenv from 'dotenv'
 import * as path from 'path'
 import { isError } from 'util'
 import { CLI, HelpError } from '../lib/cli'
 import * as ExitSystem from '../lib/exit-system'
+import { rootLogger } from '../lib/nexus-logger'
 import { detectExecLayout, globalLocalHandoff } from '../lib/process'
 import * as Commands from './commands'
 
+const log = rootLogger
+
 // use envar to boost perf, skip costly detection work
 if (!process.env.GLOBAL_LOCAL_HANDOFF) {
+  const depName = 'nexus'
   const execLayout = detectExecLayout({
-    binName: 'nexus',
-    depName: 'nexus',
+    depName,
   })
 
-  if (!execLayout.runningLocalBin) {
+  if (execLayout.toolProject && !execLayout.runningLocalBin) {
     if (execLayout.toolCurrentlyPresentInNodeModules) {
       globalLocalHandoff({
-        localPackageDir: path.join(execLayout.paths.projectDir!, 'node_modules', 'nexus'),
+        localPackageDir: path.join(execLayout.project!.nodeModulesDir, depName),
         globalPackageFilename: __filename,
       })
     } else {
-      // todo tell user they are running global nexus and local vesion is not
-      // available to handoff too
-      // todo tell user this is for their safety, so that they run the framework
-      // code that they expect
-      // todo tell user to run npm/yarn install
-      // todo tell user to re-run their cmd npm/yarn <whatever user ran>
+      //todo detect package manager
       // const packageManager = await createPackageManager(undefined, { projectRoot })
+      log.fatal(
+        stripIndent`
+        You ran a global version of the Nexus CLI against your Nexus project. But your local project does not currently present within your node_modules.
+
+        Please run yarn install and then try your command again.
+
+        Location of your global CLI: ${execLayout.paths.thisProcessBinDir}
+        Location of your locatl CLI (after installing): ${execLayout.paths.projectBinDir}
+        `
+      )
       process.exit(1)
     }
   }
