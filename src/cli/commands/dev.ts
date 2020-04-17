@@ -73,12 +73,14 @@ export class Dev implements Command {
       module: ts.ModuleKind.CommonJS,
     })
 
-    await createWatcher({
+    const watcher = await createWatcher({
       entrypointScript: transpiledStartModule,
       sourceRoot: layout.sourceRoot,
       cwd: process.cwd(),
       plugins: [layoutPlugin].concat(worktimePlugins.map((p) => p.hooks)),
       inspectBrk: args['--inspect-brk'],
     })
+
+    await watcher.start()
   }
 }
