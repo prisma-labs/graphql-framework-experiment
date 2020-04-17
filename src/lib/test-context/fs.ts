@@ -3,13 +3,13 @@ import * as fsJetPack from 'fs-jetpack'
 import { FSJetpack } from 'fs-jetpack/types'
 
 export interface FsContribution {
-  fs: () => FSJetpack
+  fs: FSJetpack
 }
 
 export const fs = create(
-  (opts: { tmpDir: () => string }): FsContribution => {
+  (opts: { tmpDir: string }): FsContribution => {
     return {
-      fs: () => fsJetPack.cwd(opts.tmpDir()),
+      fs: fsJetPack.cwd(opts.tmpDir),
     }
   }
 )
