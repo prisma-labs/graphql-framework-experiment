@@ -41,16 +41,36 @@ type ExecScenario = {
     realPath: string
     realDir: string
   }
-} /**
+}
 
+interface Input {
+  /**
+   * The name of the package for the tool. This is used to detect if the proejct
+   * (if any found) is working with this tool or not. If it is not then checks
+   * for if a local version of the package is being used are skipped.
+   */
+  depName: string
+  /**
+   * The current working directory. From here a project is looked for.
+   *
+   * @default process.cwd()
+   */
+
+  cwd?: string
+  /**
+   * The path to the script that was run by this process. Useful option for
+   * testing. Otherwise will usually rely on the default.
+   *
+   * @default process.argv[1]
+   */
+  scriptPath?: string
+}
+
+/**
  * Detect the layout of the bin used for this process, and if there is a local
  * version available.
  */
-export function detectExecLayout(input: {
-  depName: string
-  cwd?: string
-  scriptPath?: string
-}): ExecScenario {
+export function detectExecLayout(input: Input): ExecScenario {
   const cwd = input.cwd ?? process.cwd()
   let thisProcessScriptPath = input.scriptPath ?? process.argv[1]
 
