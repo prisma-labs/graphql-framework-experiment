@@ -1,6 +1,6 @@
-import { create } from './compose-create'
 import * as FS from 'fs-jetpack'
 import { FSJetpack } from 'fs-jetpack/types'
+import { create } from './compose-create'
 
 export interface FsContribution {
   fs: FSJetpack

@@ -1,15 +1,16 @@
 import { spawn, spawnSync, SpawnSyncOptions } from 'child_process'
 import { stripIndent } from 'common-tags'
-import * as Path from 'path'
+import * as path from 'path'
 import { format } from 'util'
-import { log } from './nexus-logger'
+import { findFileRecurisvelyUpwardSync } from '../fs'
+import { log } from '../nexus-logger'
 
 /**
  * Log a meaningful semantic error message sans stack track and then crash
  * the program with exit code 1. Parameters are a passthrough to `console.error`.
  */
 export function fatal(template: string, ...vars: unknown[]): never {
-  log.error(format(template, ...vars))
+  log.fatal(format(template, ...vars))
   process.exit(1)
 }
 
@@ -223,17 +224,6 @@ function isFailedExitCode(exitCode: null | number): boolean {
   return typeof exitCode === 'number' && exitCode !== 0
 }
 
-/**
- * Check if this process was created from the bin of the given project or not.
- * @param packageJsonPath
- */
-export function isProcessFromProjectBin(packageJsonPath: string): boolean {
-  const processBinPath = process.argv[1]
-  const processBinDirPath = Path.dirname(processBinPath)
-  const projectBinDirPath = Path.join(Path.dirname(packageJsonPath), 'node_modules/.bin')
-  return processBinDirPath !== projectBinDirPath
-}
-
 export function clearConsole() {
   /**
    * For convenience, we disable clearing the console when debugging
@@ -244,3 +234,34 @@ export function clearConsole() {
 
   process.stdout.write('\x1Bc')
 }
+
+/**
+ * Handoff execution from a global to local version of a package.
+ *
+ * If the givne global module path is not a real node package (defined as being
+ * unable to locate its package.json file) then an error will be thrown.
+ *
+ * An environment variable called `GLOBAL_LOCAL_HANDOFF` will be set to
+ * `"true"`. Use this to short-circuit startup logic.
+ */
+export function globalLocalHandoff(input: { localPackageDir: string; globalPackageFilename: string }) {
+  if (process.env.GLOBAL_LOCAL_HANDOFF) {
+    console.warn('warning: multiple calls to `globalLocalHandoff`, this should not happen.')
+  }
+
+  process.env.GLOBAL_LOCAL_HANDOFF = 'true'
+
+  const globalProjectDir = findFileRecurisvelyUpwardSync('package.json', {
+    cwd: path.dirname(input.globalPackageFilename),
+  })?.dir
+
+  if (!globalProjectDir) {
+    throw new Error(
+      `Could not perform handoff to local package version becuase the given global package does not appear to actually be a package:\n\n${input.globalPackageFilename}`
+    )
+  }
+
+  require(path.join(input.localPackageDir, path.relative(globalProjectDir, input.globalPackageFilename)))
+}
+
+export * from './detect-exec-layout'

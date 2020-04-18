@@ -166,7 +166,7 @@ export function areWorkerThreadsAvailable(): boolean {
 
 // todo extends Json
 export function repalceInObject<C extends object>(
-  dynamicPattern: string,
+  dynamicPattern: string | RegExp,
   replacement: string,
   content: C
 ): C {
