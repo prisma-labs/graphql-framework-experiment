@@ -554,13 +554,111 @@ schema.queryType({
 
 Refer to `objectType`. This is a shorthand where `config.name` is assigned `Query`.
 
+### `queryField`
+
+Extends the `Query` type with one or more fields. Convenient helper to split your `Query` type across multiple files.
+
+**Signature**
+
+```ts
+queryField(fieldName: string, config: FieldConfig | (() => FieldConfig)) => NexusExtendTypeDef
+queryField(definitionFn: (t: ObjectDefinitionBlock) => void) => NexusExtendTypeDef
+```
+
+**Example**
+
+```ts
+// graphql/user.ts
+import { schema } from 'nexus'
+
+schema.queryField('users', {
+  type: 'User',
+  list: true,
+  resolve(root, args, ctx) {
+    // ...
+  }
+})
+
+// graphql/post.ts
+import { schema } from 'nexus'
+
+schema.queryField('posts', {
+  type: 'Post',
+  list: true,
+  resolve(root, args, ctx) {
+    // ...
+  }
+})
+```
+
 ### `mutationType`
 
 Refer to `objectType`. This is a shorthand where `config.name` is assigned `Mutation`.
 
+### `mutationField`
+
+Extends the `Mutation` type with one or more fields. Convenient helper to split your `Mutation` type across multiple files.
+
+**Signature**
+
+```ts
+mutationField(fieldName: string, config: FieldConfig | (() => FieldConfig)) => NexusExtendTypeDef
+mutationField(definitionFn: (t: ObjectDefinitionBlock) => void) => NexusExtendTypeDef
+```
+
+**Example**
+
+```ts
+// graphql/user.ts
+import { schema } from 'nexus'
+
+schema.mutationField('createUser', {
+  type: 'User',
+  resolve(root, args, ctx) {
+    // ...
+  }
+})
+
+// graphql/post.ts
+import { schema } from 'nexus'
+
+schema.mutationField('createPost', {
+  type: 'Post',
+  resolve(root, args, ctx) {
+    // ...
+  }
+})
+```
+
 ### `subscriptionType`
 
-Not implemented, please see [#447](https://github.com/graphql-nexus/nexus/issues/447).
+Not implemented. Please use `subscriptionField` in the meantime or see see [#447](https://github.com/graphql-nexus/nexus/issues/447)
+
+### `subscriptionField`
+
+Extends the `Subscription` type with one field. Given that `subscriptionType` is not yet implemented, this is the only way to implement subscription with Nexus.
+
+**Signature**
+
+```ts
+subscriptionField(fieldName: string, config: SubscriptionFieldConfig | (() => SubscriptionFieldConfig)) => NexusExtendTypeDef
+```
+
+**Example**
+
+```ts
+import { schema } from 'nexus'
+
+schema.subscriptionField('mySubscription', {
+  type: 'OutputType',
+  resolve(root, args, ctx) {
+    // ...
+  },
+  subscribe(root, args, ctx) {
+    // ...
+  }
+})
+```
 
 ### `inputObjectType`
 
