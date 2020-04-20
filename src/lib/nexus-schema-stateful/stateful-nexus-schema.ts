@@ -28,6 +28,10 @@ export interface NexusSchemaStatefulBuilders {
   idArg: typeof NexusSchema.idArg
   extendType: typeof NexusSchema.extendType
   extendInputType: typeof NexusSchema.extendInputType
+  queryField: typeof NexusSchema.queryField
+  mutationField: typeof NexusSchema.mutationField
+  subscriptionField: typeof NexusSchema.subscriptionField
+  asNexusMethod: typeof NexusSchema.asNexusMethod
 }
 
 type NexusSchemaTypeDef =
@@ -110,6 +114,30 @@ export function createNexusSchemaStateful() {
     return typeDef
   }
 
+  const asNexusMethod: typeof NexusSchema.asNexusMethod = (scalar, methodName) => {
+    const typeDef = NexusSchema.asNexusMethod(scalar, methodName)
+    state.types.push(typeDef)
+    return typeDef
+  }
+
+  const subscriptionField: typeof NexusSchema.subscriptionField = (fieldName, config) => {
+    const typeDef = NexusSchema.subscriptionField(fieldName, config)
+    state.types.push(typeDef)
+    return typeDef
+  }
+
+  const queryField: typeof NexusSchema.queryField = (...args: any[]) => {
+    const typeDef = NexusSchema.queryField(args[0], args[1]) as any
+    state.types.push(typeDef)
+    return typeDef
+  }
+
+  const mutationField: typeof NexusSchema.mutationField = (...args: any[]) => {
+    const typeDef = NexusSchema.mutationField(args[0], args[1]) as any
+    state.types.push(typeDef)
+    return typeDef
+  }
+
   const arg = NexusSchema.arg
   const intArg = NexusSchema.intArg
   const stringArg = NexusSchema.stringArg
@@ -136,6 +164,10 @@ export function createNexusSchemaStateful() {
       booleanArg,
       extendType,
       extendInputType,
+      queryField,
+      mutationField,
+      subscriptionField,
+      asNexusMethod,
     },
   }
 }
