@@ -74,7 +74,7 @@ Upon doing this however, we will see a warning in our dev mode logs:
  → 10 t.model.moons();
 ```
 
-The feedback is pretty clear already but to restate: The problem is that we're project a Prisma model field (`moons`) that is a connection to another Prisma model (`Moon`) that has not been projected on our API layer. So let's do that now:
+The feedback is pretty clear already but to restate: The problem is that we're projecting a Prisma model field (`moons`) that is a connection to another Prisma model (`Moon`) that has not been projected on our API layer. So let's do that now:
 
 ```diff
 +++ api/graphql.ts
