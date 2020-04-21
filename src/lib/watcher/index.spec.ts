@@ -288,13 +288,11 @@ it('handles lots of restarts', async () => {
 
   setTimeout(async () => {
     await watcher.stop()
-  }, msAfterAllRestarts + 1000)
+  }, msAfterAllRestarts + 2000)
 
   await watcher.start()
 
-  const printEvent = bufferedEvents.find((e) => e.type === 'runner_stdio' && e.data === 'done!')
-
-  expect(printEvent).toMatchInlineSnapshot(`
+  expect(Lo.last(bufferedEvents)).toMatchInlineSnapshot(`
     Object {
       "data": "done!",
       "stdio": "stdout",
