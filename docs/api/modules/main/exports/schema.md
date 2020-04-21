@@ -1006,7 +1006,7 @@ If the current middleware function does not end the request-response cycle, it m
 
 ##### Examples
 
-**Simple middlewares**
+##### Example: Simple middlewares
 
 ```ts
 // graphql.ts
