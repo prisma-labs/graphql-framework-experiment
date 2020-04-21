@@ -7,7 +7,7 @@ import {
   prepareStartModule,
   START_MODULE_NAME,
 } from '../../runtime/start/start-module'
-import { extractContextTypesToTypeGenFile } from '../add-to-context-extractor/add-to-context-extractor'
+import { runAddToContextExtractorAsPromise } from '../add-to-context-extractor/add-to-context-extractor'
 import { rootLogger } from '../nexus-logger'
 import * as Plugin from '../plugin'
 import { fatal } from '../process'
@@ -78,7 +78,7 @@ export async function buildNexusApp(settings: BuildSettings) {
   log.info('Running typegen & extracting types from addToContext calls')
 
   await Promise.all([
-    extractContextTypesToTypeGenFile(tsBuilder.getProgram()).catch((error) => {
+    runAddToContextExtractorAsPromise(tsBuilder.getProgram()).catch((error) => {
       log.fatal('failed to extract context types', { error })
       process.exit(1)
     }),

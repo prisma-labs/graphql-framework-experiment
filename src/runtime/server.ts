@@ -8,12 +8,13 @@ import * as Logger from '../lib/logger'
 import * as Plugin from '../lib/plugin'
 import * as App from './app'
 import * as DevMode from './dev-mode'
+import * as Utils from '../lib/utils'
 
 // Avoid forcing users to use esModuleInterop
 const createExpressGraphql = ExpressGraphQL.default
 
 type Request = HTTP.IncomingMessage & { log: Logger.Logger }
-type ContextContributor<T extends {}> = (req: Request) => T
+type ContextContributor<T extends {}> = (req: Request) => Utils.MaybePromise<T>
 
 const log = Logger.create({ name: 'server' })
 const resolverLogger = log.child('graphql')
@@ -137,10 +138,10 @@ function setupExpress(express: Express, settings: SettingsInput): BaseServer {
   express.use(
     settingsMerged.path,
     createExpressGraphql((req) => {
-      return {
+      return settingsMerged.context(req).then((resolvedCtx) => ({
         ...settingsMerged,
-        context: settingsMerged.context(req),
-        customFormatErrorFn: (error) => {
+        context: resolvedCtx,
+        customFormatErrorFn: (error: Error) => {
           const colorlessMessage = stripAnsi(error.message)
 
           if (process.env.NEXUS_STAGE === 'dev') {
@@ -155,7 +156,7 @@ function setupExpress(express: Express, settings: SettingsInput): BaseServer {
 
           return error
         },
-      }
+      }))
     })
   )
 
@@ -301,42 +302,36 @@ export function create(): ServerFactory {
 type AnonymousRequest = Record<string, any>
 type AnonymousContext = Record<string, any>
 
-interface ContextCreator<
+type ContextCreator<
   Req extends AnonymousRequest = AnonymousRequest,
   Context extends AnonymousContext = AnonymousContext
-> {
-  (req: Req): Context
-}
+> = (req: Req) => Promise<Context>
 
 function contextFactory(
   contextContributors: ContextContributor<any>[],
   plugins: Plugin.RuntimeContributions[]
 ): ContextCreator {
-  const createContext: ContextCreator = (req) => {
+  const createContext: ContextCreator = async (req) => {
     let context: Record<string, any> = {}
-
-    // TODO HACK
-    ;(req as any).log = log.child('request')
 
     // Integrate context from plugins
     for (const plugin of plugins) {
       if (!plugin.context) continue
-      const contextContribution = plugin.context.create(req)
+      const contextContribution = await plugin.context.create(req)
+
       Object.assign(context, contextContribution)
     }
 
     // Integrate context from app context api
-    // TODO support async; probably always supported by apollo server
     // TODO good runtime feedback to user if something goes wrong
     for (const contextContributor of contextContributors) {
-      // HACK see req mutation at this func body start
-      Object.assign(context, {
-        ...contextContributor((req as unknown) as Request),
-        log: ((req as unknown) as Request).log,
-      })
+      const contextContribution = await contextContributor((req as unknown) as Request)
+
+      Object.assign(context, contextContribution)
     }
 
-    // TODO: TS error if not casted to any :(
+    Object.assign(context, { log: log.child('request') })
+
     return context
   }
 

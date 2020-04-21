@@ -15,6 +15,7 @@ import { RuntimeContributions } from '../../lib/plugin'
 import { AppState } from '../app'
 import { log } from './logger'
 import { changeSettings, mapSettingsToNexusSchemaConfig, SettingsData, SettingsInput } from './settings'
+import { MaybePromise } from '../../lib/utils'
 
 // Export this so that context typegen can import it, for example if users do
 // this:
@@ -27,7 +28,7 @@ export interface Request extends HTTP.IncomingMessage {
   log: Logger.Logger
 }
 
-export type ContextContributor<Req> = (req: Req) => Record<string, unknown>
+export type ContextContributor<Req> = (req: Req) => MaybePromise<Record<string, unknown>>
 
 type MiddlewareFn = (
   source: any,

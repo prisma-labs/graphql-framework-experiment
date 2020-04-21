@@ -85,6 +85,7 @@ export function extractContextTypes(program: ts.Program): ExtractedContextTypes 
           )
           return
         }
+
         const contextAdder = n.arguments[0]
         const contextAdderType = checker.getTypeAtLocation(contextAdder)
         const contextAdderSigs = contextAdderType.getCallSignatures()
@@ -104,16 +105,18 @@ export function extractContextTypes(program: ts.Program): ExtractedContextTypes 
           )
         }
         const contextAdderSig = contextAdderSigs[0]
-        const ContextAdderRetType = checker.getReturnTypeOfSignature(contextAdderSig)
-        const ContextAdderRetTypeString = checker.typeToString(
-          ContextAdderRetType,
+        const contextAdderRetType = checker.getReturnTypeOfSignature(contextAdderSig)
+        const unwrappedContextAdderRetType = unwrapMaybePromise(contextAdderRetType, checker)
+        const contextAdderRetTypeString = checker.typeToString(
+          unwrappedContextAdderRetType,
           undefined,
           ts.TypeFormatFlags.NoTruncation
         )
-        contextTypeContributions.types.push(ContextAdderRetTypeString)
+
+        contextTypeContributions.types.push(contextAdderRetTypeString)
 
         // search for named references, they will require importing later on
-        const contextAdderRetProps = ContextAdderRetType.getProperties()
+        const contextAdderRetProps = unwrappedContextAdderRetType.getProperties()
         for (const prop of contextAdderRetProps) {
           log.trace('processing prop', { name: prop.getName() })
           const n = prop.declarations[0]
@@ -188,6 +191,19 @@ function extractTypeImportInfoFromType(t: tsm.Type): null | TypeImportInfo {
     isExported: sourceFile.getExportedDeclarations().has(name),
     isNode: isNode,
   }
+}
+
+export function unwrapMaybePromise(type: tsm.ts.Type, checker: tsm.ts.TypeChecker) {
+  if (type.symbol?.name === 'Promise') {
+    const typeArgs = (type as ts.TypeReference).typeArguments
+    if (typeArgs) {
+      const wrappedType = typeArgs[0]
+
+      return wrappedType
+    }
+  }
+
+  return type
 }
 
 function getAbsoluteImportPath(sourceFile: tsm.SourceFile) {

@@ -129,20 +129,20 @@ it('captures required imports information', () => {
       schema.addToContext(req => { return { foo } })
     `)
   ).toMatchInlineSnapshot(`
-Object {
-  "typeImports": Array [
     Object {
-      "isExported": true,
-      "isNode": false,
-      "modulePath": "/src/a",
-      "name": "Foo",
-    },
-  ],
-  "types": Array [
-    "{ foo: Foo; }",
-  ],
-}
-`)
+      "typeImports": Array [
+        Object {
+          "isExported": true,
+          "isNode": false,
+          "modulePath": "/src/a",
+          "name": "Foo",
+        },
+      ],
+      "types": Array [
+        "{ foo: Foo; }",
+      ],
+    }
+  `)
 })
 
 it('detects if a referenced type is not exported', () => {
@@ -159,20 +159,20 @@ it('detects if a referenced type is not exported', () => {
       schema.addToContext(req => { return { foo } })
     `)
   ).toMatchInlineSnapshot(`
-Object {
-  "typeImports": Array [
     Object {
-      "isExported": false,
-      "isNode": false,
-      "modulePath": "/src/a",
-      "name": "Foo",
-    },
-  ],
-  "types": Array [
-    "{ foo: Foo; }",
-  ],
-}
-`)
+      "typeImports": Array [
+        Object {
+          "isExported": false,
+          "isNode": false,
+          "modulePath": "/src/a",
+          "name": "Foo",
+        },
+      ],
+      "types": Array [
+        "{ foo: Foo; }",
+      ],
+    }
+  `)
 })
 
 it('extracts optionality from props', () => {
@@ -183,13 +183,13 @@ it('extracts optionality from props', () => {
       schema.addToContext(req => { return { foo } })
     `)
   ).toMatchInlineSnapshot(`
-Object {
-  "typeImports": Array [],
-  "types": Array [
-    "{ foo: { bar?: { baz?: string; }; }; }",
-  ],
-}
-`)
+    Object {
+      "typeImports": Array [],
+      "types": Array [
+        "{ foo: { bar?: { baz?: string; }; }; }",
+      ],
+    }
+  `)
 })
 
 it('extracts from type alias', () => {
@@ -206,20 +206,20 @@ it('extracts from type alias', () => {
         schema.addToContext(req => { return { foo } })
       `)
   ).toMatchInlineSnapshot(`
-Object {
-  "typeImports": Array [
     Object {
-      "isExported": true,
-      "isNode": false,
-      "modulePath": "/src/a",
-      "name": "Foo",
-    },
-  ],
-  "types": Array [
-    "{ foo: Foo; }",
-  ],
-}
-`)
+      "typeImports": Array [
+        Object {
+          "isExported": true,
+          "isNode": false,
+          "modulePath": "/src/a",
+          "name": "Foo",
+        },
+      ],
+      "types": Array [
+        "{ foo: Foo; }",
+      ],
+    }
+  `)
 })
 
 it('prop type intersection', () => {
@@ -230,26 +230,26 @@ it('prop type intersection', () => {
         schema.addToContext(req => { return { foo: '' as any as Foo & Bar } })
       `)
   ).toMatchInlineSnapshot(`
-Object {
-  "typeImports": Array [
     Object {
-      "isExported": true,
-      "isNode": false,
-      "modulePath": "/src/a",
-      "name": "Foo",
-    },
-    Object {
-      "isExported": true,
-      "isNode": false,
-      "modulePath": "/src/a",
-      "name": "Bar",
-    },
-  ],
-  "types": Array [
-    "{ foo: Foo & Bar; }",
-  ],
-}
-`)
+      "typeImports": Array [
+        Object {
+          "isExported": true,
+          "isNode": false,
+          "modulePath": "/src/a",
+          "name": "Foo",
+        },
+        Object {
+          "isExported": true,
+          "isNode": false,
+          "modulePath": "/src/a",
+          "name": "Bar",
+        },
+      ],
+      "types": Array [
+        "{ foo: Foo & Bar; }",
+      ],
+    }
+  `)
 })
 
 it('prop type aliased intersection', () => {
@@ -261,20 +261,20 @@ it('prop type aliased intersection', () => {
         schema.addToContext(req => { return { foo: '' as any as Qux } })
       `)
   ).toMatchInlineSnapshot(`
-Object {
-  "typeImports": Array [
     Object {
-      "isExported": true,
-      "isNode": false,
-      "modulePath": "/src/a",
-      "name": "Qux",
-    },
-  ],
-  "types": Array [
-    "{ foo: Qux; }",
-  ],
-}
-`)
+      "typeImports": Array [
+        Object {
+          "isExported": true,
+          "isNode": false,
+          "modulePath": "/src/a",
+          "name": "Qux",
+        },
+      ],
+      "types": Array [
+        "{ foo: Qux; }",
+      ],
+    }
+  `)
 })
 
 // todo Feature is supported, but untested.
@@ -310,21 +310,21 @@ it('dedupes imports', () => {
         schema.addToContext(req => { return { mar: {} as Qux } })
       `)
   ).toMatchInlineSnapshot(`
-Object {
-  "typeImports": Array [
     Object {
-      "isExported": true,
-      "isNode": false,
-      "modulePath": "/src/a",
-      "name": "Qux",
-    },
-  ],
-  "types": Array [
-    "{ foo: Qux; bar: Qux; }",
-    "{ mar: Qux; }",
-  ],
-}
-`)
+      "typeImports": Array [
+        Object {
+          "isExported": true,
+          "isNode": false,
+          "modulePath": "/src/a",
+          "name": "Qux",
+        },
+      ],
+      "types": Array [
+        "{ foo: Qux; bar: Qux; }",
+        "{ mar: Qux; }",
+      ],
+    }
+  `)
 })
 
 it('does not import array types', () => {
@@ -333,13 +333,50 @@ it('does not import array types', () => {
         schema.addToContext(req => { return { foo: [] as string[] } })
       `)
   ).toMatchInlineSnapshot(`
-Object {
-  "typeImports": Array [],
-  "types": Array [
-    "{ foo: string[]; }",
-  ],
-}
-`)
+    Object {
+      "typeImports": Array [],
+      "types": Array [
+        "{ foo: string[]; }",
+      ],
+    }
+  `)
+})
+
+// TODO: Figure out why type-checker doesn't find the Promise type
+it.todo(
+  'support Promise.resolve'
+) /*, () => {
+  expect(
+    extract(`
+        schema.addToContext(req => {
+          return {
+            foo: Promise.resolve(1)
+          }
+        })
+      `)
+  ).toMatchInlineSnapshot(`
+    Object {
+      "typeImports": Array [],
+      "types": Array [
+        "{ foo: any; }",
+      ],
+    }
+  `)
+})*/
+
+it('support async/await', () => {
+  expect(
+    extract(`
+        schema.addToContext(async req => { return { foo: [] as string[] } })
+      `)
+  ).toMatchInlineSnapshot(`
+    Object {
+      "typeImports": Array [],
+      "types": Array [
+        "{ foo: string[]; }",
+      ],
+    }
+  `)
 })
 
 // This test is only relevant so long as we're using the TS type to string
