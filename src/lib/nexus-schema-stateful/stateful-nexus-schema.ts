@@ -12,7 +12,7 @@ export interface StatefulNexusSchema {
 
 // prettier-ignore
 export interface NexusSchemaStatefulBuilders {
-  queryType: ReturnType<typeof createNexusSchemaStateful>['builders']['queryType']
+  queryType: typeof NexusSchema.queryType
   queryField: typeof NexusSchema.queryField
   mutationType: typeof NexusSchema.mutationType
   mutationField: typeof NexusSchema.mutationField
