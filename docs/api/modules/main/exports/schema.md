@@ -632,33 +632,7 @@ schema.mutationField('createPost', {
 
 ### `subscriptionType`
 
-Not implemented. Please use `subscriptionField` in the meantime or see see [#447](https://github.com/graphql-nexus/nexus/issues/447)
-
-### `subscriptionField`
-
-Extends the `Subscription` type with one field. Given that `subscriptionType` is not yet implemented, this is the only way to implement subscription with Nexus.
-
-**Signature**
-
-```ts
-subscriptionField(fieldName: string, config: SubscriptionFieldConfig | (() => SubscriptionFieldConfig)) => NexusExtendTypeDef
-```
-
-**Example**
-
-```ts
-import { schema } from 'nexus'
-
-schema.subscriptionField('mySubscription', {
-  type: 'OutputType',
-  resolve(root, args, ctx) {
-    // ...
-  },
-  subscribe(root, args, ctx) {
-    // ...
-  }
-})
-```
+Not implemented. Please see [#447](https://github.com/graphql-nexus/nexus/issues/447)
 
 ### `inputObjectType`
 

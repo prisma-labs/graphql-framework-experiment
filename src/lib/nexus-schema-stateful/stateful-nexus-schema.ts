@@ -12,8 +12,10 @@ export interface StatefulNexusSchema {
 
 // prettier-ignore
 export interface NexusSchemaStatefulBuilders {
-  queryType: typeof NexusSchema.queryType
+  queryType: ReturnType<typeof createNexusSchemaStateful>['builders']['queryType']
+  queryField: typeof NexusSchema.queryField
   mutationType: typeof NexusSchema.mutationType
+  mutationField: typeof NexusSchema.mutationField
   objectType: ReturnType<typeof createNexusSchemaStateful>['builders']['objectType']
   enumType: ReturnType<typeof createNexusSchemaStateful>['builders']['enumType']
   scalarType: ReturnType<typeof createNexusSchemaStateful>['builders']['scalarType']
@@ -28,9 +30,6 @@ export interface NexusSchemaStatefulBuilders {
   idArg: typeof NexusSchema.idArg
   extendType: typeof NexusSchema.extendType
   extendInputType: typeof NexusSchema.extendInputType
-  queryField: typeof NexusSchema.queryField
-  mutationField: typeof NexusSchema.mutationField
-  subscriptionField: typeof NexusSchema.subscriptionField
   asNexusMethod: typeof NexusSchema.asNexusMethod
 }
 
@@ -120,12 +119,6 @@ export function createNexusSchemaStateful() {
     return typeDef
   }
 
-  const subscriptionField: typeof NexusSchema.subscriptionField = (fieldName, config) => {
-    const typeDef = NexusSchema.subscriptionField(fieldName, config)
-    state.types.push(typeDef)
-    return typeDef
-  }
-
   const queryField: typeof NexusSchema.queryField = (...args: any[]) => {
     const typeDef = NexusSchema.queryField(args[0], args[1]) as any
     state.types.push(typeDef)
@@ -166,7 +159,6 @@ export function createNexusSchemaStateful() {
       extendInputType,
       queryField,
       mutationField,
-      subscriptionField,
       asNexusMethod,
     },
   }
