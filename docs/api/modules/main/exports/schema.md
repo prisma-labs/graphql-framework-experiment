@@ -990,7 +990,7 @@ schema.use({
 
 ### `middleware`
 
-Add a global middleware to your schema. This middleware will be executed before/after every resolver of your schema.
+Run arbitrary logic before and/or after GraphQL resolvers in your schema. Middleware is run as a first-in-first-out (FIFO) stack. The order of your middleware definitions determines their order in the stack.
 
 ##### Signature
 
