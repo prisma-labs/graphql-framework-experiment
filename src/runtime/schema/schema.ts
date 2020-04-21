@@ -1,5 +1,7 @@
 import * as NexusSchema from '@nexus/schema'
-import { makeSchemaInternal } from '@nexus/schema/dist/core'
+import { CreateFieldResolverInfo, makeSchemaInternal } from '@nexus/schema/dist/core'
+import { stripIndent } from 'common-tags'
+import { GraphQLFieldResolver, GraphQLResolveInfo } from 'graphql'
 import * as HTTP from 'http'
 import { runAddToContextExtractorAsWorkerIfPossible } from '../../lib/add-to-context-extractor/add-to-context-extractor'
 import * as Layout from '../../lib/layout'
@@ -10,6 +12,7 @@ import {
   writeTypegen,
 } from '../../lib/nexus-schema-stateful'
 import { RuntimeContributions } from '../../lib/plugin'
+import { AppState } from '../app'
 import { log } from './logger'
 import { changeSettings, mapSettingsToNexusSchemaConfig, SettingsData, SettingsInput } from './settings'
 
@@ -26,11 +29,23 @@ export interface Request extends HTTP.IncomingMessage {
 
 export type ContextContributor<Req> = (req: Req) => Record<string, unknown>
 
+type MiddlewareFn = (
+  source: any,
+  args: any,
+  context: NexusSchema.core.GetGen<'context'>,
+  info: GraphQLResolveInfo,
+  next: GraphQLFieldResolver<any, any>
+) => any
+
 export interface Schema extends NexusSchemaStatefulBuilders {
   /**
    * todo link to website docs
    */
   use: (schemaPlugin: NexusSchema.core.NexusPlugin) => void
+  /**
+   * todo link to website docs
+   */
+  middleware: (fn: (config: CreateFieldResolverInfo) => MiddlewareFn | undefined) => void
   /**
    * todo link to website docs
    */
@@ -57,7 +72,7 @@ interface SchemaInternal {
   public: Schema
 }
 
-export function create(): SchemaInternal {
+export function create(appState: AppState): SchemaInternal {
   const statefulNexusSchema = createNexusSchemaStateful()
 
   const state: SchemaInternal['private']['state'] = {
@@ -66,18 +81,35 @@ export function create(): SchemaInternal {
     contextContributors: [],
   }
 
+  const middleware: SchemaInternal['public']['middleware'] = (fn) => {
+    api.public.use(
+      NexusSchema.plugin({
+        // TODO: Do we need to expose the name property?
+        name: 'local-middleware',
+        onCreateFieldResolver(config) {
+          return fn(config)
+        },
+      })
+    )
+  }
+
   const api: SchemaInternal = {
     public: {
       ...statefulNexusSchema.builders,
       use(plugin) {
-        // todo if caleld after app start, raise a warning (dev), error (prod)
-        // this will require the component having access to some of the
-        // framework state.
+        if (appState.isWasServerStartCalled === true) {
+          log.warn(stripIndent`
+            A Nexus Schema plugin was ignored because it was loaded after the server was started
+            Make sure to call \`schema.use\` before you call \`server.start\`
+          `)
+        }
+
         state.schemaPlugins.push(plugin)
       },
       addToContext(contextContributor) {
         state.contextContributors.push(contextContributor)
       },
+      middleware,
     },
     private: {
       state: state,

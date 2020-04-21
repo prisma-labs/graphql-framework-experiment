@@ -988,6 +988,107 @@ schema.use({
 })
 ```
 
+### `middleware`
+
+Run arbitrary logic before and/or after GraphQL resolvers in your schema. Middleware is run as a first-in-first-out (FIFO) stack. The order of your middleware definitions determines their order in the stack.
+
+##### Signature
+
+```ts
+schema.middleware((config: CreateFieldResolverInfo) => MiddlewareFn | undefined)): void
+```
+
+`schema.middleware` expect a function with the signature `(root, args, ctx, info, next)` to be returned.
+
+If the current middleware function does not end the request-response cycle, it must call `next` to pass control to the next middleware function, until the actual GraphQL resolver gets called.
+
+> Note: You can skip the creation of a middleware by returning `undefined` instead of a middleware.
+
+##### Example: Simple middlewares
+
+```ts
+// graphql.ts
+import { schema } from 'nexus'
+
+schema.middleware((_config) => {
+  return async (root, args, ctx, info, next) => {
+    console.log('before - middleware 1')
+    const result = await next(root, args, ctx, info)
+    console.log('after - middleware 1')
+    return result
+  }
+})
+
+schema.middleware((_config) => {
+  return async (root, args, ctx, info, next) => {
+    console.log('before - middleware 2')
+    const result = await next(root, args, ctx, info)
+    console.log('after - middleware 2')
+    return result
+  }
+})
+
+schema.queryType({
+  definition(t) {
+    t.string('hello', () => {
+      console.log('executing resolver')
+      return Promise.resolve('world')
+    })
+  },
+})
+
+/**
+ * Output
+ * before - middleware 1
+ * before - middleware 2
+ * executing resolver
+ * after - middleware 2
+ * after - middleware 1
+ */
+```
+
+##### Example: Trace resolvers completion time of the `Query` type only
+
+```ts
+import { schema } from 'nexus'
+
+schema.middleware((config) => {
+  if (config.parentTypeConfig.name !== 'Query') {
+    return
+  }
+
+  return async (root, args, ctx, info, next) => {
+    const startTimeMs = new Date().valueOf()
+    const value = await next(root, args, ctx, info)
+    const endTimeMs = new Date().valueOf()
+    const resolver = `Query.${config.fieldConfig.name}`
+    const completionTime = endTimeMs - startTimeMs
+
+    ctx.log.info(`Resolver '${resolver}' took ${completionTime} ms`, {
+      resolver,
+      completionTime,
+    })
+
+    return value
+  }
+})
+
+schema.queryType({
+  definition(t) {
+    t.string('hello', async () => {
+      // Wait two seconds
+      await new Promise((res) => setTimeout(res, 2000))
+      return 'world'
+    })
+  },
+})
+
+/**
+ * Output:
+ * ● server:request Resolver 'Query.hello' took 2001 ms  --  resolver: 'Query.hello'  time: 2001
+ */
+```
+
 ### Type Glossary
 
 #### `I` `FieldConfig`

@@ -5,7 +5,7 @@ import { mapSettingsToNexusSchemaConfig } from './settings'
 let schema: ReturnType<typeof create>
 
 beforeEach(() => {
-  schema = create()
+  schema = create({ isWasServerStartCalled: false, plugins: [] })
 })
 
 it('defaults to outputs being nullable by default', () => {
