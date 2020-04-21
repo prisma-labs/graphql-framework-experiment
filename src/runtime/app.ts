@@ -66,11 +66,13 @@ export type Settings = {
   change(newSetting: SettingsInput): void
 }
 
+export type AppState = {
+  plugins: Plugin.Plugin[]
+  isWasServerStartCalled: boolean
+}
+
 export type InternalApp = App & {
-  __state: {
-    plugins: Plugin.Plugin[]
-    isWasServerStartCalled: boolean
-  }
+  __state: AppState
 }
 
 /**
@@ -83,7 +85,7 @@ export function create(): App {
   }
 
   const server = Server.create()
-  const schemaComponent = Schema.create()
+  const schemaComponent = Schema.create(__state)
 
   const settings: Settings = {
     change(newSettings) {
