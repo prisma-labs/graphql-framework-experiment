@@ -1004,8 +1004,6 @@ If the current middleware function does not end the request-response cycle, it m
 
 > Note: You can skip the creation of a middleware by returning `undefined` instead of a middleware.
 
-##### Examples
-
 ##### Example: Simple middlewares
 
 ```ts
@@ -1049,7 +1047,7 @@ schema.queryType({
  */
 ```
 
-**Trace resolvers completion time of the `Query` type only**
+##### Example: Trace resolvers completion time of the `Query` type only
 
 ```ts
 import { schema } from 'nexus'
