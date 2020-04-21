@@ -177,14 +177,14 @@ it('restarts when a file is deleted', async () => {
 
 it('restarts when a file has an error', async () => {
   const { bufferedEvents } = await testSimpleCase({
-    entrypoint: `throw new Error('there is an error')`,
+    entrypoint: `throw new Error('This is an expected test error')`,
     fsUpdate: () => {
       ctx.write({ 'entrypoint.ts': `process.stdout.write('error fixed')` })
     },
   })
 
   expect(bufferedEvents[0].type).toBe('runner_stdio')
-  expect((bufferedEvents[0] as any).data).toContain('Error: there is an error')
+  expect((bufferedEvents[0] as any).data).toContain('Error: This is an expected test error')
 
   bufferedEvents.shift()
 
