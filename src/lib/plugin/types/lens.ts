@@ -125,7 +125,7 @@ export type RuntimeContributions<C extends {} = any> = {
         from: string
       }>
     }
-    create: (req: Express.Request) => C
+    create: (req: Express.Request) => Utils.MaybePromise<C>
   }
   schema?: {
     typegenAutoConfig?: NexusSchema.core.SchemaConfig['typegenAutoConfig']

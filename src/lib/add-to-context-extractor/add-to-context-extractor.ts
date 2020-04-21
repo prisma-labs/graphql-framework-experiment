@@ -28,14 +28,14 @@ export function runAddToContextExtractorAsWorkerIfPossible(
     log.trace('Worker threads unavailable. Fallbacking to main process')
     const layout = Layout.createFromData(layoutData)
     const builder = createTSProgram(layout, { withCache: true })
-    return extractContextTypesToTypeGenFile(builder.getProgram())
+    return runAddToContextExtractorAsPromise(builder.getProgram())
   }
 }
 
 /**
  * Run the pure extractor and then write results to a typegen module.
  */
-export async function extractContextTypesToTypeGenFile(program: ts.Program) {
+export async function runAddToContextExtractorAsPromise(program: ts.Program) {
   const contextTypes = extractContextTypes(program)
   await writeContextTypeGenFile(contextTypes)
   return contextTypes
