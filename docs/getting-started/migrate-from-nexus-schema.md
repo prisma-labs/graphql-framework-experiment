@@ -2,7 +2,7 @@ Versions of the `nexus` package `0.20` and below were what is now known as `@nex
 
 #### Dependencies
 
-1. Remove `nexus@0.12` and add `nexus@next` in its place.
+1. Remove `nexus@0.12` and add `nexus@0.20` (or higher) in its place.
 1. Remove dependency `graphql` as `nexus` bundles it.
 
 ```diff

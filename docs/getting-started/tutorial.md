@@ -5,7 +5,7 @@
 Kick off a new project. Say yes (`y`) to the prisma option. Choose `PostgreSQL` for the db option.
 
 ```cli
-npx nexus@next
+npx nexus
 ```
 
 ## Change the Data Layer
@@ -197,8 +197,8 @@ Then, create an account at [Heroku](https://www.heroku.com/) (if you don't alrea
     npx prisma migrate up --experimental
     ```
 
-1.  Commit your changes to Git    
-    
+1.  Commit your changes to Git
+
     ```cli
     git add .
     git commit -m "updates for deployment to Heroku"
