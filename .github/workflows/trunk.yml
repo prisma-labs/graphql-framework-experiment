@@ -46,8 +46,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
+      - name: Get all git commits and tags
+        run: git fetch --prune --unshallow --tags
       - uses: actions/setup-node@v1
       - name: Install deps
         run: yarn --frozen-lockfile
@@ -55,6 +55,7 @@ jobs:
         id: release
         env:
           NPM_TOKEN: ${{secrets.NPM_TOKEN}}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         run: |
           yarn -s dripip preview --json > result.json
           echo '==> Publish Result'
