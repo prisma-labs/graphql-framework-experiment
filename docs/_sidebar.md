@@ -4,6 +4,7 @@
 - [Onboarding](getting-started/onboarding)
 - [Tutorial](getting-started/tutorial)
 - [Migrate from Nexus Schema](getting-started/migrate-from-nexus-schema)
+- [Changelog](changelog)
 
 - Guides
 
@@ -36,9 +37,9 @@
 
 * [`nexus/plugin`](api/modules/plugin)
 
-* Components Standalone
+- Components Standalone
 
-* [`@nexus/schema`](components/schema/about)
+- [`@nexus/schema`](components/schema/about)
   - [API](components/schema/api)
   - [SDL Converter ⤤](https://nexus.js.org/converter)
   - [Plugins API](components/schema/plugins-api)
@@ -48,7 +49,7 @@
     - [Field Authorize](components/schema/plugins/field-authorize)
     - [Nullability Guard](components/schema/plugins/nullability-guard)
     - [Prisma](components/schema/plugins/prisma)
-* [`@nexus/logger`](components/logger/about)
+- [`@nexus/logger`](components/logger/about)
   - [API](components/logger/api)
   - [Plugins](components/logger/plugins)
   - [Plugins API](components/logger/plugins-api)

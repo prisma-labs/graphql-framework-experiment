@@ -164,7 +164,7 @@ yarn test e2e/kitchen
 
 - We use [docsifyjs/docsify](https://github.com/docsifyjs/docsify).
 - There is no build step
-- Commits to master will trigger deployment (via `gh-pages`, no ci/cd on our part)
+- Deploy using `yarn -s deploy:docs`
 - Navigation is manually managed in `_sidebar.md`
 - Cover page is managed in `_coverpage.md`
 - Configuration and significant styling customizations are kept in `index.html`
@@ -176,7 +176,7 @@ yarn test e2e/kitchen
    There is currently [a bug](https://github.com/docsifyjs/docsify-cli/issues/88) with `docsify-cli` requiring the following manual fix after installation.
 
    ```
-   vim ./node_modules/.bin/docsify
+   vim node_modules/.bin/docsify
    :se ff=unix
    :wq
    ```
