@@ -77,7 +77,7 @@ use(prisma())
 1. Scaffold Your plugin project
 
    ```cli
-   npx nexus@next create plugin
+   npx nexus create plugin
    ```
 
 2. Publish it

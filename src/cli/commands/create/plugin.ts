@@ -207,9 +207,7 @@ export default class Plugin implements Command {
     log.info(`Installing dev dependencies`)
     await proc.run(
       'yarn add --dev ' +
-        ['@types/jest', 'nexus@next', 'jest', 'jest-watch-typeahead', 'ts-jest', 'typescript', 'doctoc'].join(
-          ' '
-        )
+        ['@types/jest', 'nexus', 'jest', 'jest-watch-typeahead', 'ts-jest', 'typescript', 'doctoc'].join(' ')
     )
 
     log.info(`Initializing git repository...`)

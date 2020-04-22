@@ -5,11 +5,11 @@ If you prefer, you can install Nexus globally and then use the global CLI to wor
 <div class="TightRow">
 
 ```cli
-npm install --global nexus@next
+npm install --global nexus
 ```
 
 ```cli
-yarn global add nexus@next
+yarn global add nexus
 ```
 
 </div>
