@@ -755,7 +755,7 @@ If you need to modify the description or resolver defined by an interface, you c
 
 [GraphQL Docs for Scalar Types](https://graphql.org/learn/schema/#scalar-types)
 
-Nexus allows you to provide an `asNexusMethod` property which will make the scalar available as a builtin on the definition block object. We automatically generate and merge the types so you get type-safety just like the scalar types specified in the spec:
+Nexus allows you to provide an `asNexusMethod` property which will make the scalar available as a builtin on the definition block object. We automatically generate and merge the types so you get type-safety just like the scalar types specified in the spec.
 
 ##### Signature
 
@@ -801,40 +801,6 @@ schema.scalarType({
       return new Date(ast.value)
     }
     return null
-  },
-})
-```
-
-##### Example of Upload scalar
-
-```ts
-import { GraphQLUpload } from 'graphql-upload'
-
-export const Upload = GraphQLUpload
-```
-
-##### Example of DateTime scalar
-
-```ts
-import { GraphQLDate } from 'graphql-iso-date'
-
-export const DateTime = GraphQLDate
-```
-
-##### Example of exposing scalar as builder method
-
-If you have an existing GraphQL scalar and you'd like to expose it as a builder method, call `asNexusMethod`:
-
-```ts
-import { schema } from 'nexus'
-import { GraphQLDate } from 'graphql-iso-date'
-
-schema.asNexusMethod(GraphQLDate, 'date')
-
-schema.objectType({
-  name: 'SomeObject',
-  definition(t) {
-    t.date('createdAt') // t.date() is now available (with types!) because of `asNexusMethod`
   },
 })
 ```
