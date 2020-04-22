@@ -63,7 +63,7 @@
     "docsify": "4.11.3",
     "docsify-cli": "4.4.0",
     "doctoc": "1.4.0",
-    "dripip": "^0.9.0-next.9",
+    "dripip": "^0.9.0-next",
     "jest": "25.2.7",
     "node-pty": "0.9.0",
     "prettier": "2.0.4",
