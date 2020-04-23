@@ -974,30 +974,30 @@ If the current middleware function does not end the request-response cycle, it m
 
 ```ts
 // graphql.ts
-import { schema, log } from 'nexus'
+import { schema } from 'nexus'
 
 schema.middleware((_config) => {
   return async (root, args, ctx, info, next) => {
-    log.info('before - middleware 1')
+    ctx.log.info('before - middleware 1')
     const result = await next(root, args, ctx, info)
-    log.info('after - middleware 1')
+    ctx.log.info('after - middleware 1')
     return result
   }
 })
 
 schema.middleware((_config) => {
   return async (root, args, ctx, info, next) => {
-    log.info('before - middleware 2')
+    ctx.log.info('before - middleware 2')
     const result = await next(root, args, ctx, info)
-    log.info('after - middleware 2')
+    ctx.log.info('after - middleware 2')
     return result
   }
 })
 
 schema.queryType({
   definition(t) {
-    t.string('hello', () => {
-      log.info('executing resolver')
+    t.string('hello', (_root, _args, ctx) => {
+      ctx.log.info('executing resolver')
       return Promise.resolve('world')
     })
   },
