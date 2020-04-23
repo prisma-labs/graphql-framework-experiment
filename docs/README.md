@@ -2,7 +2,7 @@
 
 <p class='NextIs Note'></p>
 
-Nexus is a delightful framework for building GraphQL APIs in Node. It leverages TypeScript and knowledge about your data sources and API schema to give you levels of type safety that until now you've probably never experienced.
+Nexus is a framework for building GraphQL APIs in Node. It leverages TypeScript and knowledge about your data sources and API schema to give you levels of type safety that until now you've probably never experienced.
 
 ### Features
 
