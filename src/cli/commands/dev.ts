@@ -1,3 +1,5 @@
+import { stripIndent } from 'common-tags'
+import * as ts from 'typescript'
 import { arg, Command, isError } from '../../lib/cli'
 import * as Layout from '../../lib/layout'
 import { rootLogger } from '../../lib/nexus-logger'
@@ -7,12 +9,15 @@ import { fatal } from '../../lib/process'
 import { transpileModule } from '../../lib/tsc'
 import { createWatcher } from '../../lib/watcher'
 import { createStartModuleContent } from '../../runtime/start'
-import * as ts from 'typescript'
 
 const log = rootLogger.child('dev')
 
 const DEV_ARGS = {
   '--inspect-brk': String,
+  '--entrypoint': String,
+  '-e': '--entrypoint',
+  '--help': Boolean,
+  '-h': '--help',
 }
 
 export class Dev implements Command {
@@ -23,10 +28,15 @@ export class Dev implements Command {
       fatal(args.message)
     }
 
+    if (args['--help']) {
+      return this.help()
+    }
+
     /**
      * Load config before loading plugins which may rely on env vars being defined
      */
-    const layout = await Layout.create()
+    const entrypointPath = args['--entrypoint']
+    const layout = await Layout.create({ entrypointPath })
     const plugins = await Plugin.readAllPluginManifestsFromConfig(layout)
     const worktimePlugins = await Plugin.loadWorktimePlugins(layout)
 
@@ -51,7 +61,7 @@ export class Dev implements Command {
             change.type === 'unlinkDir'
           ) {
             log.trace('analyzing project layout')
-            const layout = await Layout.create()
+            const layout = await Layout.create({ entrypointPath })
             return {
               environmentAdditions: Layout.saveDataForChildProcess(layout),
             }
@@ -80,5 +90,17 @@ export class Dev implements Command {
     })
 
     await watcher.start()
+  }
+
+  help() {
+    return stripIndent`
+        Usage: nexus dev [flags]
+  
+        Develop your application in watch mode
+  
+        Flags:
+          -e, --entrypoint    Custom entrypoint to your app (default: app.ts)
+          -h,       --help    Show this help message
+      `
   }
 }

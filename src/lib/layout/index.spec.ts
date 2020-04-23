@@ -47,8 +47,8 @@ const layoutContext = TestContext.create((input: TestContext.TmpDirContribution)
     setup(spec: FSSpec = {}) {
       writeFSSpec(input.tmpDir, spec)
     },
-    async scan() {
-      const data = await Layout.create({ cwd: input.tmpDir })
+    async scan(opts?: { entrypointPath?: string }) {
+      const data = await Layout.create({ cwd: input.tmpDir, entrypointPath: opts?.entrypointPath })
       mockedStdoutBuffer = mockedStdoutBuffer.split(input.tmpDir).join('__DYNAMIC__')
       return repalceInObject(input.tmpDir, '__DYNAMIC__', data.data)
     },
@@ -333,6 +333,58 @@ it('set app.exists = false if no entrypoint', async () => {
       "exists": false,
       "path": null,
     }
+  `)
+})
+
+it('uses custom relative entrypoint when defined', async () => {
+  await ctx.setup({ ...fsTsConfig, 'index.ts': `console.log('entrypoint')` })
+  const result = await ctx.scan({ entrypointPath: './index.ts' })
+  expect(result.app).toMatchInlineSnapshot(`
+    Object {
+      "exists": true,
+      "path": "__DYNAMIC__/index.ts",
+    }
+  `)
+})
+
+it('uses custom absolute entrypoint when defined', async () => {
+  await ctx.setup({ ...fsTsConfig, 'index.ts': `console.log('entrypoint')` })
+  const result = await ctx.scan({ entrypointPath: ctx.fs.path('index.ts') })
+  expect(result.app).toMatchInlineSnapshot(`
+    Object {
+      "exists": true,
+      "path": "__DYNAMIC__/index.ts",
+    }
+  `)
+})
+
+it('fails if custom entrypoint does not exist', async () => {
+  await ctx.setup({ ...fsTsConfig, 'index.ts': `console.log('entrypoint')` })
+  await ctx.scan({ entrypointPath: './wrong-path.ts' })
+  expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
+    "✕ nexus Entrypoint does not exist {
+      path: '__DYNAMIC__/wrong-path.ts'
+    }
+
+
+    --- process.exit(1) ---
+
+    "
+  `)
+})
+
+it('fails if custom entrypoint is not a .ts file', async () => {
+  await ctx.setup({ ...fsTsConfig, 'index.ts': ``, 'index.js': `console.log('entrypoint')` })
+  await ctx.scan({ entrypointPath: './index.js' })
+  expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
+    "✕ nexus Entrypoint must be a .ts file {
+      path: '__DYNAMIC__/index.js'
+    }
+
+
+    --- process.exit(1) ---
+
+    "
   `)
 })
 
