@@ -1,7 +1,6 @@
 import { spawn, spawnSync, SpawnSyncOptions } from 'child_process'
 import { stripIndent } from 'common-tags'
 import * as path from 'path'
-import { format } from 'util'
 import { findFileRecurisvelyUpwardSync } from '../fs'
 import { log } from '../nexus-logger'
 
