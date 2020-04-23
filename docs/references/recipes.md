@@ -104,7 +104,9 @@ The reccommended way to run postgres locally is with docker, because it is easy 
 
 If you don't want to use a docker, here are some links to alternative approaches:
 
+#### Mac
 - [With Homebrew](https://wiki.postgresql.org/wiki/Homebrew)
+- [With Postgres.app](https://postgresapp.com)
 
 ## Go to production
 
