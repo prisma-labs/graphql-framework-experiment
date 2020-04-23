@@ -9,8 +9,8 @@ import { log } from '../nexus-logger'
  * Log a meaningful semantic error message sans stack track and then crash
  * the program with exit code 1. Parameters are a passthrough to `console.error`.
  */
-export function fatal(template: string, ...vars: unknown[]): never {
-  log.fatal(format(template, ...vars))
+export function fatal(template: string, context: Record<string, unknown>): never {
+  log.fatal(template, context)
   process.exit(1)
 }
 

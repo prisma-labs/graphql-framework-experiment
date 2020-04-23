@@ -30,6 +30,9 @@ rootLogger.settings({
   },
 })
 
+// Force stdout width to not wrap the logs and mess with the snapshots
+process.stdout.columns = 300
+
 /**
  * Helpers
  */
@@ -362,9 +365,7 @@ it('fails if custom entrypoint does not exist', async () => {
   await ctx.setup({ ...fsTsConfig, 'index.ts': `console.log('entrypoint')` })
   await ctx.scan({ entrypointPath: './wrong-path.ts' })
   expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
-    "✕ nexus Entrypoint does not exist {
-      path: '__DYNAMIC__/wrong-path.ts'
-    }
+    "✕ nexus Entrypoint does not exist  --  path: '__DYNAMIC__/wrong-path.ts'
 
 
     --- process.exit(1) ---
@@ -377,9 +378,7 @@ it('fails if custom entrypoint is not a .ts file', async () => {
   await ctx.setup({ ...fsTsConfig, 'index.ts': ``, 'index.js': `console.log('entrypoint')` })
   await ctx.scan({ entrypointPath: './index.js' })
   expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
-    "✕ nexus Entrypoint must be a .ts file {
-      path: '__DYNAMIC__/index.js'
-    }
+    "✕ nexus Entrypoint must be a .ts file  --  path: '__DYNAMIC__/index.js'
 
 
     --- process.exit(1) ---
