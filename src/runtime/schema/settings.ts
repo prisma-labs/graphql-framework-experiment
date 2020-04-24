@@ -6,7 +6,9 @@ import { isAbsolute } from 'path'
 import { mustLoadDataFromParentProcess } from '../../lib/layout/layout'
 import * as Plugin from '../../lib/plugin'
 import { Param1 } from '../../lib/utils'
-import { log } from './logger'
+import { log as schemaLogger } from './logger'
+
+const log = schemaLogger.child('settings')
 
 type NexusSchemaConfig = NexusSchema.core.SchemaConfig
 

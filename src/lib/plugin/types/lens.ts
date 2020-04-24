@@ -1,5 +1,6 @@
 import * as NexusSchema from '@nexus/schema'
 import * as Prompts from 'prompts'
+import { DeepPartial } from 'utility-types'
 import * as Testing from '../../../runtime/testing'
 import * as Layout from '../../layout'
 import * as Logger from '../../logger'
@@ -133,7 +134,7 @@ export type RuntimeContributions<C extends {} = any> = {
   }
 }
 
-export type TesttimeContributions = Utils.DeepPartial<Testing.TestContextCore>
+export type TesttimeContributions = DeepPartial<Testing.TestContextCore> & { [prop: string]: any }
 
 export type Lens = {
   log: Logger.Logger

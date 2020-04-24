@@ -6,10 +6,6 @@ export type SideEffector = () => MaybePromise
 
 export type Param1<F> = F extends (p: infer P, ...args: any[]) => any ? P : never
 
-export type DeepPartial<T extends Record<string, any>> = {
-  [P in keyof T]?: T[P] extends Record<string, any> ? DeepPartial<T[P]> : T[P]
-} & { [x: string]: any }
-
 /**
  * Guarantee the length of a given string, padding before or after with the
  * given character. If the given string is longer than  the span target, then it
@@ -192,4 +188,15 @@ export function partition<T>(array: Array<T>, predicate: (value: T) => boolean):
   }
 
   return partitioned
+}
+
+/**
+ * Render IPv6 `::` as localhost. By default Node servers will use :: if IPv6
+ * host is available otherwise IPv4 0.0.0.0. In local development it seems that
+ * rendering as localhost makes the most sense as to what the user expects.
+ * According to Node docs most operating systems that are supporting IPv6
+ * somehow bind `::` to `0.0.0.0` anyways.
+ */
+export function prettifyHost(host: string): string {
+  return host === '::' ? 'localhost' : host
 }
