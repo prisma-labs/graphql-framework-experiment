@@ -68,12 +68,13 @@ Nexus is a delightful framework for building GraphQL APIs in Node. It leverages 
 
 We plan to lift these limitations one day.
 
-- Does not work with JavaScript (#85)[https://github.com/graphql-nexus/nexus/issues/85]
+- Lacks good Windows support [issues](https://github.com/graphql-nexus/nexus/labels/platform%2Fwindows)
+- Does not work with JavaScript [#85](https://github.com/graphql-nexus/nexus/issues/85)
 - Does not cover the entire GrpahQL Spec
-  - Subscriptions (#447)[https://github.com/graphql-nexus/nexus/issues/447]
-  - Interface Extensions (#713)[https://github.com/graphql-nexus/nexus/issues/713])
+  - Subscriptions [#447](https://github.com/graphql-nexus/nexus/issues/447)
+  - Interface Extensions [#713](https://github.com/graphql-nexus/nexus/issues/713])
 
-### Non-Gols
+### Non-Goals
 
 We do not plan to lift these limitations.
 
