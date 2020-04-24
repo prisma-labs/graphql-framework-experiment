@@ -1,6 +1,8 @@
 import { DeepRequired } from 'utility-types'
 import { fatal } from '../../lib/process'
-import { log } from './logger'
+import { log as serverLogger } from './logger'
+
+const log = serverLogger.child('settings')
 
 export type PlaygroundSettings = {
   path?: string
@@ -76,7 +78,7 @@ export const defaultSettings: Readonly<SettingsData> = Object.freeze({
       ? 80
       : 4000,
   startMessage: ({ port, host, path, playgroundPath }): void => {
-    log.info('listening', { url: `http://${prettifyHost(host)}:${port}${playgroundPath ?? path}` })
+    serverLogger.info('listening', { url: `http://${prettifyHost(host)}:${port}${playgroundPath ?? path}` })
   },
   playground: process.env.NODE_ENV === 'production' ? false : defaultPlaygroundSettings,
   path: '/graphql',
