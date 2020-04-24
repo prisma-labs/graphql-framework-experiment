@@ -193,7 +193,7 @@ export function create(): ServerFactory {
   const express = createExpress()
   let server: BaseServer | null = null
   const state = {
-    settings: ServerSettings.defaultSettings,
+    settings: ServerSettings.defaultSettings(),
   }
 
   return {

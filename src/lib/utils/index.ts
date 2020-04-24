@@ -189,3 +189,14 @@ export function partition<T>(array: Array<T>, predicate: (value: T) => boolean):
 
   return partitioned
 }
+
+/**
+ * Render IPv6 `::` as localhost. By default Node servers will use :: if IPv6
+ * host is available otherwise IPv4 0.0.0.0. In local development it seems that
+ * rendering as localhost makes the most sense as to what the user expects.
+ * According to Node docs most operating systems that are supporting IPv6
+ * somehow bind `::` to `0.0.0.0` anyways.
+ */
+export function prettifyHost(host: string): string {
+  return host === '::' ? 'localhost' : host
+}
