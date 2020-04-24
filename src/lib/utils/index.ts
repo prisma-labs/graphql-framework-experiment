@@ -7,7 +7,7 @@ export type SideEffector = () => MaybePromise
 export type Param1<F> = F extends (p: infer P, ...args: any[]) => any ? P : never
 
 /**
- * DeepPartial
+ * DeepPartial - borrowed from `utility-types`
  * @desc Partial that works for deeply nested structure
  * @example
  *   // Expect: {
@@ -41,7 +41,7 @@ export declare type DeepPartialObject<T> = {
 }
 
 /**
- * DeepRequired
+ * DeepRequired - borrowed from `utility-types`
  * @desc Required that works for deeply nested structure
  * @example
  *   // Expect: {
