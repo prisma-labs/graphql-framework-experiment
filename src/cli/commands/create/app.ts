@@ -342,7 +342,7 @@ async function assertIsCleanSlate() {
   const contents = await fs.listAsync()
 
   if (contents !== undefined && contents.length > 0) {
-    proc.fatal('Cannot create a new nexus project here because the directory is not empty:\n %s', {
+    proc.fatal('Cannot create a new nexus project here because the directory is not empty', {
       contents,
     })
   }
