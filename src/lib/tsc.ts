@@ -29,7 +29,8 @@ export function createTSProgram(
     rootNames: layout.schemaModules.concat(layout.app.exists ? [layout.app.path] : []),
     options: {
       ...compilerCacheOptions,
-      ...layout.tsConfigJson.options,
+      ...layout.tsConfig.content.options,
+      outDir: layout.buildOutput,
     },
   })
 
@@ -79,7 +80,7 @@ export function compile(
 ): void {
   if (options?.removePreviousBuild === true) {
     log.trace('remove previous build folder if present')
-    fs.remove(layout.buildOutputRelative)
+    fs.remove(layout.buildOutput)
   }
 
   log.trace('emit transpiled modules')

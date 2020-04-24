@@ -78,7 +78,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
       require('${
         config.absoluteModuleImports
           ? config.layout.packageJson.path
-          : Path.relative(config.layout.buildOutputRelative, config.layout.packageJson.path)
+          : Path.relative(config.layout.buildOutput, config.layout.packageJson.path)
       }')
     `
   }
