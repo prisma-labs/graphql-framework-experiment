@@ -39,13 +39,13 @@ export interface App {
 type SettingsInput = {
   logger?: Logger.SettingsInput
   schema?: Schema.SettingsInput
-  server?: Server.ExtraSettingsInput
+  server?: Server.SettingsInput
 }
 
 export type SettingsData = Readonly<{
   logger: Logger.SettingsData
   schema: Schema.SettingsData
-  server: Server.ExtraSettingsData
+  server: Server.SettingsData
 }>
 
 /**
@@ -96,18 +96,18 @@ export function create(): App {
         schemaComponent.private.settings.change(newSettings.schema)
       }
       if (newSettings.server) {
-        Object.assign(settings.current.server, newSettings.server)
+        server.settings.change(newSettings.server)
       }
     },
     current: {
       logger: log.settings,
       schema: schemaComponent.private.settings.data,
-      server: Server.defaultExtraSettingsInput,
+      server: server.settings.data,
     },
     original: Lo.cloneDeep({
       logger: log.settings,
       schema: schemaComponent.private.settings.data,
-      server: Server.defaultExtraSettingsInput,
+      server: server.settings.data,
     }),
   }
 
@@ -142,11 +142,10 @@ export function create(): App {
         __state.isWasServerStartCalled = true
 
         const plugins = await Plugin.loadRuntimePluginsFromEntrypoints(__state.plugins)
-        const graphqlSchema = await schemaComponent.private.makeSchema(plugins)
+        const schema = await schemaComponent.private.makeSchema(plugins)
 
         await server.setupAndStart({
-          settings: settings,
-          schema: graphqlSchema,
+          schema,
           plugins,
           contextContributors: schemaComponent.private.state.contextContributors,
         })

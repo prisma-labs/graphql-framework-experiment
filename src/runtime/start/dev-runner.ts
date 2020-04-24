@@ -22,7 +22,7 @@ export interface DevRunner {
 export function createDevAppRunner(
   layout: Layout.Layout,
   opts?: {
-    server?: Server.ExtraSettingsInput
+    server?: Server.SettingsInput
     disableServer?: boolean
   }
 ): DevRunner {
