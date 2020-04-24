@@ -2,13 +2,14 @@ import chalk from 'chalk'
 import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import * as path from 'path'
+import * as Path from 'path'
 import { DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT, Layout } from '../../lib/layout'
 import { START_MODULE_NAME } from '../../runtime/start/start-module'
 import { findFileRecurisvelyUpwardSync } from '../fs'
 import { rootLogger } from '../nexus-logger'
 import { fatal } from '../process'
 
-const log = rootLogger.child(__filename)
+const log = rootLogger.child('build')
 
 /**
  * If you add a new deploy target, please start by adding a new item to the `SUPPORTED_DEPLOY_TARGETS`
@@ -75,7 +76,7 @@ interface NowJson {
  */
 function validateNow(layout: Layout): ValidatorResult {
   const maybeNowJson = findFileRecurisvelyUpwardSync('now.json', { cwd: layout.projectRoot })
-  const startModulePath = `${layout.buildOutputRelative}/${START_MODULE_NAME}.js`
+  const startModulePath = `${layout.buildOutput}/${START_MODULE_NAME}.js`
   let isValid = true
 
   // Make sure there's a now.json file
@@ -105,7 +106,9 @@ function validateNow(layout: Layout): ValidatorResult {
     // Make sure the now.json file has the right `builds` values
     if (
       !nowJson.builds ||
-      !nowJson.builds.find((build) => build.src === startModulePath && build.use === '@now/node')
+      !nowJson.builds.find(
+        (build) => Path.join(maybeNowJson.dir, build.src) === startModulePath && build.use === '@now/node'
+      )
     ) {
       log.error(`We could not find a proper builder in your \`now.json\` file`)
       log.error(`Found: "builds": ${JSON.stringify(nowJson.builds)}`)
@@ -123,7 +126,7 @@ function validateNow(layout: Layout): ValidatorResult {
     }
 
     // Make sure the now.json file has the right `routes` values
-    if (!nowJson.routes?.find((route) => route.dest === startModulePath)) {
+    if (!nowJson.routes?.find((route) => Path.join(maybeNowJson.dir, route.dest) === startModulePath)) {
       log.error(`We could not find a route property that redirects to your api in your \`now.json\` file.`)
       log.error(`Found: "routes": ${JSON.stringify(nowJson.routes)}`)
       log.error(`Expected: "routes": [{ src: '/.*', dest: "${startModulePath}" }, ...]`)
@@ -192,17 +195,17 @@ function validateHeroku(layout: Layout): ValidatorResult {
     // Make sure there's a start script
     if (!pcfg.scripts?.start) {
       log.error(
-        `Please add the following to your \`package.json\` file: "scripts": { "start": "node ${layout.buildOutputRelative}" }`
+        `Please add the following to your \`package.json\` file: "scripts": { "start": "node ${layout.buildOutput}" }`
       )
       console.log()
       isValid = false
     }
 
     // Make sure the start script starts the built server
-    if (!pcfg.scripts?.start?.includes(`node ${layout.buildOutputRelative}`)) {
+    if (!pcfg.scripts?.start?.includes(`node ${layout.buildOutput}`)) {
       log.error(`Please make sure your \`start\` script points to your built server`)
       log.error(`Found: "${pcfg.scripts?.start}"`)
-      log.error(`Expected: "node ${layout.buildOutputRelative}"`)
+      log.error(`Expected: "node ${layout.buildOutput}"`)
       console.log()
       isValid = false
     }
