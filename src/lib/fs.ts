@@ -62,6 +62,7 @@ export function findFileRecurisvelyUpwardSync(
   let found: { path: string; dir: string } | null = null
   let currentDir = opts.cwd
   const localFS = FS.cwd(currentDir)
+  let second = path.win32.normalize('\\')
 
   while (true) {
     const filePath = Path.join(currentDir, fileName)
@@ -71,7 +72,7 @@ export function findFileRecurisvelyUpwardSync(
       break
     }
 
-    if (currentDir === '/') {
+    if (currentDir === '/' || currentDir.slice(2) === second) {
       break
     }
 

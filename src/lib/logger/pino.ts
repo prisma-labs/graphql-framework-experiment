@@ -33,21 +33,18 @@ type Options = {
  * Currently when changing in/out of pretty mode and construction time.
  */
 export function create(opts: Options): Pino.Logger {
-  const pino = originalCreatePino(
-    {
-      prettyPrint: opts.pretty.enabled,
-      prettifier: (_opts: any) =>
-        opts.pretty.color
-          ? Prettifier.create(opts.pretty)
-          : // todo more performant way to do this would be give task to de-colour
-            // to render function. Then it can just use some cheap if conditions.
-            // Presumably strip-ansi is doing WAY more work as it has to
-            // traverse EVERY string logged...
-            Lo.flow(Prettifier.create(opts.pretty), stripAnsi),
-      messageKey: 'event',
-    } as ActualPinoOptions,
-    opts.output
-  )
+  const pino = originalCreatePino({
+    prettyPrint: opts.pretty.enabled,
+    prettifier: (_opts: any) =>
+      opts.pretty.color
+        ? Prettifier.create(opts.pretty)
+        : // todo more performant way to do this would be give task to de-colour
+          // to render function. Then it can just use some cheap if conditions.
+          // Presumably strip-ansi is doing WAY more work as it has to
+          // traverse EVERY string logged...
+          Lo.flow(Prettifier.create(opts.pretty), stripAnsi),
+    messageKey: 'event',
+  } as ActualPinoOptions)
   pino.level = opts.level
   return pino
 }
