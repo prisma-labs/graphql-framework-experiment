@@ -49,6 +49,8 @@ In dev mode the modules are synchronously found and imported when the server sta
 
 A module, anywhere in your source directory, named `app.ts`.
 
+A custom entrypoint can also be configured using the `--entrypoint` or `-e` CLI option on `nexus build` and `nexus dev`.
+
 ##### About
 
 This convention is optional if schema modules are present, required otherwise.

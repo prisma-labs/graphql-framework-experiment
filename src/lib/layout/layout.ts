@@ -8,6 +8,7 @@ import { findFile, findFileRecurisvelyUpwardSync } from '../../lib/fs'
 import { START_MODULE_NAME } from '../../runtime/start/start-module'
 import { rootLogger } from '../nexus-logger'
 import * as PackageManager from '../package-manager'
+import { fatal } from '../process'
 import * as Schema from './schema-modules'
 import { readOrScaffoldTsconfig } from './tsconfig'
 
@@ -97,6 +98,7 @@ interface Options {
    * The place to output the build, relative to project root.
    */
   buildOutputRelative?: string
+  entrypointPath?: string
   cwd?: string
 }
 
@@ -108,12 +110,16 @@ const optionDefaults = {
  * Perform a layout scan and return results with attached helper functions.
  */
 export async function create(options?: Options): Promise<Layout> {
+  const cwd = options?.cwd ?? process.cwd()
+  const normalizedEntrypoint = normalizeEntrypoint(options?.entrypointPath, cwd)
   // TODO lodash merge defaults or something
-  const optionsMerged: Required<Options> = {
+  const optionsMerged = {
     buildOutputRelative: options?.buildOutputRelative ?? optionDefaults.buildOutput,
-    cwd: options?.cwd ?? process.cwd(),
+    cwd,
+    entrypointPath: normalizedEntrypoint,
   }
-  const data = await scan({ cwd: optionsMerged.cwd })
+
+  const data = await scan({ cwd: optionsMerged.cwd, entrypointPath: optionsMerged.entrypointPath })
   const layout = createFromData({
     ...data,
     buildOutputRelative: optionsMerged.buildOutputRelative,
@@ -162,17 +168,22 @@ export function createFromData(layoutData: Data): Layout {
  * Analyze the user's project files/folders for how conventions are being used
  * and where key modules exist.
  */
-export async function scan(opts?: { cwd?: string }): Promise<ScanResult> {
+export async function scan(opts?: { cwd?: string; entrypointPath?: string }): Promise<ScanResult> {
   log.trace('starting scan')
 
   const projectRoot = opts?.cwd ?? process.cwd()
   const packageManagerType = await PackageManager.detectProjectPackageManager({ projectRoot })
   const maybePackageJson = findPackageJson({ projectRoot })
-  const maybeAppModule = findAppModule({ projectRoot })
-  const maybeSchemaModules = Schema.findDirOrModules({ projectRoot })
+  const maybeAppModule = opts?.entrypointPath ?? findAppModule({ projectRoot })
+  let maybeSchemaModules = Schema.findDirOrModules({ projectRoot })
   const tsConfigJson = await readOrScaffoldTsconfig({
     projectRoot,
   })
+
+  // Remove entrypoint from schema modules (can happen if the entrypoint is named graphql.ts or inside a graphql/ folder)
+  if (maybeSchemaModules && maybeAppModule && maybeSchemaModules.includes(maybeAppModule)) {
+    maybeSchemaModules = maybeSchemaModules.filter((s) => s !== maybeAppModule)
+  }
 
   const result: ScanResult = {
     app:
@@ -225,7 +236,7 @@ const checks = {
 export function findAppModule(opts: { projectRoot: string }): string | null {
   log.trace('looking for app module')
   const path = findFile(CONVENTIONAL_ENTRYPOINT_FILE_NAME, opts)
-  log.trace('done looking for app module')
+  log.trace('done looking for app module', { path })
 
   return path
 }
@@ -401,4 +412,22 @@ function getSourceRoot(
   }
 
   return sourceRoot
+}
+
+function normalizeEntrypoint(entrypoint: string | undefined, cwd: string): string | undefined {
+  if (!entrypoint) {
+    return undefined
+  }
+
+  const absoluteEntrypoint = entrypoint.startsWith('/') ? entrypoint : Path.join(cwd, entrypoint)
+
+  if (!absoluteEntrypoint.endsWith('.ts')) {
+    fatal('Entrypoint must be a .ts file', { path: absoluteEntrypoint })
+  }
+
+  if (!FS.exists(absoluteEntrypoint)) {
+    fatal('Entrypoint does not exist', { path: absoluteEntrypoint })
+  }
+
+  return absoluteEntrypoint
 }

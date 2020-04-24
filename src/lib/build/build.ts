@@ -25,6 +25,7 @@ interface BuildSettings {
   target?: string
   output?: string
   stage?: string
+  entrypoint?: string
 }
 
 export async function buildNexusApp(settings: BuildSettings) {
@@ -35,6 +36,7 @@ export async function buildNexusApp(settings: BuildSettings) {
 
   const layout = await Layout.create({
     buildOutputRelative: settings.output ?? computeBuildOutputFromTarget(deploymentTarget) ?? undefined,
+    entrypointPath: settings.entrypoint,
   })
 
   /**

@@ -1,7 +1,6 @@
 import { spawn, spawnSync, SpawnSyncOptions } from 'child_process'
 import { stripIndent } from 'common-tags'
 import * as path from 'path'
-import { format } from 'util'
 import { findFileRecurisvelyUpwardSync } from '../fs'
 import { log } from '../nexus-logger'
 
@@ -9,8 +8,8 @@ import { log } from '../nexus-logger'
  * Log a meaningful semantic error message sans stack track and then crash
  * the program with exit code 1. Parameters are a passthrough to `console.error`.
  */
-export function fatal(template: string, ...vars: unknown[]): never {
-  log.fatal(format(template, ...vars))
+export function fatal(template: string, context?: Record<string, unknown>): never {
+  log.fatal(template, context)
   process.exit(1)
 }
 

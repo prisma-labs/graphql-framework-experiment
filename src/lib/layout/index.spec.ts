@@ -30,6 +30,9 @@ rootLogger.settings({
   },
 })
 
+// Force stdout width to not wrap the logs and mess with the snapshots
+process.stdout.columns = 300
+
 /**
  * Helpers
  */
@@ -47,8 +50,8 @@ const layoutContext = TestContext.create((input: TestContext.TmpDirContribution)
     setup(spec: FSSpec = {}) {
       writeFSSpec(input.tmpDir, spec)
     },
-    async scan() {
-      const data = await Layout.create({ cwd: input.tmpDir })
+    async scan(opts?: { entrypointPath?: string }) {
+      const data = await Layout.create({ cwd: input.tmpDir, entrypointPath: opts?.entrypointPath })
       mockedStdoutBuffer = mockedStdoutBuffer.split(input.tmpDir).join('__DYNAMIC__')
       return repalceInObject(input.tmpDir, '__DYNAMIC__', data.data)
     },
@@ -332,6 +335,92 @@ it('set app.exists = false if no entrypoint', async () => {
     Object {
       "exists": false,
       "path": null,
+    }
+  `)
+})
+
+it('uses custom relative entrypoint when defined', async () => {
+  await ctx.setup({ ...fsTsConfig, 'index.ts': `console.log('entrypoint')` })
+  const result = await ctx.scan({ entrypointPath: './index.ts' })
+  expect(result.app).toMatchInlineSnapshot(`
+    Object {
+      "exists": true,
+      "path": "__DYNAMIC__/index.ts",
+    }
+  `)
+})
+
+it('uses custom absolute entrypoint when defined', async () => {
+  await ctx.setup({ ...fsTsConfig, 'index.ts': `console.log('entrypoint')` })
+  const result = await ctx.scan({ entrypointPath: ctx.fs.path('index.ts') })
+  expect(result.app).toMatchInlineSnapshot(`
+    Object {
+      "exists": true,
+      "path": "__DYNAMIC__/index.ts",
+    }
+  `)
+})
+
+it('fails if custom entrypoint does not exist', async () => {
+  await ctx.setup({ ...fsTsConfig, 'index.ts': `console.log('entrypoint')` })
+  await ctx.scan({ entrypointPath: './wrong-path.ts' })
+  expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
+    "✕ nexus Entrypoint does not exist  --  path: '__DYNAMIC__/wrong-path.ts'
+
+
+    --- process.exit(1) ---
+
+    "
+  `)
+})
+
+it('fails if custom entrypoint is not a .ts file', async () => {
+  await ctx.setup({ ...fsTsConfig, 'index.ts': ``, 'index.js': `console.log('entrypoint')` })
+  await ctx.scan({ entrypointPath: './index.js' })
+  expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
+    "✕ nexus Entrypoint must be a .ts file  --  path: '__DYNAMIC__/index.js'
+
+
+    --- process.exit(1) ---
+
+    "
+  `)
+})
+
+it('does not take custom entrypoint as schema module if its named graphql.ts', async () => {
+  await ctx.setup({ ...fsTsConfig, 'graphql.ts': '', graphql: { 'user.ts': '' } })
+  const result = await ctx.scan({ entrypointPath: './graphql.ts' })
+  expect({
+    app: result.app,
+    schemaModules: result.schemaModules,
+  }).toMatchInlineSnapshot(`
+    Object {
+      "app": Object {
+        "exists": true,
+        "path": "__DYNAMIC__/graphql.ts",
+      },
+      "schemaModules": Array [
+        "__DYNAMIC__/graphql/user.ts",
+      ],
+    }
+  `)
+})
+
+it('does not take custom entrypoint as schema module if its inside a graphql/ folder', async () => {
+  await ctx.setup({ ...fsTsConfig, graphql: { 'user.ts': '', 'graphql.ts': '' } })
+  const result = await ctx.scan({ entrypointPath: './graphql/graphql.ts' })
+  expect({
+    app: result.app,
+    schemaModules: result.schemaModules,
+  }).toMatchInlineSnapshot(`
+    Object {
+      "app": Object {
+        "exists": true,
+        "path": "__DYNAMIC__/graphql/graphql.ts",
+      },
+      "schemaModules": Array [
+        "__DYNAMIC__/graphql/user.ts",
+      ],
     }
   `)
 })
