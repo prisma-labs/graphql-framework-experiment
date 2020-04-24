@@ -1,4 +1,3 @@
-import * as UtilityTypes from 'utility-types'
 import * as Process from '../../lib/process'
 import * as Utils from '../../lib/utils'
 import { log as serverLogger } from './logger'
@@ -53,7 +52,7 @@ export type SettingsInput = {
   }) => void
 }
 
-export type SettingsData = Omit<UtilityTypes.DeepRequired<SettingsInput>, 'host' | 'playground'> & {
+export type SettingsData = Omit<Utils.DeepRequired<SettingsInput>, 'host' | 'playground'> & {
   host: string | undefined
   playground: false | Required<PlaygroundSettings>
 }
