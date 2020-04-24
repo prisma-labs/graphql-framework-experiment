@@ -1,8 +1,6 @@
 import { DeepRequired } from 'utility-types'
 import { fatal } from '../../lib/process'
-import { log as serverLogger } from './logger'
-
-const log = serverLogger.child('settings')
+import { log } from './logger'
 
 export type PlaygroundSettings = {
   path?: string
