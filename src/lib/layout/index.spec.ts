@@ -387,6 +387,44 @@ it('fails if custom entrypoint is not a .ts file', async () => {
   `)
 })
 
+it('does not take custom entrypoint as schema module if its named graphql.ts', async () => {
+  await ctx.setup({ ...fsTsConfig, 'graphql.ts': '', graphql: { 'user.ts': '' } })
+  const result = await ctx.scan({ entrypointPath: './graphql.ts' })
+  expect({
+    app: result.app,
+    schemaModules: result.schemaModules,
+  }).toMatchInlineSnapshot(`
+    Object {
+      "app": Object {
+        "exists": true,
+        "path": "__DYNAMIC__/graphql.ts",
+      },
+      "schemaModules": Array [
+        "__DYNAMIC__/graphql/user.ts",
+      ],
+    }
+  `)
+})
+
+it('does not take custom entrypoint as schema module if its inside a graphql/ folder', async () => {
+  await ctx.setup({ ...fsTsConfig, graphql: { 'user.ts': '', 'graphql.ts': '' } })
+  const result = await ctx.scan({ entrypointPath: './graphql/graphql.ts' })
+  expect({
+    app: result.app,
+    schemaModules: result.schemaModules,
+  }).toMatchInlineSnapshot(`
+    Object {
+      "app": Object {
+        "exists": true,
+        "path": "__DYNAMIC__/graphql/graphql.ts",
+      },
+      "schemaModules": Array [
+        "__DYNAMIC__/graphql/user.ts",
+      ],
+    }
+  `)
+})
+
 describe('source root', () => {
   it('defaults to project dir', async () => {
     ctx.setup({ 'tsconfig.json': '' })
