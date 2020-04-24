@@ -1,5 +1,6 @@
 import { stripIndent } from 'common-tags'
 import * as FS from 'fs-jetpack'
+import * as Path from 'path'
 import * as Layout from '../../lib/layout'
 import { compile, createTSProgram, deleteTSIncrementalFile } from '../../lib/tsc'
 import {
@@ -33,9 +34,10 @@ export async function buildNexusApp(settings: BuildSettings) {
 
   const startTime = Date.now()
   const deploymentTarget = normalizeTarget(settings.target)
+  const buildOutput = settings.output ?? computeBuildOutputFromTarget(deploymentTarget) ?? undefined
 
   const layout = await Layout.create({
-    buildOutputRelative: settings.output ?? computeBuildOutputFromTarget(deploymentTarget) ?? undefined,
+    buildOutput,
     entrypointPath: settings.entrypoint,
   })
 
@@ -70,9 +72,9 @@ export async function buildNexusApp(settings: BuildSettings) {
     startModule: prepareStartModule(
       tsBuilder,
       createStartModuleContent({
+        layout,
         plugins: manifests,
         internalStage: 'build',
-        layout: layout,
       })
     ),
   })
@@ -113,7 +115,7 @@ export async function buildNexusApp(settings: BuildSettings) {
   })
 
   log.info('success', {
-    buildOutput: layout.buildOutputRelative,
+    buildOutput: Path.relative(layout.projectRoot, layout.buildOutput),
     time: Date.now() - startTime,
   })
 

@@ -16,7 +16,7 @@ const diagnosticHost: ts.FormatDiagnosticsHost = {
 export async function readOrScaffoldTsconfig(input: {
   projectRoot: string
   overrides?: { outRoot?: string }
-}): Promise<ts.ParsedCommandLine> {
+}): Promise<{ content: ts.ParsedCommandLine, path: string }> {
   let tsconfigPath = ts.findConfigFile(input.projectRoot, ts.sys.fileExists, 'tsconfig.json')
 
   if (!tsconfigPath) {
@@ -103,7 +103,7 @@ export async function readOrScaffoldTsconfig(input: {
 
   log.trace('finished read')
 
-  return tsconfig
+  return { content: tsconfig, path: tsconfigPath }
 }
 
 function checkNoTsConfigErrors(tsconfig: ts.ParsedCommandLine) {

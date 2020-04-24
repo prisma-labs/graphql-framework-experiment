@@ -42,7 +42,10 @@ export type ScanResult = {
   sourceRoot: string
   projectRoot: string
   schemaModules: string[]
-  tsConfigJson: ParsedCommandLine
+  tsConfig: {
+    content: ParsedCommandLine
+    path: string
+  }
   packageManagerType: PackageManager.PackageManager['type']
   packageJson: null | {
     dir: string
@@ -71,7 +74,7 @@ export type ScanResult = {
  * the dynamic scan results.
  */
 export type Data = ScanResult & {
-  buildOutputRelative: string
+  buildOutput: string
   startModuleOutPath: string
   startModuleInPath: string
 }
@@ -97,7 +100,7 @@ interface Options {
   /**
    * The place to output the build, relative to project root.
    */
-  buildOutputRelative?: string
+  buildOutput?: string
   entrypointPath?: string
   cwd?: string
 }
@@ -113,22 +116,20 @@ export async function create(options?: Options): Promise<Layout> {
   const cwd = options?.cwd ?? process.cwd()
   const normalizedEntrypoint = normalizeEntrypoint(options?.entrypointPath, cwd)
   // TODO lodash merge defaults or something
-  const optionsMerged = {
-    buildOutputRelative: options?.buildOutputRelative ?? optionDefaults.buildOutput,
-    cwd,
-    entrypointPath: normalizedEntrypoint,
+
+  const scanResult = await scan({ cwd, entrypointPath: normalizedEntrypoint })
+  const buildOutput = getBuildOutput(options?.buildOutput, scanResult)
+  const outputInfo = {
+    buildOutput,
+    startModuleInPath: Path.join(scanResult.sourceRoot, START_MODULE_NAME + '.ts'),
+    startModuleOutPath: Path.join(buildOutput, START_MODULE_NAME + '.js'),
   }
 
-  const data = await scan({ cwd: optionsMerged.cwd, entrypointPath: optionsMerged.entrypointPath })
+  log.trace('additional layout data', { data: outputInfo })
+
   const layout = createFromData({
-    ...data,
-    buildOutputRelative: optionsMerged.buildOutputRelative,
-    startModuleInPath: Path.join(data.sourceRoot, START_MODULE_NAME + '.ts'),
-    startModuleOutPath: Path.join(
-      data.projectRoot,
-      optionsMerged.buildOutputRelative,
-      START_MODULE_NAME + '.js'
-    ),
+    ...scanResult,
+    ...outputInfo,
   })
 
   /**
@@ -170,13 +171,12 @@ export function createFromData(layoutData: Data): Layout {
  */
 export async function scan(opts?: { cwd?: string; entrypointPath?: string }): Promise<ScanResult> {
   log.trace('starting scan')
-
   const projectRoot = opts?.cwd ?? process.cwd()
   const packageManagerType = await PackageManager.detectProjectPackageManager({ projectRoot })
   const maybePackageJson = findPackageJson({ projectRoot })
   const maybeAppModule = opts?.entrypointPath ?? findAppModule({ projectRoot })
   let maybeSchemaModules = Schema.findDirOrModules({ projectRoot })
-  const tsConfigJson = await readOrScaffoldTsconfig({
+  const tsConfig = await readOrScaffoldTsconfig({
     projectRoot,
   })
 
@@ -190,12 +190,12 @@ export async function scan(opts?: { cwd?: string; entrypointPath?: string }): Pr
       maybeAppModule === null
         ? ({ exists: false, path: maybeAppModule } as const)
         : ({ exists: true, path: maybeAppModule } as const),
-    projectRoot: projectRoot,
-    sourceRoot: tsConfigJson.options.rootDir!,
+    projectRoot,
+    sourceRoot: tsConfig.content.options.rootDir!,
     schemaModules: maybeSchemaModules,
     project: readProjectInfo(opts),
-    tsConfigJson: tsConfigJson,
-    packageManagerType: packageManagerType,
+    tsConfig,
+    packageManagerType,
     packageJson: maybePackageJson,
   }
 
@@ -206,6 +206,7 @@ export async function scan(opts?: { cwd?: string; entrypointPath?: string }): Pr
   }
 
   log.trace('completed scan', { result })
+
   return result
 }
 
@@ -388,32 +389,6 @@ function findPackageJson(opts: { projectRoot: string }): ScanResult['packageJson
   }
 }
 
-function getShallowestPath(paths: string[]) {
-  return paths.sort((a, b) => {
-    return a.split(Path.sep).length - b.split(Path.sep).length
-  })[0]
-}
-
-function getSourceRoot(
-  maybeAppModule: string | null,
-  maybeSchemaModules: string[],
-  opts: { projectRoot: string }
-) {
-  let sourceRoot: string
-
-  if (maybeAppModule) {
-    sourceRoot = Path.dirname(maybeAppModule)
-  } else {
-    if (maybeSchemaModules.length !== 0) {
-      sourceRoot = Path.dirname(getShallowestPath(maybeSchemaModules))
-    } else {
-      sourceRoot = opts.projectRoot
-    }
-  }
-
-  return sourceRoot
-}
-
 function normalizeEntrypoint(entrypoint: string | undefined, cwd: string): string | undefined {
   if (!entrypoint) {
     return undefined
@@ -430,4 +405,18 @@ function normalizeEntrypoint(entrypoint: string | undefined, cwd: string): strin
   }
 
   return absoluteEntrypoint
+}
+
+/**
+ * Get the relative output build path
+ * Precedence: User's input > tsconfig.json's outDir > default
+ */
+function getBuildOutput(buildOutput: string | undefined, scanResult: ScanResult): string {
+  const output = buildOutput ?? scanResult.tsConfig.content.options.outDir ?? optionDefaults.buildOutput
+
+  if (Path.isAbsolute(output)) {
+    return output
+  }
+
+  return Path.join(scanResult.projectRoot, output)
 }
