@@ -98,7 +98,7 @@ interface Options {
    * The place to output the build, relative to project root.
    */
   buildOutputRelative?: string
-  entrypointPath?: string | null
+  entrypointPath?: string
   cwd?: string
 }
 
@@ -113,7 +113,7 @@ export async function create(options?: Options): Promise<Layout> {
   const cwd = options?.cwd ?? process.cwd()
   const normalizedEntrypoint = normalizeEntrypoint(options?.entrypointPath, cwd)
   // TODO lodash merge defaults or something
-  const optionsMerged: Required<Options> = {
+  const optionsMerged = {
     buildOutputRelative: options?.buildOutputRelative ?? optionDefaults.buildOutput,
     cwd,
     entrypointPath: normalizedEntrypoint,
@@ -168,7 +168,7 @@ export function createFromData(layoutData: Data): Layout {
  * Analyze the user's project files/folders for how conventions are being used
  * and where key modules exist.
  */
-export async function scan(opts?: { cwd?: string; entrypointPath: string | null }): Promise<ScanResult> {
+export async function scan(opts?: { cwd?: string; entrypointPath?: string }): Promise<ScanResult> {
   log.trace('starting scan')
 
   const projectRoot = opts?.cwd ?? process.cwd()
@@ -414,9 +414,9 @@ function getSourceRoot(
   return sourceRoot
 }
 
-function normalizeEntrypoint(entrypoint: string | null | undefined, cwd: string): string | null {
+function normalizeEntrypoint(entrypoint: string | undefined, cwd: string): string | undefined {
   if (!entrypoint) {
-    return null
+    return undefined
   }
 
   const absoluteEntrypoint = entrypoint.startsWith('/') ? entrypoint : Path.join(cwd, entrypoint)
