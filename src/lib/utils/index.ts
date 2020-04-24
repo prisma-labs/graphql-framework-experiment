@@ -7,6 +7,75 @@ export type SideEffector = () => MaybePromise
 export type Param1<F> = F extends (p: infer P, ...args: any[]) => any ? P : never
 
 /**
+ * DeepPartial
+ * @desc Partial that works for deeply nested structure
+ * @example
+ *   // Expect: {
+ *   //   first?: {
+ *   //     second?: {
+ *   //       name?: string;
+ *   //     };
+ *   //   };
+ *   // }
+ *   type NestedProps = {
+ *     first: {
+ *       second: {
+ *         name: string;
+ *       };
+ *     };
+ *   };
+ *   type PartialNestedProps = DeepPartial<NestedProps>;
+ */
+export declare type DeepPartial<T> = T extends Function
+  ? T
+  : T extends Array<infer U>
+  ? DeepPartialArray<U>
+  : T extends object
+  ? DeepPartialObject<T>
+  : T | undefined
+/** @private */
+export interface DeepPartialArray<T> extends Array<DeepPartial<T>> {}
+/** @private */
+export declare type DeepPartialObject<T> = {
+  [P in keyof T]?: DeepPartial<T[P]>
+}
+
+/**
+ * DeepRequired
+ * @desc Required that works for deeply nested structure
+ * @example
+ *   // Expect: {
+ *   //   first: {
+ *   //     second: {
+ *   //       name: string;
+ *   //     };
+ *   //   };
+ *   // }
+ *   type NestedProps = {
+ *     first?: {
+ *       second?: {
+ *         name?: string;
+ *       };
+ *     };
+ *   };
+ *   type RequiredNestedProps = DeepRequired<NestedProps>;
+ */
+export declare type DeepRequired<T> = T extends (...args: any[]) => any
+  ? T
+  : T extends any[]
+  ? DeepRequiredArray<T[number]>
+  : T extends object
+  ? DeepRequiredObject<T>
+  : T
+/** @private */
+export interface DeepRequiredArray<T> extends Array<DeepRequired<NonUndefined<T>>> {}
+/** @private */
+export declare type DeepRequiredObject<T> = {
+  [P in keyof T]-?: DeepRequired<NonUndefined<T[P]>>
+}
+export declare type NonUndefined<A> = A extends undefined ? never : A
+
+/**
  * Guarantee the length of a given string, padding before or after with the
  * given character. If the given string is longer than  the span target, then it
  * will be cropped.
