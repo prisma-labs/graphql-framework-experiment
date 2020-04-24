@@ -1,7 +1,6 @@
 import chalk from 'chalk'
 import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
-import * as path from 'path'
 import * as Path from 'path'
 import { DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT, Layout } from '../../lib/layout'
 import { START_MODULE_NAME } from '../../runtime/start/start-module'
@@ -97,7 +96,7 @@ function validateNow(layout: Layout): ValidatorResult {
         "routes": [{ "src": "/.*", "dest": "${startModulePath}" }]
       }
     `
-    const nowJsonPath = path.join(layout.projectRoot, 'now.json')
+    const nowJsonPath = Path.join(layout.projectRoot, 'now.json')
     fs.write(nowJsonPath, nowJsonContent)
     log.warn(`No \`now.json\` file were found. We scaffolded one for you in ${nowJsonPath}`)
   } else {
@@ -192,20 +191,22 @@ function validateHeroku(layout: Layout): ValidatorResult {
       isValid = false
     }
 
+    const relativeBuildOutput = Path.relative(layout.packageJson.dir, layout.buildOutput)
+
     // Make sure there's a start script
     if (!pcfg.scripts?.start) {
       log.error(
-        `Please add the following to your \`package.json\` file: "scripts": { "start": "node ${layout.buildOutput}" }`
+        `Please add the following to your \`package.json\` file: "scripts": { "start": "node ${relativeBuildOutput}" }`
       )
       console.log()
       isValid = false
     }
 
     // Make sure the start script starts the built server
-    if (!pcfg.scripts?.start?.includes(`node ${layout.buildOutput}`)) {
+    if (!pcfg.scripts?.start?.includes(`node ${relativeBuildOutput}`)) {
       log.error(`Please make sure your \`start\` script points to your built server`)
       log.error(`Found: "${pcfg.scripts?.start}"`)
-      log.error(`Expected: "node ${layout.buildOutput}"`)
+      log.error(`Expected to contain: "node ${relativeBuildOutput}"`)
       console.log()
       isValid = false
     }
