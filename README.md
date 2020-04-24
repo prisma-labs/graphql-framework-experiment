@@ -16,6 +16,10 @@
 - **Discussions** https://github.com/graphql-nexus/nexus/discussions
 - **Changelog** https://github.com/graphql-nexus/nexus/releases ([canary](https://github.com/graphql-nexus/nexus/releases/tag/next))
 
+## Windows users
+
+This framework uses node-gyp which on windows machines has additional requirements that must be installed manually before hand. Please refer to https://github.com/nodejs/node-gyp#on-windows.
+
 ## Repo / Package Overview
 
 | Repo                                              | NPM Package                                                  | Role             |
