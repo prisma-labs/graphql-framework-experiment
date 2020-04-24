@@ -1,4 +1,4 @@
-Versions of the `nexus` package `0.20` and below were what is now known as `@nexus/schema`. This transition of the `nexus` package from being a schema library to a framework was announced [in this GitHub issue](https://github.com/prisma-labs/nexus/issues/373). The following receipe shows how to migrate from nexus schema `0.12` to the latest version of Nexus framework.
+Versions of the `nexus` package below `0.20` were what is now known as `@nexus/schema`. This transition of the `nexus` package from being a schema library to a framework was announced [in this GitHub issue](https://github.com/prisma-labs/nexus/issues/373). The following receipe shows how to migrate from nexus schema `0.12` to the latest version of Nexus framework.
 
 #### Dependencies
 
