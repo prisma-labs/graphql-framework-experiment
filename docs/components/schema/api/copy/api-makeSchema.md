@@ -1,21 +1,8 @@
-When used standalone the Nexus Schema component includes a few additional APIs. These are documented below. For everything else please refer to the [framework schema component API docs](api/modules/main/exports/schema).
-
-The API has been carefully designed with the following goals in mind:
-
-1. Type-Safety [by default](type-generation.md)
-1. Readability
-1. Developer ergonomics
-1. Playing nicely with Prettier formatting
-
-Before you open a GitHub issue or pull-request with a suggested change to the API, try to meet all four of those criteria listed above and be able to explain why a change is necessary.
-
-## `makeSchema`
-
 Defines the GraphQL schema, by combining the GraphQL types defined by the GraphQL Nexus layer or any manually defined GraphQL named types (Scalars, ObjectTypes, Enums, etc).
 
 We require at least one type be named "Query", which will be used as the root query type. The `makeSchema` takes several options which all should be specified by the user, detailed below:
 
-### types {docsify-ignore}
+## types
 
 The `types` property is required, and should contain all of the possible Nexus/GraphQL types that make up a schema (at least the root-level ones), imported into one place. The type is opaque, it can be an array or object, we recursively walk through the object looking for types, so the following will all have the same result, and non-GraphQL objects will be ignored.
 
@@ -32,7 +19,7 @@ export const schema = makeSchema({
 })
 ```
 
-### plugins {docsify-ignore}
+## plugins
 
 The `plugins` property is an array for adding "Plugins", or ways of extending/changing the runtime behavior of Nexus and GraphQL. Unlike the `types` property, this must be an array, and the order of the plugins matters because this influences the order of any resolver "middleware" the plugin may optionally provide.
 
@@ -53,7 +40,7 @@ export const schema = makeSchema({
 })
 ```
 
-### shouldGenerateArtifacts, outputs, typegenAutoConfig {docsify-ignore}
+## shouldGenerateArtifacts, outputs, typegenAutoConfig
 
 The `shouldGenerateArtifacts` is a boolean value which determines whether artifact files (graphql and TypeScript) are emitted when the code for `makeSchema`
 
@@ -102,7 +89,7 @@ makeSchema({
 
 The [Ghost Example](https://github.com/prisma-labs/nexus/blob/develop/examples/ghost/src/ghost-schema.ts) is the best place to look for an example of how we're able to capture the types from existing runtime objects or definitions and merge them with our schema.
 
-### shouldExitAfterGenerateArtifacts {docsify-ignore}
+## shouldExitAfterGenerateArtifacts
 
 If you are not checking in your artifacts and wish to run them, this will allow you to exit right after the artifacts have been generated. There is no default behavior for this, but you could do something like the following, to be able to run a script which will exit if `--nexus-exit` is provided:
 
@@ -117,7 +104,7 @@ makeSchema({
 ts-node -T ./path/to/my/schema.ts --nexus-exit
 ```
 
-### prettierConfig {docsify-ignore}
+## prettierConfig
 
 Either an absolute path to a `.prettierrc` file, or an object with a valid "prettier" config options.
 
@@ -128,7 +115,7 @@ makeSchema({
 })
 ```
 
-### nonNullDefaults {docsify-ignore}
+## nonNullDefaults
 
 Controls the nullability of the input / output types emitted by `nexus`. The current Nexus default is
 `{ output: true, input: false }`, though the `graphql-js` / spec default is `{ output: false, input: false }`.
@@ -137,11 +124,11 @@ You should make a decision on this and supply the option yourself, it may be cha
 
 Read more on this in the [getting-started](getting-started.md) guide.
 
-### typegenConfig, formatTypegen {docsify-ignore}
+### typegenConfig, formatTypegen
 
 Escape hatches for more advanced cases which need further control over. You typically won't need these.
 
-### customPrintSchemaFn {docsify-ignore}
+### customPrintSchemaFn
 
 Optional, allows you to override the `printSchema` when outputting the generated `.graphql` file:
 
@@ -154,7 +141,7 @@ makeSchema({
 })
 ```
 
-#### Footnotes: Annotated config option for typegenAutoConfig {docsify-ignore}
+#### Footnotes: Annotated config option for typegenAutoConfig:
 
 ```ts
 export interface TypegenAutoConfigOptions {
