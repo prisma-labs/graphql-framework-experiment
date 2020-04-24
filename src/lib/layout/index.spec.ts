@@ -41,8 +41,10 @@ function tsconfigContent(input: TsConfigJson): string {
   return JSON.stringify(input)
 }
 
+const defaultTsConfigContent = { compilerOptions: { rootDir: '.' }, include: ['.'] }
+
 const fsTsConfig = {
-  'tsconfig.json': tsconfigContent({ compilerOptions: { rootDir: '.' }, include: ['.'] }),
+  'tsconfig.json': tsconfigContent(defaultTsConfigContent),
 }
 
 const layoutContext = TestContext.create((input: TestContext.TmpDirContribution) => {
@@ -50,8 +52,12 @@ const layoutContext = TestContext.create((input: TestContext.TmpDirContribution)
     setup(spec: FSSpec = {}) {
       writeFSSpec(input.tmpDir, spec)
     },
-    async scan(opts?: { entrypointPath?: string }) {
-      const data = await Layout.create({ cwd: input.tmpDir, entrypointPath: opts?.entrypointPath })
+    async scan(opts?: { entrypointPath?: string; buildOutput?: string }) {
+      const data = await Layout.create({
+        cwd: input.tmpDir,
+        entrypointPath: opts?.entrypointPath,
+        buildOutput: opts?.buildOutput,
+      })
       mockedStdoutBuffer = mockedStdoutBuffer.split(input.tmpDir).join('__DYNAMIC__')
       return repalceInObject(input.tmpDir, '__DYNAMIC__', data.data)
     },
@@ -129,8 +135,8 @@ describe('tsconfig', () => {
       ▲ nexus:tsconfig Please set your tsconfig.json include to have \\".\\"
       "
     `)
-    expect(layout.tsConfigJson.raw.compilerOptions.rootDir).toEqual('.')
-    expect(layout.tsConfigJson.raw.include).toEqual(['.'])
+    expect(layout.tsConfig.content.raw.compilerOptions.rootDir).toEqual('.')
+    expect(layout.tsConfig.content.raw.include).toEqual(['.'])
   })
 
   it('will fatal message and exit if error reading file', async () => {
@@ -226,88 +232,15 @@ it('finds nested graphql modules', async () => {
 
   const result = await ctx.scan()
 
-  expect(result).toMatchInlineSnapshot(`
-    Object {
-      "app": Object {
-        "exists": true,
-        "path": "__DYNAMIC__/src/app.ts",
-      },
-      "buildOutputRelative": "node_modules/.build",
-      "packageJson": Object {
-        "dir": "__DYNAMIC__",
-        "path": "__DYNAMIC__/package.json",
-      },
-      "packageManagerType": "npm",
-      "project": Object {
-        "isAnonymous": true,
-        "name": "anonymous",
-      },
-      "projectRoot": "__DYNAMIC__",
-      "schemaModules": Array [
-        "__DYNAMIC__/src/graphql/1.ts",
-        "__DYNAMIC__/src/graphql/2.ts",
-        "__DYNAMIC__/src/graphql/graphql/3.ts",
-        "__DYNAMIC__/src/graphql/graphql/4.ts",
-        "__DYNAMIC__/src/graphql/graphql/graphql/5.ts",
-        "__DYNAMIC__/src/graphql/graphql/graphql/6.ts",
-      ],
-      "sourceRoot": "__DYNAMIC__",
-      "startModuleInPath": "__DYNAMIC__/index.ts",
-      "startModuleOutPath": "__DYNAMIC__/node_modules/.build/index.js",
-      "tsConfigJson": Object {
-        "compileOnSave": false,
-        "configFileSpecs": Object {
-          "excludeSpecs": Array [
-            "node_modules/.build",
-          ],
-          "includeSpecs": Array [
-            ".",
-          ],
-          "validatedExcludeSpecs": Array [
-            "node_modules/.build",
-          ],
-          "validatedIncludeSpecs": Array [
-            ".",
-          ],
-          "wildcardDirectories": Object {
-            "__DYNAMIC__": 1,
-          },
-        },
-        "errors": Array [],
-        "fileNames": Array [
-          "__DYNAMIC__/src/app.ts",
-          "__DYNAMIC__/src/graphql/1.ts",
-          "__DYNAMIC__/src/graphql/2.ts",
-          "__DYNAMIC__/src/graphql/graphql/3.ts",
-          "__DYNAMIC__/src/graphql/graphql/4.ts",
-          "__DYNAMIC__/src/graphql/graphql/graphql/5.ts",
-          "__DYNAMIC__/src/graphql/graphql/graphql/6.ts",
-        ],
-        "options": Object {
-          "configFilePath": "__DYNAMIC__/tsconfig.json",
-          "outDir": "__DYNAMIC__/node_modules/.build",
-          "rootDir": "__DYNAMIC__",
-        },
-        "raw": Object {
-          "compileOnSave": false,
-          "compilerOptions": Object {
-            "outDir": "node_modules/.build",
-            "rootDir": ".",
-          },
-          "include": Array [
-            ".",
-          ],
-        },
-        "typeAcquisition": Object {
-          "enable": false,
-          "exclude": Array [],
-          "include": Array [],
-        },
-        "wildcardDirectories": Object {
-          "__DYNAMIC__": 1,
-        },
-      },
-    }
+  expect(result.schemaModules).toMatchInlineSnapshot(`
+    Array [
+      "__DYNAMIC__/src/graphql/1.ts",
+      "__DYNAMIC__/src/graphql/2.ts",
+      "__DYNAMIC__/src/graphql/graphql/3.ts",
+      "__DYNAMIC__/src/graphql/graphql/4.ts",
+      "__DYNAMIC__/src/graphql/graphql/graphql/5.ts",
+      "__DYNAMIC__/src/graphql/graphql/graphql/6.ts",
+    ]
   `)
 })
 
@@ -423,6 +356,76 @@ it('does not take custom entrypoint as schema module if its inside a graphql/ fo
       ],
     }
   `)
+})
+
+describe('build output', () => {
+  it(`defaults to node_modules/.build`, async () => {
+    await ctx.setup({ ...fsTsConfig, 'graphql.ts': '' })
+    const result = await ctx.scan()
+
+    expect({
+      buildOutput: result.buildOutput,
+      startModuleInPath: result.startModuleInPath,
+      startModuleOutPath: result.startModuleOutPath,
+    }).toMatchInlineSnapshot(`
+      Object {
+        "buildOutput": "__DYNAMIC__/node_modules/.build",
+        "startModuleInPath": "__DYNAMIC__/index.ts",
+        "startModuleOutPath": "__DYNAMIC__/node_modules/.build/index.js",
+      }
+    `)
+  })
+
+  it(`use tsconfig.json outDir is no custom output is used`, async () => {
+    await ctx.setup({
+      'tsconfig.json': tsconfigContent({
+        ...defaultTsConfigContent,
+        compilerOptions: {
+          ...defaultTsConfigContent.compilerOptions,
+          outDir: 'dist',
+        },
+      }),
+      'graphql.ts': '',
+    })
+    const result = await ctx.scan()
+
+    expect({
+      buildOutput: result.buildOutput,
+      startModuleInPath: result.startModuleInPath,
+      startModuleOutPath: result.startModuleOutPath,
+    }).toMatchInlineSnapshot(`
+      Object {
+        "buildOutput": "__DYNAMIC__/dist",
+        "startModuleInPath": "__DYNAMIC__/index.ts",
+        "startModuleOutPath": "__DYNAMIC__/dist/index.js",
+      }
+    `)
+  })
+  it(`override tsconfig.json outDir is a custom output is used`, async () => {
+    await ctx.setup({
+      'tsconfig.json': tsconfigContent({
+        ...defaultTsConfigContent,
+        compilerOptions: {
+          ...defaultTsConfigContent.compilerOptions,
+          outDir: 'dist',
+        },
+      }),
+      'graphql.ts': '',
+    })
+    const result = await ctx.scan({ buildOutput: 'custom-output' })
+
+    expect({
+      buildOutput: result.buildOutput,
+      startModuleInPath: result.startModuleInPath,
+      startModuleOutPath: result.startModuleOutPath,
+    }).toMatchInlineSnapshot(`
+      Object {
+        "buildOutput": "__DYNAMIC__/custom-output",
+        "startModuleInPath": "__DYNAMIC__/index.ts",
+        "startModuleOutPath": "__DYNAMIC__/custom-output/index.js",
+      }
+    `)
+  })
 })
 
 describe('source root', () => {
