@@ -2,17 +2,14 @@
 // for side-effects.
 require('../tty-linker').create().child.install()
 
-import * as tsNode from 'ts-node'
 import { rootLogger } from '../nexus-logger'
+import { registerTypeScriptTranspile } from '../tsc'
 import hook from './hook'
 import * as IPC from './ipc'
 
 const log = rootLogger.child('dev').child('runner')
 
-tsNode.register({
-  transpileOnly: true,
-})
-
+registerTypeScriptTranspile({})
 main()
 
 async function main() {

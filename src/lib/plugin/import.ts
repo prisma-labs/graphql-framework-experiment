@@ -1,5 +1,4 @@
 import { stripIndent } from 'common-tags'
-import * as tsNode from 'ts-node'
 import { PackageJson } from 'type-fest'
 import app from '../../index'
 import { InternalApp } from '../../runtime/app'
@@ -7,24 +6,29 @@ import * as Start from '../../runtime/start'
 import * as Layout from '../layout'
 import { rootLogger } from '../nexus-logger'
 import { fatal } from '../process'
+import { registerTypeScriptTranspile } from '../tsc'
 import { partition } from '../utils'
 import { Dimension, DimensionToPlugin, Manifest, Plugin } from './types'
 
 const log = rootLogger.child('plugin')
 
+/**
+ * This gets all the manifests of all the plugins in use in the app.
+ *
+ * @remarks
+ *
+ * This will run the app in data mode, in this process.
+ */
 export async function readAllPluginManifestsFromConfig(layout: Layout.Layout): Promise<Manifest[]> {
-  tsNode.register({
-    transpileOnly: true,
-  })
+  registerTypeScriptTranspile({})
 
-  // Run app to load plugins
   const runner = Start.createDevAppRunner(layout, {
     disableServer: true,
   })
   try {
     await runner.start()
   } catch (e) {
-    fatal('We could not load your plugins because your application has an error', {
+    fatal('Failed to scan app for used plugins because there is a runtime error in the app', {
       error: e,
     })
   }
