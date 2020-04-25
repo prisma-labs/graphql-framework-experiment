@@ -22,6 +22,7 @@
 - Plugins
 
 - [`prisma`](plugins/prisma)
+- [`jwt-auth`](https://github.com/Camji55/nexus-plugin-jwt-auth)
 
 - API
 
