@@ -1,4 +1,5 @@
 import * as fs from 'fs-jetpack'
+import { addHook } from 'pirates'
 import * as ts from 'typescript'
 import { Layout } from './layout'
 import { rootLogger } from './nexus-logger'
@@ -111,4 +112,31 @@ const diagnosticHost: ts.FormatDiagnosticsHost = {
   getNewLine: () => ts.sys.newLine,
   getCurrentDirectory: () => process.cwd(),
   getCanonicalFileName: (path) => path,
+}
+
+/**
+ * Allow node to require TypeScript modules, transpiling them on the fly.
+ *
+ * @remarks
+ *
+ * This is strictly about transpilation, no type checking is done.
+ */
+export function registerTypeScriptTranspile(compilerOptions?: ts.CompilerOptions) {
+  addHook(
+    (source, fileName) => {
+      const transpiled = ts.transpileModule(source, {
+        reportDiagnostics: true,
+        fileName,
+        compilerOptions,
+      })
+
+      if (transpiled.diagnostics && transpiled.diagnostics.length > 0) {
+        console.log(ts.formatDiagnosticsWithColorAndContext(transpiled.diagnostics, diagnosticHost))
+        throw new Error('TypeScript transpilation failed')
+      }
+
+      return transpiled.outputText
+    },
+    { exts: ['.ts'] }
+  )
 }
