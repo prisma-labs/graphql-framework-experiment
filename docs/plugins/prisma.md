@@ -850,7 +850,7 @@ enum Mood {
 }
 
 enum Role {
-  AUTHOR
+  MEMBER
   EDITOR
 }
 
