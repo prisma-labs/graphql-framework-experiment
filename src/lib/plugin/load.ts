@@ -1,8 +1,10 @@
 import * as Layout from '../layout'
 import { rootLogger } from '../nexus-logger'
-import { entrypointToManifest, filterValidPlugins, importPluginDimension } from './import'
+import { partition } from '../utils'
+import { importPluginDimension } from './import'
 import { createBaseLens, createRuntimeLens, createWorktimeLens } from './lens'
 import { Plugin } from './types'
+import { entrypointToManifest } from './utils'
 
 const log = rootLogger.child('plugin')
 
@@ -70,4 +72,27 @@ export async function importAndLoadTesttimePlugins(plugins: Plugin[]) {
       log.trace('loading testtime plugin', { name: plugin.manifest.name })
       return plugin.run(createBaseLens(plugin.manifest.name))
     })
+}
+
+/**
+ * Return only valid plugins. Invalid plugins will be logged as a warning.
+ */
+export function filterValidPlugins(plugins: Plugin[]) {
+  const [validPlugins, invalidPlugins] = partition(plugins, isValidPlugin)
+
+  if (invalidPlugins.length > 0) {
+    log.warn(`Some invalid plugins were passed to Nexus. They are being ignored.`, {
+      invalidPlugins,
+    })
+  }
+
+  return validPlugins
+}
+
+/**
+ * Predicate function, is the given plugin a valid one.
+ */
+export function isValidPlugin(plugin: any): plugin is Plugin {
+  const hasPackageJsonPath = 'packageJsonPath' in plugin
+  return hasPackageJsonPath
 }

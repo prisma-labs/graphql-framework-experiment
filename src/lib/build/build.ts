@@ -11,7 +11,6 @@ import {
 import { runAddToContextExtractorAsPromise } from '../add-to-context-extractor/add-to-context-extractor'
 import { rootLogger } from '../nexus-logger'
 import * as Plugin from '../plugin'
-import { entrypointToManifest } from '../plugin/import'
 import { fatal } from '../process'
 import { generateArtifacts } from './artifact-generation'
 import {
@@ -102,7 +101,7 @@ export async function buildNexusApp(settings: BuildSettings) {
 
   compile(tsBuilder, layout, { removePreviousBuild: false })
 
-  const runtimePluginManifests = pluginEntrypoints.map(entrypointToManifest).filter((pm) => pm.runtime)
+  const runtimePluginManifests = pluginEntrypoints.map(Plugin.entrypointToManifest).filter((pm) => pm.runtime)
 
   await writeStartModule({
     layout: layout,
