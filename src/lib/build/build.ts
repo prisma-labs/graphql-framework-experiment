@@ -11,6 +11,7 @@ import {
 import { runAddToContextExtractorAsPromise } from '../add-to-context-extractor/add-to-context-extractor'
 import { rootLogger } from '../nexus-logger'
 import * as Plugin from '../plugin'
+import { entrypointToManifest } from '../plugin/import'
 import { fatal } from '../process'
 import { generateArtifacts } from './artifact-generation'
 import {
@@ -53,10 +54,10 @@ export async function buildNexusApp(settings: BuildSettings) {
     }
   }
 
-  const manifests = await Plugin.readAllPluginManifestsFromConfig(layout)
-  const plugins = await Plugin.loadWorktimePluginFromManifests(manifests, layout)
+  const pluginEntrypoints = await Plugin.getUsedPlugins(layout)
+  const worktimePlugins = await Plugin.importAndLoadWorktimePlugins(pluginEntrypoints, layout)
 
-  for (const p of plugins) {
+  for (const p of worktimePlugins) {
     await p.hooks.build.onStart?.()
   }
 
@@ -73,7 +74,7 @@ export async function buildNexusApp(settings: BuildSettings) {
       tsBuilder,
       createStartModuleContent({
         layout,
-        plugins: manifests,
+        runtimePluginManifests: [], // tree shaking not needed
         internalStage: 'build',
       })
     ),
@@ -101,6 +102,8 @@ export async function buildNexusApp(settings: BuildSettings) {
 
   compile(tsBuilder, layout, { removePreviousBuild: false })
 
+  const runtimePluginManifests = pluginEntrypoints.map(entrypointToManifest).filter((pm) => pm.runtime)
+
   await writeStartModule({
     layout: layout,
     startModule: prepareStartModule(
@@ -108,7 +111,7 @@ export async function buildNexusApp(settings: BuildSettings) {
       createStartModuleContent({
         internalStage: 'build',
         layout: layout,
-        plugins: manifests,
+        runtimePluginManifests,
         disableArtifactGeneration: true,
       })
     ),

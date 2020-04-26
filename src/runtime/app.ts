@@ -141,7 +141,7 @@ export function create(): App {
         // or not start for the user.
         __state.isWasServerStartCalled = true
 
-        const plugins = await Plugin.loadRuntimePluginsFromEntrypoints(__state.plugins)
+        const plugins = await Plugin.importAndLoadRuntimePlugins(__state.plugins)
         const schema = await schemaComponent.private.makeSchema(plugins)
 
         await server.setupAndStart({

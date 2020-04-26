@@ -37,8 +37,8 @@ export class Dev implements Command {
      */
     const entrypointPath = args['--entrypoint']
     const layout = await Layout.create({ entrypointPath })
-    const plugins = await Plugin.readAllPluginManifestsFromConfig(layout)
-    const worktimePlugins = await Plugin.loadWorktimePlugins(layout)
+    const pluginEntrypoints = await Plugin.getUsedPlugins(layout)
+    const worktimePlugins = await Plugin.importAndLoadWorktimePlugins(pluginEntrypoints, layout)
 
     for (const p of worktimePlugins) {
       await p.hooks.dev.onStart?.()
@@ -72,7 +72,7 @@ export class Dev implements Command {
 
     const startModule = createStartModuleContent({
       internalStage: 'dev',
-      plugins,
+      runtimePluginManifests: [], // tree-shaking not needed
       layout,
       absoluteModuleImports: true,
     })

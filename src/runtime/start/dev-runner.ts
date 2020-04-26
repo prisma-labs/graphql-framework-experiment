@@ -30,7 +30,7 @@ export function createDevAppRunner(
     internalStage: 'dev',
     layout: layout,
     absoluteModuleImports: true,
-    plugins: [], // No need to statically require runtime plugins in dev (no need to tree-shake)
+    runtimePluginManifests: [], // No need to statically require runtime plugins in dev (no need to tree-shake)
     disableServer: opts?.disableServer,
   })
 
