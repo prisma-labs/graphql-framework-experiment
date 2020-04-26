@@ -20,7 +20,11 @@ type StartModuleConfig = {
   disableArtifactGeneration?: boolean
   absoluteModuleImports?: boolean
   disableServer?: boolean
-  plugins: Plugin.Manifest[]
+  /**
+   * The plugins the app is using. The start module imports them so that tree shakers
+   * can be run over the final build, pulling in the sources of the respective plugins.
+   */
+  runtimePluginManifests: Plugin.Manifest[]
 }
 
 export function createStartModuleContent(config: StartModuleConfig): string {
@@ -107,14 +111,12 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     `
   }
 
-  if (config.plugins.length) {
+  if (config.runtimePluginManifests.length) {
     content += EOL + EOL + EOL
     content += stripIndent`
-      // Statically import runtime plugins for tree-shaking
-      ${config.plugins
-        .filter((p) => p.runtime !== undefined)
-        .map((plugin, index) => {
-          return `import { ${plugin.runtime!.export} as plugin_${index} } from '${
+      ${config.runtimePluginManifests
+        .map((plugin, i) => {
+          return `import { ${plugin.runtime!.export} as plugin_${i} } from '${
             config.absoluteModuleImports
               ? plugin.runtime!.module
               : relativeModuleImport(plugin.name, plugin.runtime!.module)

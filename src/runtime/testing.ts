@@ -70,7 +70,7 @@ export async function createTestContext(): Promise<TestContext> {
 
   // todo figure out some caching system here, e.g. imagine jest --watch mode
   const layout = await Layout.create()
-  const pluginManifests = await Plugin.readAllPluginManifestsFromConfig(layout)
+  const pluginManifests = await Plugin.getUsedPlugins(layout)
   const randomPort = await getPort({ port: getPort.makeRange(4000, 6000) })
   const appRunner = await createDevAppRunner(layout, {
     server: {
@@ -97,7 +97,7 @@ export async function createTestContext(): Promise<TestContext> {
     },
   }
 
-  const testContextContributions = await Plugin.loadTesttimePluginsFromManifests(pluginManifests)
+  const testContextContributions = await Plugin.importAndLoadTesttimePlugins(pluginManifests)
 
   for (const testContextContribution of testContextContributions) {
     Lo.merge(testContextCore, testContextContribution)

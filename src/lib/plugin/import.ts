@@ -13,13 +13,14 @@ import { Dimension, DimensionToPlugin, Manifest, Plugin } from './types'
 const log = rootLogger.child('plugin')
 
 /**
- * This gets all the manifests of all the plugins in use in the app.
+ * This gets all the plugins in use in the app.
  *
  * @remarks
  *
- * This will run the app in data mode, in this process.
+ * This is useful for the CLI to get worktime plugins. This will run the app in
+ * data mode, in this process.
  */
-export async function readAllPluginManifestsFromConfig(layout: Layout.Layout): Promise<Manifest[]> {
+export async function getUsedPlugins(layout: Layout.Layout): Promise<Plugin[]> {
   registerTypeScriptTranspile({})
 
   const runner = Start.createDevAppRunner(layout, {
@@ -33,14 +34,22 @@ export async function readAllPluginManifestsFromConfig(layout: Layout.Layout): P
     })
   }
 
-  const plugins = validatePlugins((app as InternalApp).__state.plugins)
+  const plugins = (app as InternalApp).__state.plugins
 
   log.trace('loaded plugin entrypoints', { validPlugins: plugins })
 
-  return plugins.map(pluginToManifest)
+  return plugins
 }
 
-export function pluginToManifest(plugin: Plugin): Manifest {
+/**
+ * Normalize a raw plugin manifest.
+ *
+ * @remarks
+ *
+ * The raw plugin manifest is what the plugin author defined. This supplies
+ * defaults and fulfills properties to produce standardized manifest data.
+ */
+export function entrypointToManifest(plugin: Plugin): Manifest {
   try {
     const packageJson = require(plugin.packageJsonPath) as PackageJson
 
@@ -63,13 +72,13 @@ export function pluginToManifest(plugin: Plugin): Manifest {
 
        ${error.stack ?? error}
     `,
-      { plugin: plugin }
+      { plugin }
     )
   }
 }
 
 /**
- * Import the dimension of a plugin given its manifest
+ * Import the dimension of a plugin.
  */
 export function importPluginDimension<D extends Dimension>(
   dimension: D,
@@ -123,44 +132,42 @@ export function importPluginDimension<D extends Dimension>(
   }
 }
 
+export type ImportedPlugin<D extends Dimension> = { manifest: Manifest; run: DimensionToPlugin<D> }
+
 /**
- * Import the dimension of several plugins given their manifests
+ * Import dimensions from multiple plugins.
  */
 export function importPluginsDimension<D extends Dimension>(
   dimension: D,
   manifests: Manifest[]
-): {
-  manifest: Manifest
-  plugin: DimensionToPlugin<D>
-}[] {
-  const output: { manifest: Manifest; plugin: DimensionToPlugin<D> }[] = []
-
-  for (const manifest of manifests) {
-    if (manifest[dimension] === undefined) {
-      continue
-    }
-
-    output.push({
-      manifest,
-      plugin: importPluginDimension(dimension, manifest),
+): ImportedPlugin<D>[] {
+  return manifests
+    .filter((m) => m[dimension])
+    .map((m) => {
+      return {
+        run: importPluginDimension(dimension, m),
+        manifest: m,
+      }
     })
-  }
-
-  return output
 }
 
+/**
+ * Predicate function, is the given plugin a valid one.
+ */
 export function isValidPlugin(plugin: any): plugin is Plugin {
   const hasPackageJsonPath = 'packageJsonPath' in plugin
-
   return hasPackageJsonPath
 }
 
-export function validatePlugins(plugins: Plugin[]) {
+/**
+ * Return only valid plugins. Invalid plugins will be logged as a warning.
+ */
+export function filterValidPlugins(plugins: Plugin[]) {
   const [validPlugins, invalidPlugins] = partition(plugins, isValidPlugin)
 
   if (invalidPlugins.length > 0) {
     log.warn(`Some invalid plugins were passed to Nexus. They are being ignored.`, {
-      invalidPlugins: invalidPlugins,
+      invalidPlugins,
     })
   }
 

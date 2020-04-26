@@ -1,85 +1,73 @@
 import * as Layout from '../layout'
 import { rootLogger } from '../nexus-logger'
-import {
-  importPluginsDimension,
-  pluginToManifest,
-  readAllPluginManifestsFromConfig,
-  validatePlugins,
-} from './import'
+import { entrypointToManifest, filterValidPlugins, importPluginDimension } from './import'
 import { createBaseLens, createRuntimeLens, createWorktimeLens } from './lens'
-import { InnerRuntimePlugin, InnerTesttimePlugin, InnerWorktimePlugin, Manifest, Plugin } from './types'
+import { Plugin } from './types'
 
 const log = rootLogger.child('plugin')
 
 /**
- * Try to load a runtime plugin
+ * Fully import and load the runtime plugins, if any, amongst the given plugins.
  */
-export function loadRuntimePlugin(manifest: Manifest, plugin: InnerRuntimePlugin) {
-  log.trace('loading runtime plugin', { name: manifest.name })
-  return plugin(createRuntimeLens(manifest.name))
-}
-
-export async function loadRuntimePlugins(layout: Layout.Layout) {
-  const manifests = await readAllPluginManifestsFromConfig(layout)
-
-  return loadRuntimePluginsFromEntrypoints(manifests)
-}
-
-export async function loadRuntimePluginsFromEntrypoints(plugins: Plugin[]) {
-  const manifests = validatePlugins(plugins).map(pluginToManifest)
-  const importedPlugins = importPluginsDimension('runtime', manifests)
-
-  return importedPlugins.map(({ manifest, plugin }) => loadRuntimePlugin(manifest, plugin))
-}
-
-// Worktime loaders
-
-export async function loadWorktimePlugins(layout: Layout.Layout) {
-  const manifests = await readAllPluginManifestsFromConfig(layout)
-
-  return loadWorktimePluginFromManifests(manifests, layout)
-}
-
-export async function loadWorktimePluginFromManifests(manifests: Manifest[], layout: Layout.Layout) {
-  return importPluginsDimension('worktime', manifests).map(({ plugin, manifest }) =>
-    loadWorktimePlugin(layout, manifest, plugin)
-  )
+export async function importAndLoadRuntimePlugins(plugins: Plugin[]) {
+  return filterValidPlugins(plugins)
+    .map(entrypointToManifest)
+    .filter((m) => m.runtime)
+    .map((m) => {
+      return {
+        run: importPluginDimension('runtime', m),
+        manifest: m,
+      }
+    })
+    .map((plugin) => {
+      log.trace('loading runtime plugin', { name: plugin.manifest.name })
+      return plugin.run(createRuntimeLens(plugin.manifest.name))
+    })
 }
 
 /**
- * Try to load a worktime plugin
+ * Fully import and load the worktime plugins, if any, amongst the given plugins.
  */
-export function loadWorktimePlugin(layout: Layout.Layout, manifest: Manifest, plugin: InnerWorktimePlugin) {
-  log.trace('loading worktime plugin', { name: manifest.name })
-  const lens = createWorktimeLens(layout, manifest.name)
+export async function importAndLoadWorktimePlugins(plugins: Plugin[], layout: Layout.Layout) {
+  return filterValidPlugins(plugins)
+    .map(entrypointToManifest)
+    .filter((m) => m.worktime)
+    .map((m) => {
+      return {
+        run: importPluginDimension('worktime', m),
+        manifest: m,
+      }
+    })
+    .map((plugin) => {
+      log.trace('loading worktime plugin', { name: plugin.manifest.name })
+      const lens = createWorktimeLens(layout, plugin.manifest.name)
 
-  plugin(lens)
+      plugin.run(lens)
 
-  return {
-    name: manifest,
-    // plugin will have hooked onto hooks now, and framework will call those hooks
-    hooks: lens.hooks,
-  }
-}
-
-// Testtime loaders
-
-export async function loadTesttimePlugins(layout: Layout.Layout) {
-  const manifests = await readAllPluginManifestsFromConfig(layout)
-
-  return loadTesttimePluginsFromManifests(manifests)
-}
-
-export async function loadTesttimePluginsFromManifests(manifests: Manifest[]) {
-  return importPluginsDimension('testtime', manifests).map(({ manifest, plugin }) =>
-    loadTesttimePlugin(manifest, plugin)
-  )
+      return {
+        name: plugin.manifest.name,
+        // plugin will have hooked onto hooks via mutation now, and framework
+        // will call those hooks
+        hooks: lens.hooks,
+      }
+    })
 }
 
 /**
- * Try to load a testtime plugin
+ * Fully import and load the testtime plugins, if any, amongst the given plugins.
  */
-export function loadTesttimePlugin(manifest: Manifest, plugin: InnerTesttimePlugin) {
-  log.trace('loading testtime plugin', { name: manifest.name })
-  return plugin(createBaseLens(manifest.name))
+export async function importAndLoadTesttimePlugins(plugins: Plugin[]) {
+  return filterValidPlugins(plugins)
+    .map(entrypointToManifest)
+    .filter((m) => m.testtime)
+    .map((m) => {
+      return {
+        run: importPluginDimension('testtime', m),
+        manifest: m,
+      }
+    })
+    .map((plugin) => {
+      log.trace('loading testtime plugin', { name: plugin.manifest.name })
+      return plugin.run(createBaseLens(plugin.manifest.name))
+    })
 }

@@ -1,10 +1,7 @@
-export { readAllPluginManifestsFromConfig } from './import'
+export { getUsedPlugins } from './import'
 export {
-  loadRuntimePlugins,
-  loadRuntimePluginsFromEntrypoints,
-  loadTesttimePlugins,
-  loadTesttimePluginsFromManifests,
-  loadWorktimePluginFromManifests,
-  loadWorktimePlugins,
+  importAndLoadRuntimePlugins,
+  importAndLoadTesttimePlugins,
+  importAndLoadWorktimePlugins,
 } from './load'
 export * from './types'

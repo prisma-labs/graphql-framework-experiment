@@ -121,6 +121,12 @@ export type Plugin<Settings = any> =
 
 /**
  * Internal representation of a plugin entrypoint, called a "Manifest"
+ *
+ * @remarks
+ *
+ * Whereas plugin entrypoints are designed to ease what API authors must supply
+ * manifests are a resolved representation of the entrypoint with all defaults
+ * etc. filled.
  */
 export type Manifest = Plugin & {
   name: string
