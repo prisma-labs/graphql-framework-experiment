@@ -1,5 +1,4 @@
 import { stripIndent } from 'common-tags'
-import * as ts from 'typescript'
 import { arg, Command, isError } from '../../lib/cli'
 import * as Layout from '../../lib/layout'
 import { rootLogger } from '../../lib/nexus-logger'
@@ -71,15 +70,13 @@ export class Dev implements Command {
     }
 
     const startModule = createStartModuleContent({
+      registerTypeScript: layout.tsConfig.content.options,
       internalStage: 'dev',
       runtimePluginManifests: [], // tree-shaking not needed
       layout,
       absoluteModuleImports: true,
     })
-    const transpiledStartModule = transpileModule(startModule, {
-      target: ts.ScriptTarget.ES5,
-      module: ts.ModuleKind.CommonJS,
-    })
+    const transpiledStartModule = transpileModule(startModule, layout.tsConfig.content.options)
 
     const watcher = await createWatcher({
       entrypointScript: transpiledStartModule,

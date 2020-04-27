@@ -3,13 +3,11 @@
 require('../tty-linker').create().child.install()
 
 import { rootLogger } from '../nexus-logger'
-import { registerTypeScriptTranspile } from '../tsc'
 import hook from './hook'
 import * as IPC from './ipc'
 
 const log = rootLogger.child('dev').child('runner')
 
-registerTypeScriptTranspile({})
 main()
 
 async function main() {

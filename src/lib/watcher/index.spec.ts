@@ -64,7 +64,7 @@ async function testSimpleCase(params: {
   fsUpdate: () => void
 }) {
   ctx.write({
-    'entrypoint.ts': params.entrypoint,
+    'entrypoint.js': params.entrypoint,
     ...(params.additionalInitialFiles ?? {}),
   })
 
@@ -88,7 +88,7 @@ it('restarts when a file is changed', async () => {
     entrypoint: `process.stdout.write('hello')`,
     fsUpdate: () => {
       ctx.write({
-        'entrypoint.ts': `process.stdout.write('world')`,
+        'entrypoint.js': `process.stdout.write('world')`,
       })
     },
   })
@@ -101,7 +101,7 @@ it('restarts when a file is changed', async () => {
         "type": "runner_stdio",
       },
       Object {
-        "file": "entrypoint.ts",
+        "file": "entrypoint.js",
         "reason": "change",
         "type": "restart",
       },
@@ -118,7 +118,7 @@ it('restarts when a file is added', async () => {
   const { bufferedEvents } = await testSimpleCase({
     entrypoint: `process.stdout.write('hello')`,
     fsUpdate: () => {
-      ctx.write({ 'new_file.ts': `` })
+      ctx.write({ 'new_file.js': `` })
     },
   })
 
@@ -130,7 +130,7 @@ it('restarts when a file is added', async () => {
         "type": "runner_stdio",
       },
       Object {
-        "file": "new_file.ts",
+        "file": "new_file.js",
         "reason": "add",
         "type": "restart",
       },
@@ -147,10 +147,10 @@ it('restarts when a file is deleted', async () => {
   const { bufferedEvents } = await testSimpleCase({
     entrypoint: `process.stdout.write('hello')`,
     additionalInitialFiles: {
-      'other_file.ts': '',
+      'other_file.js': '',
     },
     fsUpdate: () => {
-      ctx.fs.remove('other_file.ts')
+      ctx.fs.remove('other_file.js')
     },
   })
 
@@ -162,7 +162,7 @@ it('restarts when a file is deleted', async () => {
         "type": "runner_stdio",
       },
       Object {
-        "file": "other_file.ts",
+        "file": "other_file.js",
         "reason": "unlink",
         "type": "restart",
       },
@@ -179,7 +179,7 @@ it('restarts when a file has an error', async () => {
   const { bufferedEvents } = await testSimpleCase({
     entrypoint: `throw new Error('This is an expected test error')`,
     fsUpdate: () => {
-      ctx.write({ 'entrypoint.ts': `process.stdout.write('error fixed')` })
+      ctx.write({ 'entrypoint.js': `process.stdout.write('error fixed')` })
     },
   })
 
@@ -191,7 +191,7 @@ it('restarts when a file has an error', async () => {
   expect(bufferedEvents).toMatchInlineSnapshot(`
     Array [
       Object {
-        "file": "entrypoint.ts",
+        "file": "entrypoint.js",
         "reason": "change",
         "type": "restart",
       },
@@ -267,7 +267,7 @@ it('restarts when a dir is removed', async () => {
 
 it('handles lots of restarts', async () => {
   ctx.write({
-    'entrypoint.ts': ``,
+    'entrypoint.js': ``,
   })
 
   const { watcher, bufferedEvents } = await ctx.createWatcher()
@@ -278,12 +278,12 @@ it('handles lots of restarts', async () => {
 
   Lo.times(amountOfRestarts, (i) => {
     setTimeout(() => {
-      ctx.write({ 'entrypoint.ts': ' '.repeat(i) })
+      ctx.write({ 'entrypoint.js': ' '.repeat(i) })
     }, initialDelay + msBetweenEachRestarts * i)
   })
 
   setTimeout(() => {
-    ctx.write({ 'entrypoint.ts': `process.stdout.write('done!')` })
+    ctx.write({ 'entrypoint.js': `process.stdout.write('done!')` })
   }, msAfterAllRestarts + 500)
 
   setTimeout(async () => {
@@ -303,24 +303,24 @@ it('handles lots of restarts', async () => {
 
 it('does not watch node_modules, even if required', async () => {
   const { bufferedEvents } = await testSimpleCase({
-    entrypoint: `require('${ctx.fs.path('node_modules', 'some_file.ts')}')`,
+    entrypoint: `require('${ctx.fs.path('node_modules', 'some_file.js')}')`,
     additionalInitialFiles: {
       node_modules: {
-        'some_file.ts': `process.stdout.write('test')`,
+        'some_file.js': `process.stdout.write('test')`,
       },
     },
     fsUpdate: () => {
       ctx.write({
         node_modules: {
-          'some_file.ts': `process.stdout.write('should not reload')`,
+          'some_file.js': `process.stdout.write('should not reload')`,
         },
       })
     },
   })
   ctx.write({
-    'entrypoint.ts': `require('${ctx.fs.path('node_modules', 'some_file.ts')}')`,
+    'entrypoint.js': `require('${ctx.fs.path('node_modules', 'some_file.js')}')`,
     node_modules: {
-      'some_file.ts': `process.stdout.write('test')`,
+      'some_file.js': `process.stdout.write('test')`,
     },
   })
 
