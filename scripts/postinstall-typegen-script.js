@@ -15,7 +15,7 @@ async function main() {
   const execLayout = await detectExecLayout({ depName: 'nexus', cwd })
 
   if (!execLayout.toolProject) {
-    return
+    process.exit(0)
   }
 
   const layout = await create({ cwd })
