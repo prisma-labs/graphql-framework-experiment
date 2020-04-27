@@ -199,13 +199,13 @@ export async function scan(opts?: { cwd?: string; entrypointPath?: string }): Pr
     packageJson: maybePackageJson,
   }
 
+  log.trace('completed scan', { result })
+
   if (result.app.exists === false && result.schemaModules.length === 0) {
     log.error(checks.no_app_or_schema_modules.explanations.problem)
     log.error(checks.no_app_or_schema_modules.explanations.solution)
     process.exit(1)
   }
-
-  log.trace('completed scan', { result })
 
   return result
 }
