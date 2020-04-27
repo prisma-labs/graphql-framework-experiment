@@ -1,7 +1,7 @@
 import { stripIndent } from 'common-tags'
 import { EOL } from 'os'
 import * as Path from 'path'
-import { EmitAndSemanticDiagnosticsBuilderProgram } from 'typescript'
+import ts, { EmitAndSemanticDiagnosticsBuilderProgram } from 'typescript'
 import { stripExt } from '../../lib/fs'
 import * as Layout from '../../lib/layout'
 import { rootLogger } from '../../lib/nexus-logger'
@@ -19,6 +19,7 @@ type StartModuleConfig = {
   layout: Layout.Layout
   disableArtifactGeneration?: boolean
   absoluteModuleImports?: boolean
+  registerTypeScript?: boolean | ts.CompilerOptions
   disableServer?: boolean
   /**
    * The plugins the app is using. The start module imports them so that tree shakers
@@ -28,7 +29,17 @@ type StartModuleConfig = {
 }
 
 export function createStartModuleContent(config: StartModuleConfig): string {
-  let content = `// ${START_MODULE_HEADER}` + '\n'
+  let content = `// ${START_MODULE_HEADER}`
+
+  if (config.registerTypeScript) {
+    content += EOL + EOL + EOL
+    content += stripIndent`
+      import { registerTypeScriptTranspile } from 'nexus/dist/lib/tsc'
+      registerTypeScriptTranspile(${
+        typeof config.registerTypeScript === 'object' ? JSON.stringify(config.registerTypeScript) : '{}'
+      })
+    `
+  }
 
   content += EOL + EOL + EOL
   content += stripIndent`

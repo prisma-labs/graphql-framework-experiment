@@ -56,6 +56,8 @@ export function entrypointToManifest(plugin: Plugin): Manifest {
  * data mode, in this process.
  */
 export async function getUsedPlugins(layout: Layout.Layout): Promise<Plugin[]> {
+  // todo runnning this in-process is risky, async errors or resource/memory
+  // leaks or infinite loops could bring down the process that runs this.
   registerTypeScriptTranspile({})
 
   const runner = Start.createDevAppRunner(layout, {
@@ -71,7 +73,7 @@ export async function getUsedPlugins(layout: Layout.Layout): Promise<Plugin[]> {
 
   const plugins = (app as InternalApp).__state.plugins
 
-  log.trace('loaded plugin entrypoints', { validPlugins: plugins })
+  log.trace('got used plugins', { validPlugins: plugins })
 
   return plugins
 }

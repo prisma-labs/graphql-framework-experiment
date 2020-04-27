@@ -1,13 +1,32 @@
 import { spawnSync } from 'child_process'
+import { ts } from 'ts-morph'
+import { createStartModuleContent } from '../../runtime/start'
 import { Layout } from '../layout'
 import { rootLogger } from '../nexus-logger'
+import { transpileModule } from '../tsc'
 
 const log = rootLogger.child('typegen')
 
 export async function generateArtifacts(layout: Layout): Promise<void> {
   log.trace('start')
 
-  const result = spawnSync('node', [layout.startModuleOutPath], {
+  const startModule = createStartModuleContent({
+    registerTypeScript: {
+      target: ts.ScriptTarget.ES2015,
+      module: ts.ModuleKind.CommonJS,
+    },
+    internalStage: 'build',
+    absoluteModuleImports: true,
+    layout: layout,
+    runtimePluginManifests: [], // No need to statically require runtime plugins in dev (no need to tree-shake)
+  })
+
+  const transpiledStartModule = transpileModule(startModule, {
+    target: ts.ScriptTarget.ES2015,
+    module: ts.ModuleKind.CommonJS,
+  })
+
+  const result = spawnSync('node', ['--eval', transpiledStartModule], {
     stdio: 'inherit',
     encoding: 'utf8',
     cwd: layout.projectRoot,
