@@ -1,5 +1,5 @@
 import Chalk from 'chalk'
-import { stripIndent, stripIndents } from 'common-tags'
+import { stripIndent } from 'common-tags'
 import * as FS from 'fs-jetpack'
 import * as Path from 'path'
 import { PackageJson } from 'type-fest'
@@ -117,10 +117,7 @@ export async function create(options?: Options): Promise<Layout> {
   const normalizedEntrypoint = normalizeEntrypoint(options?.entrypointPath, cwd)
   // TODO lodash merge defaults or something
 
-  const scanResult = await scan({
-    cwd,
-    entrypointPath: normalizedEntrypoint,
-  })
+  const scanResult = await scan({ cwd, entrypointPath: normalizedEntrypoint })
   const buildOutput = getBuildOutput(options?.buildOutput, scanResult)
   const outputInfo = {
     buildOutput,
