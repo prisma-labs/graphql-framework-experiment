@@ -7,3 +7,4 @@ const cp = spawn('node', [scriptPath], { stdio: 'inherit' })
 // Unref the child process to allow NodeJS to gracefully exits immediately.
 // The sub-process has a timeout of 10s before it exits anyway if anything does wrong
 cp.unref()
+process.exit(0)
