@@ -71,15 +71,17 @@ export class Dev implements Command {
     }
 
     const startModule = createStartModuleContent({
-      registerTypeScript: layout.tsConfig.content.options,
+      registerTypeScript: {
+        ...layout.tsConfig.content.options,
+        module: ts.ModuleKind.CommonJS,
+        target: ts.ScriptTarget.ES2015,
+      },
       internalStage: 'dev',
       runtimePluginManifests: [], // tree-shaking not needed
       layout,
       absoluteModuleImports: true,
     })
 
-    // The start module must be something runnable by Node. So we force module
-    // and target like we do for data mode app runs.
     const transpiledStartModule = transpileModule(startModule, {
       ...layout.tsConfig.content.options,
       module: ts.ModuleKind.CommonJS,

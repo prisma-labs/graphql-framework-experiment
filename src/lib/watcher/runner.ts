@@ -79,5 +79,6 @@ async function main() {
     IPC.client.senders.moduleImported({ filePath })
   })
 
+  console.log(process.env.ENTRYPOINT_SCRIPT)
   eval(process.env.ENTRYPOINT_SCRIPT)
 }
