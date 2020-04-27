@@ -12,6 +12,7 @@ export async function generateArtifacts(layout: Layout): Promise<void> {
 
   const startModule = createStartModuleContent({
     registerTypeScript: {
+      ...layout.tsConfig.content.options,
       target: ts.ScriptTarget.ES2015,
       module: ts.ModuleKind.CommonJS,
     },
@@ -22,6 +23,7 @@ export async function generateArtifacts(layout: Layout): Promise<void> {
   })
 
   const transpiledStartModule = transpileModule(startModule, {
+    ...layout.tsConfig.content.options,
     target: ts.ScriptTarget.ES2015,
     module: ts.ModuleKind.CommonJS,
   })

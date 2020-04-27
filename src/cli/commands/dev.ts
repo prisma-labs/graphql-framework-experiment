@@ -71,12 +71,18 @@ export class Dev implements Command {
     }
 
     const startModule = createStartModuleContent({
+      registerTypeScript: {
+        ...layout.tsConfig.content.options,
+        target: ts.ScriptTarget.ES5,
+        module: ts.ModuleKind.CommonJS,
+      },
       internalStage: 'dev',
       runtimePluginManifests: [], // tree-shaking not needed
       layout,
       absoluteModuleImports: true,
     })
     const transpiledStartModule = transpileModule(startModule, {
+      ...layout.tsConfig.content.options,
       target: ts.ScriptTarget.ES5,
       module: ts.ModuleKind.CommonJS,
     })
