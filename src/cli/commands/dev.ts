@@ -1,4 +1,5 @@
 import { stripIndent } from 'common-tags'
+import { ts } from 'ts-morph'
 import { arg, Command, isError } from '../../lib/cli'
 import * as Layout from '../../lib/layout'
 import { rootLogger } from '../../lib/nexus-logger'
@@ -76,7 +77,14 @@ export class Dev implements Command {
       layout,
       absoluteModuleImports: true,
     })
-    const transpiledStartModule = transpileModule(startModule, layout.tsConfig.content.options)
+
+    // The start module must be something runnable by Node. So we force module
+    // and target like we do for data mode app runs.
+    const transpiledStartModule = transpileModule(startModule, {
+      ...layout.tsConfig.content.options,
+      module: ts.ModuleKind.CommonJS,
+      target: ts.ScriptTarget.ES2015,
+    })
 
     const watcher = await createWatcher({
       entrypointScript: transpiledStartModule,
