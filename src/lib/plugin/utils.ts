@@ -6,7 +6,6 @@ import * as Start from '../../runtime/start'
 import * as Layout from '../layout'
 import { rootLogger } from '../nexus-logger'
 import { fatal } from '../process'
-import { registerTypeScriptTranspile } from '../tsc'
 import { Manifest, Plugin } from './types'
 
 const log = rootLogger.child('plugin')
@@ -58,11 +57,10 @@ export function entrypointToManifest(plugin: Plugin): Manifest {
 export async function getUsedPlugins(layout: Layout.Layout): Promise<Plugin[]> {
   // todo runnning this in-process is risky, async errors or resource/memory
   // leaks or infinite loops could bring down the process that runs this.
-  registerTypeScriptTranspile({})
-
   const runner = Start.createDevAppRunner(layout, {
     disableServer: true,
   })
+
   try {
     await runner.start()
   } catch (e) {
