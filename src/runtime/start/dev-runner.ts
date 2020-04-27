@@ -27,6 +27,10 @@ export function createDevAppRunner(
   }
 ): DevRunner {
   const startModule = createStartModuleContent({
+    registerTypeScript: {
+      target: ts.ScriptTarget.ES2015,
+      module: ts.ModuleKind.CommonJS,
+    },
     internalStage: 'dev',
     layout: layout,
     absoluteModuleImports: true,
@@ -35,7 +39,7 @@ export function createDevAppRunner(
   })
 
   const transpiledStartModule = transpileModule(startModule, {
-    target: ts.ScriptTarget.ES5,
+    target: ts.ScriptTarget.ES2015,
     module: ts.ModuleKind.CommonJS,
   })
 

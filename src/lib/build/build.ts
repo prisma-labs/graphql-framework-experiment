@@ -53,6 +53,8 @@ export async function buildNexusApp(settings: BuildSettings) {
     }
   }
 
+  log.info('getting used plugins')
+
   const pluginEntrypoints = await Plugin.getUsedPlugins(layout)
   const worktimePlugins = await Plugin.importAndLoadWorktimePlugins(pluginEntrypoints, layout)
 
@@ -60,37 +62,31 @@ export async function buildNexusApp(settings: BuildSettings) {
     await p.hooks.build.onStart?.()
   }
 
-  let tsBuilder
-  tsBuilder = createTSProgram(layout, { withCache: true })
+  log.info('starting artifact generation')
 
-  log.trace('Compiling a development build for typegen')
-
-  tsBuilder.emit()
-
-  await writeStartModule({
-    layout: layout,
-    startModule: prepareStartModule(
-      tsBuilder,
-      createStartModuleContent({
-        layout,
-        runtimePluginManifests: [], // tree shaking not needed
-        internalStage: 'build',
-      })
-    ),
+  const generatingArtifacts = generateArtifacts(layout).catch((error) => {
+    log.fatal('failed to generate artifacts', { error })
+    process.exit(1)
   })
 
-  log.info('Running typegen & extracting types from addToContext calls')
+  log.info('building typescript program')
 
-  await Promise.all([
-    runAddToContextExtractorAsPromise(tsBuilder.getProgram()).catch((error) => {
+  let tsBuilder
+
+  tsBuilder = createTSProgram(layout, { withCache: true })
+
+  log.info('starting addToContext type extraction')
+
+  const extractingAddToContextTypes = runAddToContextExtractorAsPromise(tsBuilder.getProgram()).catch(
+    (error) => {
       log.fatal('failed to extract context types', { error })
       process.exit(1)
-    }),
-    generateArtifacts(layout).catch((error) => {
-      log.fatal('failed to generate artifacts', { error })
-      process.exit(1)
-    }),
-  ])
+    }
+  )
+
+  log.info('Awaiting artifact generation & addToContext type extraction')
+
+  await Promise.all([generatingArtifacts, extractingAddToContextTypes])
 
   log.info('Compiling a production build')
 
