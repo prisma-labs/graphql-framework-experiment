@@ -53,7 +53,7 @@ We're going to need to expose the `moons` world field to clients
   schema.objectType({
     name: "World",
     definition(t) {
-      t.model.id()
+      t.model.worldId()
       t.model.name()
       t.model.population()
 +     t.model.moons()
