@@ -34,7 +34,11 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   if (config.registerTypeScript) {
     content += EOL + EOL + EOL
     content += stripIndent`
-      import { registerTypeScriptTranspile } from 'nexus/dist/lib/tsc'
+      import { registerTypeScriptTranspile } from '${
+        config.absoluteModuleImports
+          ? Path.dirname(resolveFrom('nexus', config.layout.projectRoot))
+          : 'nexus/dist'
+      }/lib/tsc'
       registerTypeScriptTranspile(${
         typeof config.registerTypeScript === 'object' ? JSON.stringify(config.registerTypeScript) : '{}'
       })
