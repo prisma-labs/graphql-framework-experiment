@@ -103,7 +103,6 @@ interface Options {
   buildOutput?: string
   entrypointPath?: string
   cwd?: string
-  throwInsteadOfExit?: boolean
 }
 
 const optionDefaults = {
@@ -121,7 +120,6 @@ export async function create(options?: Options): Promise<Layout> {
   const scanResult = await scan({
     cwd,
     entrypointPath: normalizedEntrypoint,
-    throwInsteadOfExit: options?.throwInsteadOfExit,
   })
   const buildOutput = getBuildOutput(options?.buildOutput, scanResult)
   const outputInfo = {
@@ -174,11 +172,7 @@ export function createFromData(layoutData: Data): Layout {
  * Analyze the user's project files/folders for how conventions are being used
  * and where key modules exist.
  */
-export async function scan(opts?: {
-  cwd?: string
-  entrypointPath?: string
-  throwInsteadOfExit?: boolean
-}): Promise<ScanResult> {
+export async function scan(opts?: { cwd?: string; entrypointPath?: string }): Promise<ScanResult> {
   log.trace('starting scan')
   const projectRoot = opts?.cwd ?? process.cwd()
   const packageManagerType = await PackageManager.detectProjectPackageManager({ projectRoot })
@@ -211,13 +205,6 @@ export async function scan(opts?: {
   log.trace('completed scan', { result })
 
   if (result.app.exists === false && result.schemaModules.length === 0) {
-    if (opts?.throwInsteadOfExit) {
-      throw new Error(stripIndents`${checks.no_app_or_schema_modules.explanations.problem} (${checks.no_app_or_schema_modules.code})
-
-        ${checks.no_app_or_schema_modules.explanations.solution}
-      `)
-    }
-
     log.error(checks.no_app_or_schema_modules.explanations.problem)
     log.error(checks.no_app_or_schema_modules.explanations.solution)
     process.exit(1)
