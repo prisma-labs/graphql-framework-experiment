@@ -18,6 +18,10 @@ async function main() {
   clearTimeout(timeoutId)
 }
 
+process.on("exit", () => {
+  process.exitCode = 0;
+});
+
 // Catch all possible errors and only log them in trace level
 process.on('uncaughtException', (error) => {
   rootLogger.trace('error in postinstall', { error })
