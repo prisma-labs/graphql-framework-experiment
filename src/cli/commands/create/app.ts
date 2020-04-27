@@ -83,7 +83,16 @@ export async function runBootstrapper(configInput?: Partial<ConfigInput>): Promi
   }
   const nexusVersion = await getNexusVersion()
   const packageManager = await getPackageManager(internalConfig.projectRoot)
+
+  if (packageManager === 'sigtermed') {
+    return
+  }
+
   const database = await getDatabaseSelection()
+
+  if (database === 'sigtermed') {
+    return
+  }
 
   // TODO in the future scan npm registry for nexus plugins, organize by
   // github stars, and so on.
@@ -186,11 +195,16 @@ export async function runBootstrapper(configInput?: Partial<ConfigInput>): Promi
   }
 }
 
-async function getPackageManager(projectRoot: string): Promise<PackageManager.PackageManager> {
-  const packageManagerTypeEnvVar = process.env
-    .CREATE_APP_CHOICE_PACKAGE_MANAGER_TYPE as PackageManager.PackageManagerType | void
+async function getPackageManager(projectRoot: string): Promise<PackageManager.PackageManager | 'sigtermed'> {
+  const packageManagerTypeEnvVar = process.env.CREATE_APP_CHOICE_PACKAGE_MANAGER_TYPE as
+    | PackageManager.PackageManagerType
+    | undefined
 
   const packageManagerType = packageManagerTypeEnvVar ?? (await askForPackageManager())
+
+  if (packageManagerType === 'sigtermed') {
+    return 'sigtermed'
+  }
 
   const packageManager = PackageManager.createPackageManager(packageManagerType, { projectRoot })
 
@@ -203,7 +217,7 @@ async function getNexusVersion(): Promise<string> {
   return nexusVersion
 }
 
-async function getDatabaseSelection(): Promise<DatabaseSelection> {
+async function getDatabaseSelection(): Promise<DatabaseSelection | 'sigtermed'> {
   const envar = process.env.CREATE_APP_CHOICE_DATABASE_TYPE as Database | 'NO_DATABASE' | undefined
 
   if (envar) {
@@ -231,11 +245,14 @@ async function getDatabaseSelection(): Promise<DatabaseSelection> {
 
 export type Database = 'SQLite' | 'PostgreSQL' | 'MySQL'
 
-type DatabaseSelection = null | {
-  database: true
-  choice: Database
-  connectionURI: string | undefined
-}
+type DatabaseSelection =
+  | null
+  | 'sigtermed'
+  | {
+      database: true
+      choice: Database
+      connectionURI: string | undefined
+    }
 
 /**
  * Ask the user if they would like to use a database driver.
@@ -244,18 +261,22 @@ async function askForDatabase(): Promise<DatabaseSelection> {
   let {
     usePrisma,
   }: {
-    usePrisma: boolean
+    usePrisma?: boolean
   } = await prompts({
     type: 'confirm',
     name: 'usePrisma',
     message: 'Do you want to use a database? (https://prisma.io)',
   })
 
-  if (!usePrisma) {
+  if (usePrisma === undefined) {
+    return 'sigtermed'
+  }
+
+  if (usePrisma === false) {
     return null
   }
   // TODO the supported databases should come from the plugin driver...
-  let { database }: { database: Database } = await prompts({
+  let { database }: { database?: Database } = await prompts({
     type: 'select',
     name: 'database',
     message: 'Choose a database',
@@ -279,6 +300,10 @@ async function askForDatabase(): Promise<DatabaseSelection> {
     initial: 0,
   })
 
+  if (database === undefined) {
+    return 'sigtermed'
+  }
+
   if (database === 'SQLite') {
     return {
       database: true,
@@ -286,25 +311,6 @@ async function askForDatabase(): Promise<DatabaseSelection> {
       connectionURI: SQLITE_DEFAULT_CONNECTION_URI,
     }
   }
-
-  // TODO: Removed temporarily until we have a more solid system to validate the uri,
-  // and a textbox where we can the cursor... boohoo prompts
-
-  // let { hasURI }: { hasURI: boolean } = await prompts.default({
-  //   type: 'confirm',
-  //   name: 'hasURI',
-  //   message: `Do you have a connection URI to connect to your ${database} database?`,
-  // })
-
-  // if (hasURI) {
-  //   let { connectionURI }: { connectionURI: string } = await prompts.default({
-  //     type: 'text',
-  //     message: `Fill in your connection URI for ${database}`,
-  //     name: 'connectionURI',
-  //   })
-
-  //   return { database: true, choice: database, connectionURI }
-  // }
 
   return { database: true, choice: database, connectionURI: undefined }
 }
@@ -314,7 +320,7 @@ async function askForDatabase(): Promise<DatabaseSelection> {
  * TODO if we detect that yarn is installed on the user's machine then we should
  * default to that, otherwise default to npm.
  */
-async function askForPackageManager(): Promise<PackageManager.PackageManagerType> {
+async function askForPackageManager(): Promise<PackageManager.PackageManagerType | 'sigtermed'> {
   const choices: {
     title: string
     value: PackageManager.PackageManagerType
@@ -323,7 +329,9 @@ async function askForPackageManager(): Promise<PackageManager.PackageManagerType
     { title: 'npm', value: 'npm' },
   ]
 
-  type Result = { packageManagerType: PackageManager.PackageManagerType }
+  type Result = {
+    packageManagerType?: PackageManager.PackageManagerType
+  }
 
   const result: Result = await prompts({
     name: 'packageManagerType',
@@ -331,6 +339,10 @@ async function askForPackageManager(): Promise<PackageManager.PackageManagerType
     message: 'What is your preferred package manager?',
     choices,
   })
+
+  if (result.packageManagerType === undefined) {
+    return 'sigtermed'
+  }
 
   return result.packageManagerType
 }
