@@ -50,11 +50,20 @@ export type SettingsInput = {
     path: string
     playgroundPath?: string
   }) => void
+  /**
+   * An optional function which will be used to format any errors produced by
+   * fulfilling a GraphQL operation.
+   */
+  customErrorFormatter?: (error: Error) => unknown | null
 }
 
-export type SettingsData = Omit<Utils.DeepRequired<SettingsInput>, 'host' | 'playground'> & {
+export type SettingsData = Omit<
+  Utils.DeepRequired<SettingsInput>,
+  'host' | 'playground' | 'customErrorFormatter'
+> & {
   host: string | undefined
   playground: false | Required<PlaygroundSettings>
+  customErrorFormatter?: (error: Error) => unknown | null
 }
 
 export const defaultPlaygroundPath = '/'

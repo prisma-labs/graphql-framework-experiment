@@ -74,7 +74,7 @@ function setupExpress(express: Express, settings: SetupExpressInput): BaseServer
 
           error.message = colorlessMessage
 
-          return error
+          return settings.customErrorFormatter ? settings.customErrorFormatter(error) : error
         },
       }))
     })
