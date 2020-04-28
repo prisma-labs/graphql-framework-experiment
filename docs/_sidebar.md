@@ -21,6 +21,7 @@
 
 - [`prisma`](plugins/prisma)
 - [`jwt-auth`](https://github.com/Camji55/nexus-plugin-jwt-auth)
+- [`graphql-shield`](https://github.com/lvauvillier/nexus-plugin-shield)
 
 - API
 
