@@ -424,6 +424,62 @@ input UserWhereUniqueInput {
 
 </div>
 
+## Plugin settings
+
+You can _optionally_ pass some settings to the plugin.
+
+### Type definition
+
+```ts
+export type PrismaClientOptions = {
+  /**
+   * Options to pass to the Prisma Client instantiated by the plugin.
+   * If you want to instantiate your own Prisma Client, use `instance` instead.
+   */
+  options: ClientOptions
+}
+
+export type PrismaClientInstance = {
+  /**
+   * Instance of your own Prisma Client. You can import it from 'nexus-plugin-prisma/client'.
+   * If you just want to pass some settings to the Prisma Client, use `options` instead.
+   */
+  instance: PrismaClient
+}
+
+export type Settings = {
+  /**
+   * Use this to pass some settings to the Prisma Client instantiated by the plugin or to pass your own Prisma Client
+   */
+  client?: PrismaClientOptions | PrismaClientInstance
+}
+```
+
+### Examples
+
+#### Configuring the Prisma Client
+
+```ts
+import { use } from 'nexus'
+import { prisma } from 'nexus-plugin-prisma'
+
+use(prisma({
+  client: { options: { log: ['query'] } }
+}))
+```
+
+#### Using a custom instance of the Prisma Client
+
+```ts
+import { use } from 'nexus'
+import { prisma } from 'nexus-plugin-prisma'
+import { PrismaClient } from 'nexus-plugin-prisma/client'
+
+use(prisma({
+  client: { instance: new PrismaClient() }
+}))
+```
+
 ## Recipes
 
 ### Projecting Prisma Model Fields {docsify-ignore}
