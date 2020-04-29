@@ -8,11 +8,10 @@ import {
   prepareStartModule,
   START_MODULE_NAME,
 } from '../../runtime/start/start-module'
-import { runAddToContextExtractorAsPromise } from '../add-to-context-extractor/add-to-context-extractor'
 import { rootLogger } from '../nexus-logger'
 import * as Plugin from '../plugin'
 import { fatal } from '../process'
-import { generateArtifacts } from './artifact-generation'
+import * as Reflection from '../reflection'
 import {
   computeBuildOutputFromTarget,
   logTargetPostBuildMessage,
@@ -53,51 +52,34 @@ export async function buildNexusApp(settings: BuildSettings) {
     }
   }
 
-  log.info('getting used plugins')
+  log.info('starting reflection')
 
-  const pluginEntrypoints = await Plugin.getUsedPlugins(layout)
-  const worktimePlugins = await Plugin.importAndLoadWorktimePlugins(pluginEntrypoints, layout)
+  const reflectionResult = await Reflection.reflect(layout, { withArtifactGeneration: true })
+
+  if (!reflectionResult.success) {
+    fatal('reflection failed', { error: reflectionResult.error })
+  }
+
+  const { plugins } = reflectionResult
+  const worktimePlugins = Plugin.importAndLoadWorktimePlugins(plugins, layout)
 
   for (const p of worktimePlugins) {
     await p.hooks.build.onStart?.()
   }
 
-  log.info('starting artifact generation')
-
-  const generatingArtifacts = generateArtifacts(layout).catch((error) => {
-    log.fatal('failed to generate artifacts', { error })
-    process.exit(1)
-  })
-
   log.info('building typescript program')
 
-  let tsBuilder
+  const tsBuilder = createTSProgram(layout, { withCache: true })
 
-  tsBuilder = createTSProgram(layout, { withCache: true })
-
-  log.info('starting addToContext type extraction')
-
-  const extractingAddToContextTypes = runAddToContextExtractorAsPromise(tsBuilder.getProgram()).catch(
-    (error) => {
-      log.fatal('failed to extract context types', { error })
-      process.exit(1)
-    }
-  )
-
-  log.info('Awaiting artifact generation & addToContext type extraction')
-
-  await Promise.all([generatingArtifacts, extractingAddToContextTypes])
-
-  log.info('Compiling a production build')
+  log.info('compiling a production build')
 
   // Recreate our program instance so that it picks up the typegen. We use
   // incremental builder type of program so that the cache from the previous
   // run of TypeScript should make re-building up this one cheap.
-  tsBuilder = createTSProgram(layout, { withCache: true })
 
   compile(tsBuilder, layout, { removePreviousBuild: false })
 
-  const runtimePluginManifests = pluginEntrypoints.map(Plugin.entrypointToManifest).filter((pm) => pm.runtime)
+  const runtimePluginManifests = plugins.map(Plugin.entrypointToManifest).filter((pm) => pm.runtime)
 
   await writeStartModule({
     layout: layout,
@@ -107,7 +89,6 @@ export async function buildNexusApp(settings: BuildSettings) {
         internalStage: 'build',
         layout: layout,
         runtimePluginManifests,
-        disableArtifactGeneration: true,
       })
     ),
   })

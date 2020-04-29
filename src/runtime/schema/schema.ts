@@ -3,14 +3,9 @@ import { CreateFieldResolverInfo, makeSchemaInternal } from '@nexus/schema/dist/
 import { stripIndent } from 'common-tags'
 import { GraphQLFieldResolver, GraphQLResolveInfo } from 'graphql'
 import * as HTTP from 'http'
-import { runAddToContextExtractorAsWorkerIfPossible } from '../../lib/add-to-context-extractor/add-to-context-extractor'
 import * as Layout from '../../lib/layout'
 import * as Logger from '../../lib/logger'
-import {
-  createNexusSchemaStateful,
-  NexusSchemaStatefulBuilders,
-  writeTypegen,
-} from '../../lib/nexus-schema-stateful'
+import { createNexusSchemaStateful, NexusSchemaStatefulBuilders } from '../../lib/nexus-schema-stateful'
 import { RuntimeContributions } from '../../lib/plugin'
 import { AppState } from '../app'
 import { log } from './logger'
@@ -61,10 +56,21 @@ interface SchemaInternal {
       contextContributors: ContextContributor<any>[]
     }
     /**
-     * Create the Nexus GraphQL Schema. If NEXUS_SHOULD_AWAIT_TYPEGEN=true then the typegen
-     * disk write is awaited upon.
+     * Create the Nexus GraphQL Schema
      */
-    makeSchema: (plugins: RuntimeContributions[]) => Promise<NexusSchema.core.NexusGraphQLSchema>
+    makeSchema: (
+      plugins: RuntimeContributions[]
+    ) => {
+      /**
+       * GraphQL schema built by @nexus/schema
+       */
+      schema: NexusSchema.core.NexusGraphQLSchema
+      /**
+       * Assert that there are no missing types after running typegen only
+       * so that we don't block writing the typegen when eg: renaming types
+       */
+      assertValidSchema: () => void
+    }
     settings: {
       data: SettingsData
       change: (newSettings: SettingsInput) => void
@@ -114,54 +120,24 @@ export function create(appState: AppState): SchemaInternal {
     },
     private: {
       state: state,
-      makeSchema: async (plugins) => {
+      makeSchema: (plugins) => {
         const nexusSchemaConfig = mapSettingsToNexusSchemaConfig(plugins, state.settings)
 
         nexusSchemaConfig.types.push(...statefulNexusSchema.state.types)
-
         nexusSchemaConfig.plugins!.push(...state.schemaPlugins)
 
-        const { schema, missingTypes, finalConfig } = makeSchemaInternal(nexusSchemaConfig)
+        const { schema, missingTypes } = makeSchemaInternal(nexusSchemaConfig)
 
-        if (nexusSchemaConfig.shouldGenerateArtifacts === true) {
-          const devModeLayout = await Layout.loadDataFromParentProcess()
+        return {
+          schema,
+          assertValidSchema() {
+            NexusSchema.core.assertNoMissingTypes(schema, missingTypes)
 
-          if (!devModeLayout) {
-            throw new Error(
-              'Layout should be defined when should gen artifacts is true. This should not happen.'
-            )
-          }
-
-          const contextExtractionPromise = runAddToContextExtractorAsWorkerIfPossible(devModeLayout.data)
-
-          const typegenPromise = writeTypegen(
-            schema,
-            finalConfig,
-            state.settings.rootTypingsGlobPattern,
-            devModeLayout
-          )
-
-          // Await promise only if needed. Otherwise let it run in the background
-          if (process.env.NEXUS_SHOULD_AWAIT_TYPEGEN === 'true') {
-            await Promise.all([typegenPromise, contextExtractionPromise])
-          }
-
-          if (nexusSchemaConfig.shouldExitAfterGenerateArtifacts) {
-            process.exit(0)
-          }
+            if (statefulNexusSchema.state.types.length === 0) {
+              log.warn(Layout.schema.emptyExceptionMessage())
+            }
+          },
         }
-
-        /**
-         * Assert that there are no missing types after running typegen only
-         * so that we don't block writing the typegen when eg: renaming types
-         */
-        NexusSchema.core.assertNoMissingTypes(schema, missingTypes)
-
-        if (statefulNexusSchema.state.types.length === 0) {
-          log.warn(Layout.schema.emptyExceptionMessage())
-        }
-
-        return schema
       },
       settings: {
         data: state.settings,

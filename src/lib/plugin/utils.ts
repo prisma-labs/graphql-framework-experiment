@@ -1,12 +1,10 @@
 import { stripIndent } from 'common-tags'
 import { PackageJson } from 'type-fest'
-import app from '../../index'
-import { InternalApp } from '../../runtime/app'
-import * as Start from '../../runtime/start'
 import * as Layout from '../layout'
 import { rootLogger } from '../nexus-logger'
 import { fatal } from '../process'
 import { Manifest, Plugin } from './types'
+import * as Reflection from '../reflection/reflect'
 
 const log = rootLogger.child('plugin')
 
@@ -55,23 +53,19 @@ export function entrypointToManifest(plugin: Plugin): Manifest {
  * data mode, in this process.
  */
 export async function getUsedPlugins(layout: Layout.Layout): Promise<Plugin[]> {
-  // todo runnning this in-process is risky, async errors or resource/memory
-  // leaks or infinite loops could bring down the process that runs this.
-  const runner = Start.createDevAppRunner(layout, {
-    disableServer: true,
-  })
-
   try {
-    await runner.start()
+    const reflection = await Reflection.reflect(layout, { withArtifactGeneration: false })
+
+    if (!reflection.success) {
+      throw reflection.error
+    }
+
+    log.trace('got used plugins', { validPlugins: reflection.plugins })
+
+    return reflection.plugins
   } catch (e) {
     fatal('Failed to scan app for used plugins because there is a runtime error in the app', {
       error: e,
     })
   }
-
-  const plugins = (app as InternalApp).__state.plugins
-
-  log.trace('got used plugins', { validPlugins: plugins })
-
-  return plugins
 }

@@ -1,8 +1,9 @@
 import * as ts from 'typescript'
 import * as Layout from '../../lib/layout'
 import { transpileModule } from '../../lib/tsc'
+import type { InternalApp } from '../app'
 import * as Server from '../server'
-import { createStartModuleContent } from './start-module'
+import { createStartModuleContent, StartModuleOptions } from './start-module'
 
 export interface DevRunner {
   /**
@@ -21,9 +22,9 @@ export interface DevRunner {
 
 export function createDevAppRunner(
   layout: Layout.Layout,
+  appSingleton: InternalApp,
   opts?: {
-    server?: Server.SettingsInput
-    disableServer?: boolean
+    catchUnhandledErrors?: StartModuleOptions['catchUnhandledErrors']
   }
 ): DevRunner {
   const startModule = createStartModuleContent({
@@ -35,8 +36,8 @@ export function createDevAppRunner(
     internalStage: 'dev',
     layout: layout,
     absoluteModuleImports: true,
-    runtimePluginManifests: [], // No need to statically require runtime plugins in dev (no need to tree-shake)
-    disableServer: opts?.disableServer,
+    runtimePluginManifests: [],
+    catchUnhandledErrors: opts?.catchUnhandledErrors
   })
 
   const transpiledStartModule = transpileModule(startModule, {
@@ -45,18 +46,11 @@ export function createDevAppRunner(
     module: ts.ModuleKind.CommonJS,
   })
 
-  // Dynamically require app here to prevent from constructing the singleton when importing this module
-  const app = require('../../index')
-
-  app.settings.change({
-    server: opts?.server,
-  })
-
   return {
     start: () => {
       return eval(transpiledStartModule)
     },
-    stop: () => app.server.stop(),
-    port: app.settings.current.server.port,
+    stop: () => appSingleton.server.stop(),
+    port: appSingleton.settings.current.server.port,
   }
 }

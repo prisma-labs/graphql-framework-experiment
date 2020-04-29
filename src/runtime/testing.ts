@@ -3,7 +3,7 @@ import * as Lo from 'lodash'
 import { GraphQLClient } from '../lib/graphql-client'
 import * as Layout from '../lib/layout'
 import * as Plugin from '../lib/plugin'
-import app from './index'
+import type { InternalApp } from './app'
 import { createDevAppRunner } from './start'
 
 type AppClient = {
@@ -72,13 +72,17 @@ export async function createTestContext(): Promise<TestContext> {
   const layout = await Layout.create()
   const pluginManifests = await Plugin.getUsedPlugins(layout)
   const randomPort = await getPort({ port: getPort.makeRange(4000, 6000) })
-  const appRunner = await createDevAppRunner(layout, {
+  const app = require('../index') as InternalApp
+
+  app.settings.change({
     server: {
       port: randomPort,
-      startMessage: () => {},
-      playground: false,
+      startMessage: () => {}, // Make server silent
+      playground: false, // Disable playground during tests
     },
   })
+
+  const appRunner = await createDevAppRunner(layout, app)
 
   const server = {
     start: appRunner.start,
@@ -97,7 +101,7 @@ export async function createTestContext(): Promise<TestContext> {
     },
   }
 
-  const testContextContributions = await Plugin.importAndLoadTesttimePlugins(pluginManifests)
+  const testContextContributions = Plugin.importAndLoadTesttimePlugins(pluginManifests)
 
   for (const testContextContribution of testContextContributions) {
     Lo.merge(testContextCore, testContextContribution)

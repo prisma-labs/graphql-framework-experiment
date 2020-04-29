@@ -1,7 +1,12 @@
 import { codeBlock } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import { hardWriteFile } from '../fs'
-import { ExtractedContextTypes } from './extractor'
+import * as Layout from '../layout'
+import { createTSProgram } from '../tsc'
+import { extractContextTypes, ExtractedContextTypes } from './extractor'
+import { rootLogger } from '../nexus-logger'
+
+const log = rootLogger.child('add-to-context-extractor')
 
 export const NEXUS_DEFAULT_RUNTIME_CONTEXT_TYPEGEN_PATH = fs.path(
   'node_modules',
@@ -9,6 +14,23 @@ export const NEXUS_DEFAULT_RUNTIME_CONTEXT_TYPEGEN_PATH = fs.path(
   'typegen-nexus-context',
   'index.d.ts'
 )
+
+/**
+ * Run the pure extractor and then write results to a typegen module.
+ */
+export async function generateContextExtractionArtifacts(
+  layout: Layout.Layout
+): Promise<ExtractedContextTypes> {
+  log.trace('starting context type extraction')
+  const program = createTSProgram(layout, { withCache: true })
+  const contextTypes = extractContextTypes(program.getProgram())
+
+  await writeContextTypeGenFile(contextTypes)
+
+  log.trace('finished context type extraction', { contextTypes })
+
+  return contextTypes
+}
 
 /**
  * Output the context types to a typegen file.

@@ -1,9 +1,9 @@
 import prompts from 'prompts'
-import { shouldGenerateArtifacts } from '../../runtime/schema/settings'
 import * as Layout from '../layout'
 import { rootLogger } from '../nexus-logger'
 import * as Process from '../process'
 import { Lens, RuntimeLens, WorktimeLens } from './types'
+import { shouldGenerateArtifacts } from '../reflection'
 
 const log = rootLogger.child('plugin')
 

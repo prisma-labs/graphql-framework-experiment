@@ -1,1 +1,1 @@
-export { runAddToContextExtractorAsWorker } from './add-to-context-extractor'
+export { generateContextExtractionArtifacts } from './typegen'
