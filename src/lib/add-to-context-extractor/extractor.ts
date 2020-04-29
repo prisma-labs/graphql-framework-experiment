@@ -149,9 +149,7 @@ export function extractContextTypes(program: ts.Program): ExtractedContextTypes 
               }
             } else if (t.isUnion()) {
               log.trace('found union', {
-                types: t
-                  .getIntersectionTypes()
-                  .map((t) => t.getText(undefined, ts.TypeFormatFlags.NoTruncation)),
+                types: t.getUnionTypes().map((t) => t.getText(undefined, ts.TypeFormatFlags.NoTruncation)),
               })
               const infos = t
                 .getUnionTypes()
