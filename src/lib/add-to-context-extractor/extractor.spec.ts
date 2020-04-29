@@ -277,6 +277,61 @@ it('prop type aliased intersection', () => {
   `)
 })
 
+it('prop type union', () => {
+  expect(
+    extract(`
+        export type Bar = { b: 2 }
+        export type Foo = { a: 1 }
+        schema.addToContext(req => { return { foo: '' as any as Foo | Bar } })
+      `)
+  ).toMatchInlineSnapshot(`
+    Object {
+      "typeImports": Array [
+        Object {
+          "isExported": true,
+          "isNode": false,
+          "modulePath": "/src/a",
+          "name": "Foo",
+        },
+        Object {
+          "isExported": true,
+          "isNode": false,
+          "modulePath": "/src/a",
+          "name": "Bar",
+        },
+      ],
+      "types": Array [
+        "{ foo: Foo | Bar; }",
+      ],
+    }
+  `)
+})
+
+it('prop type aliased union', () => {
+  expect(
+    extract(`
+        type Bar = { b: 2 }
+        type Foo = { a: 1 }
+        export type Qux = Foo | Bar
+        schema.addToContext(req => { return { foo: '' as any as Qux } })
+      `)
+  ).toMatchInlineSnapshot(`
+    Object {
+      "typeImports": Array [
+        Object {
+          "isExported": true,
+          "isNode": false,
+          "modulePath": "/src/a",
+          "name": "Qux",
+        },
+      ],
+      "types": Array [
+        "{ foo: Qux; }",
+      ],
+    }
+  `)
+})
+
 // todo Feature is supported, but untested.
 // todo how do we test this?
 it.todo('truncates import paths when detected to be a node stdlib module')

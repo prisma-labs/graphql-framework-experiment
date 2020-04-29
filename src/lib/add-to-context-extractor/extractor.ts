@@ -147,6 +147,21 @@ export function extractContextTypes(program: ts.Program): ExtractedContextTypes 
                   typeImportsIndex[info.name] = info
                 })
               }
+            } else if (t.isUnion()) {
+              log.trace('found union', {
+                types: t
+                  .getIntersectionTypes()
+                  .map((t) => t.getText(undefined, ts.TypeFormatFlags.NoTruncation)),
+              })
+              const infos = t
+                .getUnionTypes()
+                .map((t) => extractTypeImportInfoFromType(t)!)
+                .filter((info) => info !== null)
+              if (infos.length) {
+                infos.forEach((info) => {
+                  typeImportsIndex[info.name] = info
+                })
+              }
             } else {
               const info = extractTypeImportInfoFromType(t)
               if (info) {
