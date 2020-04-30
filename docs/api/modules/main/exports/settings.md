@@ -40,204 +40,214 @@ Use the settings to centrally configure various aspects of the various component
 }) => Settings
 ```
 
-- param `settingsInput`
+##### `server.playground`
 
-  - `server.playground`  
-    Should the app expose a [GraphQL Playground](https://github.com/prisma-labs/graphql-playground) to clients?
+Should the app expose a [GraphQL Playground](https://github.com/prisma-labs/graphql-playground) to clients?
 
-    ##### Default
+_Default_
 
-    `true` in dev, `false` otherwise.
+`true` in dev, `false` otherwise.
 
-  * `server.port`  
-    The port the server should listen on.
+##### `server.port`
 
-    ##### Default
+The port the server should listen on.
 
-    - Is `NEXUS_PORT` environment variable set? Then that.
-    - Is `PORT` environment variable set? Then that.
-    - Is `NODE_ENV` environment variable `production`? Then `80`
-    - Else `4000`
+_Default_
 
-* `server.host`  
-  The host the server should listen on.
+- Is `NEXUS_PORT` environment variable set? Then that.
+- Is `PORT` environment variable set? Then that.
+- Is `NODE_ENV` environment variable `production`? Then `80`
+- Else `4000`
 
-  ##### Default
+##### `server.host`
 
-  - Is `NEXUS_HOST` environment variable set? Then that.
-  - Is `HOST` environment variable set? Then that.
-  - Else the [Node HTTP server listen default](https://nodejs.org/api/net.html#net_server_listen_port_host_backlog_callback) which is `'::'` if IPv6 is present otherwise `'0.0.0.0'` for IPv4.
+The host the server should listen on.
 
-* `server.path`  
-  The path on which the GraphQL API should be served.
+_Default_
 
-  ##### Default
+- Is `HOST` environment variable set? Then that.
+- Else the [Node HTTP server listen default](https://nodejs.org/api/net.html#net_server_listen_port_host_backlog_callback) which is `'::'` if IPv6 is present otherwise `'0.0.0.0'` for IPv4.
 
-  `/graphql`
+##### `server.path`
 
-* `schema.nullable.inputs`
-  Should passing arguments be optional for clients by default?
+The path on which the GraphQL API should be served.
 
-  ##### Default
+_Default_
 
-  `true`
+`/graphql`
 
-* `schema.nullable.outputs`
-  Should the data requested by clients _not_ be guaranteed to be returned by default?
+##### `schema.nullable.inputs`
 
-  ##### Default
+Should passing arguments be optional for clients by default?
 
-  `true`
+_Default_
 
-* `schema.generateGraphQLSDLFile`
-  Should a [GraphQL SDL file](https://www.prisma.io/blog/graphql-sdl-schema-definition-language-6755bcb9ce51) be generated when the app is built and to where?
+`true`
 
-  A relative path is interpreted as being relative to the project directory. Intermediary folders are created automatically if they do not exist already.
+##### `schema.nullable.outputs`
 
-  ##### Default
+Should the data requested by clients _not_ be guaranteed to be returned by default?
 
-  `false`
+_Default_
 
-* `schema.rootTypingsGlobPattern`
+`true`
 
-  A glob pattern which will be used to find the files from which to extract the backing types used in the `rootTyping` option of `schema.(objectType|interfaceType|unionType|enumType)`
+##### `schema.generateGraphQLSDLFile`
 
-  ##### Default
+Should a [GraphQL SDL file](https://www.prisma.io/blog/graphql-sdl-schema-definition-language-6755bcb9ce51) be generated when the app is built and to where?
 
-  The default glob pattern used id `./**/*.ts`
+A relative path is interpreted as being relative to the project directory. Intermediary folders are created automatically if they do not exist already.
 
-* `schema.connections`
+_Default_
 
-  todo
+`false`
 
-  ##### Example of adding a specialized kind of connection field builder {docsify-ignore}
+##### `schema.rootTypingsGlobPattern`
 
-  ```ts
-  import { settings } from 'nexus'
+A glob pattern which will be used to find the files from which to extract the backing types used in the `rootTyping` option of `schema.(objectType|interfaceType|unionType|enumType)`
 
-  settings.change({
-    schema: {
-      connections: {
-        analyticsConnection: {
-          typePrefix: 'Analytics',
-          extendConnection: {
-            totalCount: { type: 'Int' },
-            avgDuration: { type: 'Int' },
-          },
+_Default_
+
+The default glob pattern used id `./**/*.ts`
+
+##### `schema.connections`
+
+todo
+
+###### Example of adding a specialized kind of connection field builder {docsify-ignore}
+
+```ts
+import { settings } from 'nexus'
+
+settings.change({
+  schema: {
+    connections: {
+      analyticsConnection: {
+        typePrefix: 'Analytics',
+        extendConnection: {
+          totalCount: { type: 'Int' },
+          avgDuration: { type: 'Int' },
         },
       },
     },
-  })
-  ```
+  },
+})
+```
 
-  ##### Example of including a `nodes` field like GitHub API globally {docsify-ignore}
+###### Example of including a `nodes` field like GitHub API globally {docsify-ignore}
 
-  If you want to include a `nodes` field, which includes the nodes of the connection flattened into an array similar to how GitHub does in their [GraphQL API](https://developer.github.com/v4/), set schema setting `includeNodesField` to `true`.
+If you want to include a `nodes` field, which includes the nodes of the connection flattened into an array similar to how GitHub does in their [GraphQL API](https://developer.github.com/v4/), set schema setting `includeNodesField` to `true`.
 
-  ```ts
-  import { settings } from 'nexus'
+```ts
+import { settings } from 'nexus'
 
-  settings.change({
-    connections: {
-      includeNodesField: true,
-    },
-  })
-  ```
+settings.change({
+  connections: {
+    includeNodesField: true,
+  },
+})
+```
 
-  ```graphql
-  query IncludeNodesFieldExample {
-    users(first: 10) {
-      nodes {
-        id
-      }
-      pageInfo {
-        endCursor
-        hasNextPage
-      }
+```graphql
+query IncludeNodesFieldExample {
+  users(first: 10) {
+    nodes {
+      id
+    }
+    pageInfo {
+      endCursor
+      hasNextPage
     }
   }
-  ```
+}
+```
 
-- `logger.level`  
-  The level which logs must be at or above to be logged. Logs below this level are discarded.
+##### `logger.level`
 
-  ##### Default
+The level which logs must be at or above to be logged. Logs below this level are discarded.
 
-  `debug` in dev, `info` otherwise.
+_Default_
 
-- `logger.pretty`  
-  Shorthand for `logger.pretty.enabled`.
+`debug` in dev, `info` otherwise.
 
-* `logger.pretty.enabled`  
-  Should logs be logged with rich formatting etc. (`true`), or as JSON (`false`)?
+##### `logger.pretty`
 
-  ##### Default
+Shorthand for `logger.pretty.enabled`.
 
-  - Is `LOG_PRETTY` environment variable `true`? Then `true`.
-  - Is `LOG_PRETTY` environment variable `false`? Then `false`.
-  - Is process.stdout attached to a TTY? Then `true`
+##### `logger.pretty.enabled`
 
-  ##### Example of what it looks like
+Should logs be logged with rich formatting etc. (`true`), or as JSON (`false`)?
 
-  ```
-  LOG_DEMO=true npx nexus dev
-  ```
+_Default_
 
-  ```
-  -----------
-  LOGGER DEMO
-  -----------
-    4 ✕ root:foo  --  lib: /see/
-    0 ■ root:foo
-        | har  { mar: 'tek' }
-        | jar  [
-        |        1, 2, 3, 4, 4, 5, 6,
-        |        6, 7, 9, 1, 2, 4, 5,
-        |        6, 7, 3, 6, 5, 4
-        |      ]
-        | kio  [Object: null prototype] [foo] {}
-    1 ▲ root:foo  --  bleep: [ 1, '2', true ]
-    0 ● root:foo
-    1 ○ root:foo
-        | results  [
-        |            { userId: 1, id: 1, title: 'delectus aut autem', completed: false },
-        |            { userId: 1, id: 2, title: 'quis ut nam facilis et officia qui', completed: false },
-        |            { userId: 1, id: 3, title: 'fugiat veniam minus', completed: false },
-        |            { userId: 1, id: 4, title: 'et porro tempora', completed: true },
-        |            {
-        |              userId: 1,
-        |              id: 5,
-        |              title: 'laboriosam mollitia et enim quasi adipisci quia provident illum',
-        |              completed: false
-        |            }
-        |          ]
-        | tri      'wiz'
-        | on       false
-    0 ○ root:foo  --  foo: 'bar'
-    0 — root:foo  --  a: 1  b: 2  c: 'three'
-  -----------
-  ```
+- Is `LOG_PRETTY` environment variable `true`? Then `true`.
+- Is `LOG_PRETTY` environment variable `false`? Then `false`.
+- Is process.stdout attached to a TTY? Then `true`
 
-* `logger.pretty.color`  
-  Should logs have color?
+###### Example of what it looks like
 
-  ##### Default
+```
+LOG_DEMO=true npx nexus dev
+```
 
-  `true`
+```
+-----------
+LOGGER DEMO
+-----------
+  4 ✕ root:foo  --  lib: /see/
+  0 ■ root:foo
+      | har  { mar: 'tek' }
+      | jar  [
+      |        1, 2, 3, 4, 4, 5, 6,
+      |        6, 7, 9, 1, 2, 4, 5,
+      |        6, 7, 3, 6, 5, 4
+      |      ]
+      | kio  [Object: null prototype] [foo] {}
+  1 ▲ root:foo  --  bleep: [ 1, '2', true ]
+  0 ● root:foo
+  1 ○ root:foo
+      | results  [
+      |            { userId: 1, id: 1, title: 'delectus aut autem', completed: false },
+      |            { userId: 1, id: 2, title: 'quis ut nam facilis et officia qui', completed: false },
+      |            { userId: 1, id: 3, title: 'fugiat veniam minus', completed: false },
+      |            { userId: 1, id: 4, title: 'et porro tempora', completed: true },
+      |            {
+      |              userId: 1,
+      |              id: 5,
+      |              title: 'laboriosam mollitia et enim quasi adipisci quia provident illum',
+      |              completed: false
+      |            }
+      |          ]
+      | tri      'wiz'
+      | on       false
+  0 ○ root:foo  --  foo: 'bar'
+  0 — root:foo  --  a: 1  b: 2  c: 'three'
+-----------
+```
 
-* `logger.pretty.timeDiff`  
-  Should a time delta between each log be shown in the gutter?
+##### `logger.pretty.color`
 
-  ##### Default
+Should logs have color?
 
-  `true`
+_Default_
 
-- `logger.pretty.levelLabel`  
-  Should the label of the level be shown in the gutter?
+`true`
 
-  ##### Default
+##### `logger.pretty.timeDiff`
 
-  `false`
+Should a time delta between each log be shown in the gutter?
+
+_Default_
+
+`true`
+
+##### `logger.pretty.levelLabel`
+
+Should the label of the level be shown in the gutter?
+
+_Default_
+
+`false`
 
 ##### Example
 
