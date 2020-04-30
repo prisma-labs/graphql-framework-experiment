@@ -1,18 +1,18 @@
+import { serializeError } from 'serialize-error'
 import type * as App from '../../runtime/app'
 import { createDevAppRunner } from '../../runtime/start'
 import * as Layout from '../layout'
-import { writeArtifacts } from './typegen'
-import type { Message } from './reflect'
 import * as Plugin from '../plugin'
-import { saveReflectionStageEnv, isReflectionStage } from './stage'
-import { serializeError } from 'serialize-error'
+import type { Message } from './reflect'
+import { isReflectionStage } from './stage'
+import { writeArtifacts } from './typegen'
 
 async function run() {
   if (!process.env.NEXUS_REFLECTION_LAYOUT) {
     throw new Error('process.env.NEXUS_REFLECTION_LAYOUT is required')
   }
 
-  const app = require('nexus').default as App.InternalApp
+  const app = require('../../').default as App.InternalApp
   const layout = Layout.createFromData(JSON.parse(process.env.NEXUS_REFLECTION_LAYOUT) as Layout.Data)
   const appRunner = createDevAppRunner(layout, app, {
     catchUnhandledErrors: false,
