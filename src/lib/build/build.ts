@@ -52,19 +52,27 @@ export async function buildNexusApp(settings: BuildSettings) {
     }
   }
 
-  log.info('starting reflection')
+  log.info('get used plugins')
 
-  const reflectionResult = await Reflection.reflect(layout, { withArtifactGeneration: true })
+  const pluginReflection = await Reflection.reflect(layout, { usedPlugins: true })
 
-  if (!reflectionResult.success) {
-    fatal('reflection failed', { error: reflectionResult.error })
+  if (!pluginReflection.success) {
+    fatal('failed to get used plugins', { error: pluginReflection.error })
   }
 
-  const { plugins } = reflectionResult
+  const { plugins } = pluginReflection
   const worktimePlugins = Plugin.importAndLoadWorktimePlugins(plugins, layout)
 
   for (const p of worktimePlugins) {
     await p.hooks.build.onStart?.()
+  }
+
+  log.info('starting reflection')
+
+  const reflectionResult = await Reflection.reflect(layout, { artifacts: true })
+
+  if (!reflectionResult.success) {
+    fatal('reflection failed', { error: reflectionResult.error })
   }
 
   log.info('building typescript program')

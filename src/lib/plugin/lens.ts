@@ -2,8 +2,8 @@ import prompts from 'prompts'
 import * as Layout from '../layout'
 import { rootLogger } from '../nexus-logger'
 import * as Process from '../process'
+import { isReflectionStage } from '../reflection'
 import { Lens, RuntimeLens, WorktimeLens } from './types'
-import { shouldGenerateArtifacts } from '../reflection'
 
 const log = rootLogger.child('plugin')
 
@@ -19,7 +19,7 @@ export function createBaseLens(pluginName: string): Lens {
 export function createRuntimeLens(pluginName: string): RuntimeLens {
   return {
     ...createBaseLens(pluginName),
-    shouldGenerateArtifacts: shouldGenerateArtifacts(),
+    shouldGenerateArtifacts: isReflectionStage('typegen'),
   }
 }
 

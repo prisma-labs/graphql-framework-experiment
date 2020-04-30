@@ -1,21 +1,16 @@
 import type * as App from '../../runtime/app'
 import { createDevAppRunner } from '../../runtime/start'
 import * as Layout from '../layout'
-import { writeTypegen } from './typegen'
+import { writeArtifacts } from './typegen'
 import type { Message } from './reflect'
 import * as Plugin from '../plugin'
-import { setReflectionStage } from './stage'
+import { saveReflectionStageEnv, isReflectionStage } from './stage'
 import { serializeError } from 'serialize-error'
 
 async function run() {
   if (!process.env.NEXUS_REFLECTION_LAYOUT) {
     throw new Error('process.env.NEXUS_REFLECTION_LAYOUT is required')
   }
-
-  /**
-   * Set the NEXUS_REFLECTION environment variable so that the server doesn't run
-   */
-  setReflectionStage()
 
   const app = require('nexus').default as App.InternalApp
   const layout = Layout.createFromData(JSON.parse(process.env.NEXUS_REFLECTION_LAYOUT) as Layout.Data)
@@ -30,27 +25,37 @@ async function run() {
   }
 
   const plugins = app.__state.plugins()
-  const graphqlSchema = app.__state.schema()
 
-  if (process.env.NEXUS_SHOULD_GENERATE_ARTIFACTS) {
+  if (isReflectionStage('plugin')) {
+    sendDataToParent({
+      type: 'success-plugin',
+      data: {
+        plugins,
+      },
+    })
+
+    return
+  }
+
+  if (isReflectionStage('typegen')) {
+    const graphqlSchema = app.__state.schema()
+
     try {
-      await writeTypegen({
+      await writeArtifacts({
         graphqlSchema,
         layout,
         schemaSettings: app.settings.current.schema,
         plugins: Plugin.importAndLoadRuntimePlugins(plugins),
       })
+      sendDataToParent({
+        type: 'success-typegen',
+      })
+
+      return
     } catch (err) {
       sendErrorToParent(err)
     }
   }
-
-  sendDataToParent({
-    type: 'success',
-    data: {
-      plugins,
-    },
-  })
 
   function sendDataToParent(message: Message) {
     if (!process.send) {

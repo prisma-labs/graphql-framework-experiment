@@ -34,19 +34,17 @@ export class Dev implements Command {
       return this.help()
     }
 
-    /**
-     * Load config before loading plugins which may rely on env vars being defined
-     */
     const entrypointPath = args['--entrypoint']
     let layout = await Layout.create({ entrypointPath })
-    const reflectionResult = await Reflection.reflect(layout, { withArtifactGeneration: false })
+    const pluginReflectionResult = await Reflection.reflect(layout, { usedPlugins: true })
 
-    // TODO: Do not fatal if reflection failed. Instead, run the watcher and help the user recover
-    if (!reflectionResult.success) {
-      fatal('reflection failed', { error: reflectionResult.error })
+    // TODO: Do not fatal if reflection failed.
+    // Instead, run the watcher and help the user recover
+    if (!pluginReflectionResult.success) {
+      fatal('reflection failed', { error: pluginReflectionResult.error })
     }
 
-    const worktimePlugins = Plugin.importAndLoadWorktimePlugins(reflectionResult.plugins, layout)
+    const worktimePlugins = Plugin.importAndLoadWorktimePlugins(pluginReflectionResult.plugins, layout)
 
     for (const p of worktimePlugins) {
       await p.hooks.dev.onStart?.()
@@ -54,8 +52,8 @@ export class Dev implements Command {
 
     log.info('start', { version: ownPackage.version })
 
-    const runTypegen = simpleDebounce((layout: Layout.Layout) => {
-      return Reflection.reflect(layout, { withArtifactGeneration: true })
+    const runDebouncedReflection = simpleDebounce((layout: Layout.Layout) => {
+      return Reflection.reflect(layout, { artifacts: true })
     })
 
     const devPlugin: Plugin.WorktimeHooks = {
@@ -76,7 +74,7 @@ export class Dev implements Command {
             layout = await Layout.create({ entrypointPath })
           }
 
-          runTypegen(layout)
+          runDebouncedReflection(layout)
         },
       },
     }

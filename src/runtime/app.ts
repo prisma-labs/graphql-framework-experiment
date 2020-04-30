@@ -152,6 +152,13 @@ export function create(): App {
         // or not start for the user.
         __state.isWasServerStartCalled = true
 
+        /**
+         * If loading plugins, we need to return here, before loading the runtime plugins
+         */
+         if (Reflection.isReflectionStage('plugin')) {
+           return Promise.resolve()
+         }
+
         const plugins = Plugin.importAndLoadRuntimePlugins(__state.plugins())
         const { schema, assertValidSchema } = schemaComponent.private.makeSchema(plugins)
 
@@ -163,7 +170,7 @@ export function create(): App {
         /**
          * If execution in in reflection stage, do not run the server
          */
-        if (Reflection.isReflectionStage()) {
+        if (Reflection.isReflectionStage('typegen')) {
           return Promise.resolve()
         }
 

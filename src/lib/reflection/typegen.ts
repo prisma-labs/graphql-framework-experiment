@@ -13,7 +13,7 @@ interface TypegenParams {
   plugins: Plugin.RuntimeContributions[]
 }
 
-export async function writeTypegen(params: TypegenParams) {
+export async function writeArtifacts(params: TypegenParams) {
   // Generate the backing types typegen file
   const backingTypes = await BackingTypes.generateBackingTypesArtifacts(
     params.schemaSettings.rootTypingsGlobPattern,

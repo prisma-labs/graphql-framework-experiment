@@ -3,45 +3,60 @@ import * as Layout from '../layout'
 import { fork } from 'child_process'
 import * as Path from 'path'
 import { rootLogger } from '../nexus-logger'
-import { serializeError, deserializeError, ErrorObject } from 'serialize-error'
+import { deserializeError, ErrorObject } from 'serialize-error'
+import { saveReflectionStageEnv } from './stage'
 
 const log = rootLogger.child('reflection')
 
 export type Message =
   | {
-      type: 'success'
+      type: 'success-plugin'
       data: {
         plugins: Plugin[]
       }
     }
+  | {
+      type: 'success-typegen'
+    }
   | { type: 'error'; data: { serializedError: ErrorObject } }
 
-type ReflectionResult = { success: false; error: Error } | { success: true; plugins: Plugin[] }
+type ReflectionResultPlugins = { success: false; error: Error } | { success: true; plugins: Plugin[] }
+type ReflectionResultArtifactGeneration = { success: false; error: Error } | { success: true }
+type ReflectionResult = ReflectionResultPlugins | ReflectionResultArtifactGeneration
 
 /**
  * Run the reflection step of Nexus. Get the used plugins and generate the artifacts optionally.
  */
+export function reflect(layout: Layout.Layout, opts: { usedPlugins: true }): Promise<ReflectionResultPlugins>
 export function reflect(
   layout: Layout.Layout,
-  opts: { withArtifactGeneration: boolean }
-): Promise<ReflectionResult> {
+  opts: { artifacts: true }
+): Promise<ReflectionResultArtifactGeneration>
+export function reflect(
+  layout: Layout.Layout,
+  opts: { usedPlugins?: true; artifacts?: true }
+): Promise<ReflectionResultPlugins | ReflectionResultArtifactGeneration> {
   log.trace('reflection started')
   return new Promise<ReflectionResult>((resolve) => {
     const cp = fork(Path.join(__dirname, 'fork-script.js'), [], {
       cwd: layout.projectRoot,
-      stdio: 'pipe',
+      stdio: 'inherit',
       env: {
         ...process.env,
         NEXUS_REFLECTION_LAYOUT: JSON.stringify(layout.data),
-        NEXUS_SHOULD_GENERATE_ARTIFACTS: opts.withArtifactGeneration === true ? 'true' : undefined,
+        ...saveReflectionStageEnv(opts.usedPlugins ? 'plugin' : 'typegen'),
       },
     })
 
     cp.on('message', (message: Message) => {
-      if (message.type === 'success') {
-        log.trace('reflection finished ', { plugins: message.data.plugins })
+      if (message.type === 'success-plugin' && opts.usedPlugins) {
         resolve({ success: true, plugins: message.data.plugins })
       }
+
+      if (message.type === 'success-typegen' && opts.artifacts) {
+        resolve({ success: true })
+      }
+
       if (message.type === 'error') {
         resolve({ success: false, error: deserializeError(message.data.serializedError) })
       }
@@ -69,8 +84,4 @@ export function reflect(
       }
     })
   })
-}
-
-export function shouldGenerateArtifacts(): boolean {
-  return process.env.NEXUS_SHOULD_GENERATE_ARTIFACTS === 'true'
 }
