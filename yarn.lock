@@ -388,6 +388,16 @@
     "@types/yargs" "^15.0.0"
     chalk "^3.0.0"
 
+"@nexus/logger@^0.1.0-next.1":
+  version "0.1.0-next.1"
+  resolved "https://registry.yarnpkg.com/@nexus/logger/-/logger-0.1.0-next.1.tgz#34a80cfd5f3c0e192ad147bc9ba793b33780846b"
+  integrity sha512-J80f3tRdaSvYjicRrp/Q7e6MbV4zxB8mxprd/mijEFCMdQ7t6Y8wWiW4jwEnH8ozy99tWcXTYVKGhnLXNdXV6Q==
+  dependencies:
+    chalk "^4.0.0"
+    lodash "^4.17.15"
+    pino "5"
+    strip-ansi "^6.0.0"
+
 "@nexus/schema@^0.14.0-next.1":
   version "0.14.0-next.1"
   resolved "https://registry.yarnpkg.com/@nexus/schema/-/schema-0.14.0-next.1.tgz#ea822ce28fe914ff5167962d786bb803ee1e37e6"
@@ -4427,7 +4437,7 @@ pino-std-serializers@^2.4.2:
   resolved "https://registry.yarnpkg.com/pino-std-serializers/-/pino-std-serializers-2.4.2.tgz#cb5e3e58c358b26f88969d7e619ae54bdfcc1ae1"
   integrity sha512-WaL504dO8eGs+vrK+j4BuQQq6GLKeCCcHaMB2ItygzVURcL1CycwNEUHTD/lHFHs/NL5qAz2UKrjYWXKSf4aMQ==
 
-pino@^5.15.0:
+pino@5, pino@^5.15.0:
   version "5.17.0"
   resolved "https://registry.yarnpkg.com/pino/-/pino-5.17.0.tgz#b9def314e82402154f89a25d76a31f20ca84b4c8"
   integrity sha512-LqrqmRcJz8etUjyV0ddqB6OTUutCgQULPFg2b4dtijRHUsucaAdBgSUW58vY6RFSX+NT8963F+q0tM6lNwGShA==

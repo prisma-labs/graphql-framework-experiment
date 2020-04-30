@@ -1,6 +1,6 @@
+import * as Logger from '@nexus/logger'
 import { stripIndent } from 'common-tags'
 import * as Lo from 'lodash'
-import * as Logger from '../lib/logger'
 import * as Plugin from '../lib/plugin'
 import * as Schema from './schema'
 import * as Server from './server'
