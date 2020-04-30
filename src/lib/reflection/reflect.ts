@@ -40,7 +40,7 @@ export function reflect(
   return new Promise<ReflectionResult>((resolve) => {
     const cp = fork(Path.join(__dirname, 'fork-script.js'), [], {
       cwd: layout.projectRoot,
-      stdio: 'inherit',
+      stdio: 'pipe',
       env: {
         ...process.env,
         NEXUS_REFLECTION_LAYOUT: JSON.stringify(layout.data),
