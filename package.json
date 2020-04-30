@@ -17,7 +17,9 @@
     "plugin.d.ts",
     "plugin.js",
     "components/schema.d.ts",
-    "components/schema.js"
+    "components/schema.js",
+    "components/logger.d.ts",
+    "components/logger.js"
   ],
   "bin": {
     "nexus": "dist/cli/main.js"
