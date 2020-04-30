@@ -33,6 +33,10 @@ const facades = [
 
   ['components/schema.d.ts',  "export * from '../dist/components/schema'"             + os.EOL],
   ['components/schema.js',    "module.exports = require('../dist/components/schema')" + os.EOL],
+
+  ['components/logger.d.ts',  "export * from '../dist/components/logger'"             + os.EOL],
+  ['components/logger.js',    "module.exports = require('../dist/components/logger')" + os.EOL],
+
 ]
 
 // Write facade files
