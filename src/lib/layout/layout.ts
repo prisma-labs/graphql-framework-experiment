@@ -333,16 +333,6 @@ export async function loadDataFromParentProcess(): Promise<Layout> {
   }
 }
 
-export function mustLoadDataFromParentProcess(): Layout {
-  const savedData: undefined | string = process.env[ENV_VAR_DATA_NAME]
-  if (!savedData) {
-    throw new Error(
-      'An attempt to load saved layout data was made but no serialized data was found in the environment'
-    )
-  }
-  return createFromData(JSON.parse(savedData) as Data)
-}
-
 function readProjectInfo(opts?: { cwd?: string }): ScanResult['project'] {
   const localFS = FS.cwd(opts?.cwd ?? process.cwd())
   try {

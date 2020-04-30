@@ -6,7 +6,6 @@ export {
   findAppModule,
   Layout,
   loadDataFromParentProcess,
-  mustLoadDataFromParentProcess,
   saveDataForChildProcess,
   scanProjectType,
 } from './layout'

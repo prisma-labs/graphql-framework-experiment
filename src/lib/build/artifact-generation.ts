@@ -32,11 +32,6 @@ export async function generateArtifacts(layout: Layout): Promise<void> {
     stdio: 'inherit',
     encoding: 'utf8',
     cwd: layout.projectRoot,
-    env: {
-      ...process.env,
-      NEXUS_SHOULD_AWAIT_TYPEGEN: 'true',
-      NEXUS_SHOULD_EXIT_AFTER_GENERATE_ARTIFACTS: 'true',
-    },
   })
 
   if (result.error) {

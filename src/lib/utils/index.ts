@@ -10,13 +10,13 @@ export type Param1<F> = F extends (p: infer P, ...args: any[]) => any ? P : neve
  * DeepPartial - borrowed from `utility-types`
  * @desc Partial that works for deeply nested structure
  * @example
- *   // Expect: {
- *   //   first?: {
- *   //     second?: {
- *   //       name?: string;
- *   //     };
- *   //   };
- *   // }
+ *   Expect: {
+ *     first?: {
+ *       second?: {
+ *         name?: string;
+ *       };
+ *     };
+ *   }
  *   type NestedProps = {
  *     first: {
  *       second: {
@@ -44,13 +44,13 @@ export declare type DeepPartialObject<T> = {
  * DeepRequired - borrowed from `utility-types`
  * @desc Required that works for deeply nested structure
  * @example
- *   // Expect: {
- *   //   first: {
- *   //     second: {
- *   //       name: string;
- *   //     };
- *   //   };
- *   // }
+ *   Expect: {
+ *     first: {
+ *       second: {
+ *         name: string;
+ *       };
+ *     };
+ *   }
  *   type NestedProps = {
  *     first?: {
  *       second?: {
@@ -268,4 +268,28 @@ export function partition<T>(array: Array<T>, predicate: (value: T) => boolean):
  */
 export function prettifyHost(host: string): string {
   return host === '::' ? 'localhost' : host
+}
+
+/**
+ * Makes sure, that there is only one execution at a time
+ * and the last invocation doesn't get lost (tail behavior of debounce)
+ * Mostly designed for watch mode
+ */
+export function simpleDebounce<T extends (...args: any[]) => Promise<any>>(fn: T): T {
+  let executing = false
+  let pendingExecution: any = null
+  return (async (...args: any[]) => {
+    if (executing) {
+      // if there's already an execution, make it pending
+      pendingExecution = args
+      return null as any
+    }
+    executing = true
+    await fn(...args).catch((e) => console.error(e))
+    if (pendingExecution) {
+      await fn(...args).catch((e) => console.error(e))
+      pendingExecution = null
+    }
+    executing = false
+  }) as any
 }

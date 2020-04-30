@@ -9,6 +9,8 @@ import { fatal } from '../../lib/process'
 import { transpileModule } from '../../lib/tsc'
 import { createWatcher } from '../../lib/watcher'
 import { createStartModuleContent } from '../../runtime/start'
+import * as Reflection from '../../lib/reflection'
+import { simpleDebounce } from '../../lib/utils'
 
 const log = rootLogger.child('dev')
 
@@ -32,13 +34,17 @@ export class Dev implements Command {
       return this.help()
     }
 
-    /**
-     * Load config before loading plugins which may rely on env vars being defined
-     */
     const entrypointPath = args['--entrypoint']
-    const layout = await Layout.create({ entrypointPath })
-    const pluginEntrypoints = await Plugin.getUsedPlugins(layout)
-    const worktimePlugins = await Plugin.importAndLoadWorktimePlugins(pluginEntrypoints, layout)
+    let layout = await Layout.create({ entrypointPath })
+    const pluginReflectionResult = await Reflection.reflect(layout, { usedPlugins: true })
+
+    // TODO: Do not fatal if reflection failed.
+    // Instead, run the watcher and help the user recover
+    if (!pluginReflectionResult.success) {
+      fatal('reflection failed', { error: pluginReflectionResult.error })
+    }
+
+    const worktimePlugins = Plugin.importAndLoadWorktimePlugins(pluginReflectionResult.plugins, layout)
 
     for (const p of worktimePlugins) {
       await p.hooks.dev.onStart?.()
@@ -46,7 +52,11 @@ export class Dev implements Command {
 
     log.info('start', { version: ownPackage.version })
 
-    const layoutPlugin: Plugin.WorktimeHooks = {
+    const runDebouncedReflection = simpleDebounce((layout: Layout.Layout) => {
+      return Reflection.reflect(layout, { artifacts: true })
+    })
+
+    const devPlugin: Plugin.WorktimeHooks = {
       build: {},
       create: {},
       generate: {},
@@ -61,11 +71,10 @@ export class Dev implements Command {
             change.type === 'unlinkDir'
           ) {
             log.trace('analyzing project layout')
-            const layout = await Layout.create({ entrypointPath })
-            return {
-              environmentAdditions: Layout.saveDataForChildProcess(layout),
-            }
+            layout = await Layout.create({ entrypointPath })
           }
+
+          runDebouncedReflection(layout)
         },
       },
     }
@@ -92,7 +101,7 @@ export class Dev implements Command {
       entrypointScript: transpiledStartModule,
       sourceRoot: layout.sourceRoot,
       cwd: process.cwd(),
-      plugins: [layoutPlugin].concat(worktimePlugins.map((p) => p.hooks)),
+      plugins: [devPlugin].concat(worktimePlugins.map((p) => p.hooks)),
       inspectBrk: args['--inspect-brk'],
     })
 

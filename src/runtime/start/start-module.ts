@@ -14,18 +14,35 @@ const log = rootLogger.child('start-module')
 export const START_MODULE_NAME = 'index'
 export const START_MODULE_HEADER = 'GENERATED NEXUS START MODULE'
 
-type StartModuleConfig = {
+export type StartModuleConfig = {
   internalStage: 'build' | 'dev'
   layout: Layout.Layout
-  disableArtifactGeneration?: boolean
-  absoluteModuleImports?: boolean
-  registerTypeScript?: boolean | ts.CompilerOptions
-  disableServer?: boolean
   /**
    * The plugins the app is using. The start module imports them so that tree shakers
    * can be run over the final build, pulling in the sources of the respective plugins.
    */
   runtimePluginManifests: Plugin.Manifest[]
+} & StartModuleOptions
+
+export type StartModuleOptions = {
+  /**
+   * Configure start module to require all files with absolute paths
+   *
+   * @default false
+   */
+  absoluteModuleImports?: boolean
+  /**
+   * Configure start module to register Typescript as a NodeJS extensions
+   *
+   * @default false
+   */
+  registerTypeScript?: boolean | ts.CompilerOptions
+  /**
+   * Configure start module to catch unhandled errors
+   *
+   * @default true
+   */
+  catchUnhandledErrors?: boolean
 }
 
 export function createStartModuleContent(config: StartModuleConfig): string {
@@ -45,17 +62,6 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     `
   }
 
-  content += EOL + EOL + EOL
-  content += stripIndent`
-    process.env.NEXUS_SHOULD_GENERATE_ARTIFACTS = '${!config.disableArtifactGeneration}'
-  `
-
-  if (config.disableServer) {
-    content += stripIndent`
-      process.env.NEXUS_DISABLE_SERVER = 'true'
-    `
-  }
-
   if (config.internalStage === 'dev') {
     content += EOL + EOL + EOL
     content += stripIndent`
@@ -72,9 +78,10 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     }").default
   `
 
-  // todo test coverage for this feature
-  content += EOL + EOL + EOL
-  content += stripIndent`
+  if (config.catchUnhandledErrors !== false) {
+    // todo test coverage for this feature
+    content += EOL + EOL + EOL
+    content += stripIndent`
     // Last resort error handling
     process.once('uncaughtException', error => {
       app.log.fatal('uncaughtException', { error: error })
@@ -86,6 +93,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
       process.exit(1)
     })
   `
+  }
 
   if (config.layout.packageJson) {
     content += EOL + EOL + EOL
@@ -146,14 +154,8 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     // Boot the server if the user did not already.
     if (app.__state.isWasServerStartCalled === false) {
       app.server.start()
-    }  
+    }
   `
-
-  if (config.disableServer) {
-    content += stripIndent`
-      process.env.NEXUS_DISABLE_SERVER = 'false'
-    `
-  }
 
   log.trace('created start module', { content })
   return content

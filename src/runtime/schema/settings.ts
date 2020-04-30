@@ -1,9 +1,5 @@
 import * as NexusSchema from '@nexus/schema'
-import { stripIndent, stripIndents } from 'common-tags'
-import * as fs from 'fs-jetpack'
 import * as Lo from 'lodash'
-import { isAbsolute } from 'path'
-import { mustLoadDataFromParentProcess } from '../../lib/layout/layout'
 import * as Plugin from '../../lib/plugin'
 import { Param1 } from '../../lib/utils'
 import { log as schemaLogger } from './logger'
@@ -92,28 +88,28 @@ export function changeSettings(state: SettingsData, newSettings: SettingsInput) 
   }
 }
 
-export const NEXUS_DEFAULT_TYPEGEN_PATH = fs.path('node_modules', '@types', 'typegen-nexus', 'index.d.ts')
-
 export function mapSettingsToNexusSchemaConfig(
   frameworkPlugins: Plugin.RuntimeContributions[],
   settings: SettingsData
 ): NexusSchemaConfig {
+  const runtimeTypegenConfig = {
+    // Always false here, then set to true in the reflection module
+    outputs: false,
+    shouldGenerateArtifacts: false,
+    shouldExitAfterGenerateArtifacts: false,
+  }
+
   const baseConfig: NexusSchemaConfig = {
     nonNullDefaults: {
       input: !(settings?.nullable?.inputs ?? true),
       output: !(settings?.nullable?.outputs ?? true),
     },
-    outputs: {
-      schema: getOutputSchemaPath(settings),
-      typegen: NEXUS_DEFAULT_TYPEGEN_PATH,
-    },
     typegenAutoConfig: {
       sources: [],
     },
-    shouldGenerateArtifacts: shouldGenerateArtifacts(),
-    shouldExitAfterGenerateArtifacts: shouldExitAfterGenerateArtifacts(),
     types: [],
     plugins: [],
+    ...runtimeTypegenConfig,
   }
 
   baseConfig.plugins!.push(...processConnectionsConfig(settings))
@@ -124,94 +120,9 @@ export function mapSettingsToNexusSchemaConfig(
     baseConfig.plugins!.push(...schemaPlugins)
   }
 
-  const finalConfig = withAutoTypegenConfig(baseConfig, frameworkPlugins)
+  log.trace('config built', { config: baseConfig })
 
-  log.trace('config built', { config: finalConfig })
-
-  return finalConfig
-}
-
-function withAutoTypegenConfig(nexusConfig: NexusSchemaConfig, plugins: Plugin.RuntimeContributions[]) {
-  // Integrate plugin typegenAutoConfig contributions
-  const typegenAutoConfigFromPlugins = {}
-  for (const p of plugins) {
-    if (p.schema?.typegenAutoConfig) {
-      Lo.merge(typegenAutoConfigFromPlugins, p.schema.typegenAutoConfig)
-    }
-  }
-
-  const typegenAutoConfigObject = Lo.merge({}, typegenAutoConfigFromPlugins, nexusConfig.typegenAutoConfig!)
-  nexusConfig.typegenAutoConfig = undefined
-
-  function contextTypeContribSpecToCode(ctxTypeContribSpec: Record<string, string>): string {
-    return stripIndents`
-      interface Context {
-        ${Object.entries(ctxTypeContribSpec)
-          .map(([name, type]) => {
-            // Quote key name to handle case of identifier-incompatible key names
-            return `'${name}': ${type}`
-          })
-          .join('\n')}
-      }
-    `
-  }
-
-  // Our use-case of multiple context sources seems to require a custom
-  // handling of typegenConfig. Opened an issue about maybe making our
-  // curreent use-case, fairly basic, integrated into the auto system, here:
-  // https://github.com/prisma-labs/nexus/issues/323
-  nexusConfig.typegenConfig = async (schema, outputPath) => {
-    const configurator = await NexusSchema.core.typegenAutoConfig(typegenAutoConfigObject)
-    const config = await configurator(schema, outputPath)
-
-    // Initialize
-    config.imports.push('interface Context {}')
-    config.imports.push(stripIndent`
-      declare global {
-        interface NexusContext extends Context {}
-      }
-    `)
-    config.contextType = 'NexusContext'
-
-    // Integrate plugin context contributions
-    for (const p of plugins) {
-      if (!p.context) continue
-
-      if (p.context.typeGen.imports) {
-        config.imports.push(
-          ...p.context.typeGen.imports.map((im) => `import * as ${im.as} from '${im.from}'`)
-        )
-      }
-
-      config.imports.push(contextTypeContribSpecToCode(p.context.typeGen.fields))
-    }
-
-    config.imports.push(
-      "import * as Logger from 'nexus/components/logger'",
-      contextTypeContribSpecToCode({
-        log: 'Logger.Logger',
-      })
-    )
-
-    config.nexusSchemaImportId = 'nexus/components/schema'
-
-    log.trace('built up Nexus typegenConfig', { config })
-    return config
-  }
-
-  return nexusConfig
-}
-
-export function shouldGenerateArtifacts(): boolean {
-  return process.env.NEXUS_SHOULD_GENERATE_ARTIFACTS === 'true'
-    ? true
-    : process.env.NEXUS_SHOULD_GENERATE_ARTIFACTS === 'false'
-    ? false
-    : Boolean(!process.env.NODE_ENV || process.env.NODE_ENV === 'development')
-}
-
-export function shouldExitAfterGenerateArtifacts(): boolean {
-  return process.env.NEXUS_SHOULD_EXIT_AFTER_GENERATE_ARTIFACTS === 'true' ? true : false
+  return baseConfig
 }
 
 type ConnectionPluginConfig = NonNullable<Param1<typeof NexusSchema.connectionPlugin>>
@@ -259,26 +170,4 @@ function defaultConnectionPlugin(configBase: ConnectionConfig): NexusSchema.core
     ...configBase,
     nexusFieldName: 'connection',
   })
-}
-
-function getOutputSchemaPath(settings: SettingsInput) {
-  if (process.env.NEXUS_STAGE !== 'dev') {
-    return false
-  }
-
-  const layout = mustLoadDataFromParentProcess() // Using layout at runtime and in "prod"
-  // Process graphQL SDL output setting
-  let outputSchema: string | false
-
-  if (settings.generateGraphQLSDLFile === undefined || settings.generateGraphQLSDLFile === false) {
-    outputSchema = false
-  } else {
-    if (isAbsolute(settings.generateGraphQLSDLFile)) {
-      outputSchema = settings.generateGraphQLSDLFile
-    } else {
-      outputSchema = layout.projectPath(settings.generateGraphQLSDLFile)
-    }
-  }
-
-  return outputSchema
 }

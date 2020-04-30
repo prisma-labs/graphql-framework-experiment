@@ -4,6 +4,8 @@ import * as Lo from 'lodash'
 import * as Plugin from '../lib/plugin'
 import * as Schema from './schema'
 import * as Server from './server'
+import * as NexusSchema from '@nexus/schema'
+import * as Reflection from '../lib/reflection'
 
 const log = Logger.create({ name: 'app' })
 
@@ -67,7 +69,8 @@ export type Settings = {
 }
 
 export type AppState = {
-  plugins: Plugin.Plugin[]
+  plugins: () => Plugin.Plugin[]
+  schema: () => NexusSchema.core.NexusGraphQLSchema
   isWasServerStartCalled: boolean
 }
 
@@ -79,8 +82,20 @@ export type InternalApp = App & {
  * Crate an app instance
  */
 export function create(): App {
+  let _plugins: Plugin.Plugin[] = []
+  let _schema: NexusSchema.core.NexusGraphQLSchema | null = null
+
   const __state: InternalApp['__state'] = {
-    plugins: [],
+    plugins() {
+      return _plugins
+    },
+    schema() {
+      if (_schema === null) {
+        throw new Error('GraphQL schema was not built yet. server.start() needs to be run first')
+      }
+
+      return _schema
+    },
     isWasServerStartCalled: false,
   }
 
@@ -124,7 +139,7 @@ export function create(): App {
         `)
       }
 
-      __state.plugins.push(plugin)
+      _plugins.push(plugin)
     },
     server: {
       express: server.express,
@@ -133,16 +148,37 @@ export function create(): App {
        * for you. You should not normally need to call this function yourself.
        */
       async start() {
-        if (process.env.NEXUS_DISABLE_SERVER === 'true') {
-          return
-        }
-
         // Track the start call so that we can know in entrypoint whether to run
         // or not start for the user.
         __state.isWasServerStartCalled = true
 
-        const plugins = await Plugin.importAndLoadRuntimePlugins(__state.plugins)
-        const schema = await schemaComponent.private.makeSchema(plugins)
+        /**
+         * If loading plugins, we need to return here, before loading the runtime plugins
+         */
+         if (Reflection.isReflectionStage('plugin')) {
+           return Promise.resolve()
+         }
+
+        const plugins = Plugin.importAndLoadRuntimePlugins(__state.plugins())
+        const { schema, assertValidSchema } = schemaComponent.private.makeSchema(plugins)
+
+        /**
+         * Set the schema in the app state so that the reflection step can access it
+         */
+        _schema = schema
+
+        /**
+         * If execution in in reflection stage, do not run the server
+         */
+        if (Reflection.isReflectionStage('typegen')) {
+          return Promise.resolve()
+        }
+
+        /**
+         * This needs to be done **after** the reflection step,
+         * to make sure typegen can still run in case of missing types
+         */
+        assertValidSchema()
 
         await server.setupAndStart({
           schema,
