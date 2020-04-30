@@ -187,7 +187,7 @@ function withAutoTypegenConfig(nexusConfig: NexusSchemaConfig, plugins: Plugin.R
     }
 
     config.imports.push(
-      "import * as Logger from 'nexus/dist/lib/logger'",
+      "import * as Logger from 'nexus/components/logger'",
       contextTypeContribSpecToCode({
         log: 'Logger.Logger',
       })

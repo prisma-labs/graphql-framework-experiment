@@ -1,3 +1,4 @@
+import * as Logger from '@nexus/logger'
 import * as NexusSchema from '@nexus/schema'
 import { CreateFieldResolverInfo, makeSchemaInternal } from '@nexus/schema/dist/core'
 import { stripIndent } from 'common-tags'
@@ -5,17 +6,16 @@ import { GraphQLFieldResolver, GraphQLResolveInfo } from 'graphql'
 import * as HTTP from 'http'
 import { runAddToContextExtractorAsWorkerIfPossible } from '../../lib/add-to-context-extractor/add-to-context-extractor'
 import * as Layout from '../../lib/layout'
-import * as Logger from '../../lib/logger'
 import {
   createNexusSchemaStateful,
   NexusSchemaStatefulBuilders,
   writeTypegen,
 } from '../../lib/nexus-schema-stateful'
 import { RuntimeContributions } from '../../lib/plugin'
+import { MaybePromise } from '../../lib/utils'
 import { AppState } from '../app'
 import { log } from './logger'
 import { changeSettings, mapSettingsToNexusSchemaConfig, SettingsData, SettingsInput } from './settings'
-import { MaybePromise } from '../../lib/utils'
 
 // Export this so that context typegen can import it, for example if users do
 // this:
