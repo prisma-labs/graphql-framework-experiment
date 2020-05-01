@@ -1,7 +1,7 @@
 # `@nexus/logger`
 
-todo
+Delightful logging library that is pretty practical & performant
 
 ```cli
-npm install @nexus/logger # not published standalone yet
+npm install @nexus/logger
 ```
