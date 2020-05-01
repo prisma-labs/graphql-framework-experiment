@@ -9,7 +9,7 @@ Robust, composable type definition for GraphQL in TypeScript/JavaScript.
 <blockquote class="warn">
 <b>Note:</b>
 
-The documentation is very new and may contain some gaps, please help us fill them in by opening issues or better yet, pull-requests when you think something could be explained better. The [examples](https://github.com/graphql-nexus/nexus/tree/develop/examples) are a great place to look to better understand how the library can be used.
+The documentation is very new and may contain some gaps, please help us fill them in by opening issues or better yet, pull-requests when you think something could be explained better. The [examples](https://github.com/graphql-nexus/examples) are a great place to look to better understand how the library can be used.
 
 </blockquote>
 
@@ -19,7 +19,7 @@ Nexus builds upon the primitives of `graphql-js`, and attempts to take the simpl
 
 GraphQL Nexus was designed with TypeScript/JavaScript intellisense in mind, and combines TypeScript generics, conditional types, and type merging to provide full auto-generated type coverage out of the box.
 
-Check out the [example projects](https://github.com/graphql-nexus/nexus/tree/develop/examples) to get some ideas of what this looks like in practice, or try it out in the [playground](../playground) to see what we mean!
+Check out the [example projects](https://github.com/graphql-nexus/examples) to get some ideas of what this looks like in practice, or try it out in the [playground](../playground) to see what we mean!
 
 ## Installation
 
