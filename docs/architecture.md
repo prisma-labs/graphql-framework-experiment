@@ -1,3 +1,11 @@
+## Reflection
+
+todo
+
+## Assembly
+
+todo
+
 ## Build Flow
 
 1. The app layout is calculated  
@@ -37,3 +45,21 @@ what follows is a stub
    1. validate imported value
    1. load plugin
    1. catch any load errors
+
+## Glossary
+
+### Assembly
+
+The process in which the app configuration (settings, schema type defs, used plugins, etc.) is processed into a runnable state. Nexus apps are only ever assembled once in their lifecycle.
+
+### Dynamic Reflection
+
+The process in which the app is run in order to extract data out of it. The data in turn can be used for anything. For example typegen to provide better TypeScript types or GraphQL SDL generation.
+
+### Static Reflection
+
+The process in which the app is analyzed with the TS API to extract data out of it. The data in turn can be used for anything. For example typegen to provide better TypeScript types.
+
+### Reflection
+
+The general idea of the app source code or its state at runtime being analyzed to extract data.
