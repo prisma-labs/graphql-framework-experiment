@@ -4,22 +4,6 @@
 
 Use the server to run the HTTP server that clients will connect to.
 
-### `start`
-
-Make the server start listening for incoming client connections.
-
-Calling start while already started is a no-op.
-
-Normally you should not need to use this method. When your app does not call `server.start`, Nexus will do so for you automatically.
-
-### `stop`
-
-Make the server stop listening for incoming client connections.
-
-Calling stop while the server is already stopped is a no-op.
-
-Normally you should not need to use this method.
-
 ### `express`
 
 Gives you access to the underlying `express` instance.

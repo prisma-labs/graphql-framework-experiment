@@ -1,11 +1,10 @@
 import * as Logger from '@nexus/logger'
 import { stripIndent } from 'common-tags'
-import * as Lo from 'lodash'
 import * as Plugin from '../lib/plugin'
+import * as Reflection from '../lib/reflection'
 import * as Schema from './schema'
 import * as Server from './server'
-import * as NexusSchema from '@nexus/schema'
-import * as Reflection from '../lib/reflection'
+import * as Settings from './settings'
 
 const log = Logger.create({ name: 'app' })
 
@@ -27,168 +26,126 @@ export interface App {
   /**
    * todo
    */
-  settings: Settings
+  settings: Settings.Settings
   /**
    * [API Reference](https://www.nexusjs.org/#/api/modules/main/exports/schema) // [Guide](todo)
    *
    * ### todo
    */
   schema: Schema.Schema
-
+  /**
+   * todo
+   */
   use(plugin: Plugin.Plugin): void
-}
-
-type SettingsInput = {
-  logger?: Logger.SettingsInput
-  schema?: Schema.SettingsInput
-  server?: Server.SettingsInput
-}
-
-export type SettingsData = Readonly<{
-  logger: Logger.SettingsData
-  schema: Schema.SettingsData
-  server: Server.SettingsData
-}>
-
-/**
- * todo
- */
-export type Settings = {
   /**
    * todo
    */
-  original: SettingsData
+  assemble(): any
   /**
    * todo
    */
-  current: SettingsData
+  start(): any
   /**
    * todo
    */
-  change(newSetting: SettingsInput): void
+  stop(): any
+  /**
+   * todo
+   */
 }
 
 export type AppState = {
-  plugins: () => Plugin.Plugin[]
-  schema: () => NexusSchema.core.NexusGraphQLSchema
-  isWasServerStartCalled: boolean
+  plugins: Plugin.Plugin[]
+  // schema: () => NexusSchema.core.NexusGraphQLSchema
+  /**
+   * Once the app is started incremental component APIs can no longer be used. This
+   * flag let's those APIs detect that they are being used after app start. Then
+   * they can do something useful like tell the user about their mistake.
+   */
+  assembled: boolean
+  running: boolean
+  schemaComponent: Schema.LazyState
 }
 
-export type InternalApp = App & {
-  __state: AppState
+export type PrivateApp = App & {
+  private: {
+    state: AppState
+  }
 }
 
 /**
- * Crate an app instance
+ * Create new app state. Be careful to pass this state to components to complete its
+ * data. The data returned only contains core state, despite what the return
+ * type says.
+ */
+export function createAppState(): AppState {
+  const appState = {
+    assembled: false,
+    running: false,
+    plugins: [],
+  } as Omit<AppState, 'schemaComponent'>
+
+  return appState as any
+}
+
+/**
+ * Create an app instance
  */
 export function create(): App {
-  let _plugins: Plugin.Plugin[] = []
-  let _schema: NexusSchema.core.NexusGraphQLSchema | null = null
-
-  const __state: InternalApp['__state'] = {
-    plugins() {
-      return _plugins
-    },
-    schema() {
-      if (_schema === null) {
-        throw new Error('GraphQL schema was not built yet. server.start() needs to be run first')
-      }
-
-      return _schema
-    },
-    isWasServerStartCalled: false,
-  }
-
-  const server = Server.create()
-  const schemaComponent = Schema.create(__state)
-
-  const settings: Settings = {
-    change(newSettings) {
-      if (newSettings.logger) {
-        log.settings(newSettings.logger)
-      }
-      if (newSettings.schema) {
-        schemaComponent.private.settings.change(newSettings.schema)
-      }
-      if (newSettings.server) {
-        server.settings.change(newSettings.server)
-      }
-    },
-    current: {
-      logger: log.settings,
-      schema: schemaComponent.private.settings.data,
-      server: server.settings.data,
-    },
-    original: Lo.cloneDeep({
-      logger: log.settings,
-      schema: schemaComponent.private.settings.data,
-      server: server.settings.data,
-    }),
-  }
-
-  const api: InternalApp = {
-    __state,
+  const appState = createAppState()
+  const serverComponent = Server.create(appState)
+  const schemaComponent = Schema.create(appState)
+  const settingsComponent = Settings.create({
+    serverSettings: serverComponent.private.settings,
+    schemaSettings: schemaComponent.private.settings,
+    log,
+  })
+  const api: PrivateApp = {
     log: log,
-    settings: settings,
+    settings: settingsComponent.public,
     schema: schemaComponent.public,
+    server: serverComponent.public,
+    // todo call this in the start module
+    assemble() {
+      if (appState.assembled) return
+
+      appState.assembled = true
+
+      if (Reflection.isReflectionStage('plugin')) return
+
+      const loadedRuntimePlugins = Plugin.importAndLoadRuntimePlugins(appState.plugins)
+
+      schemaComponent.private.assemble(loadedRuntimePlugins)
+
+      if (Reflection.isReflectionStage('typegen')) return
+
+      schemaComponent.private.checks()
+
+      serverComponent.private.assemble(loadedRuntimePlugins, appState.schemaComponent.schema!)
+    },
+    async start() {
+      if (Reflection.isReflection()) return
+      if (appState.running) return
+      await serverComponent.private.start()
+      appState.running = true
+    },
+    async stop() {
+      if (Reflection.isReflection()) return
+      if (!appState.running) return
+      await serverComponent.private.stop()
+      appState.running = false
+    },
     use(plugin) {
-      if (__state.isWasServerStartCalled === true) {
+      if (appState.assembled === true) {
         log.warn(stripIndent`
           A plugin was ignored because it was loaded after the server was started
           Make sure to call \`use\` before you call \`server.start\`
         `)
       }
-
-      _plugins.push(plugin)
+      appState.plugins.push(plugin)
     },
-    server: {
-      express: server.express,
-      /**
-       * Start the server. If you do not call this explicitly then nexus will
-       * for you. You should not normally need to call this function yourself.
-       */
-      async start() {
-        // Track the start call so that we can know in entrypoint whether to run
-        // or not start for the user.
-        __state.isWasServerStartCalled = true
-
-        /**
-         * If loading plugins, we need to return here, before loading the runtime plugins
-         */
-         if (Reflection.isReflectionStage('plugin')) {
-           return Promise.resolve()
-         }
-
-        const plugins = Plugin.importAndLoadRuntimePlugins(__state.plugins())
-        const { schema, assertValidSchema } = schemaComponent.private.makeSchema(plugins)
-
-        /**
-         * Set the schema in the app state so that the reflection step can access it
-         */
-        _schema = schema
-
-        /**
-         * If execution in in reflection stage, do not run the server
-         */
-        if (Reflection.isReflectionStage('typegen')) {
-          return Promise.resolve()
-        }
-
-        /**
-         * This needs to be done **after** the reflection step,
-         * to make sure typegen can still run in case of missing types
-         */
-        assertValidSchema()
-
-        await server.setupAndStart({
-          schema,
-          plugins,
-          contextContributors: schemaComponent.private.state.contextContributors,
-        })
-      },
-      stop() {
-        return server.stop()
-      },
+    private: {
+      state: appState,
     },
   }
 

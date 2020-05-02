@@ -151,10 +151,8 @@ export function createStartModuleContent(config: StartModuleConfig): string {
 
   content += EOL + EOL + EOL
   content += stripIndent`
-    // Boot the server if the user did not already.
-    if (app.__state.isWasServerStartCalled === false) {
-      app.server.start()
-    }
+    app.assemble()
+    app.start()
   `
 
   log.trace('created start module', { content })

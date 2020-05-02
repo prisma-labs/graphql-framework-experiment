@@ -12,7 +12,7 @@ async function run() {
     throw new Error('process.env.NEXUS_REFLECTION_LAYOUT is required')
   }
 
-  const app = require('../../').default as App.InternalApp
+  const app = require('../../').default as App.PrivateApp
   const layout = Layout.createFromData(JSON.parse(process.env.NEXUS_REFLECTION_LAYOUT) as Layout.Data)
   const appRunner = createDevAppRunner(layout, app, {
     catchUnhandledErrors: false,
@@ -24,13 +24,11 @@ async function run() {
     sendErrorToParent(err)
   }
 
-  const plugins = app.__state.plugins()
-
   if (isReflectionStage('plugin')) {
     sendDataToParent({
       type: 'success-plugin',
       data: {
-        plugins,
+        plugins: app.private.state.plugins,
       },
     })
 
@@ -38,14 +36,12 @@ async function run() {
   }
 
   if (isReflectionStage('typegen')) {
-    const graphqlSchema = app.__state.schema()
-
     try {
       await writeArtifacts({
-        graphqlSchema,
+        graphqlSchema: app.private.state.schemaComponent.schema!,
         layout,
         schemaSettings: app.settings.current.schema,
-        plugins: Plugin.importAndLoadRuntimePlugins(plugins),
+        plugins: Plugin.importAndLoadRuntimePlugins(app.private.state.plugins),
       })
       sendDataToParent({
         type: 'success-typegen',
