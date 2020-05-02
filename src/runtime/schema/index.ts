@@ -1,2 +1,2 @@
-export { create, Schema } from './schema'
+export { create, LazyState, Schema } from './schema'
 export { SettingsData, SettingsInput } from './settings'

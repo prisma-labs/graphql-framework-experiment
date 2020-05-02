@@ -1,8 +1,7 @@
 import * as ts from 'typescript'
 import * as Layout from '../../lib/layout'
 import { transpileModule } from '../../lib/tsc'
-import type { InternalApp } from '../app'
-import * as Server from '../server'
+import type { PrivateApp } from '../app'
 import { createStartModuleContent, StartModuleOptions } from './start-module'
 
 export interface DevRunner {
@@ -22,7 +21,7 @@ export interface DevRunner {
 
 export function createDevAppRunner(
   layout: Layout.Layout,
-  appSingleton: InternalApp,
+  appSingleton: PrivateApp,
   opts?: {
     catchUnhandledErrors?: StartModuleOptions['catchUnhandledErrors']
   }
@@ -37,7 +36,7 @@ export function createDevAppRunner(
     layout: layout,
     absoluteModuleImports: true,
     runtimePluginManifests: [],
-    catchUnhandledErrors: opts?.catchUnhandledErrors
+    catchUnhandledErrors: opts?.catchUnhandledErrors,
   })
 
   const transpiledStartModule = transpileModule(startModule, {
@@ -50,7 +49,7 @@ export function createDevAppRunner(
     start: () => {
       return eval(transpiledStartModule)
     },
-    stop: () => appSingleton.server.stop(),
+    stop: () => appSingleton.stop(),
     port: appSingleton.settings.current.server.port,
   }
 }

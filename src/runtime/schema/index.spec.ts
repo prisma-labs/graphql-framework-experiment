@@ -1,12 +1,14 @@
 import { plugin } from '@nexus/schema'
-import { create } from './schema'
+import { AppState, createAppState } from '../app'
+import { create, SchemaInternal } from './schema'
 import { mapSettingsToNexusSchemaConfig } from './settings'
 
-let schema: ReturnType<typeof create>
+let schema: SchemaInternal
+let appState: AppState
 
-// TODO: Figure out how to deal with `schema` and `plugins`
 beforeEach(() => {
-  schema = create({ isWasServerStartCalled: false, plugins: () => [], schema: () => null as any })
+  appState = createAppState()
+  schema = create(appState)
 })
 
 it('defaults to outputs being nullable by default', () => {
@@ -39,6 +41,6 @@ describe('use', () => {
   it('incrementally adds plugins', () => {
     schema.public.use(plugin({ name: 'foo' }))
     schema.public.use(plugin({ name: 'bar' }))
-    expect(schema.private.state.schemaPlugins.length).toEqual(2)
+    expect(appState.schemaComponent.plugins.length).toEqual(2)
   })
 })

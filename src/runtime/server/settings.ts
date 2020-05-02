@@ -58,6 +58,7 @@ export type SettingsData = Omit<Utils.DeepRequired<SettingsInput>, 'host' | 'pla
 }
 
 export const defaultPlaygroundPath = '/'
+
 export const defaultPlaygroundSettings: () => Readonly<Required<PlaygroundSettings>> = () =>
   Object.freeze({
     path: defaultPlaygroundPath,
@@ -148,3 +149,17 @@ export function changeSettings(oldSettings: SettingsData, newSettings: SettingsI
     playground,
   }
 }
+
+export function createServerSettingsManager() {
+  const data = defaultSettings()
+  const change = (newSettings: SettingsInput) => {
+    return changeSettings(data, newSettings)
+  }
+
+  return {
+    change,
+    data,
+  }
+}
+
+export type ServerSettingsManager = ReturnType<typeof createServerSettingsManager>

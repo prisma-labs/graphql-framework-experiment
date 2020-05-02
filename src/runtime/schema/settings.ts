@@ -171,3 +171,21 @@ function defaultConnectionPlugin(configBase: ConnectionConfig): NexusSchema.core
     nexusFieldName: 'connection',
   })
 }
+
+function defaultSettings(): SettingsInput {
+  return {}
+}
+
+export function createSchemaSettingsManager() {
+  const data = defaultSettings()
+  const change = (newSettings: SettingsInput) => {
+    return changeSettings(data, newSettings)
+  }
+
+  return {
+    change,
+    data,
+  }
+}
+
+export type SchemaSettingsManager = ReturnType<typeof createSchemaSettingsManager>

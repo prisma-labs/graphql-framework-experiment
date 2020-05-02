@@ -3,7 +3,7 @@ import * as Lo from 'lodash'
 import { GraphQLClient } from '../lib/graphql-client'
 import * as Layout from '../lib/layout'
 import * as Plugin from '../lib/plugin'
-import type { InternalApp } from './app'
+import type { PrivateApp } from './app'
 import { createDevAppRunner } from './start'
 
 type AppClient = {
@@ -72,31 +72,25 @@ export async function createTestContext(): Promise<TestContext> {
   const layout = await Layout.create()
   const pluginManifests = await Plugin.getUsedPlugins(layout)
   const randomPort = await getPort({ port: getPort.makeRange(4000, 6000) })
-  const app = require('../index') as InternalApp
+  const app = require('../index') as PrivateApp
 
   app.settings.change({
     server: {
       port: randomPort,
-      startMessage: () => {}, // Make server silent
       playground: false, // Disable playground during tests
+      startMessage() {}, // Make server silent
     },
   })
 
   const appRunner = await createDevAppRunner(layout, app)
-
-  const server = {
-    start: appRunner.start,
-    stop: appRunner.stop,
-  }
-
   const apiUrl = `http://localhost:${appRunner.port}/graphql`
   const appClient = createAppClient(apiUrl)
   const testContextCore: TestContextCore = {
     app: {
       query: appClient.query,
       server: {
-        start: server.start,
-        stop: app.server.stop,
+        start: appRunner.start,
+        stop: appRunner.stop,
       },
     },
   }
