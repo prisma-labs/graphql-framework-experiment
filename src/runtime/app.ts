@@ -124,14 +124,14 @@ export function create(): App {
       serverComponent.private.assemble(loadedRuntimePlugins, appState.schemaComponent.schema!)
     },
     async start() {
+      if (Reflection.isReflection()) return
       if (appState.running) return
       await serverComponent.private.start()
       appState.running = true
     },
     async stop() {
+      if (Reflection.isReflection()) return
       if (!appState.running) return
-      // todo should components hook onto an app event, "onStop"?
-      // todo should app state be reset?
       await serverComponent.private.stop()
       appState.running = false
     },

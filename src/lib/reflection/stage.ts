@@ -17,3 +17,10 @@ export function saveReflectionStageEnv(type: ReflectionType) {
 export function isReflectionStage(type: ReflectionType) {
   return process.env[REFLECTION_ENV_VAR] === type
 }
+
+/**
+ * Check whether the app is executing in its reflection stage
+ */
+export function isReflection() {
+  return process.env[REFLECTION_ENV_VAR] !== undefined
+}
