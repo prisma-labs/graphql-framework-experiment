@@ -57,4 +57,4 @@ const SomeObject = objectType({
 })
 ```
 
-Check the type-definitions or [the examples](https://github.com/graphql-nexus/examples) for a full illustration of the various options for `scalarType`, or feel free to open a PR on the docs to help document!
+Check the type-definitions or [the examples](https://github.com/graphql-nexus/schema/tree/develop/examples) for a full illustration of the various options for `scalarType`, or feel free to open a PR on the docs to help document!
