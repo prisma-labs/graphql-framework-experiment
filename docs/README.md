@@ -70,7 +70,7 @@ We plan to lift these limitations one day.
 
 - Lacks good Windows support [issues](https://github.com/graphql-nexus/nexus/labels/platform%2Fwindows)
 - Does not work with JavaScript [#85](https://github.com/graphql-nexus/nexus/issues/85)
-- Does not cover the entire GrpahQL Spec
+- Does not cover the entire GraphQL Spec
   - Subscriptions [#447](https://github.com/graphql-nexus/nexus/issues/447)
   - Interface Extensions [#713](https://github.com/graphql-nexus/nexus/issues/713)
 
