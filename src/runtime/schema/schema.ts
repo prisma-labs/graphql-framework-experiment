@@ -1,6 +1,6 @@
 import * as Logger from '@nexus/logger'
 import * as NexusSchema from '@nexus/schema'
-import { CreateFieldResolverInfo, makeSchemaInternal } from '@nexus/schema/dist/core'
+import { CreateFieldResolverInfo, makeSchemaInternal, NexusGraphQLSchema } from '@nexus/schema/dist/core'
 import { stripIndent } from 'common-tags'
 import { GraphQLFieldResolver, GraphQLResolveInfo } from 'graphql'
 import * as HTTP from 'http'
@@ -84,7 +84,7 @@ export interface SchemaInternal {
   private: {
     settings: SchemaSettingsManager
     checks(): void
-    assemble(plugins: RuntimeContributions[]): void
+    assemble(plugins: RuntimeContributions[]): { schema: NexusGraphQLSchema }
   }
   public: Schema
 }
@@ -110,7 +110,7 @@ export function create(appState: AppState): SchemaInternal {
     public: {
       ...statefulNexusSchema.builders,
       use(plugin) {
-        if (appState.assembled === true) {
+        if (appState.assembled) {
           log.warn(stripIndent`
             A Nexus Schema plugin was ignored because it was loaded after the server was started
             Make sure to call \`schema.use\` before you call \`server.start\`
@@ -146,6 +146,7 @@ export function create(appState: AppState): SchemaInternal {
 
         appState.schemaComponent.schema = schema
         appState.schemaComponent.missingTypes = missingTypes
+        return { schema, missingTypes }
       },
     },
   }

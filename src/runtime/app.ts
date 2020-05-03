@@ -1,9 +1,12 @@
 import * as Logger from '@nexus/logger'
+import { NexusGraphQLSchema } from '@nexus/schema/dist/core'
 import { stripIndent } from 'common-tags'
 import * as Plugin from '../lib/plugin'
+import { RuntimeContributions } from '../lib/plugin'
 import * as Reflection from '../lib/reflection'
 import * as Schema from './schema'
 import * as Server from './server'
+import { ContextCreator } from './server/server'
 import * as Settings from './settings'
 
 const log = Logger.create({ name: 'app' })
@@ -62,7 +65,11 @@ export type AppState = {
    * flag let's those APIs detect that they are being used after app start. Then
    * they can do something useful like tell the user about their mistake.
    */
-  assembled: boolean
+  assembled: null | {
+    schema: NexusGraphQLSchema
+    loadedPlugins: RuntimeContributions<any>[]
+    createContext: ContextCreator
+  }
   running: boolean
   schemaComponent: Schema.LazyState
 }
@@ -80,7 +87,7 @@ export type PrivateApp = App & {
  */
 export function createAppState(): AppState {
   const appState = {
-    assembled: false,
+    assembled: null,
     running: false,
     plugins: [],
   } as Omit<AppState, 'schemaComponent'>
@@ -109,19 +116,28 @@ export function create(): App {
     assemble() {
       if (appState.assembled) return
 
-      appState.assembled = true
+      appState.assembled = {} as any
 
       if (Reflection.isReflectionStage('plugin')) return
 
-      const loadedRuntimePlugins = Plugin.importAndLoadRuntimePlugins(appState.plugins)
+      const loadedPlugins = Plugin.importAndLoadRuntimePlugins(appState.plugins)
 
-      schemaComponent.private.assemble(loadedRuntimePlugins)
+      const { schema } = schemaComponent.private.assemble(loadedPlugins)
 
       if (Reflection.isReflectionStage('typegen')) return
 
       schemaComponent.private.checks()
 
-      serverComponent.private.assemble(loadedRuntimePlugins, appState.schemaComponent.schema!)
+      const { createContext } = serverComponent.private.assemble(
+        loadedPlugins,
+        appState.schemaComponent.schema!
+      )
+
+      appState.assembled = {
+        loadedPlugins,
+        schema,
+        createContext,
+      }
     },
     async start() {
       if (Reflection.isReflection()) return
@@ -136,10 +152,11 @@ export function create(): App {
       appState.running = false
     },
     use(plugin) {
-      if (appState.assembled === true) {
+      // extract util assertion
+      if (appState.assembled) {
         log.warn(stripIndent`
           A plugin was ignored because it was loaded after the server was started
-          Make sure to call \`use\` before you call \`server.start\`
+          Make sure to call \`use\` before you call \`app.assemble\`
         `)
       }
       appState.plugins.push(plugin)

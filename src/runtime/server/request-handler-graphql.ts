@@ -1,48 +1,55 @@
-import { execute, GraphQLSchema, parse, Source, validate } from 'graphql'
+import { execute, parse, Source, validate } from 'graphql'
+import { AppState } from '../app'
+import { log } from './logger'
+import { NexusRequestHandler } from './server'
 
-interface NexusRequest {
-  // todo currently assumes request body has been parsed as JSON
-  body: Record<string, string>
-}
+// interface NexusRequest {
+//   // todo currently assumes request body has been parsed as JSON
+//   body: Record<string, string>
+// }
 
-export function createRequestHandlerGraphQL(schema: GraphQLSchema) {
-  function handle(req: NexusRequest) {
-    const data = req.body
-    const source = new Source(data.query)
+type CreateHandler = (appState: AppState) => NexusRequestHandler
 
-    let documentAST
-    try {
-      documentAST = parse(source)
-    } catch (syntaxError) {
-      // todo
-      // https://github.com/graphql/express-graphql/blob/master/src/index.js
-      return
-    }
+export const createRequestHandlerGraphQL: CreateHandler = (appState: AppState) => async (req, res) => {
+  const data = req.body
+  const source = new Source(data.query)
 
-    const validationFailures = validate(schema, documentAST)
-
-    if (validationFailures.length > 1) {
-      // todo
-      return
-    }
-
-    // todo validate that if operation is mutation or subscription then http method is not GET
-    // https://github.com/graphql/express-graphql/blob/master/src/index.js#L296
-
-    let result
-    try {
-      result = execute({
-        schema: schema,
-        document: documentAST,
-        // todo other options
-      })
-    } catch (error) {
-      // todo
-      return
-    }
+  let documentAST
+  try {
+    documentAST = parse(source)
+  } catch (syntaxError) {
+    log.info('client request had syntax error', { syntaxError })
+    // todo
+    // https://github.com/graphql/express-graphql/blob/master/src/index.js
+    return
   }
 
-  return {
-    handle,
+  const validationFailures = validate(appState.assembled!.schema, documentAST)
+
+  if (validationFailures.length > 1) {
+    log.info('client request failed validation', { validationFailures })
+    // todo
+    return
   }
+
+  // todo validate that if operation is mutation or subscription then http method is not GET
+  // https://github.com/graphql/express-graphql/blob/master/src/index.js#L296
+
+  const context = await appState.assembled?.createContext(req)
+
+  let result
+  try {
+    result = await execute({
+      schema: appState.assembled!.schema,
+      document: documentAST,
+      contextValue: context,
+      // todo other options
+    })
+  } catch (error) {
+    log.error('failed while resolving client request', { error })
+    // todo
+    return
+  }
+
+  res.json(result)
 }

@@ -32,6 +32,7 @@ export function create(appState: AppState) {
   const state = {
     running: false,
     httpServer: HTTP.createServer(),
+    createContext: null,
   }
 
   const api: Server = {
@@ -42,7 +43,7 @@ export function create(appState: AppState) {
       },
       get graphql() {
         // todo get graphql schema to here
-        return createRequestHandlerGraphQL()
+        return createRequestHandlerGraphQL(appState)
       },
     },
   }
@@ -91,6 +92,10 @@ export function create(appState: AppState) {
             }))
           })
         )
+
+        return {
+          createContext,
+        }
       },
       async start() {
         await httpListen(state.httpServer, { port: settings.data.port, host: settings.data.host })
@@ -126,7 +131,7 @@ type AnonymousRequest = Record<string, any>
 
 type AnonymousContext = Record<string, any>
 
-type ContextCreator<
+export type ContextCreator<
   Req extends AnonymousRequest = AnonymousRequest,
   Context extends AnonymousContext = AnonymousContext
 > = (req: Req) => Promise<Context>
