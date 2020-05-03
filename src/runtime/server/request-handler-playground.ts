@@ -1,10 +1,10 @@
-import { RequestHandler } from 'express'
+import type { NexusRequestHandler } from './server'
 
 type Settings = {
   graphqlEndpoint: string
 }
 
-type Handler = (settings: Settings) => RequestHandler
+type Handler = (settings: Settings) => NexusRequestHandler
 
 export const createRequestHandlerPlayground: Handler = (settings) => (_req, res) => {
   res.send(`

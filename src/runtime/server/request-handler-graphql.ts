@@ -5,7 +5,7 @@ interface NexusRequest {
   body: Record<string, string>
 }
 
-function createGraphQLRequestHandler(schema: GraphQLSchema) {
+export function createRequestHandlerGraphQL(schema: GraphQLSchema) {
   function handle(req: NexusRequest) {
     const data = req.body
     const source = new Source(data.query)

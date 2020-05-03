@@ -8,14 +8,21 @@ import * as Plugin from '../../lib/plugin'
 import { AppState } from '../app'
 import { ContextContributor } from '../schema/schema'
 import { log } from './logger'
+import { createRequestHandlerGraphQL } from './request-handler-graphql'
 import { createRequestHandlerPlayground } from './request-handler-playground'
 import { createServerSettingsManager } from './settings'
 
 // Avoid forcing users to use esModuleInterop
 const createExpressGraphql = ExpressGraphQL.default
 
+export type NexusRequestHandler = (req: any, res: any) => void
+
 export interface Server {
   express: Express
+  endpoints: {
+    playground: NexusRequestHandler
+    graphql: NexusRequestHandler
+  }
 }
 
 export function create(appState: AppState) {
@@ -25,6 +32,19 @@ export function create(appState: AppState) {
   const state = {
     running: false,
     httpServer: HTTP.createServer(),
+  }
+
+  const api: Server = {
+    express,
+    endpoints: {
+      get playground() {
+        return createRequestHandlerPlayground({ graphqlEndpoint: settings.data.path })
+      },
+      get graphql() {
+        // todo get graphql schema to here
+        return createRequestHandlerGraphQL()
+      },
+    },
   }
 
   return {
@@ -98,9 +118,7 @@ export function create(appState: AppState) {
         state.running = false
       },
     },
-    public: {
-      express,
-    },
+    public: api,
   }
 }
 
