@@ -37,7 +37,7 @@ export function create(appState: AppState) {
         if (settings.data.playground) {
           express.get(
             settings.data.playground.path,
-            createRequestHandlerPlayground({ graphqlEndpoint: settings.data.playground.path })
+            createRequestHandlerPlayground({ graphqlEndpoint: settings.data.path })
           )
         }
 
