@@ -19,7 +19,7 @@ export type NexusRequestHandler = (req: any, res: any) => void
 
 export interface Server {
   express: Express
-  endpoints: {
+  handlers: {
     playground: NexusRequestHandler
     graphql: NexusRequestHandler
   }
@@ -37,7 +37,8 @@ export function create(appState: AppState) {
 
   const api: Server = {
     express,
-    endpoints: {
+    // todo handlers
+    handlers: {
       get playground() {
         return createRequestHandlerPlayground({ graphqlEndpoint: settings.data.path })
       },

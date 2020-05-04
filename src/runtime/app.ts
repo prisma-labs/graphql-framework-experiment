@@ -107,12 +107,11 @@ export function create(): App {
     schemaSettings: schemaComponent.private.settings,
     log,
   })
-  const api: PrivateApp = {
+  const api: PrivteApp = {
     log: log,
     settings: settingsComponent.public,
     schema: schemaComponent.public,
     server: serverComponent.public,
-    // todo call this in the start module
     assemble() {
       if (appState.assembled) return
 
@@ -126,12 +125,12 @@ export function create(): App {
 
       if (Reflection.isReflectionStage('typegen')) return
 
-      schemaComponent.private.checks()
-
       const { createContext } = serverComponent.private.assemble(
         loadedPlugins,
         appState.schemaComponent.schema!
       )
+
+      schemaComponent.private.checks()
 
       appState.assembled = {
         loadedPlugins,
