@@ -37,13 +37,11 @@ export function create(appState: AppState) {
 
   const api: Server = {
     express,
-    // todo handlers
     handlers: {
       get playground() {
         return createRequestHandlerPlayground({ graphqlEndpoint: settings.data.path })
       },
       get graphql() {
-        // todo get graphql schema to here
         return createRequestHandlerGraphQL(appState)
       },
     },
