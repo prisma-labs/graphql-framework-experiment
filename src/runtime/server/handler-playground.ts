@@ -1,4 +1,5 @@
 import type { NexusRequestHandler } from './server'
+import { sendResponse } from './utils'
 
 type Settings = {
   graphqlEndpoint: string
@@ -7,7 +8,12 @@ type Settings = {
 type Handler = (settings: Settings) => NexusRequestHandler
 
 export const createRequestHandlerPlayground: Handler = (settings) => (_req, res) => {
-  res.send(`
+  res.statusCode = 200
+  res.statusMessage = 'Success'
+  sendResponse(
+    res,
+    'text/html',
+    `
     <!DOCTYPE html>
     <html>
 
@@ -66,5 +72,6 @@ export const createRequestHandlerPlayground: Handler = (settings) => (_req, res)
     </body>
 
     </html>
-  `)
+  `
+  )
 }

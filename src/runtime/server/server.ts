@@ -8,15 +8,15 @@ import * as Plugin from '../../lib/plugin'
 import { AppState } from '../app'
 import * as DevMode from '../dev-mode'
 import { ContextContributor } from '../schema/schema'
+import { createRequestHandlerGraphQL } from './handler-graphql'
+import { createRequestHandlerPlayground } from './handler-playground'
 import { log } from './logger'
-import { createRequestHandlerGraphQL } from './request-handler-graphql'
-import { createRequestHandlerPlayground } from './request-handler-playground'
 import { createServerSettingsManager } from './settings'
 
 // Avoid forcing users to use esModuleInterop
 const createExpressGraphql = ExpressGraphQL.default
 
-export type NexusRequestHandler = (req: any, res: any) => void
+export type NexusRequestHandler = (req: HTTP.IncomingMessage, res: HTTP.ServerResponse) => void
 
 export interface Server {
   express: Express
