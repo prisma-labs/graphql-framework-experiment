@@ -5,6 +5,7 @@ require('../tty-linker').create().child.install()
 import { rootLogger } from '../nexus-logger'
 import hook from './hook'
 import * as IPC from './ipc'
+import * as DevMode from '../../runtime/dev-mode'
 
 const log = rootLogger.child('dev').child('runner')
 
@@ -16,7 +17,7 @@ async function main() {
   }
 
   // Enable dev mode code paths for IPC interaction
-  process.env.NEXUS_DEV_MODE = 'true'
+  process.env[DevMode.DEV_MODE_ENV_VAR_NAME] = 'true'
 
   // TODO perhaps we should move these unhandled error/rejections
   // to start module because we probably want them just as much from production as

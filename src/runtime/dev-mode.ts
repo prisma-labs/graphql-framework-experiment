@@ -15,7 +15,7 @@ import { fatal } from '../lib/process'
 /**
  * Data
  */
-const DEV_MODE_ENV_VAR_NAME = 'NEXUS_DEV_MODE'
+export const DEV_MODE_ENV_VAR_NAME = 'NEXUS_DEV_MODE'
 
 /**
  * Eager integrity check.
