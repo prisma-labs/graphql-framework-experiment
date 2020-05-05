@@ -89,20 +89,27 @@ export async function buildNexusApp(settings: BuildSettings) {
 
   const runtimePluginManifests = plugins.map(Plugin.entrypointToManifest).filter((pm) => pm.runtime)
 
-  await writeStartModule({
-    layout: layout,
-    startModule: prepareStartModule(
-      tsBuilder,
-      createStartModuleContent({
-        internalStage: 'build',
-        layout: layout,
-        runtimePluginManifests,
-      })
-    ),
-  })
+  if (!layout.tsConfig.content.options.noEmit) {
+    await writeStartModule({
+      layout: layout,
+      startModule: prepareStartModule(
+        tsBuilder,
+        createStartModuleContent({
+          internalStage: 'build',
+          layout: layout,
+          runtimePluginManifests,
+        })
+      ),
+    })
+  }
+
+  const buildOutputLog =
+    layout.tsConfig.content.options.noEmit === true
+      ? 'no emit'
+      : Path.relative(layout.projectRoot, layout.buildOutput)
 
   log.info('success', {
-    buildOutput: Path.relative(layout.projectRoot, layout.buildOutput),
+    buildOutput: buildOutputLog,
     time: Date.now() - startTime,
   })
 
