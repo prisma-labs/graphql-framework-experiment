@@ -17,12 +17,14 @@ export function createTSProgram(
   layout: Layout,
   options?: ProgramOptions
 ): ts.EmitAndSemanticDiagnosticsBuilderProgram {
-  const compilerCacheOptions = options?.withCache
-    ? {
-        tsBuildInfoFile: getTSIncrementalFilePath(layout),
-        incremental: true,
-      }
-    : {}
+  // Incremental option cannot be set when `noEmit: true`
+  const compilerCacheOptions =
+    options?.withCache && !layout.tsConfig.content.options.noEmit
+      ? {
+          tsBuildInfoFile: getTSIncrementalFilePath(layout),
+          incremental: true,
+        }
+      : {}
 
   log.trace('Create TypeScript program')
 
