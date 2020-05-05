@@ -193,7 +193,7 @@ yarn test e2e/kitchen
 
 #### Working With Example Apps via Linking
 
-Refer to https://github.com/graphql-nexus/schema/tree/develop/examples
+Refer to https://github.com/graphql-nexus/examples
 
 #### Developing `create app`
 
