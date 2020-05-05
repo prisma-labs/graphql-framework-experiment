@@ -51,7 +51,6 @@ export async function createWatcher(options: Options): Promise<Watcher> {
       }
 
       options.events?.({ type: 'server_listening' })
-      watcher.resume()
     },
     onRunnerStdioMessage({ stdio, data }) {
       options.events?.({ type: 'runner_stdio', stdio, data })
@@ -180,22 +179,25 @@ export async function createWatcher(options: Options): Promise<Watcher> {
     }
     restarting = true
     clearConsole()
-    log.trace('hook', { name: 'beforeWatcherStartOrRestart' })
+    log.info('restarting', change)
 
+    log.trace('hook', { name: 'beforeWatcherStartOrRestart' })
     for (const plugin of plugins) {
       const runnerChanges = await plugin.dev.onBeforeWatcherStartOrRestart?.(change)
       if (runnerChanges) {
         link.updateOptions(runnerChanges)
       }
     }
+
     log.trace('hook', { name: 'beforeWatcherRestart' })
     plugins.forEach((p) => {
       p.dev.onBeforeWatcherRestart?.()
     })
-    log.info('restarting', change)
+
     options.events?.({ type: 'restart', file: change.file, reason: change.type })
     await link.startOrRestart()
     restarting = false
+    watcher.resume()
   }
 
   let resolveWatcherPromise: null | (() => void) = null

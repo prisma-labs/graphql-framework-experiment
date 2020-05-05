@@ -87,6 +87,10 @@ export async function readOrScaffoldTsconfig(input: {
     log.warn(`Please set your tsconfig.json include to have "${tscfg.compilerOptions!.rootDir}"`)
   }
 
+  if (tscfg.compilerOptions.noEmit === true) {
+    log.warn('You have set compilerOptions.noEmit in your tsconfig.json. This will prevent `nexus build` from emitting code.')
+  }
+
   // setup out root
 
   if (input.overrides?.outRoot !== undefined) {

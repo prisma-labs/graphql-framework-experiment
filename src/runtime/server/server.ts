@@ -6,6 +6,7 @@ import * as Net from 'net'
 import stripAnsi from 'strip-ansi'
 import * as Plugin from '../../lib/plugin'
 import { AppState } from '../app'
+import * as DevMode from '../dev-mode'
 import { ContextContributor } from '../schema/schema'
 import { log } from './logger'
 import { createRequestHandlerGraphQL } from './request-handler-graphql'
@@ -112,6 +113,7 @@ export function create(appState: AppState) {
           path: settings.data.path,
           playgroundPath: settings.data.playground ? settings.data.playground.path : undefined,
         })
+        DevMode.sendServerReadySignalToDevModeMaster()
       },
       async stop() {
         if (!state.running) {
