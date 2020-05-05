@@ -513,6 +513,10 @@
         name: '.',
         repo: 'graphql-nexus/nexus',
         subMaxLevel: 4,
+        search: {
+          depth: 4,
+          hideOtherSidebarContent: true,
+        },
         loadSidebar: true,
         autoHeader: true,
         pagination: {
@@ -544,6 +548,7 @@
       }
     </script>
     <script src="//unpkg.com/docsify/lib/docsify.min.js"></script>
+    <script src="//unpkg.com/docsify/lib/plugins/search.min.js"></script>
     <script src="//unpkg.com/prismjs/components/prism-typescript.min.js"></script>
     <script src="//unpkg.com/prismjs/components/prism-diff.min.js"></script>
     <script src="//unpkg.com/prismjs/components/prism-graphql.min.js"></script>
