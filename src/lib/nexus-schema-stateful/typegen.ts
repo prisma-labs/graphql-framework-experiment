@@ -108,7 +108,7 @@ function withCustomTypegenConfig(
             ? NexusSchema.core.relativePathTo(typegenImport.from, outputPath)
             : typegenImport.from
           ).replace(/(\.d)?\.ts/, '')
-          const importStatement = `import * as ${typegenImport.as} from '${relativeImportPath}'`
+          const importStatement = `import * as ${typegenImport.as} from "${relativeImportPath}"`
 
           if (!config.imports.includes(importStatement)) {
             config.imports.push(importStatement)
