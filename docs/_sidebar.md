@@ -9,6 +9,7 @@
 
 - [Concepts](guides/concepts)
 - [Schema](guides/schema)
+- [Serverless](guides/serverless)
 - [Testing](guides/testing)
 - [Project Layout](guides/project-layout)
 - [Error Handling](guides/error-handling)
