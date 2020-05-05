@@ -11,7 +11,7 @@ const log = rootLogger.child('dev').child('runner')
 main()
 
 async function main() {
-  if (!process.env.ENTRYPOINT_SCRIPT) {
+  if (process.env.ENTRYPOINT_SCRIPT === undefined) {
     throw new Error('process.env.ENTRYPOINT_SCRIPT needs to be defined')
   }
 

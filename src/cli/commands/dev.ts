@@ -18,6 +18,8 @@ const DEV_ARGS = {
   '--inspect-brk': String,
   '--entrypoint': String,
   '-e': '--entrypoint',
+  '--reflection': Boolean,
+  '-r': '--reflection',
   '--help': Boolean,
   '-h': '--help',
 }
@@ -52,8 +54,16 @@ export class Dev implements Command {
 
     log.info('start', { version: ownPackage.version })
 
-    const runDebouncedReflection = simpleDebounce((layout: Layout.Layout) => {
-      return Reflection.reflect(layout, { artifacts: true })
+    const runDebouncedReflection = simpleDebounce(async (layout: Layout.Layout) => {
+      const reflectionResult = await Reflection.reflect(layout, { artifacts: true })
+      if (args['--reflection']) {
+        if (reflectionResult.success) {
+          log.info('reflection done')
+          log.info('waiting for file changes to run reflection...')
+        } else {
+          log.error('reflection failed', { error: reflectionResult.error })
+        }
+      }
     })
 
     const devPlugin: Plugin.WorktimeHooks = {
@@ -72,6 +82,10 @@ export class Dev implements Command {
           ) {
             log.trace('analyzing project layout')
             layout = await Layout.create({ entrypointPath })
+          }
+
+          if (args['--reflection']) {
+            log.info('running reflection')
           }
 
           runDebouncedReflection(layout)
@@ -97,8 +111,14 @@ export class Dev implements Command {
       target: ts.ScriptTarget.ES2015,
     })
 
+    /**
+     * We use an empty script when in reflection mode so that the user's app doesn't run.
+     * The watcher will keep running though and so will reflection in the devPlugin.onBeforeWatcherStartOrRestart hook above
+     */
+    const entrypointScript = args['--reflection'] ? '' : transpiledStartModule
+
     const watcher = await createWatcher({
-      entrypointScript: transpiledStartModule,
+      entrypointScript,
       sourceRoot: layout.sourceRoot,
       cwd: process.cwd(),
       plugins: [devPlugin].concat(worktimePlugins.map((p) => p.hooks)),
@@ -116,6 +136,7 @@ export class Dev implements Command {
   
         Flags:
           -e, --entrypoint    Custom entrypoint to your app (default: app.ts)
+          -r, --reflection    Run dev mode for reflection only (eg: typegen, sdl file etc..)
           -h,       --help    Show this help message
       `
   }
