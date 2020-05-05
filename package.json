@@ -69,7 +69,7 @@
     "docsify-cli": "4.4.0",
     "doctoc": "1.4.0",
     "dripip": "0.9.0",
-    "jest": "25.5.2",
+    "jest": "25.5.4",
     "node-pty": "0.9.0",
     "prettier": "2.0.5",
     "ts-jest": "25.4.0"
