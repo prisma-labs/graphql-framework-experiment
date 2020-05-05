@@ -107,7 +107,7 @@ export function create(): App {
     schemaSettings: schemaComponent.private.settings,
     log,
   })
-  const api: PrivteApp = {
+  const api: PrivateApp = {
     log: log,
     settings: settingsComponent.public,
     schema: schemaComponent.public,
