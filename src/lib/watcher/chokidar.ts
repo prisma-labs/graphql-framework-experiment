@@ -48,7 +48,6 @@ export function watch(paths: string | ReadonlyArray<string>, options?: FileWatch
   const watcher = chokidar.watch(paths, options) as FileWatcher
   const programmaticallyWatchedFiles: string[] = []
   let watcherPaused = false
-  let lastPendingExecution: null | (() => void) = null
 
   const wasFileAddedSilently = (event: string, file: string): boolean => {
     if (programmaticallyWatchedFiles.includes(file) && isSilentableEvent(event)) {
@@ -62,40 +61,34 @@ export function watch(paths: string | ReadonlyArray<string>, options?: FileWatch
     return false
   }
 
-  /** Execute watcher listener when watcher is not paused, and save last pending execution to be run when watcher.resume() is called */
-  const simpleDebounce = (fn: (...args: any[]) => void): ((...args: any[]) => void) => {
-    const decoratedFn = (...args: any[]) => {
-      if (watcherPaused) {
-        lastPendingExecution = () => {
-          fn(...args)
-        }
-        return
-      }
-
-      fn(...args)
-    }
-
-    return decoratedFn
-  }
-
   const originalOnListener = watcher.on.bind(watcher)
 
   // Use `function` to bind originalOnListener to the right context
   watcher.on = function (event: string, listener: (...args: any[]) => void) {
-    const debouncedListener = simpleDebounce(listener)
-
     if (event === 'all') {
       return originalOnListener(event, (eventName, path, stats) => {
-        if (wasFileAddedSilently(eventName, path) === false) {
-          debouncedListener(eventName, path, stats)
+        if (watcherPaused) {
+          return
         }
+
+        if (wasFileAddedSilently(eventName, path) === true) {
+          return
+        }
+
+        listener(eventName, path, stats)
       })
     }
 
     return originalOnListener(event, (path, stats) => {
-      if (wasFileAddedSilently(event, path) === false) {
-        debouncedListener(path, stats)
+      if (watcherPaused) {
+        return
       }
+
+      if (wasFileAddedSilently(event, path) === true) {
+        return
+      }
+
+      listener(path, stats)
     })
   }
 
@@ -110,11 +103,6 @@ export function watch(paths: string | ReadonlyArray<string>, options?: FileWatch
 
   watcher.resume = () => {
     watcherPaused = false
-
-    if (lastPendingExecution) {
-      lastPendingExecution()
-      lastPendingExecution = null
-    }
   }
 
   return watcher
