@@ -1,8 +1,9 @@
-## Working With `tsconfig.json`
+## Working With tsconfig.json
 
 - Nexus honours settings within `tsconfig.json`.
-- This ensures that Nexus and your IDE perform identical static analysis. If no `tsconfig.json` is present then Nexus will scaffold one for you.
-- Nexus project layout interacts with `tsconfig.json` in the following ways.
+- This ensures that Nexus and your IDE perform identical static analysis.
+- If no `tsconfig.json` is present then Nexus will scaffold one for you.
+- Nexus interacts with `tsconfig.json` in the following ways.
 
 ##### Project Root
 
@@ -22,6 +23,10 @@
 - Out Root is defined by setting `compilerOptions.outDir`.
 - If you do not specify it then Nexus will default to `node_modules/.build`. Unlike with `rootDir` Nexus will not scaffold the default into your `tsconfig.json` because its presence has no impact upon VSCode.
 - You can override its value interactively with `nexus build --out`.
+
+##### Check-Only Builds
+
+if `compilerOptions.noEmit` is set to `true` then Nexus will not output the build. This makes `nexus build` effectively a checker. This option usually [represents user error](https://github.com/graphql-nexus/nexus/issues/702) so by default Nexus will warn when this option is used. In the future ([#800](https://github.com/graphql-nexus/nexus/issues/800)) there will be ways to disable this the warning if it is really your intent.
 
 ## Conventions
 
