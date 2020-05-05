@@ -1,7 +1,6 @@
 import * as NexusSchema from '@nexus/schema'
 import { NexusSchemaExtensionConfig } from '@nexus/schema/dist/extensions'
 import { stripIndent, stripIndents } from 'common-tags'
-import * as FS from 'fs-jetpack'
 import * as Lo from 'lodash'
 import * as Path from 'path'
 import * as Schema from '../../runtime/schema'
@@ -10,8 +9,6 @@ import * as Logger from '../nexus-logger'
 import * as Plugin from '../plugin'
 
 const log = Logger.rootLogger.child('schema-typegen')
-
-export const NEXUS_DEFAULT_TYPEGEN_PATH = FS.path('node_modules', '@types', 'typegen-nexus', 'index.d.ts')
 
 interface GenerateArtifactsParams {
   graphqlSchema: NexusSchema.core.NexusGraphQLSchema
@@ -31,7 +28,7 @@ function resolveTypegenConfig(params: GenerateArtifactsParams) {
   const schemaConfig = params.graphqlSchema.extensions.nexus.config
 
   schemaConfig.outputs = {
-    typegen: NEXUS_DEFAULT_TYPEGEN_PATH,
+    typegen: params.layout.projectPath('node_modules', '@types', 'typegen-nexus', 'index.d.ts'),
     schema: getOutputSchemaPath(params),
   }
 
@@ -106,9 +103,17 @@ function withCustomTypegenConfig(
       if (!p.context) continue
 
       if (p.context.typeGen.imports) {
-        config.imports.push(
-          ...p.context.typeGen.imports.map((im) => `import * as ${im.as} from '${im.from}'`)
-        )
+        for (const typegenImport of p.context.typeGen.imports) {
+          const relativeImportPath = (Path.isAbsolute(typegenImport.from)
+            ? NexusSchema.core.relativePathTo(typegenImport.from, outputPath)
+            : typegenImport.from
+          ).replace(/(\.d)?\.ts/, '')
+          const importStatement = `import * as ${typegenImport.as} from '${relativeImportPath}'`
+
+          if (!config.imports.includes(importStatement)) {
+            config.imports.push(importStatement)
+          }
+        }
       }
 
       config.imports.push(contextTypeContribSpecToCode(p.context.typeGen.fields))

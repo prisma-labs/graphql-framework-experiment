@@ -1,4 +1,4 @@
-const { generateArtifacts } = require('../dist/lib/build/artifact-generation')
+const { reflect } = require('../dist/lib/reflection')
 const { create } = require('../dist/lib/layout')
 const { rootLogger } = require('../dist/lib/nexus-logger')
 const { detectExecLayout } = require('../dist/lib/process/detect-exec-layout')
@@ -27,7 +27,7 @@ async function main() {
 
   // Otherwise, run typegen
   const layout = await create({ cwd })
-  await generateArtifacts(layout)
+  await reflect(layout, { artifacts: true })
 
   clearTimeout(timeoutId)
 }
