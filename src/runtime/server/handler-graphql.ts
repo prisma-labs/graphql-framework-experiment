@@ -1,5 +1,5 @@
-import { Either, isLeft, left, right, tryCatch } from 'fp-ts/lib/Either'
-import { DocumentNode, execute, getOperationAST, GraphQLSchema, parse, Source, validate } from 'graphql'
+import { Either, isLeft, left, right, toError, tryCatch } from 'fp-ts/lib/Either'
+import { execute, getOperationAST, GraphQLSchema, parse, Source, validate } from 'graphql'
 import { IncomingMessage } from 'http'
 import createError, { HttpError } from 'http-errors'
 import url from 'url'
@@ -34,7 +34,7 @@ export const createRequestHandlerGraphQL: CreateHandler = (schema, createContext
 
   const source = new Source(params.query)
 
-  const errDocumentAST = parseSource(source)
+  const errDocumentAST = tryCatch(() => parse(source), toError)
 
   if (isLeft(errDocumentAST)) {
     return sendError(res, createError(400, errDocumentAST.left))
@@ -62,21 +62,24 @@ export const createRequestHandlerGraphQL: CreateHandler = (schema, createContext
 
   const context = await createContext(req)
 
-  let result
-  try {
-    result = await execute({
+  const errResult = tryCatch(async () => {
+    return await execute({
       schema: schema,
       document: documentAST,
       contextValue: context,
       variableValues: params.variables,
       operationName: params.operationName,
-      // todo other options
     })
-  } catch (error) {
-    return sendError(res, createError(500, 'failed while resolving client request', { error }))
+  }, toError)
+
+  if (isLeft(errResult)) {
+    return sendError(
+      res,
+      createError(500, 'failed while resolving client request', { error: errResult.left })
+    )
   }
 
-  sendSuccess(res, result)
+  sendSuccess(res, errResult.right)
 }
 
 /**
@@ -133,15 +136,4 @@ function parseGraphQLParams(
   const raw = urlData.raw !== undefined || bodyData.raw !== undefined
 
   return right({ query, variables, operationName, raw })
-}
-
-const parseSource = (source: string | Source): Either<Error, DocumentNode> => {
-  return tryCatch(
-    () => {
-      return parse(source)
-    },
-    (e) => {
-      return e as Error
-    }
-  )
 }
