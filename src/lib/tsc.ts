@@ -116,6 +116,25 @@ const diagnosticHost: ts.FormatDiagnosticsHost = {
   getCanonicalFileName: (path) => path,
 }
 
+class TSError extends Error {
+  constructor(public message: string) {
+    super(message)
+
+    // Make sure `name` property is not enumerable
+    // so that it doesn't end up in console.log
+    Object.defineProperty(this, 'name', {
+      value: 'TSError',
+      enumerable: false,
+    })
+  }
+}
+
+function createTSError(diagnostics: ReadonlyArray<ts.Diagnostic>) {
+  const diagnosticText = ts.formatDiagnosticsWithColorAndContext(diagnostics, diagnosticHost)
+
+  return new TSError(`⨯ Unable to compile TypeScript:\n${diagnosticText}`)
+}
+
 /**
  * Allow node to require TypeScript modules, transpiling them on the fly.
  *
@@ -123,7 +142,9 @@ const diagnosticHost: ts.FormatDiagnosticsHost = {
  *
  * This is strictly about transpilation, no type checking is done.
  */
-export function registerTypeScriptTranspile(compilerOptions?: ts.CompilerOptions) {
+export function registerTypeScriptTranspile(
+  compilerOptions?: ts.CompilerOptions,
+) {
   addHook(
     (source, fileName) => {
       const transpiled = ts.transpileModule(source, {
@@ -133,8 +154,7 @@ export function registerTypeScriptTranspile(compilerOptions?: ts.CompilerOptions
       })
 
       if (transpiled.diagnostics && transpiled.diagnostics.length > 0) {
-        console.log(ts.formatDiagnosticsWithColorAndContext(transpiled.diagnostics, diagnosticHost))
-        throw new Error('TypeScript transpilation failed')
+        throw createTSError(transpiled.diagnostics)
       }
 
       return transpiled.outputText
