@@ -60,7 +60,6 @@ export interface App {
 
 export type AppState = {
   plugins: Plugin.Plugin[]
-  // schema: () => NexusSchema.core.NexusGraphQLSchema
   /**
    * Once the app is started incremental component APIs can no longer be used. This
    * flag let's those APIs detect that they are being used after app start. Then
@@ -123,24 +122,21 @@ export function create(): App {
       if (Reflection.isReflectionStage('plugin')) return
 
       const loadedPlugins = Plugin.importAndLoadRuntimePlugins(appState.plugins)
+      appState.assembled!.loadedPlugins = loadedPlugins
 
       const { schema, missingTypes } = schemaComponent.private.assemble(loadedPlugins)
+      appState.assembled!.schema = schema
+      appState.assembled!.missingTypes = missingTypes
 
       if (Reflection.isReflectionStage('typegen')) return
 
       const { createContext } = serverComponent.private.assemble(loadedPlugins, schema)
+      appState.assembled!.createContext = createContext
 
       const { settings } = settingsComponent.private.assemble()
+      appState.assembled!.settings = settings
 
       schemaComponent.private.checks()
-
-      appState.assembled = {
-        settings,
-        missingTypes,
-        loadedPlugins,
-        schema,
-        createContext,
-      }
     },
     async start() {
       if (Reflection.isReflection()) return
