@@ -36,7 +36,7 @@ export class __Default implements Command {
           cwd: process.cwd(),
         })
         console.log(
-          "Looks like you are inside a node but not nexus project. Please either add nexus to this project's dependencies and re-run this command or navigate to a new empty folder that does not have a package.json file present in an anecestor directory."
+          "Looks like you are inside a node but not nexus project. Please either add nexus to this project's dependencies and re-run this command or navigate to a new empty folder that does not have a package.json file present in an ancestor directory."
         )
         break
       case 'unknown':
