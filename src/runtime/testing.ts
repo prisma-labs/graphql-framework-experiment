@@ -43,6 +43,10 @@ declare global {
 export type TestContext = NexusTestContextRoot
 
 export interface CreateTestContextOptions {
+  /**
+   * A path to the entrypoint of your app. Only necessary if the entrypoint falls outside of Nexus conventions.
+   * You should typically use this if you're using `nexus dev --entrypoint` or `nexus build --entrypoint`.
+   */
   entrypointPath?: string
 }
 
@@ -53,17 +57,17 @@ export interface CreateTestContextOptions {
  *
  * With jest
  * ```
- * import { setupTest, TestContext } from 'nexus/testing'
+ * import { createTestContext, TestContext } from 'nexus/testing'
  *
- * let testCtx: TestContext
+ * let ctx: TestContext
  *
  * beforeAll(async () => {
- *  testCtx = await setupTest()
- *  await testCtx.server.start()
+ *  ctx = await createTestContext()
+ *  await ctx.server.start()
  * })
  *
  * afterAll(async () => {
- *  await testCtx.server.stop()
+ *  await ctx.server.stop()
  * })
  * ```
  */
