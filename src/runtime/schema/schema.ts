@@ -30,8 +30,6 @@ function createLazyState(): LazyState {
   return {
     contextContributors: [],
     plugins: [],
-    // schema: null,
-    // missingTypes: null,
   }
 }
 

@@ -58,6 +58,8 @@ export interface App {
    */
 }
 
+type Mutable<T> = { -readonly [P in keyof T]: T[P] extends ReadonlyArray<infer U> ? U[] : T[P] }
+
 export type AppState = {
   plugins: Plugin.Plugin[]
   /**
@@ -117,7 +119,8 @@ export function create(): App {
     assemble() {
       if (appState.assembled) return
 
-      appState.assembled = {} as any
+      // todo https://github.com/graphql-nexus/nexus/pull/788#discussion_r420645846
+      appState.assembled = {} as Partial<AppState['assembled']>
 
       if (Reflection.isReflectionStage('plugin')) return
 
