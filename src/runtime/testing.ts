@@ -42,6 +42,10 @@ declare global {
 
 export type TestContext = NexusTestContextRoot
 
+export interface CreateTestContextOptions {
+  entrypointPath?: string
+}
+
 /**
  * Setup a test context providing utilities to query against your GraphQL API
  *
@@ -63,12 +67,12 @@ export type TestContext = NexusTestContextRoot
  * })
  * ```
  */
-export async function createTestContext(): Promise<TestContext> {
+export async function createTestContext(opts?: CreateTestContextOptions): Promise<TestContext> {
   // Guarantee that development mode features are on
   process.env.NEXUS_STAGE = 'dev'
 
   // todo figure out some caching system here, e.g. imagine jest --watch mode
-  const layout = await Layout.create()
+  const layout = await Layout.create({ entrypointPath: opts?.entrypointPath })
   const pluginManifests = await Plugin.getUsedPlugins(layout)
   const randomPort = await getPort({ port: getPort.makeRange(4000, 6000) })
   const app = require('../index').default as PrivateApp
