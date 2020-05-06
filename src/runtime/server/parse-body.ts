@@ -81,7 +81,7 @@ async function readBody(req: IncomingMessage, typeInfo: ParsedMediaType): Promis
 
   // Assert charset encoding per JSON RFC 7159 sec 8.1
   if (charset.slice(0, 4) !== 'utf-') {
-    throw httpError(415, `Unsupported charset "${charset.toUpperCase()}".`)
+    return left(httpError(415, `Unsupported charset "${charset.toUpperCase()}".`))
   }
 
   // Get content-encoding (e.g. gzip)
@@ -95,7 +95,10 @@ async function readBody(req: IncomingMessage, typeInfo: ParsedMediaType): Promis
 
   // Read body from stream.
   try {
-    return right(await getBody(stream.right, { encoding: charset, length, limit }))
+    // console.log(stream.right, { encoding: charset, length, limit })
+    const body = await getBody(stream.right, { encoding: charset, length, limit })
+    console.log(1)
+    return right(body)
   } catch (err) {
     return err.type === 'encoding.unsupported'
       ? left(httpError(415, `Unsupported charset "${charset.toUpperCase()}".`))

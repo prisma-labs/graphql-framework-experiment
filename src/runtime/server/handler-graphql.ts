@@ -5,7 +5,7 @@ import createError, { HttpError } from 'http-errors'
 import url from 'url'
 import { parseBody } from './parse-body'
 import { ContextCreator, NexusRequestHandler } from './server'
-import { sendError, sendSuccess } from './utils'
+import { sendError, sendErrorData, sendSuccess } from './utils'
 
 type CreateHandler = (schema: GraphQLSchema, createContext: ContextCreator) => NexusRequestHandler
 
@@ -44,8 +44,12 @@ export const createRequestHandlerGraphQL: CreateHandler = (schema, createContext
 
   const validationFailures = validate(schema, documentAST)
 
-  if (validationFailures.length > 1) {
-    return sendError(res, createError(400, 'GraphQL operation validation failed', { validationFailures }))
+  if (validationFailures.length > 0) {
+    // todo lots of rich info for clients in here, expose it to them
+    return sendErrorData(
+      res,
+      createError(400, 'GraphQL operation validation failed', { data: validationFailures })
+    )
   }
 
   // Only query operations are allowed on GET requests.
@@ -62,24 +66,19 @@ export const createRequestHandlerGraphQL: CreateHandler = (schema, createContext
 
   const context = await createContext(req)
 
-  const errResult = tryCatch(async () => {
-    return await execute({
-      schema: schema,
-      document: documentAST,
-      contextValue: context,
-      variableValues: params.variables,
-      operationName: params.operationName,
-    })
-  }, toError)
+  const result = await execute({
+    schema: schema,
+    document: documentAST,
+    contextValue: context,
+    variableValues: params.variables,
+    operationName: params.operationName,
+  })
 
-  if (isLeft(errResult)) {
-    return sendError(
-      res,
-      createError(500, 'failed while resolving client request', { error: errResult.left })
-    )
+  if (result.errors) {
+    return sendErrorData(res, createError(500, 'failed while resolving client request', { data: result }))
   }
 
-  sendSuccess(res, errResult.right)
+  return sendSuccess(res, result)
 }
 
 /**

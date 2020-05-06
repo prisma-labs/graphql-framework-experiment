@@ -5,6 +5,7 @@ import { HttpError } from 'http-errors'
 import * as Net from 'net'
 import stripAnsi from 'strip-ansi'
 import * as Plugin from '../../lib/plugin'
+import { MaybePromise } from '../../lib/utils'
 import { AppState } from '../app'
 import * as DevMode from '../dev-mode'
 import { ContextContributor } from '../schema/schema'
@@ -144,7 +145,7 @@ type AnonymousContext = Record<string, any>
 export type ContextCreator<
   Req extends AnonymousRequest = AnonymousRequest,
   Context extends AnonymousContext = AnonymousContext
-> = (req: Req) => Promise<Context>
+> = (req: Req) => MaybePromise<Context>
 
 /**
  * Combine all the context contributions defined in the app and in plugins.
