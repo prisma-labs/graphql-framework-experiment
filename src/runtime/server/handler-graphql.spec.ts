@@ -177,9 +177,15 @@ function reqBody(params: string | { query?: string; variables?: string }): void 
 }
 
 function result(res: ServerResponse): string {
-  return (res as any).outputData
-    ?.reduce((data: string, outputDatum: any) => {
-      data += String(outputDatum.data)
+  const output = (res as any).outputData ?? (res as any).output // node 10
+  return output
+    .reduce((data: string, outputDatum: any) => {
+      if (outputDatum.data) {
+        // node 12+
+        data += String(outputDatum.data) //maybe buffer
+      } else {
+        data += String(outputDatum) // maybe buffer
+      }
       return data
     }, '')
     .replace(/Date:.*/, 'Date: __dynamic__')
