@@ -180,7 +180,7 @@ function result(res: ServerResponse): string {
   const output = (res as any).outputData ?? (res as any).output // node 10
   return output
     .reduce((data: string, outputDatum: any) => {
-      if (outputDatum.data) {
+      if (outputDatum.data !== undefined) {
         // node 12+
         data += String(outputDatum.data) //maybe buffer
       } else {
