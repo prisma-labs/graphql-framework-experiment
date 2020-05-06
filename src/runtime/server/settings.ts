@@ -59,17 +59,16 @@ export type SettingsData = Omit<Utils.DeepRequired<SettingsInput>, 'host' | 'pla
 
 export const defaultPlaygroundPath = '/'
 
-export const defaultPlaygroundSettings: () => Readonly<Required<PlaygroundSettings>> = () =>
-  Object.freeze({
-    path: defaultPlaygroundPath,
-  })
+export const defaultPlaygroundSettings: () => Readonly<Required<PlaygroundSettings>> = () => ({
+  path: defaultPlaygroundPath,
+})
 
 /**
  * The default server options. These are merged with whatever you provide. Your
  * settings take precedence over these.
  */
 export const defaultSettings: () => Readonly<SettingsData> = () => {
-  return Object.freeze({
+  return {
     host: process.env.NEXUS_HOST ?? process.env.HOST ?? undefined,
     port:
       typeof process.env.NEXUS_PORT === 'string'
@@ -87,7 +86,7 @@ export const defaultSettings: () => Readonly<SettingsData> = () => {
     },
     playground: process.env.NODE_ENV === 'production' ? false : defaultPlaygroundSettings(),
     path: '/graphql',
-  } as SettingsData)
+  }
 }
 
 function playgroundPath(settings: true | PlaygroundSettings): string {
@@ -138,22 +137,23 @@ function validateGraphQLPath(path: string): string {
   return outputPath
 }
 
-export function changeSettings(oldSettings: SettingsData, newSettings: SettingsInput): SettingsData {
-  const outputSettings = { ...oldSettings, ...newSettings }
-  const playground = playgroundSettings(outputSettings.playground)
+/**
+ * Mutate the settings data
+ */
+export function changeSettings(state: SettingsData, newSettings: SettingsInput): void {
+  const updatedSettings = { ...state, ...newSettings }
 
-  outputSettings.path = validateGraphQLPath(outputSettings.path)
-
-  return {
-    ...outputSettings,
-    playground,
-  }
+  state.playground = playgroundSettings(updatedSettings.playground)
+  state.path = validateGraphQLPath(updatedSettings.path)
+  state.port = updatedSettings.port
+  state.startMessage = updatedSettings.startMessage
 }
 
 export function createServerSettingsManager() {
-  const data = defaultSettings()
+  let data = defaultSettings()
+
   const change = (newSettings: SettingsInput) => {
-    return changeSettings(data, newSettings)
+    changeSettings(data, newSettings)
   }
 
   return {
