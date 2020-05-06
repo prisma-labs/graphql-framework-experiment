@@ -3,7 +3,7 @@ import * as Lo from 'lodash'
 import { GraphQLClient } from '../lib/graphql-client'
 import * as Layout from '../lib/layout'
 import * as Plugin from '../lib/plugin'
-import type { PrivateApp } from './app'
+import { PrivateApp } from './app'
 import { createDevAppRunner } from './start'
 
 type AppClient = {
@@ -63,7 +63,6 @@ export type TestContext = NexusTestContextRoot
  * })
  * ```
  */
-
 export async function createTestContext(): Promise<TestContext> {
   // Guarantee that development mode features are on
   process.env.NEXUS_STAGE = 'dev'
@@ -72,15 +71,31 @@ export async function createTestContext(): Promise<TestContext> {
   const layout = await Layout.create()
   const pluginManifests = await Plugin.getUsedPlugins(layout)
   const randomPort = await getPort({ port: getPort.makeRange(4000, 6000) })
-  const app = require('../index') as PrivateApp
+  const app = require('../index').default as PrivateApp
+
+  const forcedServerSettings = {
+    port: randomPort,
+    playground: false, // Disable playground during tests
+    startMessage() {}, // Make server silent
+  }
+  const originalSettingsChange = app.settings.change
 
   app.settings.change({
-    server: {
-      port: randomPort,
-      playground: false, // Disable playground during tests
-      startMessage() {}, // Make server silent
-    },
+    server: forcedServerSettings,
   })
+
+  /**
+   * If app ever calls app.settings.change, force some server settings anyway
+   */
+  app.settings.change = (newSettings) => {
+    if (newSettings.server !== undefined) {
+      newSettings.server = {
+        ...newSettings.server,
+        ...forcedServerSettings,
+      }
+    }
+    originalSettingsChange(newSettings)
+  }
 
   const appRunner = await createDevAppRunner(layout, app)
   const apiUrl = `http://localhost:${appRunner.port}/graphql`
