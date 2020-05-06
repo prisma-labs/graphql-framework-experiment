@@ -1,5 +1,5 @@
 import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
-import { execute, GraphQLSchema, parse, Source, validate } from 'graphql'
+import { execute, getOperationAST, GraphQLSchema, parse, Source, validate } from 'graphql'
 import { IncomingMessage } from 'http'
 import createError, { HttpError } from 'http-errors'
 import url from 'url'
@@ -16,6 +16,9 @@ type GraphQLParams = {
   raw: boolean
 }
 
+/**
+ * Create a handler for graphql requests.
+ */
 export const createRequestHandlerGraphQL: CreateHandler = (schema, createContext) => async (req, res) => {
   const errParams = await getGraphQLParams(req)
 
@@ -44,8 +47,17 @@ export const createRequestHandlerGraphQL: CreateHandler = (schema, createContext
     return sendError(res, createError(400, 'GraphQL operation validation failed', { validationFailures }))
   }
 
-  // todo validate that if operation is mutation or subscription then http method is not GET
-  // https://github.com/graphql/express-graphql/blob/master/src/index.js#L296
+  // Only query operations are allowed on GET requests.
+  if (req.method === 'GET') {
+    const operationAST = getOperationAST(documentAST, params.operationName)
+    if (operationAST && operationAST.operation !== 'query') {
+      res.setHeader('Allow', 'POST')
+      return sendError(
+        res,
+        createError(405, `Can only perform a ${operationAST.operation} operation from a POST request.`)
+      )
+    }
+  }
 
   const context = await createContext(req)
 
