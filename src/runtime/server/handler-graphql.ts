@@ -1,5 +1,5 @@
-import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
-import { execute, getOperationAST, GraphQLSchema, parse, Source, validate } from 'graphql'
+import { Either, isLeft, left, right, tryCatch } from 'fp-ts/lib/Either'
+import { DocumentNode, execute, getOperationAST, GraphQLSchema, parse, Source, validate } from 'graphql'
 import { IncomingMessage } from 'http'
 import createError, { HttpError } from 'http-errors'
 import url from 'url'
@@ -34,12 +34,13 @@ export const createRequestHandlerGraphQL: CreateHandler = (schema, createContext
 
   const source = new Source(params.query)
 
-  let documentAST
-  try {
-    documentAST = parse(source)
-  } catch (syntaxError) {
-    return sendError(res, createError(400, syntaxError))
+  const errDocumentAST = parseSource(source)
+
+  if (isLeft(errDocumentAST)) {
+    return sendError(res, createError(400, errDocumentAST.left))
   }
+
+  const documentAST = errDocumentAST.right
 
   const validationFailures = validate(schema, documentAST)
 
@@ -132,4 +133,15 @@ function parseGraphQLParams(
   const raw = urlData.raw !== undefined || bodyData.raw !== undefined
 
   return right({ query, variables, operationName, raw })
+}
+
+const parseSource = (source: string | Source): Either<Error, DocumentNode> => {
+  return tryCatch(
+    () => {
+      return parse(source)
+    },
+    (e) => {
+      return e as Error
+    }
+  )
 }
