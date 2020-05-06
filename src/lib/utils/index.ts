@@ -293,3 +293,7 @@ export function simpleDebounce<T extends (...args: any[]) => Promise<any>>(fn: T
     executing = false
   }) as any
 }
+
+export type Index<T> = {
+  [key: string]: T
+}

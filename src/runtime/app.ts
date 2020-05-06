@@ -1,10 +1,14 @@
 import * as Logger from '@nexus/logger'
-import { stripIndent } from 'common-tags'
+import { MissingType, NexusGraphQLSchema } from '@nexus/schema/dist/core'
 import * as Plugin from '../lib/plugin'
+import { RuntimeContributions } from '../lib/plugin'
 import * as Reflection from '../lib/reflection'
+import { Index } from '../lib/utils'
 import * as Schema from './schema'
 import * as Server from './server'
+import { ContextCreator } from './server/server'
 import * as Settings from './settings'
+import { assertAppNotAssembled } from './utils'
 
 const log = Logger.create({ name: 'app' })
 
@@ -54,15 +58,22 @@ export interface App {
    */
 }
 
+type Mutable<T> = { -readonly [P in keyof T]: T[P] extends ReadonlyArray<infer U> ? U[] : T[P] }
+
 export type AppState = {
   plugins: Plugin.Plugin[]
-  // schema: () => NexusSchema.core.NexusGraphQLSchema
   /**
    * Once the app is started incremental component APIs can no longer be used. This
    * flag let's those APIs detect that they are being used after app start. Then
    * they can do something useful like tell the user about their mistake.
    */
-  assembled: boolean
+  assembled: null | {
+    settings: Settings.SettingsData
+    schema: NexusGraphQLSchema
+    missingTypes: Index<MissingType>
+    loadedPlugins: RuntimeContributions<any>[]
+    createContext: ContextCreator
+  }
   running: boolean
   schemaComponent: Schema.LazyState
 }
@@ -80,7 +91,7 @@ export type PrivateApp = App & {
  */
 export function createAppState(): AppState {
   const appState = {
-    assembled: false,
+    assembled: null,
     running: false,
     plugins: [],
   } as Omit<AppState, 'schemaComponent'>
@@ -95,33 +106,40 @@ export function create(): App {
   const appState = createAppState()
   const serverComponent = Server.create(appState)
   const schemaComponent = Schema.create(appState)
-  const settingsComponent = Settings.create({
+  const settingsComponent = Settings.create(appState, {
     serverSettings: serverComponent.private.settings,
     schemaSettings: schemaComponent.private.settings,
     log,
   })
-  const api: PrivateApp = {
+  const api: App = {
     log: log,
     settings: settingsComponent.public,
     schema: schemaComponent.public,
     server: serverComponent.public,
-    // todo call this in the start module
     assemble() {
       if (appState.assembled) return
 
-      appState.assembled = true
+      // todo https://github.com/graphql-nexus/nexus/pull/788#discussion_r420645846
+      appState.assembled = {} as Partial<AppState['assembled']>
 
       if (Reflection.isReflectionStage('plugin')) return
 
-      const loadedRuntimePlugins = Plugin.importAndLoadRuntimePlugins(appState.plugins)
+      const loadedPlugins = Plugin.importAndLoadRuntimePlugins(appState.plugins)
+      appState.assembled!.loadedPlugins = loadedPlugins
 
-      schemaComponent.private.assemble(loadedRuntimePlugins)
+      const { schema, missingTypes } = schemaComponent.private.assemble(loadedPlugins)
+      appState.assembled!.schema = schema
+      appState.assembled!.missingTypes = missingTypes
 
       if (Reflection.isReflectionStage('typegen')) return
 
-      schemaComponent.private.checks()
+      const { createContext } = serverComponent.private.assemble(loadedPlugins, schema)
+      appState.assembled!.createContext = createContext
 
-      serverComponent.private.assemble(loadedRuntimePlugins, appState.schemaComponent.schema!)
+      const { settings } = settingsComponent.private.assemble()
+      appState.assembled!.settings = settings
+
+      schemaComponent.private.checks()
     },
     async start() {
       if (Reflection.isReflection()) return
@@ -136,18 +154,15 @@ export function create(): App {
       appState.running = false
     },
     use(plugin) {
-      if (appState.assembled === true) {
-        log.warn(stripIndent`
-          A plugin was ignored because it was loaded after the server was started
-          Make sure to call \`use\` before you call \`server.start\`
-        `)
-      }
+      assertAppNotAssembled(appState, 'app.use', 'The plugin you attempted to use will be ignored')
       appState.plugins.push(plugin)
-    },
-    private: {
-      state: appState,
     },
   }
 
-  return api
+  return {
+    ...api,
+    private: {
+      state: appState,
+    },
+  } as App
 }

@@ -1,14 +1,19 @@
 import * as Logger from '@nexus/logger'
 import * as NexusSchema from '@nexus/schema'
-import { CreateFieldResolverInfo, makeSchemaInternal } from '@nexus/schema/dist/core'
-import { stripIndent } from 'common-tags'
+import {
+  CreateFieldResolverInfo,
+  makeSchemaInternal,
+  MissingType,
+  NexusGraphQLSchema,
+} from '@nexus/schema/dist/core'
 import { GraphQLFieldResolver, GraphQLResolveInfo } from 'graphql'
 import * as HTTP from 'http'
 import * as Layout from '../../lib/layout'
 import { createNexusSchemaStateful, NexusSchemaStatefulBuilders } from '../../lib/nexus-schema-stateful'
 import { RuntimeContributions } from '../../lib/plugin'
-import { MaybePromise } from '../../lib/utils'
+import { Index, MaybePromise } from '../../lib/utils'
 import { AppState } from '../app'
+import { assertAppNotAssembled } from '../utils'
 import { log } from './logger'
 import {
   createSchemaSettingsManager,
@@ -19,28 +24,12 @@ import {
 export type LazyState = {
   contextContributors: ContextContributor[]
   plugins: NexusSchema.core.NexusPlugin[]
-  /**
-   * GraphQL schema built by @nexus/schema
-   *
-   * @remarks
-   *
-   * Only available after assembly
-   */
-  schema: null | NexusSchema.core.NexusGraphQLSchema
-  /**
-   * @remarks
-   *
-   * Only available after assembly
-   */
-  missingTypes: null | Record<string, NexusSchema.core.MissingType>
 }
 
 function createLazyState(): LazyState {
   return {
     contextContributors: [],
     plugins: [],
-    schema: null,
-    missingTypes: null,
   }
 }
 
@@ -84,7 +73,9 @@ export interface SchemaInternal {
   private: {
     settings: SchemaSettingsManager
     checks(): void
-    assemble(plugins: RuntimeContributions[]): void
+    assemble(
+      plugins: RuntimeContributions[]
+    ): { schema: NexusGraphQLSchema; missingTypes: Index<MissingType> }
   }
   public: Schema
 }
@@ -94,61 +85,45 @@ export function create(appState: AppState): SchemaInternal {
   const statefulNexusSchema = createNexusSchemaStateful()
   const settings = createSchemaSettingsManager()
 
-  const middleware: SchemaInternal['public']['middleware'] = (fn) => {
-    api.public.use(
-      NexusSchema.plugin({
-        // TODO: Do we need to expose the name property?
-        name: 'local-middleware',
-        onCreateFieldResolver(config) {
-          return fn(config)
-        },
-      })
-    )
+  const api: Schema = {
+    ...statefulNexusSchema.builders,
+    use(plugin) {
+      assertAppNotAssembled(appState, 'app.schema.use', 'The Nexus Schema plugin you used will be ignored.')
+      appState.schemaComponent.plugins.push(plugin)
+    },
+    addToContext(contextContributor) {
+      appState.schemaComponent.contextContributors.push(contextContributor)
+    },
+    middleware(fn) {
+      api.use(
+        NexusSchema.plugin({
+          // TODO: Do we need to expose the name property?
+          name: 'local-middleware',
+          onCreateFieldResolver(config) {
+            return fn(config)
+          },
+        })
+      )
+    },
   }
 
-  const api: SchemaInternal = {
-    public: {
-      ...statefulNexusSchema.builders,
-      use(plugin) {
-        if (appState.assembled === true) {
-          log.warn(stripIndent`
-            A Nexus Schema plugin was ignored because it was loaded after the server was started
-            Make sure to call \`schema.use\` before you call \`server.start\`
-          `)
-        }
-
-        appState.schemaComponent.plugins.push(plugin)
-      },
-      addToContext(contextContributor) {
-        appState.schemaComponent.contextContributors.push(contextContributor)
-      },
-      middleware,
-    },
+  return {
+    public: api,
     private: {
       settings: settings,
+      assemble: (plugins) => {
+        const nexusSchemaConfig = mapSettingsToNexusSchemaConfig(plugins, settings.data)
+        nexusSchemaConfig.types.push(...statefulNexusSchema.state.types)
+        nexusSchemaConfig.plugins!.push(...appState.schemaComponent.plugins)
+        const { schema, missingTypes } = makeSchemaInternal(nexusSchemaConfig)
+        return { schema, missingTypes }
+      },
       checks() {
-        NexusSchema.core.assertNoMissingTypes(
-          appState.schemaComponent.schema!,
-          appState.schemaComponent.missingTypes!
-        )
-
+        NexusSchema.core.assertNoMissingTypes(appState.assembled!.schema, appState.assembled!.missingTypes)
         if (statefulNexusSchema.state.types.length === 0) {
           log.warn(Layout.schema.emptyExceptionMessage())
         }
       },
-      assemble: (plugins) => {
-        const nexusSchemaConfig = mapSettingsToNexusSchemaConfig(plugins, settings.data)
-
-        nexusSchemaConfig.types.push(...statefulNexusSchema.state.types)
-        nexusSchemaConfig.plugins!.push(...appState.schemaComponent.plugins)
-
-        const { schema, missingTypes } = makeSchemaInternal(nexusSchemaConfig)
-
-        appState.schemaComponent.schema = schema
-        appState.schemaComponent.missingTypes = missingTypes
-      },
     },
   }
-
-  return api
 }

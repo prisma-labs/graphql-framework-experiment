@@ -38,7 +38,7 @@ async function run() {
   if (isReflectionStage('typegen')) {
     try {
       await writeArtifacts({
-        graphqlSchema: app.private.state.schemaComponent.schema!,
+        graphqlSchema: app.private.state.assembled!.schema,
         layout,
         schemaSettings: app.settings.current.schema,
         plugins: Plugin.importAndLoadRuntimePlugins(app.private.state.plugins),
