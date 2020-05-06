@@ -1,13 +1,14 @@
 import * as Logger from '@nexus/logger'
-import { NexusGraphQLSchema } from '@nexus/schema/dist/core'
-import { stripIndent } from 'common-tags'
+import { MissingType, NexusGraphQLSchema } from '@nexus/schema/dist/core'
 import * as Plugin from '../lib/plugin'
 import { RuntimeContributions } from '../lib/plugin'
 import * as Reflection from '../lib/reflection'
+import { Index } from '../lib/utils'
 import * as Schema from './schema'
 import * as Server from './server'
 import { ContextCreator } from './server/server'
 import * as Settings from './settings'
+import { assertAppNotAssembled } from './utils'
 
 const log = Logger.create({ name: 'app' })
 
@@ -66,7 +67,9 @@ export type AppState = {
    * they can do something useful like tell the user about their mistake.
    */
   assembled: null | {
+    settings: Settings.SettingsData
     schema: NexusGraphQLSchema
+    missingTypes: Index<MissingType>
     loadedPlugins: RuntimeContributions<any>[]
     createContext: ContextCreator
   }
@@ -102,12 +105,12 @@ export function create(): App {
   const appState = createAppState()
   const serverComponent = Server.create(appState)
   const schemaComponent = Schema.create(appState)
-  const settingsComponent = Settings.create({
+  const settingsComponent = Settings.create(appState, {
     serverSettings: serverComponent.private.settings,
     schemaSettings: schemaComponent.private.settings,
     log,
   })
-  const api: PrivateApp = {
+  const api: App = {
     log: log,
     settings: settingsComponent.public,
     schema: schemaComponent.public,
@@ -121,18 +124,19 @@ export function create(): App {
 
       const loadedPlugins = Plugin.importAndLoadRuntimePlugins(appState.plugins)
 
-      const { schema } = schemaComponent.private.assemble(loadedPlugins)
+      const { schema, missingTypes } = schemaComponent.private.assemble(loadedPlugins)
 
       if (Reflection.isReflectionStage('typegen')) return
 
-      const { createContext } = serverComponent.private.assemble(
-        loadedPlugins,
-        appState.schemaComponent.schema!
-      )
+      const { createContext } = serverComponent.private.assemble(loadedPlugins, schema)
+
+      const { settings } = settingsComponent.private.assemble()
 
       schemaComponent.private.checks()
 
       appState.assembled = {
+        settings,
+        missingTypes,
         loadedPlugins,
         schema,
         createContext,
@@ -151,19 +155,15 @@ export function create(): App {
       appState.running = false
     },
     use(plugin) {
-      // extract util assertion
-      if (appState.assembled) {
-        log.warn(stripIndent`
-          A plugin was ignored because it was loaded after the server was started
-          Make sure to call \`use\` before you call \`app.assemble\`
-        `)
-      }
+      assertAppNotAssembled(appState, 'app.use', 'The plugin you attempted to use will be ignored')
       appState.plugins.push(plugin)
-    },
-    private: {
-      state: appState,
     },
   }
 
-  return api
+  return {
+    ...api,
+    private: {
+      state: appState,
+    },
+  } as App
 }

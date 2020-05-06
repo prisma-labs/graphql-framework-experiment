@@ -8,6 +8,7 @@ export function sendSuccess(res: ServerResponse, data: object): void {
 }
 
 export function sendError(res: ServerResponse, e: HttpError): void {
+  ;(res as any).error = e
   sendJSON(res, e.status, e.name, e.headers ?? {}, { message: e.message })
 }
 

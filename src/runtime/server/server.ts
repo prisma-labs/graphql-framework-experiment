@@ -1,20 +1,20 @@
 import createExpress, { Express } from 'express'
-import * as ExpressGraphQL from 'express-graphql'
 import { GraphQLSchema } from 'graphql'
 import * as HTTP from 'http'
+import { HttpError } from 'http-errors'
 import * as Net from 'net'
 import stripAnsi from 'strip-ansi'
 import * as Plugin from '../../lib/plugin'
 import { AppState } from '../app'
 import * as DevMode from '../dev-mode'
 import { ContextContributor } from '../schema/schema'
+import { assertAppIsAssembledBeforePropAccess } from '../utils'
 import { createRequestHandlerGraphQL } from './handler-graphql'
 import { createRequestHandlerPlayground } from './handler-playground'
 import { log } from './logger'
 import { createServerSettingsManager } from './settings'
 
-// Avoid forcing users to use esModuleInterop
-const createExpressGraphql = ExpressGraphQL.default
+const resolverLogger = log.child('graphql')
 
 export type NexusRequestHandler = (req: HTTP.IncomingMessage, res: HTTP.ServerResponse) => void
 
@@ -27,7 +27,6 @@ export interface Server {
 }
 
 export function create(appState: AppState) {
-  const resolverLogger = log.child('graphql')
   const settings = createServerSettingsManager()
   const express = createExpress()
   const state = {
@@ -40,10 +39,17 @@ export function create(appState: AppState) {
     express,
     handlers: {
       get playground() {
-        return createRequestHandlerPlayground({ graphqlEndpoint: settings.data.path })
+        assertAppIsAssembledBeforePropAccess(appState, 'app.server.handlers.playground')
+        // todo should be accessing settings from assembled app state settings
+        return wrapHandlerWithErrorHandling(
+          createRequestHandlerPlayground({ graphqlEndpoint: settings.data.path })
+        )
       },
       get graphql() {
-        return createRequestHandlerGraphQL(appState)
+        assertAppIsAssembledBeforePropAccess(appState, 'app.server.handlers.graphql')
+        return wrapHandlerWithErrorHandling(
+          createRequestHandlerGraphQL(appState.assembled!.schema, appState.assembled!.createContext)
+        )
       },
     },
   }
@@ -58,7 +64,9 @@ export function create(appState: AppState) {
         if (settings.data.playground) {
           express.get(
             settings.data.playground.path,
-            createRequestHandlerPlayground({ graphqlEndpoint: settings.data.path })
+            wrapHandlerWithErrorHandling(
+              createRequestHandlerPlayground({ graphqlEndpoint: settings.data.path })
+            )
           )
         }
 
@@ -67,35 +75,12 @@ export function create(appState: AppState) {
           loadedRuntimePlugins
         )
 
-        express.use(
-          settings.data.path,
-          createExpressGraphql((req) => {
-            return createContext(req).then((context) => ({
-              ...settings,
-              context: context,
-              schema: schema,
-              customFormatErrorFn: (error: Error) => {
-                const colorlessMessage = stripAnsi(error.message)
+        const graphqlHandler = createRequestHandlerGraphQL(schema, createContext)
 
-                if (process.env.NEXUS_STAGE === 'dev') {
-                  resolverLogger.error(error.stack ?? error.message)
-                } else {
-                  resolverLogger.error('An exception occured in one of your resolver', {
-                    error: error.stack ? stripAnsi(error.stack) : colorlessMessage,
-                  })
-                }
+        express.post(settings.data.path, wrapHandlerWithErrorHandling(graphqlHandler))
+        express.get(settings.data.path, wrapHandlerWithErrorHandling(graphqlHandler))
 
-                error.message = colorlessMessage
-
-                return error
-              },
-            }))
-          })
-        )
-
-        return {
-          createContext,
-        }
+        return { createContext }
       },
       async start() {
         await httpListen(state.httpServer, { port: settings.data.port, host: settings.data.host })
@@ -125,6 +110,30 @@ export function create(appState: AppState) {
       },
     },
     public: api,
+  }
+}
+
+/**
+ * Log http errors during development.
+ */
+const wrapHandlerWithErrorHandling = (handler: NexusRequestHandler): NexusRequestHandler => {
+  return async (req, res) => {
+    await handler(req, res)
+    if (res.statusCode !== 200 && (res as any).error) {
+      const error: HttpError = (res as any).error
+      const colorlessMessage = stripAnsi(error.message)
+
+      if (process.env.NEXUS_STAGE === 'dev') {
+        resolverLogger.error(error.stack ?? error.message)
+      } else {
+        resolverLogger.error('An exception occured in one of your resolver', {
+          error: error.stack ? stripAnsi(error.stack) : colorlessMessage,
+        })
+      }
+
+      // todo bring back payload sanitization for data sent to clients
+      // error.message = colorlessMessage
+    }
   }
 }
 

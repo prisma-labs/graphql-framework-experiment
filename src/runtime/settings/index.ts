@@ -1,9 +1,11 @@
 import * as Logger from '@nexus/logger'
 import { cloneDeep } from 'lodash'
+import { AppState } from '../app'
 import * as Schema from '../schema'
 import { SchemaSettingsManager } from '../schema/settings'
 import * as Server from '../server'
 import { ServerSettingsManager } from '../server/settings'
+import { assertAppNotAssembled } from '../utils'
 
 type SettingsInput = {
   logger?: Logger.SettingsInput
@@ -44,17 +46,22 @@ export type Settings = {
  * components. Therefore it depends on the other components. It requires their
  * settings managers.
  */
-export function create({
-  schemaSettings,
-  serverSettings,
-  log,
-}: {
-  schemaSettings: SchemaSettingsManager
-  serverSettings: ServerSettingsManager
-  log: Logger.RootLogger
-}) {
-  const settings: Settings = {
+export function create(
+  appState: AppState,
+  {
+    schemaSettings,
+    serverSettings,
+    log,
+  }: {
+    schemaSettings: SchemaSettingsManager
+    serverSettings: ServerSettingsManager
+    log: Logger.RootLogger
+  }
+) {
+  const api: Settings = {
     change(newSettings) {
+      assertAppNotAssembled(appState, 'app.settings.change', 'Your change of settings will be ignored.')
+
       if (newSettings.logger) {
         log.settings(newSettings.logger)
       }
@@ -78,6 +85,13 @@ export function create({
   }
 
   return {
-    public: settings,
+    public: api,
+    private: {
+      assemble() {
+        return {
+          settings: api.current,
+        }
+      },
+    },
   }
 }
