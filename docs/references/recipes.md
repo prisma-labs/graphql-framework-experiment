@@ -8,12 +8,12 @@
 
 1. Enable the plugin
 
-```ts
-import { use } from 'nexus'
-import { prisma } from 'nexus-plugin-prisma'
+   ```ts
+   import { use } from 'nexus'
+   import { prisma } from 'nexus-plugin-prisma'
 
-use(prisma())
-```
+   use(prisma())
+   ```
 
 1. Add a `schema.prisma` file. Add a datasource. Here we're working with SQLite. Add Prisma Client.
 
@@ -30,12 +30,13 @@ use(prisma())
    +  }
    ```
 
-1) Initialize your database
+1. Initialize your database
 
-- Run `yarn prisma migrate save --experimental` to create your first migration file.
-- Run `yarn prisma migrate up --experimental` to migrate your database.
+   ```cli
+   yarn prisma migrate save --experimental && yarn prisma migrate up --experimental
+   ```
 
-1. Done. Now your app has:
+1. Now your app has the following
 
    1. `nexus-prisma` Nexus plugin allowing e.g.:
 
@@ -86,7 +87,23 @@ use(prisma())
    yarn publish
    ```
 
-## Local PostgreSQL
+## Setting up PostgreSQL
+
+##### Hosted
+
+For trying things out in a deployed setting you can try Heroku's free postgres tier. Setting it up is simple:
+
+```bash
+heroku create
+heroku addons:create heroku-postgresql
+
+# Now get the connection URL
+heroku pg:credentials:url
+```
+
+For a more complete explanation of this approach see [this blog post by Nikolas Burk](https://dev.to/prisma/how-to-setup-a-free-postgresql-database-on-heroku-1dc1) using the the Heroku UI.
+
+##### Local
 
 The reccommended way to run postgres locally is with docker, because it is easy flexible and reliable.
 
@@ -102,9 +119,8 @@ The reccommended way to run postgres locally is with docker, because it is easy 
    postgresql://postgres:postgres@localhost:5432/myapp
    ```
 
-If you don't want to use a docker, here are some links to alternative approaches:
+If you don't want to use a docker, here are some links to alternative approaches for macOS users:
 
-#### Mac
 - [With Homebrew](https://wiki.postgresql.org/wiki/Homebrew)
 - [With Postgres.app](https://postgresapp.com)
 
@@ -255,6 +271,3 @@ We made it very simple to debug your app with VS Code.
 5. Click the green "Start debugging" button located next to the dropdown
 
 6. That's it. VS Code should run your code and stop wherever your set some breakpoints
-
-
-
