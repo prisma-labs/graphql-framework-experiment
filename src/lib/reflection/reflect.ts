@@ -7,7 +7,6 @@ import { deserializeError, ErrorObject } from 'serialize-error'
 import { getReflectionStageEnv, setReflectionStage, removeReflectionStage } from './stage'
 import { createDevAppRunner } from '../../runtime/start'
 import * as App from '../../runtime/app'
-import * as Either from 'fp-ts/lib/Either'
 
 const log = rootLogger.child('reflection')
 
@@ -56,7 +55,7 @@ export async function reflect(
 
 /**
  * Hack: Plugins should ideally be discovered in a sub-process.
- * This is temporary until https://github.com/graphql-nexus/nexus/issues/817 is fixed
+ * This is temporary until https://github.com/graphql-nexus/nexus/issues/818 is fixed
  */
 export async function runPluginsReflectionOnMainThread(
   layout: Layout.Layout
@@ -70,7 +69,7 @@ export async function runPluginsReflectionOnMainThread(
 
   try {
     await appRunner.start()
-    
+
     removeReflectionStage()
 
     return { success: true, plugins: app.private.state.plugins }
@@ -92,10 +91,6 @@ export function runTypegenReflectionAsSubProcess(layout: Layout.Layout) {
     })
 
     cp.on('message', (message: Message) => {
-      // ifgetReflectionStageEnvccess-plugin' && opts.usedPlugins) {
-      //   resolve({ success: true, plugins: message.data.plugins })
-      // }
-
       if (message.type === 'success-typegen') {
         resolve({ success: true })
       }

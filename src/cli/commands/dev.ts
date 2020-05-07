@@ -12,17 +12,6 @@ import { createStartModuleContent } from '../../runtime/start'
 import * as Reflection from '../../lib/reflection'
 import { simpleDebounce } from '../../lib/utils'
 
-/**
- * 1. Unexpected crashes -> process.exit()
- * 2. Unexpected errors -> throws
- * 3. Hanging process
- */
-
-/**
-* - Main process (runs nexus dev)
-* - Dev mode/Sandbox process (runs everything (reflection + watcher))
-* - App process (runs the user's app)
-*/
 const log = rootLogger.child('dev')
 
 const DEV_ARGS = {
