@@ -17,12 +17,21 @@ const NPM_LOCK_FILE_NAME = 'package-lock.json'
 export type PackageManagerType = 'yarn' | 'npm'
 
 /**
- * Detect if the project is yarn or npm based. Detection is based on the kind of
- * lock file present. If nothing is found, npm is assumed.
+ * Detect if the project is yarn or npm based. Detection is based on useragent,
+ * if present, then the lockfile present. If nothing is found, npm is assumed.
  */
 export async function detectProjectPackageManager(opts: {
   projectRoot: string
 }): Promise<PackageManagerType> {
+  const userAgent: string | undefined = process.env.npm_config_user_agent
+  if (userAgent) {
+    // example: 'yarn/1.22.4 npm/? node/v13.11.0 darwin x64'
+    const manager = userAgent.match(/(yarn|npm)(?=\/\d+\.?)+/)
+    if (manager && (manager[0] === "yarn" || manager[0] === "npm")) {
+      return manager[0]
+    }
+  }
+
   const packageManagerFound = await Promise.race([
     fs
       .existsAsync(path.join(opts.projectRoot, YARN_LOCK_FILE_NAME))
