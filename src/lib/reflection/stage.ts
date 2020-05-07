@@ -5,10 +5,18 @@ export type ReflectionType = 'plugin' | 'typegen'
 /**
  * Set the NEXUS_REFLECTION environment variable
  */
-export function saveReflectionStageEnv(type: ReflectionType) {
+export function getReflectionStageEnv(type: ReflectionType) {
   return {
     [REFLECTION_ENV_VAR]: type,
   }
+}
+
+export function setReflectionStage(type: ReflectionType) {
+  process.env[REFLECTION_ENV_VAR] = type
+}
+
+export function removeReflectionStage() {
+  process.env[REFLECTION_ENV_VAR] = undefined
 }
 
 /**

@@ -24,17 +24,6 @@ async function run() {
     sendErrorToParent(err)
   }
 
-  if (isReflectionStage('plugin')) {
-    sendDataToParent({
-      type: 'success-plugin',
-      data: {
-        plugins: app.private.state.plugins,
-      },
-    })
-
-    return
-  }
-
   if (isReflectionStage('typegen')) {
     try {
       await writeArtifacts({
