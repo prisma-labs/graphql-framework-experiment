@@ -1,5 +1,6 @@
 import * as NexusSchema from '@nexus/schema'
 import { AllTypeDefs } from '@nexus/schema/dist/core'
+import * as GraphQL from 'graphql'
 import * as CustomTypes from './custom-types'
 
 // todo use this as return type of constructor
@@ -28,6 +29,30 @@ export interface NexusSchemaStatefulBuilders {
   idArg: typeof NexusSchema.idArg
   extendType: typeof NexusSchema.extendType
   extendInputType: typeof NexusSchema.extendInputType
+  /**
+   * Add a GraphQL.js scalar type and expose it as a method in your definition builders.
+   * 
+   * @example
+   * 
+   * ```ts
+   * import { schema } from 'nexus'
+   * import { GraphQLDate } from 'graphql-iso-date'
+   *
+   * schema.addScalarAsMethod(GraphQLDate, 'date')
+   *
+   * schema.objectType({
+   *  name: 'SomeObject',
+   *  definition(t) {
+   *   t.date('createdAt') // t.date() is now available (with types!) because of `addScalarAsNexusMethod`
+   *  },
+   * })
+   * ```
+   */
+  addScalarAsMethod: typeof NexusSchema.asNexusMethod
+  /**
+   * Add GraphQL.js types to your schema.
+   */
+  addTypes: ReturnType<typeof createNexusSchemaStateful>['builders']['addTypes']
 }
 
 type NexusSchemaTypeDef =
@@ -110,6 +135,16 @@ export function createNexusSchemaStateful() {
     return typeDef
   }
 
+  const addScalarAsMethod: typeof NexusSchema.asNexusMethod = (scalar, methodName) => {
+    const typeDef = NexusSchema.asNexusMethod(scalar, methodName)
+    state.types.push(typeDef)
+    return typeDef
+  }
+
+  function addTypes<T extends GraphQL.GraphQLNamedType[]>(...types: T): void {
+    state.types.push(...types)
+  }
+
   const arg = NexusSchema.arg
   const intArg = NexusSchema.intArg
   const stringArg = NexusSchema.stringArg
@@ -136,6 +171,8 @@ export function createNexusSchemaStateful() {
       booleanArg,
       extendType,
       extendInputType,
+      addScalarAsMethod,
+      addTypes,
     },
   }
 }
