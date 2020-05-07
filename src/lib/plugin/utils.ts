@@ -54,7 +54,7 @@ export function entrypointToManifest(plugin: Plugin): Manifest {
  */
 export async function getUsedPlugins(layout: Layout.Layout): Promise<Plugin[]> {
   try {
-    const reflection = await Reflection.reflect(layout, { usedPlugins: true })
+    const reflection = await Reflection.reflect(layout, { usedPlugins: true, onMainThread: true })
 
     if (!reflection.success) {
       throw reflection.error
