@@ -199,7 +199,7 @@ it('fails if no entrypoint and no graphql modules', async () => {
     ■ nexus:layout Please do one of the following:
 
       1. Create a file, import { schema } from 'nexus' and write your GraphQL type definitions in it.
-      3. Create an app.ts file.
+      2. Create an app.ts file.
 
 
     --- process.exit(1) ---
