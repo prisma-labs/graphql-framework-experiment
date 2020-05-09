@@ -27,6 +27,7 @@ export type PostInitChangeEvent =
 
 export interface RunnerOptions {
   environmentAdditions?: Record<string, string>
+  entrypointScript?: string
 }
 
 export interface Watcher {

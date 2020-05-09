@@ -121,7 +121,7 @@ export function create(appState: AppState): SchemaInternal {
       checks() {
         NexusSchema.core.assertNoMissingTypes(appState.assembled!.schema, appState.assembled!.missingTypes)
         if (statefulNexusSchema.state.types.length === 0) {
-          log.warn(Layout.schema.emptyExceptionMessage())
+          log.warn(Layout.schemaModules.emptyExceptionMessage())
         }
       },
     },

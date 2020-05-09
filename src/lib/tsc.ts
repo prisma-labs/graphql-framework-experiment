@@ -29,7 +29,7 @@ export function createTSProgram(
   log.trace('Create TypeScript program')
 
   const builder = ts.createIncrementalProgram({
-    rootNames: layout.schemaModules.concat(layout.app.exists ? [layout.app.path] : []),
+    rootNames: layout.nexusModules.concat(layout.app.exists ? [layout.app.path] : []),
     options: {
       ...compilerCacheOptions,
       ...layout.tsConfig.content.options,

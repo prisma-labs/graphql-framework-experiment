@@ -9,8 +9,8 @@ import { START_MODULE_NAME } from '../../runtime/start/start-module'
 import { rootLogger } from '../nexus-logger'
 import * as PackageManager from '../package-manager'
 import { fatal } from '../process'
-import * as Schema from './schema-modules'
 import { readOrScaffoldTsconfig } from './tsconfig'
+import * as ts from 'ts-morph'
 
 export const DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT = 'node_modules/.build'
 
@@ -41,7 +41,7 @@ export type ScanResult = {
   }
   sourceRoot: string
   projectRoot: string
-  schemaModules: string[]
+  nexusModules: string[]
   tsConfig: {
     content: ParsedCommandLine
     path: string
@@ -93,8 +93,11 @@ export type Layout = Data & {
   projectPath(...subPaths: string[]): string
   sourceRelative(filePath: string): string
   sourcePath(...subPaths: string[]): string
+  update(options: UpdateableLayoutData): void
   packageManager: PackageManager.PackageManager
 }
+
+interface UpdateableLayoutData { nexusModules?: string[] }
 
 interface Options {
   /**
@@ -148,7 +151,7 @@ export async function create(options?: Options): Promise<Layout> {
  * data from another process that would be wasteful to re-calculate.
  */
 export function createFromData(layoutData: Data): Layout {
-  return {
+  let layout: Layout = {
     ...layoutData,
     data: layoutData,
     projectRelative: Path.relative.bind(null, layoutData.projectRoot),
@@ -162,7 +165,15 @@ export function createFromData(layoutData: Data): Layout {
     packageManager: PackageManager.createPackageManager(layoutData.packageManagerType, {
       projectRoot: layoutData.projectRoot,
     }),
+    update(options) {
+      if (options.nexusModules) {
+        layout.nexusModules = options.nexusModules
+        layout.data.nexusModules = options.nexusModules
+      }
+    },
   }
+
+  return layout
 }
 
 /**
@@ -175,15 +186,10 @@ export async function scan(opts?: { cwd?: string; entrypointPath?: string }): Pr
   const packageManagerType = await PackageManager.detectProjectPackageManager({ projectRoot })
   const maybePackageJson = findPackageJson({ projectRoot })
   const maybeAppModule = opts?.entrypointPath ?? findAppModule({ projectRoot })
-  let maybeSchemaModules = Schema.findDirOrModules({ projectRoot })
   const tsConfig = await readOrScaffoldTsconfig({
     projectRoot,
   })
-
-  // Remove entrypoint from schema modules (can happen if the entrypoint is named graphql.ts or inside a graphql/ folder)
-  if (maybeSchemaModules && maybeAppModule && maybeSchemaModules.includes(maybeAppModule)) {
-    maybeSchemaModules = maybeSchemaModules.filter((s) => s !== maybeAppModule)
-  }
+  let nexusModules = findNexusModules(tsConfig, maybeAppModule)
 
   const result: ScanResult = {
     app:
@@ -192,7 +198,7 @@ export async function scan(opts?: { cwd?: string; entrypointPath?: string }): Pr
         : ({ exists: true, path: maybeAppModule } as const),
     projectRoot,
     sourceRoot: tsConfig.content.options.rootDir!,
-    schemaModules: maybeSchemaModules,
+    nexusModules,
     project: readProjectInfo(opts),
     tsConfig,
     packageManagerType,
@@ -201,7 +207,7 @@ export async function scan(opts?: { cwd?: string; entrypointPath?: string }): Pr
 
   log.trace('completed scan', { result })
 
-  if (result.app.exists === false && result.schemaModules.length === 0) {
+  if (result.app.exists === false && result.nexusModules.length === 0) {
     log.error(checks.no_app_or_schema_modules.explanations.problem)
     log.error(checks.no_app_or_schema_modules.explanations.solution)
     process.exit(1)
@@ -219,12 +225,11 @@ const checks = {
     code: 'no_app_or_schema_modules',
     // prettier-ignore
     explanations: {
-      problem: `We could not find any ${Schema.MODULE_NAME} modules or app entrypoint`,
+      problem: `We could not find any modules that imports 'nexus' or ${CONVENTIONAL_ENTRYPOINT_FILE_NAME} entrypoint`,
       solution: stripIndent`
         Please do one of the following:
 
-          1. Create a (${Chalk.yellow(Schema.CONVENTIONAL_SCHEMA_FILE_NAME)} file and write your GraphQL type definitions in it.
-          2. Create a ${Chalk.yellow(Schema.DIR_NAME)} directory and write your GraphQL type definitions inside files there.
+          1. Create a file, import { schema } from 'nexus' and write your GraphQL type definitions in it.
           3. Create an ${Chalk.yellow(CONVENTIONAL_ENTRYPOINT_FILE_NAME)} file.
     `,
     }
@@ -409,4 +414,31 @@ function getBuildOutput(buildOutput: string | undefined, scanResult: ScanResult)
   }
 
   return Path.join(scanResult.projectRoot, output)
+}
+
+export function findNexusModules(tsConfig: ScanResult['tsConfig'], maybeAppModule: string | null) {
+  log.info('finding nexus modules')
+  const project = new ts.Project({
+    tsConfigFilePath: tsConfig.path,
+    skipFileDependencyResolution: true,
+  })
+
+  const modules = project
+    .getSourceFiles()
+    .filter((s) => {
+      // Do not add app module to nexus modules
+      if (s.getFilePath().toString() === maybeAppModule) {
+        return false
+      }
+
+      const nexusImport = s.getImportDeclarations().find((i) => {
+        return i.getModuleSpecifier()?.getLiteralText() === 'nexus'
+      })
+
+      return nexusImport !== undefined
+    })
+    .map((s) => s.getFilePath().toString())
+
+  log.info('done finding nexus modules', { modules })
+  return modules
 }

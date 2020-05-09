@@ -73,6 +73,14 @@ export class Dev implements Command {
       dev: {
         addToWatcherSettings: {},
         async onBeforeWatcherStartOrRestart(change) {
+          if (change.type === 'change') {
+            const nexusModules = Layout.findNexusModules(
+              layout.tsConfig,
+              layout.app.exists ? layout.app.path : null
+            )
+            layout.update({ nexusModules })
+          }
+
           if (
             change.type === 'init' ||
             change.type === 'add' ||
@@ -89,33 +97,21 @@ export class Dev implements Command {
           }
 
           runDebouncedReflection(layout)
+
+          //log.info('new start module', { startModule: getTranspiledStartModule(layout) })
+
+          return {
+            entrypointScript: getTranspiledStartModule(layout),
+          }
         },
       },
     }
-
-    const startModule = createStartModuleContent({
-      registerTypeScript: {
-        ...layout.tsConfig.content.options,
-        module: ts.ModuleKind.CommonJS,
-        target: ts.ScriptTarget.ES2015,
-      },
-      internalStage: 'dev',
-      runtimePluginManifests: [], // tree-shaking not needed
-      layout,
-      absoluteModuleImports: true,
-    })
-
-    const transpiledStartModule = transpileModule(startModule, {
-      ...layout.tsConfig.content.options,
-      module: ts.ModuleKind.CommonJS,
-      target: ts.ScriptTarget.ES2015,
-    })
 
     /**
      * We use an empty script when in reflection mode so that the user's app doesn't run.
      * The watcher will keep running though and so will reflection in the devPlugin.onBeforeWatcherStartOrRestart hook above
      */
-    const entrypointScript = args['--reflection'] ? '' : transpiledStartModule
+    const entrypointScript = args['--reflection'] ? '' : getTranspiledStartModule(layout)
 
     const watcher = await createWatcher({
       entrypointScript,
@@ -140,4 +136,24 @@ export class Dev implements Command {
           -h,       --help    Show this help message
       `
   }
+}
+
+function getTranspiledStartModule(layout: Layout.Layout) {
+  const startModule = createStartModuleContent({
+    registerTypeScript: {
+      ...layout.tsConfig.content.options,
+      module: ts.ModuleKind.CommonJS,
+      target: ts.ScriptTarget.ES2015,
+    },
+    internalStage: 'dev',
+    runtimePluginManifests: [], // tree-shaking not needed
+    layout,
+    absoluteModuleImports: true,
+  })
+
+  return transpileModule(startModule, {
+    ...layout.tsConfig.content.options,
+    module: ts.ModuleKind.CommonJS,
+    target: ts.ScriptTarget.ES2015,
+  })
 }

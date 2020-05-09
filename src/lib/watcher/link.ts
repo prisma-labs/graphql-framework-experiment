@@ -7,6 +7,7 @@ const log = rootLogger.child('dev').child('link')
 
 interface ChangeableOptions {
   environmentAdditions?: Record<string, string>
+  entrypointScript?: string
 }
 
 interface Options extends ChangeableOptions {
