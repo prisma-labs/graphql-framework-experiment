@@ -37,6 +37,7 @@ export class Dev implements Command {
     }
 
     const entrypointPath = args['--entrypoint']
+    const reflectionMode = args['--reflection'] === true
     let layout = await Layout.create({ entrypointPath })
     const pluginReflectionResult = await Reflection.reflect(layout, { usedPlugins: true, onMainThread: true })
 
@@ -99,20 +100,14 @@ export class Dev implements Command {
           runDebouncedReflection(layout)
 
           return {
-            entrypointScript: getTranspiledStartModule(layout),
+            entrypointScript: getTranspiledStartModule(layout, reflectionMode),
           }
         },
       },
     }
 
-    /**
-     * We use an empty script when in reflection mode so that the user's app doesn't run.
-     * The watcher will keep running though and so will reflection in the devPlugin.onBeforeWatcherStartOrRestart hook above
-     */
-    const entrypointScript = args['--reflection'] ? '' : getTranspiledStartModule(layout)
-
     const watcher = await createWatcher({
-      entrypointScript,
+      entrypointScript: getTranspiledStartModule(layout, reflectionMode),
       sourceRoot: layout.sourceRoot,
       cwd: process.cwd(),
       plugins: [devPlugin].concat(worktimePlugins.map((p) => p.hooks)),
@@ -136,7 +131,15 @@ export class Dev implements Command {
   }
 }
 
-function getTranspiledStartModule(layout: Layout.Layout) {
+function getTranspiledStartModule(layout: Layout.Layout, reflectionMode: boolean) {
+  /**
+   * We use an empty script when in reflection mode so that the user's app doesn't run.
+   * The watcher will keep running though and so will reflection in the devPlugin.onBeforeWatcherStartOrRestart hook above
+   */
+  if (reflectionMode === true) {
+    return ''
+  }
+
   const startModule = createStartModuleContent({
     registerTypeScript: {
       ...layout.tsConfig.content.options,
