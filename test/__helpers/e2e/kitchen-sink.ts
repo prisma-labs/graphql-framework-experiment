@@ -3,7 +3,6 @@ import { ConnectableObservable, Subscription } from 'rxjs'
 import { refCount } from 'rxjs/operators'
 import { createE2EContext, E2EContext } from '../../../src/lib/e2e-testing'
 import { DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT } from '../../../src/lib/layout'
-import { CONVENTIONAL_SCHEMA_FILE_NAME } from '../../../src/lib/layout/schema-modules'
 import { rootLogger } from '../../../src/lib/nexus-logger'
 import { bufferOutput, takeUntilServerListening } from './utils'
 
@@ -41,7 +40,7 @@ export async function e2eKitchenSink(app: E2EContext) {
 
   // Cover addToContext feature
   await app.fs.writeAsync(
-    `./api/add-to-context/${CONVENTIONAL_SCHEMA_FILE_NAME}`,
+    `./api/add-to-context/graphql.ts`,
     `
         import { schema } from 'nexus'
 
@@ -68,7 +67,7 @@ export async function e2eKitchenSink(app: E2EContext) {
 
   // Cover backing-types feature
   await app.fs.writeAsync(
-    `./api/backing-types/${CONVENTIONAL_SCHEMA_FILE_NAME}`,
+    `./api/backing-types/graphql.ts`,
     `
           import { schema } from 'nexus'
 
