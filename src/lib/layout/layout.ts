@@ -191,7 +191,7 @@ export async function scan(opts?: { cwd?: string; entrypointPath?: string }): Pr
   const tsConfig = await readOrScaffoldTsconfig({
     projectRoot,
   })
-  const nexusModules = findNexusModules(tsConfig.path, maybeAppModule)
+  const nexusModules = findNexusModules(tsConfig, maybeAppModule)
 
   const result: ScanResult = {
     app:
@@ -232,7 +232,7 @@ const checks = {
         Please do one of the following:
 
           1. Create a file, import { schema } from 'nexus' and write your GraphQL type definitions in it.
-          3. Create an ${Chalk.yellow(CONVENTIONAL_ENTRYPOINT_FILE_NAME)} file.
+          2. Create an ${Chalk.yellow(CONVENTIONAL_ENTRYPOINT_FILE_NAME)} file.
     `,
     }
   },
@@ -418,29 +418,32 @@ function getBuildOutput(buildOutput: string | undefined, scanResult: ScanResult)
   return Path.join(scanResult.projectRoot, output)
 }
 
-export function findNexusModules(tsConfigFilePath: string, maybeAppModule: string | null) {
-  log.trace('finding nexus modules')
-  const project = new ts.Project({
-    tsConfigFilePath,
-    skipFileDependencyResolution: true,
-  })
-
-  const modules = project
-    .getSourceFiles()
-    .filter((s) => {
-      // Do not add app module to nexus modules
-      if (s.getFilePath().toString() === maybeAppModule) {
-        return false
-      }
-
-      const nexusImport = s.getImportDeclarations().find((i) => {
-        return i.getModuleSpecifier()?.getLiteralText() === 'nexus'
-      })
-
-      return nexusImport !== undefined
+export function findNexusModules(tsConfig: ScanResult['tsConfig'], maybeAppModule: string | null): string[] {
+  try {
+    log.trace('finding nexus modules')
+    const project = new ts.Project({
+      addFilesFromTsConfig: false, // Prevent ts-morph from re-parsing the tsconfig
     })
-    .map((s) => s.getFilePath().toString())
 
-  log.trace('done finding nexus modules', { modules })
-  return modules
+    tsConfig.content.fileNames.forEach((f) => project.addSourceFileAtPath(f))
+
+    const modules = project
+      .getSourceFiles()
+      .filter((s) => {
+        // Do not add app module to nexus modules
+        if (s.getFilePath().toString() === maybeAppModule) {
+          return false
+        }
+
+        return s.getImportDeclaration('nexus') !== undefined
+      })
+      .map((s) => s.getFilePath().toString())
+
+    log.trace('done finding nexus modules', { modules })
+
+    return modules
+  } catch (error) {
+    log.error('We could not find your nexus modules', { error })
+    return []
+  }
 }

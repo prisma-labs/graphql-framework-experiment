@@ -195,11 +195,10 @@ it('fails if no entrypoint and no graphql modules', async () => {
   await ctx.scan()
 
   expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
-    "■ nexus:layout We could not find any graphql modules or app entrypoint
+    "■ nexus:layout We could not find any modules that imports 'nexus' or app.ts entrypoint
     ■ nexus:layout Please do one of the following:
 
-      1. Create a (graphql.ts file and write your GraphQL type definitions in it.
-      2. Create a graphql directory and write your GraphQL type definitions inside files there.
+      1. Create a file, import { schema } from 'nexus' and write your GraphQL type definitions in it.
       3. Create an app.ts file.
 
 
@@ -210,20 +209,20 @@ it('fails if no entrypoint and no graphql modules', async () => {
   expect(mockExit).toHaveBeenCalledWith(1)
 })
 
-it('finds nested graphql modules', async () => {
+it('finds nested nexus modules', async () => {
   ctx.setup({
     ...fsTsConfig,
     src: {
       'app.ts': '',
       graphql: {
-        '1.ts': '',
-        '2.ts': '',
+        '1.ts': `import { schema } from 'nexus'`,
+        '2.ts': `import { schema } from 'nexus'`,
         graphql: {
-          '3.ts': '',
-          '4.ts': '',
+          '3.ts': `import { schema } from 'nexus'`,
+          '4.ts': `import { schema } from 'nexus'`,
           graphql: {
-            '5.ts': '',
-            '6.ts': '',
+            '5.ts': `import { schema } from 'nexus'`,
+            '6.ts': `import { schema } from 'nexus'`,
           },
         },
       },
@@ -232,7 +231,7 @@ it('finds nested graphql modules', async () => {
 
   const result = await ctx.scan()
 
-  expect(result.schemaModules).toMatchInlineSnapshot(`
+  expect(result.nexusModules).toMatchInlineSnapshot(`
     Array [
       "__DYNAMIC__/src/graphql/1.ts",
       "__DYNAMIC__/src/graphql/2.ts",
@@ -320,39 +319,24 @@ it('fails if custom entrypoint is not a .ts file', async () => {
   `)
 })
 
-it('does not take custom entrypoint as schema module if its named graphql.ts', async () => {
-  await ctx.setup({ ...fsTsConfig, 'graphql.ts': '', graphql: { 'user.ts': '' } })
-  const result = await ctx.scan({ entrypointPath: './graphql.ts' })
+it('does not take custom entrypoint as nexus module if contains a nexus import', async () => {
+  await ctx.setup({
+    ...fsTsConfig,
+    'app.ts': `import { schema } from 'nexus'`,
+    'graphql.ts': `import { schema } from 'nexus'`,
+  })
+  const result = await ctx.scan({ entrypointPath: './app.ts' })
   expect({
     app: result.app,
-    schemaModules: result.schemaModules,
+    nexusModules: result.nexusModules,
   }).toMatchInlineSnapshot(`
     Object {
       "app": Object {
         "exists": true,
-        "path": "__DYNAMIC__/graphql.ts",
+        "path": "__DYNAMIC__/app.ts",
       },
-      "schemaModules": Array [
-        "__DYNAMIC__/graphql/user.ts",
-      ],
-    }
-  `)
-})
-
-it('does not take custom entrypoint as schema module if its inside a graphql/ folder', async () => {
-  await ctx.setup({ ...fsTsConfig, graphql: { 'user.ts': '', 'graphql.ts': '' } })
-  const result = await ctx.scan({ entrypointPath: './graphql/graphql.ts' })
-  expect({
-    app: result.app,
-    schemaModules: result.schemaModules,
-  }).toMatchInlineSnapshot(`
-    Object {
-      "app": Object {
-        "exists": true,
-        "path": "__DYNAMIC__/graphql/graphql.ts",
-      },
-      "schemaModules": Array [
-        "__DYNAMIC__/graphql/user.ts",
+      "nexusModules": Array [
+        "__DYNAMIC__/graphql.ts",
       ],
     }
   `)

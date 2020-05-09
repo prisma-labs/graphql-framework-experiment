@@ -75,7 +75,7 @@ export class Dev implements Command {
         async onBeforeWatcherStartOrRestart(change) {
           if (change.type === 'change') {
             const nexusModules = Layout.findNexusModules(
-              layout.tsConfig.path,
+              layout.tsConfig,
               layout.app.exists ? layout.app.path : null
             )
             layout.update({ nexusModules })
