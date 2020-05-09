@@ -97,7 +97,9 @@ export type Layout = Data & {
   packageManager: PackageManager.PackageManager
 }
 
-interface UpdateableLayoutData { nexusModules?: string[] }
+interface UpdateableLayoutData {
+  nexusModules?: string[]
+}
 
 interface Options {
   /**
@@ -189,7 +191,7 @@ export async function scan(opts?: { cwd?: string; entrypointPath?: string }): Pr
   const tsConfig = await readOrScaffoldTsconfig({
     projectRoot,
   })
-  let nexusModules = findNexusModules(tsConfig, maybeAppModule)
+  const nexusModules = findNexusModules(tsConfig.path, maybeAppModule)
 
   const result: ScanResult = {
     app:
@@ -416,10 +418,10 @@ function getBuildOutput(buildOutput: string | undefined, scanResult: ScanResult)
   return Path.join(scanResult.projectRoot, output)
 }
 
-export function findNexusModules(tsConfig: ScanResult['tsConfig'], maybeAppModule: string | null) {
-  log.info('finding nexus modules')
+export function findNexusModules(tsConfigFilePath: string, maybeAppModule: string | null) {
+  log.trace('finding nexus modules')
   const project = new ts.Project({
-    tsConfigFilePath: tsConfig.path,
+    tsConfigFilePath,
     skipFileDependencyResolution: true,
   })
 
@@ -439,6 +441,6 @@ export function findNexusModules(tsConfig: ScanResult['tsConfig'], maybeAppModul
     })
     .map((s) => s.getFilePath().toString())
 
-  log.info('done finding nexus modules', { modules })
+  log.trace('done finding nexus modules', { modules })
   return modules
 }

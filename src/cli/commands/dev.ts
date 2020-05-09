@@ -75,7 +75,7 @@ export class Dev implements Command {
         async onBeforeWatcherStartOrRestart(change) {
           if (change.type === 'change') {
             const nexusModules = Layout.findNexusModules(
-              layout.tsConfig,
+              layout.tsConfig.path,
               layout.app.exists ? layout.app.path : null
             )
             layout.update({ nexusModules })
@@ -97,8 +97,6 @@ export class Dev implements Command {
           }
 
           runDebouncedReflection(layout)
-
-          //log.info('new start module', { startModule: getTranspiledStartModule(layout) })
 
           return {
             entrypointScript: getTranspiledStartModule(layout),
