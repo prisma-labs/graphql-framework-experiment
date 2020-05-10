@@ -5161,12 +5161,12 @@ send@0.17.1:
     range-parser "~1.2.1"
     statuses "~1.5.0"
 
-serialize-error@^6.0.0:
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/serialize-error/-/serialize-error-6.0.0.tgz#ccfb887a1dd1c48d6d52d7863b92544331fd752b"
-  integrity sha512-3vmBkMZLQO+BR4RPHcyRGdE09XCF6cvxzk2N2qn8Er3F91cy8Qt7VvEbZBOpaL53qsBbe2cFOefU6tRY6WDelA==
+serialize-error@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/serialize-error/-/serialize-error-7.0.0.tgz#10a00c5ad7806d7b84619a5599ea443bdf1bb0d8"
+  integrity sha512-xDtzsA4FzjMMfA6bhhbnkXPYS/CA34+TjO9YKf4nas10Akb3HWYfr6nKwHYxV0xO5Qr9dWb3OmohojEfWuhoUg==
   dependencies:
-    type-fest "^0.12.0"
+    type-fest "^0.13.1"
 
 serve-static@1.14.1, serve-static@^1.12.1:
   version "1.14.1"
@@ -5797,15 +5797,15 @@ type-fest@^0.11.0:
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-0.11.0.tgz#97abf0872310fed88a5c466b25681576145e33f1"
   integrity sha512-OdjXJxnCN1AvyLSzeKIgXTXxV+99ZuXl3Hpo9XpJAv9MBcHrrJOQ5kV7ypXOuQie+AmWG25hLbiKdwYTifzcfQ==
 
-type-fest@^0.12.0:
-  version "0.12.0"
-  resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-0.12.0.tgz#f57a27ab81c68d136a51fd71467eff94157fa1ee"
-  integrity sha512-53RyidyjvkGpnWPMF9bQgFtWp+Sl8O2Rp13VavmJgfAP9WWG6q6TkrKU8iyJdnwnfgHI6k2hTlgqH4aSdjoTbg==
-
 type-fest@^0.13.0:
   version "0.13.0"
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-0.13.0.tgz#fd0fcac086697e6ed332e618efa5510161c6b81a"
   integrity sha512-wi+bJ1w69/0n9xbs5A/+DEx00hIPXtT4+P9KWMGDueFFCTemF/om07hRhdGE1EhzjzK9xnjv5VUGc5+tBT+jbg==
+
+type-fest@^0.13.1:
+  version "0.13.1"
+  resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-0.13.1.tgz#0172cb5bce80b0bd542ea348db50c7e21834d934"
+  integrity sha512-34R7HTnG0XIJcBSn5XhDd7nNFPRcXYRZrBB2O2jdKqYODldSzBAqzsWoZYYvduky73toYS/ESqxPvkDf/F0XMg==
 
 type-fest@^0.3.0:
   version "0.3.1"
