@@ -85,6 +85,7 @@ export function create(appState: AppState) {
       },
       async start() {
         await httpListen(state.httpServer, { port: settings.data.port, host: settings.data.host })
+        state.running = true
 
         // About !
         // 1. We do not support listening on unix domain sockets so string

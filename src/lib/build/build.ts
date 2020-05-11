@@ -54,7 +54,7 @@ export async function buildNexusApp(settings: BuildSettings) {
 
   log.info('get used plugins')
 
-  const pluginReflection = await Reflection.reflect(layout, { usedPlugins: true })
+  const pluginReflection = await Reflection.reflect(layout, { usedPlugins: true, onMainThread: true })
 
   if (!pluginReflection.success) {
     fatal('failed to get used plugins', { error: pluginReflection.error })

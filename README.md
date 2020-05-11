@@ -12,6 +12,7 @@
 ## Links
 
 - **Website** https://nexusjs.org
+- **Twitter** https://twitter.com/nexusgql
 - **Issues** https://github.com/graphql-nexus/nexus/issues
 - **Discussions** https://github.com/graphql-nexus/nexus/discussions
 - **Changelog** https://github.com/graphql-nexus/nexus/releases ([canary](https://github.com/graphql-nexus/nexus/releases/tag/next))

@@ -7,8 +7,10 @@
   "bugs": "https://github.com/graphql-nexus/nexus/issues",
   "license": "MIT",
   "main": "dist/index.js",
+  "module": "dist-esm/index.js",
   "files": [
     "/dist",
+    "/dist-esm",
     "/scripts",
     "README.md",
     "yarn.lock",
@@ -49,7 +51,7 @@
     "pirates": "^4.0.1",
     "prompts": "^2.3.0",
     "rxjs": "^6.5.4",
-    "serialize-error": "^6.0.0",
+    "serialize-error": "^7.0.0",
     "simple-git": "^1.126.0",
     "strip-ansi": "^6.0.0",
     "ts-morph": "^7.0.0",
@@ -77,7 +79,7 @@
     "ts-jest": "25.4.0"
   },
   "engines": {
-    "node": ">=8.0.0"
+    "node": ">=10.0.0"
   },
   "jest": {
     "preset": "ts-jest",
@@ -92,8 +94,8 @@
     "release:preview": "dripip preview",
     "release:pr": "dripip pr",
     "format": "prettier --write '.'",
-    "build": "yarn -s clean && node scripts/build-module-facades && tsc -b",
-    "clean": "git clean -fX && rm -rf dist",
+    "build": "yarn -s clean && node scripts/build-module-facades && tsc --project tsconfig.cjs.json && tsc --project tsconfig.esm.json",
+    "clean": "git clean -fX && rm -rf dist*",
     "postpublish": "yarn -s clean",
     "postinstall": "node scripts/postinstall",
     "prepublishOnly": "yarn -s build",

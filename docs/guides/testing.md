@@ -88,7 +88,7 @@ Integration testing with a database can add a lot of complexity to your test sui
 
 Integration between Nexus' test and database systems is young and still missing many features. Below we will cover some utilities and patterns that you can copy into your project meanwhile.
 
-> Note: This assumes you have [setup a PostgreSQL database running locally](references/recipes?id=local-postgresql). You could use any database supported by Prisma though.
+> Note: This assumes you have [setup a PostgreSQL database running locally](references/recipes?id=localql). You could use any database supported by Prisma though.
 
 1. Install new development dependencies for upcoming test utilities.
 

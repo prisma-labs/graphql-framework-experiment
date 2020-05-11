@@ -61,7 +61,10 @@ export type SettingsInput = {
 
 export type SettingsData = SettingsInput
 
-export function changeSettings(state: SettingsData, newSettings: SettingsInput) {
+/**
+ * Mutate the settings data
+ */
+export function changeSettings(state: SettingsData, newSettings: SettingsInput): void {
   if (newSettings.nullable) {
     if (state.nullable === undefined) {
       state.nullable = {}

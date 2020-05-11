@@ -4,6 +4,8 @@
 
 Nexus is a delightful framework for building GraphQL APIs in Node. It leverages TypeScript and knowledge about your data sources and API schema to give you levels of type safety that until now you've probably never experienced.
 
+[Discussions](https://github.com/graphql-nexus/nexus/discussions) // [Issues](https://github.com/graphql-nexus/nexus/issues) // [Tweets](https://twitter.com/nexusgql) // [Changelog](https://github.com/graphql-nexus/nexus/releases) ([canary](https://github.com/graphql-nexus/nexus/releases/tag/next)) // [Repo](https://github.com/graphql-nexus/nexus)
+
 ### Features
 
 - Pervasive zero-config philosophy.

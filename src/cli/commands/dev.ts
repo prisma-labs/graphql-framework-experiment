@@ -38,7 +38,7 @@ export class Dev implements Command {
 
     const entrypointPath = args['--entrypoint']
     let layout = await Layout.create({ entrypointPath })
-    const pluginReflectionResult = await Reflection.reflect(layout, { usedPlugins: true })
+    const pluginReflectionResult = await Reflection.reflect(layout, { usedPlugins: true, onMainThread: true })
 
     // TODO: Do not fatal if reflection failed.
     // Instead, run the watcher and help the user recover
