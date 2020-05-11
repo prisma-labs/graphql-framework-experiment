@@ -40,6 +40,7 @@
 
 - Meta
 
+- [Roadmap ⤤](https://github.com/orgs/graphql-nexus/projects/1)
 - [Changelog](changelog)
 - [Architecture](architecture)
 
