@@ -1060,12 +1060,12 @@ schema.queryType({
 ##### Signature
 
 ```ts
-schema.importType(scalarType: GraphQLScalarType, methodName?: string): GraphQLScalarType
+(scalarType: GraphQLScalarType, methodName?: string): GraphQLScalarType
 (type: GraphQLNamedType): GraphQLNamedType
 ```
 
 `schema.importType` is useful for adding existing GraphQL.js types into your Nexus schema.
-c
+
 [Check out this repository](https://github.com/Urigo/graphql-scalars) for a handful list of useful scalar types that might be useful to your GraphQL API.
 
 When passing a `GraphQLScalarType`, you can additionally pass a `methodName` as a second parameter, which will augment the `t` parameter of your definition builder with a convenient method to create a field of the associated type.
@@ -1095,9 +1095,7 @@ import { schema } from 'nexus'
 import { existingSchema } from './existing-schema'
 
 
-Object.values(
-  existingSchema.getTypeMap()
-).forEach(schema.importType)
+Object.values(existingSchema.getTypeMap()).forEach(schema.importType)
 ```
 
 ### Type Glossary

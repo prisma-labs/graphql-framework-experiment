@@ -48,7 +48,7 @@ export interface NexusSchemaStatefulBuilders {
      * schema.objectType({
      *  name: 'SomeObject',
      *  definition(t) {
-     *   t.date('createdAt') // t.date() is now available (with types!) thanks to `importType`
+     *    t.date('createdAt') // t.date() is now available (with types!) thanks to `importType`
      *  },
      * })
      * ```
