@@ -54,7 +54,7 @@ export interface NexusSchemaStatefulBuilders {
      * ```
      *
      */
-    (type: GraphQL.GraphQLScalarType, methodName?: string): GraphQL.GraphQLScalarType
+    (scalarType: GraphQL.GraphQLScalarType, methodName?: string): GraphQL.GraphQLScalarType
     /**
      * Add a GraphQL.js type in your Nexus schema.
      * Useful for adding types from an existing schema-first GraphQL schema
