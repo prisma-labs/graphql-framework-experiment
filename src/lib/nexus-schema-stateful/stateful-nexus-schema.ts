@@ -30,29 +30,48 @@ export interface NexusSchemaStatefulBuilders {
   extendType: typeof NexusSchema.extendType
   extendInputType: typeof NexusSchema.extendInputType
   /**
-   * Add a GraphQL.js scalar type and expose it as a method in your definition builders.
-   * 
-   * @example
-   * 
-   * ```ts
-   * import { schema } from 'nexus'
-   * import { GraphQLDate } from 'graphql-iso-date'
-   *
-   * schema.addScalarAsMethod(GraphQLDate, 'date')
-   *
-   * schema.objectType({
-   *  name: 'SomeObject',
-   *  definition(t) {
-   *   t.date('createdAt') // t.date() is now available (with types!) because of `addScalarAsNexusMethod`
-   *  },
-   * })
-   * ```
+   * Add a GraphQL.js type in your Nexus schema
    */
-  addScalarAsMethod: typeof NexusSchema.asNexusMethod
-  /**
-   * Add GraphQL.js types to your schema.
-   */
-  addTypes: ReturnType<typeof createNexusSchemaStateful>['builders']['addTypes']
+  importType: {
+    /**
+     * Add a GraphQL.js scalar type and (optionally) expose it as a method in your definition builders.
+     * Check the second overload if you're not adding a scalar type.
+     * 
+     * @example
+     * 
+     * ```ts
+     * import { schema } from 'nexus'
+     * import { GraphQLDate } from 'graphql-iso-date'
+     *
+     * schema.importType(GraphQLDate, 'date')
+     *
+     * schema.objectType({
+     *  name: 'SomeObject',
+     *  definition(t) {
+     *   t.date('createdAt') // t.date() is now available (with types!) thanks to `importType`
+     *  },
+     * })
+     * ```
+     *
+     */
+    (type: GraphQL.GraphQLScalarType, methodName?: string): GraphQL.GraphQLScalarType
+    /**
+     * Add a GraphQL.js type in your Nexus schema.
+     * Useful for adding types from an existing schema-first GraphQL schema
+     * 
+     * @example
+     * 
+     * ```ts
+     * import { schema } from 'nexus'
+     * import { existingSchema } from './existing-schema'
+     * 
+     * Object.values(
+     *   existingSchema.getTypeMap()
+     * ).forEach(schema.importType)
+     * ```
+     */
+    (type: GraphQL.GraphQLNamedType): GraphQL.GraphQLNamedType
+  }
 }
 
 type NexusSchemaTypeDef =
@@ -135,14 +154,17 @@ export function createNexusSchemaStateful() {
     return typeDef
   }
 
-  const addScalarAsMethod: typeof NexusSchema.asNexusMethod = (scalar, methodName) => {
-    const typeDef = NexusSchema.asNexusMethod(scalar, methodName)
-    state.types.push(typeDef)
-    return typeDef
-  }
+  function importType(type: GraphQL.GraphQLScalarType, methodName?: string): GraphQL.GraphQLScalarType
+  function importType(type: GraphQL.GraphQLNamedType): GraphQL.GraphQLNamedType
+  function importType(type: GraphQL.GraphQLNamedType, methodName?: string): GraphQL.GraphQLNamedType {
+    if (type instanceof GraphQL.GraphQLScalarType && methodName) {
+      const typeDef = NexusSchema.asNexusMethod(type, methodName)
+      state.types.push(typeDef)
+      return typeDef
+    }
 
-  function addTypes<T extends GraphQL.GraphQLNamedType[]>(...types: T): void {
-    state.types.push(...types)
+    state.types.push(type)
+    return type
   }
 
   const arg = NexusSchema.arg
@@ -171,8 +193,7 @@ export function createNexusSchemaStateful() {
       booleanArg,
       extendType,
       extendInputType,
-      addScalarAsMethod,
-      addTypes,
+      importType,
     },
   }
 }
