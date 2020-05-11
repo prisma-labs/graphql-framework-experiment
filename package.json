@@ -100,8 +100,8 @@
     "postinstall": "node scripts/postinstall",
     "prepublishOnly": "yarn -s build",
     "test": "LOG_PRETTY=true DEBUG=true jest --verbose --testTimeout 360000",
-    "test:unit": "jest --verbose --testRegex '.+/src/.+\\.spec\\.ts$'",
-    "dev:test": "jest --watch --testRegex '.+/src/.+\\.spec\\.ts$'",
+    "test:unit": "yarn -s test src",
+    "dev:test": "yarn -s test --watch src",
     "dev": "yarn -s clean && node scripts/build-module-facades && tsc -b -w"
   }
 }

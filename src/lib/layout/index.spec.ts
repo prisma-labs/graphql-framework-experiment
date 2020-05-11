@@ -12,6 +12,7 @@ const mockExit = jest.spyOn(process, 'exit').mockImplementation(((n: any) => {
   mockedStdoutBuffer += `\n\n--- process.exit(${n}) ---\n\n`
 }) as any)
 
+import stripAnsi from 'strip-ansi'
 import { TsConfigJson } from 'type-fest'
 import * as Layout from '.'
 import { rootLogger } from '../../lib/nexus-logger'
@@ -144,13 +145,13 @@ describe('tsconfig', () => {
       'tsconfig.json': 'bad json',
     })
     await ctx.scan()
-    expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
+    expect(stripAnsi(mockedStdoutBuffer)).toMatchInlineSnapshot(`
       "✕ nexus:tsconfig Unable to read your tsconifg.json
 
-      [96m../../../../..__DYNAMIC__/tsconfig.json[0m:[93m1[0m:[93m1[0m - [91merror[0m[90m TS1005: [0m'{' expected.
+      ../../../../..__DYNAMIC__/tsconfig.json:1:1 - error TS1005: '{' expected.
 
-      [7m1[0m bad json
-      [7m [0m [91m~~~[0m
+      1 bad json
+        ~~~
 
 
 
@@ -167,12 +168,12 @@ describe('tsconfig', () => {
       'tsconfig.json': '{ "exclude": "bad" }',
     })
     await ctx.scan()
-    expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
+    expect(stripAnsi(mockedStdoutBuffer)).toMatchInlineSnapshot(`
       "▲ nexus:tsconfig Please set your tsconfig.json compilerOptions.rootDir to \\".\\"
       ▲ nexus:tsconfig Please set your tsconfig.json include to have \\".\\"
       ✕ nexus:tsconfig Your tsconfig.json is invalid
 
-      [91merror[0m[90m TS5024: [0mCompiler option 'exclude' requires a value of type Array.
+      error TS5024: Compiler option 'exclude' requires a value of type Array.
 
 
 
@@ -194,13 +195,13 @@ it('fails if no entrypoint and no graphql modules', async () => {
 
   await ctx.scan()
 
-  expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
+  expect(stripAnsi(mockedStdoutBuffer)).toMatchInlineSnapshot(`
     "■ nexus:layout We could not find any graphql modules or app entrypoint
     ■ nexus:layout Please do one of the following:
 
-      1. Create a ([33mgraphql.ts[39m file and write your GraphQL type definitions in it.
-      2. Create a [33mgraphql[39m directory and write your GraphQL type definitions inside files there.
-      3. Create an [33mapp.ts[39m file.
+      1. Create a (graphql.ts file and write your GraphQL type definitions in it.
+      2. Create a graphql directory and write your GraphQL type definitions inside files there.
+      3. Create an app.ts file.
 
 
     --- process.exit(1) ---
