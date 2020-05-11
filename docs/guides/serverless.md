@@ -20,4 +20,4 @@
   }
   ```
 
-- See the [Next.JS example](https://github.com/graphql-nexus/examples/tree/master/integration-nextjs) for a functioning serverless reference.
+- See the [Next.JS example](https://github.com/graphql-nexus/examples/tree/master/with-nextjs) for a functioning serverless reference.
