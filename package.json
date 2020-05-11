@@ -104,6 +104,6 @@
     "test": "LOG_PRETTY=true DEBUG=true jest --verbose --testTimeout 360000",
     "test:unit": "jest --verbose --testRegex '.+/src/.+\\.spec\\.ts$'",
     "dev:test": "jest --watch --testRegex '.+/src/.+\\.spec\\.ts$'",
-    "dev": "yarn -s clean && node scripts/build-module-facades && tsc -b -w"
+    "dev": "yarn -s clean && node scripts/build-module-facades && tsc -b tsconfig.cjs.json -w"
   }
 }
