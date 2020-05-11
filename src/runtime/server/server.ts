@@ -29,7 +29,6 @@ export interface Server {
 
 export const defaultState = {
   running: false,
-  httpServer: HTTP.createServer(),
   createContext: null,
 }
 
@@ -71,7 +70,7 @@ export function create(appState: AppState) {
         internalServer.private.state = { ...defaultState }
       },
       assemble(loadedRuntimePlugins: Plugin.RuntimeContributions[], schema: GraphQLSchema) {
-        state.httpServer.on('request', express)
+        settings.data.httpServer.on('request', express)
 
         if (settings.data.playground) {
           express.get(
@@ -95,14 +94,14 @@ export function create(appState: AppState) {
         return { createContext }
       },
       async start() {
-        await httpListen(state.httpServer, { port: settings.data.port, host: settings.data.host })
+        await httpListen(settings.data.httpServer, { port: settings.data.port, host: settings.data.host })
         state.running = true
 
         // About !
         // 1. We do not support listening on unix domain sockets so string
         //    value will never be present here.
         // 2. We are working within the listen callback so address will not be null
-        const address = state.httpServer.address()! as Net.AddressInfo
+        const address = settings.data.httpServer.address()! as Net.AddressInfo
 
         settings.data.startMessage({
           port: address.port,
@@ -118,7 +117,7 @@ export function create(appState: AppState) {
           log.warn('You called `server.stop` but the server was not running.')
           return Promise.resolve()
         }
-        await httpClose(state.httpServer)
+        await httpClose(settings.data.httpServer)
         state.running = false
       },
     },

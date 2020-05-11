@@ -1,6 +1,7 @@
 import * as Process from '../../lib/process'
 import * as Utils from '../../lib/utils'
 import { log as serverLogger } from './logger'
+import * as HTTP from 'http'
 
 const log = serverLogger.child('settings')
 
@@ -13,6 +14,10 @@ export type SettingsInput = {
    * todo
    */
   port?: number
+  /**
+   * Use an existing http server?
+   */
+  httpServer?: HTTP.Server | undefined
   /**
    * Host the server should be listening on.
    */
@@ -86,6 +91,7 @@ export const defaultSettings: () => Readonly<SettingsData> = () => {
     },
     playground: process.env.NODE_ENV === 'production' ? false : defaultPlaygroundSettings(),
     path: '/graphql',
+    httpServer: HTTP.createServer(),
   }
 }
 
@@ -147,6 +153,7 @@ export function changeSettings(state: SettingsData, newSettings: SettingsInput):
   state.path = validateGraphQLPath(updatedSettings.path)
   state.port = updatedSettings.port
   state.startMessage = updatedSettings.startMessage
+  state.httpServer = updatedSettings.httpServer
 }
 
 export function createServerSettingsManager() {
