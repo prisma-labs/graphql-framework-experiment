@@ -12,6 +12,7 @@ const mockExit = jest.spyOn(process, 'exit').mockImplementation(((n: any) => {
   mockedStdoutBuffer += `\n\n--- process.exit(${n}) ---\n\n`
 }) as any)
 
+import stripAnsi from 'strip-ansi'
 import { TsConfigJson } from 'type-fest'
 import * as Layout from '.'
 import { rootLogger } from '../../lib/nexus-logger'
@@ -144,7 +145,7 @@ describe('tsconfig', () => {
       'tsconfig.json': 'bad json',
     })
     await ctx.scan()
-    expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
+    expect(stripAnsi(mockedStdoutBuffer)).toMatchInlineSnapshot(`
       "✕ nexus:tsconfig Unable to read your tsconifg.json
 
       ../../../../..__DYNAMIC__/tsconfig.json:1:1 - error TS1005: '{' expected.
@@ -167,7 +168,7 @@ describe('tsconfig', () => {
       'tsconfig.json': '{ "exclude": "bad" }',
     })
     await ctx.scan()
-    expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
+    expect(stripAnsi(mockedStdoutBuffer)).toMatchInlineSnapshot(`
       "▲ nexus:tsconfig Please set your tsconfig.json compilerOptions.rootDir to \\".\\"
       ▲ nexus:tsconfig Please set your tsconfig.json include to have \\".\\"
       ✕ nexus:tsconfig Your tsconfig.json is invalid
@@ -194,7 +195,7 @@ it('fails if no entrypoint and no graphql modules', async () => {
 
   await ctx.scan()
 
-  expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
+  expect(stripAnsi(mockedStdoutBuffer)).toMatchInlineSnapshot(`
     "■ nexus:layout We could not find any graphql modules or app entrypoint
     ■ nexus:layout Please do one of the following:
 
