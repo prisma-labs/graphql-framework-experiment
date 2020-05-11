@@ -1061,7 +1061,7 @@ schema.queryType({
 
 ```ts
 schema.importType(scalarType: GraphQLScalarType, methodName?: string): GraphQLScalarType
-schema.importType(type: GraphQLNamedType): GraphQLNamedType
+(type: GraphQLNamedType): GraphQLNamedType
 ```
 
 `schema.importType` is useful for adding existing GraphQL.js types into your Nexus schema.
