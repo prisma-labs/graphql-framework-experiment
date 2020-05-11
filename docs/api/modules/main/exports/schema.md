@@ -1073,7 +1073,6 @@ When passing a `GraphQLScalarType`, you can additionally pass a `methodName` as 
 ##### Example: Adding a date scalar type
 
 ```ts
-// graphql.ts
 import { schema } from 'nexus'
 import { GraphQLDate } from 'graphql-iso-date'
      
