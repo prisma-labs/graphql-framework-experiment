@@ -1065,7 +1065,7 @@ schema.importType(type: GraphQLNamedType): GraphQLNamedType
 ```
 
 `schema.importType` is useful for adding existing GraphQL.js types into your Nexus schema.
-
+c
 [Check out this repository](https://github.com/Urigo/graphql-scalars) for a handful list of useful scalar types that might be useful to your GraphQL API.
 
 When passing a `GraphQLScalarType`, you can additionally pass a `methodName` as a second parameter, which will augment the `t` parameter of your definition builder with a convenient method to create a field of the associated type.
@@ -1087,7 +1087,7 @@ schema.objectType({
 })
 ```
 
-`schema.importType` can also be used to add types from an existing GraphQL schema into your Nexus schema. This is useful to incrementally adopt Nexus if you already have a schema-first GraphQL schema.
+`schema.importType` can also be used to add types from an existing GraphQL schema into your Nexus schema. This is useful to incrementally adopt Nexus if you already have a GraphQL schema built with a different technology than Nexus.
 
 ##### Example: Adding types from a schema-first schema
 
