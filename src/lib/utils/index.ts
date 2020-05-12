@@ -162,16 +162,11 @@ export type OmitFirstArg<Func> = Func extends (firstArg: any, ...args: infer Arg
   ? (...args: Args) => Ret
   : never
 
-const createCodeNameGenerator = require('codename')
-
 /**
- * Generate a random project name.
+ * Generate a randomized Nexus project name.
  */
 export function generateProjectName(): string {
-  return createCodeNameGenerator()
-    .generate(['alliterative', 'random'], ['adjectives', 'animals'])
-    .map((word: string | number) => String(word).replace(' ', '-').toLowerCase())
-    .join('-')
+  return 'my-nexus-app-' + Math.random().toString().slice(2)
 }
 
 /**
