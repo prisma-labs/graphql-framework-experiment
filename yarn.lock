@@ -478,10 +478,10 @@
     "@types/yargs" "^15.0.0"
     chalk "^4.0.0"
 
-"@nexus/logger@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@nexus/logger/-/logger-0.1.0.tgz#8b3960016c962dd3dae426f9e786c118cfb97fed"
-  integrity sha512-13xVzq63p83W4rHNOkZ11g0dtOGfYhPi9RfeCtLVXjYWPKv5czXD6EHpFUlGv8B7bGqOHpucNGTDcmQUn8stXQ==
+"@nexus/logger@^0.2.0-next.1":
+  version "0.2.0-next.1"
+  resolved "https://registry.yarnpkg.com/@nexus/logger/-/logger-0.2.0-next.1.tgz#004b87377b6648d41b556fcb7473ae3fa9399196"
+  integrity sha512-4MB7aJBW89XUmv9Fwm7Zz3e8s3HukqpgFO07kJN7Z0k+mvkhd0wkAP3E+bRWhctUtbAqSRjzaQcv7N/MqUmsTA==
   dependencies:
     chalk "^4.0.0"
     lodash "^4.17.15"
