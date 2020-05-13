@@ -1,5 +1,5 @@
 import * as NexusSchema from '@nexus/schema'
-import { NexusSchemaExtensionConfig } from '@nexus/schema/dist/extensions'
+import type { NexusSchemaExtensionConfig } from '@nexus/schema/dist/extensions'
 import { stripIndent, stripIndents } from 'common-tags'
 import * as Lo from 'lodash'
 import * as Path from 'path'

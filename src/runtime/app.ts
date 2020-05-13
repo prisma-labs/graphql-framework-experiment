@@ -1,5 +1,5 @@
 import * as Logger from '@nexus/logger'
-import { MissingType, NexusGraphQLSchema } from '@nexus/schema/dist/core'
+import type { MissingType, NexusGraphQLSchema } from '@nexus/schema/dist/core'
 import * as Plugin from '../lib/plugin'
 import { RuntimeContributions } from '../lib/plugin'
 import * as Reflection from '../lib/reflection'

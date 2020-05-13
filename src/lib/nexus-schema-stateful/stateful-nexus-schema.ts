@@ -1,5 +1,5 @@
 import * as NexusSchema from '@nexus/schema'
-import { AllTypeDefs } from '@nexus/schema/dist/core'
+import type { AllTypeDefs } from '@nexus/schema/dist/core'
 import * as GraphQL from 'graphql'
 import * as CustomTypes from './custom-types'
 

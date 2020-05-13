@@ -1,11 +1,7 @@
 import * as Logger from '@nexus/logger'
 import * as NexusSchema from '@nexus/schema'
-import {
-  CreateFieldResolverInfo,
-  makeSchemaInternal,
-  MissingType,
-  NexusGraphQLSchema,
-} from '@nexus/schema/dist/core'
+import { core } from '@nexus/schema'
+import type { CreateFieldResolverInfo, MissingType, NexusGraphQLSchema } from '@nexus/schema/dist/core'
 import { GraphQLFieldResolver, GraphQLResolveInfo } from 'graphql'
 import * as HTTP from 'http'
 import * as Layout from '../../lib/layout'
@@ -115,7 +111,7 @@ export function create(appState: AppState): SchemaInternal {
         const nexusSchemaConfig = mapSettingsToNexusSchemaConfig(plugins, settings.data)
         nexusSchemaConfig.types.push(...statefulNexusSchema.state.types)
         nexusSchemaConfig.plugins!.push(...appState.schemaComponent.plugins)
-        const { schema, missingTypes } = makeSchemaInternal(nexusSchemaConfig)
+        const { schema, missingTypes } = core.makeSchemaInternal(nexusSchemaConfig)
         return { schema, missingTypes }
       },
       checks() {
