@@ -73,9 +73,9 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   content += stripIndent`
     // Run framework initialization side-effects
     // Also, import the app for later use
-    const app = require("${
+    import app from "${
       config.absoluteModuleImports ? resolveFrom('nexus', config.layout.projectRoot) : 'nexus'
-    }").default
+    }")
   `
 
   if (config.catchUnhandledErrors !== false) {
