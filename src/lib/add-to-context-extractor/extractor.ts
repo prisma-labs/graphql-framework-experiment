@@ -21,7 +21,7 @@ export interface ExtractedContextTypes {
 /**
  * Extract types from all `addToContext` calls.
  */
-export function extractContextTypes(program: tsm.ts.Program): ExtractedContextTypes {
+export function extractContextTypes(program: ts.Program): ExtractedContextTypes {
   const typeImportsIndex: Record<string, TypeImportInfo> = {}
 
   const checker = program.getTypeChecker()
