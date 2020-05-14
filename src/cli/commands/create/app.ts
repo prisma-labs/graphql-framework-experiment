@@ -9,7 +9,8 @@ import { tsconfigTemplate } from '../../../lib/layout/tsconfig'
 import { rootLogger } from '../../../lib/nexus-logger'
 import { ownPackage } from '../../../lib/own-package'
 import * as PackageManager from '../../../lib/package-manager'
-import * as Plugin from '../../../lib/plugin'
+import * as PluginRuntime from '../../../lib/plugin'
+import * as PluginWorktime from '../../../lib/plugin/worktime'
 import * as proc from '../../../lib/process'
 import { createGitRepository, CWDProjectNameOrGenerate } from '../../../lib/utils'
 
@@ -52,8 +53,8 @@ export async function runLocalHandOff(): Promise<void> {
 
   const parentData = await loadDataFromParentProcess()
   const layout = await Layout.create()
-  const pluginM = await Plugin.getUsedPlugins(layout)
-  const plugins = Plugin.importAndLoadWorktimePlugins(pluginM, layout)
+  const pluginM = await PluginWorktime.getUsedPlugins(layout)
+  const plugins = PluginRuntime.importAndLoadWorktimePlugins(pluginM, layout)
   log.trace('plugins', { plugins })
 
   // TODO select a template
@@ -466,7 +467,9 @@ async function scaffoldBaseFiles(options: InternalConfig) {
     // Having at least one of these satisfies minimum Nexus requirements.
     // We put both to setup vscode debugger config with an entrypoint that is
     // unlikely to change.
-    fs.writeAsync(appEntrypointPath, stripIndent`
+    fs.writeAsync(
+      appEntrypointPath,
+      stripIndent`
       /**
        * This file is your server entrypoint. Don't worry about its emptyness, Nexus handles everything for you.
        * However, if you need to add settings, enable plugins, schema middleware etc, this is place to do it.
@@ -507,7 +510,8 @@ async function scaffoldBaseFiles(options: InternalConfig) {
       // import { prisma } from 'nexus-plugin-prisma'
       //
       // use(prisma())
-    `),
+    `
+    ),
     fs.writeAsync(path.join(options.sourceRoot, Layout.schema.CONVENTIONAL_SCHEMA_FILE_NAME), ''),
     // An exhaustive .gitignore tailored for Node can be found here:
     // https://github.com/github/gitignore/blob/master/Node.gitignore
@@ -580,8 +584,8 @@ async function scaffoldBaseFiles(options: InternalConfig) {
 const ENV_PARENT_DATA = 'NEXUS_CREATE_DATA'
 
 type ParentData = {
-  database?: Plugin.OnAfterBaseSetupLens['database']
-  connectionURI?: Plugin.OnAfterBaseSetupLens['connectionURI']
+  database?: PluginRuntime.OnAfterBaseSetupLens['database']
+  connectionURI?: PluginRuntime.OnAfterBaseSetupLens['connectionURI']
 }
 
 async function loadDataFromParentProcess(): Promise<ParentData> {

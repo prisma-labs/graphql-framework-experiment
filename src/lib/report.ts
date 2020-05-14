@@ -5,7 +5,8 @@
 
 import os from 'os'
 import { PackageJson } from 'type-fest'
-import * as Plugin from '../lib/plugin'
+import * as PluginWorktime from './plugin/worktime'
+import * as PluginRuntime from './plugin'
 import { Layout } from './layout'
 
 interface Report {
@@ -33,8 +34,8 @@ export async function getNexusReport(layout: Layout): Promise<Report> {
       return ent[0] !== 'nexus' && !ent[0].startsWith('nexus-plugin')
     })
   )
-  const pluginEntrypoints = await Plugin.getUsedPlugins(layout)
-  const pluginManifests = pluginEntrypoints.map(Plugin.entrypointToManifest)
+  const pluginEntrypoints = await PluginWorktime.getUsedPlugins(layout)
+  const pluginManifests = pluginEntrypoints.map(PluginRuntime.entrypointToManifest)
 
   return {
     node: process.version,

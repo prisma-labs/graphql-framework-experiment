@@ -2,7 +2,7 @@ import prompts from 'prompts'
 import * as Layout from '../layout'
 import { rootLogger } from '../nexus-logger'
 import * as Process from '../process'
-import { isReflectionStage } from '../reflection'
+import { isReflectionStage } from '../reflection/stage'
 import { Lens, RuntimeLens, WorktimeLens } from './types'
 
 const log = rootLogger.child('plugin')

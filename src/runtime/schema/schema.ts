@@ -4,7 +4,7 @@ import { core } from '@nexus/schema'
 import type { CreateFieldResolverInfo, MissingType, NexusGraphQLSchema } from '@nexus/schema/dist/core'
 import { GraphQLFieldResolver, GraphQLResolveInfo } from 'graphql'
 import * as HTTP from 'http'
-import * as Layout from '../../lib/layout'
+import { emptyExceptionMessage } from '../../lib/layout/schema-modules'
 import { createNexusSchemaStateful, NexusSchemaStatefulBuilders } from '../../lib/nexus-schema-stateful'
 import { RuntimeContributions } from '../../lib/plugin'
 import { Index, MaybePromise } from '../../lib/utils'
@@ -117,7 +117,7 @@ export function create(appState: AppState): SchemaInternal {
       checks() {
         NexusSchema.core.assertNoMissingTypes(appState.assembled!.schema, appState.assembled!.missingTypes)
         if (statefulNexusSchema.state.types.length === 0) {
-          log.warn(Layout.schema.emptyExceptionMessage())
+          log.warn(emptyExceptionMessage())
         }
       },
     },
