@@ -54,9 +54,9 @@ export async function getPluginManifest(plugin: Plugin): Promise<Manifest> {
   const validatedPackageJson = packageJson as ValidatedPackageJson
 
   const [worktime, runtime, testtime] = await Promise.all([
-    checkForConventionalDimensionEntrypoint('worktime', validatedPackageJson, plugin),
-    checkForConventionalDimensionEntrypoint('runtime', validatedPackageJson, plugin),
-    checkForConventionalDimensionEntrypoint('testtime', validatedPackageJson, plugin),
+    getDimensionEntrypointLocation('worktime', validatedPackageJson, plugin),
+    getDimensionEntrypointLocation('runtime', validatedPackageJson, plugin),
+    getDimensionEntrypointLocation('testtime', validatedPackageJson, plugin),
   ])
 
   return {
@@ -84,7 +84,7 @@ export async function getPluginManifest(plugin: Plugin): Promise<Manifest> {
  * node-module-resolution functino e.g. `require`. Do not pass it to a raw FS
  * file read function.
  */
-async function checkForConventionalDimensionEntrypoint(
+async function getDimensionEntrypointLocation(
   dimensionkind: Dimension,
   packageJson: ValidatedPackageJson,
   plugin: Plugin
