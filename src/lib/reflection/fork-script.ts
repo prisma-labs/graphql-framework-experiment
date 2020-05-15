@@ -26,11 +26,12 @@ async function run() {
 
   if (isReflectionStage('typegen')) {
     try {
+      const plugins = await Plugin.importAndLoadRuntimePlugins(app.private.state.plugins)
       await writeArtifacts({
         graphqlSchema: app.private.state.assembled!.schema,
         layout,
         schemaSettings: app.settings.current.schema,
-        plugins: Plugin.importAndLoadRuntimePlugins(app.private.state.plugins),
+        plugins,
       })
       sendDataToParent({
         type: 'success-typegen',

@@ -157,6 +157,7 @@ export function range(times: number): number[] {
 
 import * as Path from 'path'
 import Git from 'simple-git/promise'
+import { PackageJson } from 'type-fest'
 
 export type OmitFirstArg<Func> = Func extends (firstArg: any, ...args: infer Args) => infer Ret
   ? (...args: Args) => Ret
@@ -291,4 +292,16 @@ export function simpleDebounce<T extends (...args: any[]) => Promise<any>>(fn: T
 
 export type Index<T> = {
   [key: string]: T
+}
+
+/**
+ * An ESM-aware reading of the main entrypoint to a package.
+ */
+export function getPackageJsonMain(packageJson: PackageJson & { main: string }): string {
+  // todo when building for a bundler, we want to read from the esm paths. Otherwise the cjs paths.
+  //  - this condition takes a stab at the problem but is basically a stub.
+  //  - this todo only needs to be completed once we are actually trying to do esm tree-shaking (meaning, we've moved beyond node-file-trace)
+  return process.env.ESM && packageJson.module
+    ? Path.dirname(packageJson.module)
+    : Path.dirname(packageJson.main)
 }

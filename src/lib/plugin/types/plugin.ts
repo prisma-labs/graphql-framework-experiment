@@ -11,7 +11,7 @@ import {
 
 export type Dimension = 'runtime' | 'worktime' | 'testtime'
 
-export interface DimensionEntrypoint {
+export interface DimensionEntrypointLocation {
   /**
    * Path of a module. We recommend using `require.resolve()`
    */
@@ -67,7 +67,7 @@ export interface PluginWithoutSettings {
    * }
    * ```
    */
-  runtime?: DimensionEntrypoint
+  runtime?: DimensionEntrypointLocation
   /**
    * An object pointing to the file responsible for the "worktime" dimension of your plugin.
    *
@@ -80,7 +80,7 @@ export interface PluginWithoutSettings {
    * }
    * ```
    */
-  worktime?: DimensionEntrypoint
+  worktime?: DimensionEntrypointLocation
   /**
    * An object pointing to the file responsible for the "testtime" dimension of your plugin.
    *
@@ -93,7 +93,7 @@ export interface PluginWithoutSettings {
    * }
    * ```
    */
-  testtime?: DimensionEntrypoint
+  testtime?: DimensionEntrypointLocation
   //settingsType?: DimensionEntrypoint
   //frameworkVersion?: string // valid npm version expression
 }
@@ -120,26 +120,44 @@ export type Plugin<Settings = any> =
   | PluginWithRequiredSettings<Settings>
 
 /**
+ * PackageJson type in its post-validated-for-plugin-system form.
+ */
+export type ValidatedPackageJson = {
+  name: string
+  main: string
+} & PackageJson
+
+/**
  * Internal representation of a plugin entrypoint, called a "Manifest"
  *
  * @remarks
  *
- * Whereas plugin entrypoints are designed to ease what API authors must supply
+ * Whereas plugin entrypoints are designed to ease what API authors must supply,
  * manifests are a resolved representation of the entrypoint with all defaults
  * etc. filled.
  */
-export type Manifest = Plugin & {
+export type Manifest = {
   name: string
-  packageJson: PackageJson
-  settings?: any
+  packageJson: ValidatedPackageJson
+  packageJsonPath: string
+  settings: null | Record<string, any>
+  worktime: null | DimensionEntrypointLocation
+  runtime: null | DimensionEntrypointLocation
+  testtime: null | DimensionEntrypointLocation
 }
 
+/**
+ * Utility type to lookup the entrypoint of a dimension of a plugin.
+ */
 export type DimensionToPlugin<D extends Dimension> = {
   runtime: InnerRuntimePlugin
   worktime: InnerWorktimePlugin
   testtime: InnerTesttimePlugin
 }[D]
 
+/**
+ * Utility type to lookup the lens of a dimension of a plugin.
+ */
 export type DimensionToLens<D extends Dimension> = {
   runtime: ReturnType<typeof createRuntimeLens>
   worktime: ReturnType<typeof createWorktimeLens>

@@ -4,16 +4,17 @@ import { partition } from '../utils'
 import { importPluginDimension } from './import'
 import { createBaseLens, createRuntimeLens, createWorktimeLens } from './lens'
 import { Plugin } from './types'
-import { entrypointToManifest } from './utils'
+import { getPluginManifest } from './utils'
 
 const log = rootLogger.child('plugin')
 
 /**
  * Fully import and load the runtime plugins, if any, amongst the given plugins.
  */
-export function importAndLoadRuntimePlugins(plugins: Plugin[]) {
-  return filterValidPlugins(plugins)
-    .map(entrypointToManifest)
+export async function importAndLoadRuntimePlugins(plugins: Plugin[]) {
+  const validPlugins = filterValidPlugins(plugins)
+  const pluginManifests = await Promise.all(validPlugins.map(getPluginManifest))
+  return pluginManifests
     .filter((m) => m.runtime)
     .map((m) => {
       return {
@@ -30,9 +31,11 @@ export function importAndLoadRuntimePlugins(plugins: Plugin[]) {
 /**
  * Fully import and load the worktime plugins, if any, amongst the given plugins.
  */
-export function importAndLoadWorktimePlugins(plugins: Plugin[], layout: Layout.Layout) {
-  return filterValidPlugins(plugins)
-    .map(entrypointToManifest)
+export async function importAndLoadWorktimePlugins(plugins: Plugin[], layout: Layout.Layout) {
+  const validPlugins = filterValidPlugins(plugins)
+  const pluginManifests = await Promise.all(validPlugins.map(getPluginManifest))
+
+  return pluginManifests
     .filter((m) => m.worktime)
     .map((m) => {
       return {
@@ -58,9 +61,11 @@ export function importAndLoadWorktimePlugins(plugins: Plugin[], layout: Layout.L
 /**
  * Fully import and load the testtime plugins, if any, amongst the given plugins.
  */
-export function importAndLoadTesttimePlugins(plugins: Plugin[]) {
-  return filterValidPlugins(plugins)
-    .map(entrypointToManifest)
+export async function importAndLoadTesttimePlugins(plugins: Plugin[]) {
+  const validPlugins = filterValidPlugins(plugins)
+  const pluginManifests = await Promise.all(validPlugins.map(getPluginManifest))
+
+  return pluginManifests
     .filter((m) => m.testtime)
     .map((m) => {
       return {

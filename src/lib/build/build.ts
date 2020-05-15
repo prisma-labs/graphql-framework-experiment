@@ -61,7 +61,7 @@ export async function buildNexusApp(settings: BuildSettings) {
   }
 
   const { plugins } = pluginReflection
-  const worktimePlugins = Plugin.importAndLoadWorktimePlugins(plugins, layout)
+  const worktimePlugins = await Plugin.importAndLoadWorktimePlugins(plugins, layout)
 
   for (const p of worktimePlugins) {
     await p.hooks.build.onStart?.()
@@ -87,7 +87,8 @@ export async function buildNexusApp(settings: BuildSettings) {
 
   compile(tsBuilder, layout, { removePreviousBuild: false })
 
-  const runtimePluginManifests = plugins.map(Plugin.entrypointToManifest).filter((pm) => pm.runtime)
+  const pluginManifests = await Promise.all(plugins.map(Plugin.getPluginManifest))
+  const runtimePluginManifests = pluginManifests.filter((pm) => pm.runtime)
 
   if (!layout.tsConfig.content.options.noEmit) {
     await writeStartModule({

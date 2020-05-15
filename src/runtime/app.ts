@@ -114,7 +114,7 @@ export function create(): App {
     settings: settingsComponent.public,
     schema: schemaComponent.public,
     server: serverComponent.public,
-    assemble() {
+    async assemble() {
       if (appState.assembled) return
 
       // todo https://github.com/graphql-nexus/nexus/pull/788#discussion_r420645846
@@ -122,7 +122,7 @@ export function create(): App {
 
       if (Reflection.isReflectionStage('plugin')) return
 
-      const loadedPlugins = Plugin.importAndLoadRuntimePlugins(appState.plugins)
+      const loadedPlugins = await Plugin.importAndLoadRuntimePlugins(appState.plugins)
       appState.assembled!.loadedPlugins = loadedPlugins
 
       const { schema, missingTypes } = schemaComponent.private.assemble(loadedPlugins)

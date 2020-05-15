@@ -34,7 +34,7 @@ export async function getNexusReport(layout: Layout): Promise<Report> {
     })
   )
   const pluginEntrypoints = await Plugin.getUsedPlugins(layout)
-  const pluginManifests = pluginEntrypoints.map(Plugin.entrypointToManifest)
+  const pluginManifests = await Promise.all(pluginEntrypoints.map(Plugin.getPluginManifest))
 
   return {
     node: process.version,
