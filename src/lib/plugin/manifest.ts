@@ -1,7 +1,20 @@
-import { isLeft, toError, tryCatch } from 'fp-ts/lib/Either'
+import { Either, isLeft, isRight, left, Left, right, Right, toError, tryCatch } from 'fp-ts/lib/Either'
 import { PackageJson } from 'type-fest'
 import { fatal } from '../process'
+import { ContextualError, createContextualError } from '../utils'
 import { Manifest, Plugin, ValidatedPackageJson } from './types'
+
+export type GetManifestError = ContextualError<{
+  plugin: Plugin
+  name?: string
+}>
+
+export function getPluginManifests(plugins: Plugin[]) {
+  const errManifests = plugins.map(getPluginManifest)
+  const data = errManifests.filter<Right<Manifest>>(isRight).map((m) => m.right)
+  const errors = errManifests.filter<Left<GetManifestError>>(isLeft).map((m) => m.left)
+  return { data, errors }
+}
 
 /**
  * Process manifest input into a manifest.
@@ -11,58 +24,62 @@ import { Manifest, Plugin, ValidatedPackageJson } from './types'
  * The manifest input is what the plugin author provides. This supplies
  * defaults and fulfills properties to produce normalized manifest data.
  */
-export function getPluginManifest(plugin: Plugin): Manifest {
+export function getPluginManifest(plugin: Plugin): Either<GetManifestError, Manifest> {
   const errPackageJson = tryCatch(() => require(plugin.packageJsonPath) as PackageJson, toError)
 
   if (isLeft(errPackageJson)) {
-    fatal(
-      createGetManifestError(
-        addErrorMessageContext(`Failed to read the the plugin's package.json file.`, errPackageJson.left)
-      ),
-      { plugin }
+    return left(
+      createContextualError(`Failed to read the the package.json file.\n\n${errPackageJson.left.message}`, {
+        plugin,
+      })
     )
   }
 
   const packageJson = errPackageJson.right
 
   if (!packageJson.name) {
-    fatal(createGetManifestError(new Error(`\`name\` property is missing in package.json`)), {
-      packageJson: {
-        data: packageJson,
-        path: plugin.packageJsonPath,
-      },
-    })
+    return left(
+      createContextualError(`\`name\` property is missing in package.json`, {
+        plugin,
+        name: packageJson.name!,
+      })
+    )
   }
 
   if (!packageJson.main) {
-    fatal(createGetManifestError(new Error(`\`main\` property is missing in package.json`)), {
-      packageJson: {
-        data: packageJson,
-        path: plugin.packageJsonPath,
-      },
-    })
+    return left(
+      createContextualError(`\`main\` property is missing in package.json`, {
+        plugin,
+        name: packageJson.name!,
+      })
+    )
   }
 
   const validatedPackageJson = packageJson as ValidatedPackageJson
 
-  return {
-    name: packageJson.name,
+  return right({
+    name: validatedPackageJson.name,
     settings: (plugin as any).settings ?? null,
     packageJsonPath: plugin.packageJsonPath,
     packageJson: validatedPackageJson,
     worktime: plugin.worktime ?? null,
     testtime: plugin.testtime ?? null,
     runtime: plugin.runtime ?? null,
-  }
+  })
 }
 
-// helpers
-
-function addErrorMessageContext(additionalMessage: string, error: Error): Error {
-  error.message = `${additionalMessage}\n\n${error.message}`
-  return error
-}
-
-function createGetManifestError(error: Error): Error {
-  return new Error(`An error occured whlie loading one of the plugins you are using.\n\n${error.message}`)
+/**
+ * Display erorrs then exit the program.
+ */
+export function showManifestErrorsAndExit(errors: GetManifestError[]): never {
+  const message =
+    `There were errors loading 1 or more of your plugins.\n\n` +
+    errors
+      .map((e) => {
+        const name = `${e.context.name ? `"${e.context.name}"` : '<unknown>'}`
+        const path = e.context.plugin.packageJsonPath
+        return `from plugin ${name} at path ${path}\n\n${e.message}`
+      })
+      .join('\n\n')
+  fatal(message)
 }

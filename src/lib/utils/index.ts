@@ -305,3 +305,30 @@ export function getPackageJsonMain(packageJson: PackageJson & { main: string }):
     ? Path.dirname(packageJson.module)
     : Path.dirname(packageJson.main)
 }
+
+/**
+ * An error with additional contextual data.
+ */
+export type ContextualError<Context extends Record<string, unknown> = {}> = Error & {
+  context: Context
+}
+
+/**
+ * Create an error with contextual data about it.
+ *
+ * @remarks
+ *
+ * This is handy with fp-ts Either<...> because, unlike try-catch, errors are
+ * strongly typed with the Either contstruct, making it so the error contextual
+ * data flows with inference through your program.
+ */
+export function createContextualError<Context extends Record<string, unknown>>(
+  message: string,
+  context: Context
+): ContextualError<Context> {
+  const e = new Error(message) as ContextualError<Context>
+
+  e.context = context
+
+  return e
+}

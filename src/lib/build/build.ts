@@ -87,8 +87,11 @@ export async function buildNexusApp(settings: BuildSettings) {
 
   compile(tsBuilder, layout, { removePreviousBuild: false })
 
-  const pluginManifests = plugins.map(Plugin.getPluginManifest)
-  const runtimePluginManifests = pluginManifests.filter((pm) => pm.runtime)
+  const gotManifests = Plugin.getPluginManifests(plugins)
+
+  if (gotManifests.errors) Plugin.showManifestErrorsAndExit(gotManifests.errors)
+
+  const runtimePluginManifests = gotManifests.data.filter((pm) => pm.runtime)
 
   if (!layout.tsConfig.content.options.noEmit) {
     await writeStartModule({

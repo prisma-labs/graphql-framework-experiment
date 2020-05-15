@@ -3,7 +3,7 @@ import { rootLogger } from '../nexus-logger'
 import { partition } from '../utils'
 import { importPluginDimension } from './import'
 import { createBaseLens, createRuntimeLens, createWorktimeLens } from './lens'
-import { getPluginManifest } from './manifest'
+import { getPluginManifests, showManifestErrorsAndExit } from './manifest'
 import { Plugin } from './types'
 
 const log = rootLogger.child('plugin')
@@ -13,8 +13,11 @@ const log = rootLogger.child('plugin')
  */
 export function importAndLoadRuntimePlugins(plugins: Plugin[]) {
   const validPlugins = filterValidPlugins(plugins)
-  const pluginManifests = validPlugins.map(getPluginManifest)
-  return pluginManifests
+
+  const gotManifests = getPluginManifests(validPlugins)
+  if (gotManifests.errors.length) showManifestErrorsAndExit(gotManifests.errors)
+
+  return gotManifests.data
     .filter((m) => m.runtime)
     .map((m) => {
       return {
@@ -33,9 +36,11 @@ export function importAndLoadRuntimePlugins(plugins: Plugin[]) {
  */
 export function importAndLoadWorktimePlugins(plugins: Plugin[], layout: Layout.Layout) {
   const validPlugins = filterValidPlugins(plugins)
-  const pluginManifests = validPlugins.map(getPluginManifest)
 
-  return pluginManifests
+  const gotManifests = getPluginManifests(validPlugins)
+  if (gotManifests.errors.length) showManifestErrorsAndExit(gotManifests.errors)
+
+  return gotManifests.data
     .filter((m) => m.worktime)
     .map((m) => {
       return {
@@ -63,9 +68,11 @@ export function importAndLoadWorktimePlugins(plugins: Plugin[], layout: Layout.L
  */
 export function importAndLoadTesttimePlugins(plugins: Plugin[]) {
   const validPlugins = filterValidPlugins(plugins)
-  const pluginManifests = validPlugins.map(getPluginManifest)
 
-  return pluginManifests
+  const gotManifests = getPluginManifests(validPlugins)
+  if (gotManifests.errors.length) showManifestErrorsAndExit(gotManifests.errors)
+
+  return gotManifests.data
     .filter((m) => m.testtime)
     .map((m) => {
       return {
