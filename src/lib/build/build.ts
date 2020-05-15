@@ -61,7 +61,7 @@ export async function buildNexusApp(settings: BuildSettings) {
   }
 
   const { plugins } = pluginReflection
-  const worktimePlugins = await Plugin.importAndLoadWorktimePlugins(plugins, layout)
+  const worktimePlugins = Plugin.importAndLoadWorktimePlugins(plugins, layout)
 
   for (const p of worktimePlugins) {
     await p.hooks.build.onStart?.()

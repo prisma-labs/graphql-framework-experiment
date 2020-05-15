@@ -31,7 +31,7 @@ export function importAndLoadRuntimePlugins(plugins: Plugin[]) {
 /**
  * Fully import and load the worktime plugins, if any, amongst the given plugins.
  */
-export async function importAndLoadWorktimePlugins(plugins: Plugin[], layout: Layout.Layout) {
+export function importAndLoadWorktimePlugins(plugins: Plugin[], layout: Layout.Layout) {
   const validPlugins = filterValidPlugins(plugins)
   const pluginManifests = validPlugins.map(getPluginManifest)
 
@@ -61,7 +61,7 @@ export async function importAndLoadWorktimePlugins(plugins: Plugin[], layout: La
 /**
  * Fully import and load the testtime plugins, if any, amongst the given plugins.
  */
-export async function importAndLoadTesttimePlugins(plugins: Plugin[]) {
+export function importAndLoadTesttimePlugins(plugins: Plugin[]) {
   const validPlugins = filterValidPlugins(plugins)
   const pluginManifests = validPlugins.map(getPluginManifest)
 

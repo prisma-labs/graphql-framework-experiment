@@ -46,7 +46,7 @@ export class Dev implements Command {
       fatal('reflection failed', { error: pluginReflectionResult.error })
     }
 
-    const worktimePlugins = await Plugin.importAndLoadWorktimePlugins(pluginReflectionResult.plugins, layout)
+    const worktimePlugins = Plugin.importAndLoadWorktimePlugins(pluginReflectionResult.plugins, layout)
 
     for (const p of worktimePlugins) {
       await p.hooks.dev.onStart?.()

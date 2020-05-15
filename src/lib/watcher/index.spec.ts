@@ -26,10 +26,10 @@ rootLogger.settings({
  * Helpers
  */
 
-const ctx = TestContext.create(TestContext.tmpDir(), TestContext.fs(), (opts) => {
+const ctx = TestContext.create(TestContext.tmpDir(), TestContext.fs(), (ctx) => {
   return {
     write(vfs: FSSpec) {
-      const tmpDir = opts.tmpDir
+      const tmpDir = ctx.tmpDir
 
       writeFSSpec(tmpDir, vfs)
     },
@@ -37,9 +37,9 @@ const ctx = TestContext.create(TestContext.tmpDir(), TestContext.fs(), (opts) =>
       const bufferedEvents: Event[] = []
       await new Promise((res) => setTimeout(res, 10))
       const watcher = await createWatcher({
-        entrypointScript: `require('${path.join(opts.tmpDir, 'entrypoint')}')`,
-        sourceRoot: opts.tmpDir,
-        cwd: opts.tmpDir,
+        entrypointScript: `require('${path.join(ctx.tmpDir, 'entrypoint')}')`,
+        sourceRoot: ctx.tmpDir,
+        cwd: ctx.tmpDir,
         plugins: [],
         events: (e) => {
           bufferedEvents.push(e)

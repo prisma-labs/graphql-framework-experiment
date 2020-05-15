@@ -1,12 +1,12 @@
 import * as FS from 'fs-jetpack'
 import * as Path from 'path'
-import * as TestContext from '../test-context'
+import * as TC from '../test-context'
 import { FSSpec, writeFSSpec } from '../testing-utils'
 import { generateBackingTypesArtifacts } from './extract-and-write'
 import { BackingTypes } from './types'
 import { DEFAULT_RELATIVE_BACKING_TYPES_TYPEGEN_PATH } from './write'
 
-const ctx = TestContext.create(TestContext.tmpDir(), (ctx) => {
+const ctx = TC.create(TC.tmpDir(), (ctx) => {
   return {
     setup(spec: FSSpec) {
       writeFSSpec(ctx.tmpDir, spec)

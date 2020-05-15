@@ -26,7 +26,7 @@ async function run() {
 
   if (isReflectionStage('typegen')) {
     try {
-      const plugins = await Plugin.importAndLoadRuntimePlugins(app.private.state.plugins)
+      const plugins = Plugin.importAndLoadRuntimePlugins(app.private.state.plugins)
       await writeArtifacts({
         graphqlSchema: app.private.state.assembled!.schema,
         layout,

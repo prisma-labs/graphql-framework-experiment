@@ -14,22 +14,6 @@ export type Dimension = 'runtime' | 'worktime' | 'testtime'
 /**
  * The location of a module and export to the entrypoint for the respective
  * dimension of your plugin.
- *
- * Normally, you do **not** need to configure this. Use the following
- * conventions instead.
- *
- * Adjacent to where your plugin entrypoint is, put any of these modules and
- * Nexus will automatically detect them (the following assumes a plugin
- * entrypoint of plugin/index.ts):
- *
- * ```
- * <project root>/plugin/runtime.ts
- * <project root>/plugin/testtime.ts
- * <project root>/plugin/worktime.ts
- * <project root>/plugin/runtime/index.ts
- * <project root>/plugin/testtime/index.ts
- * <project root>/plugin/worktime/index.ts
- * ```
  */
 export interface DimensionEntrypointLocation {
   /**
