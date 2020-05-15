@@ -8,20 +8,11 @@ todo
 
 ## Plugins
 
-### Loading Flow
+### Diagrams
 
-todo  
-what follows is a stub
+#### Plugin Tree Shaking
 
-1. capture the used plugins in the app
-1. validate entrypoints
-1. transform entrypoints into manifests
-1. for each dimension (work, test, run) in the manifest
-   1. import it
-   1. catch any import errors
-   1. validate imported value
-   1. load plugin
-   1. catch any load errors
+![plugin-tree-shaking](https://dsc.cloud/661643/plugin-tree-shaking.png)
 
 ### Glossary
 
@@ -77,11 +68,28 @@ A plugin lens is just a specialized api into a subset of Nexus to hook into, ext
 
 Just like the plugin has a top level entrypoint so to does each dimension within the plugin have its own entrypoint. These sub-entrypoints can be thought as sub-plugins, with the top-level plugin just being a grouping mechanism.
 
-### Diagrams
+### Comparisons to Other Systems
 
-#### Plugin Tree Shaking
+#### Rollup
 
-![plugin-tree-shaking](https://dsc.cloud/661643/plugin-tree-shaking.png)
+- Like Rollup plugins are prefixed with `<tool-name>-plugin-<plugin-name>`
+- We have considered but so far not put first-party Nexus plugins under the pattern `@nexus/plugin-<plugin-name>`. Rollup made this transition retroactively.
+- Rollup suggests plugins have a default export so that are much easier to use on the command line. Nexus suggests plugins also have default exports for similar system-usability reasons (not cli in Nexus' case, but other future features maybe like auto-use).
+
+### Loading Flow
+
+todo  
+what follows is a stub
+
+1. capture the used plugins in the app
+1. validate entrypoints
+1. transform entrypoints into manifests
+1. for each dimension (work, test, run) in the manifest
+   1. import it
+   1. catch any import errors
+   1. validate imported value
+   1. load plugin
+   1. catch any load errors
 
 ## Build Flow
 
