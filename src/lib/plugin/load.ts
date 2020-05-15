@@ -11,9 +11,9 @@ const log = rootLogger.child('plugin')
 /**
  * Fully import and load the runtime plugins, if any, amongst the given plugins.
  */
-export async function importAndLoadRuntimePlugins(plugins: Plugin[]) {
+export function importAndLoadRuntimePlugins(plugins: Plugin[]) {
   const validPlugins = filterValidPlugins(plugins)
-  const pluginManifests = await Promise.all(validPlugins.map(getPluginManifest))
+  const pluginManifests = validPlugins.map(getPluginManifest)
   return pluginManifests
     .filter((m) => m.runtime)
     .map((m) => {
@@ -33,7 +33,7 @@ export async function importAndLoadRuntimePlugins(plugins: Plugin[]) {
  */
 export async function importAndLoadWorktimePlugins(plugins: Plugin[], layout: Layout.Layout) {
   const validPlugins = filterValidPlugins(plugins)
-  const pluginManifests = await Promise.all(validPlugins.map(getPluginManifest))
+  const pluginManifests = validPlugins.map(getPluginManifest)
 
   return pluginManifests
     .filter((m) => m.worktime)
@@ -63,7 +63,7 @@ export async function importAndLoadWorktimePlugins(plugins: Plugin[], layout: La
  */
 export async function importAndLoadTesttimePlugins(plugins: Plugin[]) {
   const validPlugins = filterValidPlugins(plugins)
-  const pluginManifests = await Promise.all(validPlugins.map(getPluginManifest))
+  const pluginManifests = validPlugins.map(getPluginManifest)
 
   return pluginManifests
     .filter((m) => m.testtime)

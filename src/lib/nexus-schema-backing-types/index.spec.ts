@@ -6,13 +6,13 @@ import { generateBackingTypesArtifacts } from './extract-and-write'
 import { BackingTypes } from './types'
 import { DEFAULT_RELATIVE_BACKING_TYPES_TYPEGEN_PATH } from './write'
 
-const localCtx = TestContext.create((opts: TestContext.TmpDirContribution) => {
+const ctx = TestContext.create(TestContext.tmpDir(), (ctx) => {
   return {
     setup(spec: FSSpec) {
-      writeFSSpec(opts.tmpDir, spec)
+      writeFSSpec(ctx.tmpDir, spec)
     },
     async extractAndWrite(filePattern?: string) {
-      const cwd = opts.tmpDir
+      const cwd = ctx.tmpDir
       const backingTypes = await generateBackingTypesArtifacts(filePattern, {
         extractCwd: cwd,
         writeCwd: cwd,
@@ -32,8 +32,6 @@ const localCtx = TestContext.create((opts: TestContext.TmpDirContribution) => {
     },
   }
 })
-
-const ctx = TestContext.compose(TestContext.tmpDir, localCtx)
 
 it('extracts interfaces', async () => {
   ctx.setup({

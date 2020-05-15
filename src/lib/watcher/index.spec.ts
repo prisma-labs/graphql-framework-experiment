@@ -26,37 +26,33 @@ rootLogger.settings({
  * Helpers
  */
 
-const watcherContext = TestContext.create(
-  (opts: TestContext.TmpDirContribution & TestContext.FsContribution) => {
-    return {
-      write(vfs: FSSpec) {
-        const tmpDir = opts.tmpDir
+const ctx = TestContext.create(TestContext.tmpDir(), TestContext.fs(), (opts) => {
+  return {
+    write(vfs: FSSpec) {
+      const tmpDir = opts.tmpDir
 
-        writeFSSpec(tmpDir, vfs)
-      },
-      async createWatcher() {
-        const bufferedEvents: Event[] = []
-        await new Promise((res) => setTimeout(res, 10))
-        const watcher = await createWatcher({
-          entrypointScript: `require('${path.join(opts.tmpDir, 'entrypoint')}')`,
-          sourceRoot: opts.tmpDir,
-          cwd: opts.tmpDir,
-          plugins: [],
-          events: (e) => {
-            bufferedEvents.push(e)
-          },
-        })
+      writeFSSpec(tmpDir, vfs)
+    },
+    async createWatcher() {
+      const bufferedEvents: Event[] = []
+      await new Promise((res) => setTimeout(res, 10))
+      const watcher = await createWatcher({
+        entrypointScript: `require('${path.join(opts.tmpDir, 'entrypoint')}')`,
+        sourceRoot: opts.tmpDir,
+        cwd: opts.tmpDir,
+        plugins: [],
+        events: (e) => {
+          bufferedEvents.push(e)
+        },
+      })
 
-        return {
-          watcher,
-          bufferedEvents,
-        }
-      },
-    }
+      return {
+        watcher,
+        bufferedEvents,
+      }
+    },
   }
-)
-
-const ctx = TestContext.compose(TestContext.tmpDir, TestContext.fs, watcherContext)
+})
 
 async function testSimpleCase(params: {
   entrypoint: string
