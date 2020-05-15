@@ -1,5 +1,5 @@
 import * as Logger from '@nexus/logger'
-import type { MissingType, NexusGraphQLSchema } from '@nexus/schema/dist/core'
+import * as NexusSchema from '@nexus/schema'
 import * as Plugin from '../lib/plugin'
 import { RuntimeContributions } from '../lib/plugin'
 import * as Reflection from '../lib/reflection'
@@ -67,8 +67,8 @@ export type AppState = {
    */
   assembled: null | {
     settings: Settings.SettingsData
-    schema: NexusGraphQLSchema
-    missingTypes: Index<MissingType>
+    schema: NexusSchema.core.NexusGraphQLSchema
+    missingTypes: Index<NexusSchema.core.MissingType>
     loadedPlugins: RuntimeContributions<any>[]
     createContext: ContextCreator
   }
