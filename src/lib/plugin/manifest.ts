@@ -9,13 +9,6 @@ export type GetManifestError = ContextualError<{
   name?: string
 }>
 
-export function getPluginManifests(plugins: Plugin[]) {
-  const errManifests = plugins.map(getPluginManifest)
-  const data = errManifests.filter<Right<Manifest>>(isRight).map((m) => m.right)
-  const errors = errManifests.filter<Left<GetManifestError>>(isLeft).map((m) => m.left)
-  return { data, errors }
-}
-
 /**
  * Process manifest input into a manifest.
  *
@@ -82,4 +75,17 @@ export function showManifestErrorsAndExit(errors: GetManifestError[]): never {
       })
       .join('\n\n')
   fatal(message)
+}
+
+/**
+ * Process the given manifest inputs into manifests
+ */
+export function getPluginManifests(plugins: Plugin[]) {
+  // todo this function is a temp helper until we better adopt fp-ts and use its
+  // other features. the process of partitioning, processing, and branching over Either has lots of
+  // support in fp-ts lib.
+  const errManifests = plugins.map(getPluginManifest)
+  const data = errManifests.filter<Right<Manifest>>(isRight).map((m) => m.right)
+  const errors = errManifests.filter<Left<GetManifestError>>(isLeft).map((m) => m.left)
+  return { data, errors }
 }

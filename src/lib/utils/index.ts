@@ -328,6 +328,11 @@ export function createContextualError<Context extends Record<string, unknown>>(
 ): ContextualError<Context> {
   const e = new Error(message) as ContextualError<Context>
 
+  Object.defineProperty(e, 'message', {
+    enumerable: true,
+    value: e.message,
+  })
+
   e.context = context
 
   return e
