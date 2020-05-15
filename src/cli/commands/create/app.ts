@@ -466,7 +466,9 @@ async function scaffoldBaseFiles(options: InternalConfig) {
     // Having at least one of these satisfies minimum Nexus requirements.
     // We put both to setup vscode debugger config with an entrypoint that is
     // unlikely to change.
-    fs.writeAsync(appEntrypointPath, stripIndent`
+    fs.writeAsync(
+      appEntrypointPath,
+      stripIndent`
       /**
        * This file is your server entrypoint. Don't worry about its emptyness, Nexus handles everything for you.
        * However, if you need to add settings, enable plugins, schema middleware etc, this is place to do it.
@@ -507,7 +509,8 @@ async function scaffoldBaseFiles(options: InternalConfig) {
       // import { prisma } from 'nexus-plugin-prisma'
       //
       // use(prisma())
-    `),
+    `
+    ),
     fs.writeAsync(path.join(options.sourceRoot, Layout.schema.CONVENTIONAL_SCHEMA_FILE_NAME), ''),
     // An exhaustive .gitignore tailored for Node can be found here:
     // https://github.com/github/gitignore/blob/master/Node.gitignore

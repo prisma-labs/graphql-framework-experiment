@@ -3,7 +3,7 @@ import * as TestContext from '../test-context'
 import { Param1, repalceInObject } from '../utils'
 import { detectExecLayout } from './detect-exec-layout'
 
-const ctx = TestContext.compose(TestContext.tmpDir, TestContext.fs, (ctx) => {
+const ctx = TestContext.compose(TestContext.tmpDir(), TestContext.fs(), (ctx) => {
   return {
     detectExecLayout: (input?: Partial<Param1<typeof detectExecLayout>>) => {
       return repalceInObject(

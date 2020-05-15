@@ -1,18 +1,18 @@
 import * as FS from 'fs-jetpack'
 import * as Path from 'path'
-import * as TestContext from '../test-context'
+import * as TC from '../test-context'
 import { FSSpec, writeFSSpec } from '../testing-utils'
 import { generateBackingTypesArtifacts } from './extract-and-write'
 import { BackingTypes } from './types'
 import { DEFAULT_RELATIVE_BACKING_TYPES_TYPEGEN_PATH } from './write'
 
-const localCtx = TestContext.create((opts: TestContext.TmpDirContribution) => {
+const ctx = TC.create(TC.tmpDir(), (ctx) => {
   return {
     setup(spec: FSSpec) {
-      writeFSSpec(opts.tmpDir, spec)
+      writeFSSpec(ctx.tmpDir, spec)
     },
     async extractAndWrite(filePattern?: string) {
-      const cwd = opts.tmpDir
+      const cwd = ctx.tmpDir
       const backingTypes = await generateBackingTypesArtifacts(filePattern, {
         extractCwd: cwd,
         writeCwd: cwd,
@@ -32,8 +32,6 @@ const localCtx = TestContext.create((opts: TestContext.TmpDirContribution) => {
     },
   }
 })
-
-const ctx = TestContext.compose(TestContext.tmpDir, localCtx)
 
 it('extracts interfaces', async () => {
   ctx.setup({

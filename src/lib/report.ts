@@ -20,6 +20,9 @@ interface Report {
   devDependencies: PackageJson['devDependencies']
   hasAppModule: boolean
   packageManager: Layout['packageManagerType']
+  errorsWhileGatheringReport: {
+    gettingPluginManifests: null | string[]
+  }
 }
 
 /**
@@ -34,12 +37,12 @@ export async function getNexusReport(layout: Layout): Promise<Report> {
     })
   )
   const pluginEntrypoints = await Plugin.getUsedPlugins(layout)
-  const pluginManifests = pluginEntrypoints.map(Plugin.entrypointToManifest)
+  const gotManifests = Plugin.getPluginManifests(pluginEntrypoints)
 
   return {
     node: process.version,
     nexus: deps.nexus ?? 'undefined',
-    plugins: pluginManifests.map((m) => m.name),
+    plugins: gotManifests.data.map((m) => m.name),
     os: {
       platform: os.platform(),
       release: os.release(),
@@ -48,5 +51,10 @@ export async function getNexusReport(layout: Layout): Promise<Report> {
     devDependencies: pj?.devDependencies ?? {},
     hasAppModule: layout.data.app.exists,
     packageManager: layout.packageManagerType,
+    errorsWhileGatheringReport: {
+      gettingPluginManifests: gotManifests.errors
+        ? gotManifests.errors.map((e) => e.stack ?? e.message)
+        : null,
+    },
   }
 }

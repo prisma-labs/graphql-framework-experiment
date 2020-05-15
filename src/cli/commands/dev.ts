@@ -6,11 +6,11 @@ import { rootLogger } from '../../lib/nexus-logger'
 import { ownPackage } from '../../lib/own-package'
 import * as Plugin from '../../lib/plugin'
 import { fatal } from '../../lib/process'
+import * as Reflection from '../../lib/reflection'
 import { transpileModule } from '../../lib/tsc'
+import { simpleDebounce } from '../../lib/utils'
 import { createWatcher } from '../../lib/watcher'
 import { createStartModuleContent } from '../../runtime/start'
-import * as Reflection from '../../lib/reflection'
-import { simpleDebounce } from '../../lib/utils'
 
 const log = rootLogger.child('dev')
 

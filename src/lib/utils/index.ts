@@ -157,6 +157,7 @@ export function range(times: number): number[] {
 
 import * as Path from 'path'
 import Git from 'simple-git/promise'
+import { PackageJson } from 'type-fest'
 
 export type OmitFirstArg<Func> = Func extends (firstArg: any, ...args: infer Args) => infer Ret
   ? (...args: Args) => Ret
@@ -291,4 +292,48 @@ export function simpleDebounce<T extends (...args: any[]) => Promise<any>>(fn: T
 
 export type Index<T> = {
   [key: string]: T
+}
+
+/**
+ * An ESM-aware reading of the main entrypoint to a package.
+ */
+export function getPackageJsonMain(packageJson: PackageJson & { main: string }): string {
+  // todo when building for a bundler, we want to read from the esm paths. Otherwise the cjs paths.
+  //  - this condition takes a stab at the problem but is basically a stub.
+  //  - this todo only needs to be completed once we are actually trying to do esm tree-shaking (meaning, we've moved beyond node-file-trace)
+  return process.env.ESM && packageJson.module
+    ? Path.dirname(packageJson.module)
+    : Path.dirname(packageJson.main)
+}
+
+/**
+ * An error with additional contextual data.
+ */
+export type ContextualError<Context extends Record<string, unknown> = {}> = Error & {
+  context: Context
+}
+
+/**
+ * Create an error with contextual data about it.
+ *
+ * @remarks
+ *
+ * This is handy with fp-ts Either<...> because, unlike try-catch, errors are
+ * strongly typed with the Either contstruct, making it so the error contextual
+ * data flows with inference through your program.
+ */
+export function createContextualError<Context extends Record<string, unknown>>(
+  message: string,
+  context: Context
+): ContextualError<Context> {
+  const e = new Error(message) as ContextualError<Context>
+
+  Object.defineProperty(e, 'message', {
+    enumerable: true,
+    value: e.message,
+  })
+
+  e.context = context
+
+  return e
 }
