@@ -87,5 +87,5 @@ export function getPluginManifests(plugins: Plugin[]) {
   const errManifests = plugins.map(getPluginManifest)
   const data = errManifests.filter<Right<Manifest>>(isRight).map((m) => m.right)
   const errors = errManifests.filter<Left<GetManifestError>>(isLeft).map((m) => m.left)
-  return { data, errors }
+  return { data, errors: errors.length ? errors : null }
 }

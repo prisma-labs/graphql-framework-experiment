@@ -15,7 +15,7 @@ export function importAndLoadRuntimePlugins(plugins: Plugin[]) {
   const validPlugins = filterValidPlugins(plugins)
 
   const gotManifests = getPluginManifests(validPlugins)
-  if (gotManifests.errors.length) showManifestErrorsAndExit(gotManifests.errors)
+  if (gotManifests.errors) showManifestErrorsAndExit(gotManifests.errors)
 
   return gotManifests.data
     .filter((m) => m.runtime)
@@ -38,7 +38,7 @@ export function importAndLoadWorktimePlugins(plugins: Plugin[], layout: Layout.L
   const validPlugins = filterValidPlugins(plugins)
 
   const gotManifests = getPluginManifests(validPlugins)
-  if (gotManifests.errors.length) showManifestErrorsAndExit(gotManifests.errors)
+  if (gotManifests.errors) showManifestErrorsAndExit(gotManifests.errors)
 
   return gotManifests.data
     .filter((m) => m.worktime)
@@ -70,7 +70,7 @@ export function importAndLoadTesttimePlugins(plugins: Plugin[]) {
   const validPlugins = filterValidPlugins(plugins)
 
   const gotManifests = getPluginManifests(validPlugins)
-  if (gotManifests.errors.length) showManifestErrorsAndExit(gotManifests.errors)
+  if (gotManifests.errors) showManifestErrorsAndExit(gotManifests.errors)
 
   return gotManifests.data
     .filter((m) => m.testtime)

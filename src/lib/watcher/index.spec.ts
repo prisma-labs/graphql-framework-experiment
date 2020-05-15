@@ -3,7 +3,7 @@ import * as path from 'path'
 import { createWatcher } from '../../../dist/lib/watcher'
 import * as ExitSystem from '../exit-system'
 import { rootLogger } from '../nexus-logger'
-import * as TestContext from '../test-context'
+import * as TC from '../test-context'
 import { FSSpec, writeFSSpec } from '../testing-utils'
 import { Event } from './types'
 
@@ -26,7 +26,7 @@ rootLogger.settings({
  * Helpers
  */
 
-const ctx = TestContext.create(TestContext.tmpDir(), TestContext.fs(), (ctx) => {
+const ctx = TC.create(TC.tmpDir(), TC.fs(), (ctx) => {
   return {
     write(vfs: FSSpec) {
       const tmpDir = ctx.tmpDir

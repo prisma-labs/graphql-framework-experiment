@@ -52,8 +52,9 @@ export async function getNexusReport(layout: Layout): Promise<Report> {
     hasAppModule: layout.data.app.exists,
     packageManager: layout.packageManagerType,
     errorsWhileGatheringReport: {
-      gettingPluginManifests:
-        gotManifests.errors.length > 0 ? gotManifests.errors.map((e) => e.stack ?? e.message) : null,
+      gettingPluginManifests: gotManifests.errors
+        ? gotManifests.errors.map((e) => e.stack ?? e.message)
+        : null,
     },
   }
 }
