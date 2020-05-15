@@ -2,12 +2,9 @@ import { isLeft, toError, tryCatch } from 'fp-ts/lib/Either'
 import * as fs from 'fs-jetpack'
 import * as Path from 'path'
 import { PackageJson } from 'type-fest'
-import { rootLogger } from '../nexus-logger'
 import { fatal } from '../process'
 import { getPackageJsonMain } from '../utils'
 import { Dimension, DimensionEntrypointLocation, Manifest, Plugin, ValidatedPackageJson } from './types'
-
-const log = rootLogger.child('plugin')
 
 /**
  * Normalize a raw plugin manifest.
