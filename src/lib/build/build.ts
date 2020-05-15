@@ -2,7 +2,7 @@ import { stripIndent } from 'common-tags'
 import * as FS from 'fs-jetpack'
 import * as Path from 'path'
 import * as Layout from '../../lib/layout'
-import { compile, createTSProgram, deleteTSIncrementalFile } from '../../lib/tsc'
+import { emitTSProgram, createTSProgram, deleteTSIncrementalFile } from '../../lib/tsc'
 import {
   createStartModuleContent,
   prepareStartModule,
@@ -18,6 +18,7 @@ import {
   normalizeTarget,
   validateTarget,
 } from './deploy-target'
+import { bundle } from './bundle'
 
 const log = rootLogger.child('build')
 
@@ -26,6 +27,8 @@ interface BuildSettings {
   output?: string
   stage?: string
   entrypoint?: string
+  asBundle: boolean,
+  cwd?: string
 }
 
 export async function buildNexusApp(settings: BuildSettings) {
@@ -36,8 +39,10 @@ export async function buildNexusApp(settings: BuildSettings) {
   const buildOutput = settings.output ?? computeBuildOutputFromTarget(deploymentTarget) ?? undefined
 
   const layout = await Layout.create({
-    buildOutput,
+    buildOutputDir: buildOutput,
+    asBundle: settings.asBundle,
     entrypointPath: settings.entrypoint,
+    cwd: settings.cwd
   })
 
   /**
@@ -85,7 +90,7 @@ export async function buildNexusApp(settings: BuildSettings) {
   // incremental builder type of program so that the cache from the previous
   // run of TypeScript should make re-building up this one cheap.
 
-  compile(tsBuilder, layout, { removePreviousBuild: false })
+  emitTSProgram(tsBuilder, layout, { removePreviousBuild: false })
 
   const runtimePluginManifests = plugins.map(Plugin.entrypointToManifest).filter((pm) => pm.runtime)
 
@@ -101,12 +106,22 @@ export async function buildNexusApp(settings: BuildSettings) {
         })
       ),
     })
+
+    if (layout.build.bundleOutputDir) {
+      await bundle({
+        base: layout.projectRoot,
+        entrypoint: layout.build.startModuleOutPath,
+        outputDir: layout.build.bundleOutputDir,
+        plugins: pluginReflection.plugins,
+      })
+      await FS.removeAsync(layout.build.outputDir)
+    }
   }
 
   const buildOutputLog =
     layout.tsConfig.content.options.noEmit === true
       ? 'no emit'
-      : Path.relative(layout.projectRoot, layout.buildOutput)
+      : Path.relative(layout.projectRoot, layout.build.bundleOutputDir ?? layout.build.outputDir)
 
   log.info('success', {
     buildOutput: buildOutputLog,
@@ -134,9 +149,9 @@ export async function writeStartModule({
   // module. For example we can alias it, or, we can rename it e.g.
   // `index_original.js`. For now we just error out and ask the user to not name
   // their module index.ts.
-  if (FS.exists(layout.startModuleInPath)) {
+  if (FS.exists(layout.build.startModuleInPath)) {
     fatal(stripIndent`
-      Found ${layout.startModuleInPath}
+      Found ${layout.build.startModuleInPath}
       Nexus reserves the source root module name ${START_MODULE_NAME}.js for its own use.
       Please change your app layout to not have this module.
       This is a temporary limitation that we intend to remove in the future. 
@@ -145,5 +160,5 @@ export async function writeStartModule({
   }
 
   log.trace('Writing start module to disk')
-  await FS.writeAsync(layout.startModuleOutPath, startModule)
+  await FS.writeAsync(layout.build.startModuleOutPath, startModule)
 }

@@ -57,7 +57,8 @@ const layoutContext = TestContext.create((input: TestContext.TmpDirContribution)
       const data = await Layout.create({
         cwd: input.tmpDir,
         entrypointPath: opts?.entrypointPath,
-        buildOutput: opts?.buildOutput,
+        buildOutputDir: opts?.buildOutput,
+        asBundle: false,
       })
       mockedStdoutBuffer = mockedStdoutBuffer.split(input.tmpDir).join('__DYNAMIC__')
       return repalceInObject(input.tmpDir, '__DYNAMIC__', data.data)
@@ -365,14 +366,14 @@ describe('build output', () => {
     const result = await ctx.scan()
 
     expect({
-      buildOutput: result.buildOutput,
-      startModuleInPath: result.startModuleInPath,
-      startModuleOutPath: result.startModuleOutPath,
+      outputDir: result.build.outputDir,
+      startModuleInPath: result.build.startModuleInPath,
+      startModuleOutPath: result.build.startModuleOutPath,
     }).toMatchInlineSnapshot(`
       Object {
-        "buildOutput": "__DYNAMIC__/node_modules/.build",
+        "outputDir": "__DYNAMIC__/.nexus/build",
         "startModuleInPath": "__DYNAMIC__/index.ts",
-        "startModuleOutPath": "__DYNAMIC__/node_modules/.build/index.js",
+        "startModuleOutPath": "__DYNAMIC__/.nexus/build/index.js",
       }
     `)
   })
@@ -391,12 +392,12 @@ describe('build output', () => {
     const result = await ctx.scan()
 
     expect({
-      buildOutput: result.buildOutput,
-      startModuleInPath: result.startModuleInPath,
-      startModuleOutPath: result.startModuleOutPath,
+      outputDir: result.build.outputDir,
+      startModuleInPath: result.build.startModuleInPath,
+      startModuleOutPath: result.build.startModuleOutPath,
     }).toMatchInlineSnapshot(`
       Object {
-        "buildOutput": "__DYNAMIC__/dist",
+        "outputDir": "__DYNAMIC__/dist",
         "startModuleInPath": "__DYNAMIC__/index.ts",
         "startModuleOutPath": "__DYNAMIC__/dist/index.js",
       }
@@ -416,12 +417,12 @@ describe('build output', () => {
     const result = await ctx.scan({ buildOutput: 'custom-output' })
 
     expect({
-      buildOutput: result.buildOutput,
-      startModuleInPath: result.startModuleInPath,
-      startModuleOutPath: result.startModuleOutPath,
+      outputDir: result.build.outputDir,
+      startModuleInPath: result.build.startModuleInPath,
+      startModuleOutPath: result.build.startModuleOutPath,
     }).toMatchInlineSnapshot(`
       Object {
-        "buildOutput": "__DYNAMIC__/custom-output",
+        "outputDir": "__DYNAMIC__/custom-output",
         "startModuleInPath": "__DYNAMIC__/index.ts",
         "startModuleOutPath": "__DYNAMIC__/custom-output/index.js",
       }

@@ -75,7 +75,7 @@ interface NowJson {
  */
 function validateNow(layout: Layout): ValidatorResult {
   const maybeNowJson = findFileRecurisvelyUpwardSync('now.json', { cwd: layout.projectRoot })
-  const startModulePath = `${layout.buildOutput}/${START_MODULE_NAME}.js`
+  const startModulePath = `${layout.build.outputDir}/${START_MODULE_NAME}.js`
   let isValid = true
 
   // Make sure there's a now.json file
@@ -191,7 +191,7 @@ function validateHeroku(layout: Layout): ValidatorResult {
       isValid = false
     }
 
-    const relativeBuildOutput = Path.relative(layout.packageJson.dir, layout.buildOutput)
+    const relativeBuildOutput = Path.relative(layout.packageJson.dir, layout.build.outputDir)
 
     // Make sure there's a start script
     if (!pcfg.scripts?.start) {
