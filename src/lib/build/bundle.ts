@@ -64,7 +64,6 @@ export async function traceFiles(opts: Omit<BundleOptions, 'outputDir'>) {
          * in the plugin entrypoints but don't bring any of their dependencies to the bundle
          */
         if (worktimeTesttimePluginPaths.includes(relPath)) {
-          console.log({ stubbing: relPath.toString(), fsPath })
           sourceCache.set(relPath, { source: '' })
           return ''
         }
@@ -81,8 +80,6 @@ export async function traceFiles(opts: Omit<BundleOptions, 'outputDir'>) {
       }
     },
   })
-
-  console.log(fileList)
 
   /**
    * Remove files that were read but not added to the fileList by node-file-trace

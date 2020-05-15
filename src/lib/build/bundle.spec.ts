@@ -16,7 +16,7 @@ it('should not bundle typescript', async () => {
   expect(isTypescriptBundled).toMatchInlineSnapshot(`false`)
 })
 
-it('should not bundle any of cli', async () => {
+it('should not bundle any of the cli', async () => {
   const { files } = await traceFiles({
     base,
     entrypoint,

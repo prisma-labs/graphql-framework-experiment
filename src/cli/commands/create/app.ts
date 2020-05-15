@@ -536,7 +536,7 @@ async function scaffoldBaseFiles(options: InternalConfig) {
         format: "npx prettier --write './**/*.{ts,md}'",
         dev: 'nexus dev',
         build: 'nexus build',
-        start: 'node node_modules/.build',
+        start: 'node .nexus/build',
       },
       prettier: {
         semi: false,

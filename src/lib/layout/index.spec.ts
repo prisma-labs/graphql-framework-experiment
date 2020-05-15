@@ -361,7 +361,7 @@ it('does not take custom entrypoint as schema module if its inside a graphql/ fo
 })
 
 describe('build output', () => {
-  it(`defaults to node_modules/.build`, async () => {
+  it(`defaults to .nexus/build`, async () => {
     await ctx.setup({ ...fsTsConfig, 'graphql.ts': '' })
     const result = await ctx.scan()
 
