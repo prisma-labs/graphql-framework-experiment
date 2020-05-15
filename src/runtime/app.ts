@@ -117,25 +117,26 @@ export function create(): App {
     assemble() {
       if (appState.assembled) return
 
-      // todo https://github.com/graphql-nexus/nexus/pull/788#discussion_r420645846
-      appState.assembled = {} as any
-
       if (Reflection.isReflectionStage('plugin')) return
 
+      const assembled = {} as Partial<AppState['assembled']>
+
       const loadedPlugins = Plugin.importAndLoadRuntimePlugins(appState.plugins)
-      appState.assembled!.loadedPlugins = loadedPlugins
+      assembled!.loadedPlugins = loadedPlugins
 
       const { schema, missingTypes } = schemaComponent.private.assemble(loadedPlugins)
-      appState.assembled!.schema = schema
-      appState.assembled!.missingTypes = missingTypes
+      assembled!.schema = schema
+      assembled!.missingTypes = missingTypes
 
       if (Reflection.isReflectionStage('typegen')) return
 
       const { createContext } = serverComponent.private.assemble(loadedPlugins, schema)
-      appState.assembled!.createContext = createContext
+      assembled!.createContext = createContext
 
       const { settings } = settingsComponent.private.assemble()
-      appState.assembled!.settings = settings
+      assembled!.settings = settings
+
+      appState.assembled = assembled as AppState['assembled']
 
       schemaComponent.private.checks()
     },
