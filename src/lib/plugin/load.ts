@@ -3,8 +3,8 @@ import { rootLogger } from '../nexus-logger'
 import { partition } from '../utils'
 import { importPluginDimension } from './import'
 import { createBaseLens, createRuntimeLens, createWorktimeLens } from './lens'
+import { getPluginManifest } from './manifest'
 import { Plugin } from './types'
-import { getPluginManifest } from './utils'
 
 const log = rootLogger.child('plugin')
 
