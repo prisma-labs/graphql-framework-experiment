@@ -27,11 +27,11 @@ what follows is a stub
 
 #### Entrypoint
 
-A plugin entrypoint is responsible for returning the plugin's manifest. This is what users actually deal with at the app layer.
+A plugin entrypoint is responsible for returning the plugin's manifest input. This is what users actually deal with at the app layer.
 
 ```ts
 import { prisma } from 'nexus-plugin-prisma'
-//       ~~~~~~ <------------- The entrypoint, returns a manifest
+//       ~~~~~~ <------------- The entrypoint, returns a manifest input
 import { use } from 'nexus'
 
 use(prisma())
@@ -39,19 +39,21 @@ use(prisma())
 
 #### Manifest
 
-A plugin manifest describes logistical information about a plugin like where its package file is located on disk, what versions of Nexus it is compatible with.
+A plugin manifest describes logistical information about a plugin like where its package file is located on disk, what versions of Nexus it is compatible with, and more.
 
-Plugin manifests are returned by plugin entrypoints.
+Plugin manifests are created by Nexus by processing the manifest inputs returned by plugin entrypoints.
 
 ```ts
 import { prisma } from 'nexus-plugin-prisma'
 
-const prismaPluginManifest = prisma()
+const prismaPluginManifestInput = prisma()
 ```
 
 This lazy approach allows Nexus the flexibility it needs to provide features like automatic environment variable plugin settings injection and tree-shaking.
 
-There are two views of the manifest. Plugin authors see a partial construct with optional fields that they may but do not _have_ to provide. Internally, manifests are normalized with defaults. This approach allows us to have strong conventions but allow them to be escaped if necessary.
+#### Manifest Input
+
+A manifest input is the view of manifests that plugin authors work with. It models the minimum information that Nexus needs to build the plugin manifest. It is also more human friendly, for example minimizing the number of required fields. Developer experience is not the primary motivation here however. We want Nexus to control as much as possible, so the less the human has to specify the more we achieve this goal. For example we ask for a path to package json rather than the contents of it. We want Nexus to be the one that reads it, when and how it wants.
 
 #### Dimension
 
@@ -61,11 +63,11 @@ There are three dimensions: worktime, testtime, and runtime. Worktime allows plu
 
 Directionally Nexus is on a good track, but there is work still left to do. The names are a bit confusing when you dig into the details, and the supposed separation between worktime/runtime has undesirable "loopholes" because of reflection. Details;
 
-      1. Runtime dimension does not mean plugging exclusively into what is run in your production code. There are actually reasons to plug into the runtime for ostensibly worktime beneit... This is due to Nexus' so-called reflection system, wherein the app is run in the background during development for development purposes.
+1.  Runtime dimension does not mean plugging exclusively into what is run in your production code. There are actually reasons to plug into the runtime for ostensibly worktime beneit... This is due to Nexus' so-called reflection system, wherein the app is run in the background during development for development purposes.
 
-      2. The rationale for splitting worktime from runtime is clear, tree-shaking alone makes the case for it. However the separation between worktime and testing is less clear, perhaps nonsense, and so may be revisited in the future.
+2.  The rationale for splitting worktime from runtime is clear, tree-shaking alone makes the case for it. However the separation between worktime and testing is less clear, perhaps nonsense, and so may be revisited in the future.
 
-      3. We've talked about motivation for separating worktime from runtime, yet there are runtime parts for worktime (reflection). What this means is that expensive dependencies can make there way into the runtime dimension that a user should actually _not_ be paying for in production runtime.
+3.  We've talked about motivation for separating worktime from runtime, yet there are runtime parts for worktime (reflection). What this means is that expensive dependencies can make there way into the runtime dimension that a user should actually _not_ be paying for in production runtime.
 
 #### Lens
 
@@ -74,6 +76,12 @@ A plugin lens is just a specialized api into a subset of Nexus to hook into, ext
 #### Dimension Entrypoint
 
 Just like the plugin has a top level entrypoint so to does each dimension within the plugin have its own entrypoint. These sub-entrypoints can be thought as sub-plugins, with the top-level plugin just being a grouping mechanism.
+
+### Diagrams
+
+#### Plugin Tree Shaking
+
+![plugin-tree-shaking](https://dsc.cloud/661643/plugin-tree-shaking.png)
 
 ## Build Flow
 
