@@ -5,7 +5,7 @@
 Kick off a new project. Say yes (`y`) to the prisma option. Choose `PostgreSQL` for the db option.
 
 ```cli
-npx nexus
+npx nexus create
 ```
 
 ## Change the Data Layer
