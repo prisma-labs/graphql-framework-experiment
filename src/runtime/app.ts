@@ -117,10 +117,16 @@ export function create(): App {
     assemble() {
       if (appState.assembled) return
 
-      // todo https://github.com/graphql-nexus/nexus/pull/788#discussion_r420645846
-      appState.assembled = {} as any
-
+      /**
+       * Plugin reflection is run in the same process (eval). This means if the
+       * process is the app, which it is during testing for example, then we
+       * need to take extreme care to not mark assembly as complete, during
+       * plugin reflection. If we did, then, when we would try to start the app,
+       * it would think it is already assembled. !
+       */
       if (Reflection.isReflectionStage('plugin')) return
+
+      appState.assembled = {} as AppState['assembled']
 
       const loadedPlugins = Plugin.importAndLoadRuntimePlugins(appState.plugins)
       appState.assembled!.loadedPlugins = loadedPlugins

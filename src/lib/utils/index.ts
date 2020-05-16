@@ -157,7 +157,7 @@ export function range(times: number): number[] {
 
 import * as Path from 'path'
 import Git from 'simple-git/promise'
-import { PackageJson } from 'type-fest'
+import { JsonObject, PackageJson } from 'type-fest'
 
 export type OmitFirstArg<Func> = Func extends (firstArg: any, ...args: infer Args) => infer Ret
   ? (...args: Args) => Ret
@@ -334,6 +334,48 @@ export function createContextualError<Context extends Record<string, unknown>>(
   })
 
   e.context = context
+
+  return e
+}
+
+export type SerializedError = {
+  name: string
+  message: string
+  stack?: string
+} & JsonObject
+
+export function serializeError(e: Error): SerializedError {
+  return {
+    name: e.name,
+    message: e.message,
+    stack: e.stack,
+    ...e,
+  }
+}
+
+export function deserializeError(se: SerializedError): Error {
+  const { name, stack, message, ...rest } = se
+  const e =
+    name === 'EvalError'
+      ? new EvalError(message)
+      : name === 'RangeError'
+      ? new RangeError(message)
+      : name === 'TypeError'
+      ? new TypeError(message)
+      : name === 'URIError'
+      ? new URIError(message)
+      : name === 'SyntaxError'
+      ? new SyntaxError(message)
+      : name === 'ReferenceError'
+      ? new ReferenceError(message)
+      : new Error(message)
+
+  Object.defineProperty(e, 'stack', {
+    enumerable: false,
+    value: stack,
+  })
+
+  Object.assign(e, rest)
 
   return e
 }

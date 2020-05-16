@@ -1,12 +1,12 @@
-import { Plugin } from '../plugin'
-import * as Layout from '../layout'
 import { fork } from 'child_process'
 import * as Path from 'path'
-import { rootLogger } from '../nexus-logger'
-import { deserializeError, ErrorObject } from 'serialize-error'
-import { getReflectionStageEnv, setReflectionStage, removeReflectionStage } from './stage'
-import { createDevAppRunner } from '../../runtime/start'
 import * as App from '../../runtime/app'
+import { createDevAppRunner } from '../../runtime/start'
+import * as Layout from '../layout'
+import { rootLogger } from '../nexus-logger'
+import { Plugin } from '../plugin'
+import { deserializeError, SerializedError } from '../utils'
+import { getReflectionStageEnv, removeReflectionStage, setReflectionStage } from './stage'
 
 const log = rootLogger.child('reflection')
 
@@ -20,7 +20,7 @@ export type Message =
   | {
       type: 'success-typegen'
     }
-  | { type: 'error'; data: { serializedError: ErrorObject } }
+  | { type: 'error'; data: { serializedError: SerializedError } }
 
 type ReflectionResultPlugins = { success: false; error: Error } | { success: true; plugins: Plugin[] }
 type ReflectionResultArtifactGeneration = { success: false; error: Error } | { success: true }

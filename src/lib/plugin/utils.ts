@@ -12,7 +12,7 @@ const log = rootLogger.child('plugin')
  * @remarks
  *
  * This is useful for the CLI to get worktime plugins. This will run the app in
- * data mode, in this process.
+ * reflection **in this process**.
  */
 export async function getUsedPlugins(layout: Layout.Layout): Promise<Plugin[]> {
   try {
