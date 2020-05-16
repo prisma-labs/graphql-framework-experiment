@@ -23,10 +23,8 @@ export function createAppClient(apiUrl: string): AppClient {
 
 export interface TestContextAppCore {
   query: AppClient['query']
-  server: {
-    start: () => Promise<void>
-    stop: () => Promise<void>
-  }
+  start: () => Promise<void>
+  stop: () => Promise<void>
 }
 
 export interface TestContextCore {
@@ -57,18 +55,18 @@ export interface CreateTestContextOptions {
  * @example
  *
  * With jest
- * ```
+ * ```ts
  * import { createTestContext, TestContext } from 'nexus/testing'
  *
  * let ctx: TestContext
  *
  * beforeAll(async () => {
- *  ctx = await createTestContext()
- *  await ctx.server.start()
+ *   ctx = await createTestContext()
+ *   await ctx.app.start()
  * })
  *
  * afterAll(async () => {
- *  await ctx.server.stop()
+ *   await ctx.app.stop()
  * })
  * ```
  */
@@ -114,10 +112,8 @@ export async function createTestContext(opts?: CreateTestContextOptions): Promis
   const api: TestContextCore = {
     app: {
       query: appClient.query,
-      server: {
-        start: appRunner.start,
-        stop: appRunner.stop,
-      },
+      start: appRunner.start,
+      stop: appRunner.stop,
     },
   }
 

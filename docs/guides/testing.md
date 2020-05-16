@@ -24,11 +24,11 @@ export function createTestContext(): TestContext {
 
   beforeAll(async () => {
     Object.assign(ctx, await originalCreateTestContext())
-    await ctx.app.server.start()
+    await ctx.app.start()
   })
 
   afterAll(async () => {
-    await ctx.app.server.stop()
+    await ctx.app.stop()
   })
 
   return ctx
