@@ -219,7 +219,7 @@ schema.queryType({
   },
 })
 
-schema.schema.mutationType({
+schema.mutationType({
   definition(t) {
     t.crud.createOneUser()
     t.crud.createOnePost()
