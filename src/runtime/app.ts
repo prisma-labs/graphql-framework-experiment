@@ -117,26 +117,31 @@ export function create(): App {
     assemble() {
       if (appState.assembled) return
 
+      /**
+       * Plugin reflection is run in the same process (eval). This means if the
+       * process is the app, which it is during testing for example, then we
+       * need to take extreme care to not mark assembly as complete, during
+       * plugin reflection. If we did, then, when we would try to start the app,
+       * it would think it is already assembled. !
+       */
       if (Reflection.isReflectionStage('plugin')) return
 
-      const assembled = {} as Partial<AppState['assembled']>
+      appState.assembled = {} as AppState['assembled']
 
       const loadedPlugins = Plugin.importAndLoadRuntimePlugins(appState.plugins)
-      assembled!.loadedPlugins = loadedPlugins
+      appState.assembled!.loadedPlugins = loadedPlugins
 
       const { schema, missingTypes } = schemaComponent.private.assemble(loadedPlugins)
-      assembled!.schema = schema
-      assembled!.missingTypes = missingTypes
+      appState.assembled!.schema = schema
+      appState.assembled!.missingTypes = missingTypes
 
       if (Reflection.isReflectionStage('typegen')) return
 
       const { createContext } = serverComponent.private.assemble(loadedPlugins, schema)
-      assembled!.createContext = createContext
+      appState.assembled!.createContext = createContext
 
       const { settings } = settingsComponent.private.assemble()
-      assembled!.settings = settings
-
-      appState.assembled = assembled as AppState['assembled']
+      appState.assembled!.settings = settings
 
       schemaComponent.private.checks()
     },
