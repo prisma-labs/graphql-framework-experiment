@@ -110,7 +110,7 @@ what follows is a stub
 1. A new TypeScript instance is created so that the types generated in the previous step are picked up by the checker. This should be faster because it reuses the TypeScript cache created in the previous step.
 1. The app is type checked
 1. The app is transpiled
-1. The app is emitted into `node_modules/.build`. This convention keeps derived files in a well known generally ignored location.
+1. The app is emitted into `.nexus/build`. This convention keeps derived files in a well known generally ignored location.
 1. A production-oriented start module is generated differing in the following ways:
    - paths are relative
    - typescript not hooked into module extensions

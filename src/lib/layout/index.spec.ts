@@ -60,7 +60,8 @@ const ctx = TC.create(
         const data = await Layout.create({
           cwd: ctx.tmpDir,
           entrypointPath: opts?.entrypointPath,
-          buildOutput: opts?.buildOutput,
+          buildOutputDir: opts?.buildOutput,
+          asBundle: false,
         })
         mockedStdoutBuffer = mockedStdoutBuffer.split(ctx.tmpDir).join('__DYNAMIC__')
         return repalceInObject(ctx.tmpDir, '__DYNAMIC__', data.data)
@@ -362,19 +363,19 @@ it('does not take custom entrypoint as schema module if its inside a graphql/ fo
 })
 
 describe('build output', () => {
-  it(`defaults to node_modules/.build`, async () => {
+  it(`defaults to .nexus/build`, async () => {
     await ctx.setup({ ...fsTsConfig, 'graphql.ts': '' })
     const result = await ctx.scan()
 
     expect({
-      buildOutput: result.buildOutput,
-      startModuleInPath: result.startModuleInPath,
-      startModuleOutPath: result.startModuleOutPath,
+      tsOutputDir: result.build.tsOutputDir,
+      startModuleInPath: result.build.startModuleInPath,
+      startModuleOutPath: result.build.startModuleOutPath,
     }).toMatchInlineSnapshot(`
       Object {
-        "buildOutput": "__DYNAMIC__/node_modules/.build",
         "startModuleInPath": "__DYNAMIC__/index.ts",
-        "startModuleOutPath": "__DYNAMIC__/node_modules/.build/index.js",
+        "startModuleOutPath": "__DYNAMIC__/.nexus/build/index.js",
+        "tsOutputDir": "__DYNAMIC__/.nexus/build",
       }
     `)
   })
@@ -393,14 +394,14 @@ describe('build output', () => {
     const result = await ctx.scan()
 
     expect({
-      buildOutput: result.buildOutput,
-      startModuleInPath: result.startModuleInPath,
-      startModuleOutPath: result.startModuleOutPath,
+      tsOutputDir: result.build.tsOutputDir,
+      startModuleInPath: result.build.startModuleInPath,
+      startModuleOutPath: result.build.startModuleOutPath,
     }).toMatchInlineSnapshot(`
       Object {
-        "buildOutput": "__DYNAMIC__/dist",
         "startModuleInPath": "__DYNAMIC__/index.ts",
         "startModuleOutPath": "__DYNAMIC__/dist/index.js",
+        "tsOutputDir": "__DYNAMIC__/dist",
       }
     `)
   })
@@ -418,14 +419,14 @@ describe('build output', () => {
     const result = await ctx.scan({ buildOutput: 'custom-output' })
 
     expect({
-      buildOutput: result.buildOutput,
-      startModuleInPath: result.startModuleInPath,
-      startModuleOutPath: result.startModuleOutPath,
+      tsOutputDir: result.build.tsOutputDir,
+      startModuleInPath: result.build.startModuleInPath,
+      startModuleOutPath: result.build.startModuleOutPath,
     }).toMatchInlineSnapshot(`
       Object {
-        "buildOutput": "__DYNAMIC__/custom-output",
         "startModuleInPath": "__DYNAMIC__/index.ts",
         "startModuleOutPath": "__DYNAMIC__/custom-output/index.js",
+        "tsOutputDir": "__DYNAMIC__/custom-output",
       }
     `)
   })

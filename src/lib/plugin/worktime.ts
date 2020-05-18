@@ -1,8 +1,8 @@
-import * as Layout from '../layout'
-import { rootLogger } from '../nexus-logger'
-import { fatal } from '../process'
-import * as Reflection from '../reflection/reflect'
 import { Plugin } from './types'
+import * as Layout from '../layout'
+import * as Reflection from '../reflection/reflect'
+import * as Process from '../process'
+import { rootLogger } from '../nexus-logger'
 
 const log = rootLogger.child('plugin')
 
@@ -12,7 +12,7 @@ const log = rootLogger.child('plugin')
  * @remarks
  *
  * This is useful for the CLI to get worktime plugins. This will run the app in
- * reflection **in this process**.
+ * data mode, in this process.
  */
 export async function getUsedPlugins(layout: Layout.Layout): Promise<Plugin[]> {
   try {
@@ -26,7 +26,7 @@ export async function getUsedPlugins(layout: Layout.Layout): Promise<Plugin[]> {
 
     return reflection.plugins
   } catch (e) {
-    fatal('Failed to scan app for used plugins because there is a runtime error in the app', {
+    Process.fatal('Failed to scan app for used plugins because there is a runtime error in the app', {
       error: e,
     })
   }

@@ -3,7 +3,8 @@ import * as Lo from 'lodash'
 import app from '.'
 import { GraphQLClient } from '../lib/graphql-client'
 import * as Layout from '../lib/layout'
-import * as Plugin from '../lib/plugin'
+import * as PluginRuntime from '../lib/plugin'
+import * as PluginWorktime from '../lib/plugin/worktime'
 import { PrivateApp } from './app'
 import { createDevAppRunner } from './start'
 
@@ -76,7 +77,7 @@ export async function createTestContext(opts?: CreateTestContextOptions): Promis
 
   // todo figure out some caching system here, e.g. imagine jest --watch mode
   const layout = await Layout.create({ entrypointPath: opts?.entrypointPath })
-  const pluginManifests = await Plugin.getUsedPlugins(layout)
+  const pluginManifests = await PluginWorktime.getUsedPlugins(layout)
   const randomPort = await getPort({ port: getPort.makeRange(4000, 6000) })
   const privateApp = app as PrivateApp
 
@@ -117,7 +118,7 @@ export async function createTestContext(opts?: CreateTestContextOptions): Promis
     },
   }
 
-  const testContextContributions = Plugin.importAndLoadTesttimePlugins(pluginManifests)
+  const testContextContributions = PluginRuntime.importAndLoadTesttimePlugins(pluginManifests)
 
   for (const testContextContribution of testContextContributions) {
     Lo.merge(api, testContextContribution)

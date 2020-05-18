@@ -108,7 +108,7 @@ You should only be working with the `nexus` CLI. Below shows the example scripts
 -    "dev": "ts-node-dev --no-notify --respawn --transpileOnly src/server",
 +    "dev": "nexus dev",
 +    "build": "nexus build",
-+    "start": "node node_modules/.build"
++    "start": "node .nexus/build"
   },
 ```
 

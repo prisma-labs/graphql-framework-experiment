@@ -2,7 +2,7 @@ import * as NexusLogger from '@nexus/logger'
 import * as NexusSchema from '@nexus/schema'
 import { GraphQLFieldResolver, GraphQLResolveInfo } from 'graphql'
 import * as HTTP from 'http'
-import * as Layout from '../../lib/layout'
+import { emptyExceptionMessage } from '../../lib/layout/schema-modules'
 import { createNexusSchemaStateful, NexusSchemaStatefulBuilders } from '../../lib/nexus-schema-stateful'
 import { RuntimeContributions } from '../../lib/plugin'
 import { Index, MaybePromise } from '../../lib/utils'
@@ -115,7 +115,7 @@ export function create(appState: AppState): SchemaInternal {
       checks() {
         NexusSchema.core.assertNoMissingTypes(appState.assembled!.schema, appState.assembled!.missingTypes)
         if (statefulNexusSchema.state.types.length === 0) {
-          log.warn(Layout.schema.emptyExceptionMessage())
+          log.warn(emptyExceptionMessage())
         }
       },
     },
