@@ -33,7 +33,7 @@ export function createTSProgram(
     options: {
       ...compilerCacheOptions,
       ...layout.tsConfig.content.options,
-      outDir: layout.build.outputDir,
+      outDir: layout.build.tsOutputDir,
     },
   })
 
@@ -83,10 +83,10 @@ export function emitTSProgram(
 ): void {
   if (options?.removePreviousBuild === true) {
     log.trace('remove previous build folder if present')
-    fs.remove(layout.build.outputDir)
+    fs.remove(layout.build.tsOutputDir)
   }
 
-  log.trace('emit transpiled modules', { dest: layout.build.outputDir })
+  log.trace('emit transpiled modules', { dest: layout.build.tsOutputDir })
 
   const emitResult = builder.emit()
   log.trace('done', { filesEmitted: emitResult.emittedFiles?.length ?? 0 })

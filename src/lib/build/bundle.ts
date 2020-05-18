@@ -1,9 +1,10 @@
+import fileTrace from '@zeit/node-file-trace'
 import * as fs from 'fs'
 import * as fsJetpack from 'fs-jetpack'
-import fileTrace from '@zeit/node-file-trace'
 import * as path from 'path'
-import { Plugin } from '../plugin'
+import * as Layout from '../../lib/layout'
 import { rootLogger } from '../nexus-logger'
+import { Plugin } from '../plugin'
 import { fatal } from '../process'
 
 const log = rootLogger.child('cli').child('build').child('bundle')
@@ -12,34 +13,56 @@ type Entry = { source: string | Buffer; mode?: number } | null
 type SourceCache = Map<string, Entry>
 
 interface BundleOptions {
+  /**
+   * Base path against which relative paths should be computed.
+   * Should usually be `layout.projectRoot`.
+   */
   base: string
+  /**
+   * Absolute path of the output bundle directory.
+   */
+  bundleOutputDir: string
+  /**
+   * Absolute path to the transpiled Javascript entrypoint.
+   */
   entrypoint: string
-  outputDir: string
+  /**
+   * Absolute path of the output typescript directory.
+   */
+  tsOutputDir: string
+  /**
+   * Absolute path of the tsconfig.json rootDir property.
+   */
+  tsRootDir: string
+  /**
+   * List of Nexus plugins.
+   */
   plugins: Plugin[]
 }
 
+/**
+ * Bundle the transpiled output of Typescript into a treeshaked output.
+ * The treeshake is done at the module level, not function level.
+ * A new node_modules folder will be outputted in `bundleOutputDir` containing only the required packages
+ * for the runtime to work.
+ */
 export async function bundle(opts: BundleOptions): Promise<void> {
   log.trace('starting bundle')
 
   // delete previous bundle before tracing files
-  fsJetpack.remove(opts.outputDir)
+  fsJetpack.remove(opts.bundleOutputDir)
 
-  const { files } = await traceFiles({
-    base: opts.base,
-    entrypoint: opts.entrypoint,
-    plugins: opts.plugins,
-  })
+  const { files } = await traceFiles(opts)
 
   await writeToFS({
     files,
-    outputDir: opts.outputDir,
-    base: opts.base,
+    ...opts
   })
 
   log.trace('done bundling')
 }
 
-export async function traceFiles(opts: Omit<BundleOptions, 'outputDir'>) {
+export async function traceFiles(opts: Pick<BundleOptions, 'base' | 'plugins' | 'entrypoint'>) {
   const sourceCache = new Map<string, Entry>()
   const worktimeTesttimePluginPaths = getWorktimeAndTesttimePluginPaths(opts.base, opts.plugins)
 
@@ -49,11 +72,12 @@ export async function traceFiles(opts: Omit<BundleOptions, 'outputDir'>) {
     base: opts.base,
     /**
      * - We ignore `prettier` because `@nexus/schema` requires it as a optional peer dependency
-     * - We ignore `@prisma/client/scripts` because `nexus-prisma` causes node-file-trace to include these scripts which causes ncc to be traces as well
+     * - We ignore `@prisma/client/scripts` because `nexus-prisma` causes node-file-trace to include these scripts which causes `ncc` to be traces as well
      */
     ignore: ['node_modules/prettier/index.js', 'node_modules/@prisma/client/scripts/**/*'],
     readFile(fsPath: string): Buffer | string | null {
       const relPath = path.relative(opts.base, fsPath)
+
       const cached = sourceCache.get(relPath)
       if (cached) return cached.toString()
       // null represents a not found
@@ -125,15 +149,44 @@ export async function traceFiles(opts: Omit<BundleOptions, 'outputDir'>) {
 /**
  * Write gathered files by node-file-trace to the file system
  */
-async function writeToFS(opts: { files: SourceCache; outputDir: string; base: string }): Promise<void> {
+async function writeToFS(params: {
+  base: string
+  tsOutputDir: string
+  tsRootDir: string
+  bundleOutputDir: string
+  files: SourceCache
+}): Promise<void> {
   const writePromises = []
 
-  for (const [relPath, entry] of opts.files.entries()) {
+  for (const [relPath, entry] of params.files.entries()) {
     if (entry === null) {
       continue
     }
 
-    const to = path.resolve(opts.outputDir, relPath)
+    let to: string
+
+    // Calc absolute path of the file
+    const absPath = path.resolve(params.base, relPath)
+
+    // If the file is inside the tsOutputDir
+    if (pathIsInside({ base: params.tsOutputDir, target: absPath })) {
+      // Calc relative path of the file to tsOutputDir
+      const relativeToTsOutputDir = path.relative(params.tsOutputDir, relPath)
+      // Calc relative path of the rootDir to base
+      const relativeRootDir = path.relative(params.base, params.tsRootDir)
+      /**
+       * Transform path
+       *
+       *     from: <absPath>
+       * from val: /project/.nexus/tmp/folder/filename.js
+       *
+       *       to:      <bundleOutputDir>/<relativeRootDir>/<relativeToTsOutputDir>
+       *   to val: /project/.nexus/build/api              /folder/filename.js
+       */
+      to = path.resolve(params.bundleOutputDir, relativeRootDir, relativeToTsOutputDir)
+    } else {
+      to = path.resolve(params.bundleOutputDir, relPath)
+    }
 
     const promise = fsJetpack.write(to, entry.source, entry.mode ? { mode: entry.mode } : {})
     writePromises.push(promise)
@@ -159,4 +212,8 @@ function getWorktimeAndTesttimePluginPaths(base: string, plugins: Plugin[]) {
   }
 
   return paths
+}
+
+function pathIsInside(params: { base: string; target: string }) {
+  return !path.relative(params.base, params.target).startsWith('..')
 }

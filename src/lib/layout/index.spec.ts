@@ -366,14 +366,14 @@ describe('build output', () => {
     const result = await ctx.scan()
 
     expect({
-      outputDir: result.build.outputDir,
+      tsOutputDir: result.build.tsOutputDir,
       startModuleInPath: result.build.startModuleInPath,
       startModuleOutPath: result.build.startModuleOutPath,
     }).toMatchInlineSnapshot(`
       Object {
-        "outputDir": "__DYNAMIC__/.nexus/build",
         "startModuleInPath": "__DYNAMIC__/index.ts",
         "startModuleOutPath": "__DYNAMIC__/.nexus/build/index.js",
+        "tsOutputDir": "__DYNAMIC__/.nexus/build",
       }
     `)
   })
@@ -392,14 +392,14 @@ describe('build output', () => {
     const result = await ctx.scan()
 
     expect({
-      outputDir: result.build.outputDir,
+      tsOutputDir: result.build.tsOutputDir,
       startModuleInPath: result.build.startModuleInPath,
       startModuleOutPath: result.build.startModuleOutPath,
     }).toMatchInlineSnapshot(`
       Object {
-        "outputDir": "__DYNAMIC__/dist",
         "startModuleInPath": "__DYNAMIC__/index.ts",
         "startModuleOutPath": "__DYNAMIC__/dist/index.js",
+        "tsOutputDir": "__DYNAMIC__/dist",
       }
     `)
   })
@@ -417,14 +417,14 @@ describe('build output', () => {
     const result = await ctx.scan({ buildOutput: 'custom-output' })
 
     expect({
-      outputDir: result.build.outputDir,
+      tsOutputDir: result.build.tsOutputDir,
       startModuleInPath: result.build.startModuleInPath,
       startModuleOutPath: result.build.startModuleOutPath,
     }).toMatchInlineSnapshot(`
       Object {
-        "outputDir": "__DYNAMIC__/custom-output",
         "startModuleInPath": "__DYNAMIC__/index.ts",
         "startModuleOutPath": "__DYNAMIC__/custom-output/index.js",
+        "tsOutputDir": "__DYNAMIC__/custom-output",
       }
     `)
   })

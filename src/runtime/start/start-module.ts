@@ -95,21 +95,6 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   `
   }
 
-  if (config.layout.packageJson) {
-    content += EOL + EOL + EOL
-    content += stripIndent`
-      // package.json is needed for plugin auto-import system.
-      // On the Zeit Now platform, builds and dev copy source into
-      // new directory. Copying follows paths found in source. Give one here
-      // to package.json to make sure Zeit Now brings it along.
-      require('${
-        config.absoluteModuleImports
-          ? config.layout.packageJson.path
-          : Path.relative(config.layout.build.outputDir, config.layout.packageJson.path)
-      }')
-    `
-  }
-
   // This MUST come after nexus package has been imported for its side-effects
   const staticImports = printStaticImports(config.layout, {
     absolutePaths: config.absoluteModuleImports,

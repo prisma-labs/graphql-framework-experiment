@@ -13,7 +13,12 @@ import * as Schema from './schema-modules'
 import { readOrScaffoldTsconfig } from './tsconfig'
 
 export const DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT = '.nexus/build'
-export const DEFAULT_TMP_TS_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT = 'build'
+/**
+ * The temporary ts build folder used when bundling is enabled
+ *
+ * Note: It **should not** be nested in a sub-folder. This might "corrupt" the relative paths of the bundle build.
+ */
+export const TMP_TS_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT = '.tmp_build'
 
 const log = rootLogger.child('layout')
 
@@ -73,7 +78,7 @@ export type ScanResult = {
 type OutputInfo = {
   startModuleOutPath: string
   startModuleInPath: string
-  outputDir: string
+  tsOutputDir: string
   bundleOutputDir: string | null
 }
 
@@ -425,27 +430,23 @@ function getBuildInfo(
   scanResult: ScanResult,
   asBundle?: boolean
 ): OutputInfo {
-  const outputDir = getBuildOutput(buildOutput, scanResult)
+  const tsOutputDir = getBuildOutput(buildOutput, scanResult)
   const startModuleInPath = Path.join(scanResult.sourceRoot, START_MODULE_NAME + '.ts')
-  const startModuleOutPath = Path.join(outputDir, START_MODULE_NAME + '.js')
+  const startModuleOutPath = Path.join(tsOutputDir, START_MODULE_NAME + '.js')
 
   if (!asBundle) {
     return {
-      outputDir,
+      tsOutputDir,
       startModuleInPath,
       startModuleOutPath,
       bundleOutputDir: null,
     }
   }
 
-  const tsBuildInfo = getBuildInfo(
-    DEFAULT_TMP_TS_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT,
-    scanResult,
-    false
-  )
+  const tsBuildInfo = getBuildInfo(TMP_TS_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT, scanResult, false)
 
   return {
     ...tsBuildInfo,
-    bundleOutputDir: outputDir,
+    bundleOutputDir: tsOutputDir,
   }
 }

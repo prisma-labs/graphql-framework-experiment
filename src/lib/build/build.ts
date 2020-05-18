@@ -27,7 +27,7 @@ interface BuildSettings {
   output?: string
   stage?: string
   entrypoint?: string
-  asBundle: boolean,
+  asBundle: boolean
   cwd?: string
 }
 
@@ -42,7 +42,7 @@ export async function buildNexusApp(settings: BuildSettings) {
     buildOutputDir: buildOutput,
     asBundle: settings.asBundle,
     entrypointPath: settings.entrypoint,
-    cwd: settings.cwd
+    cwd: settings.cwd,
   })
 
   /**
@@ -108,23 +108,26 @@ export async function buildNexusApp(settings: BuildSettings) {
     })
 
     if (layout.build.bundleOutputDir) {
+      log.info('bundling app')
       await bundle({
         base: layout.projectRoot,
+        bundleOutputDir: layout.build.bundleOutputDir,
         entrypoint: layout.build.startModuleOutPath,
-        outputDir: layout.build.bundleOutputDir,
+        tsOutputDir: layout.build.tsOutputDir,
+        tsRootDir: layout.tsConfig.content.options.rootDir!,
         plugins: pluginReflection.plugins,
       })
-      await FS.removeAsync(layout.build.outputDir)
+      await FS.removeAsync(layout.build.tsOutputDir)
     }
   }
 
   const buildOutputLog =
     layout.tsConfig.content.options.noEmit === true
       ? 'no emit'
-      : Path.relative(layout.projectRoot, layout.build.bundleOutputDir ?? layout.build.outputDir)
+      : Path.relative(layout.projectRoot, layout.build.bundleOutputDir ?? layout.build.tsOutputDir)
 
   log.info('success', {
-    buildOutput: buildOutputLog,
+    buildOutput,
     time: Date.now() - startTime,
   })
 
