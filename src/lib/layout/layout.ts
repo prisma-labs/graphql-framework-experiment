@@ -459,6 +459,9 @@ export function findNexusModules(tsConfig: ScanResult['tsConfig'], maybeAppModul
   } catch (error) {
     log.error('We could not find your nexus modules', { error })
     return []
+  }
+}
+
 function getBuildInfo(
   buildOutput: string | undefined,
   scanResult: ScanResult,
