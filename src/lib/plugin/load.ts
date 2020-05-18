@@ -3,8 +3,8 @@ import { rootLogger } from '../nexus-logger'
 import { partition } from '../utils'
 import { importPluginDimension } from './import'
 import { createBaseLens, createRuntimeLens, createWorktimeLens } from './lens'
+import { getPluginManifests, showManifestErrorsAndExit } from './manifest'
 import { Plugin } from './types'
-import { entrypointToManifest } from './utils'
 
 const log = rootLogger.child('plugin')
 
@@ -12,8 +12,12 @@ const log = rootLogger.child('plugin')
  * Fully import and load the runtime plugins, if any, amongst the given plugins.
  */
 export function importAndLoadRuntimePlugins(plugins: Plugin[]) {
-  return filterValidPlugins(plugins)
-    .map(entrypointToManifest)
+  const validPlugins = filterValidPlugins(plugins)
+
+  const gotManifests = getPluginManifests(validPlugins)
+  if (gotManifests.errors) showManifestErrorsAndExit(gotManifests.errors)
+
+  return gotManifests.data
     .filter((m) => m.runtime)
     .map((m) => {
       return {
@@ -31,8 +35,12 @@ export function importAndLoadRuntimePlugins(plugins: Plugin[]) {
  * Fully import and load the worktime plugins, if any, amongst the given plugins.
  */
 export function importAndLoadWorktimePlugins(plugins: Plugin[], layout: Layout.Layout) {
-  return filterValidPlugins(plugins)
-    .map(entrypointToManifest)
+  const validPlugins = filterValidPlugins(plugins)
+
+  const gotManifests = getPluginManifests(validPlugins)
+  if (gotManifests.errors) showManifestErrorsAndExit(gotManifests.errors)
+
+  return gotManifests.data
     .filter((m) => m.worktime)
     .map((m) => {
       return {
@@ -59,8 +67,12 @@ export function importAndLoadWorktimePlugins(plugins: Plugin[], layout: Layout.L
  * Fully import and load the testtime plugins, if any, amongst the given plugins.
  */
 export function importAndLoadTesttimePlugins(plugins: Plugin[]) {
-  return filterValidPlugins(plugins)
-    .map(entrypointToManifest)
+  const validPlugins = filterValidPlugins(plugins)
+
+  const gotManifests = getPluginManifests(validPlugins)
+  if (gotManifests.errors) showManifestErrorsAndExit(gotManifests.errors)
+
+  return gotManifests.data
     .filter((m) => m.testtime)
     .map((m) => {
       return {

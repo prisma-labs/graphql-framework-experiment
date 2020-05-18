@@ -201,12 +201,12 @@ If you don't want to use a docker, here are some links to alternative approaches
      let ctx: TestContext
 
      beforeAll(async () => {
-       ctx = await createTestContext()
-       await ctx.app.server.start()
+       Object.assign(ctx, await createTestContext())
+       await ctx.app.start()
      })
 
      afterAll(async () => {
-       await ctx.app.server.stop()
+       await ctx.app.stop()
      })
 
      return ctx

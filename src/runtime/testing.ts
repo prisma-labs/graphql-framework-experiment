@@ -1,5 +1,6 @@
 import getPort from 'get-port'
 import * as Lo from 'lodash'
+import app from '.'
 import { GraphQLClient } from '../lib/graphql-client'
 import * as Layout from '../lib/layout'
 import * as PluginRuntime from '../lib/plugin'
@@ -23,10 +24,8 @@ export function createAppClient(apiUrl: string): AppClient {
 
 export interface TestContextAppCore {
   query: AppClient['query']
-  server: {
-    start: () => Promise<void>
-    stop: () => Promise<void>
-  }
+  start: () => Promise<void>
+  stop: () => Promise<void>
 }
 
 export interface TestContextCore {
@@ -57,18 +56,18 @@ export interface CreateTestContextOptions {
  * @example
  *
  * With jest
- * ```
+ * ```ts
  * import { createTestContext, TestContext } from 'nexus/testing'
  *
  * let ctx: TestContext
  *
  * beforeAll(async () => {
- *  ctx = await createTestContext()
- *  await ctx.server.start()
+ *   ctx = await createTestContext()
+ *   await ctx.app.start()
  * })
  *
  * afterAll(async () => {
- *  await ctx.server.stop()
+ *   await ctx.app.stop()
  * })
  * ```
  */
@@ -80,23 +79,25 @@ export async function createTestContext(opts?: CreateTestContextOptions): Promis
   const layout = await Layout.create({ entrypointPath: opts?.entrypointPath })
   const pluginManifests = await PluginWorktime.getUsedPlugins(layout)
   const randomPort = await getPort({ port: getPort.makeRange(4000, 6000) })
-  const app = require('../index').default as PrivateApp
+  const privateApp = app as PrivateApp
 
   const forcedServerSettings = {
     port: randomPort,
     playground: false, // Disable playground during tests
     startMessage() {}, // Make server silent
   }
-  const originalSettingsChange = app.settings.change
 
-  app.settings.change({
+  // todo remove these settings hacks once we have https://github.com/graphql-nexus/nexus/issues/758
+  const originalSettingsChange = privateApp.settings.change
+
+  privateApp.settings.change({
     server: forcedServerSettings,
   })
 
   /**
    * If app ever calls app.settings.change, force some server settings anyway
    */
-  app.settings.change = (newSettings) => {
+  privateApp.settings.change = (newSettings) => {
     if (newSettings.server !== undefined) {
       newSettings.server = {
         ...newSettings.server,
@@ -106,24 +107,22 @@ export async function createTestContext(opts?: CreateTestContextOptions): Promis
     originalSettingsChange(newSettings)
   }
 
-  const appRunner = await createDevAppRunner(layout, app)
+  const appRunner = await createDevAppRunner(layout, privateApp)
   const apiUrl = `http://localhost:${appRunner.port}/graphql`
   const appClient = createAppClient(apiUrl)
-  const testContextCore: TestContextCore = {
+  const api: TestContextCore = {
     app: {
       query: appClient.query,
-      server: {
-        start: appRunner.start,
-        stop: appRunner.stop,
-      },
+      start: appRunner.start,
+      stop: appRunner.stop,
     },
   }
 
   const testContextContributions = PluginRuntime.importAndLoadTesttimePlugins(pluginManifests)
 
   for (const testContextContribution of testContextContributions) {
-    Lo.merge(testContextCore, testContextContribution)
+    Lo.merge(api, testContextContribution)
   }
 
-  return testContextCore as TestContext
+  return api as TestContext
 }

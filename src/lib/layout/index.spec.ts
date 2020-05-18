@@ -17,7 +17,7 @@ import { TsConfigJson } from 'type-fest'
 import * as Layout from '.'
 import { rootLogger } from '../../lib/nexus-logger'
 import { FSSpec, writeFSSpec } from '../../lib/testing-utils'
-import * as TestContext from '../test-context'
+import * as TC from '../test-context'
 import { repalceInObject } from '../utils'
 
 /**
@@ -48,25 +48,27 @@ const fsTsConfig = {
   'tsconfig.json': tsconfigContent(defaultTsConfigContent),
 }
 
-const layoutContext = TestContext.create((input: TestContext.TmpDirContribution) => {
-  return {
-    setup(spec: FSSpec = {}) {
-      writeFSSpec(input.tmpDir, spec)
-    },
-    async scan(opts?: { entrypointPath?: string; buildOutput?: string }) {
-      const data = await Layout.create({
-        cwd: input.tmpDir,
-        entrypointPath: opts?.entrypointPath,
-        buildOutputDir: opts?.buildOutput,
-        asBundle: false,
-      })
-      mockedStdoutBuffer = mockedStdoutBuffer.split(input.tmpDir).join('__DYNAMIC__')
-      return repalceInObject(input.tmpDir, '__DYNAMIC__', data.data)
-    },
-  }
-})
-
-const ctx = TestContext.compose(TestContext.tmpDir, TestContext.fs, layoutContext)
+const ctx = TC.create(
+  TC.tmpDir(),
+  TC.fs(),
+  TC.createContributor((ctx) => {
+    return {
+      setup(spec: FSSpec = {}) {
+        writeFSSpec(ctx.tmpDir, spec)
+      },
+      async scan(opts?: { entrypointPath?: string; buildOutput?: string }) {
+        const data = await Layout.create({
+          cwd: ctx.tmpDir,
+          entrypointPath: opts?.entrypointPath,
+          buildOutputDir: opts?.buildOutput,
+          asBundle: false,
+        })
+        mockedStdoutBuffer = mockedStdoutBuffer.split(ctx.tmpDir).join('__DYNAMIC__')
+        return repalceInObject(ctx.tmpDir, '__DYNAMIC__', data.data)
+      },
+    }
+  })
+)
 
 /**
  * Tests

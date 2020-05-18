@@ -18,14 +18,12 @@ app.schema.queryType({
     t.field('foo', { type: 'String' })
   },
 })
-
-app.server.start()
 ```
 
 **Example of imporrting named exports**
 
 ```ts
-import { schema, server, settings, log } from 'nexus'
+import { schema, settings, log } from 'nexus'
 
 log.info('hello world')
 
@@ -40,6 +38,4 @@ schema.queryType({
     t.field('foo', { type: 'String' })
   },
 })
-
-server.start()
 ```

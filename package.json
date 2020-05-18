@@ -51,21 +51,20 @@
     "pirates": "^4.0.1",
     "prompts": "^2.3.0",
     "rxjs": "^6.5.4",
-    "serialize-error": "^7.0.0",
     "simple-git": "^1.126.0",
     "strip-ansi": "^6.0.0",
     "ts-morph": "^7.0.0",
     "ts-node": "^8.9.0",
     "tslib": "^1",
     "type-fest": "^0.13.0",
-    "typescript": "^3.7.2"
+    "typescript": "3.8.x"
   },
   "devDependencies": {
     "@prisma-labs/prettier-config": "0.1.0",
     "@types/anymatch": "1.3.1",
     "@types/common-tags": "1.8.0",
-    "@types/content-type": "^1.1.3",
-    "@types/http-errors": "^1.6.3",
+    "@types/content-type": "1.1.3",
+    "@types/http-errors": "1.6.3",
     "@types/jest": "25.2.1",
     "@types/lodash": "4.14.150",
     "@types/node": "13.13.4",
@@ -76,7 +75,7 @@
     "jest": "26.0.1",
     "node-pty": "0.9.0",
     "prettier": "2.0.5",
-    "ts-jest": "25.4.0"
+    "ts-jest": "26.0.0"
   },
   "engines": {
     "node": ">=10.0.0"
