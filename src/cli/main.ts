@@ -10,27 +10,31 @@ import { rootLogger } from '../lib/nexus-logger'
 import { detectExecLayout, globalLocalHandoff } from '../lib/process'
 import * as Commands from './commands'
 
-const log = rootLogger
+main()
 
-// use envar to boost perf, skip costly detection work
-if (!process.env.GLOBAL_LOCAL_HANDOFF) {
-  const depName = 'nexus'
+function main() {
+  const log = rootLogger
 
-  log.trace('execLayout start')
-  const execLayout = detectExecLayout({ depName })
-  log.trace('execLayout done', { execLayout })
+  // use envar to boost perf, skip costly detection work
+  if (!process.env.GLOBAL_LOCAL_HANDOFF) {
+    const depName = 'nexus'
 
-  if (execLayout.toolProject && !execLayout.runningLocalTool) {
-    if (execLayout.toolCurrentlyPresentInNodeModules) {
-      globalLocalHandoff({
-        localPackageDir: path.join(execLayout.project!.nodeModulesDir, depName),
-        globalPackageFilename: __filename,
-      })
-    } else {
-      //todo detect package manager
-      // const packageManager = await createPackageManager(undefined, { projectRoot })
-      log.fatal(
-        stripIndent`
+    log.trace('execLayout start')
+    const execLayout = detectExecLayout({ depName })
+    log.trace('execLayout done', { execLayout })
+
+    if (execLayout.toolProject && !execLayout.runningLocalTool) {
+      if (execLayout.toolCurrentlyPresentInNodeModules) {
+        globalLocalHandoff({
+          localPackageDir: path.join(execLayout.project!.nodeModulesDir, depName),
+          globalPackageFilename: __filename,
+        })
+        return
+      } else {
+        //todo detect package manager
+        // const packageManager = await createPackageManager(undefined, { projectRoot })
+        log.fatal(
+          stripIndent`
         You ran a global version of the Nexus CLI against your Nexus project. But your local project does not currently present within your node_modules.
 
         Please install your dependencies and then try your command again.
@@ -38,53 +42,54 @@ if (!process.env.GLOBAL_LOCAL_HANDOFF) {
         Location of your global CLI (you invoked this): ${execLayout.thisProcessToolBin.realPath}
         Location of your local CLI will be here: ${execLayout.project!.toolBinPath}
         `
-      )
-      process.exit(1)
+        )
+        process.exit(1)
+      }
     }
   }
-}
 
-dotenv.config()
-ExitSystem.install()
+  dotenv.config()
+  ExitSystem.install()
 
-process.on('uncaughtException', (e) => {
-  console.error(e)
-  ExitSystem.exit(1)
-})
+  process.on('uncaughtException', (e) => {
+    console.error(e)
+    ExitSystem.exit(1)
+  })
 
-process.on('unhandledRejection', (e) => {
-  console.error(e)
-  ExitSystem.exit(1)
-})
+  process.on('unhandledRejection', (e) => {
+    console.error(e)
+    ExitSystem.exit(1)
+  })
 
-const cli = new CLI({
-  dev: new Commands.Dev(),
-  build: new Commands.Build(),
-  report: new Commands.Report(),
-  create: {
-    app: new Commands.Create.App(),
-    plugin: new Commands.Create.Plugin(),
-    __default: 'app',
-  },
-  __default: new Commands.__Default(),
-})
+  const cli = new CLI({
+    dev: new Commands.Dev(),
+    build: new Commands.Build(),
+    report: new Commands.Report(),
+    create: {
+      app: new Commands.Create.App(),
+      plugin: new Commands.Create.Plugin(),
+      __default: 'app',
+    },
+    __default: new Commands.__Default(),
+  })
 
-cli
-  .parse(process.argv.slice(2))
-  .then((result) => {
-    if (result instanceof HelpError) {
-      console.error(result.message)
-      return 1
-    } else if (isError(result)) {
-      console.error(result)
-      return 1
-    } else {
-      if (result !== undefined) {
-        console.log(result)
+  cli
+    .parse(process.argv.slice(2))
+    .then((result) => {
+      if (result instanceof HelpError) {
+        console.error(result.message)
+        return 1
+      } else if (isError(result)) {
+        console.error(result)
+        return 1
+      } else {
+        if (result !== undefined) {
+          console.log(result)
+        }
+        return 0
       }
-      return 0
-    }
-  })
-  .then((exitCode) => {
-    ExitSystem.exit(exitCode)
-  })
+    })
+    .then((exitCode) => {
+      ExitSystem.exit(exitCode)
+    })
+}
