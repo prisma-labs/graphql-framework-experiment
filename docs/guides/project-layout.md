@@ -32,21 +32,19 @@ if `compilerOptions.noEmit` is set to `true` then Nexus will not output the buil
 
 Nexus imposes a few requirements about how you structure your codebase.
 
-### Schema Module(s)
+### Nexus module(s)
 
 ##### Pattern
 
-A `graphql` module or directory of modules `graphql.ts` `graphql/*.ts`.
-
-This may be repeated multiple times in your source tree.
+A file importing `nexus`. eg: `import { schema } from 'nexus'`
 
 ##### About
 
-This convention is optional if entrypoint is present, required otherwise.
+Nexus looks for modules that import `nexus` and uses codegen to statically import them before the server starts.
 
-This is where you should write your GraphQL type definitions.
+Beware if you have module-level side-effects coming from something else than Nexus, as these side-effects will always be run when your app starts.
 
-In dev mode the modules are synchronously found and imported when the server starts. Conversely, at build time, codegen runs making the modules statically imported. This is done to support tree-shaking and decrease application start time.
+> *Note: `require` is not supported.
 
 ### Entrypoint
 
@@ -58,4 +56,4 @@ A custom entrypoint can also be configured using the `--entrypoint` or `-e` CLI 
 
 ##### About
 
-This convention is optional if schema modules are present, required otherwise.
+This convention is optional if Nexus modules are present, required otherwise.

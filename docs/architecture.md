@@ -94,7 +94,7 @@ what follows is a stub
 ## Build Flow
 
 1. The app layout is calculated  
-   We discover things like where the entrypoint is, if any, and where graphql modules are, if any.
+   We discover things like where the entrypoint is, if any, and where [Nexus modules](/guides/project-layout?id=nexus-modules) are, if any.
 1. Worktime plugins are loaded (see [Plugin Loading Flow](#plugin-loading-flow))
 1. Typegen is acquired  
    This step is about processes that reflect upon the app's source code to extract type information that will be automatically used in other parts of the app. This approach is relatively novel among Node tools. There are dynamic and static processes. The static ones use the TypeScript compiler API while the dynamic ones literally run the app with node in a special reflective mode.
@@ -103,7 +103,7 @@ what follows is a stub
 
    Static doesn't have to deal with the unpredictabilities of running an app and so has the benefit of being easier to reason about in a sense. It also has the benefit of extracting accurate type information using the native TS system whereas dynamic relies on building TS types from scratch. This makes static a fit for arbitrary code. On the downside, robust AST processing is hard work, and so, so far, static restricts how certain expressions can be written, otherwise AST traversal fails.
 
-   1. A start module is created in memory. It imports the entrypoint and all graphql modules. It registers an extension hook to transpile the TypeScript app on the fly as it is run. The transpilation uses the project's tsconfig but overrides target and module so that it is runnable by Node (10 and up). Specificaly es2015 target and commonjs module. For example if user had module of `esnext` the transpilation result would not be runnable by Node.
+   1. A start module is created in memory. It imports the entrypoint and all [Nexus modules](/guides/project-layout?id=nexus-modules). It registers an extension hook to transpile the TypeScript app on the fly as it is run. The transpilation uses the project's tsconfig but overrides target and module so that it is runnable by Node (10 and up). Specificaly es2015 target and commonjs module. For example if user had module of `esnext` the transpilation result would not be runnable by Node.
    1. The start module is run in a sub-process for maximum isolation. (we're looking at running within workers [#752](https://github.com/graphql-nexus/nexus/issues/752))
    1. In parallel, a TypeScript instance is created and the app source is statically analyzed to extract context types. This does not require running the app at all. TypeScript cache called tsbuildinfo is stored under `node_modules/.nexus`.
 
