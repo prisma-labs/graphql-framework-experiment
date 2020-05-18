@@ -161,7 +161,7 @@ export function prepareStartModule(
  * in the source/build root.
  */
 export function printStaticImports(layout: Layout.Layout, opts?: { absolutePaths?: boolean }): string {
-  return layout.schemaModules.reduce((script, modulePath) => {
+  return layout.nexusModules.reduce((script, modulePath) => {
     const path = opts?.absolutePaths ? stripExt(modulePath) : relativeTranspiledImportPath(layout, modulePath)
     return `${script}\n${printSideEffectsImport(path)}`
   }, '')

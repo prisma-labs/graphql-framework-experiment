@@ -385,7 +385,7 @@ const templates: Record<TemplateName, TemplateCreator> = {
     return {
       files: [
         {
-          path: path.join(internalConfig.sourceRoot, Layout.schema.CONVENTIONAL_SCHEMA_FILE_NAME),
+          path: path.join(internalConfig.sourceRoot, 'graphql.ts'),
           content: stripIndent`
             import { schema } from "nexus";
       
@@ -513,7 +513,7 @@ async function scaffoldBaseFiles(options: InternalConfig) {
       // use(prisma())
     `
     ),
-    fs.writeAsync(path.join(options.sourceRoot, Layout.schema.CONVENTIONAL_SCHEMA_FILE_NAME), ''),
+    fs.writeAsync(path.join(options.sourceRoot, 'graphql.ts'), ''),
     // An exhaustive .gitignore tailored for Node can be found here:
     // https://github.com/github/gitignore/blob/master/Node.gitignore
     // We intentionally stay minimal here, as we want the default ignore file
