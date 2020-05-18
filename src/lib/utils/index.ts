@@ -157,21 +157,17 @@ export function range(times: number): number[] {
 
 import * as Path from 'path'
 import Git from 'simple-git/promise'
+import { JsonObject, PackageJson } from 'type-fest'
 
 export type OmitFirstArg<Func> = Func extends (firstArg: any, ...args: infer Args) => infer Ret
   ? (...args: Args) => Ret
   : never
 
-const createCodeNameGenerator = require('codename')
-
 /**
- * Generate a random project name.
+ * Generate a randomized Nexus project name.
  */
 export function generateProjectName(): string {
-  return createCodeNameGenerator()
-    .generate(['alliterative', 'random'], ['adjectives', 'animals'])
-    .map((word: string | number) => String(word).replace(' ', '-').toLowerCase())
-    .join('-')
+  return 'my-nexus-app-' + Math.random().toString().slice(2)
 }
 
 /**
@@ -296,4 +292,90 @@ export function simpleDebounce<T extends (...args: any[]) => Promise<any>>(fn: T
 
 export type Index<T> = {
   [key: string]: T
+}
+
+/**
+ * An ESM-aware reading of the main entrypoint to a package.
+ */
+export function getPackageJsonMain(packageJson: PackageJson & { main: string }): string {
+  // todo when building for a bundler, we want to read from the esm paths. Otherwise the cjs paths.
+  //  - this condition takes a stab at the problem but is basically a stub.
+  //  - this todo only needs to be completed once we are actually trying to do esm tree-shaking (meaning, we've moved beyond node-file-trace)
+  return process.env.ESM && packageJson.module
+    ? Path.dirname(packageJson.module)
+    : Path.dirname(packageJson.main)
+}
+
+/**
+ * An error with additional contextual data.
+ */
+export type ContextualError<Context extends Record<string, unknown> = {}> = Error & {
+  context: Context
+}
+
+/**
+ * Create an error with contextual data about it.
+ *
+ * @remarks
+ *
+ * This is handy with fp-ts Either<...> because, unlike try-catch, errors are
+ * strongly typed with the Either contstruct, making it so the error contextual
+ * data flows with inference through your program.
+ */
+export function createContextualError<Context extends Record<string, unknown>>(
+  message: string,
+  context: Context
+): ContextualError<Context> {
+  const e = new Error(message) as ContextualError<Context>
+
+  Object.defineProperty(e, 'message', {
+    enumerable: true,
+    value: e.message,
+  })
+
+  e.context = context
+
+  return e
+}
+
+export type SerializedError = {
+  name: string
+  message: string
+  stack?: string
+} & JsonObject
+
+export function serializeError(e: Error): SerializedError {
+  return {
+    name: e.name,
+    message: e.message,
+    stack: e.stack,
+    ...e,
+  }
+}
+
+export function deserializeError(se: SerializedError): Error {
+  const { name, stack, message, ...rest } = se
+  const e =
+    name === 'EvalError'
+      ? new EvalError(message)
+      : name === 'RangeError'
+      ? new RangeError(message)
+      : name === 'TypeError'
+      ? new TypeError(message)
+      : name === 'URIError'
+      ? new URIError(message)
+      : name === 'SyntaxError'
+      ? new SyntaxError(message)
+      : name === 'ReferenceError'
+      ? new ReferenceError(message)
+      : new Error(message)
+
+  Object.defineProperty(e, 'stack', {
+    enumerable: false,
+    value: stack,
+  })
+
+  Object.assign(e, rest)
+
+  return e
 }

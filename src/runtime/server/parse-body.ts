@@ -95,9 +95,7 @@ async function readBody(req: IncomingMessage, typeInfo: ParsedMediaType): Promis
 
   // Read body from stream.
   try {
-    // console.log(stream.right, { encoding: charset, length, limit })
     const body = await getBody(stream.right, { encoding: charset, length, limit })
-    console.log(1)
     return right(body)
   } catch (err) {
     return err.type === 'encoding.unsupported'

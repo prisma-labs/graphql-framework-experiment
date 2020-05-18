@@ -12,21 +12,20 @@ This context can be augmented by plugins.
 function createTestContext(opts?: CreateTestContextOptions): Promise<TestContext>
 ```
 
-
 ##### Example With Jest
 
 ```ts
-import { } from 'nexus/testing'
+import { TestContext, createTestContext } from 'nexus/testing'
 
 let ctx: TestContext
 
 beforeAll(async () => {
-  ctx = await createTestContext()
-  await ctx.server.start()
+  Object.assign(ctx, await createTestContext())
+  await ctx.app.start()
 })
 
 afterAll(async () => {
-  await ctx.server.stop()
+  await ctx.app.stop()
 })
 
 test('hello', async () => {

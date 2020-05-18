@@ -9,7 +9,8 @@ import { tsconfigTemplate } from '../../../lib/layout/tsconfig'
 import { rootLogger } from '../../../lib/nexus-logger'
 import { ownPackage } from '../../../lib/own-package'
 import * as PackageManager from '../../../lib/package-manager'
-import * as Plugin from '../../../lib/plugin'
+import * as PluginRuntime from '../../../lib/plugin'
+import * as PluginWorktime from '../../../lib/plugin/worktime'
 import * as proc from '../../../lib/process'
 import { createGitRepository, CWDProjectNameOrGenerate } from '../../../lib/utils'
 
@@ -52,8 +53,8 @@ export async function runLocalHandOff(): Promise<void> {
 
   const parentData = await loadDataFromParentProcess()
   const layout = await Layout.create()
-  const pluginM = await Plugin.getUsedPlugins(layout)
-  const plugins = Plugin.importAndLoadWorktimePlugins(pluginM, layout)
+  const pluginM = await PluginWorktime.getUsedPlugins(layout)
+  const plugins = PluginRuntime.importAndLoadWorktimePlugins(pluginM, layout)
   log.trace('plugins', { plugins })
 
   // TODO select a template
@@ -460,6 +461,7 @@ const templates: Record<TemplateName, TemplateCreator> = {
  */
 async function scaffoldBaseFiles(options: InternalConfig) {
   const appEntrypointPath = path.join(options.sourceRoot, 'app.ts')
+  const sourceRootRelative = path.relative(options.projectRoot, options.sourceRoot)
 
   await Promise.all([
     // Empty app and graphql module.
@@ -535,7 +537,7 @@ async function scaffoldBaseFiles(options: InternalConfig) {
         format: "npx prettier --write './**/*.{ts,md}'",
         dev: 'nexus dev',
         build: 'nexus build',
-        start: 'node node_modules/.build',
+        start: `node .nexus/build/${sourceRootRelative}`,
       },
       prettier: {
         semi: false,
@@ -550,7 +552,7 @@ async function scaffoldBaseFiles(options: InternalConfig) {
     fs.writeAsync(
       'tsconfig.json',
       tsconfigTemplate({
-        sourceRootRelative: path.relative(options.projectRoot, options.sourceRoot),
+        sourceRootRelative,
         outRootRelative: Layout.DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT,
       })
     ),
@@ -583,8 +585,8 @@ async function scaffoldBaseFiles(options: InternalConfig) {
 const ENV_PARENT_DATA = 'NEXUS_CREATE_DATA'
 
 type ParentData = {
-  database?: Plugin.OnAfterBaseSetupLens['database']
-  connectionURI?: Plugin.OnAfterBaseSetupLens['connectionURI']
+  database?: PluginRuntime.OnAfterBaseSetupLens['database']
+  connectionURI?: PluginRuntime.OnAfterBaseSetupLens['connectionURI']
 }
 
 async function loadDataFromParentProcess(): Promise<ParentData> {

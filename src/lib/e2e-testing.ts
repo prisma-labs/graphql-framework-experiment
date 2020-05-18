@@ -7,12 +7,12 @@ import { IPty, IPtyForkOptions, IWindowsPtyForkOptions } from 'node-pty'
 import * as Path from 'path'
 import { ConnectableObservable, Observable, Subject } from 'rxjs'
 import { multicast } from 'rxjs/operators'
+import stripAnsi from 'strip-ansi'
 import { Database } from '../cli/commands/create/app'
 import { getTmpDir } from './fs'
 import { GraphQLClient } from './graphql-client'
 import { rootLogger } from './nexus-logger'
 import { PackageManagerType } from './package-manager'
-import stripAnsi = require('strip-ansi')
 
 const log = rootLogger.child('e2e-testing')
 

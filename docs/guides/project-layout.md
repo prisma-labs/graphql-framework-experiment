@@ -21,7 +21,7 @@
 
 - Out Root is the place where the transpiled TypeScript (to JavaScript) modules will be emitted to. The folder structure mimicks that of the source root.
 - Out Root is defined by setting `compilerOptions.outDir`.
-- If you do not specify it then Nexus will default to `node_modules/.build`. Unlike with `rootDir` Nexus will not scaffold the default into your `tsconfig.json` because its presence has no impact upon VSCode.
+- If you do not specify it then Nexus will default to `.nexus/build`. Unlike with `rootDir` Nexus will not scaffold the default into your `tsconfig.json` because its presence has no impact upon VSCode.
 - You can override its value interactively with `nexus build --out`.
 
 ##### Check-Only Builds

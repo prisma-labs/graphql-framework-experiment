@@ -1,14 +1,8 @@
-import * as Logger from '@nexus/logger'
+import * as NexusLogger from '@nexus/logger'
 import * as NexusSchema from '@nexus/schema'
-import {
-  CreateFieldResolverInfo,
-  makeSchemaInternal,
-  MissingType,
-  NexusGraphQLSchema,
-} from '@nexus/schema/dist/core'
 import { GraphQLFieldResolver, GraphQLResolveInfo } from 'graphql'
 import * as HTTP from 'http'
-import * as Layout from '../../lib/layout'
+import { emptyExceptionMessage } from '../../lib/layout/schema-modules'
 import { createNexusSchemaStateful, NexusSchemaStatefulBuilders } from '../../lib/nexus-schema-stateful'
 import { RuntimeContributions } from '../../lib/plugin'
 import { Index, MaybePromise } from '../../lib/utils'
@@ -41,7 +35,7 @@ function createLazyState(): LazyState {
 // todo seems very brittle
 // todo request being exposed on context should be done by the framework
 export interface Request extends HTTP.IncomingMessage {
-  log: Logger.Logger
+  log: NexusLogger.Logger
 }
 
 export type ContextContributor = (req: Request) => MaybePromise<Record<string, unknown>>
@@ -62,7 +56,7 @@ export interface Schema extends NexusSchemaStatefulBuilders {
   /**
    * todo link to website docs
    */
-  middleware(fn: (config: CreateFieldResolverInfo) => MiddlewareFn | undefined): void
+  middleware(fn: (config: NexusSchema.core.CreateFieldResolverInfo) => MiddlewareFn | undefined): void
   /**
    * todo link to website docs
    */
@@ -75,7 +69,7 @@ export interface SchemaInternal {
     checks(): void
     assemble(
       plugins: RuntimeContributions[]
-    ): { schema: NexusGraphQLSchema; missingTypes: Index<MissingType> }
+    ): { schema: NexusSchema.core.NexusGraphQLSchema; missingTypes: Index<NexusSchema.core.MissingType> }
   }
   public: Schema
 }
@@ -115,13 +109,13 @@ export function create(appState: AppState): SchemaInternal {
         const nexusSchemaConfig = mapSettingsToNexusSchemaConfig(plugins, settings.data)
         nexusSchemaConfig.types.push(...statefulNexusSchema.state.types)
         nexusSchemaConfig.plugins!.push(...appState.schemaComponent.plugins)
-        const { schema, missingTypes } = makeSchemaInternal(nexusSchemaConfig)
+        const { schema, missingTypes } = NexusSchema.core.makeSchemaInternal(nexusSchemaConfig)
         return { schema, missingTypes }
       },
       checks() {
         NexusSchema.core.assertNoMissingTypes(appState.assembled!.schema, appState.assembled!.missingTypes)
         if (statefulNexusSchema.state.types.length === 0) {
-          log.warn(Layout.schemaModules.emptyExceptionMessage())
+          log.warn(emptyExceptionMessage())
         }
       },
     },

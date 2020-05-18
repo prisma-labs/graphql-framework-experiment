@@ -3,7 +3,7 @@ import { stripIndent } from 'common-tags'
 import * as FS from 'fs-jetpack'
 import * as Path from 'path'
 import { PackageJson } from 'type-fest'
-import { ParsedCommandLine } from 'typescript'
+import type { ParsedCommandLine } from 'typescript'
 import { findFile, findFileRecurisvelyUpwardSync } from '../../lib/fs'
 import { START_MODULE_NAME } from '../../runtime/start/start-module'
 import { rootLogger } from '../nexus-logger'
@@ -12,7 +12,13 @@ import { fatal } from '../process'
 import { readOrScaffoldTsconfig } from './tsconfig'
 import * as ts from 'ts-morph'
 
-export const DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT = 'node_modules/.build'
+export const DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT = '.nexus/build'
+/**
+ * The temporary ts build folder used when bundling is enabled
+ *
+ * Note: It **should not** be nested in a sub-folder. This might "corrupt" the relative paths of the bundle build.
+ */
+export const TMP_TS_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT = '.tmp_build'
 
 const log = rootLogger.child('layout')
 
@@ -69,15 +75,18 @@ export type ScanResult = {
   // }
 }
 
+type OutputInfo = {
+  startModuleOutPath: string
+  startModuleInPath: string
+  tsOutputDir: string
+  bundleOutputDir: string | null
+}
+
 /**
  * The combination of manual datums the user can specify about the layout plus
  * the dynamic scan results.
  */
-export type Data = ScanResult & {
-  buildOutput: string
-  startModuleOutPath: string
-  startModuleInPath: string
-}
+export type Data = ScanResult & { build: OutputInfo }
 
 /**
  * Layout represents the important edges of the project to support things like
@@ -105,9 +114,19 @@ interface Options {
   /**
    * The place to output the build, relative to project root.
    */
-  buildOutput?: string
+  buildOutputDir?: string
+  /**
+   * Path to the nexus entrypoint. Can be absolute or relative.
+   */
   entrypointPath?: string
+  /**
+   * Directory in which the layout should be performed
+   */
   cwd?: string
+  /**
+   * Whether the build should be outputted as a bundle
+   */
+  asBundle?: boolean
 }
 
 const optionDefaults = {
@@ -123,18 +142,13 @@ export async function create(options?: Options): Promise<Layout> {
   // TODO lodash merge defaults or something
 
   const scanResult = await scan({ cwd, entrypointPath: normalizedEntrypoint })
-  const buildOutput = getBuildOutput(options?.buildOutput, scanResult)
-  const outputInfo = {
-    buildOutput,
-    startModuleInPath: Path.join(scanResult.sourceRoot, START_MODULE_NAME + '.ts'),
-    startModuleOutPath: Path.join(buildOutput, START_MODULE_NAME + '.js'),
-  }
+  const buildInfo = getBuildInfo(options?.buildOutputDir, scanResult, options?.asBundle)
 
-  log.trace('additional layout data', { data: outputInfo })
+  log.trace('layout build info', { data: buildInfo })
 
   const layout = createFromData({
     ...scanResult,
-    ...outputInfo,
+    build: buildInfo,
   })
 
   /**
@@ -445,5 +459,28 @@ export function findNexusModules(tsConfig: ScanResult['tsConfig'], maybeAppModul
   } catch (error) {
     log.error('We could not find your nexus modules', { error })
     return []
+function getBuildInfo(
+  buildOutput: string | undefined,
+  scanResult: ScanResult,
+  asBundle?: boolean
+): OutputInfo {
+  const tsOutputDir = getBuildOutput(buildOutput, scanResult)
+  const startModuleInPath = Path.join(scanResult.sourceRoot, START_MODULE_NAME + '.ts')
+  const startModuleOutPath = Path.join(tsOutputDir, START_MODULE_NAME + '.js')
+
+  if (!asBundle) {
+    return {
+      tsOutputDir,
+      startModuleInPath,
+      startModuleOutPath,
+      bundleOutputDir: null,
+    }
+  }
+
+  const tsBuildInfo = getBuildInfo(TMP_TS_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT, scanResult, false)
+
+  return {
+    ...tsBuildInfo,
+    bundleOutputDir: tsOutputDir,
   }
 }

@@ -223,7 +223,7 @@ export async function e2eKitchenSink(app: E2EContext) {
 
     log.warn('run built app and query graphql api')
 
-    proc = app.node([DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT])
+    proc = app.spawn(['npm', 'run', 'start'])
     sub = proc.connect()
 
     await proc.pipe(takeUntilServerListening).toPromise()
@@ -250,11 +250,6 @@ export async function e2eKitchenSink(app: E2EContext) {
 
     log.warn('run built app from a different CWD than the project root')
 
-    await app
-      .node([app.fs.path(DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT)], {
-        cwd: '/',
-      })
-      .pipe(refCount(), takeUntilServerListening)
-      .toPromise()
+    await app.spawn(['npm', 'run', 'start']).pipe(refCount(), takeUntilServerListening).toPromise()
   }
 }

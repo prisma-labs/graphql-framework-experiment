@@ -1,8 +1,8 @@
-import { serializeError } from 'serialize-error'
 import type * as App from '../../runtime/app'
 import { createDevAppRunner } from '../../runtime/start'
 import * as Layout from '../layout'
 import * as Plugin from '../plugin'
+import { serializeError } from '../utils'
 import type { Message } from './reflect'
 import { isReflectionStage } from './stage'
 import { writeArtifacts } from './typegen'
@@ -26,11 +26,12 @@ async function run() {
 
   if (isReflectionStage('typegen')) {
     try {
+      const plugins = Plugin.importAndLoadRuntimePlugins(app.private.state.plugins)
       await writeArtifacts({
         graphqlSchema: app.private.state.assembled!.schema,
         layout,
         schemaSettings: app.settings.current.schema,
-        plugins: Plugin.importAndLoadRuntimePlugins(app.private.state.plugins),
+        plugins,
       })
       sendDataToParent({
         type: 'success-typegen',

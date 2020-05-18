@@ -12,11 +12,12 @@ const mockExit = jest.spyOn(process, 'exit').mockImplementation(((n: any) => {
   mockedStdoutBuffer += `\n\n--- process.exit(${n}) ---\n\n`
 }) as any)
 
+import stripAnsi from 'strip-ansi'
 import { TsConfigJson } from 'type-fest'
 import * as Layout from '.'
 import { rootLogger } from '../../lib/nexus-logger'
 import { FSSpec, writeFSSpec } from '../../lib/testing-utils'
-import * as TestContext from '../test-context'
+import * as TC from '../test-context'
 import { repalceInObject } from '../utils'
 
 /**
@@ -47,24 +48,27 @@ const fsTsConfig = {
   'tsconfig.json': tsconfigContent(defaultTsConfigContent),
 }
 
-const layoutContext = TestContext.create((input: TestContext.TmpDirContribution) => {
-  return {
-    setup(spec: FSSpec = {}) {
-      writeFSSpec(input.tmpDir, spec)
-    },
-    async scan(opts?: { entrypointPath?: string; buildOutput?: string }) {
-      const data = await Layout.create({
-        cwd: input.tmpDir,
-        entrypointPath: opts?.entrypointPath,
-        buildOutput: opts?.buildOutput,
-      })
-      mockedStdoutBuffer = mockedStdoutBuffer.split(input.tmpDir).join('__DYNAMIC__')
-      return repalceInObject(input.tmpDir, '__DYNAMIC__', data.data)
-    },
-  }
-})
-
-const ctx = TestContext.compose(TestContext.tmpDir, TestContext.fs, layoutContext)
+const ctx = TC.create(
+  TC.tmpDir(),
+  TC.fs(),
+  TC.createContributor((ctx) => {
+    return {
+      setup(spec: FSSpec = {}) {
+        writeFSSpec(ctx.tmpDir, spec)
+      },
+      async scan(opts?: { entrypointPath?: string; buildOutput?: string }) {
+        const data = await Layout.create({
+          cwd: ctx.tmpDir,
+          entrypointPath: opts?.entrypointPath,
+          buildOutputDir: opts?.buildOutput,
+          asBundle: false,
+        })
+        mockedStdoutBuffer = mockedStdoutBuffer.split(ctx.tmpDir).join('__DYNAMIC__')
+        return repalceInObject(ctx.tmpDir, '__DYNAMIC__', data.data)
+      },
+    }
+  })
+)
 
 /**
  * Tests
@@ -144,7 +148,7 @@ describe('tsconfig', () => {
       'tsconfig.json': 'bad json',
     })
     await ctx.scan()
-    expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
+    expect(stripAnsi(mockedStdoutBuffer)).toMatchInlineSnapshot(`
       "✕ nexus:tsconfig Unable to read your tsconifg.json
 
       ../../../../..__DYNAMIC__/tsconfig.json:1:1 - error TS1005: '{' expected.
@@ -167,7 +171,7 @@ describe('tsconfig', () => {
       'tsconfig.json': '{ "exclude": "bad" }',
     })
     await ctx.scan()
-    expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
+    expect(stripAnsi(mockedStdoutBuffer)).toMatchInlineSnapshot(`
       "▲ nexus:tsconfig Please set your tsconfig.json compilerOptions.rootDir to \\".\\"
       ▲ nexus:tsconfig Please set your tsconfig.json include to have \\".\\"
       ✕ nexus:tsconfig Your tsconfig.json is invalid
@@ -343,19 +347,19 @@ it('does not take custom entrypoint as nexus module if contains a nexus import',
 })
 
 describe('build output', () => {
-  it(`defaults to node_modules/.build`, async () => {
+  it(`defaults to .nexus/build`, async () => {
     await ctx.setup({ ...fsTsConfig, 'graphql.ts': '' })
     const result = await ctx.scan()
 
     expect({
-      buildOutput: result.buildOutput,
-      startModuleInPath: result.startModuleInPath,
-      startModuleOutPath: result.startModuleOutPath,
+      tsOutputDir: result.build.tsOutputDir,
+      startModuleInPath: result.build.startModuleInPath,
+      startModuleOutPath: result.build.startModuleOutPath,
     }).toMatchInlineSnapshot(`
       Object {
-        "buildOutput": "__DYNAMIC__/node_modules/.build",
         "startModuleInPath": "__DYNAMIC__/index.ts",
-        "startModuleOutPath": "__DYNAMIC__/node_modules/.build/index.js",
+        "startModuleOutPath": "__DYNAMIC__/.nexus/build/index.js",
+        "tsOutputDir": "__DYNAMIC__/.nexus/build",
       }
     `)
   })
@@ -374,14 +378,14 @@ describe('build output', () => {
     const result = await ctx.scan()
 
     expect({
-      buildOutput: result.buildOutput,
-      startModuleInPath: result.startModuleInPath,
-      startModuleOutPath: result.startModuleOutPath,
+      tsOutputDir: result.build.tsOutputDir,
+      startModuleInPath: result.build.startModuleInPath,
+      startModuleOutPath: result.build.startModuleOutPath,
     }).toMatchInlineSnapshot(`
       Object {
-        "buildOutput": "__DYNAMIC__/dist",
         "startModuleInPath": "__DYNAMIC__/index.ts",
         "startModuleOutPath": "__DYNAMIC__/dist/index.js",
+        "tsOutputDir": "__DYNAMIC__/dist",
       }
     `)
   })
@@ -399,14 +403,14 @@ describe('build output', () => {
     const result = await ctx.scan({ buildOutput: 'custom-output' })
 
     expect({
-      buildOutput: result.buildOutput,
-      startModuleInPath: result.startModuleInPath,
-      startModuleOutPath: result.startModuleOutPath,
+      tsOutputDir: result.build.tsOutputDir,
+      startModuleInPath: result.build.startModuleInPath,
+      startModuleOutPath: result.build.startModuleOutPath,
     }).toMatchInlineSnapshot(`
       Object {
-        "buildOutput": "__DYNAMIC__/custom-output",
         "startModuleInPath": "__DYNAMIC__/index.ts",
         "startModuleOutPath": "__DYNAMIC__/custom-output/index.js",
+        "tsOutputDir": "__DYNAMIC__/custom-output",
       }
     `)
   })

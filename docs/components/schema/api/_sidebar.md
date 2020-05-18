@@ -22,10 +22,12 @@
 - Plugins
 
 - [`prisma`](plugins/prisma)
+- [`jwt-auth`](https://github.com/Camji55/nexus-plugin-jwt-auth)
+- [`graphql-shield`](https://github.com/lvauvillier/nexus-plugin-shield)
 
-- API
+* API
 
-- [`nexus`](api/modules/main)
+* [`nexus`](api/modules/main)
 
   - [`schema`](api/modules/main/exports/schema)
   - [`log`](api/modules/main/exports/logger)
@@ -35,11 +37,17 @@
 
 - [`nexus/testing`](api/modules/testing)
 
-* [`nexus/plugin`](api/modules/plugin)
+- [`nexus/plugin`](api/modules/plugin)
 
-- Components Standalone
+- Meta
 
-- [`@nexus/schema`](components/schema/about)
+- [Roadmap ⤤](https://github.com/orgs/graphql-nexus/projects/1)
+- [Changelog](changelog)
+- [Architecture](architecture)
+
+* Components Standalone
+
+* [`@nexus/schema`](components/schema/about)
 
   - [API](components/schema/api/index.md)
     - [objectType](components/schema/api/copy/api-objectType)

@@ -3,6 +3,7 @@ export {
   createFromData,
   Data,
   DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT,
+  TMP_TS_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT,
   findAppModule,
   Layout,
   loadDataFromParentProcess,

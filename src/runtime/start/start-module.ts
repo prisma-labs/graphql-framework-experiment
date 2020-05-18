@@ -73,9 +73,9 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   content += stripIndent`
     // Run framework initialization side-effects
     // Also, import the app for later use
-    const app = require("${
+    import app from "${
       config.absoluteModuleImports ? resolveFrom('nexus', config.layout.projectRoot) : 'nexus'
-    }").default
+    }")
   `
 
   if (config.catchUnhandledErrors !== false) {
@@ -93,21 +93,6 @@ export function createStartModuleContent(config: StartModuleConfig): string {
       process.exit(1)
     })
   `
-  }
-
-  if (config.layout.packageJson) {
-    content += EOL + EOL + EOL
-    content += stripIndent`
-      // package.json is needed for plugin auto-import system.
-      // On the Zeit Now platform, builds and dev copy source into
-      // new directory. Copying follows paths found in source. Give one here
-      // to package.json to make sure Zeit Now brings it along.
-      require('${
-        config.absoluteModuleImports
-          ? config.layout.packageJson.path
-          : Path.relative(config.layout.buildOutput, config.layout.packageJson.path)
-      }')
-    `
   }
 
   // This MUST come after nexus package has been imported for its side-effects

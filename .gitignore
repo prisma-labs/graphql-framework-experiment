@@ -53,8 +53,8 @@ yarn-error.log*
 
 .DS_Store
 .vscode
-dist
-tsconfig.tsbuildinfo
+dist*
+*.tsbuildinfo
 
 .now
 
