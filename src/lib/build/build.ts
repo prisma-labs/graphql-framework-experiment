@@ -131,7 +131,7 @@ export async function buildNexusApp(settings: BuildSettings) {
       : Path.relative(layout.projectRoot, layout.build.bundleOutputDir ?? layout.build.tsOutputDir)
 
   log.info('success', {
-    buildOutput,
+    buildOutput: buildOutputLog,
     time: Date.now() - startTime,
   })
 

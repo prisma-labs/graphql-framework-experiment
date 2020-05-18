@@ -461,6 +461,7 @@ const templates: Record<TemplateName, TemplateCreator> = {
  */
 async function scaffoldBaseFiles(options: InternalConfig) {
   const appEntrypointPath = path.join(options.sourceRoot, 'app.ts')
+  const sourceRootRelative = path.relative(options.projectRoot, options.sourceRoot)
 
   await Promise.all([
     // Empty app and graphql module.
@@ -536,7 +537,7 @@ async function scaffoldBaseFiles(options: InternalConfig) {
         format: "npx prettier --write './**/*.{ts,md}'",
         dev: 'nexus dev',
         build: 'nexus build',
-        start: 'node .nexus/build',
+        start: `node .nexus/build/${sourceRootRelative}`,
       },
       prettier: {
         semi: false,
@@ -551,7 +552,7 @@ async function scaffoldBaseFiles(options: InternalConfig) {
     fs.writeAsync(
       'tsconfig.json',
       tsconfigTemplate({
-        sourceRootRelative: path.relative(options.projectRoot, options.sourceRoot),
+        sourceRootRelative,
         outRootRelative: Layout.DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT,
       })
     ),
