@@ -2,7 +2,6 @@ import { introspectionQuery } from 'graphql'
 import { ConnectableObservable, Subscription } from 'rxjs'
 import { refCount } from 'rxjs/operators'
 import { createE2EContext, E2EContext } from '../../../src/lib/e2e-testing'
-import { DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT } from '../../../src/lib/layout'
 import { rootLogger } from '../../../src/lib/nexus-logger'
 import { bufferOutput, takeUntilServerListening } from './utils'
 
@@ -18,6 +17,7 @@ export async function e2eKitchenSink(app: E2EContext) {
   let output: string
   let response: any
 
+  //-------------------------------------------------
   log.warn('create app')
 
   if (app.usingLocalNexus?.createAppWithThis) {
@@ -101,6 +101,33 @@ export async function e2eKitchenSink(app: E2EContext) {
         `
   )
 
+  //-------------------------------------------------
+  log.warn('use global cli to interact with local project')
+
+  if (app.usingLocalNexus) {
+    await app
+      .spawn(['yarn', 'global', 'add', app.usingLocalNexus.path])
+      .pipe(refCount(), bufferOutput)
+      .toPromise()
+  } else {
+    await app.spawn(['yarn', 'global', 'add', app.useNexusVersion]).pipe(refCount(), bufferOutput).toPromise()
+  }
+  // force the local ver to something so we have confidence that global did
+  // interact with local and so that we have stable snapshot.
+  const pjpath = app.fs.path('node_modules/nexus/package.json')
+  const pjoriginal = app.fs.read(pjpath, 'json')
+  app.fs.write(pjpath, { ...pjoriginal, version: '0.0.0-local' })
+  const result = await app
+    .spawn(['nexus', '-v'], {
+      cwd: app.dir,
+      env: { ...process.env, LOG_LEVEL: 'warn' },
+    })
+    .pipe(refCount(), bufferOutput)
+    .toPromise()
+  app.fs.write(pjpath, pjoriginal)
+  expect(result.trim()).toEqual('nexus@0.0.0-local')
+
+  //-------------------------------------------------
   log.warn('run dev & query graphql api')
 
   await buildApp()
@@ -110,6 +137,7 @@ export async function e2eKitchenSink(app: E2EContext) {
 
   await buildApp()
 
+  //-------------------------------------------------
   log.warn('create plugin')
 
   const pluginProject = createE2EContext({
@@ -119,8 +147,7 @@ export async function e2eKitchenSink(app: E2EContext) {
 
   if (app.usingLocalNexus?.createPluginWithThis) {
     output = await pluginProject.localNexusCreatePlugin!({ name: 'foobar' })
-      .refCount()
-      .pipe(bufferOutput)
+      .pipe(refCount(), bufferOutput)
       .toPromise()
   } else {
     output = await pluginProject
@@ -141,19 +168,21 @@ export async function e2eKitchenSink(app: E2EContext) {
     // one published to npm.
     await pluginProject
       .spawn(['yarn', 'add', '-D', app.usingLocalNexus.path])
-      .refCount()
-      .pipe(bufferOutput)
+      .pipe(refCount(), bufferOutput)
       .toPromise()
   }
 
+  //-------------------------------------------------
   log.warn('build plugin')
 
   await pluginProject.spawn(['yarn', 'build']).refCount().pipe(bufferOutput).toPromise()
 
+  //-------------------------------------------------
   log.warn('install plugin into app via file path')
 
   await app.spawn(['yarn', 'add', pluginProject.dir]).pipe(refCount(), bufferOutput).toPromise()
 
+  //-------------------------------------------------
   log.warn('with plugin, dev app')
 
   await app.fs.writeAsync(
@@ -183,6 +212,7 @@ export async function e2eKitchenSink(app: E2EContext) {
 
   sub.unsubscribe()
 
+  //-------------------------------------------------
   log.warn('with plugin, build app')
 
   output = await app.nexus(['build']).pipe(refCount(), bufferOutput).toPromise()
@@ -216,11 +246,13 @@ export async function e2eKitchenSink(app: E2EContext) {
 
     sub.unsubscribe()
 
+    //-------------------------------------------------
     log.warn('run build')
 
     output = await app.nexus(['build']).pipe(refCount(), bufferOutput).toPromise()
     expect(output).toContain('success')
 
+    //-------------------------------------------------
     log.warn('run built app and query graphql api')
 
     proc = app.spawn(['npm', 'run', 'start'])
@@ -248,6 +280,7 @@ export async function e2eKitchenSink(app: E2EContext) {
 
     sub.unsubscribe()
 
+    //-------------------------------------------------
     log.warn('run built app from a different CWD than the project root')
 
     await app.spawn(['npm', 'run', 'start']).pipe(refCount(), takeUntilServerListening).toPromise()
