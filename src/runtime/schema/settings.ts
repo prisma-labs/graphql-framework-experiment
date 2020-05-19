@@ -181,12 +181,21 @@ function defaultSettings(): SettingsInput {
 
 export function createSchemaSettingsManager() {
   const data = defaultSettings()
-  const change = (newSettings: SettingsInput) => {
+
+  function change(newSettings: SettingsInput) {
     return changeSettings(data, newSettings)
+  }
+
+  function reset() {
+    for (const k of Object.keys(data)) {
+      delete (data as any)[k]
+    }
+    Object.assign(data, defaultSettings())
   }
 
   return {
     change,
+    reset,
     data,
   }
 }

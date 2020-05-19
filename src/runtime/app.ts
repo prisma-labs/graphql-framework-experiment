@@ -1,5 +1,6 @@
 import * as Logger from '@nexus/logger'
 import * as NexusSchema from '@nexus/schema'
+import { rootLogger } from '../lib/nexus-logger'
 import * as Plugin from '../lib/plugin'
 import { RuntimeContributions } from '../lib/plugin'
 import * as Reflection from '../lib/reflection/stage'
@@ -45,6 +46,9 @@ export interface App {
    * todo
    */
   assemble(): any
+  /**
+   * todo
+   */
   reset(): any
   /**
    * todo
@@ -116,12 +120,11 @@ export function create(): App {
     schema: schemaComponent.public,
     server: serverComponent.public,
     reset() {
-      // if (appState.assembled) {
-      //   ;(appState.assembled as any).schema = undefined
-      //   appState.assembled.loadedPlugins = []
-      //   appState.assembled.missingTypes = {}
-      // }
-      schemaComponent.private.resetState()
+      // todo once we have log filtering, make this debug level
+      rootLogger.trace('resetting state')
+      schemaComponent.private.reset()
+      serverComponent.private.reset()
+      settingsComponent.private.reset()
       appState.assembled = null
       //serverComponent.private.state = defaultState
       appState.plugins = []
