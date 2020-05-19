@@ -45,6 +45,7 @@ export interface App {
    * todo
    */
   assemble(): any
+  reset(): any
   /**
    * todo
    */
@@ -114,6 +115,18 @@ export function create(): App {
     settings: settingsComponent.public,
     schema: schemaComponent.public,
     server: serverComponent.public,
+    reset() {
+      // if (appState.assembled) {
+      //   ;(appState.assembled as any).schema = undefined
+      //   appState.assembled.loadedPlugins = []
+      //   appState.assembled.missingTypes = {}
+      // }
+      schemaComponent.private.resetState()
+      appState.assembled = null
+      //serverComponent.private.state = defaultState
+      appState.plugins = []
+      appState.running = false
+    },
     assemble() {
       if (appState.assembled) return
 

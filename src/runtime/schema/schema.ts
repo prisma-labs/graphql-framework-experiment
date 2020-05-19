@@ -69,7 +69,8 @@ export interface SchemaInternal {
     checks(): void
     assemble(
       plugins: RuntimeContributions[]
-    ): { schema: NexusSchema.core.NexusGraphQLSchema; missingTypes: Index<NexusSchema.core.MissingType> }
+    ): { schema: NexusSchema.core.NexusGraphQLSchema; missingTypes: Index<NexusSchema.core.MissingType> },
+    resetState(): void
   }
   public: Schema
 }
@@ -105,6 +106,11 @@ export function create(appState: AppState): SchemaInternal {
     public: api,
     private: {
       settings: settings,
+      resetState() {
+        statefulNexusSchema.state.types = []
+        appState.schemaComponent.contextContributors = []
+        appState.schemaComponent.plugins = []
+      },
       assemble: (plugins) => {
         const nexusSchemaConfig = mapSettingsToNexusSchemaConfig(plugins, settings.data)
         nexusSchemaConfig.types.push(...statefulNexusSchema.state.types)

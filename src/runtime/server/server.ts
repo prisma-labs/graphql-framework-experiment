@@ -14,6 +14,7 @@ import { createRequestHandlerGraphQL } from './handler-graphql'
 import { createRequestHandlerPlayground } from './handler-playground'
 import { log } from './logger'
 import { createServerSettingsManager } from './settings'
+import { isReflection } from '../../lib/reflection'
 
 const resolverLogger = log.child('graphql')
 
@@ -27,19 +28,25 @@ export interface Server {
   }
 }
 
+export const defaultState = {
+  running: false,
+  httpServer: HTTP.createServer(),
+  createContext: null,
+}
+
 export function create(appState: AppState) {
   const settings = createServerSettingsManager()
   const express = createExpress()
-  const state = {
-    running: false,
-    httpServer: HTTP.createServer(),
-    createContext: null,
-  }
+  const state = { ...defaultState }
 
   const api: Server = {
     express,
     handlers: {
       get playground() {
+        if (isReflection()) {
+          return undefined as any
+        }
+        
         assertAppIsAssembledBeforePropAccess(appState, 'app.server.handlers.playground')
         // todo should be accessing settings from assembled app state settings
         return wrapHandlerWithErrorHandling(
@@ -47,6 +54,9 @@ export function create(appState: AppState) {
         )
       },
       get graphql() {
+        if (isReflection()) {
+          return undefined as any
+        }
         assertAppIsAssembledBeforePropAccess(appState, 'app.server.handlers.graphql')
         return wrapHandlerWithErrorHandling(
           createRequestHandlerGraphQL(appState.assembled!.schema, appState.assembled!.createContext)
