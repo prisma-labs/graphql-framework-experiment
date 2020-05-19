@@ -1,4 +1,5 @@
 import { stripIndent } from 'common-tags'
+import { Either, left, right } from 'fp-ts/lib/Either'
 import * as Lo from 'lodash'
 import * as Layout from '../layout'
 import { rootLogger } from '../nexus-logger'
@@ -6,7 +7,7 @@ import { partition } from '../utils'
 import { importPluginDimension } from './import'
 import { createBaseLens, createRuntimeLens, createWorktimeLens } from './lens'
 import { getPluginManifests, showManifestErrorsAndExit } from './manifest'
-import { Plugin } from './types'
+import { Plugin, TesttimeContributions } from './types'
 
 const log = rootLogger.child('plugin')
 
@@ -68,7 +69,7 @@ export function importAndLoadWorktimePlugins(plugins: Plugin[], layout: Layout.L
 /**
  * Fully import and load the testtime plugins, if any, amongst the given plugins.
  */
-export function importAndLoadTesttimePlugins(plugins: Plugin[]) {
+export function importAndLoadTesttimePlugins(plugins: Plugin[]): Array<Either<Error, TesttimeContributions>> {
   const validPlugins = filterValidPlugins(plugins)
 
   const gotManifests = getPluginManifests(validPlugins)
@@ -87,23 +88,13 @@ export function importAndLoadTesttimePlugins(plugins: Plugin[]) {
       const contribution = plugin.run(createBaseLens(plugin.manifest.name))
 
       if (!Lo.isPlainObject(contribution)) {
-        /**
-         * We do not `fatal` here because performing a `process.exit` causes Jest to not display the logging
-         */
-        log.error(
-          stripIndent`
-          Ignoring the testtime contribution from the Nexus plugin \`${plugin.manifest.name}\` because its contribution is not an object.
-          This is likely to cause an error in your tests. Please reach out to the author of the plugin to fix the issue.
-          `,
-          {
-            contribution,
-          }
+        return left(
+          new Error(stripIndent`Ignoring the testtime contribution from the Nexus plugin \`${plugin.manifest.name}\` because its contribution is not an object.
+        This is likely to cause an error in your tests. Please reach out to the author of the plugin to fix the issue.`)
         )
-
-        return null
       }
 
-      return contribution
+      return right(contribution)
     })
 }
 

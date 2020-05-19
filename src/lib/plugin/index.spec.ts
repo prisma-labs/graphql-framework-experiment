@@ -1,8 +1,10 @@
+import { isLeft } from 'fp-ts/lib/Either'
 import * as Path from 'path'
 import * as TC from '../test-context'
 import { repalceInObject } from '../utils'
+import { importAndLoadTesttimePlugins } from './load'
 import { getPluginManifest } from './manifest'
-import { Plugin } from './types'
+import { Dimension, Plugin, PluginWithoutSettings } from './types'
 
 const ctx = TC.create(TC.tmpDir(), TC.fs())
 
@@ -88,5 +90,26 @@ describe('manifest', () => {
         },
       }
     `)
+  })
+})
+
+function stubPlugin(dimension: Dimension, exportName: string): [PluginWithoutSettings] {
+  return [
+    {
+      packageJsonPath: require.resolve('../../../package.json'),
+      [dimension]: {
+        module: require.resolve('./plugin.fixture.js'),
+        export: exportName,
+      },
+    },
+  ]
+}
+
+// TODO: figure out why it's process.exiting
+describe('plugin', () => {
+  it('fails if testtime contrib is not an object', () => {
+    const [result] = importAndLoadTesttimePlugins(stubPlugin('testtime', 'wrongTesttimePlugin'))
+
+    expect(isLeft(result)).toStrictEqual(true)
   })
 })
