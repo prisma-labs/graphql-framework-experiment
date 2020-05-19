@@ -1,11 +1,12 @@
+import { stripIndent } from 'common-tags'
+import * as Lo from 'lodash'
 import * as Layout from '../layout'
 import { rootLogger } from '../nexus-logger'
-import { partition, isObject } from '../utils'
+import { partition } from '../utils'
 import { importPluginDimension } from './import'
 import { createBaseLens, createRuntimeLens, createWorktimeLens } from './lens'
 import { getPluginManifests, showManifestErrorsAndExit } from './manifest'
 import { Plugin } from './types'
-import { stripIndent } from 'common-tags'
 
 const log = rootLogger.child('plugin')
 
@@ -85,7 +86,7 @@ export function importAndLoadTesttimePlugins(plugins: Plugin[]) {
       log.trace('loading testtime plugin', { name: plugin.manifest.name })
       const contribution = plugin.run(createBaseLens(plugin.manifest.name))
 
-      if (!isObject(contribution)) {
+      if (!Lo.isPlainObject(contribution)) {
         /**
          * We do not `fatal` here because performing a `process.exit` causes Jest to not display the logging
          */

@@ -13,7 +13,7 @@ export type Param1<F> = F extends (p: infer P, ...args: any[]) => any ? P : neve
 /**
  * Represents a POJO. Prevents from allowing arrays and functions
  */
-export type StrictObject = {
+export type PlainObject = {
   [x: string]: Primitive | object
 }
 
@@ -43,7 +43,7 @@ export type DeepPartial<T, AllowAdditionalProps extends boolean = false> = T ext
   ? DeepPartialArray<U>
   : T extends object
   ? AllowAdditionalProps extends true
-    ? DeepPartialObject<T, true> & StrictObject
+    ? DeepPartialObject<T, true> & PlainObject
     : DeepPartialObject<T, false>
   : T | undefined
 
@@ -51,7 +51,7 @@ export interface DeepPartialArray<T> extends Array<DeepPartial<T>> {}
 
 export type DeepPartialObject<T extends object, AllowAdditionalProps extends boolean = false> = {
   [P in keyof T]?: AllowAdditionalProps extends true
-    ? DeepPartial<T[P], true> & StrictObject
+    ? DeepPartial<T[P], true> & PlainObject
     : DeepPartial<T[P], false>
 }
 
@@ -389,8 +389,4 @@ export function deserializeError(se: SerializedError): Error {
   Object.assign(e, rest)
 
   return e
-}
-
-export function isObject(o: any) {
-  return o !== null && typeof o === 'object' && Array.isArray(o) === false
 }
