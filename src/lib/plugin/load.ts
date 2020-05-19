@@ -1,10 +1,11 @@
 import * as Layout from '../layout'
 import { rootLogger } from '../nexus-logger'
-import { partition } from '../utils'
+import { partition, isObject } from '../utils'
 import { importPluginDimension } from './import'
 import { createBaseLens, createRuntimeLens, createWorktimeLens } from './lens'
 import { getPluginManifests, showManifestErrorsAndExit } from './manifest'
 import { Plugin } from './types'
+import { stripIndent } from 'common-tags'
 
 const log = rootLogger.child('plugin')
 
@@ -82,7 +83,26 @@ export function importAndLoadTesttimePlugins(plugins: Plugin[]) {
     })
     .map((plugin) => {
       log.trace('loading testtime plugin', { name: plugin.manifest.name })
-      return plugin.run(createBaseLens(plugin.manifest.name))
+      const contribution = plugin.run(createBaseLens(plugin.manifest.name))
+
+      if (!isObject(contribution)) {
+        /**
+         * We do not `fatal` here because performing a `process.exit` causes Jest to not display the logging
+         */
+        log.error(
+          stripIndent`
+          Ignoring the testtime contribution from the Nexus plugin \`${plugin.manifest.name}\` because its contribution is not an object.
+          This is likely to cause an error in your tests. Please reach out to the author of the plugin to fix the issue.
+          `,
+          {
+            contribution,
+          }
+        )
+
+        return null
+      }
+
+      return contribution
     })
 }
 
