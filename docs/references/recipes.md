@@ -274,14 +274,16 @@ We made it very simple to debug your app with VS Code.
 
 ## Use with Next.js
 
-#### Steps
+### Steps
 
-1. Your Next.js project must be a TypeSript, not JavaScript, one
+1. Your Next.js project must be [a TypeSript](https://nextjs.org/docs/basic-features/typescript), not JavaScript, one
 1. Install `nexus`
 1. Create _one_ GraphQL endpoint, e.g. `<project root>/pages/api/graphql.ts`
 1. The minimum boilerplate needed in your GraphQL endpoint is:
 
    ```ts
+   // <project root>/pages/api/graphql.ts
+
    if (process.env.NODE_ENV === 'development') require('nexus').default.reset()
 
    const app = require('nexus').default
@@ -295,9 +297,7 @@ We made it very simple to debug your app with VS Code.
    export default app.server.handlers.graphql
    ```
 
-1. While developing, you should run Nexus reflection a separate terminal apart from your normal `next dev`. This is in order to benefit from the type safety that Nexus can give you. One of its primary benefits.
-
-   1. For example:
+1. While developing, you should run Nexus reflection a separate terminal apart from your normal `next dev`. This is in order to benefit from the type safety that Nexus can give you. One of its primary benefits. For example:
 
    ```json
    "nexus:reflection": "nexus dev --reflection --entrypoint pages/api/graphql.ts",
@@ -305,12 +305,16 @@ We made it very simple to debug your app with VS Code.
 
 1. With `compilerOptions.noEmit` set to `true` in your tsconfig (forced by Next.js), treat `nexus build` as a check step in your ci process.
 
-#### Notes
+### Notes
 
 - Overall, here are the limitations with Next.js integration that you will not find in a "normal" Nexus project.
-  1.  You must run `app.assenble()` before accessing the server handlers.
-  1.  In development, you must run `app.reset()` in your endpoint module, before anything else.
-  1.  Make sure that you only have one Nexus endpoint, or else you may experience difficulties in development.
-  1.  Make sure that your Nexus modules (ones using the `nexus` package) are only part of the import graph of your Nexus endpoint.
-  1.  If you would like to use GraphQL Playground, do not rely on the one from Nexus. Instead you can use an external one like [this standalone electron one](https://www.electronjs.org/apps/graphql-playground).
-  1.  You will not be able to use the Nexus testing component
+
+  1. You must use CommonJS `require` as opposed to ES module `import` syntax for your Nexus api module. This is to preserve import order.
+  1. You must run `app.assenble()` before accessing the server handlers.
+  1. In development, you must run `app.reset()` in your Nexus api module, before anything else.
+  1. Make sure that you only have one Nexus api module, or else you may experience difficulties in development.
+  1. Make sure that your Nexus modules (ones using the `nexus` package) are only part of the import graph of your Nexus api module.
+  1. If you would like to use GraphQL Playground, do not rely on the one packaged with Nexus. Instead you can use an external one like [this standalone electron one](https://www.electronjs.org/apps/graphql-playground).
+  1. You will not be able to use the Nexus testing component
+
+- Integration with Next.js should improve [once it supports plugins](https://github.com/zeit/next.js/issues/9133). For example you will probably not need to think about `app.assemble()` and `app.reset()` anymore and be able to use ES module syntax in your Nexus api module.
