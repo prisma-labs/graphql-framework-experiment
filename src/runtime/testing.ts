@@ -121,6 +121,10 @@ export async function createTestContext(opts?: CreateTestContextOptions): Promis
   const testContextContributions = PluginRuntime.importAndLoadTesttimePlugins(pluginManifests)
 
   for (const testContextContribution of testContextContributions) {
+    if (testContextContribution === null) {
+      continue
+    }
+
     Lo.merge(api, testContextContribution)
   }
 
