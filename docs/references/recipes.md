@@ -271,3 +271,46 @@ We made it very simple to debug your app with VS Code.
 5. Click the green "Start debugging" button located next to the dropdown
 
 6. That's it. VS Code should run your code and stop wherever your set some breakpoints
+
+## Use with Next.js
+
+#### Steps
+
+1. Your Next.js project must be a TypeSript, not JavaScript, one
+1. Install `nexus`
+1. Create _one_ GraphQL endpoint, e.g. `<project root>/pages/api/graphql.ts`
+1. The minimum boilerplate needed in your GraphQL endpoint is:
+
+   ```ts
+   if (process.env.NODE_ENV === 'development') require('nexus').default.reset()
+
+   const app = require('nexus').default
+
+   // Require your nexus modules here
+   // or write them inline
+   // ...
+
+   app.assemble()
+
+   export default app.server.handlers.graphql
+   ```
+
+1. While developing, you should run Nexus reflection a separate terminal apart from your normal `next dev`. This is in order to benefit from the type safety that Nexus can give you. One of its primary benefits.
+
+   1. For example:
+
+   ```json
+   "nexus:reflection": "nexus dev --reflection --entrypoint pages/api/graphql.ts",
+   ```
+
+1. With `compilerOptions.noEmit` set to `true` in your tsconfig (forced by Next.js), treat `nexus build` as a check step in your ci process.
+
+#### Notes
+
+- Overall, here are the limitations with Next.js integration that you will not find in a "normal" Nexus project.
+  1.  You must run `app.assenble()` before accessing the server handlers.
+  1.  In development, you must run `app.reset()` in your endpoint module, before anything else.
+  1.  Make sure that you only have one Nexus endpoint, or else you may experience difficulties in development.
+  1.  Make sure that your Nexus modules (ones using the `nexus` package) are only part of the import graph of your Nexus endpoint.
+  1.  If you would like to use GraphQL Playground, do not rely on the one from Nexus. Instead you can use an external one like [this standalone electron one](https://www.electronjs.org/apps/graphql-playground).
+  1.  You will not be able to use the Nexus testing component
