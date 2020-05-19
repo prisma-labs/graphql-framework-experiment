@@ -7,17 +7,9 @@ import { globalToLocalModule } from './utils'
 const log = rootLogger.child('glocal')
 
 /**
- * Handle relationship between global and local versions of a cli.
- *
- * If the local project does not have the tool on disk then fatal message will
- * be logged and process exited.
+ * Input for `setup`
  */
-export function setup({
-  run,
-  toolName,
-  depName,
-  filename,
-}: {
+type SetupInput = {
   /**
    * Actual CLI code you want to run.
    */
@@ -39,7 +31,15 @@ export function setup({
    * Normally, this is just a matter of the caller passing its `__filename`.
    */
   filename: string
-}): void {
+}
+
+/**
+ * Handle relationship between global and local versions of a cli.
+ *
+ * If the local project does not have the tool on disk then fatal message will
+ * be logged and process exited.
+ */
+export function setup({ run, toolName, depName, filename }: SetupInput): void {
   // use envar to boost perf, skip costly detection work
   if (!process.env.GLOBAL_LOCAL_HANDOFF) {
     log.trace('execLayout start')
