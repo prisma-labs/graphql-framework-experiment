@@ -126,7 +126,6 @@ export function create(): App {
       serverComponent.private.reset()
       settingsComponent.private.reset()
       appState.assembled = null
-      //serverComponent.private.state = defaultState
       appState.plugins = []
       appState.running = false
     },
