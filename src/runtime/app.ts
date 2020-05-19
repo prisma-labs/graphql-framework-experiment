@@ -47,7 +47,13 @@ export interface App {
    */
   assemble(): any
   /**
-   * todo
+   * This method makes it possible to reset the state of the singleton. This can
+   * be useful when working in a development environment where multiple runs of
+   * the app (or run-like, e.g. Node module cache being reset) can take place
+   * without having state reset. Such an example of that is the Next.js dev
+   * mode.
+   *
+   * @experimental
    */
   reset(): any
   /**
