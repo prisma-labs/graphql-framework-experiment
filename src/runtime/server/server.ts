@@ -5,11 +5,11 @@ import { HttpError } from 'http-errors'
 import * as Net from 'net'
 import stripAnsi from 'strip-ansi'
 import * as Plugin from '../../lib/plugin'
-import { MaybePromise } from '../../lib/utils'
+import { MaybePromise, noop } from '../../lib/utils'
 import { AppState } from '../app'
 import * as DevMode from '../dev-mode'
 import { ContextContributor } from '../schema/schema'
-import { assertAppIsAssembledBeforePropAccess } from '../utils'
+import { assembledGuard } from '../utils'
 import { createRequestHandlerGraphQL } from './handler-graphql'
 import { createRequestHandlerPlayground } from './handler-playground'
 import { log } from './logger'
@@ -42,16 +42,22 @@ export function create(appState: AppState) {
     express,
     handlers: {
       get playground() {
-        assertAppIsAssembledBeforePropAccess(appState, 'app.server.handlers.playground')
-        // todo should be accessing settings from assembled app state settings
-        return wrapHandlerWithErrorHandling(
-          createRequestHandlerPlayground({ graphqlEndpoint: settings.data.path })
+        return (
+          assembledGuard(appState, 'app.server.handlers.playground', () => {
+            // todo should be accessing settings from assembled app state settings
+            return wrapHandlerWithErrorHandling(
+              createRequestHandlerPlayground({ graphqlEndpoint: settings.data.path })
+            )
+          }) ?? noop
         )
       },
       get graphql() {
-        assertAppIsAssembledBeforePropAccess(appState, 'app.server.handlers.graphql')
-        return wrapHandlerWithErrorHandling(
-          createRequestHandlerGraphQL(appState.assembled!.schema, appState.assembled!.createContext)
+        return (
+          assembledGuard(appState, 'app.server.handlers.graphql', () => {
+            return wrapHandlerWithErrorHandling(
+              createRequestHandlerGraphQL(appState.assembled!.schema, appState.assembled!.createContext)
+            )
+          }) ?? noop
         )
       },
     },

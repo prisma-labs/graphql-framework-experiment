@@ -2,6 +2,7 @@ process.env.FORCE_COLOR = '0'
 
 import * as Lo from 'lodash'
 import { rootLogger } from '../lib/nexus-logger'
+import { removeReflectionStage, setReflectionStage } from '../lib/reflection'
 import * as App from './app'
 
 let app: App.PrivateApp
@@ -82,6 +83,20 @@ describe('checks', () => {
       ]
     `)
   })
+})
+
+describe('server handlers', () => {
+  it('under reflection are noops', () => {
+    setReflectionStage('plugin')
+    const g = app.server.handlers.graphql as any
+    const p = app.server.handlers.playground as any
+    expect(g()).toBeUndefined()
+    expect(p()).toBeUndefined()
+    removeReflectionStage()
+  })
+
+  // todo, process exit poop
+  it.todo('if accessed before assembly, and not under reflection, error')
 })
 
 /**

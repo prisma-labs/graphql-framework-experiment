@@ -390,3 +390,5 @@ export function deserializeError(se: SerializedError): Error {
 
   return e
 }
+
+export function noop() {}
