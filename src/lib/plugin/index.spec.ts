@@ -113,7 +113,7 @@ describe('plugin', () => {
     if (isLeft(result)) {
       expect(result.left).toMatchInlineSnapshot(`
         [Error: Ignoring the testtime contribution from the Nexus plugin \`nexus\` because its contribution is not an object.
-                  This is likely to cause an error in your tests. Please reach out to the author of the plugin to fix the issue.]
+                This is likely to cause an error in your tests. Please reach out to the author of the plugin to fix the issue.]
       `)
     }
   })
