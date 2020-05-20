@@ -288,9 +288,9 @@ We made it very simple to debug your app with VS Code.
 
    const app = require('nexus').default
 
-   // Require your nexus modules here
-   // or write them inline
-   // ...
+   // Require your nexus modules here.
+   // Do not write them inline, since the Nexus API is typed `any` because of `require` import.
+   // require('...')
 
    app.assemble()
 
