@@ -1,9 +1,3 @@
-export const correctTesttimePlugin = () => () => {
-  return {
-    foo: 'bar'
-  }
-}
-
-export const wrongTesttimePlugin = () => () => {
+module.exports.testtimeNotAnObject = () => () => {
   return []
 }

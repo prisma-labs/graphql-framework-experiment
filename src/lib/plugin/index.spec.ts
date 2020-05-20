@@ -105,11 +105,16 @@ function stubPlugin(dimension: Dimension, exportName: string): [PluginWithoutSet
   ]
 }
 
-// TODO: figure out why it's process.exiting
 describe('plugin', () => {
   it('fails if testtime contrib is not an object', () => {
-    const [result] = importAndLoadTesttimePlugins(stubPlugin('testtime', 'wrongTesttimePlugin'))
+    const [result] = importAndLoadTesttimePlugins(stubPlugin('testtime', 'testtimeNotAnObject'))
 
-    expect(isLeft(result)).toStrictEqual(true)
+    expect(isLeft(result)).toBe(true)
+    if (isLeft(result)) {
+      expect(result.left).toMatchInlineSnapshot(`
+        [Error: Ignoring the testtime contribution from the Nexus plugin \`nexus\` because its contribution is not an object.
+                  This is likely to cause an error in your tests. Please reach out to the author of the plugin to fix the issue.]
+      `)
+    }
   })
 })
