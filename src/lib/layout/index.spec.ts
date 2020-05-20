@@ -1,3 +1,4 @@
+process.env.FORCE_COLOR = '0'
 let mockedStdoutBuffer: string = ''
 const mockStdout = jest.spyOn(process.stdout, 'write').mockImplementation((data) => {
   mockedStdoutBuffer += data
