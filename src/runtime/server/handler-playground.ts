@@ -64,13 +64,14 @@ export const createRequestHandlerPlayground: Handler = (settings) => (_req, res)
           <span class="title">GraphQL Playground</span>
         </div>
       </div>
-      <script>window.addEventListener('load', function (event) {
+      <script>
+        window.addEventListener('load', function (event) {
           GraphQLPlayground.init(document.getElementById('root'), {
             endpoint: '${settings.graphqlEndpoint}'
           })
-        })</script>
+        })
+      </script>
     </body>
-
     </html>
   `
   )

@@ -27,14 +27,16 @@ export interface Server {
   }
 }
 
+export const defaultState = {
+  running: false,
+  httpServer: HTTP.createServer(),
+  createContext: null,
+}
+
 export function create(appState: AppState) {
   const settings = createServerSettingsManager()
   const express = createExpress()
-  const state = {
-    running: false,
-    httpServer: HTTP.createServer(),
-    createContext: null,
-  }
+  const state = { ...defaultState }
 
   const api: Server = {
     express,
@@ -55,10 +57,13 @@ export function create(appState: AppState) {
     },
   }
 
-  return {
+  const internalServer = {
     private: {
       settings,
       state,
+      reset() {
+        internalServer.private.state = { ...defaultState }
+      },
       assemble(loadedRuntimePlugins: Plugin.RuntimeContributions[], schema: GraphQLSchema) {
         state.httpServer.on('request', express)
 
@@ -113,6 +118,8 @@ export function create(appState: AppState) {
     },
     public: api,
   }
+
+  return internalServer
 }
 
 /**
