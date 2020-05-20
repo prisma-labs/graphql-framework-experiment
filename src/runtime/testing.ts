@@ -1,3 +1,4 @@
+import { isLeft } from 'fp-ts/lib/Either'
 import getPort from 'get-port'
 import * as Lo from 'lodash'
 import app from '.'
@@ -7,6 +8,9 @@ import * as PluginRuntime from '../lib/plugin'
 import * as PluginWorktime from '../lib/plugin/worktime'
 import { PrivateApp } from './app'
 import { createDevAppRunner } from './start'
+import { rootLogger } from '../lib/nexus-logger'
+
+const pluginLogger = rootLogger.child('plugin')
 
 type AppClient = {
   query: GraphQLClient['request']
@@ -121,7 +125,12 @@ export async function createTestContext(opts?: CreateTestContextOptions): Promis
   const testContextContributions = PluginRuntime.importAndLoadTesttimePlugins(pluginManifests)
 
   for (const testContextContribution of testContextContributions) {
-    Lo.merge(api, testContextContribution)
+    if (isLeft(testContextContribution)) {
+      pluginLogger.error(testContextContribution.left.message, { error: testContextContribution.left })
+      continue
+    }
+
+    Lo.merge(api, testContextContribution.right)
   }
 
   return api as TestContext

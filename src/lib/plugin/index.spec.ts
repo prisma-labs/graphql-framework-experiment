@@ -1,8 +1,10 @@
+import { isLeft } from 'fp-ts/lib/Either'
 import * as Path from 'path'
 import * as TC from '../test-context'
 import { repalceInObject } from '../utils'
+import { importAndLoadTesttimePlugins } from './load'
 import { getPluginManifest } from './manifest'
-import { Plugin } from './types'
+import { Dimension, Plugin, PluginWithoutSettings } from './types'
 
 const ctx = TC.create(TC.tmpDir(), TC.fs())
 
@@ -88,5 +90,31 @@ describe('manifest', () => {
         },
       }
     `)
+  })
+})
+
+function stubPlugin(dimension: Dimension, exportName: string): [PluginWithoutSettings] {
+  return [
+    {
+      packageJsonPath: require.resolve('../../../package.json'),
+      [dimension]: {
+        module: require.resolve('./plugin.fixture.js'),
+        export: exportName,
+      },
+    },
+  ]
+}
+
+describe('plugin', () => {
+  it('fails if testtime contrib is not an object', () => {
+    const [result] = importAndLoadTesttimePlugins(stubPlugin('testtime', 'testtimeNotAnObject'))
+
+    expect(isLeft(result)).toBe(true)
+    if (isLeft(result)) {
+      expect(result.left).toMatchInlineSnapshot(`
+        [Error: Ignoring the testtime contribution from the Nexus plugin \`nexus\` because its contribution is not an object.
+                This is likely to cause an error in your tests. Please reach out to the author of the plugin to fix the issue.]
+      `)
+    }
   })
 })
