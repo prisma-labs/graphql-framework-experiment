@@ -2,7 +2,7 @@ import chalk from 'chalk'
 import { stripIndent } from 'common-tags'
 import { log } from '../lib/nexus-logger'
 import { fatal } from '../lib/process'
-import { isReflection } from '../lib/reflection'
+import { isReflection } from '../lib/reflection/stage'
 import { AppState } from './app'
 
 /**
