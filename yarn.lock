@@ -478,10 +478,10 @@
     "@types/yargs" "^15.0.0"
     chalk "^4.0.0"
 
-"@nexus/logger@^0.2.0-next.2":
-  version "0.2.0-next.2"
-  resolved "https://registry.yarnpkg.com/@nexus/logger/-/logger-0.2.0-next.2.tgz#4056bf91e78637edf10320299217af9513c05555"
-  integrity sha512-ElTJdsTi8afTIRc8iSXk8+KqDI2JU+qtum9+VBnTiSFXlfUnKyk7yC1szDxsbF9T/oGX2vxxAuW6f3yjzOrK3g==
+"@nexus/logger@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@nexus/logger/-/logger-0.2.0.tgz#c1ae9ef0d9ba91a0da4c635695e35248613636fc"
+  integrity sha512-r63+KBH+EmjR/bkse7KE28qsZRUGU3YP9AxUOUiVUnDgN07TJn2cOXYq6YOAfMWRbEGo/DdW2L3ntFMgaIvX3A==
   dependencies:
     chalk "^4.0.0"
     fp-ts "^2.6.1"

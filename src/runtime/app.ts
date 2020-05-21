@@ -10,7 +10,7 @@ import { ContextCreator } from './server/server'
 import * as Settings from './settings'
 import { assertAppNotAssembled } from './utils'
 
-const log = Logger.create({ name: 'app' })
+const log = Logger.log.child('app')
 
 // todo the jsdoc below is lost on the destructured object exports later on...
 export interface App {
@@ -107,8 +107,19 @@ export function create(): App {
   const settingsComponent = Settings.create(appState, {
     serverSettings: serverComponent.private.settings,
     schemaSettings: schemaComponent.private.settings,
-    log,
+    log: Logger.log,
   })
+
+  /**
+   * Setup default log filter
+   */
+
+  settingsComponent.public.change({
+    logger: {
+      filter: 'app@*,nexus:*@info+,*@warn+',
+    },
+  })
+
   const api: App = {
     log: log,
     settings: settingsComponent.public,
