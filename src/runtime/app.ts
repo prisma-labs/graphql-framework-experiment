@@ -116,7 +116,7 @@ export function create(): App {
 
   settingsComponent.public.change({
     logger: {
-      filter: 'app@*,nexus:*@info+,*@warn+',
+      filter: 'app:*, nexus:*@info+, *@warn+',
     },
   })
 
