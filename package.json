@@ -53,7 +53,7 @@
     "serialize-error": "^7.0.0",
     "simple-git": "^1.126.0",
     "strip-ansi": "^6.0.0",
-    "ts-morph": "^7.0.3",
+    "ts-morph": "^7.1.0",
     "ts-node": "^8.10.1",
     "tslib": "^2.0.0",
     "type-fest": "^0.13.0",
