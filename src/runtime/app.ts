@@ -1,5 +1,6 @@
 import * as Logger from '@nexus/logger'
 import * as NexusSchema from '@nexus/schema'
+import { rootLogger } from '../lib/nexus-logger'
 import * as Plugin from '../lib/plugin'
 import { RuntimeContributions } from '../lib/plugin'
 import * as Reflection from '../lib/reflection/stage'
@@ -45,6 +46,16 @@ export interface App {
    * todo
    */
   assemble(): any
+  /**
+   * This method makes it possible to reset the state of the singleton. This can
+   * be useful when working in a development environment where multiple runs of
+   * the app (or run-like, e.g. Node module cache being reset) can take place
+   * without having state reset. Such an example of that is the Next.js dev
+   * mode.
+   *
+   * @experimental
+   */
+  reset(): any
   /**
    * todo
    */
@@ -125,6 +136,16 @@ export function create(): App {
     settings: settingsComponent.public,
     schema: schemaComponent.public,
     server: serverComponent.public,
+    reset() {
+      // todo once we have log filtering, make this debug level
+      rootLogger.trace('resetting state')
+      schemaComponent.private.reset()
+      serverComponent.private.reset()
+      settingsComponent.private.reset()
+      appState.assembled = null
+      appState.plugins = []
+      appState.running = false
+    },
     assemble() {
       if (appState.assembled) return
 

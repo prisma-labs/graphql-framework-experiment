@@ -150,14 +150,22 @@ export function changeSettings(state: SettingsData, newSettings: SettingsInput):
 }
 
 export function createServerSettingsManager() {
-  let data = defaultSettings()
+  const data = defaultSettings()
 
-  const change = (newSettings: SettingsInput) => {
+  function change(newSettings: SettingsInput) {
     changeSettings(data, newSettings)
+  }
+
+  function reset() {
+    for (const k of Object.keys(data)) {
+      delete (data as any)[k]
+    }
+    Object.assign(data, defaultSettings())
   }
 
   return {
     change,
+    reset,
     data,
   }
 }

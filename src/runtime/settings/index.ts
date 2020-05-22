@@ -87,6 +87,12 @@ export function create(
   return {
     public: api,
     private: {
+      reset() {
+        schemaSettings.reset()
+        serverSettings.reset()
+        // todo
+        // log.settings.reset()
+      },
       assemble() {
         return {
           settings: api.current,

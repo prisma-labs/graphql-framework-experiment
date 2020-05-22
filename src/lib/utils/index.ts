@@ -1,3 +1,7 @@
+import * as Path from 'path'
+import Git from 'simple-git/promise'
+import { JsonObject, PackageJson, Primitive } from 'type-fest'
+
 export type MaybePromise<T = void> = T | Promise<T>
 
 export type CallbackRegistrer<F> = (f: F) => void
@@ -7,7 +11,14 @@ export type SideEffector = () => MaybePromise
 export type Param1<F> = F extends (p: infer P, ...args: any[]) => any ? P : never
 
 /**
- * DeepPartial - borrowed from `utility-types`
+ * Represents a POJO. Prevents from allowing arrays and functions
+ */
+export type PlainObject = {
+  [x: string]: Primitive | object
+}
+
+/**
+ * DeepPartial - modified version from `utility-types`
  * @desc Partial that works for deeply nested structure
  * @example
  *   Expect: {
@@ -26,18 +37,22 @@ export type Param1<F> = F extends (p: infer P, ...args: any[]) => any ? P : neve
  *   };
  *   type PartialNestedProps = DeepPartial<NestedProps>;
  */
-export declare type DeepPartial<T> = T extends Function
+export type DeepPartial<T, AllowAdditionalProps extends boolean = false> = T extends Function
   ? T
   : T extends Array<infer U>
   ? DeepPartialArray<U>
   : T extends object
-  ? DeepPartialObject<T>
+  ? AllowAdditionalProps extends true
+    ? DeepPartialObject<T, true> & PlainObject
+    : DeepPartialObject<T, false>
   : T | undefined
-/** @private */
+
 export interface DeepPartialArray<T> extends Array<DeepPartial<T>> {}
-/** @private */
-export declare type DeepPartialObject<T> = {
-  [P in keyof T]?: DeepPartial<T[P]>
+
+export type DeepPartialObject<T extends object, AllowAdditionalProps extends boolean = false> = {
+  [P in keyof T]?: AllowAdditionalProps extends true
+    ? DeepPartial<T[P], true> & PlainObject
+    : DeepPartial<T[P], false>
 }
 
 /**
@@ -67,9 +82,9 @@ export declare type DeepRequired<T> = T extends (...args: any[]) => any
   : T extends object
   ? DeepRequiredObject<T>
   : T
-/** @private */
+
 export interface DeepRequiredArray<T> extends Array<DeepRequired<NonUndefined<T>>> {}
-/** @private */
+
 export declare type DeepRequiredObject<T> = {
   [P in keyof T]-?: DeepRequired<NonUndefined<T[P]>>
 }
@@ -154,10 +169,6 @@ export function range(times: number): number[] {
   }
   return list
 }
-
-import * as Path from 'path'
-import Git from 'simple-git/promise'
-import { JsonObject, PackageJson } from 'type-fest'
 
 export type OmitFirstArg<Func> = Func extends (firstArg: any, ...args: infer Args) => infer Ret
   ? (...args: Args) => Ret
@@ -379,3 +390,5 @@ export function deserializeError(se: SerializedError): Error {
 
   return e
 }
+
+export function noop() {}
