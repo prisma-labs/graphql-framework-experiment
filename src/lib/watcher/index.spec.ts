@@ -2,25 +2,12 @@ import * as Lo from 'lodash'
 import * as path from 'path'
 import { createWatcher } from '../../../dist/lib/watcher'
 import * as ExitSystem from '../exit-system'
-import { rootLogger } from '../nexus-logger'
 import * as TC from '../test-context'
 import { FSSpec, writeFSSpec } from '../testing-utils'
 import { Event } from './types'
 
 ExitSystem.install()
 process.env.DEBUG = 'true'
-
-/**
- * Disable logger timeDiff and color to allow snapshot matching
- */
-rootLogger.settings({
-  pretty: {
-    enabled: false,
-    timeDiff: false,
-    color: false,
-  },
-  level: 'trace',
-})
 
 /**
  * Helpers

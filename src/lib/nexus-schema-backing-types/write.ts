@@ -4,7 +4,7 @@ import { hardWriteFileSync } from '../fs'
 import { rootLogger } from '../nexus-logger'
 import { BackingTypes } from './types'
 
-const log = rootLogger.child('backing-types')
+const log = rootLogger.child('backingTypes')
 
 export const DEFAULT_RELATIVE_BACKING_TYPES_TYPEGEN_PATH = Path.join(
   'node_modules',

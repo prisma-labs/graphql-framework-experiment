@@ -2,11 +2,11 @@ import { codeBlock } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import { hardWriteFile } from '../fs'
 import * as Layout from '../layout'
+import { rootLogger } from '../nexus-logger'
 import { createTSProgram } from '../tsc'
 import { extractContextTypes, ExtractedContextTypes } from './extractor'
-import { rootLogger } from '../nexus-logger'
 
-const log = rootLogger.child('add-to-context-extractor')
+const log = rootLogger.child('addToContextExtractor')
 
 export const NEXUS_DEFAULT_RUNTIME_CONTEXT_TYPEGEN_PATH = fs.path(
   'node_modules',

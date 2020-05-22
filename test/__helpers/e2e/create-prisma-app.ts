@@ -5,7 +5,7 @@ import { E2EContext } from '../../../src/lib/e2e-testing'
 import { rootLogger } from '../../../src/lib/nexus-logger'
 import { bufferOutput, takeUntilServerListening } from './utils'
 
-const log = rootLogger.child('e2e-testing')
+const log = rootLogger.child('e2eTesting')
 
 /**
  * Smoketest the user journey through create app with prisma SQLite databsae.

@@ -5,7 +5,7 @@ import { createE2EContext, E2EContext } from '../../../src/lib/e2e-testing'
 import { rootLogger } from '../../../src/lib/nexus-logger'
 import { bufferOutput, takeUntilServerListening } from './utils'
 
-const log = rootLogger.child('e2e').child('kitchen-sink')
+const log = rootLogger.child('e2e').child('kitchenSink')
 
 /**
  * Test creating an app, creating a plugin, and then using that plugin in the
