@@ -1,14 +1,14 @@
 import { isLeft } from 'fp-ts/lib/Either'
 import getPort from 'get-port'
 import * as Lo from 'lodash'
-import app from '.'
 import { GraphQLClient } from '../lib/graphql-client'
 import * as Layout from '../lib/layout'
+import { rootLogger } from '../lib/nexus-logger'
 import * as PluginRuntime from '../lib/plugin'
 import * as PluginWorktime from '../lib/plugin/worktime'
-import { PrivateApp } from './app'
-import { createDevAppRunner } from './start'
-import { rootLogger } from '../lib/nexus-logger'
+import app from '../runtime'
+import { PrivateApp } from '../runtime/app'
+import { createDevAppRunner } from '../runtime/start'
 
 const pluginLogger = rootLogger.child('plugin')
 
