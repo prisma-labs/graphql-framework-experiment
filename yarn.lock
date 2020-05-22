@@ -478,12 +478,13 @@
     "@types/yargs" "^15.0.0"
     chalk "^4.0.0"
 
-"@nexus/logger@0.2.0-next.1":
-  version "0.2.0-next.1"
-  resolved "https://registry.yarnpkg.com/@nexus/logger/-/logger-0.2.0-next.1.tgz#004b87377b6648d41b556fcb7473ae3fa9399196"
-  integrity sha512-4MB7aJBW89XUmv9Fwm7Zz3e8s3HukqpgFO07kJN7Z0k+mvkhd0wkAP3E+bRWhctUtbAqSRjzaQcv7N/MqUmsTA==
+"@nexus/logger@0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@nexus/logger/-/logger-0.2.0.tgz#c1ae9ef0d9ba91a0da4c635695e35248613636fc"
+  integrity sha512-r63+KBH+EmjR/bkse7KE28qsZRUGU3YP9AxUOUiVUnDgN07TJn2cOXYq6YOAfMWRbEGo/DdW2L3ntFMgaIvX3A==
   dependencies:
     chalk "^4.0.0"
+    fp-ts "^2.6.1"
     lodash "^4.17.15"
     strip-ansi "^6.0.0"
 
@@ -2649,6 +2650,11 @@ fp-ts@^2.5.4:
   version "2.5.4"
   resolved "https://registry.yarnpkg.com/fp-ts/-/fp-ts-2.5.4.tgz#f184079aaa78403ea66458517be7787e0d593429"
   integrity sha512-cZlLeEneRYypc2dOzB9h8+bd9mQhJVyt2g0Dny2gKR7uWNgA4EmLSJyguLYsTU44nJSSG9EjurUalEc0wQqeKw==
+
+fp-ts@^2.6.1:
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/fp-ts/-/fp-ts-2.6.1.tgz#f2505a4b44a77a344a1e451c667383e42f3728de"
+  integrity sha512-ZYOgqEOvUuO59rvItjf1OniEG4k/ClY3rd+AiuRYbl3skY4X/s7Oig25/wvORjycjeOjjr5OO+VcpprLQQOpIQ==
 
 fragment-cache@^0.2.1:
   version "0.2.1"
