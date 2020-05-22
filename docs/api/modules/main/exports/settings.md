@@ -6,8 +6,6 @@ Use the settings to centrally configure various aspects of the various component
 
 ### `change`
 
-##### Signature
-
 <!-- prettier-ignore -->
 ```ts
 (settingsInput: {
@@ -22,7 +20,7 @@ Use the settings to centrally configure various aspects of the various component
       outputs?: boolean
       intputs?: boolean
     }
-    connections?: {} // TODO
+    connections?: Record<string, ConnectionConfig>
     generateGraphQLSDLFile?: false | string
     rootTypingsGlobPattern?: string
   }
@@ -45,7 +43,15 @@ Use the settings to centrally configure various aspects of the various component
 }) => Settings
 ```
 
+Change your app's current settings. This is an additive API meaning it can be called multiple times, each time merging with the previous settings.
+
 #### `server.playground`
+
+<div class="OneLineSignature"></div>
+
+```
+boolean
+```
 
 Should the app expose a [GraphQL Playground](https://github.com/prisma-labs/graphql-playground) to clients?
 
@@ -54,6 +60,12 @@ _Default_
 `true` in dev, `false` otherwise.
 
 #### `server.port`
+
+<div class="OneLineSignature"></div>
+
+```
+number
+```
 
 The port the server should listen on.
 
@@ -66,6 +78,12 @@ _Default_
 
 #### `server.host`
 
+<div class="OneLineSignature"></div>
+
+```
+string
+```
+
 The host the server should listen on.
 
 _Default_
@@ -75,6 +93,12 @@ _Default_
 
 #### `server.path`
 
+<div class="OneLineSignature"></div>
+
+```
+string
+```
+
 The path on which the GraphQL API should be served.
 
 _Default_
@@ -82,6 +106,12 @@ _Default_
 `/graphql`
 
 #### `schema.nullable.inputs`
+
+<div class="OneLineSignature"></div>
+
+```
+boolean
+```
 
 Should passing arguments be optional for clients by default?
 
@@ -91,6 +121,12 @@ _Default_
 
 #### `schema.nullable.outputs`
 
+<div class="OneLineSignature"></div>
+
+```
+boolean
+```
+
 Should the data requested by clients _not_ be guaranteed to be returned by default?
 
 _Default_
@@ -98,6 +134,12 @@ _Default_
 `true`
 
 #### `schema.generateGraphQLSDLFile`
+
+<div class="OneLineSignature"></div>
+
+```
+boolean
+```
 
 Should a [GraphQL SDL file](https://www.prisma.io/blog/graphql-sdl-schema-definition-language-6755bcb9ce51) be generated when the app is built and to where?
 
@@ -109,6 +151,12 @@ _Default_
 
 #### `schema.rootTypingsGlobPattern`
 
+<div class="OneLineSignature"></div>
+
+```
+string
+```
+
 A glob pattern which will be used to find the files from which to extract the backing types used in the `rootTyping` option of `schema.(objectType|interfaceType|unionType|enumType)`
 
 _Default_
@@ -116,6 +164,12 @@ _Default_
 The default glob pattern used id `./**/*.ts`
 
 #### `schema.connections`
+
+<div class="OneLineSignature"></div>
+
+```ts
+Record<string, ConnectionConfig>
+```
 
 todo
 
@@ -269,7 +323,7 @@ _Default_
 ###### Example of what it looks like
 
 ```
-LOG_DEMO=true npx nexus dev
+LOG_DEMO=true nexus dev
 ```
 
 ```
