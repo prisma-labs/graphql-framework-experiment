@@ -13,7 +13,7 @@ const log = rootLogger.child('build')
 /**
  * If you add a new deploy target, please start by adding a new item to the `SUPPORTED_DEPLOY_TARGETS`
  */
-const SUPPORTED_DEPLOY_TARGETS = ['now', 'heroku'] as const
+const SUPPORTED_DEPLOY_TARGETS = ['vercel', 'heroku'] as const
 
 export const formattedSupportedDeployTargets = SUPPORTED_DEPLOY_TARGETS.map((t) => `"${t}"`).join(', ')
 
@@ -40,7 +40,7 @@ export function normalizeTarget(inputDeployTarget: string | undefined): Supporte
 }
 
 const TARGET_TO_BUILD_OUTPUT: Record<SupportedTargets, string> = {
-  now: 'dist',
+  vercel: 'dist',
   heroku: DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT,
 }
 
@@ -54,7 +54,7 @@ export function computeBuildOutputFromTarget(target: SupportedTargets | null) {
 
 type ValidatorResult = { valid: boolean }
 const TARGET_VALIDATORS: Record<SupportedTargets, (layout: Layout) => ValidatorResult> = {
-  now: validateNow,
+  vercel: validateVercel,
   heroku: validateHeroku,
 }
 
@@ -63,7 +63,7 @@ export function validateTarget(target: SupportedTargets, layout: Layout): Valida
   return validator(layout)
 }
 
-interface NowJson {
+interface VercelJson {
   version: 1 | 2
   name: string
   builds?: Array<{ src: string; use: string }>
@@ -71,22 +71,21 @@ interface NowJson {
 }
 
 /**
- * Validate the user's now configuration file.
+ * Validate the user's vercel configuration file.
  */
-function validateNow(layout: Layout): ValidatorResult {
-  const maybeNowJson = findFileRecurisvelyUpwardSync('now.json', { cwd: layout.projectRoot })
+function validateVercel(layout: Layout): ValidatorResult {
+  const maybeVercelJson = findFileRecurisvelyUpwardSync('vercel.json', { cwd: layout.projectRoot })
   const startModulePath = `${layout.build.tsOutputDir}/${START_MODULE_NAME}.js`
   let isValid = true
 
-  // Make sure there's a now.json file
-  if (!maybeNowJson) {
-    log.trace('creating now.json because none exists yet')
+  // Make sure there's a vercel.json file
+  if (!maybeVercelJson) {
+    log.trace('creating vercel.json because none exists yet')
     const projectName = layout.packageJson?.content.name ?? 'now_rename_me'
 
-    const nowJsonContent = stripIndent`
+    const vercelJsonContent = stripIndent`
       {
         "version": 2,
-        "name": "${projectName}",
         "builds": [
           {
             "src": "${startModulePath}",
@@ -96,38 +95,38 @@ function validateNow(layout: Layout): ValidatorResult {
         "routes": [{ "src": "/.*", "dest": "${startModulePath}" }]
       }
     `
-    const nowJsonPath = Path.join(layout.projectRoot, 'now.json')
-    fs.write(nowJsonPath, nowJsonContent)
-    log.warn(`No \`now.json\` file were found. We scaffolded one for you in ${nowJsonPath}`)
+    const vercelJsonPath = Path.join(layout.projectRoot, 'vercel.json')
+    fs.write(vercelJsonPath, vercelJsonContent)
+    log.warn(`No \`vercel.json\` file were found. We scaffolded one for you in ${vercelJsonPath}`)
   } else {
-    const nowJson: NowJson = fs.read(maybeNowJson.path, 'json')
+    const vercelJson: VercelJson = fs.read(maybeVercelJson.path, 'json')
 
-    // Make sure the now.json file has the right `builds` values
+    // Make sure the vercel.json file has the right `builds` values
     if (
-      !nowJson.builds ||
-      !nowJson.builds.find(
-        (build) => Path.join(maybeNowJson.dir, build.src) === startModulePath && build.use === '@now/node'
+      !vercelJson.builds ||
+      !vercelJson.builds.find(
+        (build) => Path.join(maybeVercelJson.dir, build.src) === startModulePath && build.use === '@now/node'
       )
     ) {
-      log.error(`We could not find a proper builder in your \`now.json\` file`)
-      log.error(`Found: "builds": ${JSON.stringify(nowJson.builds)}`)
+      log.error(`We could not find a proper builder in your \`vercel.json\` file`)
+      log.error(`Found: "builds": ${JSON.stringify(vercelJson.builds)}`)
       log.error(`Expected: "builds": [{ src: "${startModulePath}", use: '@now/node' }, ...]`)
       console.log('\n')
       isValid = false
     }
 
-    // Make sure the now.json file has a `routes` property
-    if (!nowJson.routes) {
-      log.error(`We could not find a \`routes\` property in your \`now.json\` file.`)
+    // Make sure the vercel.json file has a `routes` property
+    if (!vercelJson.routes) {
+      log.error(`We could not find a \`routes\` property in your \`vercel.json\` file.`)
       log.error(`Expected: "routes": [{ "src": "/.*", "dest": "${startModulePath}" }]`)
       console.log('\n')
       isValid = false
     }
 
-    // Make sure the now.json file has the right `routes` values
-    if (!nowJson.routes?.find((route) => Path.join(maybeNowJson.dir, route.dest) === startModulePath)) {
-      log.error(`We could not find a route property that redirects to your api in your \`now.json\` file.`)
-      log.error(`Found: "routes": ${JSON.stringify(nowJson.routes)}`)
+    // Make sure the vercel.json file has the right `routes` values
+    if (!vercelJson.routes?.find((route) => Path.join(maybeVercelJson.dir, route.dest) === startModulePath)) {
+      log.error(`We could not find a route property that redirects to your api in your \`vercel.json\` file.`)
+      log.error(`Found: "routes": ${JSON.stringify(vercelJson.routes)}`)
       log.error(`Expected: "routes": [{ src: '/.*', dest: "${startModulePath}" }, ...]`)
       console.log('\n')
       isValid = false
@@ -216,7 +215,7 @@ function validateHeroku(layout: Layout): ValidatorResult {
 }
 
 const TARGET_TO_POST_BUILD_MESSAGE: Record<SupportedTargets, string> = {
-  now: `Please run \`now\` to deploy your nexus server. Your endpoint will be available at http://<id>.now.sh/graphql`,
+  vercel: `Please run \`vercel\` or \`vc\` to deploy your nexus server. Your endpoint will be available at http://<id>.now.sh/graphql`,
   heroku: `\
 Please run the following commands to deploy to heroku:
 
