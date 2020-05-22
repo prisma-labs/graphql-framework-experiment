@@ -15,7 +15,7 @@ import { GraphQLClient } from './graphql-client'
 import { rootLogger } from './nexus-logger'
 import { PackageManagerType } from './package-manager'
 
-const log = rootLogger.child('e2e-testing')
+const log = rootLogger.child('e2eTesting')
 
 interface CreateAppOptions {
   /**
