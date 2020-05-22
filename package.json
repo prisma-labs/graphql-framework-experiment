@@ -51,7 +51,7 @@
     "pirates": "^4.0.1",
     "prompts": "^2.3.0",
     "rxjs": "^6.5.4",
-    "simple-git": "^1.126.0",
+    "simple-git": "^2.0.0",
     "strip-ansi": "^6.0.0",
     "ts-morph": "^7.0.0",
     "ts-node": "^8.9.0",
