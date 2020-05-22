@@ -1,3 +1,4 @@
+import * as Lo from 'lodash'
 import prompts from 'prompts'
 import * as Layout from '../layout'
 import { rootLogger } from '../nexus-logger'
@@ -9,7 +10,7 @@ const log = rootLogger.child('plugin')
 
 export function createBaseLens(pluginName: string): Lens {
   return {
-    log: log.child(pluginName),
+    log: log.child(Lo.camelCase(pluginName)),
     run: Process.run,
     runSync: Process.runSync,
     prompt: prompts,
