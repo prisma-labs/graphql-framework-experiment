@@ -1,3 +1,7 @@
+import * as Path from 'path'
+import Git from 'simple-git/promise'
+import { JsonObject, PackageJson, Primitive } from 'type-fest'
+
 export type MaybePromise<T = void> = T | Promise<T>
 
 export type CallbackRegistrer<F> = (f: F) => void
@@ -7,7 +11,14 @@ export type SideEffector = () => MaybePromise
 export type Param1<F> = F extends (p: infer P, ...args: any[]) => any ? P : never
 
 /**
- * DeepPartial - borrowed from `utility-types`
+ * Represents a POJO. Prevents from allowing arrays and functions
+ */
+export type PlainObject = {
+  [x: string]: Primitive | object
+}
+
+/**
+ * DeepPartial - modified version from `utility-types`
  * @desc Partial that works for deeply nested structure
  * @example
  *   Expect: {
@@ -26,18 +37,22 @@ export type Param1<F> = F extends (p: infer P, ...args: any[]) => any ? P : neve
  *   };
  *   type PartialNestedProps = DeepPartial<NestedProps>;
  */
-export declare type DeepPartial<T> = T extends Function
+export type DeepPartial<T, AllowAdditionalProps extends boolean = false> = T extends Function
   ? T
   : T extends Array<infer U>
   ? DeepPartialArray<U>
   : T extends object
-  ? DeepPartialObject<T>
+  ? AllowAdditionalProps extends true
+    ? DeepPartialObject<T, true> & PlainObject
+    : DeepPartialObject<T, false>
   : T | undefined
-/** @private */
+
 export interface DeepPartialArray<T> extends Array<DeepPartial<T>> {}
-/** @private */
-export declare type DeepPartialObject<T> = {
-  [P in keyof T]?: DeepPartial<T[P]>
+
+export type DeepPartialObject<T extends object, AllowAdditionalProps extends boolean = false> = {
+  [P in keyof T]?: AllowAdditionalProps extends true
+    ? DeepPartial<T[P], true> & PlainObject
+    : DeepPartial<T[P], false>
 }
 
 /**
@@ -67,9 +82,9 @@ export declare type DeepRequired<T> = T extends (...args: any[]) => any
   : T extends object
   ? DeepRequiredObject<T>
   : T
-/** @private */
+
 export interface DeepRequiredArray<T> extends Array<DeepRequired<NonUndefined<T>>> {}
-/** @private */
+
 export declare type DeepRequiredObject<T> = {
   [P in keyof T]-?: DeepRequired<NonUndefined<T[P]>>
 }
@@ -154,9 +169,6 @@ export function range(times: number): number[] {
   }
   return list
 }
-
-import * as Path from 'path'
-import Git from 'simple-git/promise'
 
 export type OmitFirstArg<Func> = Func extends (firstArg: any, ...args: infer Args) => infer Ret
   ? (...args: Args) => Ret
@@ -292,3 +304,91 @@ export function simpleDebounce<T extends (...args: any[]) => Promise<any>>(fn: T
 export type Index<T> = {
   [key: string]: T
 }
+
+/**
+ * An ESM-aware reading of the main entrypoint to a package.
+ */
+export function getPackageJsonMain(packageJson: PackageJson & { main: string }): string {
+  // todo when building for a bundler, we want to read from the esm paths. Otherwise the cjs paths.
+  //  - this condition takes a stab at the problem but is basically a stub.
+  //  - this todo only needs to be completed once we are actually trying to do esm tree-shaking (meaning, we've moved beyond node-file-trace)
+  return process.env.ESM && packageJson.module
+    ? Path.dirname(packageJson.module)
+    : Path.dirname(packageJson.main)
+}
+
+/**
+ * An error with additional contextual data.
+ */
+export type ContextualError<Context extends Record<string, unknown> = {}> = Error & {
+  context: Context
+}
+
+/**
+ * Create an error with contextual data about it.
+ *
+ * @remarks
+ *
+ * This is handy with fp-ts Either<...> because, unlike try-catch, errors are
+ * strongly typed with the Either contstruct, making it so the error contextual
+ * data flows with inference through your program.
+ */
+export function createContextualError<Context extends Record<string, unknown>>(
+  message: string,
+  context: Context
+): ContextualError<Context> {
+  const e = new Error(message) as ContextualError<Context>
+
+  Object.defineProperty(e, 'message', {
+    enumerable: true,
+    value: e.message,
+  })
+
+  e.context = context
+
+  return e
+}
+
+export type SerializedError = {
+  name: string
+  message: string
+  stack?: string
+} & JsonObject
+
+export function serializeError(e: Error): SerializedError {
+  return {
+    name: e.name,
+    message: e.message,
+    stack: e.stack,
+    ...e,
+  }
+}
+
+export function deserializeError(se: SerializedError): Error {
+  const { name, stack, message, ...rest } = se
+  const e =
+    name === 'EvalError'
+      ? new EvalError(message)
+      : name === 'RangeError'
+      ? new RangeError(message)
+      : name === 'TypeError'
+      ? new TypeError(message)
+      : name === 'URIError'
+      ? new URIError(message)
+      : name === 'SyntaxError'
+      ? new SyntaxError(message)
+      : name === 'ReferenceError'
+      ? new ReferenceError(message)
+      : new Error(message)
+
+  Object.defineProperty(e, 'stack', {
+    enumerable: false,
+    value: stack,
+  })
+
+  Object.assign(e, rest)
+
+  return e
+}
+
+export function noop() {}

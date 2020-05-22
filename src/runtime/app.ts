@@ -1,8 +1,9 @@
 import * as Logger from '@nexus/logger'
-import type { MissingType, NexusGraphQLSchema } from '@nexus/schema/dist/core'
+import * as NexusSchema from '@nexus/schema'
+import { rootLogger } from '../lib/nexus-logger'
 import * as Plugin from '../lib/plugin'
 import { RuntimeContributions } from '../lib/plugin'
-import * as Reflection from '../lib/reflection'
+import * as Reflection from '../lib/reflection/stage'
 import { Index } from '../lib/utils'
 import * as Schema from './schema'
 import * as Server from './server'
@@ -10,7 +11,7 @@ import { ContextCreator } from './server/server'
 import * as Settings from './settings'
 import { assertAppNotAssembled } from './utils'
 
-const log = Logger.create({ name: 'app' })
+const log = Logger.log.child('app')
 
 // todo the jsdoc below is lost on the destructured object exports later on...
 export interface App {
@@ -46,6 +47,16 @@ export interface App {
    */
   assemble(): any
   /**
+   * This method makes it possible to reset the state of the singleton. This can
+   * be useful when working in a development environment where multiple runs of
+   * the app (or run-like, e.g. Node module cache being reset) can take place
+   * without having state reset. Such an example of that is the Next.js dev
+   * mode.
+   *
+   * @experimental
+   */
+  reset(): any
+  /**
    * todo
    */
   start(): any
@@ -67,8 +78,8 @@ export type AppState = {
    */
   assembled: null | {
     settings: Settings.SettingsData
-    schema: NexusGraphQLSchema
-    missingTypes: Index<MissingType>
+    schema: NexusSchema.core.NexusGraphQLSchema
+    missingTypes: Index<NexusSchema.core.MissingType>
     loadedPlugins: RuntimeContributions<any>[]
     createContext: ContextCreator
   }
@@ -107,20 +118,47 @@ export function create(): App {
   const settingsComponent = Settings.create(appState, {
     serverSettings: serverComponent.private.settings,
     schemaSettings: schemaComponent.private.settings,
-    log,
+    log: Logger.log,
   })
+
+  /**
+   * Setup default log filter
+   */
+
+  settingsComponent.public.change({
+    logger: {
+      filter: 'app:*, nexus:*@info+, *@warn+',
+    },
+  })
+
   const api: App = {
     log: log,
     settings: settingsComponent.public,
     schema: schemaComponent.public,
     server: serverComponent.public,
+    reset() {
+      // todo once we have log filtering, make this debug level
+      rootLogger.trace('resetting state')
+      schemaComponent.private.reset()
+      serverComponent.private.reset()
+      settingsComponent.private.reset()
+      appState.assembled = null
+      appState.plugins = []
+      appState.running = false
+    },
     assemble() {
       if (appState.assembled) return
 
-      // todo https://github.com/graphql-nexus/nexus/pull/788#discussion_r420645846
-      appState.assembled = {} as any
-
+      /**
+       * Plugin reflection is run in the same process (eval). This means if the
+       * process is the app, which it is during testing for example, then we
+       * need to take extreme care to not mark assembly as complete, during
+       * plugin reflection. If we did, then, when we would try to start the app,
+       * it would think it is already assembled. !
+       */
       if (Reflection.isReflectionStage('plugin')) return
+
+      appState.assembled = {} as AppState['assembled']
 
       const loadedPlugins = Plugin.importAndLoadRuntimePlugins(appState.plugins)
       appState.assembled!.loadedPlugins = loadedPlugins

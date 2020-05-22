@@ -29,11 +29,11 @@ export function createTSProgram(
   log.trace('Create TypeScript program')
 
   const builder = ts.createIncrementalProgram({
-    rootNames: layout.schemaModules.concat(layout.app.exists ? [layout.app.path] : []),
+    rootNames: layout.nexusModules.concat(layout.app.exists ? [layout.app.path] : []),
     options: {
       ...compilerCacheOptions,
       ...layout.tsConfig.content.options,
-      outDir: layout.buildOutput,
+      outDir: layout.build.tsOutputDir,
     },
   })
 
@@ -76,17 +76,17 @@ interface CompileOptions {
 /**
  * compile a program. Throws an error if the program does not type check.
  */
-export function compile(
+export function emitTSProgram(
   builder: ts.EmitAndSemanticDiagnosticsBuilderProgram,
   layout: Layout,
   options?: CompileOptions
 ): void {
   if (options?.removePreviousBuild === true) {
     log.trace('remove previous build folder if present')
-    fs.remove(layout.buildOutput)
+    fs.remove(layout.build.tsOutputDir)
   }
 
-  log.trace('emit transpiled modules')
+  log.trace('emit transpiled modules', { dest: layout.build.tsOutputDir })
 
   const emitResult = builder.emit()
   log.trace('done', { filesEmitted: emitResult.emittedFiles?.length ?? 0 })
@@ -142,9 +142,7 @@ function createTSError(diagnostics: ReadonlyArray<ts.Diagnostic>) {
  *
  * This is strictly about transpilation, no type checking is done.
  */
-export function registerTypeScriptTranspile(
-  compilerOptions?: ts.CompilerOptions,
-) {
+export function registerTypeScriptTranspile(compilerOptions?: ts.CompilerOptions) {
   addHook(
     (source, fileName) => {
       const transpiled = ts.transpileModule(source, {

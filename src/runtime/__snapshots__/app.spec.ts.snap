@@ -1,0 +1,23 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`assemble warnings when api features used after assembly schema.use 1`] = `
+Array [
+  Array [
+    "▲ nexus Cannot call app.schema.use(...) after app.assemble()
+
+The Nexus Schema plugin you used will be ignored.
+",
+  ],
+]
+`;
+
+exports[`assemble warnings when api features used after assembly settings.change 1`] = `
+Array [
+  Array [
+    "▲ nexus Cannot call app.settings.change(...) after app.assemble()
+
+Your change of settings will be ignored.
+",
+  ],
+]
+`;

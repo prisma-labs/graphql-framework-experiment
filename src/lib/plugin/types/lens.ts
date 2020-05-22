@@ -133,7 +133,7 @@ export type RuntimeContributions<C extends {} = any> = {
   }
 }
 
-export type TesttimeContributions = Utils.DeepPartial<Testing.TestContextCore> & { [prop: string]: any }
+export type TesttimeContributions = Utils.DeepPartial<Testing.TestContextCore, true>
 
 export type Lens = {
   log: Logger.Logger

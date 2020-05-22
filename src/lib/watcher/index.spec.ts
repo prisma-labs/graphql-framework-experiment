@@ -2,8 +2,7 @@ import * as Lo from 'lodash'
 import * as path from 'path'
 import { createWatcher } from '../../../dist/lib/watcher'
 import * as ExitSystem from '../exit-system'
-import { rootLogger } from '../nexus-logger'
-import * as TestContext from '../test-context'
+import * as TC from '../test-context'
 import { FSSpec, writeFSSpec } from '../testing-utils'
 import { Event } from './types'
 
@@ -11,52 +10,36 @@ ExitSystem.install()
 process.env.DEBUG = 'true'
 
 /**
- * Disable logger timeDiff and color to allow snapshot matching
- */
-rootLogger.settings({
-  pretty: {
-    enabled: false,
-    timeDiff: false,
-    color: false,
-  },
-  level: 'trace',
-})
-
-/**
  * Helpers
  */
 
-const watcherContext = TestContext.create(
-  (opts: TestContext.TmpDirContribution & TestContext.FsContribution) => {
-    return {
-      write(vfs: FSSpec) {
-        const tmpDir = opts.tmpDir
+const ctx = TC.create(TC.tmpDir(), TC.fs(), (ctx) => {
+  return {
+    write(vfs: FSSpec) {
+      const tmpDir = ctx.tmpDir
 
-        writeFSSpec(tmpDir, vfs)
-      },
-      async createWatcher() {
-        const bufferedEvents: Event[] = []
-        await new Promise((res) => setTimeout(res, 10))
-        const watcher = await createWatcher({
-          entrypointScript: `require('${path.join(opts.tmpDir, 'entrypoint')}')`,
-          sourceRoot: opts.tmpDir,
-          cwd: opts.tmpDir,
-          plugins: [],
-          events: (e) => {
-            bufferedEvents.push(e)
-          },
-        })
+      writeFSSpec(tmpDir, vfs)
+    },
+    async createWatcher() {
+      const bufferedEvents: Event[] = []
+      await new Promise((res) => setTimeout(res, 10))
+      const watcher = await createWatcher({
+        entrypointScript: `require('${path.join(ctx.tmpDir, 'entrypoint')}')`,
+        sourceRoot: ctx.tmpDir,
+        cwd: ctx.tmpDir,
+        plugins: [],
+        events: (e) => {
+          bufferedEvents.push(e)
+        },
+      })
 
-        return {
-          watcher,
-          bufferedEvents,
-        }
-      },
-    }
+      return {
+        watcher,
+        bufferedEvents,
+      }
+    },
   }
-)
-
-const ctx = TestContext.compose(TestContext.tmpDir, TestContext.fs, watcherContext)
+})
 
 async function testSimpleCase(params: {
   entrypoint: string

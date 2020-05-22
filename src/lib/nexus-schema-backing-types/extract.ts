@@ -2,7 +2,7 @@ import * as fs from 'fs-jetpack'
 import { rootLogger } from '../nexus-logger'
 import { BackingTypes } from './types'
 
-const log = rootLogger.child('backing-types')
+const log = rootLogger.child('backingTypes')
 
 export const defaultTSTypeMatcher = new RegExp(`export\\s+(?:interface|type|class|enum)\\s+(\\w+)`, 'g')
 

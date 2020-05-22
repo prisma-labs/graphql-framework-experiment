@@ -8,7 +8,7 @@ import * as Layout from '../layout'
 import * as Logger from '../nexus-logger'
 import * as Plugin from '../plugin'
 
-const log = Logger.rootLogger.child('schema-typegen')
+const log = Logger.rootLogger.child('schemaTypegen')
 
 interface GenerateArtifactsParams {
   graphqlSchema: NexusSchema.core.NexusGraphQLSchema

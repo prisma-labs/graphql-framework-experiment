@@ -2,7 +2,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { findFileRecurisvelyUpwardSync } from '../fs'
 
-type ExecScenario = {
+export type ExecScenario = {
   /**
    * Tells you if this process was executed within a Node proejct.
    */

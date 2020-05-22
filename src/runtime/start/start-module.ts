@@ -9,7 +9,7 @@ import * as Plugin from '../../lib/plugin'
 import { transpileModule } from '../../lib/tsc'
 import { resolveFrom } from './resolve-from'
 
-const log = rootLogger.child('start-module')
+const log = rootLogger.child('startModule')
 
 export const START_MODULE_NAME = 'index'
 export const START_MODULE_HEADER = 'GENERATED NEXUS START MODULE'
@@ -95,21 +95,6 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   `
   }
 
-  if (config.layout.packageJson) {
-    content += EOL + EOL + EOL
-    content += stripIndent`
-      // package.json is needed for plugin auto-import system.
-      // On the Zeit Now platform, builds and dev copy source into
-      // new directory. Copying follows paths found in source. Give one here
-      // to package.json to make sure Zeit Now brings it along.
-      require('${
-        config.absoluteModuleImports
-          ? config.layout.packageJson.path
-          : Path.relative(config.layout.buildOutput, config.layout.packageJson.path)
-      }')
-    `
-  }
-
   // This MUST come after nexus package has been imported for its side-effects
   const staticImports = printStaticImports(config.layout, {
     absolutePaths: config.absoluteModuleImports,
@@ -176,7 +161,7 @@ export function prepareStartModule(
  * in the source/build root.
  */
 export function printStaticImports(layout: Layout.Layout, opts?: { absolutePaths?: boolean }): string {
-  return layout.schemaModules.reduce((script, modulePath) => {
+  return layout.nexusModules.reduce((script, modulePath) => {
     const path = opts?.absolutePaths ? stripExt(modulePath) : relativeTranspiledImportPath(layout, modulePath)
     return `${script}\n${printSideEffectsImport(path)}`
   }, '')

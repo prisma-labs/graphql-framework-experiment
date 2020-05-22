@@ -1,7 +1,7 @@
 import { findFiles } from '../fs'
 import { rootLogger } from '../nexus-logger'
 
-const log = rootLogger.child('backing-types')
+const log = rootLogger.child('backingTypes')
 
 export const DEFAULT_BACKING_TYPES_GLOB = `./**/*.ts`
 

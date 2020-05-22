@@ -1,3 +1,3 @@
-import * as Logger from '@nexus/logger'
+import { rootLogger } from '../../lib/nexus-logger'
 
-export const log = Logger.create({ name: 'server' })
+export const log = rootLogger.child('server')

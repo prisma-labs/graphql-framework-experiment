@@ -1,5 +1,4 @@
 import * as NexusSchema from '@nexus/schema'
-import type { AllTypeDefs } from '@nexus/schema/dist/core'
 import * as GraphQL from 'graphql'
 import * as CustomTypes from './custom-types'
 
@@ -75,7 +74,7 @@ export interface NexusSchemaStatefulBuilders {
 }
 
 type NexusSchemaTypeDef =
-  | AllTypeDefs
+  | NexusSchema.core.AllTypeDefs
   | NexusSchema.core.NexusExtendInputTypeDef<any>
   | NexusSchema.core.NexusExtendTypeDef<any>
 

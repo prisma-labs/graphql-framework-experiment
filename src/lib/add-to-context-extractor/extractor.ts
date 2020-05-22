@@ -3,7 +3,7 @@ import * as tsm from 'ts-morph'
 import ts from 'typescript'
 import { rootLogger } from '../nexus-logger'
 
-const log = rootLogger.child('add-to-context-extractor')
+const log = rootLogger.child('addToContextExtractor')
 
 interface TypeImportInfo {
   name: string

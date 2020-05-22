@@ -1,10 +1,13 @@
+import { stripIndent } from 'common-tags'
+import { Either, left, right } from 'fp-ts/lib/Either'
+import * as Lo from 'lodash'
 import * as Layout from '../layout'
 import { rootLogger } from '../nexus-logger'
 import { partition } from '../utils'
 import { importPluginDimension } from './import'
 import { createBaseLens, createRuntimeLens, createWorktimeLens } from './lens'
-import { Plugin } from './types'
-import { entrypointToManifest } from './utils'
+import { getPluginManifests, showManifestErrorsAndExit } from './manifest'
+import { Plugin, TesttimeContributions } from './types'
 
 const log = rootLogger.child('plugin')
 
@@ -12,8 +15,12 @@ const log = rootLogger.child('plugin')
  * Fully import and load the runtime plugins, if any, amongst the given plugins.
  */
 export function importAndLoadRuntimePlugins(plugins: Plugin[]) {
-  return filterValidPlugins(plugins)
-    .map(entrypointToManifest)
+  const validPlugins = filterValidPlugins(plugins)
+
+  const gotManifests = getPluginManifests(validPlugins)
+  if (gotManifests.errors) showManifestErrorsAndExit(gotManifests.errors)
+
+  return gotManifests.data
     .filter((m) => m.runtime)
     .map((m) => {
       return {
@@ -31,8 +38,12 @@ export function importAndLoadRuntimePlugins(plugins: Plugin[]) {
  * Fully import and load the worktime plugins, if any, amongst the given plugins.
  */
 export function importAndLoadWorktimePlugins(plugins: Plugin[], layout: Layout.Layout) {
-  return filterValidPlugins(plugins)
-    .map(entrypointToManifest)
+  const validPlugins = filterValidPlugins(plugins)
+
+  const gotManifests = getPluginManifests(validPlugins)
+  if (gotManifests.errors) showManifestErrorsAndExit(gotManifests.errors)
+
+  return gotManifests.data
     .filter((m) => m.worktime)
     .map((m) => {
       return {
@@ -58,9 +69,13 @@ export function importAndLoadWorktimePlugins(plugins: Plugin[], layout: Layout.L
 /**
  * Fully import and load the testtime plugins, if any, amongst the given plugins.
  */
-export function importAndLoadTesttimePlugins(plugins: Plugin[]) {
-  return filterValidPlugins(plugins)
-    .map(entrypointToManifest)
+export function importAndLoadTesttimePlugins(plugins: Plugin[]): Array<Either<Error, TesttimeContributions>> {
+  const validPlugins = filterValidPlugins(plugins)
+
+  const gotManifests = getPluginManifests(validPlugins)
+  if (gotManifests.errors) showManifestErrorsAndExit(gotManifests.errors)
+
+  return gotManifests.data
     .filter((m) => m.testtime)
     .map((m) => {
       return {
@@ -70,7 +85,16 @@ export function importAndLoadTesttimePlugins(plugins: Plugin[]) {
     })
     .map((plugin) => {
       log.trace('loading testtime plugin', { name: plugin.manifest.name })
-      return plugin.run(createBaseLens(plugin.manifest.name))
+      const contribution = plugin.run(createBaseLens(plugin.manifest.name))
+
+      if (!Lo.isPlainObject(contribution)) {
+        return left(
+          new Error(stripIndent`Ignoring the testtime contribution from the Nexus plugin \`${plugin.manifest.name}\` because its contribution is not an object.
+        This is likely to cause an error in your tests. Please reach out to the author of the plugin to fix the issue.`)
+        )
+      }
+
+      return right(contribution)
     })
 }
 

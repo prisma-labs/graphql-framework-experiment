@@ -6,65 +6,33 @@ Use the logger to output structured information about runtime activity.
 
 Logging is one of the primary means for knowing what is going on at runtime, what data is flowing through, and how so. It is a classic workhorse of debugging and development time feedback. There are a wealth of specialized tools but a great logging strategy can take you far. Nexus gives you a logging system built for a modern cloud native environment.
 
-It is recommended that your app only sends to stdout via the Nexus logging system. This ensures that you maintain log level control and are always working with JSON. We work hard to make the logger so good that you'll to use it.
+Your app should only output logs via Nexus Logger. This ensures that you maintain log level control and are always working with JSON. We work hard to make the logger so good that you'll to use it.
 
-All logs are sent to stdout (not stderr). Logs are formatted as JSON but there is a pretty mode for development.
-
-##### Signature
-
-```ts
-<logLevel>(event: string, context?: Record<string, unknown>) => void
-```
-
-- `event`
-
-  The event name of this log. Maps to the `event` property in the output JSON.
-
-  ##### Remarks
-
-  The log api is designed to get you thinking about logs in terms of events with structured data instead of strings of interpolated data. This approach gets you significantly more leverage out of your logs once they hit your logging platform, e.g. [ELK](https://www.elastic.co/what-is/elk-stack)
-
-- `context`
-
-  Contextual information about this log. The object passed here is deeply merged under the log's `context` property.
-
-  ##### Example
-
-  ```ts
-  log.info('hello', { user: 'Toto' }) // { "context": { "user": "Toto"  }, ... }
-  ```
-
-##### Example
-
-```ts
-import { log } from 'nexus'
-
-log.info('hello')
-```
+All logs are sent to stdout (not stderr). Logs are formatted as JSON but there is a pretty mode designed for development.
 
 ### `fatal`
 
-Log something at `fatal` level.
+A <code class="TypeRef" >[Log](#Log)</code> that outputs at `fatal` (6) level.
 
 ### `error`
 
-Log something at `error` level.
+A <code class="TypeRef" >[Log](#Log)</code> that outputs at `error` (5) level.
 
 ### `warn`
 
-Log something at `warn` level.
+A <code class="TypeRef" >[Log](#Log)</code> that outputs at `warn` (4) level.
 
 ### `info`
 
-Log something at `info` level.
+A <code class="TypeRef" >[Log](#Log)</code> that outputs at `info` (3) level.
 
 ### `debug`
 
-Log something at `debug` level.
+A <code class="TypeRef" >[Log](#Log)</code> that outputs at `debug` (2) level.
 
 ### `trace`
 
-Log something at `trace` level.
+A <code class="TypeRef" >[Log](#Log)</code> that outputs at `trace` (1) level.
 
 ### `addToContext`
 
@@ -144,6 +112,43 @@ Child loggers are useful when you want to pass a logger to something that should
 All runtime logs in your app (including from plugins come from either the `logger` itself or descendents thereof. This means if you wish absolutely every log being emitted by your app to contain some additional context you can do so simply by adding context to the root logger.
 
 ### Type Glossary
+
+#### `F` `Log`
+
+##### Signature
+
+```ts
+(event: string, context?: Record<string, unknown>) => void
+```
+
+Parameters:
+
+- `event`
+
+  The event name of this log. Maps to the `event` property in the output JSON.
+
+  ##### Remarks
+
+  The log api is designed to get you thinking about logs in terms of events with structured data instead of strings of interpolated data. This approach gets you significantly more leverage out of your logs once they hit your logging platform, e.g. [ELK](https://www.elastic.co/what-is/elk-stack)
+
+- `context`
+
+  Contextual information about this log. The object passed here is deeply merged under the log's `context` property.
+
+  ##### Example
+
+  ```ts
+  log.info('hello', { user: 'Toto' })
+  // { "context": { "user": "Toto"  }, ... }
+  ```
+
+##### Example
+
+```ts
+import { log } from 'nexus'
+
+log.info('hello')
+```
 
 #### `I` `JSONLog`
 

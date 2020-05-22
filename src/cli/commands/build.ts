@@ -14,6 +14,7 @@ const BUILD_ARGS = {
   '--stage': String,
   '--entrypoint': String,
   '-e': '--entrypoint',
+  '--no-bundle': Boolean,
   '--help': Boolean,
   '-h': '--help',
 }
@@ -36,6 +37,7 @@ export class Build implements Command {
       output: args['--output'],
       stage: args['--stage'],
       entrypoint: args['--entrypoint'],
+      asBundle: args['--no-bundle'] !== true,
     })
   }
 
@@ -49,6 +51,7 @@ export class Build implements Command {
         -o,     --output    Relative path to output directory
         -e, --entrypoint    Custom entrypoint to your app (default: app.ts)
         -d, --deployment    Enable custom build for some deployment platforms (${formattedSupportedDeployTargets})
+             --no-bundle    Do not output build as a bundle
         -h,       --help    Show this help message
     `
   }

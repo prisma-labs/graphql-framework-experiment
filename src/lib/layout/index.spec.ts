@@ -1,3 +1,4 @@
+process.env.FORCE_COLOR = '0'
 let mockedStdoutBuffer: string = ''
 const mockStdout = jest.spyOn(process.stdout, 'write').mockImplementation((data) => {
   mockedStdoutBuffer += data
@@ -12,18 +13,18 @@ const mockExit = jest.spyOn(process, 'exit').mockImplementation(((n: any) => {
   mockedStdoutBuffer += `\n\n--- process.exit(${n}) ---\n\n`
 }) as any)
 
+import { log } from '@nexus/logger'
 import stripAnsi from 'strip-ansi'
 import { TsConfigJson } from 'type-fest'
 import * as Layout from '.'
-import { rootLogger } from '../../lib/nexus-logger'
 import { FSSpec, writeFSSpec } from '../../lib/testing-utils'
-import * as TestContext from '../test-context'
+import * as TC from '../test-context'
 import { repalceInObject } from '../utils'
 
 /**
  * Disable logger timeDiff and color to allow snapshot matching
  */
-rootLogger.settings({
+log.settings({
   pretty: {
     enabled: true,
     timeDiff: false,
@@ -48,24 +49,27 @@ const fsTsConfig = {
   'tsconfig.json': tsconfigContent(defaultTsConfigContent),
 }
 
-const layoutContext = TestContext.create((input: TestContext.TmpDirContribution) => {
-  return {
-    setup(spec: FSSpec = {}) {
-      writeFSSpec(input.tmpDir, spec)
-    },
-    async scan(opts?: { entrypointPath?: string; buildOutput?: string }) {
-      const data = await Layout.create({
-        cwd: input.tmpDir,
-        entrypointPath: opts?.entrypointPath,
-        buildOutput: opts?.buildOutput,
-      })
-      mockedStdoutBuffer = mockedStdoutBuffer.split(input.tmpDir).join('__DYNAMIC__')
-      return repalceInObject(input.tmpDir, '__DYNAMIC__', data.data)
-    },
-  }
-})
-
-const ctx = TestContext.compose(TestContext.tmpDir, TestContext.fs, layoutContext)
+const ctx = TC.create(
+  TC.tmpDir(),
+  TC.fs(),
+  TC.createContributor((ctx) => {
+    return {
+      setup(spec: FSSpec = {}) {
+        writeFSSpec(ctx.tmpDir, spec)
+      },
+      async scan(opts?: { entrypointPath?: string; buildOutput?: string }) {
+        const data = await Layout.create({
+          cwd: ctx.tmpDir,
+          entrypointPath: opts?.entrypointPath,
+          buildOutputDir: opts?.buildOutput,
+          asBundle: false,
+        })
+        mockedStdoutBuffer = mockedStdoutBuffer.split(ctx.tmpDir).join('__DYNAMIC__')
+        return repalceInObject(ctx.tmpDir, '__DYNAMIC__', data.data)
+      },
+    }
+  })
+)
 
 /**
  * Tests
@@ -195,13 +199,12 @@ it('fails if no entrypoint and no graphql modules', async () => {
 
   await ctx.scan()
 
-  expect(stripAnsi(mockedStdoutBuffer)).toMatchInlineSnapshot(`
-    "■ nexus:layout We could not find any graphql modules or app entrypoint
+  expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
+    "■ nexus:layout We could not find any modules that imports 'nexus' or app.ts entrypoint
     ■ nexus:layout Please do one of the following:
 
-      1. Create a (graphql.ts file and write your GraphQL type definitions in it.
-      2. Create a graphql directory and write your GraphQL type definitions inside files there.
-      3. Create an app.ts file.
+      1. Create a file, import { schema } from 'nexus' and write your GraphQL type definitions in it.
+      2. Create an app.ts file.
 
 
     --- process.exit(1) ---
@@ -211,20 +214,20 @@ it('fails if no entrypoint and no graphql modules', async () => {
   expect(mockExit).toHaveBeenCalledWith(1)
 })
 
-it('finds nested graphql modules', async () => {
+it('finds nested nexus modules', async () => {
   ctx.setup({
     ...fsTsConfig,
     src: {
       'app.ts': '',
       graphql: {
-        '1.ts': '',
-        '2.ts': '',
+        '1.ts': `import { schema } from 'nexus'`,
+        '2.ts': `import { schema } from 'nexus'`,
         graphql: {
-          '3.ts': '',
-          '4.ts': '',
+          '3.ts': `import { schema } from 'nexus'`,
+          '4.ts': `import { schema } from 'nexus'`,
           graphql: {
-            '5.ts': '',
-            '6.ts': '',
+            '5.ts': `import { schema } from 'nexus'`,
+            '6.ts': `import { schema } from 'nexus'`,
           },
         },
       },
@@ -233,7 +236,7 @@ it('finds nested graphql modules', async () => {
 
   const result = await ctx.scan()
 
-  expect(result.schemaModules).toMatchInlineSnapshot(`
+  expect(result.nexusModules).toMatchInlineSnapshot(`
     Array [
       "__DYNAMIC__/src/graphql/1.ts",
       "__DYNAMIC__/src/graphql/2.ts",
@@ -321,58 +324,43 @@ it('fails if custom entrypoint is not a .ts file', async () => {
   `)
 })
 
-it('does not take custom entrypoint as schema module if its named graphql.ts', async () => {
-  await ctx.setup({ ...fsTsConfig, 'graphql.ts': '', graphql: { 'user.ts': '' } })
-  const result = await ctx.scan({ entrypointPath: './graphql.ts' })
+it('does not take custom entrypoint as nexus module if contains a nexus import', async () => {
+  await ctx.setup({
+    ...fsTsConfig,
+    'app.ts': `import { schema } from 'nexus'`,
+    'graphql.ts': `import { schema } from 'nexus'`,
+  })
+  const result = await ctx.scan({ entrypointPath: './app.ts' })
   expect({
     app: result.app,
-    schemaModules: result.schemaModules,
+    nexusModules: result.nexusModules,
   }).toMatchInlineSnapshot(`
     Object {
       "app": Object {
         "exists": true,
-        "path": "__DYNAMIC__/graphql.ts",
+        "path": "__DYNAMIC__/app.ts",
       },
-      "schemaModules": Array [
-        "__DYNAMIC__/graphql/user.ts",
-      ],
-    }
-  `)
-})
-
-it('does not take custom entrypoint as schema module if its inside a graphql/ folder', async () => {
-  await ctx.setup({ ...fsTsConfig, graphql: { 'user.ts': '', 'graphql.ts': '' } })
-  const result = await ctx.scan({ entrypointPath: './graphql/graphql.ts' })
-  expect({
-    app: result.app,
-    schemaModules: result.schemaModules,
-  }).toMatchInlineSnapshot(`
-    Object {
-      "app": Object {
-        "exists": true,
-        "path": "__DYNAMIC__/graphql/graphql.ts",
-      },
-      "schemaModules": Array [
-        "__DYNAMIC__/graphql/user.ts",
+      "nexusModules": Array [
+        "__DYNAMIC__/graphql.ts",
       ],
     }
   `)
 })
 
 describe('build output', () => {
-  it(`defaults to node_modules/.build`, async () => {
+  it(`defaults to .nexus/build`, async () => {
     await ctx.setup({ ...fsTsConfig, 'graphql.ts': '' })
     const result = await ctx.scan()
 
     expect({
-      buildOutput: result.buildOutput,
-      startModuleInPath: result.startModuleInPath,
-      startModuleOutPath: result.startModuleOutPath,
+      tsOutputDir: result.build.tsOutputDir,
+      startModuleInPath: result.build.startModuleInPath,
+      startModuleOutPath: result.build.startModuleOutPath,
     }).toMatchInlineSnapshot(`
       Object {
-        "buildOutput": "__DYNAMIC__/node_modules/.build",
         "startModuleInPath": "__DYNAMIC__/index.ts",
-        "startModuleOutPath": "__DYNAMIC__/node_modules/.build/index.js",
+        "startModuleOutPath": "__DYNAMIC__/.nexus/build/index.js",
+        "tsOutputDir": "__DYNAMIC__/.nexus/build",
       }
     `)
   })
@@ -391,14 +379,14 @@ describe('build output', () => {
     const result = await ctx.scan()
 
     expect({
-      buildOutput: result.buildOutput,
-      startModuleInPath: result.startModuleInPath,
-      startModuleOutPath: result.startModuleOutPath,
+      tsOutputDir: result.build.tsOutputDir,
+      startModuleInPath: result.build.startModuleInPath,
+      startModuleOutPath: result.build.startModuleOutPath,
     }).toMatchInlineSnapshot(`
       Object {
-        "buildOutput": "__DYNAMIC__/dist",
         "startModuleInPath": "__DYNAMIC__/index.ts",
         "startModuleOutPath": "__DYNAMIC__/dist/index.js",
+        "tsOutputDir": "__DYNAMIC__/dist",
       }
     `)
   })
@@ -416,14 +404,14 @@ describe('build output', () => {
     const result = await ctx.scan({ buildOutput: 'custom-output' })
 
     expect({
-      buildOutput: result.buildOutput,
-      startModuleInPath: result.startModuleInPath,
-      startModuleOutPath: result.startModuleOutPath,
+      tsOutputDir: result.build.tsOutputDir,
+      startModuleInPath: result.build.startModuleInPath,
+      startModuleOutPath: result.build.startModuleOutPath,
     }).toMatchInlineSnapshot(`
       Object {
-        "buildOutput": "__DYNAMIC__/custom-output",
         "startModuleInPath": "__DYNAMIC__/index.ts",
         "startModuleOutPath": "__DYNAMIC__/custom-output/index.js",
+        "tsOutputDir": "__DYNAMIC__/custom-output",
       }
     `)
   })
