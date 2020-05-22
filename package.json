@@ -57,7 +57,7 @@
     "ts-node": "^8.9.0",
     "tslib": "^1",
     "type-fest": "^0.14.0",
-    "typescript": "3.8.x"
+    "typescript": "3.9.x"
   },
   "devDependencies": {
     "@prisma-labs/prettier-config": "0.1.0",
