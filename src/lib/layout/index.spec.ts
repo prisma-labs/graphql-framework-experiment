@@ -13,10 +13,10 @@ const mockExit = jest.spyOn(process, 'exit').mockImplementation(((n: any) => {
   mockedStdoutBuffer += `\n\n--- process.exit(${n}) ---\n\n`
 }) as any)
 
+import { log } from '@nexus/logger'
 import stripAnsi from 'strip-ansi'
 import { TsConfigJson } from 'type-fest'
 import * as Layout from '.'
-import { rootLogger } from '../../lib/nexus-logger'
 import { FSSpec, writeFSSpec } from '../../lib/testing-utils'
 import * as TC from '../test-context'
 import { repalceInObject } from '../utils'
@@ -24,7 +24,7 @@ import { repalceInObject } from '../utils'
 /**
  * Disable logger timeDiff and color to allow snapshot matching
  */
-rootLogger.settings({
+log.settings({
   pretty: {
     enabled: true,
     timeDiff: false,

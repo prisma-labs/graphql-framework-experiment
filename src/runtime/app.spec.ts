@@ -1,7 +1,7 @@
 process.env.FORCE_COLOR = '0'
 
+import { log } from '@nexus/logger'
 import * as Lo from 'lodash'
-import { rootLogger } from '../lib/nexus-logger'
 import { removeReflectionStage, setReflectionStage } from '../lib/reflection'
 import * as App from './app'
 
@@ -10,7 +10,7 @@ let app: App.PrivateApp
 beforeEach(() => {
   app = App.create() as App.PrivateApp
   // fix once there is a singleton logger
-  rootLogger.settings({ pretty: { timeDiff: false } })
+  log.settings({ pretty: { timeDiff: false } })
   app.settings.change({ logger: { pretty: { color: false, timeDiff: false } } })
 })
 

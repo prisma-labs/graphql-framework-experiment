@@ -9,7 +9,7 @@ import * as Plugin from '../../lib/plugin'
 import { transpileModule } from '../../lib/tsc'
 import { resolveFrom } from './resolve-from'
 
-const log = rootLogger.child('start-module')
+const log = rootLogger.child('startModule')
 
 export const START_MODULE_NAME = 'index'
 export const START_MODULE_HEADER = 'GENERATED NEXUS START MODULE'

@@ -3,7 +3,7 @@ import { suggestionList } from '../levenstein'
 import { rootLogger } from '../nexus-logger'
 import { BackingTypes } from './types'
 
-const log = rootLogger.child('backing-types')
+const log = rootLogger.child('backingTypes')
 
 /**
  * Remaps the rootTypings stored in the schema to actual filePath & typeName

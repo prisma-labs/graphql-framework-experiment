@@ -2,6 +2,7 @@
  * These testing utilities live here so that `nexus-plugin-prisma` can reuse them
  */
 
+import * as Logger from '@nexus/logger'
 import * as FS from 'fs-jetpack'
 import { IPty, IPtyForkOptions, IWindowsPtyForkOptions } from 'node-pty'
 import * as Path from 'path'
@@ -14,7 +15,7 @@ import { GraphQLClient } from './graphql-client'
 import { rootLogger } from './nexus-logger'
 import { PackageManagerType } from './package-manager'
 
-const log = rootLogger.child('e2e-testing')
+const log = rootLogger.child('e2eTesting')
 
 interface CreateAppOptions {
   /**
@@ -59,7 +60,7 @@ interface Config {
 }
 
 export function createE2EContext(config: Config) {
-  rootLogger.settings({ level: 'trace' })
+  Logger.log.settings({ filter: { level: 'trace' } })
   process.env.LOG_LEVEL = 'trace'
 
   if (config.serverPort) {
