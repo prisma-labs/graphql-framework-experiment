@@ -310,7 +310,7 @@ We made it very simple to debug your app with VS Code.
 - Overall, here are the limitations with Next.js integration that you will not find in a "normal" Nexus project.
 
   1. You must use CommonJS `require` as opposed to ES module `import` syntax for your Nexus api module. This is to preserve import order.
-  1. You must run `app.assenble()` before accessing the server handlers.
+  1. You must run `app.assemble()` before accessing the server handlers.
   1. In development, you must run `app.reset()` in your Nexus api module, before anything else.
   1. Make sure that you only have one Nexus api module, or else you may experience difficulties in development.
   1. Make sure that your Nexus modules (ones using the `nexus` package) are only part of the import graph of your Nexus api module.
