@@ -110,7 +110,9 @@ yarn test e2e/kitchen
 
 - Live under `/test/e2e`
 
-  - `E2E_NEXUS_VERSION` – which version of Nexus to install during app creation
+- `E2E_NEXUS_VERSION` – which version of Nexus to install during app creation
+
+- The `create-prisma` e2e test always uses the `next` version of `nexus-plugin-prisma`. This is so that pre-releases can be made to fix Nexus PRs ([example](https://github.com/graphql-nexus/nexus/pull/859)).
 
 - E2E tests run in CI against every commit _after the package has been published_. These are preview and pr releases so its acceptable, and doing it this way provides a true smoke test of if the _real_ user journey works end to end.
 

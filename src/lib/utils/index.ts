@@ -357,10 +357,10 @@ export type SerializedError = {
 
 export function serializeError(e: Error): SerializedError {
   return {
+    ...e,
     name: e.name,
     message: e.message,
     stack: e.stack,
-    ...e,
   }
 }
 
