@@ -201,8 +201,12 @@ If you want to include a `nodes` field, which includes the nodes of the connecti
 import { settings } from 'nexus'
 
 settings.change({
-  connections: {
-    includeNodesField: true,
+  schema: {
+    connections: {
+      default: {
+        includeNodesField: true,
+      },
+    },
   },
 })
 ```
