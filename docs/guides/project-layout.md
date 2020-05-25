@@ -28,6 +28,18 @@
 
 if `compilerOptions.noEmit` is set to `true` then Nexus will not output the build. This makes `nexus build` effectively a checker. This option usually [represents user error](https://github.com/graphql-nexus/nexus/issues/702) so by default Nexus will warn when this option is used. In the future ([#800](https://github.com/graphql-nexus/nexus/issues/800)) there will be ways to disable this the warning if it is really your intent.
 
+##### TypeScript Language Service Plugin
+
+Nexus ships with a TypeScript Language Service Plugin. It currently helps with improved autocomplete experience. In the future it will do more. Nexus will check that you are using it correctly in dev mode. You can see an example of its effect below.
+
+Autocomplete without Nexus TS LSP:
+
+![](https://user-images.githubusercontent.com/284476/82776800-1bbe0e00-9e1a-11ea-83a1-eb175b11a2ca.png)
+
+Autocomplete with Nexus TS LSP:
+
+![](https://user-images.githubusercontent.com/284476/82776802-1cef3b00-9e1a-11ea-88c3-065869407380.png)
+
 ## Conventions
 
 Nexus imposes a few requirements about how you structure your codebase.
@@ -44,7 +56,7 @@ Nexus looks for modules that import `nexus` and uses codegen to statically impor
 
 Beware if you have module-level side-effects coming from something else than Nexus, as these side-effects will always be run when your app starts.
 
-> *Note: `require` is not supported.
+> \*Note: `require` is not supported.
 
 ### Entrypoint
 
