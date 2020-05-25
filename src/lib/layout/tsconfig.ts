@@ -1,9 +1,13 @@
+import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
+import { EOL } from 'os'
 import * as Path from 'path'
 import { TsConfigJson } from 'type-fest'
 import * as ts from 'typescript'
 import { rootLogger } from '../nexus-logger'
 import { DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT } from './layout'
+
+export const NEXUS_TS_LSP_IMPORT_ID = 'nexus/typescript-language-service'
 
 const log = rootLogger.child('tsconfig')
 
@@ -16,7 +20,7 @@ const diagnosticHost: ts.FormatDiagnosticsHost = {
 export async function readOrScaffoldTsconfig(input: {
   projectRoot: string
   overrides?: { outRoot?: string }
-}): Promise<{ content: ts.ParsedCommandLine, path: string }> {
+}): Promise<{ content: ts.ParsedCommandLine; path: string }> {
   let tsconfigPath = ts.findConfigFile(input.projectRoot, ts.sys.fileExists, 'tsconfig.json')
 
   if (!tsconfigPath) {
@@ -32,17 +36,17 @@ export async function readOrScaffoldTsconfig(input: {
 
   const projectRoot = Path.dirname(tsconfigPath)
 
-  const tsconfigContent = ts.readConfigFile(tsconfigPath, ts.sys.readFile)
+  const tscfgReadResult = ts.readConfigFile(tsconfigPath, ts.sys.readFile)
 
-  if (tsconfigContent.error) {
+  if (tscfgReadResult.error) {
     log.fatal(
       'Unable to read your tsconifg.json\n\n' +
-        ts.formatDiagnosticsWithColorAndContext([tsconfigContent.error], diagnosticHost)
+        ts.formatDiagnosticsWithColorAndContext([tscfgReadResult.error], diagnosticHost)
     )
     process.exit(1)
   }
 
-  const tscfg: TsConfigJson = tsconfigContent.config
+  const tscfg: TsConfigJson = tscfgReadResult.config
 
   // setup zero values
 
@@ -60,6 +64,27 @@ export async function readOrScaffoldTsconfig(input: {
   }
 
   // Lint
+
+  if (tscfg.compilerOptions.plugins && tscfg.compilerOptions.plugins.length) {
+    if (!tscfg.compilerOptions.plugins.map((p) => p.name).includes('nexus/typescript-language-service')) {
+      const pluginsFixed = tscfg.compilerOptions.plugins.concat([{ name: NEXUS_TS_LSP_IMPORT_ID }])
+      log.warn(
+        stripIndent`
+          You have not added the Nexus TypeScript Language Service Plugin to your configured TypeScript plugins. Add this to your tsconfig compiler options:
+
+              "plugins": ${JSON.stringify(pluginsFixed)}
+        ` + EOL
+      )
+    }
+  } else {
+    log.warn(
+      stripIndent`
+        You have not setup the Nexus TypeScript Language Service Plugin. Add this to your tsconfig compiler options:
+
+            "plugins": [{ "name": "${NEXUS_TS_LSP_IMPORT_ID}" }]
+      ` + EOL
+    )
+  }
 
   if (tscfg.compilerOptions.tsBuildInfoFile) {
     delete tscfg.compilerOptions.tsBuildInfoFile
@@ -88,7 +113,9 @@ export async function readOrScaffoldTsconfig(input: {
   }
 
   if (tscfg.compilerOptions.noEmit === true) {
-    log.warn('You have set compilerOptions.noEmit in your tsconfig.json. This will prevent `nexus build` from emitting code.')
+    log.warn(
+      'You have set compilerOptions.noEmit in your tsconfig.json. This will prevent `nexus build` from emitting code.'
+    )
   }
 
   // setup out root
@@ -132,6 +159,7 @@ export function tsconfigTemplate(input: { sourceRootRelative: string; outRootRel
         lib: ['esnext'],
         strict: true,
         rootDir: sourceRelative,
+        plugins: [{ name: 'nexus/typescript-language-service' }],
       },
       include: [sourceRelative],
     },

@@ -45,9 +45,12 @@ Nexus is a delightful framework for building GraphQL APIs in Node. It leverages 
   - One dep
   - Add prisma, only one dep more
   - Nexus handles sound integration between all components
+  - Nexus handles minimal deployment size via integrated tree-shake step in build
 - Decomposable, from framework to libs
   - @nexus/schema
   - @nexus/logger
+- Enhanced IDE Experience via TypeScript Language Service Plugin
+  - Refined nexus lib autocomplete
 
 ### Future Features
 
