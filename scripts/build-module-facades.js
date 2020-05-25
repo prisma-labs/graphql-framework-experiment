@@ -37,6 +37,8 @@ const facades = [
   ['components/logger.d.ts',  "export * from '../dist/components/logger'"             + os.EOL],
   ['components/logger.js',    "module.exports = require('../dist/components/logger')" + os.EOL],
 
+  ['typescript-language-service/index.d.ts',  "export * from './dist/typescript-language-service'"             + os.EOL],
+  ['typescript-language-service/index.js',    "module.exports = require('./dist/typescript-language-service')" + os.EOL],
 ]
 
 // Write facade files
