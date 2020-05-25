@@ -20,6 +20,7 @@ import * as Layout from '.'
 import { FSSpec, writeFSSpec } from '../../lib/testing-utils'
 import * as TC from '../test-context'
 import { repalceInObject } from '../utils'
+import { NEXUS_TS_LSP_IMPORT_ID } from './tsconfig'
 
 /**
  * Disable logger timeDiff and color to allow snapshot matching
@@ -43,7 +44,13 @@ function tsconfigContent(input: TsConfigJson): string {
   return JSON.stringify(input)
 }
 
-const defaultTsConfigContent = { compilerOptions: { rootDir: '.' }, include: ['.'] }
+const defaultTsConfigContent = {
+  compilerOptions: {
+    rootDir: '.',
+    plugins: [{ name: NEXUS_TS_LSP_IMPORT_ID }],
+  },
+  include: ['.'],
+}
 
 const fsTsConfig = {
   'tsconfig.json': tsconfigContent(defaultTsConfigContent),
@@ -104,6 +111,11 @@ describe('tsconfig', () => {
             "esnext",
           ],
           "module": "commonjs",
+          "plugins": Array [
+            Object {
+              "name": "nexus/typescript-language-service",
+            },
+          ],
           "rootDir": ".",
           "strict": true,
           "target": "es2016",
@@ -118,7 +130,12 @@ describe('tsconfig', () => {
   it('will warn if reserved settings are in use', async () => {
     ctx.setup({
       'tsconfig.json': tsconfigContent({
-        compilerOptions: { rootDir: '.', incremental: true, tsBuildInfoFile: 'foo' },
+        compilerOptions: {
+          rootDir: '.',
+          incremental: true,
+          tsBuildInfoFile: 'foo',
+          plugins: defaultTsConfigContent.compilerOptions.plugins,
+        },
         include: ['.'],
       }),
     })
@@ -136,12 +153,34 @@ describe('tsconfig', () => {
     })
     const layout = await ctx.scan()
     expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
-      "▲ nexus:tsconfig Please set your tsconfig.json compilerOptions.rootDir to \\".\\"
+      "▲ nexus:tsconfig You have not setup the Nexus TypeScript Language Service Plugin. Add this to your tsconfig compiler options:
+
+          \\"plugins\\": [{ \\"name\\": \\"nexus/typescript-language-service\\" }]
+
+      ▲ nexus:tsconfig Please set your tsconfig.json compilerOptions.rootDir to \\".\\"
       ▲ nexus:tsconfig Please set your tsconfig.json include to have \\".\\"
       "
     `)
     expect(layout.tsConfig.content.raw.compilerOptions.rootDir).toEqual('.')
     expect(layout.tsConfig.content.raw.include).toEqual(['.'])
+  })
+
+  it("will contextually warn if have TS LSP's present but not nexus one", async () => {
+    ctx.setup({
+      'tsconfig.json': tsconfigContent({
+        ...defaultTsConfigContent,
+        compilerOptions: { ...defaultTsConfigContent.compilerOptions, plugins: [{ name: 'foobar' }] },
+      }),
+    })
+
+    await ctx.scan()
+    expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
+      "▲ nexus:tsconfig You have not added the Nexus TypeScript Language Service Plugin to your configured TypeScript plugins. Add this to your tsconfig compiler options:
+
+          \\"plugins\\": [{\\"name\\":\\"foobar\\"},{\\"name\\":\\"nexus/typescript-language-service\\"}]
+
+      "
+    `)
   })
 
   it('will fatal message and exit if error reading file', async () => {
@@ -161,6 +200,10 @@ describe('tsconfig', () => {
 
       --- process.exit(1) ---
 
+      ▲ nexus:tsconfig You have not setup the Nexus TypeScript Language Service Plugin. Add this to your tsconfig compiler options:
+
+          \\"plugins\\": [{ \\"name\\": \\"nexus/typescript-language-service\\" }]
+
       ▲ nexus:tsconfig Please set your tsconfig.json compilerOptions.rootDir to \\".\\"
       ▲ nexus:tsconfig Please set your tsconfig.json include to have \\".\\"
       "
@@ -173,7 +216,11 @@ describe('tsconfig', () => {
     })
     await ctx.scan()
     expect(stripAnsi(mockedStdoutBuffer)).toMatchInlineSnapshot(`
-      "▲ nexus:tsconfig Please set your tsconfig.json compilerOptions.rootDir to \\".\\"
+      "▲ nexus:tsconfig You have not setup the Nexus TypeScript Language Service Plugin. Add this to your tsconfig compiler options:
+
+          \\"plugins\\": [{ \\"name\\": \\"nexus/typescript-language-service\\" }]
+
+      ▲ nexus:tsconfig Please set your tsconfig.json compilerOptions.rootDir to \\".\\"
       ▲ nexus:tsconfig Please set your tsconfig.json include to have \\".\\"
       ✕ nexus:tsconfig Your tsconfig.json is invalid
 
