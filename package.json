@@ -21,7 +21,9 @@
     "components/schema.d.ts",
     "components/schema.js",
     "components/logger.d.ts",
-    "components/logger.js"
+    "components/logger.js",
+    "typescript-language-service/index.d.ts",
+    "typescript-language-service/index.js"
   ],
   "bin": {
     "nexus": "dist/cli/main.js"
