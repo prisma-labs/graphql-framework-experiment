@@ -4,17 +4,17 @@
 - [Onboarding](getting-started/onboarding)
 - [Tutorial](getting-started/tutorial)
 - [Migrate from Nexus Schema](getting-started/migrate-from-nexus-schema)
-- [Changelog](changelog)
 
 - Guides
 
 - [Concepts](guides/concepts)
 - [Schema](guides/schema)
+- [Server](guides/server)
+- [Logger](guides/logger)
 - [Testing](guides/testing)
 - [Project Layout](guides/project-layout)
 - [Error Handling](guides/error-handling)
 - [Plugins](guides/plugins)
-- [Debugging](guides/debugging)
 - [Recipes](references/recipes)
 - [Writing Plugins](guides/writing-plugins)
 - [CLI](guides/cli)
