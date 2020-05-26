@@ -1,6 +1,6 @@
 # `import { server }`
 
-[issues](https://github.com/graphql-nexus/nexus/labels/scope%2Fserver) - [`feature`](https://github.com/graphql-nexus/nexus/issues?q=is%3Aopen+label%3Ascope%2Fserver+label%3Atype%2Ffeat) [`bug`](https://github.com/graphql-nexus/nexus/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fserver+label%3Atype%2Fbug+)
+[issues](https://nxs.li/issues/component/server) / [features](https://nxs.li/issues/components/server/features) | [bugs](https://nxs.li/issues/component/server/bugs)
 
 Use the server to run the HTTP server that clients will connect to.
 

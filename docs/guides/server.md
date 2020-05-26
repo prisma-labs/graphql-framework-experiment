@@ -1,3 +1,7 @@
+[API Reference](/api/modules/main/exports/server) ⌁ [issues](https://nxs.li/issues/component/server) / [features](https://nxs.li/issues/components/server/features) | [bugs](https://nxs.li/issues/component/server/bugs)
+
+## Serverless
+
 - Nexus has experimental support for serverless deployments.
 - Support for serverless is being tracked in [#782](https://github.com/graphql-nexus/nexus/issues/782).
 - Serverless features are not yet documented in the API docs.

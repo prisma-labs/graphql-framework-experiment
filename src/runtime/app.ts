@@ -13,37 +13,36 @@ import { assertAppNotAssembled } from './utils'
 
 const log = Logger.log.child('app')
 
-// todo the jsdoc below is lost on the destructured object exports later on...
+// WARNING Make sure that jsdoc edits here are ported to runtime/index
+
 export interface App {
   /**
-   * [API Reference](https://www.nexusjs.org/#/api/modules/main/exports/logger)  ⌁  [Guide](todo)
-   *
-   * ### todo
+   * [API Reference](https://nxs.li/docs/api/logger) ⌁ [Guide](https://nxs.li/docs/guides/logger) ⌁ [Issues](https://nxs.li/issues/components/logger)
    */
   log: Logger.Logger
   /**
-   * [API Reference](https://www.nexusjs.org/#/api/modules/main/exports/server)  ⌁  [Guide](todo)
-   *
-   * ### todo
-   *
+   * [API Reference](https://nxs.li/docs/api/server) ⌁ [Guide](https://nxs.li/docs/guides/server) ⌁ [Issues](https://nxs.li/issues/components/server)
    */
   server: Server.Server
   /**
-   * todo
-   */
-  settings: Settings.Settings
-  /**
-   * [API Reference](https://www.nexusjs.org/#/api/modules/main/exports/schema) // [Guide](todo)
-   *
-   * ### todo
+   * [API Reference](https://nxs.li/docs/api/schema) ⌁ [Guide](https://nxs.li/docs/guides/schema) ⌁ [Issues](https://nxs.li/issues/components/schema)
    */
   schema: Schema.Schema
   /**
-   * todo
+   * [API Reference](https://nxs.li/docs/api/settings) ⌁ [Issues](https://nxs.li/issues/components/settings)
+   */
+  settings: Settings.Settings
+  /**
+   * [API Reference](https://nxs.li/docs/api/use-plugins) ⌁ [Issues](https://nxs.li/issues/components/plugins)
    */
   use(plugin: Plugin.Plugin): void
   /**
-   * todo
+   * Run this to gather the final state of all Nexus api interactions. This method
+   * is experimental. It provides experimental support for Nextjs integration.
+   *
+   * In a regular Nexus app, you should not need to use this method.
+   *
+   * @experimental
    */
   assemble(): any
   /**

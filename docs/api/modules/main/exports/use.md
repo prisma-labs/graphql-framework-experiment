@@ -1,6 +1,6 @@
 # `import { use }`
 
-[issues](https://github.com/graphql-nexus/nexus/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc+label%3Ascope%2Fplugins) – [features](https://github.com/graphql-nexus/nexus/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc+label%3Ascope%2Fplugins+label%3Atype%2Ffeat) ⬝ [bugs](https://github.com/graphql-nexus/nexus/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc+label%3Ascope%2Fplugins+label%3Atype%2Fbug)
+[issues](https://nxs.li/issues/component/plugins) / [features](https://nxs.li/issues/components/plugins/features) | [bugs](https://nxs.li/issues/component/plugins/bugs)
 
 Use the plugin component to add new functionality to your project.
 

@@ -1,6 +1,6 @@
 # Schema
 
-[issues](https://github.com/graphql-nexus/nexus/labels/scope%2Fschema) – [features](https://github.com/graphql-nexus/nexus/issues?q=is%3Aopen+label%3Ascope%2Fschema+label%3Atype%2Ffeat) ⬝ [bugs](https://github.com/graphql-nexus/nexus/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fschema+label%3Atype%2Fbug+)
+[API Reference](/api/modules/main/exports/schema) ⌁ [issues](https://nxs.li/issues/component/schema) / [features](https://nxs.li/issues/components/schema/features) | [bugs](https://nxs.li/issues/component/schema/bugs)
 
 This is the Nexus schema component guide. Here you will find concepts explained and a survey of how to use the API. If you are not familiar with Nexus this is a good document to read. If you are familiar, then the [Schema API Docs](/api/modules/main/exports/schema) may be of more use to you.
 
@@ -312,7 +312,7 @@ When creating an API, especially before going to production or lifting features 
 
 If inputs are optional or outputs are guaranteed then client developers will have a simpler API to deal with since making requests demands no up front configuration and handling responses presents no null cases. On the other hand, for the API developer, changing the API becomes harder since turning inputs from optional to required or making outputs go from guaranteed to nullable are breaking changes from the client's point of view.
 
-Also, as more outputs are guaranteed, the greater the potential of the "null blast radius" can be. This is the effect where, within a server rutime, a `null` or error received from some data source where the schema states there shall be no `null` requires propagating the `null` up the data tree until a nullable type is found (or, at root, finally error).
+Also, as more outputs are guaranteed, the greater the potential of the "null blast radius" can be. This is the effect where, within a schema rutime, a `null` or error received from some data source where the schema states there shall be no `null` requires propagating the `null` up the data tree until a nullable type is found (or, at root, finally error).
 
 If you'd like to see these design considerations discussed further here are a few articles/resources you may find helpful:
 
