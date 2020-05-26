@@ -1,5 +1,8 @@
 import * as App from './app'
 
+/**
+ * [API Reference](https://nxs.li/docs/api/app) ⌁ [Issues](https://nxs.li/issues) ⌁ [Discussions](https://nxs.li/discussions) ⌁ [Tweets](https://nxs.li/tweets)
+ */
 const app = App.create()
 
 export default app
