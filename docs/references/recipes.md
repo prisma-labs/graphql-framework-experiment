@@ -140,11 +140,11 @@ If you don't want to use a docker, here are some links to alternative approaches
    + "start": "node .nexus/build"
    ```
 
-3. In many cases this will be enough. Many deployment platforms will call into these scripts by default. You can customize where `build` outputs to if your deployment platform requires it. There are built in guides for `zeit` and `heroku` which will check your project is prepared for deployment to those respective platforms. Take advantage of them if applicable:
+3. In many cases this will be enough. Many deployment platforms will call into these scripts by default. You can customize where `build` outputs to if your deployment platform requires it. There are built in guides for `vercel` and `heroku` which will check your project is prepared for deployment to those respective platforms. Take advantage of them if applicable:
 
    ```diff
    +++ package.json
-   + "build": "nexus build --deployment now"
+   + "build": "nexus build --deployment vercel"
    ```
 
    ```diff
