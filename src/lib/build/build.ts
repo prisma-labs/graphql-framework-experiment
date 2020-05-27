@@ -2,7 +2,7 @@ import { stripIndent } from 'common-tags'
 import * as FS from 'fs-jetpack'
 import * as Path from 'path'
 import * as Layout from '../../lib/layout'
-import { emitTSProgram, createTSProgram, deleteTSIncrementalFile } from '../../lib/tsc'
+import { createTSProgram, deleteTSIncrementalFile, emitTSProgram } from '../../lib/tsc'
 import {
   createStartModuleContent,
   prepareStartModule,
@@ -12,13 +12,13 @@ import { rootLogger } from '../nexus-logger'
 import * as Plugin from '../plugin'
 import { fatal } from '../process'
 import * as Reflection from '../reflection'
+import { bundle } from './bundle'
 import {
   computeBuildOutputFromTarget,
   logTargetPostBuildMessage,
   normalizeTarget,
   validateTarget,
 } from './deploy-target'
-import { bundle } from './bundle'
 
 const log = rootLogger.child('build')
 

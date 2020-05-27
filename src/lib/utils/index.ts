@@ -392,3 +392,26 @@ export function deserializeError(se: SerializedError): Error {
 }
 
 export function noop() {}
+
+/**
+ * This makes the optimally pretty import path following Node's algorithm.
+ *
+ * @example
+ *
+ * ```
+ * foo -> foo
+ * ```
+ * ```
+ * foo/bar -> foo/bar
+ * ```
+ * ```
+ * foo/bar/index.js -> foo/bar
+ * ```
+ */
+export function prettyImportPath(id: string): string {
+  const { dir, name } = Path.parse(id)
+
+  if (name === 'index') return dir
+
+  return id
+}
