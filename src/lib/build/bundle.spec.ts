@@ -61,3 +61,9 @@ export function isModuleBundled(
 
   return { reason: path.reverse() }
 }
+
+describe('deployment=heroku', () => {
+  it.todo('checks that the start script points to the build output (bundle true)')
+  it.todo('checks that the start script points to the build output (bundle false)')
+  it.todo('checks that the package engines field is correctly set')
+})

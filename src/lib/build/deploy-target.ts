@@ -3,10 +3,10 @@ import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import * as Path from 'path'
 import { DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT, Layout } from '../../lib/layout'
-import { START_MODULE_NAME } from '../../runtime/start/start-module'
 import { findFileRecurisvelyUpwardSync } from '../fs'
 import { rootLogger } from '../nexus-logger'
 import { fatal } from '../process'
+import { prettyImportPath } from '../utils'
 
 const log = rootLogger.child('build')
 
@@ -75,12 +75,12 @@ interface VercelJson {
  */
 function validateVercel(layout: Layout): ValidatorResult {
   const maybeVercelJson = findFileRecurisvelyUpwardSync('vercel.json', { cwd: layout.projectRoot })
-  const startModulePath = `${layout.build.tsOutputDir}/${START_MODULE_NAME}.js`
   let isValid = true
 
   // Make sure there's a vercel.json file
   if (!maybeVercelJson) {
     log.trace('creating vercel.json because none exists yet')
+    // todo unused, what was it for?
     const projectName = layout.packageJson?.content.name ?? 'now_rename_me'
 
     const vercelJsonContent = stripIndent`
@@ -88,11 +88,11 @@ function validateVercel(layout: Layout): ValidatorResult {
         "version": 2,
         "builds": [
           {
-            "src": "${startModulePath}",
+            "src": "${layout.build.startModule}",
             "use": "@now/node"
           }
         ],
-        "routes": [{ "src": "/.*", "dest": "${startModulePath}" }]
+        "routes": [{ "src": "/.*", "dest": "${layout.build.startModule}" }]
       }
     `
     const vercelJsonPath = Path.join(layout.projectRoot, 'vercel.json')
@@ -105,12 +105,13 @@ function validateVercel(layout: Layout): ValidatorResult {
     if (
       !vercelJson.builds ||
       !vercelJson.builds.find(
-        (build) => Path.join(maybeVercelJson.dir, build.src) === startModulePath && build.use === '@now/node'
+        (build) =>
+          Path.join(maybeVercelJson.dir, build.src) === layout.build.startModule && build.use === '@now/node'
       )
     ) {
       log.error(`We could not find a proper builder in your \`vercel.json\` file`)
       log.error(`Found: "builds": ${JSON.stringify(vercelJson.builds)}`)
-      log.error(`Expected: "builds": [{ src: "${startModulePath}", use: '@now/node' }, ...]`)
+      log.error(`Expected: "builds": [{ src: "${layout.build.startModule}", use: '@now/node' }, ...]`)
       console.log('\n')
       isValid = false
     }
@@ -118,16 +119,20 @@ function validateVercel(layout: Layout): ValidatorResult {
     // Make sure the vercel.json file has a `routes` property
     if (!vercelJson.routes) {
       log.error(`We could not find a \`routes\` property in your \`vercel.json\` file.`)
-      log.error(`Expected: "routes": [{ "src": "/.*", "dest": "${startModulePath}" }]`)
+      log.error(`Expected: "routes": [{ "src": "/.*", "dest": "${layout.build.startModule}" }]`)
       console.log('\n')
       isValid = false
     }
 
     // Make sure the vercel.json file has the right `routes` values
-    if (!vercelJson.routes?.find((route) => Path.join(maybeVercelJson.dir, route.dest) === startModulePath)) {
+    if (
+      !vercelJson.routes?.find(
+        (route) => Path.join(maybeVercelJson.dir, route.dest) === layout.build.startModule
+      )
+    ) {
       log.error(`We could not find a route property that redirects to your api in your \`vercel.json\` file.`)
       log.error(`Found: "routes": ${JSON.stringify(vercelJson.routes)}`)
-      log.error(`Expected: "routes": [{ src: '/.*', dest: "${startModulePath}" }, ...]`)
+      log.error(`Expected: "routes": [{ src: '/.*', dest: "${layout.build.startModule}" }, ...]`)
       console.log('\n')
       isValid = false
     }
@@ -190,22 +195,24 @@ function validateHeroku(layout: Layout): ValidatorResult {
       isValid = false
     }
 
-    const relativeBuildOutput = Path.relative(layout.packageJson.dir, layout.build.tsOutputDir)
+    const startModuleRelative = prettyImportPath(layout.projectRelative(layout.build.startModule))
 
     // Make sure there's a start script
     if (!pcfg.scripts?.start) {
       log.error(
-        `Please add the following to your \`package.json\` file: "scripts": { "start": "node ${relativeBuildOutput}" }`
+        `Please add the following to your \`package.json\` file: "scripts": { "start": "node ${startModuleRelative}" }`
       )
       console.log()
       isValid = false
     }
 
     // Make sure the start script starts the built server
-    if (!pcfg.scripts?.start?.includes(`node ${relativeBuildOutput}`)) {
-      log.error(`Please make sure your \`start\` script points to your built server`)
-      log.error(`Found: "${pcfg.scripts?.start}"`)
-      log.error(`Expected to contain: "node ${relativeBuildOutput}"`)
+    const startPattern = new RegExp(`^.*node +${startModuleRelative.replace('.', '\\.')}(?: +.*)?$`)
+    if (!pcfg.scripts?.start?.match(startPattern)) {
+      log.error(`Please make sure your ${chalk.bold(`\`start\``)} script points to your built server`)
+      log.error(`Found: ${chalk.red(pcfg.scripts?.start ?? '<empty>')}`)
+      log.error(`Expected a pattern conforming to ${chalk.yellow(startPattern)}`)
+      log.error(`For example: ${chalk.green(`node ${startModuleRelative}`)}`)
       console.log()
       isValid = false
     }
