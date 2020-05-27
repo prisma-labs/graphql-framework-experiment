@@ -12,7 +12,8 @@ export function fatal(errOrMsg: string | Error, context?: Record<string, unknown
   } else {
     log.fatal(errOrMsg, context)
   }
-  process.exit(1)
+  process.send!("exit", {err: errOrMsg, context});
+  process.exit(1);
 }
 
 export type SuccessfulRunResult = {

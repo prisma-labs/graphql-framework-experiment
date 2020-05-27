@@ -14,6 +14,7 @@ import { createRequestHandlerGraphQL } from './handler-graphql'
 import { createRequestHandlerPlayground } from './handler-playground'
 import { log } from './logger'
 import { createServerSettingsManager } from './settings'
+import { fatal } from '../../lib/process'
 
 const resolverLogger = log.child('graphql')
 
@@ -72,6 +73,11 @@ export function create(appState: AppState) {
       },
       assemble(loadedRuntimePlugins: Plugin.RuntimeContributions[], schema: GraphQLSchema) {
         state.httpServer.on('request', express)
+        state.httpServer.on('error', async function (err: NodeJS.ErrnoException)  {
+          if (err.code === 'EADDRINUSE') {
+            fatal(`Port ${settings.data.port} is already in use.`, { ...err })
+          }
+        });
 
         if (settings.data.playground) {
           express.get(
