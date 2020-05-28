@@ -1,7 +1,7 @@
 import { isLeft } from 'fp-ts/lib/Either'
 import getPort from 'get-port'
+import { GraphQLClient } from 'graphql-request'
 import * as Lo from 'lodash'
-import { GraphQLClient } from '../lib/graphql-client'
 import * as Layout from '../lib/layout'
 import { rootLogger } from '../lib/nexus-logger'
 import * as PluginRuntime from '../lib/plugin'
