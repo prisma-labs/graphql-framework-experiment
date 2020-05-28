@@ -1,4 +1,4 @@
-import 'cross-fetch/polyfill'
+import 'cross-fetch/polyfill' // for graphql-request
 import { isLeft } from 'fp-ts/lib/Either'
 import getPort from 'get-port'
 import { GraphQLClient } from 'graphql-request'
