@@ -137,7 +137,7 @@ If you don't want to use a docker, here are some links to alternative approaches
 
    ```diff
    +++ package.json
-   + "start": "node .nexus/build"
+   + "start": "node .nexus/build/api"
    ```
 
 3. In many cases this will be enough. Many deployment platforms will call into these scripts by default. You can customize where `build` outputs to if your deployment platform requires it. There are built in guides for `vercel` and `heroku` which will check your project is prepared for deployment to those respective platforms. Take advantage of them if applicable:
