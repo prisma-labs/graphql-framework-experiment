@@ -18,6 +18,7 @@ import stripAnsi from 'strip-ansi'
 import { TsConfigJson } from 'type-fest'
 import * as Layout from '.'
 import { FSSpec, writeFSSpec } from '../../lib/testing-utils'
+import { rightOrThrow } from '../glocal/utils'
 import * as TC from '../test-context'
 import { repalceInObject } from '../utils'
 import { NEXUS_TS_LSP_IMPORT_ID } from './tsconfig'
@@ -65,12 +66,14 @@ const ctx = TC.create(
         writeFSSpec(ctx.tmpDir, spec)
       },
       async scan(opts?: { entrypointPath?: string; buildOutput?: string }) {
-        const data = await Layout.create({
-          cwd: ctx.tmpDir,
-          entrypointPath: opts?.entrypointPath,
-          buildOutputDir: opts?.buildOutput,
-          asBundle: false,
-        })
+        const data = rightOrThrow(
+          await Layout.create({
+            cwd: ctx.tmpDir,
+            entrypointPath: opts?.entrypointPath,
+            buildOutputDir: opts?.buildOutput,
+            asBundle: false,
+          })
+        )
         mockedStdoutBuffer = mockedStdoutBuffer.split(ctx.tmpDir).join('__DYNAMIC__')
         return repalceInObject(ctx.tmpDir, '__DYNAMIC__', data.data)
       },
