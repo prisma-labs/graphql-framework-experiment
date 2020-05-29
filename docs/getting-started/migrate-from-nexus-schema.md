@@ -22,7 +22,7 @@ Change any imports of `nexus` to `@nexus/schema`:
 + import { makeSchema } from "@nexus/schema";
 ```
 
-If you were previously a user of `nexus-prisma`, it still exists! It's remains published to NPM under the same package name and you can upgrade it and continue using it as before. You can find it on GitHub under its updated repository name: [`nexus-schema-plugin-prisma`](https://github.com/graphql-nexus/nexus-schema-plugin-prisma). (Note that the Nexus framework has a distinct but similarly-named plugin, [`nexus-plugin-prisma`](https://github.com/graphql-nexus/nexus-plugin-prisma), which is covered below.)
+If you were previously a user of `nexus-prisma`, it still exists! It remains published to NPM under the same package name and you can upgrade it and continue using it as before. You can find it on GitHub under its updated repository name: [`nexus-schema-plugin-prisma`](https://github.com/graphql-nexus/nexus-schema-plugin-prisma). (Note that the Nexus framework has a distinct but similarly-named plugin, [`nexus-plugin-prisma`](https://github.com/graphql-nexus/nexus-plugin-prisma), which is covered below.)
 
 
 ### Using `nexus`
