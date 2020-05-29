@@ -1,4 +1,31 @@
-Versions of the `nexus` package below `0.20` were what is now known as `@nexus/schema`. This transition of the `nexus` package from being a schema library to a framework was announced [in this GitHub issue](https://github.com/prisma-labs/nexus/issues/373). The following receipe shows how to migrate from nexus schema `0.12` to the latest version of Nexus framework.
+Prior to version `0.20`, the `nexus` package comprised only the schema definition and code generation components of the Nexus framework. These components are now known as [`@nexus/schema`](components/schema/about), and while they're included as part of the Nexus framework, they remain available as a [standalone package](https://github.com/graphql-nexus/schema). (You can read more about the transition of Nexus from a schema library to a full-fledged framework in the [announcement in this GitHub issue](https://github.com/prisma-labs/nexus/issues/373).)
+
+For users of `nexus` version `0.12` and below, you can either migrate to the `@nexus/schema` package, or to the new Nexus framework. The former is more straightforward, but the latter may significantly simplify your configuration and give you the benefit of baked-in sensible defaults and best practices (especially if you were previously using `graphql-yoga` or `express-graphql`). This guide will cover both scenarios.
+
+
+### Using `@nexus/schema`
+
+Run `npm rm nexus` and `npm i @nexus/schema` to migrate to the updated package name.
+
+```diff
++++ package.json
+   "dependencies": {
+-     "nexus": "0.12.0",
++     "@nexus/schema": "0.13.1"
+   }
+```
+
+Change any imports of `nexus` to `@nexus/schema`:
+
+```diff
+- import { makeSchema } from "nexus";
++ import { makeSchema } from "@nexus/schema";
+```
+
+If you were previously a user of `nexus-prisma`, it still exists! It's remains published to NPM under the same package name and you can upgrade it and continue using it as before. You can find it on GitHub under its updated repository name: [`nexus-schema-plugin-prisma`](https://github.com/graphql-nexus/nexus-schema-plugin-prisma). (Note that the Nexus framework has a distinct but similarly-named plugin, [`nexus-plugin-prisma`](https://github.com/graphql-nexus/nexus-plugin-prisma), which is covered below.)
+
+
+### Using `nexus`
 
 #### Dependencies
 
