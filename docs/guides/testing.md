@@ -58,7 +58,7 @@ const { app } = createTestContext() // Error!
 
 ## Test Context interface
 
-The Test context interface is extensible by plugins. By default it includes basic control over the app and a grphql client instance of ready to send queries and mutations to it.
+The Test context interface is extensible by plugins. By default it includes basic control over the app and a GraphQL client instance ready to send queries and mutations to it.
 
 ## Without a database
 
