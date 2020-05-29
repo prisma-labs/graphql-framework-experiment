@@ -4,6 +4,7 @@
 
 import * as Logger from '@nexus/logger'
 import * as FS from 'fs-jetpack'
+import { GraphQLClient } from 'graphql-request'
 import { IPty, IPtyForkOptions, IWindowsPtyForkOptions } from 'node-pty'
 import * as Path from 'path'
 import { ConnectableObservable, Observable, Subject } from 'rxjs'
@@ -11,7 +12,6 @@ import { multicast } from 'rxjs/operators'
 import stripAnsi from 'strip-ansi'
 import { Database } from '../cli/commands/create/app'
 import { getTmpDir } from './fs'
-import { GraphQLClient } from './graphql-client'
 import { rootLogger } from './nexus-logger'
 import { PackageManagerType } from './package-manager'
 
