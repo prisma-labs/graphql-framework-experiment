@@ -47,7 +47,7 @@
     "fs-jetpack": "^2.4.0",
     "get-port": "^5.1.0",
     "graphql": "^14.5.8",
-    "graphql-request": "^2.0.0",
+    "graphql-request": "^2.1.0-next.1",
     "http-errors": "^1.7.3",
     "lodash": "^4.17.15",
     "node-fetch": "^2.6.0",
