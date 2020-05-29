@@ -3,7 +3,6 @@
  */
 
 import * as Logger from '@nexus/logger'
-import 'cross-fetch/polyfill' // for graphql-request
 import * as FS from 'fs-jetpack'
 import { GraphQLClient } from 'graphql-request'
 import { IPty, IPtyForkOptions, IWindowsPtyForkOptions } from 'node-pty'
