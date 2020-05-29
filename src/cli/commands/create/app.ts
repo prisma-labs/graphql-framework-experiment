@@ -4,6 +4,7 @@ import * as path from 'path'
 import prompts from 'prompts'
 import { PackageJson } from 'type-fest'
 import { Command } from '../../../lib/cli'
+import { rightOrFatal } from '../../../lib/glocal/utils'
 import * as Layout from '../../../lib/layout'
 import { tsconfigTemplate } from '../../../lib/layout/tsconfig'
 import { rootLogger } from '../../../lib/nexus-logger'
@@ -52,7 +53,7 @@ export async function runLocalHandOff(): Promise<void> {
   log.trace('start local handoff')
 
   const parentData = await loadDataFromParentProcess()
-  const layout = await Layout.create()
+  const layout = rightOrFatal(await Layout.create())
   const pluginM = await PluginWorktime.getUsedPlugins(layout)
   const plugins = PluginRuntime.importAndLoadWorktimePlugins(pluginM, layout)
   log.trace('plugins', { plugins })

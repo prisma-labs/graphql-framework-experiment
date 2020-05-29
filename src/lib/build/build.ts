@@ -8,6 +8,7 @@ import {
   prepareStartModule,
   START_MODULE_NAME,
 } from '../../runtime/start/start-module'
+import { rightOrFatal } from '../glocal/utils'
 import { rootLogger } from '../nexus-logger'
 import * as Plugin from '../plugin'
 import { fatal } from '../process'
@@ -38,12 +39,14 @@ export async function buildNexusApp(settings: BuildSettings) {
   const deploymentTarget = normalizeTarget(settings.target)
   const buildOutput = settings.output ?? computeBuildOutputFromTarget(deploymentTarget) ?? undefined
 
-  const layout = await Layout.create({
-    buildOutputDir: buildOutput,
-    asBundle: settings.asBundle,
-    entrypointPath: settings.entrypoint,
-    cwd: settings.cwd,
-  })
+  const layout = rightOrFatal(
+    await Layout.create({
+      buildOutputDir: buildOutput,
+      asBundle: settings.asBundle,
+      entrypointPath: settings.entrypoint,
+      cwd: settings.cwd,
+    })
+  )
 
   /**
    * Delete the TS incremental file to make sure we're building from a clean slate

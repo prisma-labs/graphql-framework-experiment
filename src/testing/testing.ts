@@ -2,6 +2,7 @@ import { isLeft } from 'fp-ts/lib/Either'
 import getPort from 'get-port'
 import { GraphQLClient } from 'graphql-request'
 import * as Lo from 'lodash'
+import { rightOrFatal } from '../lib/glocal/utils'
 import * as Layout from '../lib/layout'
 import { rootLogger } from '../lib/nexus-logger'
 import * as PluginRuntime from '../lib/plugin'
@@ -80,7 +81,7 @@ export async function createTestContext(opts?: CreateTestContextOptions): Promis
   process.env.NEXUS_STAGE = 'dev'
 
   // todo figure out some caching system here, e.g. imagine jest --watch mode
-  const layout = await Layout.create({ entrypointPath: opts?.entrypointPath })
+  const layout = rightOrFatal(await Layout.create({ entrypointPath: opts?.entrypointPath }))
   const pluginManifests = await PluginWorktime.getUsedPlugins(layout)
   const randomPort = await getPort({ port: getPort.makeRange(4000, 6000) })
   const privateApp = app as PrivateApp

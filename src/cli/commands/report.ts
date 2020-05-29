@@ -28,6 +28,7 @@ export class Report implements Command {
       return
     }
 
+    // todo copy-paste this to user clipboard
     console.log('```json' + EOL + JSON.stringify(report, null, 2) + EOL + '```')
   }
 }

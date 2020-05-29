@@ -1,5 +1,6 @@
 import Chalk from 'chalk'
 import { stripIndent } from 'common-tags'
+import { Either, right } from 'fp-ts/lib/Either'
 import * as FS from 'fs-jetpack'
 import * as Path from 'path'
 import * as ts from 'ts-morph'
@@ -180,7 +181,7 @@ const optionDefaults = {
 /**
  * Perform a layout scan and return results with attached helper functions.
  */
-export async function create(options?: Options): Promise<Layout> {
+export async function create(options?: Options): Promise<Either<Error, Layout>> {
   const cwd = options?.cwd ?? process.cwd()
   const normalizedEntrypoint = normalizeEntrypoint(options?.entrypointPath, cwd)
   // TODO lodash merge defaults or something
@@ -203,7 +204,7 @@ export async function create(options?: Options): Promise<Layout> {
     ...saveDataForChildProcess(layout),
   }
 
-  return layout
+  return right(layout)
 }
 
 /**
@@ -386,7 +387,7 @@ export function saveDataForChildProcess(layout: Layout): { NEXUS_LAYOUT: string 
  * For this reason the function is async however under normal circumstances it
  * should be as-if sync.
  */
-export async function loadDataFromParentProcess(): Promise<Layout> {
+export async function loadDataFromParentProcess(): Promise<Either<Error, Layout>> {
   const savedData: undefined | string = process.env[ENV_VAR_DATA_NAME]
   if (!savedData) {
     log.trace(
@@ -394,7 +395,8 @@ export async function loadDataFromParentProcess(): Promise<Layout> {
     )
     return create({}) // todo no build output...
   } else {
-    return createFromData(JSON.parse(savedData) as Data)
+    // todo guard against corrupted env data
+    return right(createFromData(JSON.parse(savedData) as Data))
   }
 }
 

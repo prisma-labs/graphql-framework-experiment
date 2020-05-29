@@ -1,6 +1,7 @@
 import { stripIndent } from 'common-tags'
 import { ts } from 'ts-morph'
 import { arg, Command, isError } from '../../lib/cli'
+import { rightOrFatal } from '../../lib/glocal/utils'
 import * as Layout from '../../lib/layout'
 import { rootLogger } from '../../lib/nexus-logger'
 import { ownPackage } from '../../lib/own-package'
@@ -38,7 +39,7 @@ export class Dev implements Command {
 
     const entrypointPath = args['--entrypoint']
     const reflectionMode = args['--reflection'] === true
-    let layout = await Layout.create({ entrypointPath })
+    let layout = rightOrFatal(await Layout.create({ entrypointPath }))
     const pluginReflectionResult = await Reflection.reflect(layout, { usedPlugins: true, onMainThread: true })
 
     // TODO: Do not fatal if reflection failed.
@@ -90,7 +91,7 @@ export class Dev implements Command {
             change.type === 'unlinkDir'
           ) {
             log.trace('analyzing project layout')
-            layout = await Layout.create({ entrypointPath })
+            layout = rightOrFatal(await Layout.create({ entrypointPath }))
           }
 
           if (args['--reflection']) {
