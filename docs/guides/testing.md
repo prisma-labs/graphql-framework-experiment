@@ -106,7 +106,7 @@ Integration between Nexus' test and database systems is young and still missing 
    // nexus-test-environment.js
    const { Client } = require('pg')
    const NodeEnvironment = require('jest-environment-node')
-   const nanoid = require('nanoid')
+   const { nanoid } = require('nanoid')
    const util = require('util')
    const exec = util.promisify(require('child_process').exec)
 
