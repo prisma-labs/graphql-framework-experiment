@@ -1,6 +1,6 @@
 import Chalk from 'chalk'
 import { stripIndent } from 'common-tags'
-import { Either, right } from 'fp-ts/lib/Either'
+import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
 import * as FS from 'fs-jetpack'
 import * as Path from 'path'
 import * as ts from 'ts-morph'
@@ -10,7 +10,7 @@ import { findFile, findFileRecurisvelyUpwardSync } from '../../lib/fs'
 import { START_MODULE_NAME } from '../../runtime/start/start-module'
 import { rootLogger } from '../nexus-logger'
 import * as PackageManager from '../package-manager'
-import { fatal } from '../process'
+import { createContextualError } from '../utils'
 import { readOrScaffoldTsconfig } from './tsconfig'
 
 export const DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT = '.nexus/build'
@@ -183,7 +183,11 @@ const optionDefaults = {
  */
 export async function create(options?: Options): Promise<Either<Error, Layout>> {
   const cwd = options?.cwd ?? process.cwd()
-  const normalizedEntrypoint = normalizeEntrypoint(options?.entrypointPath, cwd)
+  const errNormalizedEntrypoint = normalizeEntrypoint(options?.entrypointPath, cwd)
+
+  if (isLeft(errNormalizedEntrypoint)) return errNormalizedEntrypoint
+  const normalizedEntrypoint = errNormalizedEntrypoint.right
+
   // TODO lodash merge defaults or something
 
   const scanResult = await scan({ cwd, entrypointPath: normalizedEntrypoint })
@@ -446,22 +450,24 @@ function findPackageJson(opts: { projectRoot: string }): ScanResult['packageJson
   }
 }
 
-function normalizeEntrypoint(entrypoint: string | undefined, cwd: string): string | undefined {
+function normalizeEntrypoint(entrypoint: string | undefined, cwd: string): Either<Error, string | undefined> {
   if (!entrypoint) {
-    return undefined
+    return right(undefined)
   }
 
   const absoluteEntrypoint = entrypoint.startsWith('/') ? entrypoint : Path.join(cwd, entrypoint)
 
   if (!absoluteEntrypoint.endsWith('.ts')) {
-    fatal('Entrypoint must be a .ts file', { path: absoluteEntrypoint })
+    const error = createContextualError('Entrypoint must be a .ts file', { path: absoluteEntrypoint })
+    return left(error)
   }
 
   if (!FS.exists(absoluteEntrypoint)) {
-    fatal('Entrypoint does not exist', { path: absoluteEntrypoint })
+    const error = createContextualError('Entrypoint does not exist', { path: absoluteEntrypoint })
+    return left(error)
   }
 
-  return absoluteEntrypoint
+  return right(absoluteEntrypoint)
 }
 
 /**
