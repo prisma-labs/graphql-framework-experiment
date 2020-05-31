@@ -1,86 +1,53 @@
-# Introduction {docsify-ignore}
+# Welcome To Nexus {docsify-ignore}
 
 <p class='NextIs Note'></p>
 
-Nexus is a delightful framework for building GraphQL APIs in Node. It leverages TypeScript and knowledge about your data sources and API schema to give you levels of type safety that until now you've probably never experienced.
+Nexus is a framework for building GraphQL APIs in Node. It leverages TypeScript and knowledge about your data sources and API schema to give you levels of type safety that until now you've probably never experienced.
 
 [Discussions](https://github.com/graphql-nexus/nexus/discussions) // [Issues](https://github.com/graphql-nexus/nexus/issues) // [Tweets](https://twitter.com/nexusgql) // [Changelog](https://github.com/graphql-nexus/nexus/releases) ([canary](https://github.com/graphql-nexus/nexus/releases/tag/next)) // [Repo](https://github.com/graphql-nexus/nexus)
 
-### Features
+## Goals
 
-- Pervasive zero-config philosophy.
-- You are free to use the API where and how you see fit. Few conventions on how to structure your app.
-- GraphQL schema construction
-  - Define your schema in code, abstract repeated patterns.
-  - Integrated helpers for building Relay compliant pagination
-  - Define graphql types without export/import and configuration boilerplate.
-- Type safety made simple
-  - Automatically fully typed GraphQL resolvers accounting for what you see in the `parent`, `args`, `ctx` arguments and what you're allowed to return.
-  - Automatically extracted types from return values in your `addToContext` invocations are merged into the Nexus resolver context type.
-  - Export any type in any module to make it available as a backing type for any object in your GraphQL schema.
-- Integrated logger component built atop Pino
-  - Pretty mode for development
-  - JSON mode for production
-  - Automatic request-scoped child logger available on context object
-- Integrated Testing
-  - Utils to boot a test app, integrated GraphQL client ready to make requests against it
-- Sane defaults
-  - Top-level sync and async error handling, process exit
-- Scaffolding
-  - Generate new app projects
-  - Generate new plugin projects
-- Plugins
-  - build hooks
-  - dev hooks
-  - resolver middleware
-  - add type defs
-  - add field def builders
-  - add type def builders
-- Generate GraphQL SDL from your schema, make pull-request reviews more collaborative.
-- Integrated TypeScript
-  - No install needed
-  - Builtin dynamic tsconfig guide rails
-  - Nexus CLI honurs your tsconfig
-- Simple dependency management
-  - One dep
-  - Add prisma, only one dep more
-  - Nexus handles sound integration between all components
-  - Nexus handles minimal deployment size via integrated tree-shake step in build
-- Decomposable, from framework to libs
-  - @nexus/schema
-  - @nexus/logger
-- Enhanced IDE Experience via TypeScript Language Service Plugin
-  - Refined nexus lib autocomplete
+Nexus is a code-first GraphQL server framework designed from the ground up to be 100% type-safe with conventions over configuration in mind.
 
-### Future Features
+- It leverages TypeScript and its type system to unlock rich patterns that help you safely scale, maintain and test your GraphQL API.
+- The development server that's running as you build your API ensures that you always get auto-completion and error checks for the schema changes you just introduced.
+- Its API is designed with care to be as declarative as possible so that your schema stays readable despite being implemented with code.
+- Its unconventional plugin system also enables the creation of "end-to-end plugins" which enhance not only Nexus at runtime, but also the CLI and many framework workflows such as dev mode and testing.
+- On that matter, **Nexus has an official Prisma plugin** that will help you wire your GraphQL API to a database. Prisma is an [open source](https://github.com/prisma/prisma) database toolkit that currently consists of an auto-generated type-safe query builder, declarative data model language, and experimental migration system.
 
-- Integrated query complexity analysis
-- Integrated Bundler
-  - Automatically tree shake your app into the minimum artifact size
-  - Automatically generate v8 snapshots for ultimate cold start times
-- Integrated Server
-  - Platform adaptors providing fully typed request and response objects
-  - Seamless transition between serverful and serverless
-  - Pluggable
-- Integrated Ops
-  - Deployment adaptors (Now, AWS Lambda, Google Functions)
-  - Adaptors for logging and APM (Elastic, Datadog, New Relic, ...)
-  - Alpine Docker images
-  - Pluggable
-- ...
+## Highlights
 
-### Limitations
+- **Type-safety by default** - Take advantage of TypeScript without the hassle of type annotations everywhere
+- **GraphQL Server included** - We manage the GraphQL server for you while letting you control it
+- **Bundled CLI for development workflows \*\***- Develop, test and build your app using our CLI
+- **Reusable modules** - Leverage your programming language to reuse part of your GraphQL schema
+- **Scalable** - Split your GraphQL schema by features to horizontally scale as your project grows
+- **Testable** - Nexus includes tooling to run integration tests against your API
+- **Zero config** - Thanks to conventions over configuration, get up and running quickly without the hassle of configuring anything
+- **Batteries included (DB, rate limiting, relay connections, custom scalars, ...)** - We've got you covered beyond the to-do app
+- **Readable** - Implement your schema with code, read it with the autogenerated GraphQL SDL file
+- **Pluggable** - Make use of the Nexus plugin ecosystem or create yours to enhance the default experience
+- **No lock-in** - Buying into a framework can be scary. We make sure you've got the right escape hatches
 
-We plan to lift these limitations one day.
+## Why
 
-- Lacks good Windows support [issues](https://github.com/graphql-nexus/nexus/labels/platform%2Fwindows)
-- Does not work with JavaScript [#85](https://github.com/graphql-nexus/nexus/issues/85)
-- Does not cover the entire GraphQL Spec
-  - Subscriptions [#447](https://github.com/graphql-nexus/nexus/issues/447)
-  - Interface Extensions [#713](https://github.com/graphql-nexus/nexus/issues/713)
+Nexus, the framework, is built on top of a great library called Nexus _Schema_, built by [Tim Griesser](https://github.com/tgriesser).
 
-### Non-Goals
+« Nexus Schema was born out of my experience building several production GraphQL APIs, in different languages and frameworks. The first with vanilla [graphql-js](https://github.com/graphql/graphql-js), another schema-first with [graph.ql](https://github.com/matthewmueller/graph.ql) and later [graphql-tools](https://github.com/apollographql/graphql-tools). Following that with [graphene-python](https://docs.graphene-python.org/en/latest/) and most recently with a bit of [graphql-ruby](http://graphql-ruby.org/).
 
-We do not plan to lift these limitations.
+After working with the toolkits in other scripting languages, it felt like there was a gap in the JavaScript approaches. Schema-first development starts out great, by simply expressing your schema in the GraphQL Schema Definition Language (SDL) and providing resolvers matching to the types as needed you are up and running fast! No need for tons of requires or "overhead" to get a GraphQL server running.
 
-- Works with Node v9 and below
+As your schema then grows to hundreds or thousands of types, manually curating these SDL fragments becomes tedious. Documentation changes can be tough. Modifying fields on interfaces can require manual changes to many implementing types, a process that can be quite error prone.
+
+_If only there were a way to combine the simplicity of schema-first development, with the long-term maintainability of a definition-first approach._
+
+Nexus Schema aims to fill that void, making the process as simple as possible while also making good use of the runtime to introduce powerful ways of composing types, introducing type or schema wide changes, and much more.
+
+The core idea of Nexus Schema draws from basing the schema off the SDL - keeping things declarative and simple to understand. For example it allows you to reference the type names as string literals rather than always need to import to reference types (but, you can do that too if you prefer).
+
+By combining automatic type generation with some of the more powerful features of TypeScript - type merging, conditional types, and type inference, we can know exactly which type names we are referring to and able to use throughout our code. We can know both the parameters and the return type of resolvers without providing any type annotation. It takes a little getting used to, but it ends up leading to a great feedback loop of the types annotating themselves. » — _Tim Griesser_
+
+The complex mechanisms on which Nexus Schema relies turned out to produce a lot of friction to the daily workflows that people have to deal with when working with it.
+
+Nexus, the framework, is a natural continuation of that vision built by Tim Griesser which aims to make Nexus Schema more accessible to everyone by hiding some of the underlying complexity of the system and by trying to push users into the pit of success.

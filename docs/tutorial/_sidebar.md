@@ -2,7 +2,14 @@
 
 - [Welcome To Nexus](README)
 - [Onboarding](getting-started/onboarding)
-- [Tutorial](tutorial/chapter-1-welcome-to-nexus)
+- [Tutorial]()
+  - [Introduction](tutorial/introduction)
+  - [Installation & Getting Started](tutorial/chapter-1-installation)
+  - [Writing Your First Schema](tutorial/chapter-2-writing-your-first-schema)
+  - [Adding Mutations to Your API](tutorial/chapter-3-adding-mutations-to-your-api)
+  - [Testing your API](tutorial/chapter-4-testing-your-api)
+  - [Persisting Data (via Prisma)](tutorial/chapter-5-persisting-data-via-prisma)
+  - [Testing With Prisma](tutorial/chapter-6-testing-with-prisma)
 - [Migrate from Nexus Schema](getting-started/migrate-from-nexus-schema)
 
 - Guides

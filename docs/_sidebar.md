@@ -1,8 +1,8 @@
 - Getting Started
 
-- [Introduction](README)
+- [Welcome To Nexus](README)
 - [Onboarding](getting-started/onboarding)
-- [Tutorial](getting-started/tutorial)
+- [Tutorial](tutorial/chapter-1-welcome-to-nexus)
 - [Migrate from Nexus Schema](getting-started/migrate-from-nexus-schema)
 
 - Guides
@@ -43,6 +43,7 @@
 
 - [Roadmap ⤤](https://github.com/orgs/graphql-nexus/projects/1)
 - [Changelog](changelog)
+- [Spec Sheet](meta/spec-sheet)
 - [Architecture](architecture)
 
 - Components Standalone
