@@ -2,7 +2,7 @@
 
 - [Welcome To Nexus](README)
 - [Onboarding](getting-started/onboarding)
-- [Tutorial](tutorial/chapter-1-welcome-to-nexus)
+- [Tutorial](tutorial/introduction)
 - [Migrate from Nexus Schema](getting-started/migrate-from-nexus-schema)
 
 - Guides

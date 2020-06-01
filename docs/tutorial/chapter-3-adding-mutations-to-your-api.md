@@ -7,7 +7,7 @@ In this chapter you're going to add some write capability to your API. You'll le
 
 To keep our learning gradual we'll use in-memory data for now but rest assured we'll be using a proper databases later in this tutorial.
 
-## a. Creating our in-memory database
+## Creating our in-memory database
 
 First, let's create an `api/db.ts` \*\*\*\*file and stub some content as follows:
 
@@ -90,7 +90,7 @@ schema.queryType({
 
 Alright, now that we know how to wire our in-memory database, let's continue building our schema.
 
-## b. Designing our schema
+## Designing our schema
 
 Let's begin by visualizing what schema additions we'd like to build using GraphQL SDL. We'll need an `Order` object to represent a store checkout and a `checkout` GraphQL mutation to perform checkouts.
 
@@ -158,7 +158,7 @@ input OrderItemInput {
 }
 ```
 
-## c. Updating our in-memory database
+## Updating our in-memory database
 
 Before we actually evolve our GraphQL schema, there's one thing we need to do: evolve our in-memory database. We need two new tables for the `orders` and `orderItems`.
 
@@ -188,7 +188,7 @@ export const db = {
 }
 ```
 
-## d. Implementing the designed schema
+## Implementing the designed schema
 
 Now we're going to implement our desired schema changes in Nexus. If you want, try to implement it yourself and then come back here to compare your solution.
 

@@ -5,7 +5,7 @@ In this chapter you're going to write your first schema. You'll learn about:
 - GraphQL SDL file generation
 - Enhanced type safety & autocompletion
 
-## a. Give me break
+## Give me break
 
 You might have noticed that you need very little setup to get up and running. In fact, you might even be confused and wondering:
 
@@ -15,11 +15,11 @@ Well, Nexus comes with a server out of the box. It happens to be an `express` in
 
 If your lock-in fears are tingling, know that **you still have _full_ access** to the underlying `express` instance. So if you need to add custom middlewares, routes, and so on, you can.
 
-## b. What are we building?
+## What are we building?
 
 So, what are we building? A toy e-commerce app One just complete enough to give you a full overview of what Nexus can do but hopefully not too complex to confuse you with unnecessary detail. Let's dive-in!
 
-## c. Before we start
+## Before we start
 
 ⚠️ Nexus has an unconventional concept called "Reflection". The `nexus dev` command runs your application code, but **it also derives artifacts from your app every time it is restarted. Namely, TypeScript types and GraphQL SDL file.**
 
@@ -27,7 +27,7 @@ We'll explore Reflection a bit more later, but \**\*\*for now just remember the 
 
 > There are plans to run Nexus Reflection as a separate process integrated into your IDE. You can learn more about and track the feature here ([#949](https://github.com/graphql-nexus/nexus/issues/949))
 
-## d. Ready now?
+## Ready now?
 
 Let's get started with our e-commerce app by modeling some key entities in the domain. We'll begin with the concept of a `Product`. Something that sits in inventory and users can buy. Our modeling work is going to be done at the API level first but traditionally you might start at your database layer. We're starting with the API to reduce the concepts you need to learn at once here.
 
@@ -76,7 +76,7 @@ Nexus allows you to disable generating this file, but its existence has two bene
 1. It might be easier at first for newcomers to read this file and see how Nexus behaves.
 2. It is valuable to commit it into your version control for pull-request reviews. The SDL file is an accessible way for others to evaluate incoming API changes without having to know about Nexus, or even JavaScript.
 
-## e. Getting our first query working
+## Getting our first query working
 
 Our `Product` object in place but there's still no way for clients of our API to query it. Let's change that. We'll use the special `Query` object type to expose our Product type. The SDL schema for this would look like as follows:
 

@@ -12,7 +12,7 @@ There are multiple ways you can test a GraphQL API. One way is to extract resolv
 
 Testing non-trivial resolvers in isolation is likely to be a good investment in most cases but its up to you as a developer. What Nexus provides help with is not at this level, but higher up in the testing pyramid, at the system level. System testing means tests that will run operations against your API just like a real client would. This chapter will focus on that. Let's dive-in!
 
-## a. Setting up your test environment
+## Setting up your test environment
 
 During this tutorial, you'll use the [Jest testing framework](https://jestjs.io/) to test your API. This is not mandatory but we do recommend it. Still, in general, outside this tutorial, if you prefer another testing framework, feel free to use it.
 
@@ -42,7 +42,7 @@ mkdir tests && touch tests/Order.test.ts
 
 You're set.
 
-## b. Testing the `checkout` mutation
+## Testing the `checkout` mutation
 
 Nexus comes with a special testing module that you can import from `nexus/testing`.
 
@@ -175,8 +175,4 @@ Not Tested:
 
 - That the order and order items are properly persisted in your database.
 
-About testing whether the data is properly persisted, don't worry, we'll get to that very soon.
-
-In fact, the next chapter is about persisting your data in a real database.
-
-See you there!
+About testing whether the data is properly persisted, don't worry, we'll get to that very soon. In fact, the next chapter is about persisting your data in a real database. See you there!

@@ -103,7 +103,7 @@ In your Prisma Schema file replace `<postgres_connection_url>` with your actual 
 
 Confirm things are setup correctly by ... **TODO: find a way to make sure their connection url is working**
 
-## d. Create your database schema
+## Create your database schema
 
 It is now time to replace our in-memory data with actual tables in our database. To do this we'll write models in our Prisma Schema. In chapters 2 and 3 we already began to model our e-com domain with GraphQL types `Product` `Order` and `OrderItem`. We can base our models on that prior work, resulting in a Prisma Schema like so:
 
@@ -147,7 +147,7 @@ Then, apply the migration...
 npx prisma migrate up --experimental
 ```
 
-## e. Access your database
+## Access your database
 
 Now let's finally ditch our in-memory data! Let's start by removing the `api/db.ts` module and then be guided by TypeScript errors.
 
