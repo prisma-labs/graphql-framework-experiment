@@ -31,7 +31,7 @@ We'll explore Reflection a bit more later, but \**\*\*for now just remember the 
 
 <div class="NextIs SectionDivider"></div>
 
-## Model
+## Model The Domain
 
 Let's get started with our e-commerce app by modeling some key entities in the domain. We'll begin with the concept of a `Product`. Something that sits in inventory and users can buy. Our modeling work is going to be done at the API level first but traditionally you might start at your database layer. We're starting with the API to reduce the concepts you need to learn at once here.
 
@@ -49,7 +49,7 @@ To create the the `Product` Object we'll import the `schema` component from the 
 
 `schema` **is where you'll find all the needed building blocks to craft your GraphQL API**. Here, we are particularly interested in the `schema.objectType`, which, unsurprisingly, helps building [GraphQL Object Types](https://graphql.org/graphql-js/object-types/).
 
-```tsx
+```ts
 // api/graphql/Product.ts
 
 import { schema } from 'nexus'
@@ -103,7 +103,7 @@ If you're using an IDE, try to rely as much as possible on auto-completion. Espe
 
 We'll start out with this:
 
-```tsx
+```ts
 // api/graphql/Product.ts
 // ...
 
@@ -135,7 +135,7 @@ So go ahead and add an empty `resolve` method now. Once done, you will see a new
 
 There's one more tweak we'll make before moving on. When specifying a field whose type is a list-of-something, there is a `t.list.*` shorthand you can use instead of `list: true`. Give it a shot, refactor your implementation like so 👇
 
-```tsx
+```ts
 definition(t) {
   t.list.field('products', { ... })
 }

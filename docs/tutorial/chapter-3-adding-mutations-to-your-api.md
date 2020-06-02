@@ -17,7 +17,7 @@ First, let's create an `api/db.ts` \*\*\*\*file and stub some content as follows
 touch api/db.ts
 ```
 
-```tsx
+```ts
 // api/db.ts
 
 export const db = {
@@ -29,7 +29,7 @@ Remember our empty `api/app.ts` file that we created at the beginning of the tut
 
 > GraphQL Context: The GraphQL Context is a plain JavaScript object shared across all resolvers. Nexus creates it anew for each request and adds a few of its own properties. Largely though, what it will contains will be defined by your app. It is a good place to, for example, attach information about the current user.
 
-```tsx
+```ts
 // api/app.ts
 
 import { schema } from 'nexus'
@@ -51,7 +51,7 @@ That's it.
 
 Now, let's use our new context data. Remember the `Query.products` field we created earlier?
 
-```tsx
+```ts
 // api/graphql/Product.ts
 
 import { schema } from 'nexus'
@@ -71,7 +71,7 @@ schema.queryType({
 
 Replace the hardcoded user data that we previously wrote with a read from the context data. Access the context from the _third_ argument in our resolver. Your revised Product object should look like so 👇
 
-```tsx
+```ts
 // api/graphql/Product.ts
 import { schema } from 'nexus'
 
@@ -179,7 +179,7 @@ export const db = {
 Hey, don't get pissed off by the "+" signs that prevents you from copy & pasting yet 😬.
 Here's a version that you can copy & paste .
 
-```tsx
+```ts
 // api/db.ts
 const orderItem = { id: 1, productName: 'ProductFoo', quantity: 1 }
 
@@ -196,7 +196,7 @@ Now we're going to implement our desired schema changes in Nexus. If you want, t
 
 Create an `api/graphql/Order.ts` module that will contain both the `Order` and `OrderItem` objects. Because both objects are so closely related we're not bothering to create modules for each one.
 
-```tsx
+```ts
 // api/graphql/Order.ts
 
 import { schema } from 'nexus'
@@ -232,7 +232,7 @@ In our current implementation though, they're all nullable. **That's because by 
 
 If you're ever not happy with these defaults, don't worry, [you can change them globally](https://www.nexusjs.org/#/api/modules/main/exports/settings?id=schemanullableinputs). For now though, we're interested in changing _only_ the defaults for the `OrderItem` fields. Each field can be made non-null.
 
-```tsx
+```ts
 schema.objectType({
   name: 'OrderItem',
   definition(t) {
@@ -245,7 +245,7 @@ schema.objectType({
 
 When only a few fields' nullability deviate from the default, field-level configuration like this is reasonable. But when a large majority of fields deviate, there is an alternative technique worth considering. Change the default nullability setting at the object level with `nonNullDefaults` setting. We'll do that for `OrderItem` now.
 
-```tsx
+```ts
 schema.objectType({
   name: 'OrderItem',
   nonNullDefaults: {
@@ -263,7 +263,7 @@ Now let's add the `Mutation.checkout` mutation. Like before when we collocated t
 
 Let's start with the following. Like in the last chapter we won't implement the resolver yet and so you'll see an expected static type error about in your IDE.
 
-```tsx
+```ts
 // ...
 
 schema.extendType({
@@ -281,7 +281,7 @@ schema.extendType({
 
 Now, to implement this checkout resolver, we're going to need it to accept some arguments, otherwise its going to be pretty useless! Looking back to our SDL we indeed had `items` arguments:
 
-```tsx
+```ts
 type Mutation {
   checkout(items: [OrderItemInput!]!): Order
 }
@@ -294,7 +294,7 @@ input OrderItemInput {
 
 To implement this in Nexus we'll first create a new GraphQL Input Object called `OrderItemInput` using the `schema.inputObjectType` method. Since we want all fields of this input object to be required, we'll once again adjust the default nullability at the type level.
 
-```tsx
+```ts
 schema.inputObjectType({
   name: 'OrderItemInput',
   nonNullableDefaults: {
@@ -332,7 +332,7 @@ schema.extendType({
 
 If you prefer a copy & pastable version, there you go
 
-```tsx
+```ts
 schema.extendType({
   type: 'Mutation',
   definition(t) {
@@ -369,7 +369,7 @@ Don't worry, that mess will go away soon.
 
 First, we map the incoming arguments to create some actual `OrderItem`s that we'll push to our database.
 
-```tsx
+```ts
 resolve(_root, args, ctx) {
   const items = args.items.map((item, index) => {
     const product = ctx.db.products.find((p) => p.id === item.productId)!;
@@ -391,13 +391,13 @@ resolve(_root, args, ctx) {
 
 Then, we compute the total price of the order based on these items
 
-```tsx
+```ts
 const total = items.reduce((price, i) => price + i.productPrice * i.quantity, 0)
 ```
 
 Finally, we create the actual order, we commit it to the database, and we return it
 
-```tsx
+```ts
 const newOrder = {
   id: ctx.db.orders.length,
   items,
@@ -411,7 +411,7 @@ return newOrder
 
 There's the entire implementation
 
-```tsx
+```ts
 resolve(_root, args, ctx) {
   const items = args.items.map((item, index) => {
     const product = ctx.db.products.find((p) => p.id === item.productId)!;

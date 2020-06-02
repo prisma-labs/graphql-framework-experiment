@@ -38,7 +38,7 @@ Plugins are easy to use:
 npm add nexus-plugin-foo
 ```
 
-```tsx
+```ts
 import foo from 'nexus-plugin-foo'
 import { foo } from 'nexus-plugin-foo' // alternative, as you wish
 import { use } from 'nexus'
@@ -65,7 +65,7 @@ like so:
 npm add nexus-plugin-prisma
 ```
 
-```tsx
+```ts
 // api/app.ts
 
 import { use } from 'nexus'
@@ -262,7 +262,7 @@ schema.extendType({
 
 If you need a copy & pastable version, here it is
 
-```tsx
+```ts
 schema.extendType({
   type: 'Mutation',
   definition(t) {

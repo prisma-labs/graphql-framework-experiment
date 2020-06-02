@@ -58,7 +58,7 @@ Create a `tests/__helpers.ts` module with the following contents.
 touch tests/__helpers.ts
 ```
 
-```tsx
+```ts
 // tests/__helpers.ts                                      // 1
 
 import { createTestContext as originalCreateTestContext, TestContext } from 'nexus/testing'
@@ -89,7 +89,7 @@ Dissecting this helper:
 
 Alright, now you will test your checkout mutation. Use your new helper and scaffold your first test, `"ensures that checkout creates an order"` .
 
-```tsx
+```ts
 // tests/Order.test.ts
 
 import { createTestContext } from './__helpers'
@@ -119,7 +119,7 @@ mutation {
 
 Use that now as input into `ctx.app.query`. Then, snapshot its output. Simple! Like this:
 
-```tsx
+```ts
 // tests/Order.test.ts
 
 import { createTestContext } from './__helpers'
