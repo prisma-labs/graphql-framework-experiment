@@ -9,7 +9,7 @@ In this chapter you're going to write your first schema. You'll learn about:
 
 <div class="NextIs SectionDivider"></div>
 
-## Server?
+## What About That Server?
 
 In the last chapter you probably noticed the minimal setup required to get up and running. In fact, you might even be confused and wondering:
 
@@ -23,9 +23,15 @@ If your lock-in fears are tingling, know that **you still have _full_ access** t
 
 ## Reflection?
 
-⚠️ Nexus has an unconventional concept called "Reflection". The `nexus dev` command runs your application code, but **it also derives artifacts from your app every time it is restarted. Namely, TypeScript types and GraphQL SDL file.**
+Before we get going we need a moment to introduce an important part of the Nexus development workflow. Nexus has an unconventional concept called "Reflection". It refers to the fact that when `nexus dev` or `nexus build` is running not only is your application code being run, but **information is being gathered and artifacts are being derived**. Some of Nexus' uses for reflection include:
 
-We'll explore Reflection a bit more later, but \**\*\*for now just remember the following. You should *always* have your `nexus dev` running when you're working on your project *even\* when you're not intending to access the GraphQL Playground or otherwise run test queries against your API. If you don't do this, you will not get the static typing experience that you expect from Nexus.
+- Figuring out which plugins you are using, and the settings passed
+- Generating TypeScript types to give your resovlers complete type safety
+- Generating an SDL file
+
+This partly explains why Nexus has a declarative API. It needs a way to run your app reliably at build time. Declarative APIs give Nexus a higher degree of control to do this. Declarative APIs also encode enough enough semantic value for Nexus to do the things it needs to.
+
+Architecturally there's a lot more to say about reflection but for now, from a user point of view, just remember the following. You should _always_ have your `nexus dev` running when you're working on your project _even_ when you're not intending to use your server (e.g. access the GraphQL Playground). If you forget to run `nexus dev` then you will not, for example, get the static typing experience that you expect in your resolvers.
 
 > There are plans to run Nexus Reflection as a separate process integrated into your IDE. You can learn more about and track the feature here ([#949](https://github.com/graphql-nexus/nexus/issues/949))
 
