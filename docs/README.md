@@ -51,3 +51,26 @@ By combining automatic type generation with some of the more powerful features o
 The complex mechanisms on which Nexus Schema relies turned out to produce a lot of friction to the daily workflows that people have to deal with when working with it.
 
 Nexus, the framework, is a natural continuation of that vision built by Tim Griesser which aims to make Nexus Schema more accessible to everyone by hiding some of the underlying complexity of the system and by trying to push users into the pit of success.
+
+## Pre-requisites
+
+Having a decent understanding of GraphQL and a bit of familiarity with TypeScript may help you adopt Nexus. If you like to dive in and learn on the fly feel free to do so, but if you do want to build up some pre-requisite knowledge upfront then the following resources may be of interest.
+
+_GraphQL_
+
+- [How to GraphQL](https://www.howtographql.com)
+- [Production Ready GraphQL](https://book.productionreadygraphql.com/)
+- [Official GraphQL website](https://graphql.org) ([community resources](https://graphql.org/community/))
+
+_TypeScript_
+
+- [The New Handbook](https://microsoft.github.io/TypeScript-New-Handbook/everything/)
+- [The Interactive Playground](http://www.typescriptlang.org/play)
+- [Dozens of articles](https://mariusschulz.com/blog) by [Marius Schulz](https://github.com/mariusschulz)
+- [Dozens of articles](https://2ality.com/index.html) by [Dr. Axel Rauschmayer](https://github.com/rauschma)
+
+## Diving In
+
+- Go through the [tutorial](/tutorial/introduction)
+- Explore the [examples repo](https://github.com/graphql-nexus/examples)
+- Explore your own first app by running `npx nexus`

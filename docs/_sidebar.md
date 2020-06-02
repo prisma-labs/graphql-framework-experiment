@@ -1,7 +1,6 @@
 - Getting Started
 
 - [Welcome To Nexus](README)
-- [Onboarding](getting-started/onboarding)
 - [Tutorial](tutorial/introduction)
 - [Migrate from Nexus Schema](getting-started/migrate-from-nexus-schema)
 

@@ -53,7 +53,7 @@ mkdir api/graphql && touch api/graphql/Product.ts
 
 To create the the `Product` Object we'll import the `schema` component from the `nexus` package.
 
-`schema` **is where you'll find all the needed building blocks to craft your GraphQL API**. Here, we are particularly interested in the `schema.objectType`, which, unsurprisingly, helps building [GraphQL Object Types](https://graphql.org/graphql-js/object-types/).
+`schema` is where you'll find all the needed building blocks to craft your GraphQL API. Here, we are particularly interested in the `schema.objectType`, which, unsurprisingly, helps building [GraphQL Object Types](https://graphql.org/graphql-js/object-types/).
 
 ```ts
 // api/graphql/Product.ts

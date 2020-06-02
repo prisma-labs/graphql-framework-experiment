@@ -14,6 +14,8 @@
       :root {
         --theme-color: #42b983;
         --theme-color-secondary: rgb(167, 94, 255);
+        --theme-color-text: #2c4762;
+        --theme-color-text-light: #516a83;
         --theme-color-blue: rgb(24, 189, 240);
         --theme-color-purple: #6566f9;
         --theme-color-warning: #f9b965;
@@ -22,6 +24,7 @@
       body {
         font-size: 17px;
         line-height: 2rem;
+        color: var(--theme-color-text);
       }
 
       /* Components */
@@ -452,7 +455,8 @@
       .markdown-section blockquote {
         padding-top: 0.3em;
         padding-bottom: 0.8em;
-        opacity: 0.85;
+        border-left-width: 2px;
+        color: var(--theme-color-text-light);
       }
       .markdown-section blockquote p {
         font-weight: normal;

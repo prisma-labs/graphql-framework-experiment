@@ -1,7 +1,6 @@
 - Getting Started
 
 - [Welcome To Nexus](README)
-- [Onboarding](getting-started/onboarding)
 - [Tutorial]()
   - [Introduction](tutorial/introduction)
   - [Setup & First Query](tutorial/chapter-1-setup-and-first-query)
