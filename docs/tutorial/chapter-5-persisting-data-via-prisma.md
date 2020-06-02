@@ -1,3 +1,5 @@
+# Chapter 5 <br> Persisting Data (via Prisma) {docsify-ignore}
+
 So far we have been working with in-memory data while we learn about other parts of Nexus in a focused manner, but in this chapter we're going to put the focus squarely on data and show how Nexus can be used with a database. This marks an important step toward your e-commerce app becoming more real. You'll learn about:
 
 - Prisma

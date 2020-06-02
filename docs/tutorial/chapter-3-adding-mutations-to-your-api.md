@@ -1,3 +1,5 @@
+# Chapter 3 <br> Adding Mutations to Your API {docsify-ignore}
+
 In this chapter you're going to add some write capability to your API. You'll learn about:
 
 - Writing GraphQL mutations

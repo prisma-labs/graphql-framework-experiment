@@ -1,3 +1,5 @@
+# Chapter 4 <br> Testing Your API {docsify-ignore}
+
 So far you've been validating your work by manual interacting with the Playground. That might be reasonable at first (depending on your relationship to TDD) but it will not scale. At some point you are going to want automated testing. So in this chapter you're going to add some automated tests to your e-commerce project. You'll learn about:
 
 - Nexus' approach to testing
