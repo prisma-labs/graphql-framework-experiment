@@ -20,9 +20,13 @@
       }
 
       body {
-        font-size: 16px;
+        font-size: 17px;
         line-height: 2rem;
       }
+
+      /* Components */
+      /* Components */
+      /* Components */
 
       /* Section Divider */
 
@@ -33,6 +37,9 @@
         font-size: 1.5rem;
         margin-top: 1.5em !important;
         margin-bottom: 1.5em !important;
+      }
+      .NextIs.SectionDivider + h3 .anchor span {
+        color: var(--theme-color-purple);
       }
 
       /* Component TypeRef */
@@ -115,6 +122,8 @@
       }
 
       /* Component BigButton */
+      /* Component BigButton */
+      /* Component BigButton */
 
       .BigButton {
         border-radius: 2rem;
@@ -142,6 +151,63 @@
         color: #262332 !important;
       }
 
+      /* NextIs */
+
+      .NextIs {
+        line-height: 0 !important;
+        margin: 0 !important;
+      }
+
+      /* .NextIsDetail */
+
+      .NextIs.Detail + blockquote {
+        border-left-color: var(--theme-color-blue);
+      }
+      .NextIs.Detail + blockquote::before {
+        content: 'Detail';
+        color: var(--theme-color-blue);
+      }
+
+      /* .NextIsNote */
+
+      .NextIs.Note + blockquote {
+        border-left-color: rgb(211, 211, 211);
+      }
+      .NextIs.Note + blockquote::before {
+        content: 'Note';
+        color: rgb(163, 163, 163);
+      }
+
+      /* .NextIsTip */
+
+      .NextIs.Tip + blockquote {
+        border-left-color: var(--theme-color);
+      }
+      .NextIs.Tip + blockquote::before {
+        content: 'Tip';
+        color: var(--theme-color);
+      }
+
+      /* .NextIs.Warn */
+
+      .NextIs.Warn + blockquote {
+        border-left-color: var(--theme-color-warning);
+      }
+      .NextIs.Warn + blockquote::before {
+        content: 'Warning';
+        color: var(--theme-color-warning);
+      }
+
+      .OneLineSignature {
+        margin: 0 !important;
+      }
+      .OneLineSignature + pre > code {
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
+      }
+
+      /* Cover page */
+      /* Cover page */
       /* Cover page */
 
       .cover {
@@ -202,6 +268,8 @@
         left: 15rem;
       }
 
+      /* Sidebar */
+      /* Sidebar */
       /* Sidebar */
 
       /* @media only screen and (min-width: 1800px) {
@@ -305,6 +373,14 @@
       }
 
       /* Markdown */
+      /* Markdown */
+      /* Markdown */
+
+      #main > h1:first-child {
+        margin-bottom: 2em;
+        text-align: center;
+        line-height: 1.8;
+      }
 
       .markdown-section h3 {
         margin-top: 3em !important;
@@ -385,59 +461,6 @@
         font-weight: bold !important;
       }
 
-      .NextIs {
-        line-height: 0 !important;
-        margin: 0 !important;
-      }
-
-      /* .NextIsDetail */
-
-      .NextIs.Detail + blockquote {
-        border-left-color: var(--theme-color-blue);
-      }
-      .NextIs.Detail + blockquote::before {
-        content: 'Detail';
-        color: var(--theme-color-blue);
-      }
-
-      /* .NextIsNote */
-
-      .NextIs.Note + blockquote {
-        border-left-color: rgb(211, 211, 211);
-      }
-      .NextIs.Note + blockquote::before {
-        content: 'Note';
-        color: rgb(163, 163, 163);
-      }
-
-      /* .NextIsTip */
-
-      .NextIs.Tip + blockquote {
-        border-left-color: var(--theme-color);
-      }
-      .NextIs.Tip + blockquote::before {
-        content: 'Tip';
-        color: var(--theme-color);
-      }
-
-      /* .NextIs.Warn */
-
-      .NextIs.Warn + blockquote {
-        border-left-color: var(--theme-color-warning);
-      }
-      .NextIs.Warn + blockquote::before {
-        content: 'Warning';
-        color: var(--theme-color-warning);
-      }
-
-      .OneLineSignature {
-        margin: 0 !important;
-      }
-      .OneLineSignature + pre > code {
-        padding-top: 1rem !important;
-        padding-bottom: 1rem !important;
-      }
-
       .markdown-section pre > code {
         font-size: 0.8rem;
         line-height: 1.75;
@@ -466,6 +489,8 @@
         margin-top: 0;
       }
 
+      /* Improvements to code blocks */
+      /* Improvements to code blocks */
       /* Improvements to code blocks */
 
       .token.coord {

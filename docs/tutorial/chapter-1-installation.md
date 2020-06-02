@@ -1,3 +1,5 @@
+# Chapter 1 <br> Installation & Getting Started {docsify-ignore}
+
 In this first chapter we're just going to get the bare minimum of a Nexus project setup. You'll learn about:
 
 - The `nexus` package
