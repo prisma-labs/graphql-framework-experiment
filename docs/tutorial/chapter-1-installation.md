@@ -4,26 +4,22 @@ In this first chapter we're just going to get the bare minimum of a Nexus projec
 - The Nexus CLI
 - Laying out and running a Nexus project
 
-For the purpose of this tutorial, we'll start a Nexus project from scratch.
+<div class="NextIs SectionDivider"></div>
 
-Normally you would run `nexus` (or the scaffolder directly `nexus create app`) to scaffold a new project. But for learning purposes, we suggest not using it yet.
+### CLI
 
-Let's start by creating an empty folder and initializing our `package.json`:
-
-```bash
-mkdir nexus-tutorial && cd nexus-tutorial && npm init -y
-```
-
-Then, let's add `nexus` as dependency. This might take a couple of seconds.
+Start by creating your project directory, initializing your `package.json`, and adding the `nexus` dependency.
 
 ```bash
-npm install nexus
+mkdir nexus-tutorial && cd nexus-tutorial
+npm init -y
+npm add nexus
 ```
 
-Nexus comes out of the box with a CLI. You'll use it often while working on your app. While you can access the CLI of your local nexus via `yarn` or npm scripts or `npx` there's an even easier way. Install `nexus` globally. Then you can access the CLI from anywhere. Nexus is smart enough to delegate all invocations to the _local_ nexus. This is the idiomatic way to work with Nexus, but you aren't forced to do this.
+Nexus comes out of the box with a CLI. You'll use it often while working on your app. While you can access the CLI of your local nexus via `yarn` or npm scripts or `npx` but there's an even easier way. Install `nexus` globally. Then you can access the CLI from anywhere. Nexus is smart enough to delegate all invocations to the _local_ nexus. This is the idiomatic way to work with Nexus, but you aren't forced to do this.
 
 ```markdown
-npm install --global nexus
+npm add --global nexus
 ```
 
 There are just two CLI commands you need to know about right now:
@@ -31,7 +27,9 @@ There are just two CLI commands you need to know about right now:
 - `nexus dev` : This command starts a development server in watch mode. Every time you change a file, your app will be restarted.
 - `nexus build` : This command builds a "production-ready" server, ready to be deployed.
 
-To easily use the CLI, add the following scripts to your `package.json` file which we'll use as shorthands later.
+> Another is `nexus create app` which will scaffold a new Nexus project for you. That is how you should _normally_ start your Nexus projects. We're avoiding it in this tutorial so that you can learn the basics from the ground up.
+
+Despite having the global Nexus CLI, using package scripts can be a handy way of self-documenting your project's workflows. So feel free to add the following scripts to your `package.json`. If you work with team members this can help streamline collaboration.
 
 ```json
 "scripts": {
@@ -40,30 +38,44 @@ To easily use the CLI, add the following scripts to your `package.json` file whi
 }
 ```
 
-Finally, let's create an `api/` folder and create an empty `api/app.ts` module inside it:
+<div class="NextIs SectionDivider"></div>
+
+### Conventional Entrypoint
+
+We'll now create our first module at `api/app.ts`:
 
 ```bash
 mkdir api && touch api/app.ts
 ```
 
-You're almost ready, let's just run our dev server thanks to the scripts we've just created
+The directory name `api` is arbitrary but the module name `app` has special meaning. Nexus will find `app.ts` wherever you put it within your project and treat it as your entrypoint. Furthermore, every module that imports `nexus` will be automatically included into the final build by Nexus. This makes growing and refactoring your project easy as you are freed from managing imoprt/export tedium. You might be wondering how import order is managed. The answer is that Nexus' APIs are declarative and so designed to be order independent.
+
+<div class="NextIs SectionDivider"></div>
+
+### Contextual Feedback
+
+Ok, with our entrypoint setup, let's boot up dev mode and see what happens.
 
 ```bash
-npm run dev
+nexus dev
 ```
 
-Woops. If everything went well so far, you should have the following warning
+Woops? You should be seeing a warning from Nexus:
 
 ```bash
 ▲ nexus:schema Your GraphQL schema is empty. [...]
 ```
 
-This is all fine, you indeed did not add any types to your GraphQL schema yet. Don't worry, we'll get to that very quickly.
+All good, you indeed haven't added any types to your GraphQL schema yet so Nexus is right here. This is the first example of Nexus' rich development mode contextual feedback. One of the goals of Nexus is to never leave you in a confused disoriented state. If Nexus can give you in inline feedback it should. Add rich jsDoc and precise TypeScript types into the mix, and ideally you can largely avoid getting lost and _needing_ to consult the Nexus website, community, so on.
 
-More importantly, you should also have a log telling you that your server is up and running.
+Aside from the warning, you should also see a message indicating that your server is running, and where.
 
 ```bash
 ● nexus:server listening  --  url: 'http://localhost:4000/'
 ```
+
+<div class="NextIs SectionDivider"></div>
+
+### Wrapping Up
 
 That's it! In the next chapter you'll begin working on your app's schema.

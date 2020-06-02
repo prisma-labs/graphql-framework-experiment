@@ -25,6 +25,6 @@ _TypeScript_
 
 ### Diving In
 
-- Go through the [tutorial](/getting-started/tutorial)
-- Start your first app by running `npx nexus`
+- Go through the [tutorial](/tutorial/introduction)
 - Explore the [examples repo](https://github.com/graphql-nexus/examples)
+- Explore your own first app by running `npx nexus`
