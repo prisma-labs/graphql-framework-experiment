@@ -1,3 +1,5 @@
+# Chapter 2 <br> Writing Your First Schema {docsify-ignore}
+
 In this chapter you're going to write your first schema. You'll learn about:
 
 - Writing GraphQL objects
@@ -5,21 +7,21 @@ In this chapter you're going to write your first schema. You'll learn about:
 - GraphQL SDL file generation
 - Enhanced type safety & autocompletion
 
-## Give me break
+<div class="NextIs SectionDivider"></div>
 
-You might have noticed that you need very little setup to get up and running. In fact, you might even be confused and wondering:
+## Server?
 
-> Hey, all I have is an empty `app.ts` file, how can my server even be running?
+In the last chapter you probably noticed the minimal setup required to get up and running. In fact, you might even be confused and wondering:
 
-Well, Nexus comes with a server out of the box. It happens to be an `express` instance today but this area of Nexus will evolve ([#295](https://github.com/graphql-nexus/nexus/issues/295)). There's no need for you to start or stop the server or otherwise think about it beyond your domain logic. Nexus wants you to focus on what makes your GraphQL API unique.
+"Hey, all I have is an empty `app.ts` file, how can my server even be running?"
 
-If your lock-in fears are tingling, know that **you still have _full_ access** to the underlying `express` instance. So if you need to add custom middlewares, routes, and so on, you can.
+Well, Nexus comes with a server out of the box. There's no need for you to start or stop the server or otherwise think about it beyond your domain logic. Nexus wants you to focus on what makes your GraphQL API unique.
 
-## What are we building?
+If your lock-in fears are tingling, know that **you still have _full_ access** to the underlying server instance. So if you need to add custom middlewares, routes, and so on, you can. It happens that currently it is an `express` instance but this area of Nexus will evolve ([#295](https://github.com/graphql-nexus/nexus/issues/295)).
 
-So, what are we building? A toy e-commerce app One just complete enough to give you a full overview of what Nexus can do but hopefully not too complex to confuse you with unnecessary detail. Let's dive-in!
+<div class="NextIs SectionDivider"></div>
 
-## Before we start
+## Reflection?
 
 ⚠️ Nexus has an unconventional concept called "Reflection". The `nexus dev` command runs your application code, but **it also derives artifacts from your app every time it is restarted. Namely, TypeScript types and GraphQL SDL file.**
 
@@ -27,7 +29,9 @@ We'll explore Reflection a bit more later, but \**\*\*for now just remember the 
 
 > There are plans to run Nexus Reflection as a separate process integrated into your IDE. You can learn more about and track the feature here ([#949](https://github.com/graphql-nexus/nexus/issues/949))
 
-## Ready now?
+<div class="NextIs SectionDivider"></div>
+
+## Model
 
 Let's get started with our e-commerce app by modeling some key entities in the domain. We'll begin with the concept of a `Product`. Something that sits in inventory and users can buy. Our modeling work is going to be done at the API level first but traditionally you might start at your database layer. We're starting with the API to reduce the concepts you need to learn at once here.
 
@@ -76,7 +80,9 @@ Nexus allows you to disable generating this file, but its existence has two bene
 1. It might be easier at first for newcomers to read this file and see how Nexus behaves.
 2. It is valuable to commit it into your version control for pull-request reviews. The SDL file is an accessible way for others to evaluate incoming API changes without having to know about Nexus, or even JavaScript.
 
-## Getting our first query working
+<div class="NextIs SectionDivider"></div>
+
+## Your First Home Grown Query
 
 Our `Product` object in place but there's still no way for clients of our API to query it. Let's change that. We'll use the special `Query` object type to expose our Product type. The SDL schema for this would look like as follows:
 
@@ -173,5 +179,9 @@ In response, you should get this:
   }
 }
 ```
+
+<div class="NextIs SectionDivider"></div>
+
+## Wrapping Up
 
 Congratulations! You've successfully got your first GraphQL schema up and running with Nexus! In the next chapter we'll explore adding some write capabilities to our API.

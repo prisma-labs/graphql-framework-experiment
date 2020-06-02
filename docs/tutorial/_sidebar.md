@@ -4,7 +4,7 @@
 - [Onboarding](getting-started/onboarding)
 - [Tutorial]()
   - [Introduction](tutorial/introduction)
-  - [Installation & Getting Started](tutorial/chapter-1-installation)
+  - [Setup & First Query](tutorial/chapter-1-setup-and-first-query)
   - [Writing Your First Schema](tutorial/chapter-2-writing-your-first-schema)
   - [Adding Mutations to Your API](tutorial/chapter-3-adding-mutations-to-your-api)
   - [Testing your API](tutorial/chapter-4-testing-your-api)

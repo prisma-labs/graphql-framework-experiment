@@ -7,7 +7,7 @@ In this chapter you're going to add some write capability to your API. You'll le
 
 To keep our learning gradual we'll use in-memory data for now but rest assured we'll be using a proper databases later in this tutorial.
 
-## Creating our in-memory database
+## Creating an In-Memory Database
 
 First, let's create an `api/db.ts` \*\*\*\*file and stub some content as follows:
 

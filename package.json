@@ -92,6 +92,7 @@
     "docs:dev": "docsify serve docs",
     "docs:readme:build": "doctoc README.md --notitle --maxlevel 3",
     "docs:deploy": "now --prod",
+    "docs:deploy:preview": "now",
     "release:stable": "dripip stable",
     "release:preview": "dripip preview",
     "release:pr": "dripip pr",
