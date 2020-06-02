@@ -27,9 +27,30 @@
         color: var(--theme-color-text);
       }
 
+      /* Tutorial */
+      /* Tutorial */
+      /* Tutorial */
+
+      #wrapping-up {
+        margin-top: 6rem !important;
+      }
+      #wrapping-up + p {
+        text-align: center;
+      }
+
       /* Components */
       /* Components */
       /* Components */
+
+      .NextIs.NextChapter + * > a {
+        font-weight: 100 !important;
+        text-decoration-line: none;
+      }
+      .NextIs.NextChapter + * {
+        margin: 0;
+        font-size: 5rem;
+        text-align: center;
+      }
 
       /* Section Divider */
 
@@ -275,18 +296,6 @@
       /* Sidebar */
       /* Sidebar */
 
-      /* @media only screen and (min-width: 1800px) {
-        .sidebar {
-          width: 30rem !important;
-        }
-      }
-
-      @media only screen and (min-width: 2600px) {
-        .sidebar {
-          width: 50rem !important;
-        }
-      } */
-
       .sidebar li > p.active > a {
         color: var(--theme-color);
       }
@@ -311,6 +320,17 @@
       .sidebar {
         width: 15rem;
         padding-top: 1rem;
+      }
+      .close .sidebar-toggle {
+        top: 1rem;
+        bottom: initial;
+        left: 1rem;
+      }
+      .sidebar-toggle {
+        transition: 300ms left;
+        top: 0.5rem;
+        bottom: initial;
+        left: 15.5rem;
       }
       .sidebar-nav {
         width: 15rem;
@@ -346,9 +366,7 @@
       .sidebar ul:last-child {
         margin-bottom: 1rem;
       }
-      /* .sidebar li p span:only-child::before {
-        content: '◆ ';
-      } */
+
       .sidebar li p span:only-child {
         color: var(--theme-color-purple);
         margin-top: 1em;
@@ -379,6 +397,9 @@
       /* Markdown */
       /* Markdown */
 
+      #main {
+        margin-bottom: 50vh;
+      }
       #main > h1:first-child {
         margin-bottom: 2em;
         text-align: center;
@@ -589,6 +610,7 @@
     </script>
     <script src="//unpkg.com/docsify/lib/docsify.min.js"></script>
     <script src="//unpkg.com/docsify/lib/plugins/search.min.js"></script>
+    <!-- <script src="//cdn.jsdelivr.net/npm/docsify@4"></script> -->
     <script src="//unpkg.com/prismjs/components/prism-typescript.min.js"></script>
     <script src="//unpkg.com/prismjs/components/prism-diff.min.js"></script>
     <script src="//unpkg.com/prismjs/components/prism-graphql.min.js"></script>

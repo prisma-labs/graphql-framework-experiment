@@ -94,3 +94,7 @@ Take a look at the right-hand side SCHEAM tab. There you'll see a default schema
 ## Wrapping Up
 
 That's it! In the next chapter you'll begin working on your app's schema.
+
+<div class="NextIs NextChapter"></div>
+
+[➳](/tutorial/chapter-2-writing-your-first-schema)
