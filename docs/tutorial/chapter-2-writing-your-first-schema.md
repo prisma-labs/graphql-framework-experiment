@@ -55,11 +55,11 @@ To create the the `Product` Object we'll import the `schema` component from the 
 import { schema } from 'nexus'
 
 schema.objectType({
-  name: 'Product', // <-- Name of your type
+  name: 'Product', //     <- Name of your type
   definition(t) {
-    t.int('id') // <-- Field named `id` of type `Int`
-    t.string('name') // <-- Field named `name` of type `String`
-    t.int('price') // <-- Field named `price` of type `Int`
+    t.int('id') //        <- Field named `id` of type `Int`
+    t.string('name') //   <- Field named `name` of type `String`
+    t.int('price') //     <- Field named `price` of type `Int`
   },
 })
 ```
@@ -94,14 +94,7 @@ type Query {
 
 The Query object is a central place in your schema where many other types will appear. From a code organization perspective we could either create a new `api/graphql/Query.ts` module or we could _collocate_ the exposure of Product type with its definition in `api/graphql/Product.ts`. In this tutorial we'll take the collocation approach. This organizing pattern often scales better on large apps.
 
-To achieve colocation in Nexus we'll use `schema.extendType`. Its API is _very_ similar to the `schema.objectType` one.
-
-**But before simply copy & pasting it**, please try to write down the snippet below manually.
-
-This is not to bother you. This is to help you get a feeling for how Nexus reacts when you're typing.
-If you're using an IDE, try to rely as much as possible on auto-completion. Especially for the `type` field and while writing the return value of the `resolve` method of the `products` field.
-
-We'll start out with this:
+To achieve colocation in Nexus we'll use `schema.extendType`. Its API is _very_ similar to the `schema.objectType` one. We'll start out with this:
 
 ```ts
 // api/graphql/Product.ts
