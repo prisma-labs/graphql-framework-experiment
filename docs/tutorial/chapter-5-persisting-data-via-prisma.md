@@ -61,6 +61,7 @@ Now that you know a bit about Prisma and Nexus plugins, let's get going! Do the 
 - Install the Prisma plugin
 - Use it in your `api/app.ts` module
 - Create your Prisma Schema
+- Create a `.env` file to store your database credentials
 - Connect to your database
 
 like so:
@@ -79,7 +80,9 @@ use(prisma())
 ```
 
 ```bash
-mkdir prisma && touch prisma/schema.prisma
+mkdir prisma
+touch prisma/schema.prisma
+touch prisma/.env
 ```
 
 ```groovy
@@ -87,8 +90,13 @@ mkdir prisma && touch prisma/schema.prisma
 
 datasource postgres {
   provider = "postgresql"
-  url      = "<postgres_connection_url>"
+  url      = env("DATABASE_URL")
 }
+```
+
+```
+# prisma/.env
+DATABASE_URL="<postgres_connection_url>"
 ```
 
 Almost done, but we still need to setup a Postgres database for our app to connect to. There are a ton of ways to do this so we're just going to show the most straight forward cross-platform way we know how. First, make sure you have [docker installed](https://docs.docker.com/get-docker/). Then, simply run this command:
@@ -105,7 +113,7 @@ postgresql://postgres:postgres@localhost:5432/myapp
 
 If you prefer setting up your local Postgres another way go for it. If our suggest approach doesn't work for you, then checkout a few other approaches listed on the [Nexus recipes page](https://www.nexusjs.org/#/references/recipes?id=setting-up-postgresql).
 
-In your Prisma Schema file replace `<postgres_connection_url>` with your actual database URL.
+Finally, in the `prisma/.env` file you've created before, replace `<postgres_connection_url>` with your actual database URL.
 
 Confirm things are setup correctly by ... **TODO: find a way to make sure their connection url is working**
 
