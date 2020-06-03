@@ -154,7 +154,7 @@ We will not go into more detail about the data resolution systems of GraphQL and
 
 You'll see some feedback from your IDE that you're missing a `resolve` property. Go ahead and try to implement it, letting the autocompletion guide you.
 
-> You might be wondering why Nexus hasn't complained about misisng resolvers in some other cases so far. The answer is a more advanced topic that we'll cover later.
+> You might be wondering why Nexus hasn't complained about missing resolvers in some other cases so far. The answer is a more advanced topic that we'll cover later.
 
 ```ts
 import { schema } from 'nexus'
