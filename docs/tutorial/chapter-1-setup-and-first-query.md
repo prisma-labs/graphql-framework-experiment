@@ -7,8 +7,6 @@ In this first chapter we're just going to get the bare minimum of a Nexus projec
 - Laying out and running a Nexus project
 - GraphQL Playground
 
-<div class="NextIs SectionDivider"></div>
-
 ## CLI
 
 Start by creating your project directory, initializing your `package.json`, and adding the `nexus` dependency.
@@ -41,8 +39,6 @@ Despite having the global Nexus CLI, using package scripts can be a handy way of
 }
 ```
 
-<div class="NextIs SectionDivider"></div>
-
 ## Conventional Entrypoint
 
 We'll now create our first module at `api/app.ts`:
@@ -52,8 +48,6 @@ mkdir api && touch api/app.ts
 ```
 
 The directory name `api` is arbitrary but the module name `app` has special meaning. Nexus will find `app.ts` wherever you put it within your project and treat it as your entrypoint. Furthermore, every module that imports `nexus` will be automatically included into the final build by Nexus. This makes growing and refactoring your project easy as you are freed from managing imoprt/export tedium. You might be wondering how import order is managed. The answer is that Nexus' APIs are declarative and so designed to be order independent.
-
-<div class="NextIs SectionDivider"></div>
 
 ## Contextual Feedback
 
@@ -71,8 +65,6 @@ Woops? You should be seeing a warning from Nexus:
 
 All good, you indeed haven't added any types to your GraphQL schema yet so Nexus is right here. This is the first example of Nexus' rich development mode contextual feedback. One of the goals of Nexus is to never leave you in a confused disoriented state. If Nexus can give you in inline feedback it should. Add rich jsDoc and precise TypeScript types into the mix, and ideally you can largely avoid getting lost and _needing_ to consult the Nexus website, community, so on.
 
-<div class="NextIs SectionDivider"></div>
-
 ## Make Your First Query
 
 Aside from the warning, you should also see a message indicating that your server is running, and where.
@@ -88,8 +80,6 @@ Open it up, what do you see? It should be an instance of [GraphQL Playground](ht
 This is a graphical user inteface for interacting with GraphQL APIs. If you prefer you can run a [standalone](https://www.electronjs.org/apps/graphql-playground) version as an app on your machine, or another GraphQL GUI entirely. Nexus ships with one out of the box for your convenience.
 
 Take a look at the right-hand side SCHEAM tab. There you'll see a default schema that Nexus has prvoided for you. This, along with the warning you say before, will go away once you begin your own schema.
-
-<div class="NextIs SectionDivider"></div>
 
 ## Wrapping Up
 

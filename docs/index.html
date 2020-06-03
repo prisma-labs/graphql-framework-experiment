@@ -64,22 +64,7 @@
         text-align: center;
       }
 
-      /* Section Divider */
-      /* TODO we can remove this given the tutorial css above */
-
-      .NextIs.SectionDivider + * {
-        text-align: center;
-        font-style: italic;
-        font-family: serif;
-        font-size: 1.5rem;
-        margin-top: 1.5em !important;
-        margin-bottom: 1.5em !important;
-      }
-      .NextIs.SectionDivider + * .anchor span {
-        color: var(--theme-color);
-      }
-
-      /* Component TypeRef */
+      /* TypeRef */
 
       .markdown-section code.TypeRef {
         color: hsla(100, 100%, 0%, 0.5);
@@ -92,7 +77,7 @@
         content: '⌕ ';
       }
 
-      /* Component NexusVSDL */
+      /* NexusVSDL */
 
       .Row.NexusVSDL > *:first-child {
         flex-grow: 0;
@@ -101,9 +86,10 @@
         flex-grow: 1;
       }
 
-      /* Component TightRow */
-      /* Component Row */
-      /* Component Collapsable */
+      /* IntrinsicRow */
+      /* TightRow */
+      /* Row */
+      /* Collapsable */
 
       @media (max-width: 1300px) {
         .Row.Collapsable {
@@ -122,17 +108,10 @@
       }
 
       @media (min-width: 1300px) {
-        /* .IntrinsicRow, */
         .Row {
           width: 900px;
           margin-left: -100px; /* (900 - 700) / 2 */
         }
-        /* .IntrinsicRow {
-          justify-content: center;
-        }
-        .IntrinsicRow > * {
-          flex-grow: initial !important;
-        } */
       }
 
       @media (min-width: 1650px) {
@@ -173,9 +152,7 @@
         margin-left: 0.55em;
       }
 
-      /* Component BigButton */
-      /* Component BigButton */
-      /* Component BigButton */
+      /* BigButton */
 
       .BigButton {
         border-radius: 2rem;
