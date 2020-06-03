@@ -312,6 +312,14 @@ schema.extendType({
 })
 ```
 
+## Try It Out
+
 Awesome, you're ready to open up the playground and buy a few things! If all goes well, good job! If not, no worries, there's a lot of integration pieces in this chapter where something could have gone wrong. If after reviewing your steps you still don't understand the issue, feel free to open up a [discussion](https://nxs.li/discussions) asking for help.
 
+## Wrapping Up
+
 We've just changed our code, so we must be due or overdue for a test update right? Well, in the next chapter we'll do just that, and show you how Nexus testing works with Prisma.
+
+<div class="NextIs NextChapter"></div>
+
+[➳](/tutorial/chapter-6-testing-with-prisma)

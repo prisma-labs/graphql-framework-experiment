@@ -65,7 +65,7 @@ Woops? You should be seeing a warning from Nexus:
 
 All good, you indeed haven't added any types to your GraphQL schema yet so Nexus is right here. This is the first example of Nexus' rich development mode contextual feedback. One of the goals of Nexus is to never leave you in a confused disoriented state. If Nexus can give you in inline feedback it should. Add rich jsDoc and precise TypeScript types into the mix, and ideally you can largely avoid getting lost and _needing_ to consult the Nexus website, community, so on.
 
-## Make Your First Query
+## Try It Out
 
 Aside from the warning, you should also see a message indicating that your server is running, and where.
 

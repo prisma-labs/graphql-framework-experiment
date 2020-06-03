@@ -14,7 +14,7 @@ There are multiple ways you can test a GraphQL API. One way is to extract resolv
 - Thanks to the enhanced static type safety brought by Nexus, testing for correct handling of different input types and expected output types can be greatly reduced. For example you shouldn't need to test that your resolver checks for nulls before accessing nullable fields of an input object. And you don't need to test that your resolver is returning the right type.
 - Unit testing resolvers cannot provide a client perspective view of correctness since they focus on internals. If you want to test but have limited time/capacity to do so, you might choose to minimize/forgo the unit level in favor of system/integration tests that are closer to or at the level of a client perspective.
 
-Testing non-trivial resolvers in isolation is likely to be a good investment in most cases but its up to you as a developer. What Nexus provides help with is not at this level, but higher up in the testing pyramid, at the system level. System testing means tests that will run operations against your API just like a real client would. This chapter will focus on that. Let's dive-in!
+Testing non-trivial resolvers in isolation is likely to be a good investment in most cases but its up to you as a developer. What Nexus provides help with is not at this level, but higher up in the [testing pyramid](https://codingjourneyman.com/tag/uncle-bob/page/2/), at the system level. System testing means tests that will run operations against your API just like a real client would. This chapter will focus on that. Let's dive-in!
 
 ## Setting up Your Test Environment
 
@@ -121,6 +121,8 @@ it('ensures that an order is created', async () => {
 1. The test context exposes a GraphQL client at `ctx.app.query` that will help us run operations against our API. Here We're using it to send a signup mutation.
 2. This is the mutation from the end of last chapter.
 3. The result will be snapshoted inline allowing us to see the input and output colocated!
+
+## Try It Out
 
 Now run your tests and let's see that snapshot come to life! It should look similar to this:
 

@@ -11,3 +11,7 @@ If you're using another set of tools, like Yarn on Windows with Sublime Text, th
 As you progress you'll be writing code, of course. Often you'll have the chance to copy and paste our code, but we strongly suggest if you're just starting out to **write the code yourself**. This will expose you to _experience_ of writing a Nexus app. Things like autocompletion and letting static safety guide your implementations, e.g. inside a GraphQL resolver. Also if you're new to TypeScript getting used to encountering, understanding, and fixing static type errors is essential practice. That said at no time should you feel _frustrated_. If things just aren't working, copy-paste our work as needed. Then, once things _are_ working, taking a momemnt muck around, break things, fix them again, etc. is almost always time well spent.
 
 Thanks for checking out Nexus, we hope you're as excited to learn about it as we are to show it to you! :rocket:
+
+<div class="NextIs NextChapter"></div>
+
+[➳](/tutorial/chapter-1-setup-and-first-query)
