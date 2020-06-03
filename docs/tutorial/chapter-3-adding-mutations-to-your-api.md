@@ -82,398 +82,283 @@ schema.queryType({
 
 **Did you notice?** Still no TypeScript type annotations required from you yet everything is still totally type safe. Prove it to yourself by hovering over the `ctx.db.products` property and witness the correct type information it gives you. This is the type propagation we just mentioned in action. 🙌
 
+## Your First Mutation
+
+Alright, now that we know how to wire things into our context, let's implement our first mutation. We're going to make it possible for your API clients to create new users through your API. This mutation will need a name. Rather than simply call it `createUser` we'll use language from our domain. In this case `signup` seems reasonable. There are similarities with our previous work with `Query.users`:
+
+- `Mutation` is a root type, its fields are entrypoints.
+- We can colocate mutation fields with the objects they relate to or centralize all mutation fields.
+
+As before we will take the colocation approach.
+
+<div class="TightRow">
+
+<!-- prettier-ignore -->
+```ts
+// api/graphql/User.ts
+// ...
+
+schema.extendType({
+  name: 'Mutation',
+  definition(t) {
+    t.field('signup', {
+      type: 'User',
+      nullable: false,              // 1
+      resolve(_root, args, ctx) {
+        ctx.db.users.push(/*...*/)
+        return // ...
+      },
+    })
+  },
+})
+```
+
+```graphql
+Mutation {
+  signup: User!
+}
+```
+
+</div>
+
+1. By default in Nexus all output types are nullable. This is for [best practice reasons](https://graphql.org/learn/best-practices/#nullability). In this case, we want to guarantee [to the client] that a User object will always be returned upon a successful signup mutation.
+
+   If you're ever dissatisfied with Nexus' defaults, not to worry, [you can change them globally](https://www.nexusjs.org/#/api/modules/main/exports/settings?id=schemanullableinputs).
+
+We need to get the client's input data to complete our resolver. This brings us to a new concept, GraphQL arguments. Every field in GraphQL may accept them. Effectively you can think of each field in GraphQL like a function, accepting some input, doing something, and returning an output. Most of the time "doing something" is a matter of some read-like operation but with `Mutation` fields the "doing something" usually entails a process with side-effects (e.g. writing to the databse).
+
+Let's revise our implementation with GraphQL arguments.
+
+<div class="IntrinsicRow">
+
+```diff
+schema.extendType({
+  name: 'Mutation',
+  definition(t) {
+    t.field('signup', {
+      type: 'User',
++     args: {                                        // 1
++       name: schema.stringArg({ required: true }),  // 2
++       email: schema.stringArg({ required: true }), // 2
++     },
+      resolve(_root, args, ctx) {
++       const user = {
++         id: Number(Math.random().toString().slice(2))
++         name: args.name,                           // 3
++         email: args.email,                         // 3
++       }
++       ctx.db.users.push(user)
++       return user
+-       ctx.db.users.push(/*...*/)
+-       return // ...
+      },
+    })
+  },
+})
+```
+
+```diff
+Mutation {
+-  signup: User
++  signup(name:String!, email:String!): User
+}
+```
+
+</div>
+
+1. Add an `args` property to the field definition to define its args. Keys are arg names and values are type specifications.
+2. Use the Nexus helpers for defining an arg type. There is one such helper for every GraphQL scalar such as `schema.intArg` and `schema.booleanArg`. Should you want to reference a type like some InputObject then use `schema.arg({ type: "..." })`.
+3. In our resolver, access the args we specified above and pass them through to our custom logic. If you hover over the `args` parameter you'll see that Nexus has properly typed them including the fact that they cannot be undefined.
+
 ## Model The Domain pt 2
 
-Alright, now that we know how to wire things into our context, let's flush out our schema a bit more. We'll add `Post` objects to represent content by authors and `Blog` objects to represent groupings of users and posts.
+Before we wrap this chapter let's flush out our schema a bit more. We'll add `Post` objects to represent content by authors and `Blog` objects to represent groupings of users and posts. We'll also tweak our existing `User` objects to relate to blogs and posts. Finally we'll update our in memory database. There are no new concepts here so we'll move briskly.
 
-We've already worked with objects now, let's dive in.
+<div class="IntrinsicRow">
 
 ```ts
 // api/graphql/Blog.ts
-```
-
-```ts
-// api/graphql/Post.ts
-```
-
-We'll use some SDL to visualize what additions we'd like to make. We'll need a `Post` object to represent the actual writings of users. `Order` object to represent a store checkout and a `checkout` GraphQL mutation to perform checkouts.
-
-```graphql
-type Order {
-  id: Int
-  createdAt: DateTime
-  items: [OrderItem] # Items of that order
-  total: Int # Total of that order
-}
-
-type OrderItem {
-  id: Int!
-  productName: String! # Name of the product
-  productPrice: String! # Price of the product
-  quantity: Int! # Quantity of the product
-}
-
-type Mutation {
-  checkout(items: [OrderItemInput!]!): Order
-}
-
-input OrderItemInput {
-  productId: ID!
-  quantity: Int!
-}
-```
-
-> **Note:** `OrderItem` does not have a relation to a `Product` because we need orders to stay immutable. If a product is deleted after an order is placed, we need that order to stay intact, for accountability reasons.
-
-Let's wrap up and see what the schema should look like overall
-
-```graphql
-type Query {
-  products: [Product!]
-}
-
-type Mutation {
-  checkout(items: [OrderItemInput!]!): Order
-}
-
-type Product {
-  id: Int
-  name: String
-  price: Int
-}
-
-type Order {
-  id: Int
-  createdAt: DateTime
-  items: [OrderItem!]
-  total: Int
-}
-
-type OrderItem {
-  id: Int!
-  productName: String!
-  productPrice: Int!
-  quantity: Int!
-}
-
-input OrderItemInput {
-  quantity: Int!
-  productId: Int!
-}
-```
-
-## Updating our in-memory database
-
-Before we actually evolve our GraphQL schema, there's one thing we need to do: evolve our in-memory database. We need two new tables for the `orders` and `orderItems`.
-
-Head to your `api/db.ts` file, and add the following
-
-```diff
-+ const orderItem = { id: 1, productName: 'ProductFoo', quantity: 1 }
-
-export const db = {
-   products: [{ id: 1, names: 'ProductFoo' }],
-+	 orders: [{ id: 1, items: [orderItem] }],
-+  orderItems: [orderItem]
-};
-```
-
-## Implementing the designed schema
-
-Now we're going to implement our desired schema changes in Nexus. If you want, try to implement it yourself and then come back here to compare your solution.
-
-Create an `api/graphql/Order.ts` module that will contain both the `Order` and `OrderItem` objects. Because both objects are so closely related we're not bothering to create modules for each one.
-
-```ts
-// api/graphql/Order.ts
 
 import { schema } from 'nexus'
 
 schema.objectType({
-  name: 'Order',
-  definition(t) {
-    t.int('id')
-    t.list.field('items', {
-      type: 'OrderItem',
-    })
-    t.int('total')
-    //t.date('createdAt') // TODO: support t.date out of the box
-  },
-})
-
-schema.objectType({
-  name: 'OrderItem',
-  definition(t) {
-    t.int('id')
-    t.string('productName')
-    t.int('productPrice')
-    t.int('quantity')
-  },
-})
-```
-
-Now have a look at your generated `schema.graphql` SDL file. _Did you notice something wrong?_
-
-In our original schema design, we specified the `OrderItem` fields to _all_ be required.
-
-In our current implementation though, they're all nullable. **That's because by default and [for best practices reasons](https://graphql.org/learn/best-practices/#nullability), all fields and output types are nullable by default.**
-
-If you're ever not happy with these defaults, don't worry, [you can change them globally](https://www.nexusjs.org/#/api/modules/main/exports/settings?id=schemanullableinputs). For now though, we're interested in changing _only_ the defaults for the `OrderItem` fields. Each field can be made non-null.
-
-```ts
-schema.objectType({
-  name: 'OrderItem',
+  name: 'Blog',
   definition(t) {
     t.int('id', { nullable: false })
-    t.string('productName', { nullable: false })
-    t.int('quantity', { nullable: false })
+    t.string('name', { nullable: false })
+    t.list.field('posts', { type: 'Post', nullable: false })
+    t.list.field('users', { type: 'User', nullable: false })
   },
 })
 ```
 
-When only a few fields' nullability deviate from the default, field-level configuration like this is reasonable. But when a large majority of fields deviate, there is an alternative technique worth considering. Change the default nullability setting at the object level with `nonNullDefaults` setting. We'll do that for `OrderItem` now.
+```graphql
+type Blog {
+  id: Int!
+  name: String!
+  posts: [Post!]!
+  users: [User!]!
+}
+```
+
+</div>
+<div class="IntrinsicRow">
 
 ```ts
+// api/graphql/Post.ts
+
+import { schema } from 'nexus'
+
 schema.objectType({
-  name: 'OrderItem',
-  nonNullDefaults: {
-    output: true,
-  },
+  name: 'Post',
   definition(t) {
-    t.int('id')
-    t.string('productName')
-    t.int('quantity')
+    t.int('id', { nullable: false })
+    t.string('title', { nullable: false })
+    t.string('body', { nullable: false })
+    t.field('author', { type: 'User' })
   },
 })
 ```
 
-Now let's add the `Mutation.checkout` mutation. Like before when we collocated the `Query.products` query with the `Product` object, we'll now colocate the `Mutation.checkout` mutation with the `Order` object.
-
-Let's start with the following. Like in the last chapter we won't implement the resolver yet and so you'll see an expected static type error about in your IDE.
-
-```ts
-// ...
-
-schema.extendType({
-  type: 'Mutation',
-  definition(t) {
-    t.field('checkout', {
-      type: 'Order',
-      resolve() {
-        // ...
-      },
-    })
-  },
-})
-```
-
-Now, to implement this checkout resolver, we're going to need it to accept some arguments, otherwise its going to be pretty useless! Looking back to our SDL we indeed had `items` arguments:
-
-```ts
-type Mutation {
-  checkout(items: [OrderItemInput!]!): Order
-}
-
-input OrderItemInput {
-  quantity: Int!
-  productId: Int!
+```graphql
+type Post {
+  id: Int!
+  title: String!
+  body: String!
+  author: User
 }
 ```
 
-To implement this in Nexus we'll first create a new GraphQL Input Object called `OrderItemInput` using the `schema.inputObjectType` method. Since we want all fields of this input object to be required, we'll once again adjust the default nullability at the type level.
+</div>
 
-```ts
-schema.inputObjectType({
-  name: 'OrderItemInput',
-  nonNullableDefaults: {
-    input: true,
-  },
-  definition(t) {
-    t.int('productId')
-    t.int('quantity')
-  },
-})
-```
+Evidently most of data isn't nullable! Its pretty annoying to write and read that repitition. Luckily Nexus allows us to change the nullability defaults at the object level.
 
-Second, let's update our checkout mutation to use our newly created input object type. We'll use the `schema.arg` method which supports referencing input types defined in our schema.
+<div class="IntrinsicRow">
 
 ```diff
-schema.extendType({
-  type: "Mutation",
+schema.objectType({
+  name: 'Blog',
++ nonNullDefaults: {
++   output: true,
++ },
   definition(t) {
-    t.field("checkout", {
-      type: "Order",
-+      args: {
-+        items: schema.arg({
-+          type: "OrderItemInput",
-+          list: true,
-+          required: true,
-+        }),
-      },
-      resolve(root, args) {
-				// ...
-      },
-    });
-  },
-});
-```
-
-If you prefer a copy & pastable version, there you go
-
-```ts
-schema.extendType({
-  type: 'Mutation',
-  definition(t) {
-    t.field('checkout', {
-      type: 'Order',
-      args: {
-        items: schema.arg({
-          type: 'OrderItemInput',
-          list: true,
-          required: true,
-        }),
-      },
-      resolve(root, args) {
-        // ...
-      },
-    })
++   t.int('id')
+-   t.int('id', { nullable: false })
++   t.string('name')
+-   t.string('name', { nullable: false })
++   t.list.field('posts', { type: 'Post' })
+-   t.list.field('posts', { type: 'Post', nullable: false })
++   t.list.field('users', { type: 'User' })
+-   t.list.field('users', { type: 'User', nullable: false })
   },
 })
 ```
 
-> **Note**: There's a handful of other methods you can use for scalar input types, such as `schema.intArg` , `schema.stringArg` , `schema.booleanArg` etc..
-
-With the `items` arg setup, Nexus will now automatically statically type the `args` parameter of the `resolve` method. Verify that by hovering your cursor over the `args` parameter. We're now ready to implement the `Mutation.checkout` resolver! What do we want it to do?
-
-1. Create the `OrderItem`s based on the incoming arguments
-2. Push these to our in-memory database
-3. Compute the total of the order based on the `OrderItem`
-4. Create an `Order`
-5. Push it to our in-memory database
-6. Return our `Order`
-
-Because of our in-memory database, the implementation is hairy. We'll try to do it step by step.
-Don't worry, that mess will go away soon.
-
-First, we map the incoming arguments to create some actual `OrderItem`s that we'll push to our database.
-
-```ts
-resolve(_root, args, ctx) {
-  const items = args.items.map((item, index) => {
-    const product = ctx.db.products.find((p) => p.id === item.productId)!;
-
-    if (!product) {
-      throw new Error(`Could not find product with id ${item.productId}`);
-    }
-
-    return {
-      id: ctx.db.orderItems.length + index + 1, // generate ids for our order items
-      productName: product.name,
-      productPrice: product.price,
-      quantity: item.quantity, // associate the quantity
-    };
-  });
-
-  ctx.db.orderItems.push(...items) // Push them to the database
+```diff
+schema.objectType({
+  name: 'Post',
++ nonNullDefaults: {
++   output: true,
++ },
+  definition(t) {
++   t.int('id')
+-   t.int('id', { nullable: false })
++   t.string('title')
+-   t.string('title', { nullable: false })
++   t.string('body')
+-   t.string('body', { nullable: false })
++   t.field('author', { type: 'User', nullable: true })
+-   t.field('author', { type: 'User' })
+  },
+})
 ```
 
-Then, we compute the total price of the order based on these items
+</div>
 
-```ts
-const total = items.reduce((price, i) => price + i.productPrice * i.quantity, 0)
+<!-- TODO maybe we should introduce nullable config in chapter 2... -->
+
+While tweaking our User object to relate to posts and blogs we'll also make its field return types non-nullable.
+
+```diff
+schema.objectType({
+  name: 'User',
++ nonNullDefaults: {
++   output: true,
++ },
+  definition(t) {
+    t.int('id')
+    t.string('name')
+    t.int('email')
++   t.list.field('posts', { type: 'Post' })
++   t.list.field('blogs', { type: 'Blog' })
+  },
+})
 ```
 
-Finally, we create the actual order, we commit it to the database, and we return it
-
-```ts
-const newOrder = {
-  id: ctx.db.orders.length,
-  items,
-  total,
-}
-
-ctx.db.orders.push(newOrder)
-
-return newOrder
-```
-
-There's the entire implementation
-
-```ts
-resolve(_root, args, ctx) {
-  const items = args.items.map((item, index) => {
-    const product = ctx.db.products.find((p) => p.id === item.productId)!;
-
-    if (!product) {
-      throw new Error(`Could not find product with id ${item.productId}`);
-    }
-
-    return {
-      id: ctx.db.orderItems.length + index + 1, // generate ids for our order items
-      productName: product.name,
-      productPrice: product.price,
-      quantity: item.quantity, // associate the quantity
-    };
-  });
-
-  ctx.db.orderItems.push(...items);
-
-  const total = items.reduce(
-    (price, i) => price + i.productPrice * i.quantity,
-    0
-  );
-
-  const newOrder = {
-    id: ctx.db.orders.length,
-    items,
-    total,
-  };
-
-  ctx.db.orders.push(newOrder);
-
-  return newOrder;
+```diff
+type User {
+- id: Int
+- name: String
+- email: string
++ id: Int!
++ name: String!
++ email: string!
++ posts: [Post!]!
++ blogs: [Blog!]!
 }
 ```
 
-Alright, there we are. If you're curious to try what you've just built, head over to the GraphQL Playground again and run this query:
+And updates to our in-memory database at `api/db.ts`:
+
+```diff
+ export const db = {
+   users: [{ id: 1, name: 'Jill', email: 'jill@prisma.io' }],
++  blogs: [{ id: 1, name: 'Foo', users:[], posts:[] }],
++  posts: [{ id: 1, title: 'Bar', author: '1', body: '...' }],
+ }
+```
+
+## Try It Out
+
+Great, now head on over to the GraphQL Playground and run this query (left). If everything went well, you should see a response like this (right):
+
+<div class="IntrinsicRow">
 
 ```graphql
 mutation {
-  checkout(items: [{ productId: 1, quantity: 3 }]) {
+  signup(name: "Jim", email: "jim@prisma.io") {
     id
-    items {
+    name
+    email
+    posts {
       id
-      productName
-      quantity
     }
-    total
+    blogs {
+      id
+    }
   }
 }
 ```
-
-In response, you should get this:
 
 ```json
 {
   "data": {
-    "checkout": {
-      "id": 2,
-      "items": [
-        {
-          "id": 3,
-          "productName": "ProductFoo",
-          "quantity": 3
-        }
-      ],
-      "total": 30
+    "signup": {
+      "id": 2345185,
+      "name": "Jim",
+      "email": "jim@prisma.io",
+      "posts": [],
+      "blogs": []
     }
   }
 }
 ```
 
+</div>
+
 ## Wrapping Up
 
-Congratulations! You can now read and write to your API. Good job. But, so far you've been validating your work by manual interacting with the Playground. That may be reasonable at first (depending on your relationship to TDD) but it will not scale. At some point you are going to want automated testing. Nexus takes testing seriously and in the next chapter we'll show you how. See you there!
+Congratulations! You can now read and write to your API. Good job. But, so far you've been validating your work by manually interacting with the Playground. That may be reasonable at first (depending on your relationship to TDD) but it will not scale. At some point you are going to want automated testing. Nexus takes testing seriously and in the next chapter we'll show you how. See you there!
 
 <div class="NextIs NextChapter"></div>
 

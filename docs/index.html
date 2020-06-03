@@ -122,19 +122,34 @@
       }
 
       @media (min-width: 1300px) {
+        /* .IntrinsicRow, */
         .Row {
           width: 900px;
           margin-left: -100px; /* (900 - 700) / 2 */
         }
+        /* .IntrinsicRow {
+          justify-content: center;
+        }
+        .IntrinsicRow > * {
+          flex-grow: initial !important;
+        } */
       }
 
       @media (min-width: 1650px) {
+        .IntrinsicRow,
         .Row {
           width: 1400px;
           margin-left: -350px; /* (1300 - 700) / 2 */
         }
+        .IntrinsicRow {
+          justify-content: center;
+        }
+        .IntrinsicRow > * {
+          flex-grow: initial !important;
+        }
       }
 
+      .IntrinsicRow,
       .TightRow,
       .Row {
         display: flex;
@@ -142,17 +157,17 @@
         margin-bottom: 1.2em;
         flex-wrap: wrap;
       }
+      .IntrinsicRow > *,
       .TightRow > *,
       .Row > * {
-        /* margin-top: 0 !important; */
-        /* margin-bottom: 0 !important; */
         flex-grow: 1;
-        /* align-self: flex-start; */
       }
+      .IntrinsicRow > *:not(:last-child),
       .TightRow > *:not(:last-child),
       .Row > *:not(:last-child) {
         margin-right: 0.55em;
       }
+      .IntrinsicRow > *:not(:first-child),
       .TightRow > *:not(:first-child),
       .Row > *:not(:first-child) {
         margin-left: 0.55em;

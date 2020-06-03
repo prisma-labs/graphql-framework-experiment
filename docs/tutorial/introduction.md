@@ -1,4 +1,4 @@
-Welcome to _the_ Neuxus tutorial! If you're new to Nexus and want a guided learning journey, this is the place! Through a handful of chapters we're going to be building just enough of an e-commerce app to give you an overview of Nexus; what it is and what it can do.
+Welcome to _the_ Neuxus tutorial! If you're new to Nexus and want a guided learning journey, this is the place! Through a handful of chapters we're going to be building just enough of a blog platform to give you an overview of Nexus; what it is and what it can do.
 
 Throughout this journey, we'll be making a few minor assumptions about your toolchain to keep the content flowing:
 
