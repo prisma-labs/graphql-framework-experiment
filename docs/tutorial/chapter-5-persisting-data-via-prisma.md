@@ -1,12 +1,16 @@
 # Chapter 5 <br> Persisting Data (via Prisma) {docsify-ignore}
 
-So far we have been working with in-memory data while we learn about other parts of Nexus in a focused manner, but in this chapter we're going to put the focus squarely on data and show how Nexus can be used with a database. This marks an important step toward your e-commerce app becoming more real. You'll learn about:
+So far we have been working with in-memory data while we learn about other parts of Nexus in a focused manner, but in this chapter we're going to put the focus squarely on data and show how Nexus can be used with a database. This marks an important step toward your blog app becoming more real. You'll learn about:
 
 - Prisma
 - Nexus Plugins
 - Setting up a Postgres database locally
 
-We're going to be using a database called Postgres and a tool called Prisma to interact with it. Postgres is a well known open-source relational database. Prisma is a new way of working with databases that we'll learn more about in a moment. Its important to understand that Nexus does not _require_ these technology choices and _could_ actually be used with any database and abstractions over them (raw SQL, query builder, ORM..). However, Nexus is built by a team at Prisma (the company) and unsurprisingly there is great integration between its tools and Nexus.
+We're going to be using a database called Postgres and a tool called Prisma to interact with it.
+
+Postgres is a well known open-source relational database. Prisma is a new way of working with databases that we'll learn more about in a moment.
+
+Its important to understand that Nexus does not _require_ these technology choices and _could_ actually be used with any database and abstractions over them (raw SQL, query builder, ORM..). However, Nexus is built by a team at Prisma (the company) and unsurprisingly there is great integration between its tools and Nexus.
 
 ## Prisma?
 
@@ -107,31 +111,19 @@ Confirm things are setup correctly by ... **TODO: find a way to make sure their 
 
 ## Create your database schema
 
-It is now time to replace our in-memory data with actual tables in our database. To do this we'll write models in our Prisma Schema. In chapters 2 and 3 we already began to model our e-com domain with GraphQL types `Product` `Order` and `OrderItem`. We can base our models on that prior work, resulting in a Prisma Schema like so:
+It is now time to replace our in-memory data with actual tables in our database. To do this we'll write models in our Prisma Schema.
+
+In chapters 2 and 3 we already began to model our blog domain with the GraphQL types `Post` and `Comment`. We can base our models on that prior work, resulting in a Prisma Schema like so:
 
 ```groovy
 // prisma/schema.prisma
 // ...
 
-model Product {
-  id    Int    @id @default(autoincrement())
-  name  String
-  price Int
-}
-
-model Order {
-  id    Int         @id @default(autoincrement())
-  total Int
-  items OrderItem[]
-}
-
-model OrderItem {
-  id           Int    @id @default(autoincrement())
-  productName  String
-  productPrice Int
-  quantity     Int
-  orderId      Int?
-  order        Order? @relation(fields: [orderId], references: [id])
+model Post {
+  id        Int     @id @default(autoincrement())
+  title     String
+  body      String
+  published Boolean
 }
 ```
 
@@ -176,7 +168,9 @@ In `api/app.ts` module, remove the db import and the `schema.addToContext` call.
 - })
 ```
 
-You might be wondering how you'll maintain access to the `db` client in your GraphQL Context given that we've just deleted it. Nexus plugins help here. One of their many capabilities is augmenting your GraphQL context. In this case, the prisma plugin adds a `db` property, an instance of Prisma Client, one of the tools in the Prisma toolkit.
+You might be wondering how you'll maintain access to the `db` client in your GraphQL Context given that we've just deleted it. Nexus plugins help here. One of their many capabilities is augmenting your GraphQL context.
+
+In this case, the prisma plugin adds a `db` property, an instance of Prisma Client, one of the tools in the Prisma toolkit.
 
 Let's now replace all our previous in-memory db interactions with calls to the Prisma Client
 
@@ -184,13 +178,20 @@ Let's now replace all our previous in-memory db interactions with calls to the P
 schema.extendType({
   type: 'Query',
   definition(t) {
-    t.list.field('products', {
-      type: 'Product',
+    t.list.field('drafts', {
+      type: 'Post',
       resolve(_root, _args, ctx) {
--        return ctx.db.products
-+        return ctx.db.product.findMany()
+-        return ctx.db.posts.filter((p) => p.published === false)
++        return ctx.db.post.findMany({ where: { published: false } })
       },
     });
+    t.list.field('posts', {
+      type: 'Post',
+      resolve(_root, _args, ctx) {
+-       return ctx.db.posts.filter((p) => p.published === true)
++       return ctx.db.post.findMany({ where: { published: true } })
+      },
+    })
   },
 });
 ```
@@ -199,113 +200,106 @@ schema.extendType({
 schema.extendType({
   type: 'Mutation',
   definition(t) {
-    t.field('checkout', {
-      type: 'Order',
+    t.field('createDraft', {
+      type: 'Post',
       args: {
-        items: schema.arg({
-          type: 'OrderItemInput',
-          list: true,
-          required: true,
-        }),
+        title: schema.stringArg({ required: true }),
+        body: schema.stringArg({ required: true }),
       },
-      async resolve(_root, args, ctx) {
-+       const products = await ctx.db.product.findMany({
-+         where: { id: { in: args.items.map((i) => i.productId) } },
-+       });
-        const items = args.items.map((item) => {
--         const product = ctx.db.products.find((p) => p.id === item.productId)!;
-+         const product = products.find((p) => p.id === item.productId);
+      resolve(_root, args, ctx) {
+        const draft = {
+-         id: ctx.inDb.posts.length + 1,
+          title: args.title,
+          body: args.body,
+          published: false,
+        }
+-       ctx.inDb.posts.push(draft)
 
-          if (!product) {
-            throw new Error(`Could not find product with id ${item.productId}`);
-          }
+-       return draft
++       return ctx.db.post.create({ data: draft })
+      },
+    })
 
-          return {
--           id: ctx.db.orderItems.length + index + 1, // generate ids for our order items
-            productName: product.name,
-            productPrice: product.price,
-            quantity: item.quantity, // associate the quantity
-          };
-        });
+    t.field('publish', {
+      type: 'Post',
+      args: {
+        draftId: schema.intArg({ required: true }),
+      },
+      resolve(_root, args, ctx) {
+-       let postToPublish = ctx.inDb.posts.find((p) => p.id === args.draftId)
 
--       ctx.db.orderItems.push(...items);
+-       if (!postToPublish) {
+-         throw new Error('Could not find draft with id ' + args.draftId)
+-       }
 
-        const total = items.reduce(
-          (price, i) => price + i.productPrice * i.quantity,
-          0
-        );
+-       postToPublish.published = true
 
--       const newOrder = {
--         id: ctx.db.orders.length,
--         items,
--         total,
--        };
+-       return postToPublish
 
-+       const newOrder = await ctx.db.order.create({
++       return ctx.db.post.update({
++         where: { id: args.draftId },
 +         data: {
-+           total,
-+           items: {
-+             create: items,
-+            },
++           published: true,
 +         },
-+         include: { items: true },
 +       });
-
--       ctx.db.orders.push(newOrder);
-
-        return newOrder;
       },
-    });
+    })
   },
-});
+})
 ```
 
 If you need a copy & pastable version, here it is
 
 ```ts
 schema.extendType({
+  type: 'Query',
+  definition(t) {
+    t.list.field('drafts', {
+      type: 'Post',
+      resolve(_root, _args, ctx) {
+        return ctx.db.post.findMany({ where: { published: false } })
+      },
+    })
+    t.list.field('posts', {
+      type: 'Post',
+      resolve(_root, _args, ctx) {
+        return ctx.db.post.findMany({ where: { published: true } })
+      },
+    })
+  },
+})
+
+schema.extendType({
   type: 'Mutation',
   definition(t) {
-    t.field('checkout', {
-      type: 'Order',
+    t.field('createDraft', {
+      type: 'Post',
       args: {
-        items: schema.arg({
-          type: 'OrderItemInput',
-          list: true,
-          required: true,
-        }),
+        title: schema.stringArg({ required: true }),
+        body: schema.stringArg({ required: true }),
       },
-      async resolve(_root, args, ctx) {
-        const products = await ctx.db.product.findMany({
-          where: { id: { in: args.items.map((i) => i.productId) } },
-        })
-        const items = args.items.map((item) => {
-          const product = products.find((p) => p.id === item.productId)
+      resolve(_root, args, ctx) {
+        const draft = {
+          title: args.title,
+          body: args.body,
+          published: false,
+        }
+        return ctx.db.post.create({ data: draft })
+      },
+    })
 
-          if (!product) {
-            throw new Error(`Could not find product with id ${item.productId}`)
-          }
-
-          return {
-            productName: product.name,
-            productPrice: product.price,
-            quantity: item.quantity, // associate the quantity
-          }
-        })
-
-        const total = items.reduce((price, i) => price + i.productPrice * i.quantity, 0)
-
-        const order = await ctx.db.order.create({
+    t.field('publish', {
+      type: 'Post',
+      args: {
+        draftId: schema.intArg({ required: true }),
+      },
+      resolve(_root, args, ctx) {
+        return ctx.db.post.update({
+          where: { id: args.draftId },
           data: {
-            total,
-            items: {
-              create: items,
-            },
+            published: true,
           },
-          include: { items: true }, // Include the created order items in the result
-        })
-
-        return order
+        });
       },
     })
   },
@@ -314,7 +308,7 @@ schema.extendType({
 
 ## Try It Out
 
-Awesome, you're ready to open up the playground and buy a few things! If all goes well, good job! If not, no worries, there's a lot of integration pieces in this chapter where something could have gone wrong. If after reviewing your steps you still don't understand the issue, feel free to open up a [discussion](https://nxs.li/discussions) asking for help.
+Awesome, you're ready to open up the playground and create a draft! If all goes well, good job! If not, no worries, there's a lot of integration pieces in this chapter where something could have gone wrong. If after reviewing your steps you still don't understand the issue, feel free to open up a [discussion](https://nxs.li/discussions) asking for help.
 
 ## Wrapping Up
 
