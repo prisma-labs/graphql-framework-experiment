@@ -16,7 +16,7 @@ There are multiple ways you can test a GraphQL API. One way is to extract resolv
 
 Testing non-trivial resolvers in isolation is likely to be a good investment in most cases but its up to you as a developer. What Nexus provides help with is not at this level, but higher up in the testing pyramid, at the system level. System testing means tests that will run operations against your API just like a real client would. This chapter will focus on that. Let's dive-in!
 
-## Setting up your test environment
+## Setting up Your Test Environment
 
 During this tutorial, you'll use the [Jest testing framework](https://jestjs.io/) to test your API. This is not mandatory but we do recommend it. Still, in general, outside this tutorial, if you prefer another testing framework, feel free to use it.
 
@@ -46,7 +46,7 @@ mkdir tests && touch tests/Order.test.ts
 
 You're set.
 
-## Testing the `checkout` mutation
+## Testing The Signup Mutation
 
 Nexus comes with a special testing module that you can import from `nexus/testing`.
 
@@ -60,28 +60,27 @@ Create a `tests/__helpers.ts` module with the following contents.
 touch tests/__helpers.ts
 ```
 
+<!-- prettier-ignore -->
 ```ts
-// tests/__helpers.ts                                      // 1
+// tests/__helpers.ts                                     // 1
 
 import { createTestContext as originalCreateTestContext, TestContext } from 'nexus/testing'
 
 export function createTestContext() {
-  let ctx = {} as TestContext // 2
+  let ctx = {} as TestContext                             // 2
 
   beforeAll(async () => {
     Object.assign(ctx, await originalCreateTestContext()) // 3
-    await ctx.app.start() // 4
+    await ctx.app.start()                                 // 4
   })
 
   afterAll(async () => {
-    await ctx.app.stop() // 5
+    await ctx.app.stop()                                  // 5
   })
 
   return ctx
 }
 ```
-
-Dissecting this helper:
 
 1. The module name prefix `__` matches that of jest's for snapshot folders `__snapshots__`
 2. Create an object that will be returned immediately but mutated before tests run
@@ -89,38 +88,9 @@ Dissecting this helper:
 4. Before tests run start the app
 5. After tests complete, stop the app. This will for example close your app's HTTP server.
 
-Alright, now you will test your checkout mutation. Use your new helper and scaffold your first test, `"ensures that checkout creates an order"` .
+Alright, now you will test your signup mutation. Use your new helper and scaffold your first test:
 
-```ts
-// tests/Order.test.ts
-
-import { createTestContext } from './__helpers'
-
-const ctx = createTestContext()
-
-it('ensures that checkout creates an order', async () => {
-  // use `ctx` in here
-})
-```
-
-The test context exposes a GraphQL client at `ctx.app.query` that will help us run operations against our API. We'll use it now to ensure that an order is properly created when a user checks out. Do you remember the query that you manually tested at the end of the last chapter?
-
-```graphql
-mutation {
-  checkout(items: [{ productId: 1, quantity: 3 }]) {
-    id
-    items {
-      id
-      productName
-      quantity
-    }
-    total
-  }
-}
-```
-
-Use that now as input into `ctx.app.query`. Then, snapshot its output. Simple! Like this:
-
+<!-- prettier-ignore -->
 ```ts
 // tests/Order.test.ts
 
@@ -129,54 +99,57 @@ import { createTestContext } from './__helpers'
 const ctx = createTestContext()
 
 it('ensures that an order is created', async () => {
-  const result = await ctx.app.query(`
+  const result = await ctx.app.query(`                  # 1
     mutation {
-      checkout(
-        items: [{
-          productId: 1,
-          quantity: 3
-        }]
-      ) {
+      signup(name: "Jim", email: "jim@prisma.io") {     # 2
         id
-        items {
+        name
+        email
+        posts {
           id
-          productName
-          productPrice
-          quantity
         }
-        total
+        blogs {
+          id
+        }
       }
     }
   `)
-
-  expect(result).toMatchInlineSnapshot()
+  expect(result).toMatchInlineSnapshot()              // 3
 })
 ```
 
-You can now run your test using this command:
+1. The test context exposes a GraphQL client at `ctx.app.query` that will help us run operations against our API. Here We're using it to send a signup mutation.
+2. This is the mutation from the end of last chapter.
+3. The result will be snapshoted inline allowing us to see the input and output colocated!
+
+Now run your tests and let's see that snapshot come to life! It should look similar to this:
 
 ```bash
 npm run test
 ```
 
-Your inline snapshot should get populated with the response data, changing your test to now look like so:
-
-(**TODO: fix `nexus/testing` module and update the snippet below with the actual snaphot)**
-
-```bash
-  expect(result).toMatchInlineSnapshot(``);
+```diff
+  expect(result).toMatchInlineSnapshot(`
++    {
++     "data": {
++       "signup": {
++         "id": 2345185,
++         "name": "Jim",
++         "email": "jim@prisma.io",
++         "posts": [],
++         "blogs": []
++       }
++     }
++   }
+  `)
 ```
 
-There's a couple of things you've just implicitly tested and some that you haven't.
+Awesome, beautiful workflow isn't it? If inline snapshots get too unweildly you can switch to regular snapshots and install [a VSCode plugin](https://marketplace.visualstudio.com/items?itemName=asvetliakov.snapshot-tools) that will display the snapshots upon hovering over the `toMatchSnapshot` method name. While not quite as fluid as seeing inline snapshots throughout your test module, it may work better for you.
 
-Tested:
+## Wrapping Up
 
-- That an order is properly created
-- That the individual price of each items is correct
-- That the total price of your order is correct
+You've just made a big step in the maintainability of your API. Here we showed how to test your signup mutation, proving that a user is properly constructed and returned. However you did _not_ test if the user was correctly persisted into your database. That piece will come soon! But first we need a real database in the first place. That's what the next chapter is all about!
 
-Not Tested:
+<div class="NextIs NextChapter"></div>
 
-- That the order and order items are properly persisted in your database.
-
-About testing whether the data is properly persisted, don't worry, we'll get to that very soon. In fact, the next chapter is about persisting your data in a real database. See you there!
+[➳](/tutorial/chapter-5-persisting-data-via-prisma)
