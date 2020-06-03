@@ -38,7 +38,7 @@ Another convention that they usually follow is that they use the default export 
 
 Plugins are easy to use:
 
-```markdown
+```bash
 npm add nexus-plugin-foo
 ```
 
@@ -52,7 +52,7 @@ use(foo())
 
 All plugins are functions. They can accept optional or required settings if the plugin authors wishes so. Once a plugin is imported and invoked, its return value is passed to the Nexus `use` method. Once done, your app is using the plugin. On the surface the method looks similar to that of `express`'s `use`.
 
-Note how the plugins only exist within your app code yet we mentioned before that plugins can augment worktime aspects like the CLI. Neat right? No external config files with plugin setup are required. Its one of examples of how Nexus provides a powerful and extensible system without forwarding you, the user, a complexity tax for it.
+Note how the plugins only exist within your app code yet we mentioned before that plugins can augment worktime aspects like the CLI. Neat right? No external config files with plugin setup are required. Its one of many examples of how Nexus provides a powerful and extensible system without forwarding you, the user, a complexity tax for it.
 
 ## Connect to your database
 
@@ -113,7 +113,7 @@ Confirm things are setup correctly by ... **TODO: find a way to make sure their 
 
 It is now time to replace our in-memory data with actual tables in our database. To do this we'll write models in our Prisma Schema.
 
-In chapters 2 and 3 we already began to model our blog domain with the GraphQL types `Post` and `Comment`. We can base our models on that prior work, resulting in a Prisma Schema like so:
+In chapters 2 and 3 we already began to model our blog domain with the GraphQL type `Post`. We can base our models on that prior work, resulting in a Prisma Schema like so:
 
 ```groovy
 // prisma/schema.prisma
