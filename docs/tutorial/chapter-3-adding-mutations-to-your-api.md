@@ -186,8 +186,24 @@ schema.objectType({
   definition(t) {
     t.int('id', { nullable: false })
     t.string('name', { nullable: false })
-    t.list.field('posts', { type: 'Post', nullable: false })
-    t.list.field('users', { type: 'User', nullable: false })
+    t.list.field('posts', {
+      type: 'Post',
+      nullable: false,
+      resolve(blog, _args, ctx) {
+        return ctx.db.posts.filter((post) => {
+          return post.blogId === blog.id
+        })
+      },
+    })
+    t.list.field('users', {
+      type: 'User',
+      nullable: false,
+      resolve(blog, _args, ctx) {
+        return ctx.db.users.filter((post) => {
+          return user.blogIds.includes(blog.id)
+        })
+      },
+    })
   },
 })
 ```
@@ -215,7 +231,16 @@ schema.objectType({
     t.int('id', { nullable: false })
     t.string('title', { nullable: false })
     t.string('body', { nullable: false })
-    t.field('author', { type: 'User' })
+    t.field('author', {
+      type: 'User',
+      resolve(post, _args, ctx) {
+        return (
+          ctx.db.users.find((user) => {
+            return user.id === post.authorId
+          }) ?? null
+        )
+      },
+    })
   },
 })
 ```
@@ -246,10 +271,24 @@ schema.objectType({
 -   t.int('id', { nullable: false })
 +   t.string('name')
 -   t.string('name', { nullable: false })
-+   t.list.field('posts', { type: 'Post' })
--   t.list.field('posts', { type: 'Post', nullable: false })
-+   t.list.field('users', { type: 'User' })
--   t.list.field('users', { type: 'User', nullable: false })
+    t.list.field('posts', {
+      type: 'Post',
+-     nullable: false,
+      resolve(blog, _args, ctx) {
+        return ctx.db.posts.filter((post) => {
+          return post.blogId === blog.id
+        })
+      },
+    })
+    t.list.field('users', {
+      type: 'User',
+-     nullable: false,
+      resolve(blog, _args, ctx) {
+        return ctx.db.users.filter((post) => {
+          return user.blogIds.includes(blog.id)
+        })
+      },
+    })
   },
 })
 ```
@@ -267,8 +306,17 @@ schema.objectType({
 -   t.string('title', { nullable: false })
 +   t.string('body')
 -   t.string('body', { nullable: false })
-+   t.field('author', { type: 'User', nullable: true })
--   t.field('author', { type: 'User' })
+    t.field('author', {
+      type: 'User',
++     nullable: true,
+      resolve(post, _args, ctx) {
+        return (
+          ctx.db.users.find((user) => {
+            return user.id === post.authorId
+          }) ?? null
+        )
+      },
+    })
   },
 })
 ```
@@ -289,8 +337,24 @@ schema.objectType({
     t.int('id')
     t.string('name')
     t.int('email')
-+   t.list.field('posts', { type: 'Post' })
-+   t.list.field('blogs', { type: 'Blog' })
+    t.list.field('posts', {
+      type: 'Post',
+      nullable: false,
+      resolve(user, _args, ctx) {
+        return ctx.db.posts.filter((post) => {
+          return post.authorId === user.id
+        })
+      },
+    })
+    t.list.field('blogs', {
+      type: 'Blog',
+      nullable: false,
+      resolve(user, _args, ctx) {
+        return ctx.db.blogs.filter((blog) => {
+          return blog.userIds.includes(user.id)
+        })
+      },
+    })
   },
 })
 ```
@@ -312,9 +376,10 @@ And updates to our in-memory database at `api/db.ts`:
 
 ```diff
  export const db = {
-   users: [{ id: 1, name: 'Jill', email: 'jill@prisma.io' }],
-+  blogs: [{ id: 1, name: 'Foo', users:[], posts:[] }],
-+  posts: [{ id: 1, title: 'Bar', author: '1', body: '...' }],
+-  users: [{ id: 1, name: 'Jill', email: 'jill@prisma.io' }],
++  users: [{ id: 1, name: 'Jill', email: 'jill@prisma.io', postIds: [], blogIds: [] }],
++  blogs: [{ id: 1, name: 'Foo', usersIds: [], postIds: [] }],
++  posts: [{ id: 1, title: 'Bar', body: '...', authorId: '1', blogId: '1' }],
  }
 ```
 
