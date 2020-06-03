@@ -136,17 +136,19 @@ type Query {
 
 <div class="NextIs SectionDivider"></div>
 
-## Root Types
+<!-- ## Root Types -->
 
 <!-- TODO rethink this content; diagrams; later; it implicates backing types... -->
 
-There is one last thing to do here. You should be seeing error feedback from your IDE that the `resolve` field is missing. This is because `Query` (along with `Mutation` and `Subscription`) are _root types_. In GraphQL, the _fields_ of root types, unlike the fields of all other types, are _entrypoints_ into your API graph. And an entrypoint _must,_ intuitively, begin the process of getting data to fulfill the incoming operation.
+<!-- There is one last thing to do here. You should be seeing error feedback from your IDE that the `resolve` field is missing. This is because `Query` (along with `Mutation` and `Subscription`) are _root types_. In GraphQL, the _fields_ of root types, unlike the fields of all other types, are _entrypoints_ into your API graph. And an entrypoint _must,_ intuitively, begin the process of getting data to fulfill the incoming operation.
 
 Now, the `resolve` property is where you, the developer, implement this process of getting data. Put another way, the `resolve` property is where you implement the logic that fulfills the field's specification. You may be noting how when we defined our `User` object, we did _not_ write resolvers for its fields. The reason for that is that Nexus provides _default_ resolvers for fields that are not root and that don't have resolvers. This default implementation is to return a property from the parent data of the same name as the field name. And when that's not possible (because the parent data diverges), then Nexus will let you know _statically_, requiring the resolver from you. What's awesome is that none of this is require knowledge to get productive with Nexus thanks to the static error that Nexus will give you along the way right in your IDE. Follow these and for the most part you'll fall into the pit of success. Awesome!
 
-We will not go into more detail about the data resolution systems of GraphQL and Nexus just now. This was just a brief overview to give you a sense of what is going on. Mastering a complete mental model will take a bit of time and practice.
+We will not go into more detail about the data resolution systems of GraphQL and Nexus just now. This was just a brief overview to give you a sense of what is going on. Mastering a complete mental model will take a bit of time and practice. -->
 
-So go ahead and add an empty `resolve` method now. Once done, you will see a new error from your IDE about the return type of `resolve`. This makes sense. Our resolver, being empty, is not satisfying the specification we gave for `Query.users`. Thanks Nexus! Play around with autocompletion to return a value that will fix the error.
+You'll see some feedback from your IDE that you're missing a `resolve` property. Go ahead and try to implement it, letting the autocompletion guide you.
+
+> You might be wondering why Nexus hasn't complained about misisng resolvers in some other cases so far. The answer is a more advanced topic that we'll cover later.
 
 ```ts
 import { schema } from 'nexus'
@@ -158,8 +160,8 @@ schema.extendType({
       type: 'User',
       list: true,
       resolve() {
-        return [{ id: 1, name: 'Jill', email: "jill@prisma.io" }]
-      }
+        return [{ id: 1, name: 'Jill', email: 'jill@prisma.io' }]
+      },
     })
   },
 })
