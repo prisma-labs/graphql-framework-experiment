@@ -23,13 +23,13 @@ If your lock-in fears are tingling, know that **you still have _full_ access** t
 
 ## Reflection?
 
-Before we get going we need a moment to introduce an important part of the Nexus development workflow. Nexus has an unconventional concept called "Reflection". It refers to the fact that when `nexus dev` or `nexus build` is running not only is your application code being run, but **information is being gathered and artifacts are being derived**. Some of Nexus' uses for reflection include:
+Before we get going we need a moment to introduce an important part of the Nexus development workflow. Nexus has an unconventional concept called "Reflection". It refers to the fact that, when `nexus dev` or `nexus build` is running, not only is your application code being run, but **information is being gathered and artifacts are being derived**. Some of Nexus' uses for reflection include:
 
 - Figuring out which plugins you are using, and the settings passed
-- Generating TypeScript types to give your resovlers complete type safety
+- Generating TypeScript types to give your resolvers complete type safety
 - Generating an SDL file
 
-This partly explains why Nexus has a declarative API. It needs a way to run your app reliably at build time. Declarative APIs give Nexus a higher degree of control to do this. Declarative APIs also encode enough enough semantic value for Nexus to do the things it needs to.
+This partly explains why Nexus has a declarative API. It needs a way to run your app reliably at build time. Declarative APIs give Nexus a higher degree of control to do this. Declarative APIs also encode enough semantic value for Nexus to do the things it needs to.
 
 Architecturally there's a lot more to say about reflection but for now, from a user point of view, just remember the following. You should _always_ have your `nexus dev` running when you're working on your project _even_ when you're not intending to use your server (e.g. access the GraphQL Playground). If you forget to run `nexus dev` then you will not, for example, get the static typing experience that you expect in your resolvers.
 
@@ -39,17 +39,17 @@ Architecturally there's a lot more to say about reflection but for now, from a u
 
 ## Model The Domain
 
-Let's get started with our blog schema by modeling some key entities in the domain. We'll begin with the concept of a `User`. Somone that can write posts on the blog. Your modeling work is going to start on the API layer as opposed to the database layer. This API-first approach can be a good way to collaborate with frontend teams, getting their input in shaping the data early.
+Let's get started with our blog schema by modeling some key entities in the domain. We'll begin with the concept of a `User`. Someone that can write posts on the blog. Your modeling work is going to start on the API layer as opposed to the database layer. This API-first approach can be a good way to collaborate with frontend teams, getting their input in shaping the data early.
 
 > A note about terminology. We will be talking about the Product Object not Product Model. The difference is that at the API layer we have objects but at the database layer we have models. The name difference helps us talk about these different layers without confusion. It is also how GraphQL (API layer) and Prisma (database layer, discussed later) respectively refer to these things.
 
-Create a new module for your Product object at `api/graphql/User.ts`. We _could_ write our whole schema within say `api/app.ts` or `api/graphql.ts` but modularizing your GraphQL type definitions can help scale your codebase. Neither approach is inheritly wrong though, so do as you see you fit. For this tutorial we'll use the modular style.
+Create a new module for your Product object at `api/graphql/User.ts`. We _could_ write our whole schema within say `api/app.ts` or `api/graphql.ts`, but modularizing your GraphQL type definitions can help scale your codebase. Neither approach is inheritly wrong though, so do as you see you fit. For this tutorial we'll use the modular style.
 
 ```bash
 mkdir api/graphql && touch api/graphql/Product.ts
 ```
 
-To create the the `User` object we'll import the `schema` component from the `nexus` package. `schema` is where you'll find all the building blocks to craft your GraphQL types. Right now we are interested in the `schema.objectType` method, which, unsurprisingly, helps building [GraphQL Object Types](https://graphql.org/graphql-js/object-types/).
+To create the `User` object we'll import the `schema` component from the `nexus` package. `schema` is where you'll find all the building blocks to craft your GraphQL types. Right now we are interested in the `schema.objectType` method, which, unsurprisingly, helps building [GraphQL Object Types](https://graphql.org/graphql-js/object-types/).
 
 <!-- prettier-ignore -->
 ```ts
@@ -71,7 +71,7 @@ schema.objectType({
 
 ## SDL?
 
-Once you've saved this file change to disk, your app will be restarted and the previous warning you had about an empty GraphQL schema now gone.
+Once you've saved this file change to disk, your app will be restarted and the previous warning you had about an empty GraphQL schema should be gone.
 
 You may notice that there's also now a new `schema.graphql` file at your project root. It contains a representation of your schema in a syntax called the GraphQL Schema Definition Language (SDL for short). In dev mode Nexus generates this for you at every app restart. In it you should see the following:
 
@@ -86,7 +86,7 @@ type User {
 You are free to disable this file (settings discussed later) but its existence has two benefits for you to consider:
 
 1. For users familiar with SDL the correspondance between the source code and it may help them learn Nexus' schema API faster.
-2. The accessability of SDL syntax makes it an accessible way for others to evaluate incoming API changes without having to know about Nexus, or even JavaScript. Consider using the generated SDL file to improve your pull-request reviews.
+2. The SDL syntax makes it an accessible way for others to evaluate incoming API changes without having to know about Nexus, or even JavaScript. Consider using the generated SDL file to improve your pull-request reviews.
 
 For the remainder of this tutorial we'll be keeping SDL to the right of Nexus code blocks.
 
@@ -122,7 +122,7 @@ type Query {
 
 </div>
 
-1. The Query object is a central place in your schema where many other types will appear. Like before with the modular GraphQL types decision we again can decide to be modular here. We could either create a new `api/graphql/Query.ts` module (not modulur) or we could _collocate_ the exposure of User object with its definition in `api/graphql/User.ts` (modular). Staying consistent with before, we'll take the modular way now.
+1. The Query object is a central place in your schema where many other types will appear. Like before with the modular GraphQL types decision we again can decide to be modular here. We could either create a new `api/graphql/Query.ts` module (not modular), or we could _collocate_ the exposure of User object with its definition in `api/graphql/User.ts` (modular). Staying consistent with before, we'll take the modular way.
 1. To achieve colocation in Nexus we'll use `schema.extendType`. Its API is _very_ similar to `schema.objectType` with the difference that the defined fields are merged into the _targeted_ type.
 1. The first parameter specifies the field's name, here `users`
 1. `type: 'User'` specifies what the field's type should be. Here, a `User`
@@ -140,13 +140,30 @@ type Query {
 
 <!-- TODO rethink this content; diagrams; later; it implicates backing types... -->
 
-There is one last thing to do here. You should be seeing error feedback from your IDE that the `resolve` field is missing. This is because `Query` (along with `Mutation` and `Subscription`) are _root types_. In GraphQL, the _fields_ of root types, unlike the fields of all other types, are _entrypoints_ into your API graph. And an entrypoint _must,_ intuitively*,* begin the process of getting data to fulfill the incoming operation.
+There is one last thing to do here. You should be seeing error feedback from your IDE that the `resolve` field is missing. This is because `Query` (along with `Mutation` and `Subscription`) are _root types_. In GraphQL, the _fields_ of root types, unlike the fields of all other types, are _entrypoints_ into your API graph. And an entrypoint _must,_ intuitively, begin the process of getting data to fulfill the incoming operation.
 
-Now, the `resolve` property is where you, the developer, implement this process of getting data. Put another way, the `resolve` property is where you implement the logic that fulfills the field's specification. You may now be noting how when we defined our `User` object we did _not_ write resolvers for its fields. The reason for that is that Nexus provides _default_ resolvers for fields that are scalars and that are not roots. This default implementation is to return a property from the parent data of the same name as the field name. And when that's not possible (because the parent data diverges), then Nexus will let you know _statically_, requiring the resolver from you. What's awesome is that none of this is require knowledge to get productive with Nexus thanks to the static error that Nexus will give you along the way right in your IDE. Follow these and for the most part you'll fall into the pit of success. Aweomse!
+Now, the `resolve` property is where you, the developer, implement this process of getting data. Put another way, the `resolve` property is where you implement the logic that fulfills the field's specification. You may be noting how when we defined our `User` object, we did _not_ write resolvers for its fields. The reason for that is that Nexus provides _default_ resolvers for fields that are not root and that don't have resolvers. This default implementation is to return a property from the parent data of the same name as the field name. And when that's not possible (because the parent data diverges), then Nexus will let you know _statically_, requiring the resolver from you. What's awesome is that none of this is require knowledge to get productive with Nexus thanks to the static error that Nexus will give you along the way right in your IDE. Follow these and for the most part you'll fall into the pit of success. Awesome!
 
 We will not go into more detail about the data resolution systems of GraphQL and Nexus just now. This was just a brief overview to give you a sense of what is going on. Mastering a complete mental model will take a bit of time and practice.
 
-So go ahead and add an empty `resolve` method now. Once done, you will see a new error from your IDE about the return type of `resolve`. This makes sense. Our resolver, being empty, is not satisfying the specification we gave for `Query.products`. Thanks Nexus! Play around with autocompletion to return a value that will fix the error.
+So go ahead and add an empty `resolve` method now. Once done, you will see a new error from your IDE about the return type of `resolve`. This makes sense. Our resolver, being empty, is not satisfying the specification we gave for `Query.users`. Thanks Nexus! Play around with autocompletion to return a value that will fix the error.
+
+```ts
+import { schema } from 'nexus'
+
+schema.extendType({
+  type: 'Query',
+  definition(t) {
+    t.field('users', {
+      type: 'User',
+      list: true,
+      resolve() {
+        return [{ id: 1, name: 'Jill', email: "jill@prisma.io" }]
+      }
+    })
+  },
+})
+```
 
 <div class="NextIs SectionDivider"></div>
 
