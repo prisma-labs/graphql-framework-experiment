@@ -14,17 +14,59 @@
       :root {
         --theme-color: #42b983;
         --theme-color-secondary: rgb(167, 94, 255);
+        --theme-color-text: #2c4762;
+        --theme-color-text-light: #516a83;
         --theme-color-blue: rgb(24, 189, 240);
         --theme-color-purple: #6566f9;
         --theme-color-warning: #f9b965;
       }
 
       body {
-        font-size: 16px;
+        font-size: 17px;
         line-height: 2rem;
+        color: var(--theme-color-text);
       }
 
-      /* Component TypeRef */
+      /* Tutorial */
+      /* Tutorial */
+      /* Tutorial */
+
+      #wrapping-up {
+        margin-top: 6rem !important;
+      }
+      #wrapping-up + p + p + p,
+      #wrapping-up + p + p,
+      #wrapping-up + p {
+        text-align: center;
+        margin-bottom: 0;
+      }
+      body[data-page^='tutorial'] .markdown-section h2 {
+        text-align: center;
+        font-style: italic;
+        font-family: serif;
+        font-size: 1.5rem;
+        margin-top: 1.5em !important;
+        margin-bottom: 1.5em !important;
+      }
+      body[data-page^='tutorial'] h2 span {
+        color: var(--theme-color);
+      }
+
+      /* Components */
+      /* Components */
+      /* Components */
+
+      .NextIs.NextChapter + * > a {
+        font-weight: 100 !important;
+        text-decoration-line: none;
+      }
+      .NextIs.NextChapter + * {
+        margin: 0;
+        font-size: 5rem;
+        text-align: center;
+      }
+
+      /* TypeRef */
 
       .markdown-section code.TypeRef {
         color: hsla(100, 100%, 0%, 0.5);
@@ -37,7 +79,7 @@
         content: '⌕ ';
       }
 
-      /* Component NexusVSDL */
+      /* NexusVSDL */
 
       .Row.NexusVSDL > *:first-child {
         flex-grow: 0;
@@ -46,9 +88,10 @@
         flex-grow: 1;
       }
 
-      /* Component TightRow */
-      /* Component Row */
-      /* Component Collapsable */
+      /* IntrinsicRow */
+      /* TightRow */
+      /* Row */
+      /* Collapsable */
 
       @media (max-width: 1300px) {
         .Row.Collapsable {
@@ -74,12 +117,20 @@
       }
 
       @media (min-width: 1650px) {
+        .IntrinsicRow,
         .Row {
           width: 1400px;
           margin-left: -350px; /* (1300 - 700) / 2 */
         }
+        .IntrinsicRow {
+          justify-content: center;
+        }
+        .IntrinsicRow > * {
+          flex-grow: initial !important;
+        }
       }
 
+      .IntrinsicRow,
       .TightRow,
       .Row {
         display: flex;
@@ -87,23 +138,23 @@
         margin-bottom: 1.2em;
         flex-wrap: wrap;
       }
+      .IntrinsicRow > *,
       .TightRow > *,
       .Row > * {
-        /* margin-top: 0 !important; */
-        /* margin-bottom: 0 !important; */
         flex-grow: 1;
-        /* align-self: flex-start; */
       }
+      .IntrinsicRow > *:not(:last-child),
       .TightRow > *:not(:last-child),
       .Row > *:not(:last-child) {
         margin-right: 0.55em;
       }
+      .IntrinsicRow > *:not(:first-child),
       .TightRow > *:not(:first-child),
       .Row > *:not(:first-child) {
         margin-left: 0.55em;
       }
 
-      /* Component BigButton */
+      /* BigButton */
 
       .BigButton {
         border-radius: 2rem;
@@ -131,6 +182,63 @@
         color: #262332 !important;
       }
 
+      /* NextIs */
+
+      .NextIs {
+        line-height: 0 !important;
+        margin: 0 !important;
+      }
+
+      /* .NextIsDetail */
+
+      .NextIs.Detail + blockquote {
+        border-left-color: var(--theme-color-blue);
+      }
+      .NextIs.Detail + blockquote::before {
+        content: 'Detail';
+        color: var(--theme-color-blue);
+      }
+
+      /* .NextIsNote */
+
+      .NextIs.Note + blockquote {
+        border-left-color: rgb(211, 211, 211);
+      }
+      .NextIs.Note + blockquote::before {
+        content: 'Note';
+        color: rgb(163, 163, 163);
+      }
+
+      /* .NextIsTip */
+
+      .NextIs.Tip + blockquote {
+        border-left-color: var(--theme-color);
+      }
+      .NextIs.Tip + blockquote::before {
+        content: 'Tip';
+        color: var(--theme-color);
+      }
+
+      /* .NextIs.Warn */
+
+      .NextIs.Warn + blockquote {
+        border-left-color: var(--theme-color-warning);
+      }
+      .NextIs.Warn + blockquote::before {
+        content: 'Warning';
+        color: var(--theme-color-warning);
+      }
+
+      .OneLineSignature {
+        margin: 0 !important;
+      }
+      .OneLineSignature + pre > code {
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
+      }
+
+      /* Cover page */
+      /* Cover page */
       /* Cover page */
 
       .cover {
@@ -192,18 +300,8 @@
       }
 
       /* Sidebar */
-
-      /* @media only screen and (min-width: 1800px) {
-        .sidebar {
-          width: 30rem !important;
-        }
-      }
-
-      @media only screen and (min-width: 2600px) {
-        .sidebar {
-          width: 50rem !important;
-        }
-      } */
+      /* Sidebar */
+      /* Sidebar */
 
       .sidebar li > p.active > a {
         color: var(--theme-color);
@@ -229,6 +327,17 @@
       .sidebar {
         width: 15rem;
         padding-top: 1rem;
+      }
+      .close .sidebar-toggle {
+        top: 1rem;
+        bottom: initial;
+        left: 1rem;
+      }
+      .sidebar-toggle {
+        transition: 300ms left;
+        top: 0.5rem;
+        bottom: initial;
+        left: 15.5rem;
       }
       .sidebar-nav {
         width: 15rem;
@@ -264,9 +373,7 @@
       .sidebar ul:last-child {
         margin-bottom: 1rem;
       }
-      /* .sidebar li p span:only-child::before {
-        content: '◆ ';
-      } */
+
       .sidebar li p span:only-child {
         color: var(--theme-color-purple);
         margin-top: 1em;
@@ -294,6 +401,17 @@
       }
 
       /* Markdown */
+      /* Markdown */
+      /* Markdown */
+
+      #main {
+        padding-bottom: 50vh;
+      }
+      #main > h1:first-child {
+        margin-bottom: 2em;
+        text-align: center;
+        line-height: 1.8;
+      }
 
       .markdown-section h3 {
         margin-top: 3em !important;
@@ -365,66 +483,14 @@
       .markdown-section blockquote {
         padding-top: 0.3em;
         padding-bottom: 0.8em;
-        opacity: 0.85;
+        border-left-width: 2px;
+        color: var(--theme-color-text-light);
       }
       .markdown-section blockquote p {
         font-weight: normal;
       }
       .markdown-section blockquote::before {
         font-weight: bold !important;
-      }
-
-      .NextIs {
-        line-height: 0 !important;
-        margin: 0 !important;
-      }
-
-      /* .NextIsDetail */
-
-      .NextIs.Detail + blockquote {
-        border-left-color: var(--theme-color-blue);
-      }
-      .NextIs.Detail + blockquote::before {
-        content: 'Detail';
-        color: var(--theme-color-blue);
-      }
-
-      /* .NextIsNote */
-
-      .NextIs.Note + blockquote {
-        border-left-color: rgb(211, 211, 211);
-      }
-      .NextIs.Note + blockquote::before {
-        content: 'Note';
-        color: rgb(163, 163, 163);
-      }
-
-      /* .NextIsTip */
-
-      .NextIs.Tip + blockquote {
-        border-left-color: var(--theme-color);
-      }
-      .NextIs.Tip + blockquote::before {
-        content: 'Tip';
-        color: var(--theme-color);
-      }
-
-      /* .NextIs.Warn */
-
-      .NextIs.Warn + blockquote {
-        border-left-color: var(--theme-color-warning);
-      }
-      .NextIs.Warn + blockquote::before {
-        content: 'Warning';
-        color: var(--theme-color-warning);
-      }
-
-      .OneLineSignature {
-        margin: 0 !important;
-      }
-      .OneLineSignature + pre > code {
-        padding-top: 1rem !important;
-        padding-bottom: 1rem !important;
       }
 
       .markdown-section pre > code {
@@ -455,6 +521,8 @@
         margin-top: 0;
       }
 
+      /* Improvements to code blocks */
+      /* Improvements to code blocks */
       /* Improvements to code blocks */
 
       .token.coord {
@@ -549,6 +617,7 @@
     </script>
     <script src="//unpkg.com/docsify/lib/docsify.min.js"></script>
     <script src="//unpkg.com/docsify/lib/plugins/search.min.js"></script>
+    <!-- <script src="//cdn.jsdelivr.net/npm/docsify@4"></script> -->
     <script src="//unpkg.com/prismjs/components/prism-typescript.min.js"></script>
     <script src="//unpkg.com/prismjs/components/prism-diff.min.js"></script>
     <script src="//unpkg.com/prismjs/components/prism-graphql.min.js"></script>
