@@ -13,7 +13,7 @@ To keep our learning gradual we'll stick to in-memory data for now but rest assu
 
 The first thing we'll do is setup an in-memory database and expose it to our resolvers using the _GraphQL context_.
 
-The GraphQL Context is a plain JavaScript object shared across all resolvers. Nexus creates it anew for each request and adds a few of its own properties. Largely though, what it will contains will be defined by your app. It is a good place to, for example, attach information about the current user.
+The GraphQL Context is a plain JavaScript object shared across all resolvers. Nexus creates a new one for each request and adds a few of its own properties. Largely though, what it will contains will be defined by your app. It is a good place to, for example, attach information about the logged-in user.
 
 So go ahead and create the database.
 
@@ -55,11 +55,11 @@ module global {
 ```
 
 > **Note** For those familiar with GraphQL, you might be grimacing that we’re attaching static things to the context, instead of using export/import.
-> This is a matter of convenience. Feel free to take a purer approach in your apps if you want. Furthermore, it's likely that your actual db instance would be tight to the request cycle and therefore be instantiated in the GraphQL context.
+> This is a matter of convenience. Feel free to take a purer approach in your apps if you want.
 
 ## Use The Context
 
-Now let's use this data to reimplement the the `Query.users` resolver from the previous chapter.
+Now let's use this data to reimplement the `Query.users` resolver from the previous chapter.
 
 ```diff
 schema.queryType({
@@ -70,17 +70,17 @@ schema.queryType({
 -      resolve() {
 -        return [{ id: 1, name: 'Jill', email: 'jill@prisma.io' }]
 +     resolve(_root, _args, ctx) {  // 1
-+        return ctx.db.products     // 2
++        return ctx.db.users     // 2
       },
     })
   },
 })
 ```
 
-1. Context is the _thrid_ parameter, usually identified as `ctx`
+1. Context is the _third_ parameter, usually identified as `ctx`
 2. Simply return the data, Nexus makes sure the types line up.
 
-**Did you notice?** Still no TypeScript type annotations required from you yet everything is still totally type safe. Prove it to yourself by hovering over the `ctx.db.products` property and witness the correct type information it gives you. This is the type propagation we just mentioned in action. 🙌
+**Did you notice?** Still no TypeScript type annotations required from you yet everything is still totally type safe. Prove it to yourself by hovering over the `ctx.db.users` property and witness the correct type information it gives you. This is the type propagation we just mentioned in action. 🙌
 
 ## Your First Mutation
 
@@ -160,14 +160,14 @@ schema.extendType({
 ```diff
 Mutation {
 -  signup: User
-+  signup(name:String!, email:String!): User
++  signup(name: String!, email: String!): User
 }
 ```
 
 </div>
 
 1. Add an `args` property to the field definition to define its args. Keys are arg names and values are type specifications.
-2. Use the Nexus helpers for defining an arg type. There is one such helper for every GraphQL scalar such as `schema.intArg` and `schema.booleanArg`. Should you want to reference a type like some InputObject then use `schema.arg({ type: "..." })`.
+2. Use the Nexus helpers for defining an arg type. There is one such helper for every GraphQL scalar such as `schema.intArg` and `schema.booleanArg`. If you want to reference a type like some InputObject then use `schema.arg({ type: "..." })`.
 3. In our resolver, access the args we specified above and pass them through to our custom logic. If you hover over the `args` parameter you'll see that Nexus has properly typed them including the fact that they cannot be undefined.
 
 ## Model The Domain pt 2
@@ -256,7 +256,7 @@ type Post {
 
 </div>
 
-Evidently most of data isn't nullable! Its pretty annoying to write and read that repitition. Luckily Nexus allows us to change the nullability defaults at the object level.
+Evidently most of data isn't nullable! Its pretty annoying to write and read that repetition. Luckily Nexus allows us to change the nullability defaults at the object level.
 
 <div class="IntrinsicRow">
 
@@ -325,7 +325,7 @@ schema.objectType({
 
 <!-- TODO maybe we should introduce nullable config in chapter 2... -->
 
-While tweaking our User object to relate to posts and blogs we'll also make its field return types non-nullable.
+While tweaking our `User` object to relate to posts and blogs we'll also make its field return types non-nullable.
 
 ```diff
 schema.objectType({
@@ -423,7 +423,8 @@ mutation {
 
 ## Wrapping Up
 
-Congratulations! You can now read and write to your API. Good job. But, so far you've been validating your work by manually interacting with the Playground. That may be reasonable at first (depending on your relationship to TDD) but it will not scale. At some point you are going to want automated testing. Nexus takes testing seriously and in the next chapter we'll show you how. See you there!
+Congratulations! You can now read and write to your API.
+But, so far you've been validating your work by manually interacting with the Playground. That may be reasonable at first (depending on your relationship to TDD) but it will not scale. At some point you are going to want automated testing. Nexus takes testing seriously and in the next chapter we'll show you how. See you there!
 
 <div class="NextIs NextChapter"></div>
 
