@@ -25,7 +25,7 @@ touch api/db.ts
 // api/db.ts
 
 export const db = {
-  users: [{ id: 1, name: 'Jill', email: 'jill@prisma.io' }],
+  posts: [{ id: 1, title: 'Nexus', body: '...', published: false }]
 }
 ```
 
@@ -59,18 +59,18 @@ module global {
 
 ## Use The Context
 
-Now let's use this data to reimplement the `Query.users` resolver from the previous chapter.
+Now let's use this data to reimplement the `Query.drafts` resolver from the previous chapter.
 
 ```diff
 schema.queryType({
   name: 'Query',
   definition(t) {
-    t.list.field('users', {
-      type: 'Users',
--      resolve() {
--        return [{ id: 1, name: 'Jill', email: 'jill@prisma.io' }]
-+     resolve(_root, _args, ctx) {  // 1
-+        return ctx.db.users     // 2
+    t.list.field('drafts', {
+      type: 'Post',
+-     resolve() {
+-       return [{ id: 1, title: 'Nexus', body: '...', published: false }]
++     resolve(_root, _args, ctx) {                             // 1
++       return ctx.db.posts.filter(p => p.published === false)  // 2
       },
     })
   },
@@ -78,13 +78,15 @@ schema.queryType({
 ```
 
 1. Context is the _third_ parameter, usually identified as `ctx`
-2. Simply return the data, Nexus makes sure the types line up.
+2. Return the filtered data by un-published posts, _aka_ drafts . Nexus makes sure the types line up.
 
-**Did you notice?** Still no TypeScript type annotations required from you yet everything is still totally type safe. Prove it to yourself by hovering over the `ctx.db.users` property and witness the correct type information it gives you. This is the type propagation we just mentioned in action. 🙌
+**Did you notice?** Still no TypeScript type annotations required from you yet everything is still totally type safe. Prove it to yourself by hovering over the `ctx.db.posts` property and witness the correct type information it gives you. This is the type propagation we just mentioned in action. 🙌
 
 ## Your First Mutation
 
-Alright, now that we know how to wire things into our context, let's implement our first mutation. We're going to make it possible for your API clients to create new users through your API. This mutation will need a name. Rather than simply call it `createUser` we'll use language from our domain. In this case `signup` seems reasonable. There are similarities with our previous work with `Query.users`:
+Alright, now that we know how to wire things into our context, let's implement our first mutation. We're going to make it possible for your API clients to create new drafts.
+
+This mutation will need a name. Rather than simply call it `createPost` we'll use language from our domain. In this case `createDraft` seems reasonable. There are similarities with our previous work with `Query.drafts`:
 
 - `Mutation` is a root type, its fields are entrypoints.
 - We can colocate mutation fields with the objects they relate to or centralize all mutation fields.
@@ -95,17 +97,17 @@ As before we will take the colocation approach.
 
 <!-- prettier-ignore -->
 ```ts
-// api/graphql/User.ts
+// api/graphql/Post.ts
 // ...
 
 schema.extendType({
   name: 'Mutation',
   definition(t) {
-    t.field('signup', {
-      type: 'User',
+    t.field('createDraft', {
+      type: 'Post',
       nullable: false,              // 1
       resolve(_root, args, ctx) {
-        ctx.db.users.push(/*...*/)
+        ctx.db.posts.push(/*...*/)
         return // ...
       },
     })
@@ -115,13 +117,13 @@ schema.extendType({
 
 ```graphql
 Mutation {
-  signup: User!
+  createDraft: Post!
 }
 ```
 
 </div>
 
-1. By default in Nexus all output types are nullable. This is for [best practice reasons](https://graphql.org/learn/best-practices/#nullability). In this case, we want to guarantee [to the client] that a User object will always be returned upon a successful signup mutation.
+1. By default in Nexus all output types are nullable. This is for [best practice reasons](https://graphql.org/learn/best-practices/#nullability). In this case, we want to guarantee [to the client] that a Post object will always be returned upon a successful signup mutation.
 
    If you're ever dissatisfied with Nexus' defaults, not to worry, [you can change them globally](https://www.nexusjs.org/#/api/modules/main/exports/settings?id=schemanullableinputs).
 
@@ -135,21 +137,22 @@ Let's revise our implementation with GraphQL arguments.
 schema.extendType({
   name: 'Mutation',
   definition(t) {
-    t.field('signup', {
-      type: 'User',
+    t.field('createDraft', {
+      type: 'Post',
 +     args: {                                        // 1
-+       name: schema.stringArg({ required: true }),  // 2
-+       email: schema.stringArg({ required: true }), // 2
++       title: schema.stringArg({ required: true }), // 2
++       body: schema.stringArg({ required: true }),  // 2
 +     },
       resolve(_root, args, ctx) {
-+       const user = {
-+         id: Number(Math.random().toString().slice(2))
-+         name: args.name,                           // 3
-+         email: args.email,                         // 3
++       const draft = {
++         id: ctx.db.posts.length + 1,
++         title: args.title,                         // 3
++         body: args.body,                           // 3
++         published: false,
 +       }
-+       ctx.db.users.push(user)
-+       return user
--       ctx.db.users.push(/*...*/)
++       ctx.db.posts.push(draft)
++       return draft
+-       ctx.db.posts.push(/*...*/)
 -       return // ...
       },
     })
@@ -159,8 +162,8 @@ schema.extendType({
 
 ```diff
 Mutation {
--  signup: User
-+  signup(name: String!, email: String!): User
+-  createDraft: Post
++  createDraft(title: String!, body: String!): Post
 }
 ```
 
@@ -172,52 +175,8 @@ Mutation {
 
 ## Model The Domain pt 2
 
-Before we wrap this chapter let's flush out our schema a bit more. We'll add `Post` objects to represent content by authors and `Blog` objects to represent groupings of users and posts. We'll also tweak our existing `User` objects to relate to blogs and posts. Finally we'll update our in memory database. There are no new concepts here so we'll move briskly.
+Before we wrap this chapter let's flush out our schema a bit more. We'll add a `publish` mutation to transform a draft into an actual published post, then we'll let API clients read the the published posts.
 
-<div class="IntrinsicRow">
-
-```ts
-// api/graphql/Blog.ts
-
-import { schema } from 'nexus'
-
-schema.objectType({
-  name: 'Blog',
-  definition(t) {
-    t.int('id', { nullable: false })
-    t.string('name', { nullable: false })
-    t.list.field('posts', {
-      type: 'Post',
-      nullable: false,
-      resolve(blog, _args, ctx) {
-        return ctx.db.posts.filter((post) => {
-          return post.blogId === blog.id
-        })
-      },
-    })
-    t.list.field('users', {
-      type: 'User',
-      nullable: false,
-      resolve(blog, _args, ctx) {
-        return ctx.db.users.filter((post) => {
-          return user.blogIds.includes(blog.id)
-        })
-      },
-    })
-  },
-})
-```
-
-```graphql
-type Blog {
-  id: Int!
-  name: String!
-  posts: [Post!]!
-  users: [User!]!
-}
-```
-
-</div>
 <div class="IntrinsicRow">
 
 ```ts
@@ -225,68 +184,55 @@ type Blog {
 
 import { schema } from 'nexus'
 
-schema.objectType({
-  name: 'Post',
+schema.extendType({
+  type: 'Mutation',
   definition(t) {
-    t.int('id', { nullable: false })
-    t.string('title', { nullable: false })
-    t.string('body', { nullable: false })
-    t.field('author', {
-      type: 'User',
-      resolve(post, _args, ctx) {
-        return (
-          ctx.db.users.find((user) => {
-            return user.id === post.authorId
-          }) ?? null
-        )
+    // ...
+    t.field('publish', {
+      type: 'Post',
+      args: {
+        draftId: schema.intArg({ required: true }),
+      },
+      resolve(_root, args, ctx) {
+        let draftToPublish = ctx.inDb.posts.find((p) => p.id === args.draftId)
+
+        if (!draftToPublish) {
+          throw new Error('Could not find draft with id ' + args.draftId)
+        }
+
+        draftToPublish.published = true
+
+        return draftToPublish
       },
     })
-  },
+  }
 })
 ```
 
-```graphql
-type Post {
-  id: Int!
-  title: String!
-  body: String!
-  author: User
+```diff
+type Mutation {
+  createDraft(body: String!, title: String!): Post
++ publish(draftId: Int!): Post
 }
 ```
 
 </div>
-
-Evidently most of data isn't nullable! Its pretty annoying to write and read that repetition. Luckily Nexus allows us to change the nullability defaults at the object level.
 
 <div class="IntrinsicRow">
 
-```diff
-schema.objectType({
-  name: 'Blog',
-+ nonNullDefaults: {
-+   output: true,
-+ },
+```ts
+// api/graphql/Post.ts
+
+import { schema } from 'nexus'
+
+schema.extendType({
+  name: 'Query',
   definition(t) {
-+   t.int('id')
--   t.int('id', { nullable: false })
-+   t.string('name')
--   t.string('name', { nullable: false })
+    // ...
     t.list.field('posts', {
       type: 'Post',
--     nullable: false,
-      resolve(blog, _args, ctx) {
-        return ctx.db.posts.filter((post) => {
-          return post.blogId === blog.id
-        })
-      },
-    })
-    t.list.field('users', {
-      type: 'User',
--     nullable: false,
-      resolve(blog, _args, ctx) {
-        return ctx.db.users.filter((post) => {
-          return user.blogIds.includes(blog.id)
-        })
+      resolve(_root, _args, ctx) {
+        return ctx.inDb.posts.filter((p) => p.published === true)
       },
     })
   },
@@ -294,94 +240,13 @@ schema.objectType({
 ```
 
 ```diff
-schema.objectType({
-  name: 'Post',
-+ nonNullDefaults: {
-+   output: true,
-+ },
-  definition(t) {
-+   t.int('id')
--   t.int('id', { nullable: false })
-+   t.string('title')
--   t.string('title', { nullable: false })
-+   t.string('body')
--   t.string('body', { nullable: false })
-    t.field('author', {
-      type: 'User',
-+     nullable: true,
-      resolve(post, _args, ctx) {
-        return (
-          ctx.db.users.find((user) => {
-            return user.id === post.authorId
-          }) ?? null
-        )
-      },
-    })
-  },
-})
-```
-
-</div>
-
-<!-- TODO maybe we should introduce nullable config in chapter 2... -->
-
-While tweaking our `User` object to relate to posts and blogs we'll also make its field return types non-nullable.
-
-```diff
-schema.objectType({
-  name: 'User',
-+ nonNullDefaults: {
-+   output: true,
-+ },
-  definition(t) {
-    t.int('id')
-    t.string('name')
-    t.int('email')
-    t.list.field('posts', {
-      type: 'Post',
-      nullable: false,
-      resolve(user, _args, ctx) {
-        return ctx.db.posts.filter((post) => {
-          return post.authorId === user.id
-        })
-      },
-    })
-    t.list.field('blogs', {
-      type: 'Blog',
-      nullable: false,
-      resolve(user, _args, ctx) {
-        return ctx.db.blogs.filter((blog) => {
-          return blog.userIds.includes(user.id)
-        })
-      },
-    })
-  },
-})
-```
-
-```diff
-type User {
-- id: Int
-- name: String
-- email: string
-+ id: Int!
-+ name: String!
-+ email: string!
-+ posts: [Post!]!
-+ blogs: [Blog!]!
+type Query {
+  drafts: [Post!]
++ posts: [Post!]
 }
 ```
 
-And updates to our in-memory database at `api/db.ts`:
-
-```diff
- export const db = {
--  users: [{ id: 1, name: 'Jill', email: 'jill@prisma.io' }],
-+  users: [{ id: 1, name: 'Jill', email: 'jill@prisma.io', postIds: [], blogIds: [] }],
-+  blogs: [{ id: 1, name: 'Foo', usersIds: [], postIds: [] }],
-+  posts: [{ id: 1, title: 'Bar', body: '...', authorId: '1', blogId: '1' }],
- }
-```
+</div>
 
 ## Try It Out
 
@@ -391,16 +256,11 @@ Great, now head on over to the GraphQL Playground and run this query (left). If 
 
 ```graphql
 mutation {
-  signup(name: "Jim", email: "jim@prisma.io") {
+  publish(draftId: 1) {
     id
-    name
-    email
-    posts {
-      id
-    }
-    blogs {
-      id
-    }
+    title
+    body
+    published
   }
 }
 ```
@@ -408,18 +268,49 @@ mutation {
 ```json
 {
   "data": {
-    "signup": {
-      "id": 2345185,
-      "name": "Jim",
-      "email": "jim@prisma.io",
-      "posts": [],
-      "blogs": []
+    "publish": {
+      "id": 1,
+      "title": "Nexus",
+      "body": "...",
+      "published": true
     }
   }
 }
 ```
 
 </div>
+
+Now, that published draft should be visible via the `posts` Query. Run this query (left) and expect the following response (right):
+
+<div class="IntrinsicRow">
+
+```graphql
+query {
+  posts {
+    id
+    title
+    body
+    published
+  }
+}
+```
+
+```json
+{
+  "data": {
+    "posts": [
+      {
+        "id": 1,
+        "title": "Nexus",
+        "body": "...",
+        "published": true
+      }
+    ]
+  }
+}
+```
+</div>
+
 
 ## Wrapping Up
 
