@@ -424,6 +424,7 @@ mutation {
 ## Wrapping Up
 
 Congratulations! You can now read and write to your API.
+
 But, so far you've been validating your work by manually interacting with the Playground. That may be reasonable at first (depending on your relationship to TDD) but it will not scale. At some point you are going to want automated testing. Nexus takes testing seriously and in the next chapter we'll show you how. See you there!
 
 <div class="NextIs NextChapter"></div>
