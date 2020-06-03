@@ -51,6 +51,7 @@
 
   - [API](components/schema/api/index.md)
   - [Plugins API](components/schema/plugins-api)
+  - [SDL Converter ⤤](https://nexus.js.org/converter)
   - [Plugins](components/schema/plugins)
     - [Connection](components/schema/plugins/connection)
     - [Query Complexity](components/schema/plugins/query-complexity)
