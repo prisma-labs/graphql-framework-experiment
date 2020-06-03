@@ -38,15 +38,15 @@ Then, configure jest and npm scripts in your `package.json`
 }
 ```
 
-Finally, create a `tests` folder at the root of your project and a `Order.test.ts` file inside it
+Finally, create a `tests` folder at the root of your project and a `Post.test.ts` file inside it
 
 ```bash
-mkdir tests && touch tests/Order.test.ts
+mkdir tests && touch tests/Post.test.ts
 ```
 
 You're set.
 
-## Testing The Signup Mutation
+## Testing The Publish Mutation
 
 Nexus comes with a special testing module that you can import from `nexus/testing`.
 
@@ -88,60 +88,118 @@ export function createTestContext() {
 4. Before tests run start the app
 5. After tests complete, stop the app. This will for example close your app's HTTP server.
 
-Alright, now you will test your signup mutation. Use your new helper and scaffold your first test:
+Alright, now you will test your `publish` mutation. Because we want to start from a clean database, we'll just remove the pre-seeded data in the in-memory database that we've been using up until now.
+
+```diff
+// api/db.ts
+export const db = {
+- posts: [{ id: 1, title: 'Nexus', body: '...', published: false }],
++ posts: []
+}
+```
+
+Now use your new helper and scaffold your first test:
 
 <!-- prettier-ignore -->
 ```ts
-// tests/Order.test.ts
+// tests/Post.test.ts
 
 import { createTestContext } from './__helpers'
 
 const ctx = createTestContext()
 
-it('ensures that an order is created', async () => {
-  const result = await ctx.app.query(`                  # 1
+it('ensures that a draft can be created and published', async () => {
+  // Create a new draft
+  const draftResult = await ctx.app.query(`                 # 1
     mutation {
-      signup(name: "Jim", email: "jim@prisma.io") {     # 2
+      createDraft(title: "Nexus", body: "...") {            # 2
         id
-        name
-        email
-        posts {
-          id
-        }
-        blogs {
-          id
-        }
+        title
+        body
+        published
       }
     }
   `)
-  expect(result).toMatchInlineSnapshot()              // 3
+
+  // Snapshot that draft and expect `published` to be false
+  expect(draftResult).toMatchInlineSnapshot(`                // 3
+    Object {
+      "createDraft": Object {
+        "body": "...",
+        "id": 1,
+        "published": false,
+        "title": "Nexus",
+      },
+    }
+  `)
+
+  // Publish the previously created draft
+  const publishResult = await ctx.app.query(`
+    mutation publishDraft($draftId: Int!) {
+      publish(draftId: $draftId) {
+        id
+        title
+        body
+        published
+      }
+    }
+  `,
+    { draftId: draftResult.createDraft.id }
+  )
+
+  // Snapshot the published draft and expect `published` to be true
+  expect(publishResult).toMatchInlineSnapshot(`
+    Object {
+      "publish": Object {
+        "body": "...",
+        "id": 1,
+        "published": true,
+        "title": "Nexus",
+      },
+    }
+  `)
 })
 ```
 
-1. The test context exposes a GraphQL client at `ctx.app.query` that will help us run operations against our API. Here We're using it to send a signup mutation.
+1. The test context exposes a GraphQL client at `ctx.app.query` that will help us run operations against our API. Here We're using it to send a publish mutation.
 2. This is the mutation from the end of last chapter.
 3. The result will be snapshoted inline allowing us to see the input and output colocated!
 
 ## Try It Out
 
-Now run your tests and let's see that snapshot come to life! It should look similar to this:
+Now run your tests and let's see the snapshots come to life! It should look similar to this:
 
 ```bash
 npm run test
 ```
 
+Draft snapshot
 ```diff
+  // Snapshot that draft and expect `published` to be false
   expect(result).toMatchInlineSnapshot(`
-+    {
-+     "data": {
-+       "signup": {
-+         "id": 2345185,
-+         "name": "Jim",
-+         "email": "jim@prisma.io",
-+         "posts": [],
-+         "blogs": []
-+       }
-+     }
++   Object {
++     "publish": Object {
++       "id": 1,
++       "title": "Nexus",
++       "body": "...",
++       "published": false,
++     },
++   }
+  `)
+```
+
+Published draft snapshot
+
+```diff
+  // Snapshot that draft and expect `published` to be false
+  expect(result).toMatchInlineSnapshot(`
++   Object {
++     "publish": Object {
++       "id": 1,
++       "title": "Nexus",
++       "body": "...",
++       "published": true,
++     },
 +   }
   `)
 ```
@@ -150,7 +208,7 @@ Awesome, beautiful workflow isn't it? If inline snapshots get too unweildly you 
 
 ## Wrapping Up
 
-You've just made a big step in the maintainability of your API. Here we showed how to test your signup mutation, proving that a user is properly constructed and returned. However you did _not_ test if the user was correctly persisted into your database. That piece will come soon! But first we need a real database in the first place. That's what the next chapter is all about!
+You've just made a big step in the maintainability of your API. Here we showed how to test your `createDraft` and `publish` mutation, proving that a draft can be properly created and published. However you did _not_ test if the draft was correctly persisted into your database. That piece will come soon! But first we need a real database in the first place. That's what the next chapter is all about!
 
 <div class="NextIs NextChapter"></div>
 
