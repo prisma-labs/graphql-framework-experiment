@@ -25,7 +25,7 @@ touch api/db.ts
 // api/db.ts
 
 export const db = {
-  posts: [{ id: 1, title: 'Nexus', body: '...', published: false }]
+  posts: [{ id: 1, title: 'Nexus', body: '...', published: false }],
 }
 ```
 
@@ -205,7 +205,7 @@ schema.extendType({
         return draftToPublish
       },
     })
-  }
+  },
 })
 ```
 
@@ -252,7 +252,7 @@ type Query {
 
 Great, now head on over to the GraphQL Playground and run this query (left). If everything went well, you should see a response like this (right):
 
-<div class="IntrinsicRow">
+<div class="TightRow">
 
 ```graphql
 mutation {
@@ -282,7 +282,7 @@ mutation {
 
 Now, that published draft should be visible via the `posts` Query. Run this query (left) and expect the following response (right):
 
-<div class="IntrinsicRow">
+<div class="TightRow">
 
 ```graphql
 query {
@@ -309,8 +309,8 @@ query {
   }
 }
 ```
-</div>
 
+</div>
 
 ## Wrapping Up
 
