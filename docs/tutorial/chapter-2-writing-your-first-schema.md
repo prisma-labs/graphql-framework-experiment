@@ -126,15 +126,13 @@ type Query {
 1. To achieve colocation in Nexus we'll use `schema.extendType`. Its API is _very_ similar to `schema.objectType` with the difference that the defined fields are merged into the _targeted_ type.
 1. The first parameter specifies the field's name, here `users`
 1. `type: 'User'` specifies what the field's type should be. Here, a `User`
-1. `list: true` augments the field's type spec, making it wrapped by a List type. Here, a `[User]`
+1. `list: true` augments the field's type spec, making it wrapped by a List type. Here, a `[User]`. Nexus also provides the following shorthand for this 👇
 
-When specifying a field whose type is a list-of-something, there is a `t.list.*` shorthand you can use instead of `list: true`. Give it a shot like so 👇
-
-```ts
-definition(t) {
-  t.list.field('products', { ... })
-}
-```
+   ```ts
+   definition(t) {
+     t.list.field('users', { ... })
+   }
+   ```
 
 <div class="NextIs SectionDivider"></div>
 
@@ -160,7 +158,7 @@ You can now open up your GraphQL playground and try the following query (left); 
 
 ```graphql
 {
-  products {
+  users {
     id
     name
   }
@@ -173,7 +171,7 @@ You can now open up your GraphQL playground and try the following query (left); 
     "products": [
       {
         "id": 1,
-        "name": "ProductFoo"
+        "name": "Jill"
       }
     ]
   }
@@ -190,4 +188,4 @@ Congratulations! You've successfully got your first GraphQL schema up and runnin
 
 <div class="NextIs NextChapter"></div>
 
-[➳](/chapter-3-adding-mutations-to-your-api)
+[➳](/tutorial/chapter-3-adding-mutations-to-your-api)

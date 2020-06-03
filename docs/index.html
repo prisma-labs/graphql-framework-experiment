@@ -36,6 +36,18 @@
       }
       #wrapping-up + p {
         text-align: center;
+        margin-bottom: 0;
+      }
+      body[data-page^='tutorial'] .markdown-section h2 {
+        text-align: center;
+        font-style: italic;
+        font-family: serif;
+        font-size: 1.5rem;
+        margin-top: 1.5em !important;
+        margin-bottom: 1.5em !important;
+      }
+      body[data-page^='tutorial'] h2 span {
+        color: var(--theme-color);
       }
 
       /* Components */
@@ -53,6 +65,7 @@
       }
 
       /* Section Divider */
+      /* TODO we can remove this given the tutorial css above */
 
       .NextIs.SectionDivider + * {
         text-align: center;
@@ -398,7 +411,7 @@
       /* Markdown */
 
       #main {
-        margin-bottom: 50vh;
+        padding-bottom: 50vh;
       }
       #main > h1:first-child {
         margin-bottom: 2em;

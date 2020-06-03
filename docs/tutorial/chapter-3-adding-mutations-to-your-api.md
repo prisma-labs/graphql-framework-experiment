@@ -7,11 +7,15 @@ In this chapter you're going to add some write capability to your API. You'll le
 - Working with GraphQL Context
 - Working with GraphQL arguments
 
-To keep our learning gradual we'll use in-memory data for now but rest assured we'll be using a proper databases later in this tutorial.
+To keep our learning gradual we'll stick to in-memory data for now but rest assured a proper databases is coming in an upcoming chapter.
 
-## Creating an In-Memory Database
+## Wire Up The Context
 
-First, let's create an `api/db.ts` \*\*\*\*file and stub some content as follows:
+The first thing we'll do is setup an in-memory database and expose it to our resolvers using the _GraphQL context_.
+
+The GraphQL Context is a plain JavaScript object shared across all resolvers. Nexus creates it anew for each request and adds a few of its own properties. Largely though, what it will contains will be defined by your app. It is a good place to, for example, attach information about the current user.
+
+So go ahead and create the database.
 
 ```bash
 touch api/db.ts
@@ -21,13 +25,11 @@ touch api/db.ts
 // api/db.ts
 
 export const db = {
-  products: [{ id: 1, name: 'ProductFoo' }],
+  users: [{ id: 1, name: 'Jill', email: 'jill@prisma.io' }],
 }
 ```
 
-Remember our empty `api/app.ts` file that we created at the beginning of the tutorial? We'll go back there now to attach our database to our _GraphQL context_. To do that we'll use the `schema.addToContext` method.
-
-> GraphQL Context: The GraphQL Context is a plain JavaScript object shared across all resolvers. Nexus creates it anew for each request and adds a few of its own properties. Largely though, what it will contains will be defined by your app. It is a good place to, for example, attach information about the current user.
+Now to expose it in our GraphQL context we'll use a new schema method called `addToContext`. We can do this anywhere in our app but a fine place is the `api/app.ts` module we already created in chapter 1.
 
 ```ts
 // api/app.ts
@@ -42,59 +44,59 @@ schema.addToContext(() => {
 })
 ```
 
-That's it.
-
-> **Note**: For those familiar with GraphQL, you might be grimacing that we’re attaching static things to the context, instead of using export/import.
-> This is a matter of convenience. Feel free to take a purer approach in your apps if you want. Furthermore, it's likely that your actual db instance would be tight to the request cycle and therefore be instantiated in the GraphQL context.
-
-## Using it in our GraphQL API
-
-Now, let's use our new context data. Remember the `Query.products` field we created earlier?
+That's it. Behind the scenes Nexus will use the TypeScript compiler API to extract our return type here and propagate it to the parts of our app where the context is accessible. And if ever this process does not work for you for some reason you can use fallback to manually giving the types to Nexus like so:
 
 ```ts
-// api/graphql/Product.ts
+module global {
+  interface NexusContext {
+    // type information here
+  }
+}
+```
 
-import { schema } from 'nexus'
+> **Note** For those familiar with GraphQL, you might be grimacing that we’re attaching static things to the context, instead of using export/import.
+> This is a matter of convenience. Feel free to take a purer approach in your apps if you want. Furthermore, it's likely that your actual db instance would be tight to the request cycle and therefore be instantiated in the GraphQL context.
 
+## Use The Context
+
+Now let's use this data to reimplement the the `Query.users` resolver from the previous chapter.
+
+```diff
 schema.queryType({
   name: 'Query',
   definition(t) {
-    t.list.field('products', {
-      type: 'Product',
-      resolve() {
-        return [{ id: 1, name: 'ProductFoo' }]
+    t.list.field('users', {
+      type: 'Users',
+-      resolve() {
+-        return [{ id: 1, name: 'Jill', email: 'jill@prisma.io' }]
++     resolve(_root, _args, ctx) {  // 1
++        return ctx.db.products     // 2
       },
     })
   },
 })
 ```
 
-Replace the hardcoded user data that we previously wrote with a read from the context data. Access the context from the _third_ argument in our resolver. Your revised Product object should look like so 👇
+1. Context is the _thrid_ parameter, usually identified as `ctx`
+2. Simply return the data, Nexus makes sure the types line up.
+
+**Did you notice?** Still no TypeScript type annotations required from you yet everything is still totally type safe. Prove it to yourself by hovering over the `ctx.db.products` property and witness the correct type information it gives you. This is the type propagation we just mentioned in action. 🙌
+
+## Model The Domain pt 2
+
+Alright, now that we know how to wire things into our context, let's flush out our schema a bit more. We'll add `Post` objects to represent content by authors and `Blog` objects to represent groupings of users and posts.
+
+We've already worked with objects now, let's dive in.
 
 ```ts
-// api/graphql/Product.ts
-import { schema } from 'nexus'
-
-schema.queryType({
-  definition(t) {
-    t.list.field('products', {
-      type: 'Product',
-      resolve(_root, _args, ctx) {
-        // Bring context into scope
-        return ctx.db.products // Use context to return our data
-      },
-    })
-  },
-})
+// api/graphql/Blog.ts
 ```
 
-**Did you notice?** Still no TypeScript type annotations involved at all, and yet, `ctx.db.products` is fully type-safe. Try to hover the `db.products` field. Your IDE will probably give you type information.
+```ts
+// api/graphql/Post.ts
+```
 
-Alright, now that we know how to wire our in-memory database, let's continue building our schema.
-
-## Designing our schema
-
-Let's begin by visualizing what schema additions we'd like to build using GraphQL SDL. We'll need an `Order` object to represent a store checkout and a `checkout` GraphQL mutation to perform checkouts.
+We'll use some SDL to visualize what additions we'd like to make. We'll need a `Post` object to represent the actual writings of users. `Order` object to represent a store checkout and a `checkout` GraphQL mutation to perform checkouts.
 
 ```graphql
 type Order {
@@ -174,20 +176,6 @@ export const db = {
 +	 orders: [{ id: 1, items: [orderItem] }],
 +  orderItems: [orderItem]
 };
-```
-
-Hey, don't get pissed off by the "+" signs that prevents you from copy & pasting yet 😬.
-Here's a version that you can copy & paste .
-
-```ts
-// api/db.ts
-const orderItem = { id: 1, productName: 'ProductFoo', quantity: 1 }
-
-export const db = {
-  products: [{ id: 1, names: 'ProductFoo', price: 10 }],
-  orders: [{ id: 1, items: [orderItem] }],
-  orderItems: [orderItem],
-}
 ```
 
 ## Implementing the designed schema
@@ -483,4 +471,10 @@ In response, you should get this:
 }
 ```
 
+## Wrapping Up
+
 Congratulations! You can now read and write to your API. Good job. But, so far you've been validating your work by manual interacting with the Playground. That may be reasonable at first (depending on your relationship to TDD) but it will not scale. At some point you are going to want automated testing. Nexus takes testing seriously and in the next chapter we'll show you how. See you there!
+
+<div class="NextIs NextChapter"></div>
+
+[➳](/tutorial/chapter-4-testing-your-api)
