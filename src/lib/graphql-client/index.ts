@@ -1,70 +1,82 @@
-import { Headers } from 'cross-fetch'
+import { Headers as FetchHeaders } from 'cross-fetch'
 import * as GQLR from 'graphql-request'
+import { Param3 } from '../utils'
 
-export type Client = {
-  send: GQLR.GraphQLClient['request']
-  headers: {
-    set(headers: Record<string, string>): void
-    set(name: string, value: string): void
-    set(header: [string, string]): void
-    add(headers: Record<string, string>): void
-    add(name: string, value: string): void
-    add(header: [string, string]): void
-    del(name: string): void
-    get(name: string): null | string
-    has(name: string): boolean
-    entries(): IterableIterator<[string, string]>
+type Variables = Omit<Param3<typeof GQLR.request>, 'undefined'>
+
+type FetchHeaders = typeof FetchHeaders['prototype']
+
+export class GraphQLClient {
+  private fetchHeaders: FetchHeaders
+  headers: Headers
+
+  constructor(private apiUrl: string) {
+    this.fetchHeaders = new FetchHeaders()
+    this.headers = new Headers(this.fetchHeaders)
+  }
+
+  send(queryString: string, variables: Variables) {
+    const headers = this.fetchHeaders
+    const apiUrl = this.apiUrl
+    const client = new GQLR.GraphQLClient(apiUrl, { headers })
+    return client.request(queryString, variables)
   }
 }
 
 /**
  * Create a GraphQL Client instance
  */
-export function create(apiUrl: string): Client {
-  const headers = new Headers()
+export class Headers {
+  constructor(private fetchHeaders: FetchHeaders) {}
 
-  return {
-    send(queryString: string, variables) {
-      const client = new GQLR.GraphQLClient(apiUrl, { headers })
-      return client.request(queryString, variables)
-    },
-    headers: {
-      set(...args: unknown[]) {
-        let input: Record<string, string>
-        if (Array.isArray(args[0])) {
-          input = { [args[0][0]]: args[0][1] }
-        } else if (typeof args[0] === 'string' && typeof args[1] === 'string') {
-          input = { [args[0]]: args[1] }
-        } else if (typeof args[0] === 'object' && args[0] !== null) {
-          input = args[0] as any
-        } else throw new TypeError(`invalid input: ${args}`)
+  set(headers: Record<string, string>): void
+  set(name: string, value: string): void
+  set(header: [string, string]): void
+  set(...args: unknown[]) {
+    let input: Record<string, string>
+    if (Array.isArray(args[0])) {
+      input = { [args[0][0]]: args[0][1] }
+    } else if (typeof args[0] === 'string' && typeof args[1] === 'string') {
+      input = { [args[0]]: args[1] }
+    } else if (typeof args[0] === 'object' && args[0] !== null) {
+      input = args[0] as any
+    } else throw new TypeError(`invalid input: ${args}`)
 
-        Object.entries(input).forEach(([k, v]) => {
-          headers.set(k, v)
-        })
+    Object.entries(input).forEach(([k, v]) => {
+      this.fetchHeaders.set(k, v)
+    })
 
-        return undefined
-      },
-      add(...args: any[]) {
-        let input: Record<string, string>
-        if (Array.isArray(args[0])) {
-          input = { [args[0][0]]: args[0][1] }
-        } else if (typeof args[0] === 'string' && typeof args[1] === 'string') {
-          input = { [args[0]]: args[1] }
-        } else if (typeof args[0] === 'object') {
-          input = args[0]
-        } else throw new TypeError(`invalid input: ${args}`)
+    return undefined
+  }
+  add(headers: Record<string, string>): void
+  add(name: string, value: string): void
+  add(header: [string, string]): void
+  add(...args: any[]) {
+    let input: Record<string, string>
+    if (Array.isArray(args[0])) {
+      input = { [args[0][0]]: args[0][1] }
+    } else if (typeof args[0] === 'string' && typeof args[1] === 'string') {
+      input = { [args[0]]: args[1] }
+    } else if (typeof args[0] === 'object') {
+      input = args[0]
+    } else throw new TypeError(`invalid input: ${args}`)
 
-        Object.entries(input).forEach(([name, value]) => {
-          headers.append(name, value)
-        })
+    Object.entries(input).forEach(([name, value]) => {
+      this.fetchHeaders.append(name, value)
+    })
 
-        return undefined
-      },
-      del: headers.delete.bind(headers),
-      get: headers.get.bind(headers),
-      has: headers.has.bind(headers),
-      entries: headers.entries.bind(headers),
-    },
+    return undefined
+  }
+  del(name: string) {
+    return this.fetchHeaders.delete(name)
+  }
+  get(name: string) {
+    return this.fetchHeaders.get(name)
+  }
+  has(name: string) {
+    return this.fetchHeaders.has(name)
+  }
+  entries() {
+    return this.fetchHeaders.entries()
   }
 }

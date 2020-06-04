@@ -2,7 +2,7 @@ import { isLeft } from 'fp-ts/lib/Either'
 import getPort from 'get-port'
 import * as Lo from 'lodash'
 import { rightOrFatal } from '../lib/glocal/utils'
-import * as GraphQLClient from '../lib/graphql-client'
+import { GraphQLClient } from '../lib/graphql-client'
 import * as Layout from '../lib/layout'
 import { rootLogger } from '../lib/nexus-logger'
 import * as PluginRuntime from '../lib/plugin'
@@ -20,7 +20,7 @@ export interface TestContextAppCore {
 
 export interface TestContextCore {
   app: TestContextAppCore
-  client: GraphQLClient.Client
+  client: GraphQLClient
 }
 
 declare global {
@@ -28,7 +28,7 @@ declare global {
 
   interface NexusTestContextRoot {
     app: NexusTestContextApp
-    client: GraphQLClient.Client
+    client: GraphQLClient
   }
 }
 
@@ -101,7 +101,7 @@ export async function createTestContext(opts?: CreateTestContextOptions): Promis
 
   const appRunner = await createDevAppRunner(layout, privateApp)
   const apiUrl = `http://localhost:${appRunner.port}/graphql`
-  const client = GraphQLClient.create(apiUrl)
+  const client = new GraphQLClient(apiUrl)
   const api: TestContextCore = {
     client,
     app: {

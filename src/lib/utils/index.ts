@@ -8,7 +8,9 @@ export type CallbackRegistrer<F> = (f: F) => void
 
 export type SideEffector = () => MaybePromise
 
-export type Param1<F> = F extends (p: infer P, ...args: any[]) => any ? P : never
+export type Param1<F> = F extends (p1: infer P1, ...args: any[]) => any ? P1 : never
+export type Param2<F> = F extends (p1: any, p2: infer P2, ...args: any[]) => any ? P2 : never
+export type Param3<F> = F extends (p1: any, p2: any, p3: infer P3, ...args: any[]) => any ? P3 : never
 
 /**
  * Represents a POJO. Prevents from allowing arrays and functions

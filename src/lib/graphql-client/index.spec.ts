@@ -1,9 +1,9 @@
-import * as Client from './'
+import { GraphQLClient } from './'
 
-let client: Client.Client
+let client: GraphQLClient
 
 beforeEach(() => {
-  client = Client.create('foo.bar')
+  client = new GraphQLClient('foo.bar')
 })
 
 describe('headers', () => {
