@@ -29,7 +29,7 @@ afterAll(async () => {
 })
 
 test('hello', async () => {
-  const result = await ctx.query(`{ hello }`)
+  const result = await ctx.client.send(`{ hello }`)
 
   expect(result).toMatchInlineSnapshot()
 })

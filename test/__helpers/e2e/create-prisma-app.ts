@@ -45,7 +45,7 @@ export async function e2ePrismaApp(app: E2EContext) {
 
   await proc.pipe(takeUntilServerListening).toPromise()
 
-  response = await app.client.request(`{
+  response = await app.client.send(`{
       worlds {
         id
         name
@@ -55,7 +55,7 @@ export async function e2ePrismaApp(app: E2EContext) {
 
   expect(response).toMatchSnapshot('query')
 
-  response = await app.client.request(introspectionQuery)
+  response = await app.client.send(introspectionQuery)
   expect(response).toMatchSnapshot('introspection')
 
   sub.unsubscribe()
