@@ -1,9 +1,8 @@
-import { Headers } from 'cross-fetch'
 import { isLeft } from 'fp-ts/lib/Either'
 import getPort from 'get-port'
-import { GraphQLClient } from 'graphql-request'
 import * as Lo from 'lodash'
 import { rightOrFatal } from '../lib/glocal/utils'
+import * as GraphQLClient from '../lib/graphql-client'
 import * as Layout from '../lib/layout'
 import { rootLogger } from '../lib/nexus-logger'
 import * as PluginRuntime from '../lib/plugin'
@@ -14,23 +13,6 @@ import { createDevAppRunner } from '../runtime/start'
 
 const pluginLogger = rootLogger.child('plugin')
 
-type AppClient = {
-  send: GraphQLClient['request']
-  headers: Headers
-}
-
-export function createGraphqlClient(apiUrl: string): AppClient {
-  const headers = new Headers()
-
-  return {
-    send(queryString, variables) {
-      const client = new GraphQLClient(apiUrl, { headers })
-      return client.request(queryString, variables)
-    },
-    headers,
-  }
-}
-
 export interface TestContextAppCore {
   start: () => Promise<void>
   stop: () => Promise<void>
@@ -38,6 +20,7 @@ export interface TestContextAppCore {
 
 export interface TestContextCore {
   app: TestContextAppCore
+  client: GraphQLClient.Client
 }
 
 declare global {
@@ -45,6 +28,7 @@ declare global {
 
   interface NexusTestContextRoot {
     app: NexusTestContextApp
+    client: GraphQLClient.Client
   }
 }
 
@@ -117,9 +101,9 @@ export async function createTestContext(opts?: CreateTestContextOptions): Promis
 
   const appRunner = await createDevAppRunner(layout, privateApp)
   const apiUrl = `http://localhost:${appRunner.port}/graphql`
-  const appClient = createGraphqlClient(apiUrl)
+  const client = GraphQLClient.create(apiUrl)
   const api: TestContextCore = {
-    client: appClient,
+    client,
     app: {
       start: appRunner.start,
       stop: appRunner.stop,
