@@ -14,8 +14,15 @@ import { createDevAppRunner } from '../runtime/start'
 const pluginLogger = rootLogger.child('plugin')
 
 export interface TestContextAppCore {
-  start: () => Promise<void>
-  stop: () => Promise<void>
+  // todo this typing will make vscode show query as a property kind in autocompletion...
+  // what we want is a method, which would be the effect from this style of typing: `query(...): ...`
+  // ... yet we also don't want to manually repeat the whole type in our code!
+  /**
+   * @deprecated Use `ctx.client.send` instead.
+   */
+  query: GraphQLClient['send']
+  start(): Promise<void>
+  stop(): Promise<void>
 }
 
 export interface TestContextCore {
@@ -105,6 +112,7 @@ export async function createTestContext(opts?: CreateTestContextOptions): Promis
   const api: TestContextCore = {
     client,
     app: {
+      query: client.send,
       start: appRunner.start,
       stop: appRunner.stop,
     },

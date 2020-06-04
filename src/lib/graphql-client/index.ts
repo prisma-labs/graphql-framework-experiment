@@ -8,17 +8,17 @@ type FetchHeaders = typeof FetchHeaders['prototype']
 
 export class GraphQLClient {
   private fetchHeaders: FetchHeaders
-  headers: Headers
+  public headers: Headers
 
-  constructor(private apiUrl: string) {
+  constructor(private url: string) {
     this.fetchHeaders = new FetchHeaders()
     this.headers = new Headers(this.fetchHeaders)
   }
 
   send(queryString: string, variables: Variables) {
     const headers = this.fetchHeaders
-    const apiUrl = this.apiUrl
-    const client = new GQLR.GraphQLClient(apiUrl, { headers })
+    const url = this.url
+    const client = new GQLR.GraphQLClient(url, { headers })
     return client.request(queryString, variables)
   }
 }
