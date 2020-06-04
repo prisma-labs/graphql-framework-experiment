@@ -1,3 +1,4 @@
+import { Headers } from 'cross-fetch'
 import { isLeft } from 'fp-ts/lib/Either'
 import getPort from 'get-port'
 import { GraphQLClient } from 'graphql-request'
@@ -14,21 +15,23 @@ import { createDevAppRunner } from '../runtime/start'
 const pluginLogger = rootLogger.child('plugin')
 
 type AppClient = {
-  query: GraphQLClient['request']
+  send: GraphQLClient['request']
+  headers: Headers
 }
 
-export function createAppClient(apiUrl: string): AppClient {
-  const client = new GraphQLClient(apiUrl)
+export function createGraphqlClient(apiUrl: string): AppClient {
+  const headers = new Headers()
 
   return {
-    query(queryString, variables) {
+    send(queryString, variables) {
+      const client = new GraphQLClient(apiUrl, { headers })
       return client.request(queryString, variables)
     },
+    headers,
   }
 }
 
 export interface TestContextAppCore {
-  query: AppClient['query']
   start: () => Promise<void>
   stop: () => Promise<void>
 }
@@ -114,10 +117,10 @@ export async function createTestContext(opts?: CreateTestContextOptions): Promis
 
   const appRunner = await createDevAppRunner(layout, privateApp)
   const apiUrl = `http://localhost:${appRunner.port}/graphql`
-  const appClient = createAppClient(apiUrl)
+  const appClient = createGraphqlClient(apiUrl)
   const api: TestContextCore = {
+    client: appClient,
     app: {
-      query: appClient.query,
       start: appRunner.start,
       stop: appRunner.stop,
     },
