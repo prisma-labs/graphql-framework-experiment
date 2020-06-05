@@ -1,11 +1,12 @@
 import React from 'react'
-// import CodeBlock from './codeBlock'
-import TabbedContent from './tabbedContent'
+import ButtonLink from './button'
 import Code from './code'
 import CollapseBox from './collapsible'
-import Table from './table'
-import ButtonLink from './button'
+import Cols from './cols'
 import FileWithIcon from './fileWithIcon'
+// import CodeBlock from './codeBlock'
+import TabbedContent from './tabbedContent'
+import Table from './table'
 
 export default {
   h1: () => <h1 style={{ display: 'none' }} />,
@@ -18,6 +19,7 @@ export default {
   code: Code,
   details: CollapseBox,
   table: Table,
+  cols: Cols,
   ButtonLink,
   img: (props: any) => (
     <a href={props.src} target="_blank">

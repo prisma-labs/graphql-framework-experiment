@@ -10,19 +10,22 @@ html {
 
 body {
   /* Generic */
-  --main-font-color: #1a202c;
-  --main-bgd-color: #f7fafc;
+  /* --main-font-color: #2d3340; */
+  --main-font-color: #4c5661;
+  /* --main-bgd-color: #f7fafc; */
+  --main-bgd-color: #fff;
   --selection-bgd-color: #0c344b;
   --white-color: #ffffff;
-  --link-color: #3182ce;
+  --link-color: #42b983;
   --border-color: #e2e8f0;
-  --code-bgd-color: #edf2f7;
+  /* --code-bgd-color: #edf2f7; */
+  --code-bgd-color: #f6f8fa;
   --list-bullet-color: #a0aec0;
   --search-highlight-bg-color: #ebf8ff;
   --tag-media-color: #2d3748;
-  --header-gradient-color: #2a6379;
-  --header-bg-color: #255468;
-  --header-btn-color: #153d4e;
+  --header-gradient-color: #2e2c3f;
+  --header-bg-color: #2e2c3f;
+  --header-btn-color: #fff;
   --placeholder-color: #7f9199;
   /* Code blocks */
   --code-inner-color: #718096;
@@ -116,7 +119,7 @@ h6 code {
 
 * {
   box-sizing: border-box;
-  -webkit-font-smoothing: antialiased;
+  /* -webkit-font-smoothing: antialiased; */
   -moz-osx-font-smoothing: grayscale;
 }
 
@@ -138,8 +141,8 @@ p {
 
 p,
 li {
-  font-family: 'Open Sans';
-  font-style: normal;
+  font-family: 'Open Sans' rif;
+  */font-style: normal;
   font-weight: normal;
   font-size: 16px;
   line-height: 24px;

@@ -1,7 +1,5 @@
 import * as React from 'react'
 import styled from 'styled-components'
-import TOC from './toc'
-import ParentTitle from './parentTitleComp'
 
 const TopSectionWrapper = styled.div`
   position: relative;

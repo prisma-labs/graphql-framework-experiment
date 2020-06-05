@@ -1,15 +1,18 @@
 ---
-title: 'Migrate from Nexus Schema'
-metaTitle: 'Migrate from Nexus Schema'
-metaDescription: 'TODO'
+title: Migrate from Nexus Schema
+# TODO if these frontmatter items are removed the site crashes
+duration: ''
+experimental: false
+staticLink: false
 ---
+
+## Migrate from Nexus Schema
 
 Prior to version `0.20`, the `nexus` package comprised only the schema definition and code generation components of the Nexus framework. These components are now known as [`@nexus/schema`](components/schema/about), and while they're included as part of the Nexus framework, they remain available as a [standalone package](https://github.com/graphql-nexus/schema). (You can read more about the transition of Nexus from a schema library to a full-fledged framework in the [announcement in this GitHub issue](https://github.com/prisma-labs/nexus/issues/373).)
 
 For users of `nexus` version `0.12` and below, you can either migrate to the `@nexus/schema` package, or to the new Nexus framework. The former is more straightforward, but the latter may significantly simplify your configuration and give you the benefit of baked-in sensible defaults and best practices (especially if you were previously using `graphql-yoga` or `express-graphql`). This guide will cover both scenarios.
 
-
-### Using `@nexus/schema`
+## Using `@nexus/schema`
 
 Run `npm rm nexus` and `npm i @nexus/schema` to migrate to the updated package name.
 
@@ -30,10 +33,9 @@ Change any imports of `nexus` to `@nexus/schema`:
 
 If you were previously a user of `nexus-prisma`, it still exists! It currently remains published to NPM under the same package name and you can upgrade it and continue using it as before. (But note that [this may change in a future release](https://github.com/graphql-nexus/nexus-schema-plugin-prisma/issues/630).) You can find it on GitHub under its updated repository name: [`nexus-schema-plugin-prisma`](https://github.com/graphql-nexus/nexus-schema-plugin-prisma). (Note that the Nexus framework has a distinct but similarly-named plugin, [`nexus-plugin-prisma`](https://github.com/graphql-nexus/nexus-plugin-prisma), which is covered below.)
 
+## Using `nexus`
 
-### Using `nexus`
-
-#### Dependencies
+### Dependencies
 
 1. Remove `nexus@0.12` and add `nexus@0.20` (or higher) in its place.
 1. Remove dependency `graphql` as `nexus` bundles it.
@@ -47,11 +49,11 @@ If you were previously a user of `nexus-prisma`, it still exists! It currently r
    }
 ```
 
-#### Project Layout
+### Project Layout
 
 Not much to do but your source must include a `graphql` module or directory, and/or `app` entrypoint. More details in the [convention guide](/guides/project-layout#conventions). Nexus will give informative feedback if you get this wrong.
 
-#### Type Defs (aka. schema)
+### Type Defs (aka. schema)
 
 Nexus is based upon a singleton system. Import the `schema` component to get access to the nexus building blocks you're familiar with. But unlike before you will no longer need to export/import the type defs for passing into `makeSchema`. All of that is handled for you. To aid in this style of project code the framework has a convention that all `graphql` modules or child modules of `graphql` directories get auto-imported. Example:
 
@@ -76,7 +78,7 @@ Nexus is based upon a singleton system. Import the `schema` component to get acc
 ...
 ```
 
-#### Context
+### Context
 
 Nexus has an API for adding to context.
 
@@ -98,7 +100,7 @@ Nexus has an API for adding to context.
 - })
 ```
 
-#### Server
+### Server
 
 The server migration is particularly dependent on your setup. Nexus bundles `express` and `express-graphql`.
 
@@ -124,7 +126,7 @@ If you do have server logic that needs porting, and it is express based, use `se
 
 We currently do not support any other server than `express`.
 
-#### Developing & Building
+### Developing & Building
 
 You should only be working with the `nexus` CLI. Below shows the example scripts you might have had previously, versus what you'll now have (suggested).
 
@@ -145,7 +147,7 @@ You should only be working with the `nexus` CLI. Below shows the example scripts
   },
 ```
 
-#### Backing Types
+### Backing Types
 
 With Nexus Schema you manage backing types for your GraphQL objects centrally via `makeSchema`. Paths you give are to modules that export types. Type names that _match your GraphQL object type names_ are made their respective backing types.
 
@@ -205,7 +207,7 @@ schema.objectType({
 })
 ```
 
-#### Nullability
+### Nullability
 
 By default Nexus Schema has [outputs as guaranteed](https://nexus.js.org/docs/getting-started#nullability-default-values). Nexus Framework has outputs as nullable.
 
@@ -221,7 +223,7 @@ By default Nexus Schema has [outputs as guaranteed](https://nexus.js.org/docs/ge
   })
   ```
 
-#### Logging
+### Logging
 
 Nexus ships with its own logger.
 
@@ -232,7 +234,7 @@ import { log } from 'nexus'
 + log.info('hello world!', { population: 6_000_000 })
 ```
 
-#### Prisma
+### Prisma
 
 If you were a [`nexus-prisma`](https://github.com/prisma-labs/nexus-prisma) user, you will now become a [`nexus-plugin-prisma`](https://github.com/graphql-nexus/plugin-prisma) user. Install the plugin, and enable it in your project.
 

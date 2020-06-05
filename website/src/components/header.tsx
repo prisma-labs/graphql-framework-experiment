@@ -1,12 +1,12 @@
-import Link from '../components/link'
 import * as React from 'react'
 import styled, { css } from 'styled-components'
 import styledTS from 'styled-components-ts'
-import HeaderLogo from '../icons/Logo'
-import Github from '../icons/Git'
-import Clear from '../icons/Clear'
+import Link from '../components/link'
 import Search from '../components/search'
 import Sidebar from '../components/sidebar'
+import Clear from '../icons/Clear'
+import Github from '../icons/Git'
+import HeaderLogo from '../icons/Logo'
 import { HeaderProps } from '../interfaces/Layout.interface'
 
 type HeaderViewProps = {
@@ -50,7 +50,16 @@ const HeaderNav = styled.div`
 `
 
 const LogoContainer = styled.div`
+  display: flex;
   padding-right: 0.75rem;
+  color: white;
+  font-size: 1.3rem;
+  font-weight: 600;
+  svg {
+    margin-right: 1rem;
+    margin-left: 0.5rem;
+    transform: scale(1.1);
+  }
 `
 
 const SearchComponent = styled(Search)`
@@ -60,6 +69,7 @@ const SearchComponent = styled(Search)`
 `
 
 const NavLinks = styled.div`
+  opacity: 0;
   display: flex;
   justify-content: space-around;
   flex-grow: 1;
@@ -150,7 +160,8 @@ const MenuMobileBtn = styled.a`
   color: var(--white-color) !important;
   text-transform: uppercase;
   @media (min-width: 0px) and (max-width: 767px) {
-    display: block;
+    /* display: block; */
+    display: none;
   }
 `
 
@@ -215,7 +226,7 @@ const Header = ({ headerProps }: HeaderViewProps) => {
               }}
             >
               <LogoContainer>
-                <HeaderLogo style={{ height: '24px' }} />
+                <HeaderLogo style={{}} /> Nexus
               </LogoContainer>
             </Link>
           </div>
