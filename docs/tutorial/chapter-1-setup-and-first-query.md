@@ -79,7 +79,7 @@ Open it up, what do you see? It should be an instance of [GraphQL Playground](ht
 
 This is a graphical user inteface for interacting with GraphQL APIs. If you prefer you can run a [standalone](https://www.electronjs.org/apps/graphql-playground) version as an app on your machine, or another GraphQL GUI entirely. Nexus ships with one out of the box for your convenience.
 
-Take a look at the right-hand side SCHEAM tab. There you'll see a default schema that Nexus has prvoided for you. This, along with the warning you say before, will go away once you begin your own schema.
+Take a look at the right-hand side SCHEMA tab. There you'll see a default schema that Nexus has prvoided for you. This, along with the warning you say before, will go away once you begin your own schema.
 
 ## Wrapping Up
 
