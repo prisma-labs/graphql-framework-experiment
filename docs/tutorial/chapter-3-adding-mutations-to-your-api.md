@@ -63,7 +63,7 @@ Now let's use this data to reimplement the `Query.drafts` resolver from the prev
 
 ```diff
 schema.queryType({
-  name: 'Query',
+  type: 'Query',
   definition(t) {
     t.list.field('drafts', {
       type: 'Post',
@@ -101,7 +101,7 @@ As before we will take the colocation approach.
 // ...
 
 schema.extendType({
-  name: 'Mutation',
+  type: 'Mutation',
   definition(t) {
     t.field('createDraft', {
       type: 'Post',
@@ -135,7 +135,7 @@ Let's revise our implementation with GraphQL arguments.
 
 ```diff
 schema.extendType({
-  name: 'Mutation',
+  type: 'Mutation',
   definition(t) {
     t.field('createDraft', {
       type: 'Post',
@@ -226,7 +226,7 @@ type Mutation {
 import { schema } from 'nexus'
 
 schema.extendType({
-  name: 'Query',
+  type: 'Query',
   definition(t) {
     // ...
     t.list.field('posts', {
