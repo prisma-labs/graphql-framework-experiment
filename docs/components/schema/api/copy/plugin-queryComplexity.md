@@ -9,7 +9,7 @@ A single GraphQL query can potentially generate a huge workload for a server, li
 To install, add the `queryComplexityPlugin` to the `makeSchema.plugins` array, along with any other plugins you'd like to include:
 
 ```ts
-import { makeSchema, queryComplexityPlugin } from '@nexus/schema'
+import { makeSchema, queryComplexityPlugin } from "@nexus/schema";
 
 const schema = makeSchema({
   // ... types, etc,
@@ -17,20 +17,20 @@ const schema = makeSchema({
     // ... other plugins
     queryComplexityPlugin(),
   ],
-})
+});
 ```
 
 The plugin will install a `complexity` property on the output field config:
 
 ```ts
 export const User = objectType({
-  name: 'User',
+  name: "User",
   definition(t) {
-    t.id('id', {
+    t.id("id", {
       complexity: 2,
-    })
+    });
   },
-})
+});
 ```
 
 And of course, integrate `graphql-query-complexity` with your GraphQL server. You can setup with `express-graphql` as in [the library's example](https://github.com/slicknode/graphql-query-complexity#usage-with-express-graphql).
@@ -51,7 +51,7 @@ const complexity = getComplexity({
     // All undefined complexity values will fallback to 1
     simpleEstimator({ defaultComplexity: 1 }),
   ],
-})
+});
 ```
 
 Another way is with the complexity estimator, which is a function that returns a number, but also provides arguments to compute the final value. The query complexity plugin augments `graphql-query-complexity`'s default complexity estimator by providing its corresponding nexus types to ensure type-safety. No additional arguments are introduced so the function declaration is still syntactically equal.
@@ -59,28 +59,37 @@ Another way is with the complexity estimator, which is a function that returns a
 Augmented complexity estimator function signature:
 
 ```ts
-type QueryComplexityEstimatorArgs<TypeName extends string, FieldName extends string> = {
+type QueryComplexityEstimatorArgs<
+  TypeName extends string,
+  FieldName extends string
+> = {
   // The root type the field belongs too
-  type: RootValue<TypeName>
+  type: RootValue<TypeName>;
 
   // The GraphQLField that is being evaluated
-  field: GraphQLField<RootValue<TypeName>, GetGen<'context'>, ArgsValue<TypeName, FieldName>>
+  field: GraphQLField<
+    RootValue<TypeName>,
+    GetGen<"context">,
+    ArgsValue<TypeName, FieldName>
+  >;
 
   // The input arguments of the field
-  args: ArgsValue<TypeName, FieldName>
+  args: ArgsValue<TypeName, FieldName>;
 
   // The complexity of all child selections for that field
-  childComplexity: number
-}
+  childComplexity: number;
+};
 
-type QueryComplexityEstimator = (options: QueryComplexityEstimatorArgs) => number | void
+type QueryComplexityEstimator = (
+  options: QueryComplexityEstimatorArgs
+) => number | void;
 ```
 
 And you can use it like so:
 
 ```ts
-export const users = queryField('users', {
-  type: 'User',
+export const users = queryField("users", {
+  type: "User",
   list: true,
   args: {
     count: intArg({ nullable: false }),
@@ -88,8 +97,8 @@ export const users = queryField('users', {
   // This will calculate the complexity based on the count and child complexity.
   // This is useful to prevent clients from querying mass amount of data.
   complexity: ({ args, childComplexity }) => args.count * childComplexity,
-  resolve: () => [{ id: '1' }],
-})
+  resolve: () => [{ id: "1" }],
+});
 ```
 
 For more info about how query complexity is computed, please visit [graphql-query-complexity](https://github.com/slicknode/graphql-query-complexity).
