@@ -64,3 +64,6 @@ dist*
 /plugin.d.ts
 /plugin.js
 /components
+
+# website
+website/.cache
