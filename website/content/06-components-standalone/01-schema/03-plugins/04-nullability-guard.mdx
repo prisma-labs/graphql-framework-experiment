@@ -6,9 +6,6 @@ title: Nullability Guard
 
 This plugin helps us guard against non-null values crashing our queries in production. It does this by defining that every scalar value have a "fallback" value defined, so if we see a nullish value on an otherwise non-null field, we will fallback to this instead of crashing the query.
 
-<div >
-<div class="NextIs Warn"></div>
-
 > The `nullabilityGuardPlugin` by default only guards when `process.env.NODE_ENV === 'production'`. This is intended so you see/catch these errors in development and do not use it except as a last resort. If you want to change this, set the `shouldGuard` config option.
 
 #### Example {docsify-ignore}
