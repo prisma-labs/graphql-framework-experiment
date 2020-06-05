@@ -1,4 +1,9 @@
-# Chapter 3 <br> Adding Mutations to Your API {docsify-ignore}
+---
+title: 3. Adding Mutations to Your API
+
+---
+
+## Chapter 3 <br/> Adding Mutations to Your API
 
 In this chapter you're going to add some write capability to your API. You'll learn about:
 
@@ -63,7 +68,6 @@ Now let's use this data to reimplement the `Query.drafts` resolver from the prev
 
 ```diff
 schema.queryType({
-  type: 'Query',
   definition(t) {
     t.list.field('drafts', {
       type: 'Post',
