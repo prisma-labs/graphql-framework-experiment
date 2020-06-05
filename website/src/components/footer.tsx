@@ -1,13 +1,14 @@
+import Link from '../components/link'
 import * as React from 'react'
 import styled from 'styled-components'
-import Link from '../components/link'
-import NewsLetter from '../components/newsletter'
-import Facebook from '../icons/Facebook'
-import Github from '../icons/GitGrey'
 import PrismaLogoGrey from '../icons/PrismaLogoGrey'
-import Slack from '../icons/Slack'
+import NewsLetter from '../components/newsletter'
 import Twitter from '../icons/Twitter'
 import Youtube from '../icons/Youtube'
+import Slack from '../icons/Slack'
+import Github from '../icons/GitGrey'
+import Facebook from '../icons/Facebook'
+
 import { FooterProps } from '../interfaces/Layout.interface'
 
 type FooterViewProps = {
@@ -15,7 +16,6 @@ type FooterViewProps = {
 }
 
 const FooterWrapper = styled.div`
-  opacity: 0;
   background: transparent;
   width: 100%;
   display: flex;

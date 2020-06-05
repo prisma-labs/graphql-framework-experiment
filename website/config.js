@@ -5,7 +5,7 @@ const config = {
   },
   header: {
     logoLink: 'https://www.nexusjs.org', // replace with nexus site
-    title: 'Nexus',
+    title: 'GraphQL Nexus',
     // check all links
     links: [
       { name: 'Docs', link: 'https://www.nexusjs.org/docs' },
@@ -26,9 +26,9 @@ const config = {
     },
   },
   siteMetadata: {
-    title: 'Nexus - title',
-    description: 'Nexus - desc',
-    keywords: 'Docs, nexus',
+    title: 'GraphQL Nexus - title',
+    description: 'GraphQL Nexus - desc',
+    keywords: 'Docs, nexus, 1.0',
     docsLocation: 'https://github.com/graphql-nexus/docs/tree/master/content',
     twitter: {
       site: '@nexus',
@@ -36,10 +36,10 @@ const config = {
       image: '/social/docs-social.png',
     },
     og: {
-      site_name: 'Nexus',
+      site_name: 'GraphQL Nexus',
       type: 'website',
       image: {
-        alt: 'Nexus',
+        alt: 'GraphQL Nexus',
         height: '630',
         type: 'image/png',
         url: '/social/docs-social.png', //replace social image

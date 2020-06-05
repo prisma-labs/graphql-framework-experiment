@@ -1,11 +1,11 @@
-import { MDXProvider } from '@mdx-js/react'
 import { RouterProps } from '@reach/router'
 import * as React from 'react'
-import styled from 'styled-components'
-import customMdx from '../components/customMdx'
+import styled, { ThemeProvider } from 'styled-components'
 import { useLayoutQuery } from '../hooks/useLayoutQuery'
-import Footer from './footer'
 import Header from './header'
+import Footer from './footer'
+import { MDXProvider } from '@mdx-js/react'
+import customMdx from '../components/customMdx'
 import './layout.css'
 import Sidebar from './sidebar'
 // import { StickyContainer } from 'react-sticky';
@@ -32,10 +32,9 @@ const Layout: React.FunctionComponent<LayoutProps> = ({ children }) => {
   `
 
   const Content = styled.article`
-    max-width: 760px;
+    max-width: 880px;
     width: 880px;
-    /* margin: -80px 0 1rem 24px; */
-    margin: 0 0 1rem 24px;
+    margin: -80px 0 1rem 24px;
     position: relative;
     z-index: 100;
     @media (min-width: 0px) and (max-width: 1024px) {
@@ -47,8 +46,8 @@ const Layout: React.FunctionComponent<LayoutProps> = ({ children }) => {
 
   const MaxWidth = styled.div`
     > section {
-      /* background: var(--white-color); */
-      /* box-shadow: 0px 4px 8px rgba(47, 55, 71, 0.05), 0px 1px 3px rgba(47, 55, 71, 0.1); */
+      background: var(--white-color);
+      box-shadow: 0px 4px 8px rgba(47, 55, 71, 0.05), 0px 1px 3px rgba(47, 55, 71, 0.1);
       border-radius: 5px;
       margin-top: 1rem;
       padding: 2rem 40px;

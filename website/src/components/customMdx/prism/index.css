@@ -27,8 +27,7 @@ pre[class*='language-'] code {
   -ms-hyphens: none;
   hyphens: none;
 
-  /* border-radius: 8px; */
-  border-radius: 3px;
+  border-radius: 8px;
   display: table;
   width: 100%;
   overflow: auto;
@@ -36,8 +35,7 @@ pre[class*='language-'] code {
 
 /* Code blocks */
 pre[class*='language-'] {
-  /* padding: 1em 0; */
-  padding: 1.8em 1em;
+  padding: 1em 0;
   margin: 0;
   overflow: auto;
 }

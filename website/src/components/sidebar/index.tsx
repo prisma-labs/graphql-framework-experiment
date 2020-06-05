@@ -1,14 +1,13 @@
 import React from 'react'
-import { Sticky, StickyContainer } from 'react-sticky'
+import Tree from './tree'
 import styled, { css } from 'styled-components'
 import styledTS from 'styled-components-ts'
+import { StickyContainer, Sticky } from 'react-sticky'
 import { useAllArticlesQuery } from '../../hooks/useAllArticlesQuery'
 import { AllArticles } from '../../interfaces/AllArticles.interface'
-import Tree from './tree'
 
 const SidebarContainer = styled.aside`
-  /* width: 235px; */
-  width: 355px;
+  width: 235px;
 `
 
 const Sidebar = styledTS<{ isSticky: boolean }>(styled.div)`

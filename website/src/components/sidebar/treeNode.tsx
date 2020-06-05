@@ -1,17 +1,17 @@
 import React from 'react'
 import styled from 'styled-components'
-import ArrowDown from '../../icons/ArrowDown'
 import ArrowRight from '../../icons/ArrowRight'
-import { urlGenerator } from '../../utils/urlGenerator'
+import ArrowDown from '../../icons/ArrowDown'
 import Link from '../link'
+import { urlGenerator } from '../../utils/urlGenerator'
 
 const List = styled.ul`
   list-style: none;
   padding: 0;
   margin: 16px 0;
   &.has-border {
-    /* border-left: 2px solid var(--border-color); */
-    /* margin-left: -12px; */
+    border-left: 2px solid var(--border-color);
+    margin-left: -12px;
   }
 `
 
@@ -21,11 +21,12 @@ const ListItem = styled.li`
   margin-bottom: 16px;
   position: relative;
   a {
+    transition: color 150ms ease 0s;
     color: var(--code-inner-color) !important;
     text-decoration: none;
     vertical-align: middle;
     &:hover {
-      color: var(--link-color) !important;
+      color: var(--main-font-color) !important;
     }
 
     @media (min-width: 0px) and (max-width: 1024px) {
@@ -91,7 +92,7 @@ const ListItem = styled.li`
     }
   }
   .active-item {
-    color: var(--link-color) !important;
+    color: var(--main-font-color) !important;
     font-weight: 700;
     @media (min-width: 0px) and (max-width: 1024px) {
       color: var(--border-color) !important;
