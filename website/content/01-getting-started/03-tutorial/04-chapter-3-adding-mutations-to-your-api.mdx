@@ -198,7 +198,7 @@ schema.extendType({
         draftId: schema.intArg({ required: true }),
       },
       resolve(_root, args, ctx) {
-        let draftToPublish = ctx.inDb.posts.find((p) => p.id === args.draftId)
+        let draftToPublish = ctx.db.posts.find((p) => p.id === args.draftId)
 
         if (!draftToPublish) {
           throw new Error('Could not find draft with id ' + args.draftId)
