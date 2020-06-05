@@ -19,6 +19,11 @@ exports.onCreateNode = ({ node, getNode, actions }) => {
       name: 'id',
       value: node.id,
     })
+    createNodeField({
+      node,
+      name: 'modSlug',
+      value: `/${value.replace('/index', '')}`,
+    })
   }
 }
 
@@ -34,6 +39,7 @@ exports.createPages = ({ graphql, actions }) => {
               fields {
                 slug
                 id
+                modSlug
               }
               frontmatter {
                 title

@@ -1,16 +1,19 @@
 export interface ArticleFields {
   slug: string
+  modSlug: string
 }
 
 export interface ArticleFrontmatter {
   title: string
   metaTitle?: string
   metaDescription?: string
-  langSwitcher?: string[]
-  dbSwitcher?: string[]
+  // langSwitcher?: string[]
+  // dbSwitcher?: string[]
   staticLink?: boolean
   duration?: string
   experimental?: boolean
+  toc?: boolean
+  hidePage?: boolean
 }
 
 export interface ArticleData {

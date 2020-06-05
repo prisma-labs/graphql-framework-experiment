@@ -33,7 +33,7 @@ const TopSection = ({ title, slug, toc }: any) => {
     <TopSectionWrapper>
       <ParentTitle slug={slug} />
       <MainTitle>{title}</MainTitle>
-      <TOC headings={toc.items} />
+      {toc && toc.items && toc.items.length > 0 && <TOC headings={toc.items} />}
     </TopSectionWrapper>
   )
 }

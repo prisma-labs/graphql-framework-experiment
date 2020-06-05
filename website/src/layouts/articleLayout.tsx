@@ -3,7 +3,7 @@ import * as React from 'react'
 import { ArticleQueryData } from '../interfaces/Article.interface'
 import Layout from '../components/layout'
 import TopSection from '../components/topSection'
-// import PageBottom from '../components/pageBottom'
+import PageBottom from '../components/pageBottom'
 import SEO from '../components/seo'
 import { graphql } from 'gatsby'
 import MDXRenderer from 'gatsby-plugin-mdx/mdx-renderer'
@@ -16,8 +16,8 @@ const ArticleLayout = ({ data, ...props }: ArticleLayoutProps) => {
   }
   const {
     mdx: {
-      fields: { slug },
-      frontmatter: { title, metaTitle, metaDescription },
+      fields: { slug, modSlug },
+      frontmatter: { title, metaTitle, metaDescription, toc },
       body,
       parent,
       tableOfContents,
@@ -31,10 +31,14 @@ const ArticleLayout = ({ data, ...props }: ArticleLayoutProps) => {
     <Layout {...props}>
       <SEO title={metaTitle || title} description={metaDescription || title} />
       <section className="top-section">
-        <TopSection title={title} slug={slug} toc={tableOfContents} />
+        <TopSection
+          title={title}
+          slug={modSlug}
+          toc={toc || toc == null ? tableOfContents : []}
+        />
       </section>
       <MDXRenderer>{body}</MDXRenderer>
-      {/* <PageBottom editDocsPath={`${docsLocation}/${parent.relativePath}`} pageUrl={slug} /> */}
+      <PageBottom editDocsPath={`${docsLocation}/${parent.relativePath}`} pageUrl={slug} />
     </Layout>
   )
 }
@@ -51,6 +55,7 @@ export const query = graphql`
     mdx(fields: { id: { eq: $id } }) {
       fields {
         slug
+        modSlug
       }
       body
       parent {
@@ -63,6 +68,7 @@ export const query = graphql`
         title
         metaTitle
         metaDescription
+        toc
       }
     }
   }

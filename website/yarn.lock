@@ -1000,6 +1000,13 @@
   dependencies:
     regenerator-runtime "^0.13.4"
 
+"@babel/runtime@^7.10.2":
+  version "7.10.2"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.10.2.tgz#d103f21f2602497d38348a32e008637d506db839"
+  integrity sha512-6sF3uQw2ivImfVIl62RZ7MXhO2tap69WeWK57vAaimT6AZbE4FbqjdEJIN1UqoD6wI6B+1n9UiagafH1sxjOtg==
+  dependencies:
+    regenerator-runtime "^0.13.4"
+
 "@babel/standalone@^7.9.6":
   version "7.9.6"
   resolved "https://registry.yarnpkg.com/@babel/standalone/-/standalone-7.9.6.tgz#7a5f82c6fa29959b12f708213be6de8ec0b79338"
@@ -6868,14 +6875,6 @@ gatsby-plugin-catch-links@^2.3.0:
     "@babel/runtime" "^7.9.6"
     escape-string-regexp "^1.0.5"
 
-gatsby-plugin-google-analytics@^2.2.4:
-  version "2.3.1"
-  resolved "https://registry.yarnpkg.com/gatsby-plugin-google-analytics/-/gatsby-plugin-google-analytics-2.3.1.tgz#c86a4c9c31a3ad51123cbf1508e629072a7e1c5a"
-  integrity sha512-2dfaWVxAScwMMs00g5QJ4vHHOmj9i/3MWeC273zjpC8IW35IXw/ypcDg+O7Kh+Q/Xwok1pS+c+LREic8E08iYQ==
-  dependencies:
-    "@babel/runtime" "^7.9.6"
-    minimatch "3.0.4"
-
 gatsby-plugin-manifest@^2.0.24:
   version "2.4.2"
   resolved "https://registry.yarnpkg.com/gatsby-plugin-manifest/-/gatsby-plugin-manifest-2.4.2.tgz#0a9605a778a8e30ce047b9b3701031b9bde61d6b"
@@ -7124,6 +7123,20 @@ gatsby-remark-autolink-headers@^2.2.1:
     mdast-util-to-string "^1.1.0"
     unist-util-visit "^1.4.1"
 
+gatsby-remark-copy-linked-files@^2.3.2:
+  version "2.3.4"
+  resolved "https://registry.yarnpkg.com/gatsby-remark-copy-linked-files/-/gatsby-remark-copy-linked-files-2.3.4.tgz#559cd7203e8633ef90fd0220a9ade7ae1405d327"
+  integrity sha512-nCRXygWu6EBm7Ej1niqSOHb1mJVNjvTUVB89TdSRE1N7F83iCQafQWq1ajuVxO4VIYKGcyQZVxhSgeb3I2UXIQ==
+  dependencies:
+    "@babel/runtime" "^7.10.2"
+    cheerio "^1.0.0-rc.3"
+    fs-extra "^8.1.0"
+    is-relative-url "^3.0.0"
+    lodash "^4.17.15"
+    path-is-inside "^1.0.2"
+    probe-image-size "^4.1.1"
+    unist-util-visit "^1.4.1"
+
 gatsby-remark-images@^3.2.1:
   version "3.3.1"
   resolved "https://registry.yarnpkg.com/gatsby-remark-images/-/gatsby-remark-images-3.3.1.tgz#d9bd27f8f158f6b7fd2a228c755708c109ec5474"
@@ -7149,6 +7162,13 @@ gatsby-remark-prismjs@^3.2.5:
     "@babel/runtime" "^7.9.6"
     parse-numeric-range "^0.0.2"
     unist-util-visit "^1.4.1"
+
+gatsby-remark-rewrite-relative-links@^1.0.8:
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/gatsby-remark-rewrite-relative-links/-/gatsby-remark-rewrite-relative-links-1.0.8.tgz#b2a1190336fa0760518a4e318bc2c503a904f20a"
+  integrity sha512-7jCyMM+AWdp8mFLUWuJ5RGPQIKFzpLqf253QR6Aq8xrhlV0Bcz2k1+03MxPnGP0R5XetIoRm2W864KrbIZdk9Q==
+  dependencies:
+    unist-util-visit "^2.0.0"
 
 gatsby-remark-sectionize@^1.0.0:
   version "1.0.0"
@@ -13178,6 +13198,11 @@ react-fast-compare@^3.0.0:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/react-fast-compare/-/react-fast-compare-3.0.2.tgz#8b0bfa93a049ec1eef9d54ab5e5c6036c317144d"
   integrity sha512-1fBw8Efm6fb1blbRorZcO3OqzWgxYWxXzlaNeqEVXcrDdyFzeqygrPVU6qrPuqnqYMpUJVkQBdDgDJQTmCXp+Q==
+
+react-ga@^2.7.0:
+  version "2.7.0"
+  resolved "https://registry.yarnpkg.com/react-ga/-/react-ga-2.7.0.tgz#24328f157f31e8cffbf4de74a3396536679d8d7c"
+  integrity sha512-AjC7UOZMvygrWTc2hKxTDvlMXEtbmA0IgJjmkhgmQQ3RkXrWR11xEagLGFGaNyaPnmg24oaIiaNPnEoftUhfXA==
 
 react-helmet@^6.0.0:
   version "6.0.0"

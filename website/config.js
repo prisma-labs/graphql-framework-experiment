@@ -3,21 +3,23 @@ const config = {
     pathPrefix: '',
     siteUrl: 'https://www.nexusjs.org', // replace with nexus site
   },
+  redirects: [],
   header: {
     logoLink: 'https://www.nexusjs.org', // replace with nexus site
     title: 'GraphQL Nexus',
     // check all links
-    links: [
-      { name: 'Docs', link: 'https://www.nexusjs.org/docs' },
-      { name: 'Quickstart', link: 'https://www.prisma.io/docs/getting-started/quickstart' },
-      {
-        name: 'Reference',
-        link: 'https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/api',
-      },
-      { name: 'Blog', link: 'https://www.prisma.io/blog/' },
-      { name: 'Community', link: 'https://www.prisma.io/community/' },
-      { name: 'FAQ', link: 'https://www.prisma.io/docs/more/faq' },
-    ],
+    // links: [
+    //   { name: 'Docs', link: 'https://www.nexusjs.org/docs' },
+    //   { name: 'Quickstart', link: 'https://www.prisma.io/docs/getting-started/quickstart' },
+    //   {
+    //     name: 'Reference',
+    //     link: 'https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/api',
+    //   },
+    //   { name: 'Blog', link: 'https://www.prisma.io/blog/' },
+    //   { name: 'Community', link: 'https://www.prisma.io/community/' },
+    //   { name: 'FAQ', link: 'https://www.prisma.io/docs/more/faq' },
+    // ],
+    links: [{ name: '', link: '' }],
     search: {
       indexName: process.env.GATSBY_ALGOLIA_INDEX_NAME,
       algoliaAppId: process.env.GATSBY_ALGOLIA_APP_ID,
@@ -29,7 +31,7 @@ const config = {
     title: 'GraphQL Nexus - title',
     description: 'GraphQL Nexus - desc',
     keywords: 'Docs, nexus, 1.0',
-    docsLocation: 'https://github.com/graphql-nexus/docs/tree/master/content',
+    docsLocation: 'https://github.com/graphql-nexus/nexus/tree/master/website/content',
     twitter: {
       site: '@nexus',
       creator: '@nexus',
@@ -48,7 +50,10 @@ const config = {
     },
   },
   feedback: {
-    function_name: 'https://nexus-docs.netlify.app/.netlify/functions/index', // Replace with correct one
+    function_name: '', // Replace with correct one
+  },
+  sidebar: {
+    tablet_menu_split: [], // Slugs for top level folders which should appear in right pane on tablet
   },
   footer: {
     logoLink: '/',
