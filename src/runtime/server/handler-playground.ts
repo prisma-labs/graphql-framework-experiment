@@ -1,8 +1,10 @@
 import type { NexusRequestHandler } from './server'
 import { sendResponse } from './utils'
+import { PlaygroundClientSettings } from './settings'
 
 type Settings = {
   graphqlEndpoint: string
+  clientSettings: PlaygroundClientSettings
 }
 
 type Handler = (settings: Settings) => NexusRequestHandler
@@ -67,7 +69,8 @@ export const createRequestHandlerPlayground: Handler = (settings) => (_req, res)
       <script>
         window.addEventListener('load', function (event) {
           GraphQLPlayground.init(document.getElementById('root'), {
-            endpoint: '${settings.graphqlEndpoint}'
+            endpoint: '${settings.graphqlEndpoint}',
+            settings: ${JSON.stringify(settings.clientSettings)}
           })
         })
       </script>

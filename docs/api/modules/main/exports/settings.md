@@ -13,7 +13,7 @@ Use the settings to centrally configure various aspects of the various component
     port?: number
     host?: string
     path?: string
-    playground?: boolean | { path?: string }
+    playground?: boolean | { path?: string, clientSettings?: PlaygroundClientSettings }
   }
   schema?: {
     nullable?: {
@@ -50,10 +50,10 @@ Change your app's current settings. This is an additive API meaning it can be ca
 <div class="OneLineSignature"></div>
 
 ```
-boolean
+boolean | { path?: string, clientSettings?: PlaygroundClientSettings }
 ```
 
-Should the app expose a [GraphQL Playground](https://github.com/prisma-labs/graphql-playground) to clients?
+Should the app expose a [GraphQL Playground](https://github.com/prisma-labs/graphql-playground) to clients? Client configuration options are defined [here](https://github.com/prisma-labs/graphql-playground/blob/40c35fc4c73b939d002c9d2dff51eed5dd0b6aa9/packages/graphql-playground-react/src/types.ts#L19-L36).
 
 _Default_
 

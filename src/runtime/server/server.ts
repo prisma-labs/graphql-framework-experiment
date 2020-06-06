@@ -46,7 +46,10 @@ export function create(appState: AppState) {
           assembledGuard(appState, 'app.server.handlers.playground', () => {
             // todo should be accessing settings from assembled app state settings
             return wrapHandlerWithErrorHandling(
-              createRequestHandlerPlayground({ graphqlEndpoint: settings.data.path })
+              createRequestHandlerPlayground({
+                graphqlEndpoint: settings.data.path,
+                clientSettings: settings.data.playground ? settings.data.playground.clientSettings : {},
+              })
             )
           }) ?? noop
         )
@@ -77,7 +80,10 @@ export function create(appState: AppState) {
           express.get(
             settings.data.playground.path,
             wrapHandlerWithErrorHandling(
-              createRequestHandlerPlayground({ graphqlEndpoint: settings.data.path })
+              createRequestHandlerPlayground({
+                graphqlEndpoint: settings.data.path,
+                clientSettings: settings.data.playground ? settings.data.playground.clientSettings : {},
+              })
             )
           )
         }

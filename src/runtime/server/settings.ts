@@ -4,10 +4,6 @@ import { log as serverLogger } from './logger'
 
 const log = serverLogger.child('settings')
 
-export type PlaygroundSettings = {
-  path?: string
-}
-
 export type SettingsInput = {
   /**
    * todo
@@ -59,8 +55,57 @@ export type SettingsData = Omit<Utils.DeepRequired<SettingsInput>, 'host' | 'pla
 
 export const defaultPlaygroundPath = '/'
 
+/*
+ * Typings and defaults for `graphql-playground-react`
+ * https://github.com/prisma-labs/graphql-playground/blob/master/packages/graphql-playground-react/src/types.ts
+ */
+export type PlaygroundCursorShape = 'line' | 'block' | 'underline'
+export type PlaygroundTheme = 'dark' | 'light'
+
+export type PlaygroundClientSettings = {
+  'editor.cursorShape'?: PlaygroundCursorShape
+  'editor.fontFamily'?: string
+  'editor.fontSize'?: number
+  'editor.reuseHeaders'?: boolean
+  'editor.theme'?: PlaygroundTheme
+  'general.betaUpdates'?: boolean
+  'prettier.printWidth'?: number
+  'prettier.tabWidth'?: number
+  'prettier.useTabs'?: boolean
+  'request.credentials'?: 'omit' | 'include' | 'same-origin'
+  'schema.disableComments'?: boolean
+  'schema.polling.enable'?: boolean
+  'schema.polling.endpointFilter'?: string
+  'schema.polling.interval'?: number
+  'tracing.hideTracingResponse'?: boolean
+  'tracing.tracingSupported'?: boolean
+}
+
+export type PlaygroundSettings = {
+  path?: string
+  clientSettings?: PlaygroundClientSettings
+}
+
 export const defaultPlaygroundSettings: () => Readonly<Required<PlaygroundSettings>> = () => ({
   path: defaultPlaygroundPath,
+  clientSettings: {
+    'editor.cursorShape': 'line',
+    'editor.fontFamily': `'Source Code Pro', 'Consolas', 'Inconsolata', 'Droid Sans Mono', 'Monaco', monospace'`,
+    'editor.fontSize': 14,
+    'editor.reuseHeaders': true,
+    'editor.theme': 'dark',
+    'general.betaUpdates': false,
+    'prettier.printWidth': 80,
+    'prettier.tabWidth': 2,
+    'prettier.useTabs': false,
+    'request.credentials': 'same-origin',
+    'schema.disableComments': true,
+    'schema.polling.enable': true,
+    'schema.polling.endpointFilter': '*localhost*',
+    'schema.polling.interval': 2000,
+    'tracing.hideTracingResponse': true,
+    'tracing.tracingSupported': true,
+  },
 })
 
 /**
@@ -116,8 +161,11 @@ export function playgroundSettings(settings: SettingsInput['playground']): Setti
     return false
   }
 
+  const clientDefaults = defaultPlaygroundSettings().clientSettings
   return {
     path: playgroundPath(settings),
+    clientSettings:
+      typeof settings === 'boolean' ? clientDefaults : { ...clientDefaults, ...settings.clientSettings },
   }
 }
 
