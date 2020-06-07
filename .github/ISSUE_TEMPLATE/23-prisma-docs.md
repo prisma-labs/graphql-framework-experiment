@@ -1,5 +1,5 @@
 ---
-name: (Prisma plugin) Docs
+name: Prisma plugin –– Docs
 about: Feedback or ideas about the documentation
 title: ''
 labels:
