@@ -1,6 +1,6 @@
 ---
 name: Prisma plugin –– Docs
-about: Feedback or ideas about the documentation
+about: You have feedback or ideas about the documentation
 title: ''
 labels:
   - type/docs
