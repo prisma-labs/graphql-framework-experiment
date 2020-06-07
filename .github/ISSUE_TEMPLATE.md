@@ -1,4 +1,4 @@
-For **questions**, please use the repo's [GitHub Discussions](https://github.com/graphql-nexus/nexus/discussions)
+For **questions**, please use the repo's [GitHub Discussions](https://github.com/graphql-nexus/nexus/discussions/new)
 
 ---
 
@@ -14,4 +14,4 @@ For **documentation issues**, please fill out the [documentation issue template]
 
 ---
 
-For **something else**, please fill out the [something else template](https://github.com/graphql-nexus/nexus/issues/new?template=5-other.md)
+For **something else**, please fill out the [something else template](https://github.com/graphql-nexus/nexus/issues/new?template=99-something-else.md)

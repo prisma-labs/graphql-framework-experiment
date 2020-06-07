@@ -1,6 +1,6 @@
 ---
 name: Something Else
-about: Feedback, support, docs, performance, ...
+about: You have something to say that doesn't obviously fit another category here
 title: ''
 labels: ''
 assignees: ''

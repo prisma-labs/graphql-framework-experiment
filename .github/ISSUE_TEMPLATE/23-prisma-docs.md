@@ -1,8 +1,10 @@
 ---
-name: Docs
+name: Prisma plugin –– Docs
 about: You have feedback or ideas about the documentation
 title: ''
-labels: type/docs
+labels:
+  - type/docs
+  - plugin/prisma
 assignees: ''
 ---
 

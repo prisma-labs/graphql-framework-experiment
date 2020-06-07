@@ -1,8 +1,10 @@
 ---
-name: Docs
-about: You have feedback or ideas about the documentation
+name: Prisma plugin –– Feature
+about: You have an idea for a new capability or a refinement to an existing one
 title: ''
-labels: type/docs
+labels:
+  - type/feat
+  - plugin/prisma
 assignees: ''
 ---
 
@@ -11,8 +13,6 @@ assignees: ''
 <!-- 1. Remove sections/details you do not complete -->
 <!-- 2. Add sections/details useful to you          -->
 
-#### What
+#### Perceived Problem
 
-#### Why
-
-#### How
+#### Ideas / Proposed Solution(s)
