@@ -1,5 +1,5 @@
 ---
-name: Docs
+name: 📗 Docs
 about: You have feedback or ideas about the documentation
 title: ''
 labels: type/docs
