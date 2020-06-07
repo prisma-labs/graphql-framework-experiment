@@ -1,5 +1,5 @@
 ---
-name: 🐛 Prisma Plugin –– Bug Bug
+name: Prisma Plugin –– Bug Bug 🐛
 about: You encountered something that is not working the way it should
 title: ''
 labels:
