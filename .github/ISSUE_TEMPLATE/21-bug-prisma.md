@@ -1,6 +1,6 @@
 ---
-name: Prisma Plugin –– Bug Bug 🐛
-about: You encountered something that is not working the way it should
+name: 🐛 Bug –– Prisma Plugin
+about: You encountered something that is not working the way it should for Prisma plugin
 title: ''
 labels:
   - type/bug

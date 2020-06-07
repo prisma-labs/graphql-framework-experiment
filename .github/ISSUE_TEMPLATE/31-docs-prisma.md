@@ -1,9 +1,9 @@
 ---
-name: Prisma plugin –– Feature 🚀
-about: You have an idea for a new capability or a refinement to an existing one
+name: 📗 Docs -- Prisma plugin
+about: You have feedback or ideas about the documentation for Prisma plugin
 title: ''
 labels:
-  - type/feat
+  - type/docs
   - plugin/prisma
 assignees: ''
 ---
@@ -13,6 +13,8 @@ assignees: ''
 <!-- 1. Remove sections/details you do not complete -->
 <!-- 2. Add sections/details useful to you          -->
 
-#### Perceived Problem
+#### What
 
-#### Ideas / Proposed Solution(s)
+#### Why
+
+#### How
