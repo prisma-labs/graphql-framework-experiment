@@ -157,7 +157,9 @@ You'll see some feedback from your IDE that you're missing a `resolve` property.
 > You might be wondering why Nexus hasn't complained about missing resolvers in some other cases so far. The answer is a more advanced topic that we'll cover later.
 
 ```ts
+// api/graphql/Post.ts
 import { schema } from 'nexus'
+// ...
 
 schema.extendType({
   type: 'Query',
