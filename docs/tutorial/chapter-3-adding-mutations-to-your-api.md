@@ -63,7 +63,6 @@ Now let's use this data to reimplement the `Query.drafts` resolver from the prev
 
 ```diff
 schema.queryType({
-  type: 'Query',
   definition(t) {
     t.list.field('drafts', {
       type: 'Post',
