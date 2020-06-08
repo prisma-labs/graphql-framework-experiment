@@ -1,3 +1,4 @@
+import { Either, left, right } from 'fp-ts/lib/Either'
 import * as fs from 'fs-jetpack'
 import { addHook } from 'pirates'
 import * as ts from 'typescript'
@@ -16,7 +17,7 @@ interface ProgramOptions {
 export function createTSProgram(
   layout: Layout,
   options?: ProgramOptions
-): ts.EmitAndSemanticDiagnosticsBuilderProgram {
+): Either<Error, ts.EmitAndSemanticDiagnosticsBuilderProgram> {
   // Incremental option cannot be set when `noEmit: true`
   const compilerCacheOptions =
     options?.withCache && !layout.tsConfig.content.options.noEmit
@@ -47,17 +48,13 @@ export function createTSProgram(
     (error) => error.code === SOURCE_ROOT_MUST_CONTAIN_ALL_SOURCE_FILES_ERROR_CODE
   )
   if (maybeSourceRootMustContainAllSourceFilesError) {
-    log.fatal(
+    const message =
       'Your app is invalid\n\n' +
-        ts.formatDiagnosticsWithColorAndContext(
-          [maybeSourceRootMustContainAllSourceFilesError],
-          diagnosticHost
-        )
-    )
-    process.exit(1)
+      ts.formatDiagnosticsWithColorAndContext([maybeSourceRootMustContainAllSourceFilesError], diagnosticHost)
+    return left(Error(message))
   }
 
-  return builder
+  return right(builder)
 }
 
 export function deleteTSIncrementalFile(layout: Layout) {
