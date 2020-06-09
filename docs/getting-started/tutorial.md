@@ -12,7 +12,7 @@ npx nexus
 
 Our Hello World schema doesn't account for information about moons, lets change that.
 
-Start by updating our data layer to model information about moons. We don't want to go crazy scientific here but a bit of modelling will serve us well. A world may have more than one moon, and a moon may have properites in its own right. So lets give moons a first class model representation. Then, we can connect them to their respective worlds:
+Start by updating our data layer to model information about moons. We don't want to go crazy scientific here but a bit of modelling will serve us well. A world may have more than one moon, and a moon may have properties in its own right. So lets give moons a first class model representation. Then, we can connect them to their respective worlds:
 
 ```diff
 +++ prisma/schema.prisma
@@ -65,7 +65,7 @@ Upon doing this however, we will see a warning in our dev mode logs:
 
 ```
  Warning: Your GraphQL `World` object definition is projecting a field `moons` with `Moon` as output type, but `Moon` is not defined in your GraphQL Schema
- Warning: in /Users/jasonkuhrt/foobar/api/graphql.ts:10:13
+ Warning: in /Users/x/foobar/api/graphql.ts:10:13
 
    6 definition(t) {
    7 t.model.id();
@@ -88,7 +88,7 @@ The feedback is pretty clear already but to restate: The problem is that we're p
 +})
 ```
 
-Do not copy-paste. Instead type this out yourself and take note how autcompletion within the `definition` block on `t.model` effectively guides you to success.
+Do not copy-paste. Instead type this out yourself and take note how autocompletion within the `definition` block on `t.model` effectively guides you to success.
 
 Once you have projected `Moon` from your data layer to your API layer, you will see that the dev mode warning and TypeScript error are now resolved. 🙌
 
@@ -177,7 +177,7 @@ Then, create an account at [Heroku](https://www.heroku.com/) (if you don't alrea
     heroku addons:create heroku-postgresql
     ```
 
-1.  Find the postgres databse connection URL
+1.  Find the postgres database connection URL
 
     ```cli
     heroku pg:credentials:url
@@ -185,7 +185,7 @@ Then, create an account at [Heroku](https://www.heroku.com/) (if you don't alrea
 
     Copy it into `prisma/.env` to give Prisma access.
 
-1.  Migrate the heroku postgres databse
+1.  Migrate the heroku postgres database
 
     ```cli
     yarn prisma migrate up --experimental

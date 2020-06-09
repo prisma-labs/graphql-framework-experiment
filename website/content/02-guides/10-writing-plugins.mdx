@@ -205,7 +205,7 @@ title: Writing Plugins
 ## Wholistic
 
 - The breadth of Nexus' plugin system is uncommon
-- Most tools are either rutime (Express) or workflow (ESLint) oriented and thus naturally scope their plugins to their focus
+- Most tools are either runtime (Express) or workflow (ESLint) oriented and thus naturally scope their plugins to their focus
 - the advantage of Nexus' approach where plugins can hook into both workflow and runtime is that they allow plugin authors to deliver rich wholistic experiences for their users
 - For example a plugin author might reinforce their plugin's runtime feature with additions to doctor which lint for idiomatic usage
 - No longer does a plugin need rely on a lengthy readme that probably isn't complete and probably isn't read by most users to guide users through correct configuration, etc. usage of their plugin
@@ -214,7 +214,7 @@ title: Writing Plugins
 ## Runtime vs Worktime
 
 - runtime is for hooking into when your app is actually running
-- so logic here can directly impact your production systems's reliability and performance characteristics
+- so logic here can directly impact your production systems' reliability and performance characteristics
 - worktime is for hooking into things like dev testing and building
 - logic here is relatively free from concern over runtime impact, e.g. some slow running build-time extensions cannot impact latency experienced by end-users of the app in production.
 

@@ -40,7 +40,7 @@
 - Integrated TypeScript
   - No install needed
   - Builtin dynamic tsconfig guide rails
-  - Nexus CLI honurs your tsconfig
+  - Nexus CLI honours your tsconfig
 - Simple dependency management
   - One dep
   - Add prisma, only one dep more

@@ -157,7 +157,7 @@ log.info('hello')
   Unix timestamp in milliseconds.
 
 - `pid`  
-  The process ID given by the host kernal.
+  The process ID given by the host kernel.
 
 - `hostname`  
   The machine host (`require('os').hostname()`)

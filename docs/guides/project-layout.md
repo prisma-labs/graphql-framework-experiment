@@ -7,7 +7,7 @@
 
 ##### Project Root
 
-- Project Root is the CWD (current working directory) for all CLI invocatons.
+- Project Root is the CWD (current working directory) for all CLI invocations.
 - Nexus ([like VSCode](https://vscode.readthedocs.io/en/latest/languages/typescript/#typescript-files-and-projects)) considers the folder containing a `tsconfig.json` to be the project root.
 
 ##### Source Root
@@ -19,7 +19,7 @@
 
 ##### Out Root
 
-- Out Root is the place where the transpiled TypeScript (to JavaScript) modules will be emitted to. The folder structure mimicks that of the source root.
+- Out Root is the place where the transpiled TypeScript (to JavaScript) modules will be emitted to. The folder structure mimics that of the source root.
 - Out Root is defined by setting `compilerOptions.outDir`.
 - If you do not specify it then Nexus will default to `.nexus/build`. Unlike with `rootDir` Nexus will not scaffold the default into your `tsconfig.json` because its presence has no impact upon VSCode.
 - You can override its value interactively with `nexus build --out`.

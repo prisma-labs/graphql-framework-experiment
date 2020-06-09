@@ -54,7 +54,7 @@ There are three dimensions: worktime, testtime, and runtime. Worktime allows plu
 
 Directionally Nexus is on a good track, but there is work still left to do. The names are a bit confusing when you dig into the details, and the supposed separation between worktime/runtime has undesirable "loopholes" because of reflection. Details;
 
-1.  Runtime dimension does not mean plugging exclusively into what is run in your production code. There are actually reasons to plug into the runtime for ostensibly worktime beneit... This is due to Nexus' so-called reflection system, wherein the app is run in the background during development for development purposes.
+1.  Runtime dimension does not mean plugging exclusively into what is run in your production code. There are actually reasons to plug into the runtime for ostensibly worktime benefit... This is due to Nexus' so-called reflection system, wherein the app is run in the background during development for development purposes.
 
 2.  The rationale for splitting worktime from runtime is clear, tree-shaking alone makes the case for it. However the separation between worktime and testing is less clear, perhaps nonsense, and so may be revisited in the future.
 
@@ -103,7 +103,7 @@ what follows is a stub
 
    Static doesn't have to deal with the unpredictabilities of running an app and so has the benefit of being easier to reason about in a sense. It also has the benefit of extracting accurate type information using the native TS system whereas dynamic relies on building TS types from scratch. This makes static a fit for arbitrary code. On the downside, robust AST processing is hard work, and so, so far, static restricts how certain expressions can be written, otherwise AST traversal fails.
 
-   1. A start module is created in memory. It imports the entrypoint and all [Nexus modules](/guides/project-layout?id=nexus-modules). It registers an extension hook to transpile the TypeScript app on the fly as it is run. The transpilation uses the project's tsconfig but overrides target and module so that it is runnable by Node (10 and up). Specificaly es2015 target and commonjs module. For example if user had module of `esnext` the transpilation result would not be runnable by Node.
+   1. A start module is created in memory. It imports the entrypoint and all [Nexus modules](/guides/project-layout?id=nexus-modules). It registers an extension hook to transpile the TypeScript app on the fly as it is run. The transpilation uses the project's tsconfig but overrides target and module so that it is runnable by Node (10 and up). Specifically es2015 target and commonjs module. For example if user had module of `esnext` the transpilation result would not be runnable by Node.
    1. The start module is run in a sub-process for maximum isolation. (we're looking at running within workers [#752](https://github.com/graphql-nexus/nexus/issues/752))
    1. In parallel, a TypeScript instance is created and the app source is statically analyzed to extract context types. This does not require running the app at all. TypeScript cache called tsbuildinfo is stored under `node_modules/.nexus`.
 

@@ -304,7 +304,7 @@ As the API author, there are three design tasks you will invariable perform over
 2. Define connections between these data types that model how logical entities and concepts relate in your business domain.
 3. Define entrypoints which allow traversal into this graph of data.
 
-This is an iterative process that can generally be seen as an finite loop wherein your team gradually refines and expands (or contracts!) the data graph as you respond to changing client app needs, business needs, and so on. Data modelling is hard work. For one thing it is a suble art, occasionally underappreciated. There are typically multiple ways to model any one thing and competing tradeoffs that leave no obvious winner abound. If the process of data modelling itself or data modelling in GraphQL is new to you, you may find this book by [Marc-Andre Giroux](https://twitter.com/__xuorig__) helpful: [Production Ready GraphQL](https://book.productionreadygraphql.com/).
+This is an iterative process that can generally be seen as an finite loop wherein your team gradually refines and expands (or contracts!) the data graph as you respond to changing client app needs, business needs, and so on. Data modelling is hard work. For one thing it is a subtle art, occasionally underappreciated. There are typically multiple ways to model any one thing and competing tradeoffs that leave no obvious winner abound. If the process of data modelling itself or data modelling in GraphQL is new to you, you may find this book by [Marc-Andre Giroux](https://twitter.com/__xuorig__) helpful: [Production Ready GraphQL](https://book.productionreadygraphql.com/).
 
 ## Nullability in Principal
 
@@ -312,7 +312,7 @@ When creating an API, especially before going to production or lifting features 
 
 If inputs are optional or outputs are guaranteed then client developers will have a simpler API to deal with since making requests demands no up front configuration and handling responses presents no null cases. On the other hand, for the API developer, changing the API becomes harder since turning inputs from optional to required or making outputs go from guaranteed to nullable are breaking changes from the client's point of view.
 
-Also, as more outputs are guaranteed, the greater the potential of the "null blast radius" can be. This is the effect where, within a schema rutime, a `null` or error received from some data source where the schema states there shall be no `null` requires propagating the `null` up the data tree until a nullable type is found (or, at root, finally error).
+Also, as more outputs are guaranteed, the greater the potential of the "null blast radius" can be. This is the effect where, within a schema runtime, a `null` or error received from some data source where the schema states there shall be no `null` requires propagating the `null` up the data tree until a nullable type is found (or, at root, finally error).
 
 If you'd like to see these design considerations discussed further here are a few articles/resources you may find helpful:
 
@@ -326,12 +326,12 @@ If you'd like to see these design considerations discussed further here are a fe
 Nexus defaults to both inputs and outputs being nullable. This means by default your API is conservative in what it sends but flexible in what it accepts. With this approach, by default:
 
 - You're free to defer some hard thinking about output nullability, knowing you can always change your mind later without breaking clients.
-- Client developers work more to processing API respones, having to handle null conditions.
+- Client developers work more to processing API responses, having to handle null conditions.
 - You're forced to frontload some hard thinking about inputs, since realizing something should have been required later will require breaking clients.
 - Client developers work less to satisfy minimum query requirements.
 - The "null blast radius" (refer to [Nullability in Principal](#nullability-in-principal)) is reduced to zero.
 
-There is no right or wrong answer to nullability. These are just defaults, not judgements. Understand the tradeoffs, and react to your use-case, above all.
+There is no right or wrong answer to nullability. These are just defaults, not judgments. Understand the tradeoffs, and react to your use-case, above all.
 
 You can override the global defaults at the per-type level or per-field level. If you find yourself writing local overrides in a majority of cases then it might mean the global defaults are a bad fit for your API. In that case you can change the global defaults.
 
@@ -590,7 +590,7 @@ Here is a step-by-step breakdown of what is going on (follow the diagram annotat
 
 5. The `comments` field is is an object type so just like with `Query.users` before, its own fields must be resolved. The `comments` resolver fetches comments data from the database. Like in step 3 this data becomes _backing type_ data.
 
-6. Much like the GraphQL `Comment` object field were resolved, so is `Comment`. Resolution runs once for every comment retrived from the database in the previous step. The `text` field is scalar so resolution of that path can terminate there. But the `likers` field is typed to an object and so once again goes through the object-field resolution pattern.
+6. Much like the GraphQL `Comment` object field were resolved, so is `Comment`. Resolution runs once for every comment retrieved from the database in the previous step. The `text` field is scalar so resolution of that path can terminate there. But the `likers` field is typed to an object and so once again goes through the object-field resolution pattern.
 
 7. A request to the database for users who liked this comment is made.
 
@@ -832,4 +832,4 @@ schema.queryType({
 
 <p class="NextIs Detail"></p>
 
-> The backing type configuration is co-located with the GraphQL object because Nexus takes the view that a GraphQL object owns its backing type requirements and all nodes in the graph pointing to it must then satisfy those requirements in their own resolvers. We saw a bit of this in the Backing Types Conepts section before, where `User` object was related to by multiple nodes in the graph, and those various nodes passed the same kinds of backing types during resolution.
+> The backing type configuration is co-located with the GraphQL object because Nexus takes the view that a GraphQL object owns its backing type requirements and all nodes in the graph pointing to it must then satisfy those requirements in their own resolvers. We saw a bit of this in the Backing Types Concepts section before, where `User` object was related to by multiple nodes in the graph, and those various nodes passed the same kinds of backing types during resolution.

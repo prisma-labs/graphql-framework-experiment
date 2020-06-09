@@ -50,7 +50,7 @@ Your modeling work is going to start on the API layer as opposed to the database
 
 > A note about terminology. We will be talking about the Post Object not Post Model. The difference is that at the API layer we have objects but at the database layer we have models. The name difference helps us talk about these different layers without confusion. It is also how GraphQL (API layer) and Prisma (database layer, discussed later) respectively refer to these things.
 
-Create a new module for your Post object at `api/graphql/Post.ts`. We _could_ write our whole schema within say `api/app.ts` or `api/graphql.ts`, but modularizing your GraphQL type definitions can help scale your codebase. Neither approach is inheritly wrong though, so do as you see you fit. For this tutorial we'll use the modular style.
+Create a new module for your Post object at `api/graphql/Post.ts`. We _could_ write our whole schema within say `api/app.ts` or `api/graphql.ts`, but modularizing your GraphQL type definitions can help scale your codebase. Neither approach is inherently wrong though, so do as you see you fit. For this tutorial we'll use the modular style.
 
 ```bash
 mkdir api/graphql && touch api/graphql/Post.ts
@@ -94,7 +94,7 @@ type Post {
 
 You are free to disable this file (settings discussed later) but its existence has two benefits for you to consider:
 
-1. For users familiar with SDL the correspondance between the source code and it may help them learn Nexus' schema API faster.
+1. For users familiar with SDL the correspondence between the source code and it may help them learn Nexus' schema API faster.
 2. The SDL syntax makes it an accessible way for others to evaluate incoming API changes without having to know about Nexus, or even JavaScript. Consider using the generated SDL file to improve your pull-request reviews.
 
 For the remainder of this tutorial we'll be keeping SDL to the right of Nexus code blocks.
@@ -134,7 +134,7 @@ type Query {
 </div>
 
 1. The Query object is a central place in your schema where many other types will appear. Like before with the modular GraphQL types decision we again can decide to be modular here. We could either create a new `api/graphql/Query.ts` module (not modular), or we could _collocate_ the exposure of Post object with its definition in `api/graphql/Post.ts` (modular). Staying consistent with before, we'll take the modular way.
-1. To achieve colocation in Nexus we'll use `schema.extendType`. Its API is _very_ similar to `schema.objectType` with the difference that the defined fields are merged into the _targeted_ type.
+1. To achieve collocation in Nexus we'll use `schema.extendType`. Its API is _very_ similar to `schema.objectType` with the difference that the defined fields are merged into the _targeted_ type.
 1. The first parameter specifies the field's name, here `drafts`
 1. `type: 'Post'` specifies what the field's type should be. Here, a `Post`
 1. `list: true` augments the field's type spec, making it wrapped by a List type. Here, a `[Post]`. Nexus also provides the following shorthand for this 👇

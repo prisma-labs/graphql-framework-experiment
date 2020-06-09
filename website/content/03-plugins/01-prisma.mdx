@@ -120,7 +120,7 @@ You're ready to start working!
 
 ### From an existing database
 
-When starting from an existing database, you should use [Prisma's instrospection](https://www.prisma.io/docs/reference/tools-and-interfaces/introspection) feature.
+When starting from an existing database, you should use [Prisma's introspection](https://www.prisma.io/docs/reference/tools-and-interfaces/introspection) feature.
 
 **1. Create a `schema.prisma` file**
 
@@ -877,7 +877,7 @@ model User {
 enum Mood {
   HAPPY
   SAD
-  COMFUSED
+  CONFUSED
 }
 
 enum Role {
@@ -1812,7 +1812,7 @@ Allow clients to fetch multiple records at once of the respective Prisma model.
 
 ##### Options
 
-[`type`](#type) [`alias`](#alias) [`filtering`](#filtering) [`pagiantion`](#pagination) [`ordering`](#ordering) [`computedInputs`](#computedInputs-local)([local](#computedInputs-local) and [global](#computedInputs-global))
+[`type`](#type) [`alias`](#alias) [`filtering`](#filtering) [`pagination`](#pagination) [`ordering`](#ordering) [`computedInputs`](#computedInputs-local)([local](#computedInputs-local) and [global](#computedInputs-global))
 
 ##### GraphQL Schema Contributions [`?`](#graphql-schema-contributions 'How to read this')
 
@@ -2250,10 +2250,10 @@ undefined | true | false
 # t.crud.<BatchRead>
 Ms(
   # The starting object for the list (typically ID or other unique value).
-  after: M_WhereUniquInout
+  after: M_WhereUniqueInput
 
   # The last object for the list (typically ID or other unique value)
-  before: M_WhereUniquInout
+  before: M_WhereUniqueInput
 
   # How many elements, forwards from `after` otherwise head
   first: Int
@@ -2269,10 +2269,10 @@ Ms(
 
 # t.model.<ListRelation>
 type M {
-  MRF(after: M_WhereUniquInout, before: M_WhereUniquInout, first: Int, last: Int, skip: Int)
+  MRF(after: M_WhereUniqueInput, before: M_WhereUniqueInput, first: Int, last: Int, skip: Int)
 }
 
-input M_WhereUniquInout {
+input M_WhereUniqueInput {
   MSF@unique: S
 }
 ```
@@ -2716,7 +2716,7 @@ mutation createOneUser {
 Record<string, ({ args, ctx, info}: MutationResolverParams) => any>
 ```
 
-Note: This is an abbreviated version of the ComputedInputs type. The most important thing to undertand each of the object's values will be a function that takes an object with "args", "ctx", and "info" keys that represent the runtime values of the corresponding parameters that are passed to your resolver. For the full type, see [ComputedInputs Type Details](#computedinputs-type-details).
+Note: This is an abbreviated version of the ComputedInputs type. The most important thing to understand each of the object's values will be a function that takes an object with "args", "ctx", and "info" keys that represent the runtime values of the corresponding parameters that are passed to your resolver. For the full type, see [ComputedInputs Type Details](#computedinputs-type-details).
 
 **Applies To**
 
@@ -2786,7 +2786,7 @@ schema.objectType({
 nexusPrismaPlugin({
   /*
   Remove fields named "createdWithBrowser" from all mutation input types. When resolving
-  a request whose data contains any of these types, the value is inferred from the resvoler's 
+  a request whose data contains any of these types, the value is inferred from the resolver's 
   params based on the function we defined below and passed to Prisma Client, even if it's nested.
   This example assumes a Prisma Client context containing a "browser" key that maps to a string
   representing the browser from which the request was made.

@@ -120,7 +120,7 @@ todo
 
 #### `t.connection`
 
-This field builder helps you implement paginated associations between types in your schema. The contributions that it makes to your GraphQL schema adhear to the [Relay Connection Specification](https://facebook.github.io/relay/graphql/connections.htm#sec-Node). In other words it allows you the API author to write the minimum logic required to create spec-compliant relay connections for your API clients.
+This field builder helps you implement paginated associations between types in your schema. The contributions that it makes to your GraphQL schema adhere to the [Relay Connection Specification](https://facebook.github.io/relay/graphql/connections.htm#sec-Node). In other words it allows you the API author to write the minimum logic required to create spec-compliant relay connections for your API clients.
 
 ##### Signature
 
@@ -148,7 +148,7 @@ This field builder helps you implement paginated associations between types in y
                                   info:     ResolverInfo
                                 ) => {
                                        hasNextPage:     boolean,
-                                       hasPreviousPage: booolean
+                                       hasPreviousPage: boolean
                                      }
     cursorFromNode?:            (
                                   node:    Node,
@@ -290,7 +290,7 @@ This field builder helps you implement paginated associations between types in y
 
     ##### Remarks
 
-    Because this customizes the GraphQL connection object type, the _name_ of the type will necessarially be changed as well. If it didn't, it would conflict with the non-extended connection type in your schema (if any). The following pattern will be used to name the GraphQL object type:
+    Because this customizes the GraphQL connection object type, the _name_ of the type will necessarily be changed as well. If it didn't, it would conflict with the non-extended connection type in your schema (if any). The following pattern will be used to name the GraphQL object type:
 
     <p class="OneLineSignature"></p>
 
@@ -341,7 +341,7 @@ This field builder helps you implement paginated associations between types in y
 
     ##### Remarks
 
-    Because this customizes the GraphQL edge object type, the _name_ of the type will necessarially be changed as well. If it didn't, it would conflict with the non-extended edge type in your schema (if any). The following pattern will be used to name the GraphQL object type:
+    Because this customizes the GraphQL edge object type, the _name_ of the type will necessarily be changed as well. If it didn't, it would conflict with the non-extended edge type in your schema (if any). The following pattern will be used to name the GraphQL object type:
 
     <p class="OneLineSignature"></p>
 
@@ -388,7 +388,7 @@ This field builder helps you implement paginated associations between types in y
       info:    ResolverInfo
     ) => {
       hasNextPage:     boolean,
-      hasPreviousPage: booolean
+      hasPreviousPage: boolean
     }
     ```
 
@@ -853,7 +853,7 @@ schema.unionType({
 ```ts
 (config: {
   type:         'Boolean' | 'Float' | 'Int' | 'String' | 'ID'
-  defualt?:     TYPEGEN
+  default?:     TYPEGEN
   description?: string
   list?:        null | true | boolean[]
   nullable?:    boolean

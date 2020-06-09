@@ -22,7 +22,7 @@ Use the settings to centrally configure various aspects of the various component
   schema?: {
     nullable?: {
       outputs?: boolean
-      intputs?: boolean
+      inputs?: boolean
     }
     connections?: Record<string, ConnectionConfig>
     generateGraphQLSDLFile?: false | string
@@ -221,7 +221,7 @@ string | { level?: Level, pattern?: string }
 
 #### `logger.filter.level`
 
-Set the defualt filter level. This setting is used whenever a filter pattern does not specify the level. For example filter patterns like `*` `app` and `app:*` would use this setting but filter patterns like `*@*` `app@info+` `app:router@trace` would not.
+Set the default filter level. This setting is used whenever a filter pattern does not specify the level. For example filter patterns like `*` `app` and `app:*` would use this setting but filter patterns like `*@*` `app@info+` `app:router@trace` would not.
 
 When a log falls below the set level then it is not sent to the logger output (typically stdout).
 
@@ -229,7 +229,7 @@ _Default_
 
 First found in the following order
 
-1. `LOG_LEVEL` envar
+1. `LOG_LEVEL` env var
 2. `'info'` if `NODE_ENV=production`
 3. `'debug'`
 
@@ -259,8 +259,8 @@ _Default_
 
     Path Wildcard
     *           any path at default level
-    app:*       app path plus descendants at defualt level
-    app::*      app path descendants at defualt level
+    app:*       app path plus descendants at default level
+    app::*      app path descendants at default level
 
     Negation
     !app      any path at any level _except_ those at app path at default level
@@ -269,7 +269,7 @@ _Default_
     Removal
     *,!app      any path at default level _except_ logs at app path at default level
     *,!*@2-     any path _except_ those at debug level or lower
-    app,!app@4  app path at defualt level _except_ those at warn level
+    app,!app@4  app path at default level _except_ those at warn level
 
     Levels
     *@info      all paths at info level
@@ -286,7 +286,7 @@ _Default_
     *@*         all paths at all levels
 
     Explicit Root
-    .           root path at defualt level
+    .           root path at default level
     .@info      root path at info level
     .:app       Same as "app"
     .:*         Same as "*"

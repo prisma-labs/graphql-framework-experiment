@@ -163,7 +163,7 @@ it('ensures that a draft can be created and published', async () => {
 
 1. The test context exposes a GraphQL client at `ctx.client.send` that will help us run operations against our API. Here We're using it to send a publish mutation.
 2. This is the mutation from the end of last chapter.
-3. The result will be snapshoted inline allowing us to see the input and output colocated!
+3. The result will be snapshoted inline allowing us to see the input and output collocated!
 
 ## Try It Out
 
@@ -205,7 +205,7 @@ Published draft snapshot
   `)
 ```
 
-Awesome, beautiful workflow isn't it? If inline snapshots get too unweildly you can switch to regular snapshots and install [a VSCode plugin](https://marketplace.visualstudio.com/items?itemName=asvetliakov.snapshot-tools) that will display the snapshots upon hovering over the `toMatchSnapshot` method name. While not quite as fluid as seeing inline snapshots throughout your test module, it may work better for you.
+Awesome, beautiful workflow isn't it? If inline snapshots get too unwieldy you can switch to regular snapshots and install [a VSCode plugin](https://marketplace.visualstudio.com/items?itemName=asvetliakov.snapshot-tools) that will display the snapshots upon hovering over the `toMatchSnapshot` method name. While not quite as fluid as seeing inline snapshots throughout your test module, it may work better for you.
 
 ## Wrapping Up
 

@@ -59,7 +59,7 @@ module global {
 
 ## Use The Context
 
-Now let's use this data to reimplement the `Query.drafts` resolver from the previous chapter.
+Now let's use this data to re-implement the `Query.drafts` resolver from the previous chapter.
 
 ```diff
 schema.queryType({
@@ -91,7 +91,7 @@ This mutation will need a name. Rather than simply call it `createPost` we'll us
 - `Mutation` is a root type, its fields are entrypoints.
 - We can colocate mutation fields with the objects they relate to or centralize all mutation fields.
 
-As before we will take the colocation approach.
+As before we will take the collocation approach.
 
 <div class="TightRow">
 
@@ -127,7 +127,7 @@ Mutation {
 
    If you're ever dissatisfied with Nexus' defaults, not to worry, [you can change them globally](https://www.nexusjs.org/#/api/modules/main/exports/settings?id=schemanullableinputs).
 
-We need to get the client's input data to complete our resolver. This brings us to a new concept, GraphQL arguments. Every field in GraphQL may accept them. Effectively you can think of each field in GraphQL like a function, accepting some input, doing something, and returning an output. Most of the time "doing something" is a matter of some read-like operation but with `Mutation` fields the "doing something" usually entails a process with side-effects (e.g. writing to the databse).
+We need to get the client's input data to complete our resolver. This brings us to a new concept, GraphQL arguments. Every field in GraphQL may accept them. Effectively you can think of each field in GraphQL like a function, accepting some input, doing something, and returning an output. Most of the time "doing something" is a matter of some read-like operation but with `Mutation` fields the "doing something" usually entails a process with side-effects (e.g. writing to the database).
 
 Let's revise our implementation with GraphQL arguments.
 

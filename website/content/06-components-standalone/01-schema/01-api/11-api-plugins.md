@@ -67,7 +67,7 @@ plugin({
 
 ### onAfterBuild(schema)
 
-The "onAfterBuild" hook is provided the schema, and is usedful to validate contract of the schema
+The "onAfterBuild" hook is provided the schema, and is useful to validate contract of the schema
 with the expectations of the plugin. The [nullabilityGuard](plugin-nullabilityGuard.md)
 
 ```ts
@@ -106,7 +106,7 @@ const LogMutationTimePlugin = plugin({
 
 The "onMissingType" hook occurs when a type is provided as a string, but was never explicitly defined.
 This can be helpful in situations where you have boilerplate types which can be constructed
-generically / programatically based on their name.
+generically / programmatically based on their name.
 
 Here is an example of a plugin which creates a "ResourceResponse" type whenever you see a string:
 

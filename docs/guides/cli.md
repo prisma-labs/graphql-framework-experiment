@@ -22,7 +22,7 @@ cd my-project
 nexus dev
 ```
 
-This is just a convenience. It is equivilant to:
+This is just a convenience. It is equivalent to:
 
 <div class="TightRow">
 
