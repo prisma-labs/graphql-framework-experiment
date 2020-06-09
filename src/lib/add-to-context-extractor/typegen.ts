@@ -1,4 +1,5 @@
 import { codeBlock } from 'common-tags'
+import { Either, isLeft, right } from 'fp-ts/lib/Either'
 import * as fs from 'fs-jetpack'
 import { hardWriteFile } from '../fs'
 import * as Layout from '../layout'
@@ -20,16 +21,18 @@ export const NEXUS_DEFAULT_RUNTIME_CONTEXT_TYPEGEN_PATH = fs.path(
  */
 export async function generateContextExtractionArtifacts(
   layout: Layout.Layout
-): Promise<ExtractedContextTypes> {
+): Promise<Either<Error, ExtractedContextTypes>> {
   log.trace('starting context type extraction')
-  const program = createTSProgram(layout, { withCache: true })
+  const errProgram = createTSProgram(layout, { withCache: true })
+  if (isLeft(errProgram)) return errProgram
+  const program = errProgram.right
   const contextTypes = extractContextTypes(program.getProgram())
 
   await writeContextTypeGenFile(contextTypes)
 
   log.trace('finished context type extraction', { contextTypes })
 
-  return contextTypes
+  return right(contextTypes)
 }
 
 /**
