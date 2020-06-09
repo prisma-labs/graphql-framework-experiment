@@ -1451,7 +1451,7 @@ input RM_UpdateWithout_M_DataInput {
 
 input RM_UpdateManyWithWhereNestedInput {
   data: RM_UpdateManyDataInput!
-  where: RM_ScalarWhereInput! # see batch filering reference
+  where: RM_ScalarWhereInput! # see batch filtering reference
 }
 
 input RM_UpsertWithWhereUniqueWithout_M_Input {
