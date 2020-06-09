@@ -111,7 +111,7 @@ For a more complete explanation of this approach see [this blog post by Nikolas 
 
 ##### Local
 
-The reccommended way to run postgres locally is with docker, because it is easy flexible and reliable.
+The recommended way to run postgres locally is with docker, because it is easy flexible and reliable.
 
 1. Start a postgres server for your app:
 
@@ -160,7 +160,7 @@ If you don't want to use a docker, here are some links to alternative approaches
 
 ## Prisma + Heroku + PostgreSQL
 
-1. Confirm the name of the environment variable that Heroku will inject into your app at runtime for the database connection URL. In a simple setup, with a single attached atabase, it is `DATABASE_URL`.
+1. Confirm the name of the environment variable that Heroku will inject into your app at runtime for the database connection URL. In a simple setup, with a single attached database, it is `DATABASE_URL`.
 1. Update your Prisma Schema file to get the database connection URL from an environment variable of the same name as in step 1. Example:
 
    ```diff
@@ -193,7 +193,7 @@ If you don't want to use a docker, here are some links to alternative approaches
       ```cli
       direnv allow .
       ```
-   1. Done. Now when you work within your project with a shell, all your commands will be run with access to the environment variables defined in your `.envrc` file. The magic of `direnv` is that these environment variables are automatically exported to and removed from your environment based on you being within your prject directory or not.
+   1. Done. Now when you work within your project with a shell, all your commands will be run with access to the environment variables defined in your `.envrc` file. The magic of `direnv` is that these environment variables are automatically exported to and removed from your environment based on you being within your project directory or not.
 
 ## Integrate `createTestContext` with `jest`
 
@@ -282,7 +282,7 @@ We made it very simple to debug your app with VS Code.
 
 ### Steps
 
-1. Your Next.js project must be [a TypeSript](https://nextjs.org/docs/basic-features/typescript), not JavaScript, one
+1. Your Next.js project must be [a TypeScript](https://nextjs.org/docs/basic-features/typescript), not JavaScript, one
 1. Install `nexus`
 1. Create _one_ GraphQL endpoint, e.g. `<project root>/pages/api/graphql.ts`
 1. The minimum boilerplate needed in your GraphQL endpoint is:

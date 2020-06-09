@@ -177,7 +177,7 @@ Integration between Nexus' test and database systems is young and still missing 
    +++ schema.prisma
    datasource db {
      provider = "postgresql"
-   -  url      = "postresql://..."
+   -  url      = "postgresql://..."
    +  url      = env("POSTGRES_URL")
    }
    ```
@@ -206,7 +206,7 @@ Integration between Nexus' test and database systems is young and still missing 
    })
    ```
 
-1. That's it. Despite adding a database to your integration tests, they are essentially no more complex than without a databse, which is great. Of course they will run a bit slower now.
+1. That's it. Despite adding a database to your integration tests, they are essentially no more complex than without a database, which is great. Of course they will run a bit slower now.
 
    We will cover seeding your test database with data in in the future iteration of this guide.
 
