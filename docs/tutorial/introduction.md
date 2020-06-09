@@ -1,4 +1,4 @@
-Welcome to _the_ Neuxus tutorial! If you're new to Nexus and want a guided learning journey, this is the place! Through a handful of chapters we're going to be building just enough of a blog to give you an overview of Nexus; what it is and what it can do.
+Welcome to _the_ Nexus tutorial! If you're new to Nexus and want a guided learning journey, this is the place! Through a handful of chapters we're going to be building just enough of a blog to give you an overview of Nexus; what it is and what it can do.
 
 This tutorial is still under construction. Some chapters will continue to be refined and more added. If you're looking for our old tutorial content, it can still be found [here](/getting-started/tutorial).
 

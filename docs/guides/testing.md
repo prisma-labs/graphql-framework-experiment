@@ -70,8 +70,8 @@ import { createTestContext } from './__helpers'
 const ctx = createTestContext()
 
 it('makes sure a user was registered', async () => {
-  // ctx.app.query sends requests to your locally running nexus server
-  const result = await ctx.app.query(`
+  // ctx.client.send sends requests to your locally running nexus server
+  const result = await ctx.client.send(`
     mutation {
       signupUser(data: { email: "person@email.com", password: "123456" })
     } {
@@ -81,7 +81,7 @@ it('makes sure a user was registered', async () => {
     }
   `)
 
-  const createdUsers = await ctx.app.query(`{ users { id } }`)
+  const createdUsers = await ctx.client.send(`{ users { id } }`)
   expect(createdUsers).toMatchSnapshot()
 })
 ```
@@ -212,8 +212,8 @@ Integration between Nexus' test and database systems is young and still missing 
    const ctx = createTestContext()
 
    it('makes sure a user was registered', async () => {
-     // ctx.app.query sends requests to your locally running nexus server
-     const result = await ctx.app.query(`
+     // ctx.app.client.send sends requests to your locally running nexus server
+     const result = await ctx.client.send(`
        mutation {
          signupUser(data: { email: "person@email.com", password: "123456" })
        } {
@@ -223,7 +223,7 @@ Integration between Nexus' test and database systems is young and still missing 
        }
      `)
 
-     const createdUsers = await ctx.app.query(`{ users { id } }`)
+     const createdUsers = await ctx.client.send(`{ users { id } }`)
      expect(createdUsers).toMatchSnapshot()
    })
    ```

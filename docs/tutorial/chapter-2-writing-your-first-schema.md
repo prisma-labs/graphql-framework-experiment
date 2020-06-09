@@ -64,7 +64,7 @@ schema.objectType({
   definition(t) {
     t.int('id')            // <- Field named `id` of type `Int`
     t.string('title')      // <- Field named `title` of type `String`
-    t.int('body')          // <- Field named `body` of type `String`
+    t.string('body')          // <- Field named `body` of type `String`
     t.boolean('published') // <- Field named `published` of type `Boolean`
   },
 })
@@ -157,7 +157,9 @@ You'll see some feedback from your IDE that you're missing a `resolve` property.
 > You might be wondering why Nexus hasn't complained about missing resolvers in some other cases so far. The answer is a more advanced topic that we'll cover later.
 
 ```ts
+// api/graphql/Post.ts
 import { schema } from 'nexus'
+// ...
 
 schema.extendType({
   type: 'Query',

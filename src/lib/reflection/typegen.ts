@@ -1,3 +1,4 @@
+import { rightOrThrow } from '@nexus/logger/dist/utils'
 import * as NexusSchema from '@nexus/schema'
 import * as Schema from '../../runtime/schema'
 import { generateContextExtractionArtifacts } from '../add-to-context-extractor'
@@ -30,5 +31,10 @@ export async function writeArtifacts(params: TypegenParams) {
   // Generate the context typegen file
   const contextExtractorTypegenPromise = generateContextExtractionArtifacts(params.layout)
 
-  await Promise.all([nexusSchemaTypegenPromise, contextExtractorTypegenPromise])
+  const [_, contextExtractorTypegen] = await Promise.all([
+    nexusSchemaTypegenPromise,
+    contextExtractorTypegenPromise,
+  ])
+
+  rightOrThrow(contextExtractorTypegen)
 }

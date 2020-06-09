@@ -128,7 +128,7 @@ it('ensures that a draft can be created and published', async () => {
   // ...
 
   // Publish the previously created draft
-  const publishResult = await ctx.app.query(
+  const publishResult = await ctx.client.send(
     `
     mutation publishDraft($draftId: Int!) {
       publish(draftId: $draftId) {

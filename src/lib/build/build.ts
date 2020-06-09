@@ -1,3 +1,4 @@
+import { rightOrThrow } from '@nexus/logger/dist/utils'
 import { stripIndent } from 'common-tags'
 import * as FS from 'fs-jetpack'
 import * as Path from 'path'
@@ -85,7 +86,7 @@ export async function buildNexusApp(settings: BuildSettings) {
 
   log.info('building typescript program')
 
-  const tsBuilder = createTSProgram(layout, { withCache: true })
+  const tsBuilder = rightOrThrow(createTSProgram(layout, { withCache: true }))
 
   log.info('compiling a production build')
 

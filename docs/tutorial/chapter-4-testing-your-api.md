@@ -110,7 +110,7 @@ const ctx = createTestContext()
 
 it('ensures that a draft can be created and published', async () => {
   // Create a new draft
-  const draftResult = await ctx.app.query(`                 # 1
+  const draftResult = await ctx.client.send(`               # 1
     mutation {
       createDraft(title: "Nexus", body: "...") {            # 2
         id
@@ -134,7 +134,7 @@ it('ensures that a draft can be created and published', async () => {
   `)
 
   // Publish the previously created draft
-  const publishResult = await ctx.app.query(`
+  const publishResult = await ctx.client.send(`
     mutation publishDraft($draftId: Int!) {
       publish(draftId: $draftId) {
         id
@@ -161,7 +161,7 @@ it('ensures that a draft can be created and published', async () => {
 })
 ```
 
-1. The test context exposes a GraphQL client at `ctx.app.query` that will help us run operations against our API. Here We're using it to send a publish mutation.
+1. The test context exposes a GraphQL client at `ctx.client.send` that will help us run operations against our API. Here We're using it to send a publish mutation.
 2. This is the mutation from the end of last chapter.
 3. The result will be snapshoted inline allowing us to see the input and output collocated!
 
@@ -174,6 +174,7 @@ npm run test
 ```
 
 Draft snapshot
+
 ```diff
   // Snapshot that draft and expect `published` to be false
   expect(result).toMatchInlineSnapshot(`

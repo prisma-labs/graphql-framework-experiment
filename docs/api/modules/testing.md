@@ -29,7 +29,7 @@ afterAll(async () => {
 })
 
 test('hello', async () => {
-  const result = await ctx.query(`{ hello }`)
+  const result = await ctx.client.send(`{ hello }`)
 
   expect(result).toMatchInlineSnapshot()
 })
@@ -51,8 +51,22 @@ export interface CreateTestContextOptions {
 
 ```ts
 export interface TestContext {
+  client: {
+    send: <T>(query: string, variables: Record<string, any>): Promise<T>
+    headers: {
+      set(headers: Record<string, string>): void
+      set(name: string, value: string): void
+      set(header: [string, string]): void
+      add(headers: Record<string, string>): void
+      add(name: string, value: string): void
+      add(header: [string, string]): void
+      del(name: string): void
+      get(name: string): null | string
+      has(name: string): boolean
+      entries(): [string,string][]
+    }
+  }
   app: {
-    query: <T = any>(query: string, variables: Record<string, any>): Promise<T>
     server: {
       start: () => Promise<void>
       stop: () => Promise<void>

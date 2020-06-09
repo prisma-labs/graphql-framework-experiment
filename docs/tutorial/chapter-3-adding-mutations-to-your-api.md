@@ -63,7 +63,7 @@ Now let's use this data to re-implement the `Query.drafts` resolver from the pre
 
 ```diff
 schema.queryType({
-  name: 'Query',
+  type: 'Query',
   definition(t) {
     t.list.field('drafts', {
       type: 'Post',
@@ -101,7 +101,7 @@ As before we will take the collocation approach.
 // ...
 
 schema.extendType({
-  name: 'Mutation',
+  type: 'Mutation',
   definition(t) {
     t.field('createDraft', {
       type: 'Post',
@@ -135,7 +135,7 @@ Let's revise our implementation with GraphQL arguments.
 
 ```diff
 schema.extendType({
-  name: 'Mutation',
+  type: 'Mutation',
   definition(t) {
     t.field('createDraft', {
       type: 'Post',
@@ -194,7 +194,7 @@ schema.extendType({
         draftId: schema.intArg({ required: true }),
       },
       resolve(_root, args, ctx) {
-        let draftToPublish = ctx.inDb.posts.find((p) => p.id === args.draftId)
+        let draftToPublish = ctx.db.posts.find((p) => p.id === args.draftId)
 
         if (!draftToPublish) {
           throw new Error('Could not find draft with id ' + args.draftId)
@@ -226,7 +226,7 @@ type Mutation {
 import { schema } from 'nexus'
 
 schema.extendType({
-  name: 'Query',
+  type: 'Query',
   definition(t) {
     // ...
     t.list.field('posts', {

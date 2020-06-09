@@ -202,7 +202,7 @@ export async function e2eKitchenSink(app: E2EContext) {
 
   expect(output).toContain('dev.onStart hook from foobar')
 
-  await app.client.request(`{
+  await app.client.send(`{
           worlds {
             id
             name
@@ -226,7 +226,7 @@ export async function e2eKitchenSink(app: E2EContext) {
 
     await proc.pipe(takeUntilServerListening).toPromise()
 
-    response = await app.client.request(`{
+    response = await app.client.send(`{
       worlds {
         id
         name
@@ -235,13 +235,13 @@ export async function e2eKitchenSink(app: E2EContext) {
     }`)
     expect(response).toMatchSnapshot('query')
 
-    response = await app.client.request(introspectionQuery)
+    response = await app.client.send(introspectionQuery)
     expect(response).toMatchSnapshot('introspection')
 
-    response = await app.client.request(`{ a }`)
+    response = await app.client.send(`{ a }`)
     expect(response).toMatchSnapshot('addToContext query')
 
-    response = await app.client.request(`{ testBackingType { test } }`)
+    response = await app.client.send(`{ testBackingType { test } }`)
     expect(response).toMatchSnapshot('backing type query')
 
     sub.unsubscribe()
@@ -260,7 +260,7 @@ export async function e2eKitchenSink(app: E2EContext) {
 
     await proc.pipe(takeUntilServerListening).toPromise()
 
-    response = await app.client.request(`{
+    response = await app.client.send(`{
       worlds {
         id
         name
@@ -269,13 +269,13 @@ export async function e2eKitchenSink(app: E2EContext) {
     }`)
     expect(response).toMatchSnapshot('built app query')
 
-    response = await app.client.request(introspectionQuery)
+    response = await app.client.send(introspectionQuery)
     expect(response).toMatchSnapshot('built app introspection')
 
-    response = await app.client.request(`{ a }`)
+    response = await app.client.send(`{ a }`)
     expect(response).toMatchSnapshot('built app addToContext query')
 
-    response = await app.client.request(`{ testBackingType { test } }`)
+    response = await app.client.send(`{ testBackingType { test } }`)
     expect(response).toMatchSnapshot('built app backing type query')
 
     sub.unsubscribe()
