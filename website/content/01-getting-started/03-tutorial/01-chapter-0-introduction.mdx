@@ -22,29 +22,28 @@ If you're using another set of tools, like Yarn on Windows with Sublime Text, th
 
 There's a few conventions used throughout this tutorial that you should know about.
 
-- **Annotated Code Blocks**
+### Annotated Code Blocks
 
-  Most Code Blocks are explained with annotations. Take the following for example. Immediately following the codeblock are numbered points. Each corresponds to a line annotated with that number in the code block.
+Most Code Blocks are explained with annotations. Take the following for example. Immediately following the codeblock are numbered points. Each corresponds to a line annotated with that number in the code block.
 
-  <!-- prettier-ignore -->
-  ```ts
-  const a = 1 as const // 1
+```ts
+const a = 1 as const // 1
 
-  interface A {}       // 2
-  interface A {}       // 2
+interface A {} // 2
+interface A {} // 2
 
-  const b: any = 1     // 3
-  ```
+const b: any = 1 // 3
+```
 
-  1. Use `as const` to make TS take the narrowest inference. Here `1` vs `number`.
-  2. Same-named interfaces will merge into one.
-  3. Use `any` to effectively disable type-checking
+1. Use `as const` to make TS take the narrowest inference. Here `1` vs `number`.
+2. Same-named interfaces will merge into one.
+3. Use `any` to effectively disable type-checking
 
-- **Auxiliary Content**
+### Auxiliary Content
 
-  Sometimes content that isn't core to the current flow but related to it will be mentioned. That looks like so:
+Sometimes content that isn't core to the current flow but related to it will be mentioned. That looks like so:
 
-  > Hello there, have a nice day!
+> Hello there, have a nice day!
 
 ## Copy-Pasting
 
@@ -52,4 +51,4 @@ As you progress you'll be writing code, of course. Often you'll have the chance 
 
 ## Wrapping Up
 
-Thanks for checking out Nexus, we hope you're as excited<br/>to learn about it as we are to show it to you! :rocket:
+Thanks for checking out Nexus, we hope you're as excited to learn about it as we are to show it to you!
