@@ -5,15 +5,23 @@ import { Param1 } from '../../lib/utils'
 // todo export type from @nexus/schema
 type ConnectionPluginConfig = NonNullable<Param1<typeof NexusSchema.connectionPlugin>>
 
-/**
- * The name of the relay connection field builder. This is not configurable by users.
- */
-const CONNECTION_FIELD_BUILDER_NAME = 'connection'
+type ConnectionPluginConfigPropsManagedByNexus = 'nexusFieldName' | 'nexusSchemaImportId'
+
+const connectionPluginConfigManagedByNexus: Pick<
+  ConnectionPluginConfig,
+  ConnectionPluginConfigPropsManagedByNexus
+> = {
+  nexusSchemaImportId: 'nexus/components/schema',
+  /**
+   * The name of the relay connection field builder. This is not configurable by users.
+   */
+  nexusFieldName: 'connection',
+}
 
 /**
  * Relay connection field builder settings for users.
  */
-export type ConnectionSettings = Omit<ConnectionPluginConfig, 'nexusFieldName' | 'nexusSchemaImportId'>
+export type ConnectionSettings = Omit<ConnectionPluginConfig, ConnectionPluginConfigPropsManagedByNexus>
 
 /**
  * The schema settings users can control.
@@ -137,8 +145,7 @@ export function changeSettings(state: SettingsData, newSettings: SettingsInput):
     // todo deep merge
     Object.assign(state.connections, {
       ...newSettings.connections,
-      nexusSchemaImportId: 'nexus/components/schema',
-      nexusFieldName: CONNECTION_FIELD_BUILDER_NAME,
+      ...connectionPluginConfigManagedByNexus,
     })
   }
 }
@@ -157,8 +164,7 @@ function defaultSettings(): SettingsData {
     connections: {
       // there is another level of defaults that will be applied by Nexus Schema Relay Connections plugin
       default: {
-        nexusSchemaImportId: 'nexus/components/schema',
-        nexusFieldName: CONNECTION_FIELD_BUILDER_NAME,
+        ...connectionPluginConfigManagedByNexus,
       },
     },
   }
