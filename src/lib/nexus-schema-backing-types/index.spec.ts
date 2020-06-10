@@ -11,7 +11,7 @@ const ctx = TC.create(TC.tmpDir(), (ctx) => {
     setup(spec: FSSpec) {
       writeFSSpec(ctx.tmpDir, spec)
     },
-    async extractAndWrite(filePattern?: string) {
+    async extractAndWrite(filePattern: string = './**/*.ts') {
       const cwd = ctx.tmpDir
       const backingTypes = await generateBackingTypesArtifacts(filePattern, {
         extractCwd: cwd,
