@@ -65,43 +65,44 @@ jobs:
         with:
           name: published
           path: result.json
-  e2e-tests:
-    needs: publish
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [10.x, 12.x]
-        test-case: [kitchen-sink, create-prisma-app]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Load publish result
-        uses: actions/download-artifact@v1
-        with:
-          name: published
-      - name: Analyze publish result
-        id: release
-        run: |
-          jq -r '.data.release.version' < published/result.json
-          jq -r '.' < published/result.json 
-          echo ::set-output name=result::$(jq -r '.type' < published/result.json)
-      - name: Use Node.js ${{ matrix.node-version }}
-        if: steps.release.outputs.result == 'did_publish'
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node-version }}
-      - name: Install deps
-        if: steps.release.outputs.result == 'did_publish'
-        run: yarn --frozen-lockfile
-      - name: Setup global git user
-        if: steps.release.outputs.result == 'did_publish'
-        run: |
-          # For nexus create app flow which will make an init commit
-          git config --global user.name prisma-labs
-          git config --global user.email labs@prisma.io
-      - name: e2e test
-        if: steps.release.outputs.result == 'did_publish'
-        env:
-          LOG_LEVEL: trace
-        run: |
-          export E2E_NEXUS_VERSION=$(cat published/result.json | jq -r '.data.release.version')
-          yarn test e2e/${{matrix.test-case}}
+  # todo https://github.com/graphql-nexus/nexus/issues/963
+  # e2e-tests:
+  #   needs: publish
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       node-version: [10.x, 12.x]
+  #       test-case: [kitchen-sink, create-prisma-app]
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Load publish result
+  #       uses: actions/download-artifact@v1
+  #       with:
+  #         name: published
+  #     - name: Analyze publish result
+  #       id: release
+  #       run: |
+  #         jq -r '.data.release.version' < published/result.json
+  #         jq -r '.' < published/result.json
+  #         echo ::set-output name=result::$(jq -r '.type' < published/result.json)
+  #     - name: Use Node.js ${{ matrix.node-version }}
+  #       if: steps.release.outputs.result == 'did_publish'
+  #       uses: actions/setup-node@v1
+  #       with:
+  #         node-version: ${{ matrix.node-version }}
+  #     - name: Install deps
+  #       if: steps.release.outputs.result == 'did_publish'
+  #       run: yarn --frozen-lockfile
+  #     - name: Setup global git user
+  #       if: steps.release.outputs.result == 'did_publish'
+  #       run: |
+  #         # For nexus create app flow which will make an init commit
+  #         git config --global user.name prisma-labs
+  #         git config --global user.email labs@prisma.io
+  #     - name: e2e test
+  #       if: steps.release.outputs.result == 'did_publish'
+  #       env:
+  #         LOG_LEVEL: trace
+  #       run: |
+  #         export E2E_NEXUS_VERSION=$(cat published/result.json | jq -r '.data.release.version')
+  #         yarn test e2e/${{matrix.test-case}}
