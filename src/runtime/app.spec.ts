@@ -25,7 +25,7 @@ describe('reset', () => {
     app.assemble()
     app.reset()
     expect(app.settings.current.server.path).toEqual(app.settings.original.server.path)
-    expect(app.settings.current.schema.connections).toEqual(undefined)
+    expect(app.settings.current.schema.connections).toEqual({ default: { nexusFieldName: 'connection' } })
     expect(app.private.state).toEqual(originalAppState)
   })
 
