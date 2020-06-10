@@ -48,6 +48,9 @@ type MiddlewareFn = (
   next: GraphQLFieldResolver<any, any>
 ) => any
 
+/**
+ * Schema component API
+ */
 export interface Schema extends NexusSchemaStatefulBuilders {
   /**
    * todo link to website docs
@@ -63,6 +66,9 @@ export interface Schema extends NexusSchemaStatefulBuilders {
   addToContext(contextContributor: ContextContributor): void
 }
 
+/**
+ * Schema component internal API
+ */
 export interface SchemaInternal {
   private: {
     settings: SchemaSettingsManager

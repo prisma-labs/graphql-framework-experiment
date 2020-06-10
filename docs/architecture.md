@@ -120,7 +120,11 @@ what follows is a stub
 
 ### Assembly
 
-The process in which the app configuration (settings, schema type defs, used plugins, etc.) is processed into a runnable state. Nexus apps are only ever assembled once in their lifecycle.
+The process in which the app "configuration" (settings, schema type defs, used plugins, etc.) is processed into a runnable state. Nexus apps are only ever assembled once in their process lifecycle.
+
+### Reflection
+
+The general idea of the app source code or its state at runtime being analyzed to extract data.
 
 ### Dynamic Reflection
 
@@ -129,7 +133,3 @@ The process in which the app is run in order to extract data out of it. The data
 ### Static Reflection
 
 The process in which the app is analyzed with the TS API to extract data out of it. The data in turn can be used for anything. For example typegen to provide better TypeScript types.
-
-### Reflection
-
-The general idea of the app source code or its state at runtime being analyzed to extract data.
