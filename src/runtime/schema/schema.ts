@@ -9,11 +9,8 @@ import { Index, MaybePromise } from '../../lib/utils'
 import { AppState } from '../app'
 import { assertAppNotAssembled } from '../utils'
 import { log } from './logger'
-import {
-  createSchemaSettingsManager,
-  mapSettingsToNexusSchemaConfig,
-  SchemaSettingsManager,
-} from './settings'
+import { createSchemaSettingsManager, SchemaSettingsManager } from './settings'
+import { mapSettingsAndPluginsToNexusSchemaConfig } from './settings-mapper'
 
 export type LazyState = {
   contextContributors: ContextContributor[]
@@ -118,7 +115,7 @@ export function create(appState: AppState): SchemaInternal {
         appState.schemaComponent.plugins = []
       },
       assemble: (plugins) => {
-        const nexusSchemaConfig = mapSettingsToNexusSchemaConfig(plugins, settings.data)
+        const nexusSchemaConfig = mapSettingsAndPluginsToNexusSchemaConfig(plugins, settings.data)
         nexusSchemaConfig.types.push(...statefulNexusSchema.state.types)
         nexusSchemaConfig.plugins!.push(...appState.schemaComponent.plugins)
         const { schema, missingTypes } = NexusSchema.core.makeSchemaInternal(nexusSchemaConfig)
