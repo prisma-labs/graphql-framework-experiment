@@ -13,7 +13,7 @@ const CONNECTION_FIELD_BUILDER_NAME = 'connection'
 /**
  * Relay connection field builder settings for users.
  */
-export type ConnectionSettings = Omit<ConnectionPluginConfig, 'nexusFieldName'>
+export type ConnectionSettings = Omit<ConnectionPluginConfig, 'nexusFieldName' | 'nexusSchemaImportId'>
 
 /**
  * The schema settings users can control.
@@ -137,6 +137,7 @@ export function changeSettings(state: SettingsData, newSettings: SettingsInput):
     // todo deep merge
     Object.assign(state.connections, {
       ...newSettings.connections,
+      nexusSchemaImportId: 'nexus/components/schema',
       nexusFieldName: CONNECTION_FIELD_BUILDER_NAME,
     })
   }
@@ -156,6 +157,7 @@ function defaultSettings(): SettingsData {
     connections: {
       // there is another level of defaults that will be applied by Nexus Schema Relay Connections plugin
       default: {
+        nexusSchemaImportId: 'nexus/components/schema',
         nexusFieldName: CONNECTION_FIELD_BUILDER_NAME,
       },
     },

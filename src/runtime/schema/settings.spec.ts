@@ -12,6 +12,7 @@ it('has defaults', () => {
       "connections": Object {
         "default": Object {
           "nexusFieldName": "connection",
+          "nexusSchemaImportId": "nexus/components/schema",
         },
       },
       "generateGraphQLSDLFile": "api.graphql",

@@ -47,14 +47,6 @@ export function mapSettingsAndPluginsToNexusSchemaConfig(
  * Specialized mapping for the complexity of relay connections plugins.
  */
 function mapConnectionsSettingsToNexusSchemaConfig(settings: SettingsData): NexusSchema.core.NexusPlugin[] {
-  if (settings.connections === undefined) {
-    return [
-      NexusSchema.connectionPlugin({
-        nexusSchemaImportId: 'nexus/components/schema',
-      }),
-    ]
-  }
-
   const instances: NexusSchema.core.NexusPlugin[] = []
 
   const { default: defaultTypeConfig, ...customTypesConfig } = settings.connections
@@ -63,7 +55,6 @@ function mapConnectionsSettingsToNexusSchemaConfig(settings: SettingsData): Nexu
     if (config) {
       instances.push(
         NexusSchema.connectionPlugin({
-          nexusSchemaImportId: 'nexus/components/schema',
           nexusFieldName: name,
           ...config,
         })
