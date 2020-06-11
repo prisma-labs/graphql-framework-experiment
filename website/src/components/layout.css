@@ -20,10 +20,14 @@ body {
   --list-bullet-color: #a0aec0;
   --search-highlight-bg-color: #ebf8ff;
   --tag-media-color: #2d3748;
+  --gradient1-color: #2f3747;
+  --gradient2-color: #0d0f14;
+  --header-btn-color: #4a5568;
   --header-gradient-color: #2a6379;
   --header-bg-color: #255468;
   --header-btn-color: #153d4e;
   --placeholder-color: #7f9199;
+
   /* Code blocks */
   --code-inner-color: #718096;
   --code-token1-color: #d5408c;
@@ -40,6 +44,7 @@ body {
   --code-deleted-bg-color: #f5e4e7;
   --code-highlight-color: #a0aec0;
   --code-highlight-bg-color: #e2e8f0;
+  --code-result-bg-color: #e7edf3;
   /* Buttons */
   --red-color: #ff4f56;
   --green-color: #15bd76;
@@ -145,6 +150,17 @@ li {
   line-height: 24px;
 }
 
+kbd {
+  background: var(--white-color);
+  box-shadow: 0px 1px 1px rgba(47, 55, 71, 0.6),0px 1px 4px rgba(47, 55, 71, 0.2);;
+  border-bottom: 1px solid  rgba(47, 55, 71, 0.2);
+  border-radius: 4px;
+  padding: 2px 6px;
+  vertical-align: baseline;
+  font-size: 14px;
+  font-family: 'Roboto Mono';
+}
+
 table {
   width: 100%;
   word-break: normal;
@@ -152,7 +168,7 @@ table {
   border-radius: 8px;
   border-spacing: 0px;
   margin: 0 0px 20px;
-  white-space: nowrap;
+  white-space: inherit;
 }
 
 table * {
@@ -169,6 +185,11 @@ table th {
 table td {
   padding: 12px;
   border-top: 1px solid var(--border-color);
+  vertical-align: top;
+}
+
+table code {
+  white-space: nowrap;
 }
 
 blockquote {
@@ -229,6 +250,10 @@ hr {
   font-size: 28px;
   margin-right: 8px;
   vertical-align: middle;
+}
+
+.o-list li {
+  margin-top: 10px;
 }
 
 .clearfix {

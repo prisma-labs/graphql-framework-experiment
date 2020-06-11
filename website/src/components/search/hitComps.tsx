@@ -1,7 +1,6 @@
 import React from 'react'
 import { Snippet } from 'react-instantsearch-dom'
 import Link from '../link'
-import { urlGenerator } from '../../utils/urlGenerator'
 import styled from 'styled-components'
 import ParentTitle from '../parentTitleComp'
 
@@ -48,12 +47,14 @@ const HitComp = styled.div`
 
 const DocHit = ({ hit }: any) => (
   <HitComp>
-    <Link
-      style={{ boxShadow: `none`, textDecoration: 'none' }}
-      to={hit.slug.includes('index') ? null : urlGenerator(hit.slug)}
-    >
-      <ParentTitle slug={hit.slug} />
-      <h3>{hit.title}</h3>
+    <Link style={{ boxShadow: `none`, textDecoration: 'none' }} to={hit.path}>
+      <ParentTitle slug={hit.slug} nonLink={true} />
+      <h3>
+        <Snippet hit={hit} attribute="title" tagName="mark" /> /{' '}
+        <span style={{ color: 'var(--code-inner-color)' }}>
+          <Snippet hit={hit} attribute="heading" tagName="mark" />
+        </span>
+      </h3>
       <Snippet hit={hit} attribute="content" tagName="mark" />
     </Link>
   </HitComp>

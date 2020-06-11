@@ -9,8 +9,9 @@ This repository contains the [source code](./src) and the [content](./content) f
 Download the code and get started by running the following commands:
 
 ```
-git clone git@github.com:graphql-nexus/docs.git
-cd docs
+git clone git@github.com:graphql-nexus.git
+cd nexus
+cd website
 yarn
 yarn dev
 ```
