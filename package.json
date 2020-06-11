@@ -103,6 +103,7 @@
     "postpublish": "yarn clean",
     "postinstall": "node scripts/postinstall",
     "prepublishOnly": "yarn build",
+    "prepare": "rm -rf dist* && node scripts/build-module-facades && tsc --project tsconfig.cjs.json && tsc --project tsconfig.esm.json",
     "test": "LOG_PRETTY=true DEBUG=true jest --verbose --testTimeout 360000 --forceExit",
     "test:unit": "yarn test src",
     "dev:test": "yarn test --watch src",
