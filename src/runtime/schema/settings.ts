@@ -58,6 +58,10 @@ export type SettingsInput = {
     [connectionTypeName: string]: ConnectionSettings | undefined | false
   }
   /**
+   * Disable or configure the authorization plugin
+   */
+  authorization?: false | NexusSchema.core.FieldAuthorizePluginConfig,
+  /**
    * Should a [GraphQL SDL file](https://www.prisma.io/blog/graphql-sdl-schema-definition-language-6755bcb9ce51) be generated when the app is built and to where?
    *
    * A relative path is interpreted as being relative to the project directory.
@@ -122,6 +126,7 @@ export type SettingsData = {
   }
   generateGraphQLSDLFile: NonNullable<SettingsInput['generateGraphQLSDLFile']>
   rootTypingsGlobPattern: NonNullable<SettingsInput['rootTypingsGlobPattern']>
+  authorization: NonNullable<SettingsInput['authorization']>
 }
 
 /**
@@ -166,6 +171,7 @@ function defaultSettings(): SettingsData {
         ...connectionPluginConfigManagedByNexus,
       },
     },
+    authorization: {}
   }
 
   return data

@@ -9,6 +9,7 @@ beforeEach(() => {
 it('has defaults', () => {
   expect(sm.data).toMatchInlineSnapshot(`
     Object {
+      "authorization": Object {},
       "connections": Object {
         "default": Object {
           "nexusFieldName": "connection",
