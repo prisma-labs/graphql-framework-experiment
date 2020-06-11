@@ -32,6 +32,10 @@ export function mapSettingsAndPluginsToNexusSchemaConfig(
 
   baseConfig.plugins!.push(...mapConnectionsSettingsToNexusSchemaConfig(settings))
 
+  if (settings.authorization !== false) {
+    baseConfig.plugins!.push(NexusSchema.fieldAuthorizePlugin(settings.authorization))
+  }
+
   // Merge the plugin nexus plugins
   for (const frameworkPlugin of frameworkPlugins) {
     const schemaPlugins = frameworkPlugin.schema?.plugins ?? []
