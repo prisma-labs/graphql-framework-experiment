@@ -74,6 +74,7 @@
     "@types/lodash": "4.14.152",
     "@types/node": "13.13.9",
     "@types/parse-json": "^4.0.0",
+    "cross-env": "^7.0.2",
     "docsify": "4.11.3",
     "docsify-cli": "4.4.0",
     "doctoc": "1.4.0",
@@ -105,7 +106,7 @@
     "postpublish": "yarn clean",
     "postinstall": "node scripts/postinstall",
     "prepublishOnly": "yarn build",
-    "test": "FORCE_COLOR=3 LOG_PRETTY=true DEBUG=true jest --verbose --testTimeout 360000 --forceExit",
+    "test": "cross-env FORCE_COLOR=3 LOG_PRETTY=true DEBUG=true jest --verbose --testTimeout 360000 --forceExit",
     "test:unit": "yarn test src",
     "dev:test": "yarn test --watch src",
     "dev": "yarn clean && node scripts/build-module-facades && tsc -b tsconfig.cjs.json -w"
