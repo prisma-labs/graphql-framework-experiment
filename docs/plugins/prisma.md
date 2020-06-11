@@ -183,7 +183,7 @@ You're ready to start working!
 
 Given a [Prisma schema](https://github.com/prisma/prisma2/blob/master/docs/prisma-schema-file.md) (left), you will be able to project these Prisma models onto your API and expose operations against them (middle) resulting in the GraphQL Schema (right).
 
-> Note that to enable `t.crud` functionalities, you must add `features: { crud: true }` to the `prisma()` plugin constructor.
+> Note: `t.crud` is an experimental feature. You must explicitly enable it [via the plugin options](#type-definition).
 
 <div class="Row Collapsable">
 
