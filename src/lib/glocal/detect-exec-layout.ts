@@ -1,5 +1,5 @@
 import * as fs from 'fs'
-import * as path from 'path'
+import * as Path from 'path'
 import { findFileRecurisvelyUpwardSync } from '../fs'
 
 export type ExecScenario = {
@@ -76,7 +76,7 @@ export function detectExecLayout(input: Input): ExecScenario {
 
   // Node CLI supports omitting the ".js" ext like this: $ node a/b/c/foo
   // Handle that case otherwise the realpathSync below will fail.
-  if (path.extname(thisProcessScriptPath) !== '.js') {
+  if (Path.extname(thisProcessScriptPath) !== '.js') {
     if (fs.existsSync(thisProcessScriptPath + '.js')) {
       thisProcessScriptPath += '.js'
     }
@@ -84,9 +84,9 @@ export function detectExecLayout(input: Input): ExecScenario {
 
   // todo try-catch? can we guarantee this? If not, what is the fallback?
   const thisProcessBinRealPath = fs.realpathSync(thisProcessScriptPath)
-  const thisProcessBinDir = path.dirname(thisProcessScriptPath)
-  const thisProcessBinRealDir = path.dirname(thisProcessBinRealPath)
-  const thisProcessBinName = path.basename(thisProcessScriptPath)
+  const thisProcessBinDir = Path.dirname(thisProcessScriptPath)
+  const thisProcessBinRealDir = Path.dirname(thisProcessBinRealPath)
+  const thisProcessBinName = Path.basename(thisProcessScriptPath)
   const thisProcessToolBin = {
     name: thisProcessBinName,
     path: thisProcessScriptPath,
@@ -111,9 +111,9 @@ export function detectExecLayout(input: Input): ExecScenario {
     }
   }
 
-  const projectNodeModulesDir = path.join(projectDir, 'node_modules')
-  const projectBinDir = path.join(projectNodeModulesDir, '.bin')
-  const projectToolBinPath = path.join(projectBinDir, thisProcessToolBin.name)
+  const projectNodeModulesDir = Path.join(projectDir, 'node_modules')
+  const projectBinDir = Path.join(projectNodeModulesDir, '.bin')
+  const projectToolBinPath = Path.join(projectBinDir, thisProcessToolBin.name)
   const project = {
     dir: projectDir,
     binDir: projectBinDir,
@@ -125,7 +125,7 @@ export function detectExecLayout(input: Input): ExecScenario {
   let isToolProject = null
   try {
     isToolProject =
-      typeof require(path.join(projectDir, 'package.json'))?.dependencies?.[input.depName] === 'string'
+      typeof require(Path.join(projectDir, 'package.json'))?.dependencies?.[input.depName] === 'string'
   } catch (e) {
     console.log(e)
   }

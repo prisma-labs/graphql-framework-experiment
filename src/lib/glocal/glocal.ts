@@ -1,5 +1,5 @@
 import { stripIndent } from 'common-tags'
-import * as path from 'path'
+import * as Path from 'path'
 import { rootLogger } from '../nexus-logger'
 import { detectExecLayout, ExecScenario } from './detect-exec-layout'
 import { globalToLocalModule } from './utils'
@@ -55,7 +55,7 @@ export function setup({ run, toolName, depName, filename }: SetupInput): void {
         process.env.GLOBAL_LOCAL_HANDOFF = 'true'
 
         globalToLocalModule({
-          localPackageDir: path.join(execLayout.project!.nodeModulesDir, depName),
+          localPackageDir: Path.join(execLayout.project!.nodeModulesDir, depName),
           globalPackageFilename: filename,
         })
         return // we're done, all up to local now

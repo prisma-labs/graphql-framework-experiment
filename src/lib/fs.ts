@@ -1,9 +1,7 @@
 import * as NodeFS from 'fs'
 import * as FS from 'fs-jetpack'
-import * as fs from 'fs-jetpack'
 import * as OS from 'os'
 import * as Path from 'path'
-import * as path from 'path'
 import { log } from './nexus-logger'
 
 /**
@@ -116,11 +114,11 @@ export function getTmpDir(prefix: string = '') {
 }
 
 export const writeCachedFile = async (filePath: string, fileContent: string): Promise<void> => {
-  const alreadyExistingFallbackFileContents = fs.read(filePath)
+  const alreadyExistingFallbackFileContents = FS.read(filePath)
 
   if (alreadyExistingFallbackFileContents === undefined) {
     log.trace('writing file', { filePath })
-    await fs.writeAsync(filePath, fileContent)
+    await FS.writeAsync(filePath, fileContent)
   } else if (alreadyExistingFallbackFileContents !== fileContent) {
     log.trace(
       'there is a file already present on disk but its content does not match, replacing old with new %s',
@@ -130,7 +128,7 @@ export const writeCachedFile = async (filePath: string, fileContent: string): Pr
     )
     log.trace(alreadyExistingFallbackFileContents)
     log.trace(fileContent)
-    await fs.writeAsync(filePath, fileContent)
+    await FS.writeAsync(filePath, fileContent)
   } else {
     log.trace('there is a file already present on disk and its content matches, therefore doing nothing')
   }
@@ -139,11 +137,11 @@ export const writeCachedFile = async (filePath: string, fileContent: string): Pr
 // build/index.js => index.ts
 
 export function getTranspiledPath(projectDir: string, filePath: string, outDir: string) {
-  const pathFromRootToFile = path.relative(projectDir, filePath)
-  const jsFileName = path.basename(pathFromRootToFile, '.ts') + '.js'
-  const pathToJsFile = path.join(path.dirname(pathFromRootToFile), jsFileName)
+  const pathFromRootToFile = Path.relative(projectDir, filePath)
+  const jsFileName = Path.basename(pathFromRootToFile, '.ts') + '.js'
+  const pathToJsFile = Path.join(Path.dirname(pathFromRootToFile), jsFileName)
 
-  return path.join(outDir, pathToJsFile)
+  return Path.join(outDir, pathToJsFile)
 }
 
 // build/index.js => /Users/me/project/src/index.ts
@@ -161,13 +159,13 @@ export function sourceFilePathFromTranspiledPath({
 }) {
   const normalizedTranspiledPath = transpiledPath.startsWith('/')
     ? transpiledPath
-    : path.join(packageJsonPath, transpiledPath)
+    : Path.join(packageJsonPath, transpiledPath)
 
-  const pathFromOutDirToFile = path.relative(outDir, normalizedTranspiledPath)
-  const tsFileName = path.basename(pathFromOutDirToFile, '.js') + '.ts'
-  const maybeAppFolders = path.dirname(pathFromOutDirToFile)
+  const pathFromOutDirToFile = Path.relative(outDir, normalizedTranspiledPath)
+  const tsFileName = Path.basename(pathFromOutDirToFile, '.js') + '.ts'
+  const maybeAppFolders = Path.dirname(pathFromOutDirToFile)
 
-  return path.join(rootDir, maybeAppFolders, tsFileName)
+  return Path.join(rootDir, maybeAppFolders, tsFileName)
 }
 
 export function findFile(
@@ -176,7 +174,7 @@ export function findFile(
 ): null | string {
   const paths = Array.isArray(fileNames) ? fileNames : [fileNames]
   const projectRoot = config.projectRoot
-  const localFs = fs.cwd(projectRoot)
+  const localFs = FS.cwd(projectRoot)
 
   const foundFiles = localFs.find({
     matching: [...paths, '!node_modules/**/*', '!.yalc/**/*', ...(config?.ignore?.map((i) => `!${i}`) ?? [])],
@@ -184,7 +182,7 @@ export function findFile(
 
   // TODO: What if several files were found?
   if (foundFiles.length > 0) {
-    return path.join(projectRoot, foundFiles[0])
+    return Path.join(projectRoot, foundFiles[0])
   }
 
   return null
@@ -196,13 +194,13 @@ export async function findFiles(
 ): Promise<string[]> {
   const cwd = config?.cwd ?? process.cwd()
   const paths = Array.isArray(fileNames) ? fileNames : [fileNames]
-  const localFS = fs.cwd(cwd)
+  const localFS = FS.cwd(cwd)
 
   const files = await localFS.findAsync({
     matching: [...paths, ...baseIgnores, ...(config?.ignore?.map((i) => `!${i}`) ?? [])],
   })
 
-  return files.map((f) => (path.isAbsolute(f) ? f : localFS.path(f)))
+  return files.map((f) => (Path.isAbsolute(f) ? f : localFS.path(f)))
 }
 
 export const baseIgnores = ['!node_modules/**/*', '!.*/**/*']
@@ -222,6 +220,6 @@ export function trimNodeModulesIfInPath(path: string) {
  * suitable for import like a user would do, not supplying the ext.
  */
 export function stripExt(filePath: string): string {
-  const { dir, name } = path.parse(filePath)
-  return path.join(dir, name)
+  const { dir, name } = Path.parse(filePath)
+  return Path.join(dir, name)
 }

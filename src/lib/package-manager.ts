@@ -7,7 +7,7 @@
  * agnostic way.
  */
 import * as fs from 'fs-jetpack'
-import * as path from 'path'
+import * as Path from 'path'
 import * as proc from './process'
 import { OmitFirstArg } from './utils'
 
@@ -27,17 +27,17 @@ export async function detectProjectPackageManager(opts: {
   if (userAgent) {
     // example: 'yarn/1.22.4 npm/? node/v13.11.0 darwin x64'
     const manager = userAgent.match(/(yarn|npm)(?=\/\d+\.?)+/)
-    if (manager && (manager[0] === "yarn" || manager[0] === "npm")) {
+    if (manager && (manager[0] === 'yarn' || manager[0] === 'npm')) {
       return manager[0]
     }
   }
 
   const packageManagerFound = await Promise.race([
     fs
-      .existsAsync(path.join(opts.projectRoot, YARN_LOCK_FILE_NAME))
+      .existsAsync(Path.join(opts.projectRoot, YARN_LOCK_FILE_NAME))
       .then((result) => (result === 'file' ? 'yarn' : null)),
     fs
-      .existsAsync(path.join(opts.projectRoot, NPM_LOCK_FILE_NAME))
+      .existsAsync(Path.join(opts.projectRoot, NPM_LOCK_FILE_NAME))
       .then((result) => (result === 'file' ? 'npm' : null)),
   ])
 

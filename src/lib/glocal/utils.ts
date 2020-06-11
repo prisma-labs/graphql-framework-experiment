@@ -1,5 +1,5 @@
 import { Either, isLeft, isRight } from 'fp-ts/lib/Either'
-import * as path from 'path'
+import * as Path from 'path'
 import { findFileRecurisvelyUpwardSync } from '../fs'
 import { fatal } from '../process'
 
@@ -11,7 +11,7 @@ import { fatal } from '../process'
  */
 export function globalToLocalModule(input: { localPackageDir: string; globalPackageFilename: string }) {
   const globalProjectDir = findFileRecurisvelyUpwardSync('package.json', {
-    cwd: path.dirname(input.globalPackageFilename),
+    cwd: Path.dirname(input.globalPackageFilename),
   })?.dir
 
   if (!globalProjectDir) {
@@ -20,7 +20,7 @@ export function globalToLocalModule(input: { localPackageDir: string; globalPack
     )
   }
 
-  require(path.join(input.localPackageDir, path.relative(globalProjectDir, input.globalPackageFilename)))
+  require(Path.join(input.localPackageDir, Path.relative(globalProjectDir, input.globalPackageFilename)))
 }
 
 /**

@@ -1,8 +1,7 @@
 import fileTrace from '@zeit/node-file-trace'
 import * as fs from 'fs'
 import * as fsJetpack from 'fs-jetpack'
-import * as path from 'path'
-import * as Layout from '../../lib/layout'
+import * as Path from 'path'
 import { rootLogger } from '../nexus-logger'
 import { Plugin } from '../plugin'
 import { fatal } from '../process'
@@ -56,7 +55,7 @@ export async function bundle(opts: BundleOptions): Promise<void> {
 
   await writeToFS({
     files,
-    ...opts
+    ...opts,
   })
 
   log.trace('done bundling')
@@ -76,7 +75,7 @@ export async function traceFiles(opts: Pick<BundleOptions, 'base' | 'plugins' | 
      */
     ignore: ['node_modules/prettier/index.js', 'node_modules/@prisma/client/scripts/**/*'],
     readFile(fsPath: string): Buffer | string | null {
-      const relPath = path.relative(opts.base, fsPath)
+      const relPath = Path.relative(opts.base, fsPath)
 
       const cached = sourceCache.get(relPath)
       if (cached) return cached.toString()
@@ -118,7 +117,7 @@ export async function traceFiles(opts: Pick<BundleOptions, 'base' | 'plugins' | 
    */
   for (const relPath of fileList) {
     if (!sourceCache.has(relPath)) {
-      const absPath = path.resolve(opts.base, relPath)
+      const absPath = Path.resolve(opts.base, relPath)
       try {
         const source = fs.readFileSync(absPath)
         const { mode } = fs.lstatSync(absPath)
@@ -166,14 +165,14 @@ async function writeToFS(params: {
     let to: string
 
     // Calc absolute path of the file
-    const absPath = path.resolve(params.base, relPath)
+    const absPath = Path.resolve(params.base, relPath)
 
     // If the file is inside the tsOutputDir
     if (pathIsInside({ base: params.tsOutputDir, target: absPath })) {
       // Calc relative path of the file to tsOutputDir
-      const relativeToTsOutputDir = path.relative(params.tsOutputDir, relPath)
+      const relativeToTsOutputDir = Path.relative(params.tsOutputDir, relPath)
       // Calc relative path of the rootDir to base
-      const relativeRootDir = path.relative(params.base, params.tsRootDir)
+      const relativeRootDir = Path.relative(params.base, params.tsRootDir)
       /**
        * Transform path
        *
@@ -183,9 +182,9 @@ async function writeToFS(params: {
        *       to:      <bundleOutputDir>/<relativeRootDir>/<relativeToTsOutputDir>
        *   to val: /project/.nexus/build/api              /folder/filename.js
        */
-      to = path.resolve(params.bundleOutputDir, relativeRootDir, relativeToTsOutputDir)
+      to = Path.resolve(params.bundleOutputDir, relativeRootDir, relativeToTsOutputDir)
     } else {
-      to = path.resolve(params.bundleOutputDir, relPath)
+      to = Path.resolve(params.bundleOutputDir, relPath)
     }
 
     const promise = fsJetpack.write(to, entry.source, entry.mode ? { mode: entry.mode } : {})
@@ -203,11 +202,11 @@ function getWorktimeAndTesttimePluginPaths(base: string, plugins: Plugin[]) {
 
   for (const p of plugins) {
     if (p.worktime) {
-      paths.push(path.relative(base, p.worktime.module))
+      paths.push(Path.relative(base, p.worktime.module))
     }
 
     if (p.testtime) {
-      paths.push(path.relative(base, p.testtime.module))
+      paths.push(Path.relative(base, p.testtime.module))
     }
   }
 
@@ -215,5 +214,5 @@ function getWorktimeAndTesttimePluginPaths(base: string, plugins: Plugin[]) {
 }
 
 function pathIsInside(params: { base: string; target: string }) {
-  return !path.relative(params.base, params.target).startsWith('..')
+  return !Path.relative(params.base, params.target).startsWith('..')
 }

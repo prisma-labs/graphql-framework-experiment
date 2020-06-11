@@ -1,7 +1,7 @@
 import { stripIndent } from 'common-tags'
 import dotenv from 'dotenv'
 import * as fs from 'fs-jetpack'
-import * as path from 'path'
+import * as Path from 'path'
 import { LiteralUnion } from 'type-fest'
 import { ScriptTarget } from 'typescript'
 import { rootLogger } from '../lib/nexus-logger'
@@ -322,7 +322,7 @@ function createSecretLoader(stage: string): SecretLoader {
 
 function tryLoadSecrets(stage: string): { secrets: Record<string, string>; file: string } | null {
   const secretFileName = `${stage}.env`
-  let secretPath = path.join('.secrets', secretFileName)
+  let secretPath = Path.join('.secrets', secretFileName)
   let secretContent = fs.read(secretPath)
 
   if (secretContent) {

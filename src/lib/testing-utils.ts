@@ -1,5 +1,5 @@
 import * as fs from 'fs-jetpack'
-import * as path from 'path'
+import * as Path from 'path'
 
 // In-memory file tree
 export type FSSpec = {
@@ -8,7 +8,7 @@ export type FSSpec = {
 
 export function writeFSSpec(cwd: string, spec: FSSpec) {
   Object.entries(spec).forEach(([fileOrDirName, fileContentOrDir]) => {
-    const fileOrDirPath = path.join(cwd, fileOrDirName)
+    const fileOrDirPath = Path.join(cwd, fileOrDirName)
 
     if (typeof fileContentOrDir === 'string') {
       fs.write(fileOrDirPath, fileContentOrDir)

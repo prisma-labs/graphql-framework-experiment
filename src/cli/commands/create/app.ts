@@ -1,6 +1,6 @@
 import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
-import * as path from 'path'
+import * as Path from 'path'
 import prompts from 'prompts'
 import { PackageJson } from 'type-fest'
 import { Command } from '../../../lib/cli'
@@ -80,7 +80,7 @@ export async function runBootstrapper(configInput?: Partial<ConfigInput>): Promi
   const internalConfig: InternalConfig = {
     projectName: projectName,
     projectRoot: process.cwd(),
-    sourceRoot: path.join(process.cwd(), 'api'),
+    sourceRoot: Path.join(process.cwd(), 'api'),
     ...configInput,
   }
   const nexusVersion = await getNexusVersion()
@@ -386,7 +386,7 @@ const templates: Record<TemplateName, TemplateCreator> = {
     return {
       files: [
         {
-          path: path.join(internalConfig.sourceRoot, 'graphql.ts'),
+          path: Path.join(internalConfig.sourceRoot, 'graphql.ts'),
           content: stripIndent`
             import { schema } from "nexus";
       
@@ -444,7 +444,7 @@ const templates: Record<TemplateName, TemplateCreator> = {
     return {
       files: [
         {
-          path: path.join(internalConfig.sourceRoot, 'app.ts'),
+          path: Path.join(internalConfig.sourceRoot, 'app.ts'),
           content: stripIndent`
           import { use } from 'nexus'
           import { prisma } from 'nexus-plugin-prisma'
@@ -461,8 +461,8 @@ const templates: Record<TemplateName, TemplateCreator> = {
  * Scaffold a new nexus project from scratch
  */
 async function scaffoldBaseFiles(options: InternalConfig) {
-  const appEntrypointPath = path.join(options.sourceRoot, 'app.ts')
-  const sourceRootRelative = path.relative(options.projectRoot, options.sourceRoot)
+  const appEntrypointPath = Path.join(options.sourceRoot, 'app.ts')
+  const sourceRootRelative = Path.relative(options.projectRoot, options.sourceRoot)
 
   await Promise.all([
     // Empty app and graphql module.
@@ -514,7 +514,7 @@ async function scaffoldBaseFiles(options: InternalConfig) {
       // use(prisma())
     `
     ),
-    fs.writeAsync(path.join(options.sourceRoot, 'graphql.ts'), ''),
+    fs.writeAsync(Path.join(options.sourceRoot, 'graphql.ts'), ''),
     // An exhaustive .gitignore tailored for Node can be found here:
     // https://github.com/github/gitignore/blob/master/Node.gitignore
     // We intentionally stay minimal here, as we want the default ignore file
@@ -530,7 +530,7 @@ async function scaffoldBaseFiles(options: InternalConfig) {
         lerna-debug.log*
       `
     ),
-    fs.writeAsync(path.join(options.projectRoot, 'package.json'), {
+    fs.writeAsync(Path.join(options.projectRoot, 'package.json'), {
       name: options.projectName,
       license: 'UNLICENSED',
       dependencies: {},
@@ -572,7 +572,7 @@ async function scaffoldBaseFiles(options: InternalConfig) {
               "protocol": "inspector",
               "runtimeExecutable": "\${workspaceRoot}/node_modules/.bin/nexus",
               "runtimeArgs": ["dev"],
-              "args": ["${path.relative(options.projectRoot, appEntrypointPath)}"],
+              "args": ["${Path.relative(options.projectRoot, appEntrypointPath)}"],
               "sourceMaps": true,
               "console": "integratedTerminal"
             }
