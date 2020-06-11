@@ -1,5 +1,0 @@
-## TODO
-
-```cli
-nexus --help
-```

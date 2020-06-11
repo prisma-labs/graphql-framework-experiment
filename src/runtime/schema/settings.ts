@@ -62,8 +62,7 @@ export type SettingsInput = {
    *
    * A relative path is interpreted as being relative to the project directory.
    *
-   * Intermediary folders are created automatically if they do not exist
-   * already.
+   * Intermediary folders are created automatically if they do not exist already.
    *
    * @default "api.graphql"
    */
