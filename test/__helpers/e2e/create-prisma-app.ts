@@ -45,6 +45,8 @@ export async function e2ePrismaApp(app: E2EContext) {
 
   await proc.pipe(takeUntilServerListening).toPromise()
 
+  await new Promise((res) => setTimeout(res, 12000))
+
   response = await app.client.send(`{
       worlds {
         id

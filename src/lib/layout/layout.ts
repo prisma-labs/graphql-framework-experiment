@@ -145,6 +145,10 @@ export type Layout = Data & {
   data: Data
   projectRelative(filePath: string): string
   projectPath(...subPaths: string[]): string
+  /**
+   * Like projectPath but treats absolute paths as passthrough.
+   */
+  projectPathOrAbsolute(...subPaths: string[]): string
   sourceRelative(filePath: string): string
   sourcePath(...subPaths: string[]): string
   update(options: UpdateableLayoutData): void
@@ -225,7 +229,13 @@ export function createFromData(layoutData: Data): Layout {
       return Path.join(layoutData.sourceRoot, ...subPaths)
     },
     projectPath(...subPaths: string[]): string {
-      return Path.join(layoutData.projectRoot, ...subPaths)
+      const joinedPath = Path.join(...subPaths)
+      return Path.join(layoutData.projectRoot, joinedPath)
+    },
+    projectPathOrAbsolute(...subPaths: string[]): string {
+      const joinedPath = Path.join(...subPaths)
+      if (Path.isAbsolute(joinedPath)) return joinedPath
+      return Path.join(layoutData.projectRoot, joinedPath)
     },
     packageManager: PackageManager.createPackageManager(layoutData.packageManagerType, {
       projectRoot: layoutData.projectRoot,
