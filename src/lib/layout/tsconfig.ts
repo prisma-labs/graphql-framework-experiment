@@ -151,19 +151,17 @@ function checkNoTsConfigErrors(tsconfig: ts.ParsedCommandLine) {
 export function tsconfigTemplate(input: { sourceRootRelative: string; outRootRelative: string }): string {
   // Render empty source root as '.' which is what node path module relative func will do when same dir.
   const sourceRelative = input.sourceRootRelative || '.'
-  return JSON.stringify(
-    {
-      compilerOptions: {
-        target: 'es2016',
-        module: 'commonjs',
-        lib: ['esnext'],
-        strict: true,
-        rootDir: sourceRelative,
-        plugins: [{ name: 'nexus/typescript-language-service' }],
-      },
-      include: [sourceRelative],
+  const config: TsConfigJson = {
+    compilerOptions: {
+      skipLibCheck: true, // temporary until Prisma 2
+      target: 'es2016',
+      module: 'commonjs',
+      lib: ['esnext'],
+      strict: true,
+      rootDir: sourceRelative,
+      plugins: [{ name: 'nexus/typescript-language-service' }],
     },
-    null,
-    2
-  )
+    include: [sourceRelative],
+  }
+  return JSON.stringify(config, null, 2)
 }
