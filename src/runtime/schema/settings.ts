@@ -1,13 +1,31 @@
 import * as NexusSchema from '@nexus/schema'
 import * as Lo from 'lodash'
-import * as Plugin from '../../lib/plugin'
 import { Param1 } from '../../lib/utils'
-import { log as schemaLogger } from './logger'
 
-const log = schemaLogger.child('settings')
+// todo export type from @nexus/schema
+type ConnectionPluginConfig = NonNullable<Param1<typeof NexusSchema.connectionPlugin>>
 
-type NexusSchemaConfig = NexusSchema.core.SchemaConfig
+type ConnectionPluginConfigPropsManagedByNexus = 'nexusFieldName' | 'nexusSchemaImportId'
 
+const connectionPluginConfigManagedByNexus: Pick<
+  ConnectionPluginConfig,
+  ConnectionPluginConfigPropsManagedByNexus
+> = {
+  nexusSchemaImportId: 'nexus/components/schema',
+  /**
+   * The name of the relay connection field builder. This is not configurable by users.
+   */
+  nexusFieldName: 'connection',
+}
+
+/**
+ * Relay connection field builder settings for users.
+ */
+export type ConnectionSettings = Omit<ConnectionPluginConfig, ConnectionPluginConfigPropsManagedByNexus>
+
+/**
+ * The schema settings users can control.
+ */
 export type SettingsInput = {
   /**
    *  See the [Nullability Guide](https://www.nexusjs.org/#/guides/schema?id=nullability-in-principal) for more details.
@@ -33,42 +51,84 @@ export type SettingsInput = {
     /**
      * todo
      */
-    default?: ConnectionConfig | false
+    default?: ConnectionSettings | false
     // Extra undefined below is forced by it being above, forced via `?:`.
     // This is a TS limitation, cannot express void vs missing semantics,
     // being tracked here: https://github.com/microsoft/TypeScript/issues/13195
-    [typeName: string]: ConnectionConfig | undefined | false
+    [connectionTypeName: string]: ConnectionSettings | undefined | false
   }
   /**
    * Should a [GraphQL SDL file](https://www.prisma.io/blog/graphql-sdl-schema-definition-language-6755bcb9ce51) be generated when the app is built and to where?
    *
    * A relative path is interpreted as being relative to the project directory.
-   * Intermediary folders are created automatically if they do not exist
-   * already.
    *
-   * @default false
+   * Intermediary folders are created automatically if they do not exist already.
+   *
+   * @default "api.graphql"
    */
   generateGraphQLSDLFile?: false | string
   /**
-   * A glob pattern which will be used to find the files from which to extract the backing types used in the `rootTyping` option of `schema.(objectType|interfaceType|unionType|enumType)`
+   * A glob pattern which will be used to find the files from which to extract the backing types. Backing types are used in/selected in  the rootTyping option of these schema methods:
+   *
+   * ```
+   * schema.objectType
+   * schema.interfaceType
+   * schema.unionType
+   * schema.enumType
+   * ```
+   *
+   * Here is a mini glob syntax guide (copied from [node-glob](https://github.com/isaacs/node-glob#glob-primer)). The following characters have special meaning in path portions:
+   *
+   * ```
+   * * –– Matches 0 or more characters in a single path portion
+   *
+   * ? –– Matches 1 character
+   *
+   * [...] –– Matches a range of characters, similar to a RegExp range. If the first character of the range is ! or ^ then it matches any character not in the range.
+   *
+   * !(pattern|pattern|pattern) –– Matches anything that does not match any of the patterns provided.
+   *
+   * ?(pattern|pattern|pattern) –– Matches zero or one occurrence of the patterns provided.
+   *
+   * +(pattern|pattern|pattern) –– Matches one or more occurrences of the patterns provided.
+   *
+   * *(a|b|c) –– Matches zero or more occurrences of the patterns provided
+   *
+   * AT_SYMBOL(pattern|pat*|pat?erN) –– Matches exactly one of the patterns provided
+   *
+   * ** –– If a "globstar" is alone in a path portion, then it matches zero or more directories and subdirectories searching for matches. It does not crawl symlinked directories.
+   * ```
    *
    * @default "./**\/*.ts"
    *
    * @example "./**\/*.backing.ts"
+   *
+   * @remarks
+   *
+   * The glob library used by Nexus is [minimatch](https://github.com/isaacs/minimatch).
+   *
    */
   rootTypingsGlobPattern?: string
 }
 
-export type SettingsData = SettingsInput
+/**
+ * Internal representation of settings data.
+ */
+export type SettingsData = {
+  nullable: NonNullable<Required<SettingsInput['nullable']>>
+  connections: {
+    default: false | ConnectionPluginConfig
+    [connectionTypeName: string]: false | ConnectionPluginConfig
+  }
+  generateGraphQLSDLFile: NonNullable<SettingsInput['generateGraphQLSDLFile']>
+  rootTypingsGlobPattern: NonNullable<SettingsInput['rootTypingsGlobPattern']>
+}
 
 /**
- * Mutate the settings data
+ * Mutate the settings data with new settings input.
  */
 export function changeSettings(state: SettingsData, newSettings: SettingsInput): void {
   if (newSettings.nullable) {
-    if (state.nullable === undefined) {
-      state.nullable = {}
-    }
     Lo.merge(state.nullable, newSettings.nullable)
   }
 
@@ -81,104 +141,39 @@ export function changeSettings(state: SettingsData, newSettings: SettingsInput):
   }
 
   if (newSettings.connections) {
-    state.connections = state.connections ?? {}
-    const { types, ...connectionPluginConfig } = newSettings.connections
-    if (types) {
-      state.connections.types = state.connections.types ?? {}
-      Object.assign(state.connections.types, types)
-    }
-    Object.assign(state.connections, connectionPluginConfig)
+    // todo deep merge
+    Object.assign(state.connections, {
+      ...newSettings.connections,
+      ...connectionPluginConfigManagedByNexus,
+    })
   }
 }
-
-export function mapSettingsToNexusSchemaConfig(
-  frameworkPlugins: Plugin.RuntimeContributions[],
-  settings: SettingsData
-): NexusSchemaConfig {
-  const runtimeTypegenConfig = {
-    // Always false here, then set to true in the reflection module
-    outputs: false,
-    shouldGenerateArtifacts: false,
-    shouldExitAfterGenerateArtifacts: false,
-  }
-
-  const baseConfig: NexusSchemaConfig = {
-    nonNullDefaults: {
-      input: !(settings?.nullable?.inputs ?? true),
-      output: !(settings?.nullable?.outputs ?? true),
-    },
-    typegenAutoConfig: {
-      sources: [],
-    },
-    types: [],
-    plugins: [],
-    ...runtimeTypegenConfig,
-  }
-
-  baseConfig.plugins!.push(...processConnectionsConfig(settings))
-
-  // Merge the plugin nexus plugins
-  for (const frameworkPlugin of frameworkPlugins) {
-    const schemaPlugins = frameworkPlugin.schema?.plugins ?? []
-    baseConfig.plugins!.push(...schemaPlugins)
-  }
-
-  log.trace('config built', { config: baseConfig })
-
-  return baseConfig
-}
-
-type ConnectionPluginConfig = NonNullable<Param1<typeof NexusSchema.connectionPlugin>>
-
-export type ConnectionConfig = Omit<ConnectionPluginConfig, 'nexusFieldName'>
 
 /**
- * Process the schema connection settings into nexus schema relay connection
- * plugins.
+ * Get the default settings.
  */
-function processConnectionsConfig(settings: SettingsInput): NexusSchema.core.NexusPlugin[] {
-  if (settings.connections === undefined) {
-    return [
-      defaultConnectionPlugin({
-        nexusSchemaImportId: 'nexus/components/schema',
-      }),
-    ]
+function defaultSettings(): SettingsData {
+  const data: SettingsData = {
+    nullable: {
+      inputs: true,
+      outputs: true,
+    },
+    generateGraphQLSDLFile: 'api.graphql',
+    rootTypingsGlobPattern: './**/*.ts',
+    connections: {
+      // there is another level of defaults that will be applied by Nexus Schema Relay Connections plugin
+      default: {
+        ...connectionPluginConfigManagedByNexus,
+      },
+    },
   }
 
-  const instances: NexusSchema.core.NexusPlugin[] = []
-
-  const { default: defaultTypeConfig, ...customTypesConfig } = settings.connections
-
-  for (const [name, config] of Object.entries(customTypesConfig)) {
-    if (config) {
-      instances.push(
-        NexusSchema.connectionPlugin({
-          nexusSchemaImportId: 'nexus/components/schema',
-          nexusFieldName: name,
-          ...config,
-        })
-      )
-    }
-  }
-
-  if (defaultTypeConfig) {
-    instances.push(defaultConnectionPlugin(defaultTypeConfig))
-  }
-
-  return instances
+  return data
 }
 
-function defaultConnectionPlugin(configBase: ConnectionConfig): NexusSchema.core.NexusPlugin {
-  return NexusSchema.connectionPlugin({
-    ...configBase,
-    nexusFieldName: 'connection',
-  })
-}
-
-function defaultSettings(): SettingsInput {
-  return {}
-}
-
+/**
+ * Create a schema settings manager.
+ */
 export function createSchemaSettingsManager() {
   const data = defaultSettings()
 

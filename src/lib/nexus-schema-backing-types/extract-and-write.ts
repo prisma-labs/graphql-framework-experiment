@@ -3,7 +3,7 @@ import { find } from './find'
 import { write } from './write'
 
 export async function generateBackingTypesArtifacts(
-  filePattern?: string,
+  filePattern: string,
   opts?: { extractCwd?: string; writeCwd?: string }
 ) {
   const backingTypesFiles = await find(filePattern, { cwd: opts?.extractCwd })

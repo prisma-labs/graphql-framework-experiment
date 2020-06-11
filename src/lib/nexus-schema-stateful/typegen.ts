@@ -27,9 +27,18 @@ export async function generateArtifacts(params: GenerateArtifactsParams): Promis
 function resolveTypegenConfig(params: GenerateArtifactsParams) {
   const schemaConfig = params.graphqlSchema.extensions.nexus.config
 
+  const typegenOutput = params.layout.projectPath('node_modules/@types/typegen-nexus/index.d.ts')
+
+  let schemaOutput
+  if (params.schemaSettings.generateGraphQLSDLFile === false) {
+    schemaOutput = false
+  } else {
+    schemaOutput = params.layout.projectPathOrAbsolute(params.schemaSettings.generateGraphQLSDLFile)
+  }
+
   schemaConfig.outputs = {
-    typegen: params.layout.projectPath('node_modules', '@types', 'typegen-nexus', 'index.d.ts'),
-    schema: getOutputSchemaPath(params),
+    typegen: typegenOutput,
+    schema: schemaOutput,
   }
 
   schemaConfig.shouldGenerateArtifacts = true
@@ -39,20 +48,9 @@ function resolveTypegenConfig(params: GenerateArtifactsParams) {
   return NexusSchema.core.resolveTypegenConfig(schemaConfigWithTypegen)
 }
 
-function getOutputSchemaPath(params: GenerateArtifactsParams) {
-  const settings = params.schemaSettings
-
-  if (settings.generateGraphQLSDLFile === undefined || settings.generateGraphQLSDLFile === false) {
-    return false
-  }
-
-  if (Path.isAbsolute(settings.generateGraphQLSDLFile)) {
-    return settings.generateGraphQLSDLFile
-  }
-
-  return params.layout.projectPath(settings.generateGraphQLSDLFile)
-}
-
+/**
+ * Augment @nexus/schema typegen config with contributions from plugins.
+ */
 function withCustomTypegenConfig(
   nexusConfig: NexusSchemaExtensionConfig,
   plugins: Plugin.RuntimeContributions[]

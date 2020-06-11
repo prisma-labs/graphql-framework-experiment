@@ -9,11 +9,8 @@ import { Index, MaybePromise } from '../../lib/utils'
 import { AppState } from '../app'
 import { assertAppNotAssembled } from '../utils'
 import { log } from './logger'
-import {
-  createSchemaSettingsManager,
-  mapSettingsToNexusSchemaConfig,
-  SchemaSettingsManager,
-} from './settings'
+import { createSchemaSettingsManager, SchemaSettingsManager } from './settings'
+import { mapSettingsAndPluginsToNexusSchemaConfig } from './settings-mapper'
 
 export type LazyState = {
   contextContributors: ContextContributor[]
@@ -48,6 +45,9 @@ type MiddlewareFn = (
   next: GraphQLFieldResolver<any, any>
 ) => any
 
+/**
+ * Schema component API
+ */
 export interface Schema extends NexusSchemaStatefulBuilders {
   /**
    * todo link to website docs
@@ -63,6 +63,9 @@ export interface Schema extends NexusSchemaStatefulBuilders {
   addToContext(contextContributor: ContextContributor): void
 }
 
+/**
+ * Schema component internal API
+ */
 export interface SchemaInternal {
   private: {
     settings: SchemaSettingsManager
@@ -112,7 +115,7 @@ export function create(appState: AppState): SchemaInternal {
         appState.schemaComponent.plugins = []
       },
       assemble: (plugins) => {
-        const nexusSchemaConfig = mapSettingsToNexusSchemaConfig(plugins, settings.data)
+        const nexusSchemaConfig = mapSettingsAndPluginsToNexusSchemaConfig(plugins, settings.data)
         nexusSchemaConfig.types.push(...statefulNexusSchema.state.types)
         nexusSchemaConfig.plugins!.push(...appState.schemaComponent.plugins)
         const { schema, missingTypes } = NexusSchema.core.makeSchemaInternal(nexusSchemaConfig)

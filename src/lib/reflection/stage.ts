@@ -20,14 +20,14 @@ export function removeReflectionStage() {
 }
 
 /**
- * Check whether the app is executing in its reflection stage
+ * Check whether the app is executing in a particular reflection stage.
  */
 export function isReflectionStage(type: ReflectionType) {
   return process.env[REFLECTION_ENV_VAR] === type
 }
 
 /**
- * Check whether the app is executing in its reflection stage
+ * Check whether the app is executing in any reflection stage.
  */
 export function isReflection() {
   return process.env[REFLECTION_ENV_VAR] !== undefined
