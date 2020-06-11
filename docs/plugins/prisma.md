@@ -1110,7 +1110,7 @@ Like [relations](#relation) but also supports batch related options.
 
 ##### Options
 
-[`type`](#type) [`alias`](#alias) [`filtering`](#filtering) [`pagination`](#pagination) [`ordering`](#ordering) [`resolve`](#resolve)
+[`type`](#type) [`alias`](#alias) [`resolve`](#resolve) [`filtering`](#filtering) [`pagination`](#pagination) [`ordering`](#ordering)
 
 ##### GraphQL Schema Contributions [`?`](#graphql-schema-contributions 'How to read this')
 
@@ -1836,7 +1836,7 @@ Allow clients to fetch multiple records at once of the respective Prisma model.
 
 ##### Options
 
-[`type`](#type) [`alias`](#alias) [`resolve`](#resolve) [`filtering`](#filtering) [`pagination`](#pagination) [`ordering`](#ordering) [`computedInputs`](#computedInputs-local)([local](#computedInputs-local) and [global](#computedInputs-global)) 
+[`type`](#type) [`alias`](#alias) [`resolve`](#resolve) [`filtering`](#filtering) [`pagination`](#pagination) [`ordering`](#ordering) [`computedInputs`](#computedInputs-local)([local](#computedInputs-local) and [global](#computedInputs-global))
 
 ##### GraphQL Schema Contributions [`?`](#graphql-schema-contributions 'How to read this')
 
@@ -2408,7 +2408,6 @@ query batchReadRelation {
 ```
 
 </div>
-
 
 #### `filtering`
 
