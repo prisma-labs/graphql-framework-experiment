@@ -27,12 +27,21 @@ const schema = makeSchema({
 
 You can find runnable examples in the [repo examples folder](https://github.com/graphql-nexus/nexus-schema-plugin-prisma/tree/master/examples).
 
+> Note: If you're looking for CRUD capabilities, you must enable the `experimentalCRUD` option.
+
 ## Configuration {docsify-ignore}
 
 Note that, In most cases, you should not need to configure anything.
 
 ```ts
 type Options = {
+  /**
+   * Enable experimental CRUD capabilities.
+   * Add a `t.crud` method in your definition block to generate CRUD resolvers in your `Query` and `Mutation` GraphQL Object Type.
+   *
+   * @default false
+   */  
+  experimentalCRUD?: boolean
   /**
    * nexus-prisma will call this to get a reference to an instance of the Prisma Client.
    * The function is passed the context object. Typically a Prisma Client instance will
