@@ -72,7 +72,7 @@ yarn-error.log
 .envrc
 
 # Example page
-# content/00-example.mdx
+content/00-example.mdx
 
 # History
 .history/
