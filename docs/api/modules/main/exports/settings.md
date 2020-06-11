@@ -15,6 +15,7 @@ Use the settings to centrally configure various aspects of the various component
     path?: string
     playground?: boolean | { path?: string }
   }
+  authorization?: false | { formatError?: (authConfig: AuthorizationConfig) => Error }
   schema?: {
     nullable?: {
       outputs?: boolean
@@ -148,6 +149,17 @@ A relative path is interpreted as being relative to the project directory. Inter
 _Default_
 
 `api.graphql`
+
+#### schema.authorization
+
+<div class="OneLineSignature"></div>
+
+```
+false | { formatError?: (authConfig: AuthConfig) => Error }
+```
+
+Disable or configure the `authorize` field behaviour.
+
 
 #### `schema.rootTypingsGlobPattern`
 
