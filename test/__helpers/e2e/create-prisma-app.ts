@@ -45,9 +45,6 @@ export async function e2ePrismaApp(app: E2EContext) {
 
   await proc.pipe(takeUntilServerListening).toPromise()
 
-  // debugging panic that occurs in ci on the following query
-  await new Promise((res) => setTimeout(res, 5000))
-
   response = await app.client.send(`{
       worlds {
         id
