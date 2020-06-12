@@ -1,17 +1,4 @@
 process.env.FORCE_COLOR = '0'
-let mockedStdoutBuffer: string = ''
-const mockStdout = jest.spyOn(process.stdout, 'write').mockImplementation((data) => {
-  mockedStdoutBuffer += data
-  return true
-})
-
-afterEach(() => {
-  mockedStdoutBuffer = ''
-})
-
-const mockExit = jest.spyOn(process, 'exit').mockImplementation(((n: any) => {
-  mockedStdoutBuffer += `\n\n--- process.exit(${n}) ---\n\n`
-}) as any)
 
 import { log } from '@nexus/logger'
 import { defaultsDeep } from 'lodash'
@@ -23,6 +10,24 @@ import { rightOrThrow } from '../glocal/utils'
 import * as TC from '../test-context'
 import { repalceInObject, replaceEvery } from '../utils'
 import { NEXUS_TS_LSP_IMPORT_ID } from './tsconfig'
+
+let mockedStdoutBuffer: string = ''
+
+log.settings({
+  output: {
+    write(data) {
+      mockedStdoutBuffer += data
+    },
+  },
+})
+
+afterEach(() => {
+  mockedStdoutBuffer = ''
+})
+
+const mockExit = jest.spyOn(process, 'exit').mockImplementation(((n: any) => {
+  mockedStdoutBuffer += `\n\n--- process.exit(${n}) ---\n\n`
+}) as any)
 
 /**
  * Disable logger timeDiff and color to allow snapshot matching

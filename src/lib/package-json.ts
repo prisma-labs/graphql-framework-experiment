@@ -61,7 +61,7 @@ export function parse(contents: string, path: string) {
   )
   if (isLeft(errRawData)) return errRawData
   const rawData = errRawData.right
-  console.log(rawData)
+
   if (!isPlainObject(rawData))
     return left(malformedPackageJson({ path, reason: 'Package.json data is not an object' }))
   if (!isString(rawData.name))
@@ -72,5 +72,6 @@ export function parse(contents: string, path: string) {
     return left(malformedPackageJson({ path, reason: 'Package.json version field is not a string' }))
   if (isEmpty(rawData.version))
     return left(malformedPackageJson({ path, reason: 'Package.json version field is empty' }))
+
   return right(rawData as ValidPackageJson)
 }
