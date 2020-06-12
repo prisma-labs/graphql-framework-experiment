@@ -139,7 +139,13 @@ export async function readOrScaffoldTsconfig(input: {
     )
   }
 
-  // setup out root
+  /**
+   * Setup noEmit. Internally we always want emit to be on.
+   */
+
+  tscfg.compilerOptions.noEmit = true
+
+  // setup outDir
 
   if (input.overrides?.outRoot !== undefined) {
     tscfg.compilerOptions.outDir = input.overrides.outRoot
