@@ -74,7 +74,11 @@ export class __Default implements Command {
         break
       case 'malformed_package_json':
         // todo test this case
-        log.fatal(projectType.error.message)
+        const e = projectType.error
+        log.fatal(
+          `Failed to establish a project type. A package.json was found at ${e.context.path}. But, there was an error whlie trying to read it.`,
+          { reason: e.context.reason }
+        )
         break
       default:
         casesHandled(projectType)
