@@ -2,7 +2,7 @@ import chalk from 'chalk'
 import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import * as Path from 'path'
-import { DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT, Layout } from '../../lib/layout'
+import { DEFAULT_BUILD_DIR_PATH_RELATIVE_TO_PROJECT_ROOT, Layout } from '../../lib/layout'
 import { findFileRecurisvelyUpwardSync } from '../fs'
 import { rootLogger } from '../nexus-logger'
 import { fatal } from '../process'
@@ -41,7 +41,7 @@ export function normalizeTarget(inputDeployTarget: string | undefined): Supporte
 
 const TARGET_TO_BUILD_OUTPUT: Record<SupportedTargets, string> = {
   vercel: 'dist',
-  heroku: DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT,
+  heroku: DEFAULT_BUILD_DIR_PATH_RELATIVE_TO_PROJECT_ROOT,
 }
 
 export function computeBuildOutputFromTarget(target: SupportedTargets | null) {

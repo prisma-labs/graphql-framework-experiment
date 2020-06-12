@@ -2,7 +2,6 @@ import * as NexusLogger from '@nexus/logger'
 import * as NexusSchema from '@nexus/schema'
 import { GraphQLFieldResolver, GraphQLResolveInfo } from 'graphql'
 import * as HTTP from 'http'
-import { emptyExceptionMessage } from '../../lib/layout/schema-modules'
 import { createNexusSchemaStateful, NexusSchemaStatefulBuilders } from '../../lib/nexus-schema-stateful'
 import { RuntimeContributions } from '../../lib/plugin'
 import { Index, MaybePromise } from '../../lib/utils'
@@ -129,4 +128,8 @@ export function create(appState: AppState): SchemaInternal {
       },
     },
   }
+}
+
+function emptyExceptionMessage() {
+  return `Your GraphQL schema is empty. This is normal if you have not defined any GraphQL types yet. If you did however, check that your files are contained in the same directory specified in the \`rootDir\` property of your tsconfig.json file.`
 }

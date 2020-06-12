@@ -73,7 +73,7 @@ const ctx = TC.create(
       async scanThrow(opts?: { entrypointPath?: string; buildOutput?: string }) {
         const data = rightOrThrow(
           await Layout.create({
-            cwd: ctx.tmpDir,
+            projectRoot: ctx.tmpDir,
             entrypointPath: opts?.entrypointPath,
             buildOutputDir: opts?.buildOutput,
             asBundle: false,
@@ -84,7 +84,7 @@ const ctx = TC.create(
       },
       async scan(opts?: { entrypointPath?: string; buildOutput?: string }) {
         return Layout.create({
-          cwd: ctx.tmpDir,
+          projectRoot: ctx.tmpDir,
           entrypointPath: opts?.entrypointPath,
           buildOutputDir: opts?.buildOutput,
           asBundle: false,
@@ -97,6 +97,26 @@ const ctx = TC.create(
 /**
  * Tests
  */
+
+describe('projectRoot', () => {
+  it.todo('can be forced')
+  it.todo('uses first dir in hierarchy with a package.json')
+  it.todo('falls back to process cwd')
+})
+
+describe('sourceRoot', () => {
+  it('defaults to project dir', async () => {
+    ctx.setup({ 'tsconfig.json': '' })
+    const result = await ctx.scanThrow()
+    expect(result.sourceRoot).toEqual('__DYNAMIC__')
+    expect(result.projectRoot).toEqual('__DYNAMIC__')
+  })
+  it('honours the value in tsconfig rootDir', async () => {
+    ctx.setup({ 'tsconfig.json': tsconfigContent({ compilerOptions: { rootDir: 'api' } }) })
+    const result = await ctx.scanThrow()
+    expect(result.sourceRoot).toMatchInlineSnapshot(`"__DYNAMIC__/api"`)
+  })
+})
 
 it('fails if empty file tree', async () => {
   ctx.setup()
@@ -251,7 +271,7 @@ describe('tsconfig', () => {
   })
 })
 
-it('fails if no entrypoint and no graphql modules', async () => {
+it('fails if no entrypoint and no nexus modules', async () => {
   ctx.setup({
     ...fsTsConfig,
     src: {
@@ -277,29 +297,30 @@ it('fails if no entrypoint and no graphql modules', async () => {
   expect(mockExit).toHaveBeenCalledWith(1)
 })
 
-it('finds nested nexus modules', async () => {
-  ctx.setup({
-    ...fsTsConfig,
-    src: {
-      'app.ts': '',
-      graphql: {
-        '1.ts': `import { schema } from 'nexus'`,
-        '2.ts': `import { schema } from 'nexus'`,
+describe('nexusModules', () => {
+  it('finds nested nexus modules', async () => {
+    ctx.setup({
+      ...fsTsConfig,
+      src: {
+        'app.ts': '',
         graphql: {
-          '3.ts': `import { schema } from 'nexus'`,
-          '4.ts': `import { schema } from 'nexus'`,
+          '1.ts': `import { schema } from 'nexus'`,
+          '2.ts': `import { schema } from 'nexus'`,
           graphql: {
-            '5.ts': `import { schema } from 'nexus'`,
-            '6.ts': `import { schema } from 'nexus'`,
+            '3.ts': `import { schema } from 'nexus'`,
+            '4.ts': `import { schema } from 'nexus'`,
+            graphql: {
+              '5.ts': `import { schema } from 'nexus'`,
+              '6.ts': `import { schema } from 'nexus'`,
+            },
           },
         },
       },
-    },
-  })
+    })
 
-  const result = await ctx.scanThrow()
+    const result = await ctx.scanThrow()
 
-  expect(result.nexusModules).toMatchInlineSnapshot(`
+    expect(result.nexusModules).toMatchInlineSnapshot(`
     Array [
       "__DYNAMIC__/src/graphql/1.ts",
       "__DYNAMIC__/src/graphql/2.ts",
@@ -309,85 +330,19 @@ it('finds nested nexus modules', async () => {
       "__DYNAMIC__/src/graphql/graphql/graphql/6.ts",
     ]
   `)
-})
-
-it('detects yarn as package manager', async () => {
-  ctx.setup({ ...fsTsConfig, 'app.ts': '', 'yarn.lock': '' })
-  const result = await ctx.scanThrow()
-  expect(result.packageManagerType).toMatchInlineSnapshot(`"yarn"`)
-})
-
-it('finds app.ts entrypoint', async () => {
-  ctx.setup({ ...fsTsConfig, 'app.ts': '' })
-  const result = await ctx.scanThrow()
-  expect(result.app).toMatchInlineSnapshot(`
-    Object {
-      "exists": true,
-      "path": "__DYNAMIC__/app.ts",
-    }
-  `)
-})
-
-it('set app.exists = false if no entrypoint', async () => {
-  await ctx.setup({ ...fsTsConfig, 'graphql.ts': '' })
-  const result = await ctx.scanThrow()
-  expect(result.app).toMatchInlineSnapshot(`
-    Object {
-      "exists": false,
-      "path": null,
-    }
-  `)
-})
-
-it('uses custom relative entrypoint when defined', async () => {
-  await ctx.setup({ ...fsTsConfig, 'index.ts': `console.log('entrypoint')` })
-  const result = await ctx.scanThrow({ entrypointPath: './index.ts' })
-  expect(result.app).toMatchInlineSnapshot(`
-    Object {
-      "exists": true,
-      "path": "__DYNAMIC__/index.ts",
-    }
-  `)
-})
-
-it('uses custom absolute entrypoint when defined', async () => {
-  await ctx.setup({ ...fsTsConfig, 'index.ts': `console.log('entrypoint')` })
-  const result = await ctx.scanThrow({ entrypointPath: ctx.fs.path('index.ts') })
-  expect(result.app).toMatchInlineSnapshot(`
-    Object {
-      "exists": true,
-      "path": "__DYNAMIC__/index.ts",
-    }
-  `)
-})
-
-it('fails if custom entrypoint does not exist', async () => {
-  await ctx.setup({ ...fsTsConfig, 'index.ts': `console.log('entrypoint')` })
-  const result = await ctx.scan({ entrypointPath: './wrong-path.ts' })
-  expect(JSON.stringify(result)).toMatchInlineSnapshot(
-    `"{\\"_tag\\":\\"Left\\",\\"left\\":{\\"message\\":\\"Entrypoint does not exist\\",\\"context\\":{\\"path\\":\\"__DYNAMIC__/wrong-path.ts\\"}}}"`
-  )
-})
-
-it('fails if custom entrypoint is not a .ts file', async () => {
-  await ctx.setup({ ...fsTsConfig, 'index.ts': ``, 'index.js': `console.log('entrypoint')` })
-  const result = await ctx.scan({ entrypointPath: './index.js' })
-  expect(JSON.stringify(result)).toMatchInlineSnapshot(
-    `"{\\"_tag\\":\\"Left\\",\\"left\\":{\\"message\\":\\"Entrypoint must be a .ts file\\",\\"context\\":{\\"path\\":\\"__DYNAMIC__/index.js\\"}}}"`
-  )
-})
-
-it('does not take custom entrypoint as nexus module if contains a nexus import', async () => {
-  await ctx.setup({
-    ...fsTsConfig,
-    'app.ts': `import { schema } from 'nexus'`,
-    'graphql.ts': `import { schema } from 'nexus'`,
   })
-  const result = await ctx.scanThrow({ entrypointPath: './app.ts' })
-  expect({
-    app: result.app,
-    nexusModules: result.nexusModules,
-  }).toMatchInlineSnapshot(`
+
+  it('does not take custom entrypoint as nexus module if contains a nexus import', async () => {
+    await ctx.setup({
+      ...fsTsConfig,
+      'app.ts': `import { schema } from 'nexus'`,
+      'graphql.ts': `import { schema } from 'nexus'`,
+    })
+    const result = await ctx.scanThrow({ entrypointPath: './app.ts' })
+    expect({
+      app: result.app,
+      nexusModules: result.nexusModules,
+    }).toMatchInlineSnapshot(`
     Object {
       "app": Object {
         "exists": true,
@@ -398,9 +353,80 @@ it('does not take custom entrypoint as nexus module if contains a nexus import',
       ],
     }
   `)
+  })
 })
 
-describe('build output', () => {
+describe('packageManagerType', () => {
+  it('detects yarn as package manager', async () => {
+    ctx.setup({ ...fsTsConfig, 'app.ts': '', 'yarn.lock': '' })
+    const result = await ctx.scanThrow()
+    expect(result.packageManagerType).toMatchInlineSnapshot(`"yarn"`)
+  })
+})
+
+describe('entrypoint', () => {
+  it('finds app.ts entrypoint', async () => {
+    ctx.setup({ ...fsTsConfig, 'app.ts': '' })
+    const result = await ctx.scanThrow()
+    expect(result.app).toMatchInlineSnapshot(`
+    Object {
+      "exists": true,
+      "path": "__DYNAMIC__/app.ts",
+    }
+  `)
+  })
+
+  it('set app.exists = false if no entrypoint', async () => {
+    await ctx.setup({ ...fsTsConfig, 'graphql.ts': '' })
+    const result = await ctx.scanThrow()
+    expect(result.app).toMatchInlineSnapshot(`
+    Object {
+      "exists": false,
+      "path": null,
+    }
+  `)
+  })
+
+  it('uses custom relative entrypoint when defined', async () => {
+    await ctx.setup({ ...fsTsConfig, 'index.ts': `console.log('entrypoint')` })
+    const result = await ctx.scanThrow({ entrypointPath: './index.ts' })
+    expect(result.app).toMatchInlineSnapshot(`
+    Object {
+      "exists": true,
+      "path": "__DYNAMIC__/index.ts",
+    }
+  `)
+  })
+
+  it('uses custom absolute entrypoint when defined', async () => {
+    await ctx.setup({ ...fsTsConfig, 'index.ts': `console.log('entrypoint')` })
+    const result = await ctx.scanThrow({ entrypointPath: ctx.fs.path('index.ts') })
+    expect(result.app).toMatchInlineSnapshot(`
+    Object {
+      "exists": true,
+      "path": "__DYNAMIC__/index.ts",
+    }
+  `)
+  })
+
+  it('fails if custom entrypoint does not exist', async () => {
+    await ctx.setup({ ...fsTsConfig, 'index.ts': `console.log('entrypoint')` })
+    const result = await ctx.scan({ entrypointPath: './wrong-path.ts' })
+    expect(JSON.stringify(result)).toMatchInlineSnapshot(
+      `"{\\"_tag\\":\\"Left\\",\\"left\\":{\\"message\\":\\"Entrypoint does not exist\\",\\"context\\":{\\"path\\":\\"__DYNAMIC__/wrong-path.ts\\"}}}"`
+    )
+  })
+
+  it('fails if custom entrypoint is not a .ts file', async () => {
+    await ctx.setup({ ...fsTsConfig, 'index.ts': ``, 'index.js': `console.log('entrypoint')` })
+    const result = await ctx.scan({ entrypointPath: './index.js' })
+    expect(JSON.stringify(result)).toMatchInlineSnapshot(
+      `"{\\"_tag\\":\\"Left\\",\\"left\\":{\\"message\\":\\"Entrypoint must be a .ts file\\",\\"context\\":{\\"path\\":\\"__DYNAMIC__/index.js\\"}}}"`
+    )
+  })
+})
+
+describe('build', () => {
   it(`defaults to .nexus/build`, async () => {
     await ctx.setup({ ...fsTsConfig, 'graphql.ts': '' })
     const result = await ctx.scanThrow()
@@ -470,21 +496,7 @@ describe('build output', () => {
   })
 })
 
-describe('source root', () => {
-  it('defaults to project dir', async () => {
-    ctx.setup({ 'tsconfig.json': '' })
-    const result = await ctx.scanThrow()
-    expect(result.sourceRoot).toEqual('__DYNAMIC__')
-    expect(result.projectRoot).toEqual('__DYNAMIC__')
-  })
-  it('honours the value in tsconfig rootDir', async () => {
-    ctx.setup({ 'tsconfig.json': tsconfigContent({ compilerOptions: { rootDir: 'api' } }) })
-    const result = await ctx.scanThrow()
-    expect(result.sourceRoot).toMatchInlineSnapshot(`"__DYNAMIC__/api"`)
-  })
-})
-
-describe.only('scanProjectType', () => {
+describe('scanProjectType', () => {
   const pjdata = { version: '0.0.0', name: 'foo' }
   const nestTmpDir = () => {
     const projectRootPath = ctx.fs.path('project_root')
