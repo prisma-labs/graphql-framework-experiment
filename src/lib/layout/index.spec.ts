@@ -484,18 +484,62 @@ describe('source root', () => {
   })
 })
 
-describe('scanProjectType', () => {
-  it('if malformed package.json in cwd then error', async () => {
-    ctx.fs.write('package.json', 'bad')
-    const res = await Layout.scanProjectType({ cwd: ctx.fs.cwd() })
-    expect(res.type).toMatchInlineSnapshot(`"malformed_package_json"`)
-  })
-  it('if malformed package.json in hierarchy then error', async () => {
+describe.only('scanProjectType', () => {
+  const pjdata = { version: '0.0.0', name: 'foo' }
+  const nestTmpDir = () => {
     const projectRootPath = ctx.fs.path('project_root')
     ctx.fs.dir(projectRootPath)
     ctx.fs = ctx.fs.cwd(projectRootPath)
-    ctx.fs.write('package.json', 'bad')
+  }
+
+  describe('if package.json with nexus dep then nexus project', () => {
+    it('in cwd', async () => {
+      ctx.fs.write('package.json', { ...pjdata, dependencies: { nexus: '0.0.0' } })
+      const res = await Layout.scanProjectType({ cwd: ctx.fs.cwd() })
+      expect(res.type).toMatchInlineSnapshot(`"NEXUS_project"`)
+    })
+    it('in hierarchy', async () => {
+      nestTmpDir()
+      ctx.fs.write('../package.json', { ...pjdata, dependencies: { nexus: '0.0.0' } })
+      const res = await Layout.scanProjectType({ cwd: ctx.fs.cwd() })
+      expect(res.type).toMatchInlineSnapshot(`"NEXUS_project"`)
+    })
+  })
+
+  describe('if package.json without nexus dep then node project', () => {
+    it('in cwd', async () => {
+      ctx.fs.write('package.json', { ...pjdata, dependencies: {} })
+      const res = await Layout.scanProjectType({ cwd: ctx.fs.cwd() })
+      expect(res.type).toMatchInlineSnapshot(`"node_project"`)
+    })
+    it('in hierarchy', async () => {
+      nestTmpDir()
+      ctx.fs.write('../package.json', { ...pjdata, dependencies: {} })
+      const res = await Layout.scanProjectType({ cwd: ctx.fs.cwd() })
+      expect(res.type).toMatchInlineSnapshot(`"node_project"`)
+    })
+  })
+
+  it('if no package.json and dir is empty then new project', async () => {
     const res = await Layout.scanProjectType({ cwd: ctx.fs.cwd() })
-    expect(res.type).toMatchInlineSnapshot(`"malformed_package_json"`)
+    expect(res.type).toMatchInlineSnapshot(`"new"`)
+  })
+  it('if no package.json and dir is not empty then unknown project', async () => {
+    ctx.fs.write('foo.txt', 'bar')
+    const res = await Layout.scanProjectType({ cwd: ctx.fs.cwd() })
+    expect(res.type).toMatchInlineSnapshot(`"unknown"`)
+  })
+  describe('if malformed package.json then error', () => {
+    it('in cwd', async () => {
+      ctx.fs.write('package.json', 'bad')
+      const res = await Layout.scanProjectType({ cwd: ctx.fs.cwd() })
+      expect(res.type).toMatchInlineSnapshot(`"malformed_package_json"`)
+    })
+    it('in hierarchy', async () => {
+      nestTmpDir()
+      ctx.fs.write('../package.json', 'bad')
+      const res = await Layout.scanProjectType({ cwd: ctx.fs.cwd() })
+      expect(res.type).toMatchInlineSnapshot(`"malformed_package_json"`)
+    })
   })
 })
