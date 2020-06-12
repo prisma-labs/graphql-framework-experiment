@@ -533,6 +533,7 @@ async function scaffoldBaseFiles(options: InternalConfig) {
     fs.writeAsync(Path.join(options.projectRoot, 'package.json'), {
       name: options.projectName,
       license: 'UNLICENSED',
+      version: '0.0.0',
       dependencies: {},
       scripts: {
         format: "npx prettier --write './**/*.{ts,md}'",

@@ -153,7 +153,6 @@ export function tsconfigTemplate(input: { sourceRootRelative: string; outRootRel
   const sourceRelative = input.sourceRootRelative || '.'
   const config: TsConfigJson = {
     compilerOptions: {
-      skipLibCheck: true, // temporary until Prisma 2
       target: 'es2016',
       module: 'commonjs',
       lib: ['esnext'],
