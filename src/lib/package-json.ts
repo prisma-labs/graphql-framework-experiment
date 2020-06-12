@@ -4,9 +4,9 @@ import { isEmpty, isPlainObject, isString } from 'lodash'
 import parseJson from 'parse-json'
 import * as Path from 'path'
 import { PackageJson } from 'type-fest'
-import { execeptionType } from './utils'
+import { exceptionType } from './utils'
 
-const malformedPackageJson = execeptionType<'MalformedPackageJson', { path: string; reason: string }>(
+const malformedPackageJson = exceptionType<'MalformedPackageJson', { path: string; reason: string }>(
   'MalformedPackageJson',
   (c) => `package.json at ${c.path} was malformed\n\n${c.reason}`
 )

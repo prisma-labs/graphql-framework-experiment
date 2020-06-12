@@ -331,7 +331,7 @@ export interface Exception<T extends string, C extends SomeRecord> extends Error
   context: C
 }
 
-export function execeptionType<Type extends string, Context extends SomeRecord>(
+export function exceptionType<Type extends string, Context extends SomeRecord>(
   type: Type,
   template: (ctx: Context) => string
 ) {
