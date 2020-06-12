@@ -1,3 +1,4 @@
+import chalk from 'chalk'
 import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
 import { EOL } from 'os'
@@ -72,7 +73,7 @@ export async function readOrScaffoldTsconfig(input: {
         stripIndent`
           You have not added the Nexus TypeScript Language Service Plugin to your configured TypeScript plugins. Add this to your tsconfig compiler options:
 
-              "plugins": ${JSON.stringify(pluginsFixed)}
+              ${chalk.yellowBright(`"plugins": ${JSON.stringify(pluginsFixed)}`)}
         ` + EOL
       )
     }
@@ -88,33 +89,55 @@ export async function readOrScaffoldTsconfig(input: {
 
   if (tscfg.compilerOptions.tsBuildInfoFile) {
     delete tscfg.compilerOptions.tsBuildInfoFile
+    const setting = renderSetting(`compilerOptions.tsBuildInfoFile`)
     log.warn(
-      'You have set compilerOptions.tsBuildInfoFile in your tsconfig.json but it will be ignored by Nexus. Nexus manages this value internally.'
+      `You have set ${setting} in your tsconfig.json but it will be ignored by Nexus. Nexus manages this value internally.`
     )
   }
 
   if (tscfg.compilerOptions.incremental) {
     delete tscfg.compilerOptions.incremental
+    const setting = renderSetting('compilerOptions.incremental')
     log.warn(
-      'You have set compilerOptions.incremental in your tsconfig.json but it will be ignored by Nexus. Nexus manages this value internally.'
+      `You have set ${setting} in your tsconfig.json but it will be ignored by Nexus. Nexus manages this value internally.`
     )
   }
 
-  // setup source root
+  const { typeRoots, types } = tscfg.compilerOptions
+  if (typeRoots || types) {
+    if (typeRoots) delete tscfg.compilerOptions.typeRoots
+    if (types) delete tscfg.compilerOptions.types
+    const settingsSet =
+      typeRoots && types
+        ? `${renderSetting('compilerOptions.typeRoots')} and ${renderSetting('compilerOptions.types')}`
+        : typeRoots
+        ? renderSetting('compilerOptions.typeRoots')
+        : renderSetting('compilerOptions.types')
+    const itThem = typeRoots && types ? 'them' : 'it'
+    const thisThese = typeRoots && types ? 'these' : 'this'
+    const s = typeRoots && types ? 's' : ''
+    log.error(
+      `You have set ${settingsSet} in your tsconfig.json but Nexus does not support ${itThem}. If you do not remove your customization you may/will (e.g. VSCode) see inconsistent results between your IDE and what Nexus tells you at build time. If you would like to see Nexus support ${thisThese} setting${s} please chime in at https://github.com/graphql-nexus/nexus/issues/1036.`
+    )
+  }
 
   if (!tscfg.compilerOptions!.rootDir) {
+    // setup source root
     tscfg.compilerOptions!.rootDir = '.'
-    log.warn(`Please set your tsconfig.json compilerOptions.rootDir to "${tscfg.compilerOptions!.rootDir}"`)
+    const setting = renderSetting('compilerOptions.rootDir')
+    log.warn(`Please set your tsconfig.json ${setting} to "${tscfg.compilerOptions!.rootDir}"`)
   }
 
   if (!tscfg.include.includes(tscfg.compilerOptions!.rootDir!)) {
     tscfg.include.push(tscfg.compilerOptions!.rootDir!)
-    log.warn(`Please set your tsconfig.json include to have "${tscfg.compilerOptions!.rootDir}"`)
+    const setting = renderSetting('include')
+    log.warn(`Please set your tsconfig.json ${setting} to have "${tscfg.compilerOptions!.rootDir}"`)
   }
 
   if (tscfg.compilerOptions.noEmit === true) {
+    const setting = renderSetting('compilerOptions.noEmit')
     log.warn(
-      'You have set compilerOptions.noEmit in your tsconfig.json. This will prevent `nexus build` from emitting code.'
+      `You have set ${setting} in your tsconfig.json. This will prevent \`$ nexus build\` from emitting code.`
     )
   }
 
@@ -163,4 +186,11 @@ export function tsconfigTemplate(input: { sourceRootRelative: string; outRootRel
     include: [sourceRelative],
   }
   return JSON.stringify(config, null, 2)
+}
+
+/**
+ * Prettifier a property path for terminal output.
+ */
+function renderSetting(setting: string) {
+  return chalk.yellowBright(`\`${setting}\``)
 }
