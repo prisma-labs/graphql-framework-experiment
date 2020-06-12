@@ -104,13 +104,25 @@ interface Options {
    * Whether the build should be outputted as a bundle
    */
   asBundle?: boolean
+  /**
+   * Force the current working directory.
+   *
+   * @default
+   *
+   * process.cwd()
+   *
+   * @remarks
+   *
+   * Interplay between this and projectRoot option: When the projectRoot is not forced then the cwd is utilized for various logic.
+   */
+  cwd?: string
 }
 
 /**
  * Perform a layout scan and return results with attached helper functions.
  */
 export async function create(options?: Options): Promise<Either<Error, Layout>> {
-  const cwd = process.cwd()
+  const cwd = options?.cwd ?? process.cwd()
 
   /**
    * Find the project root directory. This can be different than the source root
