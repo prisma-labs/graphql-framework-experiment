@@ -1,5 +1,3 @@
-process.env.FORCE_COLOR = '0'
-
 import { log } from '@nexus/logger'
 import { defaultsDeep } from 'lodash'
 import stripAnsi from 'strip-ansi'
@@ -202,8 +200,8 @@ describe('tsconfig', () => {
       })
       await ctx.createLayoutThrow()
       expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
-        "▲ nexus:tsconfig You have set \`compilerOptions.tsBuildInfoFile\` in your tsconfig.json but it will be ignored by Nexus. Nexus manages this value internally.
-        ▲ nexus:tsconfig You have set \`compilerOptions.incremental\` in your tsconfig.json but it will be ignored by Nexus. Nexus manages this value internally.
+        "▲ nexus:tsconfig You have set [93m\`compilerOptions.tsBuildInfoFile\`[39m in your tsconfig.json but it will be ignored by Nexus. Nexus manages this value internally.
+        ▲ nexus:tsconfig You have set [93m\`compilerOptions.incremental\`[39m in your tsconfig.json but it will be ignored by Nexus. Nexus manages this value internally.
         "
       `)
     })
@@ -217,8 +215,8 @@ describe('tsconfig', () => {
 
             \\"plugins\\": [{ \\"name\\": \\"nexus/typescript-language-service\\" }]
 
-        ▲ nexus:tsconfig Please set your tsconfig.json \`compilerOptions.rootDir\` to \\".\\"
-        ▲ nexus:tsconfig Please set your tsconfig.json \`include\` to have \\".\\"
+        ▲ nexus:tsconfig Please set your tsconfig.json [93m\`compilerOptions.rootDir\`[39m to \\".\\"
+        ▲ nexus:tsconfig Please set your tsconfig.json [93m\`include\`[39m to have \\".\\"
         "
       `)
       expect(layout.tsConfig.content.raw.compilerOptions.rootDir).toEqual('.')
@@ -233,12 +231,12 @@ describe('tsconfig', () => {
 
       await ctx.createLayoutThrow()
       expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
-              "▲ nexus:tsconfig You have not added the Nexus TypeScript Language Service Plugin to your configured TypeScript plugins. Add this to your tsconfig compiler options:
+        "▲ nexus:tsconfig You have not added the Nexus TypeScript Language Service Plugin to your configured TypeScript plugins. Add this to your tsconfig compiler options:
 
-                  \\"plugins\\": [{\\"name\\":\\"foobar\\"},{\\"name\\":\\"nexus/typescript-language-service\\"}]
+            [93m\\"plugins\\": [{\\"name\\":\\"foobar\\"},{\\"name\\":\\"nexus/typescript-language-service\\"}][39m
 
-              "
-          `)
+        "
+      `)
     })
     it('does not support use of compilerOptions.types', async () => {
       ctx.setup({
@@ -246,7 +244,7 @@ describe('tsconfig', () => {
       })
       await ctx.createLayoutThrow()
       expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
-        "■ nexus:tsconfig You have set \`compilerOptions.types\` in your tsconfig.json but Nexus does not support it. If you do not remove your customization you may/will (e.g. VSCode) see inconsistent results between your IDE and what Nexus tells you at build time. If you would like to see Nexus support this setting please chime in at https://github.com/graphql-nexus/nexus/issues/1036.
+        "■ nexus:tsconfig You have set [93m\`compilerOptions.types\`[39m in your tsconfig.json but Nexus does not support it. If you do not remove your customization you may/will (e.g. VSCode) see inconsistent results between your IDE and what Nexus tells you at build time. If you would like to see Nexus support this setting please chime in at https://github.com/graphql-nexus/nexus/issues/1036.
         "
       `)
     })
@@ -256,7 +254,7 @@ describe('tsconfig', () => {
       })
       await ctx.createLayoutThrow()
       expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
-        "■ nexus:tsconfig You have set \`compilerOptions.typeRoots\` in your tsconfig.json but Nexus does not support it. If you do not remove your customization you may/will (e.g. VSCode) see inconsistent results between your IDE and what Nexus tells you at build time. If you would like to see Nexus support this setting please chime in at https://github.com/graphql-nexus/nexus/issues/1036.
+        "■ nexus:tsconfig You have set [93m\`compilerOptions.typeRoots\`[39m in your tsconfig.json but Nexus does not support it. If you do not remove your customization you may/will (e.g. VSCode) see inconsistent results between your IDE and what Nexus tells you at build time. If you would like to see Nexus support this setting please chime in at https://github.com/graphql-nexus/nexus/issues/1036.
         "
       `)
     })
@@ -266,7 +264,7 @@ describe('tsconfig', () => {
       })
       await ctx.createLayoutThrow()
       expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
-        "■ nexus:tsconfig You have set \`compilerOptions.typeRoots\` and \`compilerOptions.types\` in your tsconfig.json but Nexus does not support them. If you do not remove your customization you may/will (e.g. VSCode) see inconsistent results between your IDE and what Nexus tells you at build time. If you would like to see Nexus support these settings please chime in at https://github.com/graphql-nexus/nexus/issues/1036.
+        "■ nexus:tsconfig You have set [93m\`compilerOptions.typeRoots\`[39m and [93m\`compilerOptions.types\`[39m in your tsconfig.json but Nexus does not support them. If you do not remove your customization you may/will (e.g. VSCode) see inconsistent results between your IDE and what Nexus tells you at build time. If you would like to see Nexus support these settings please chime in at https://github.com/graphql-nexus/nexus/issues/1036.
         "
       `)
     })
@@ -340,7 +338,7 @@ it('fails if no entrypoint and no nexus modules', async () => {
     ■ nexus:layout Please do one of the following:
 
       1. Create a file, import { schema } from 'nexus' and write your GraphQL type definitions in it.
-      2. Create an app.ts file.
+      2. Create an [33mapp.ts[39m file.
 
 
     --- process.exit(1) ---

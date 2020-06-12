@@ -1,5 +1,3 @@
-process.env.FORCE_COLOR = '0'
-
 import { log } from '@nexus/logger'
 import * as Lo from 'lodash'
 import { removeReflectionStage, setReflectionStage } from '../lib/reflection'

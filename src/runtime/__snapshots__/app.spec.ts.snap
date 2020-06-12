@@ -3,7 +3,7 @@
 exports[`assemble warnings when api features used after assembly schema.use 1`] = `
 Array [
   Array [
-    "▲ nexus Cannot call app.schema.use(...) after app.assemble()
+    "▲ nexus Cannot call [33mapp.schema.use[39m(...) after app.assemble()
 
 The Nexus Schema plugin you used will be ignored.
 ",
@@ -14,7 +14,7 @@ The Nexus Schema plugin you used will be ignored.
 exports[`assemble warnings when api features used after assembly settings.change 1`] = `
 Array [
   Array [
-    "▲ nexus Cannot call app.settings.change(...) after app.assemble()
+    "▲ nexus Cannot call [33mapp.settings.change[39m(...) after app.assemble()
 
 Your change of settings will be ignored.
 ",
