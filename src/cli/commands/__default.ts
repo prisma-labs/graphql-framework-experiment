@@ -3,7 +3,7 @@ import * as fs from 'fs-jetpack'
 import { Command } from '../../lib/cli'
 import * as Layout from '../../lib/layout'
 import { rootLogger } from '../../lib/nexus-logger'
-import { CWDProjectNameOrGenerate, generateProjectName } from '../../lib/utils'
+import { casesHandled, CWDProjectNameOrGenerate, generateProjectName } from '../../lib/utils'
 import { run as runCreateApp } from './create/app'
 import { Dev } from './dev'
 
@@ -72,6 +72,16 @@ export class __Default implements Command {
         console.log() // space after codeblock
 
         break
+      case 'malformed_package_json':
+        // todo test this case
+        const e = projectType.error
+        log.fatal(
+          `Failed to establish a project type. A package.json was found at ${e.context.path}. But, there was an error whlie trying to read it.`,
+          { reason: e.context.reason }
+        )
+        break
+      default:
+        casesHandled(projectType)
     }
   }
 }

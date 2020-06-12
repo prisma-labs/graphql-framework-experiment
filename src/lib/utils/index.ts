@@ -326,6 +326,23 @@ export type ContextualError<Context extends Record<string, unknown> = {}> = Erro
   context: Context
 }
 
+export interface Exception<T extends string, C extends SomeRecord> extends Error {
+  type: T
+  context: C
+}
+
+export function exceptionType<Type extends string, Context extends SomeRecord>(
+  type: Type,
+  template: (ctx: Context) => string
+) {
+  return (ctx: Context) => {
+    const e = new Error(template(ctx)) as Exception<Type, Context>
+    e.type = type
+    e.context = ctx
+    return e
+  }
+}
+
 /**
  * Create an error with contextual data about it.
  *
@@ -335,7 +352,7 @@ export type ContextualError<Context extends Record<string, unknown> = {}> = Erro
  * strongly typed with the Either contstruct, making it so the error contextual
  * data flows with inference through your program.
  */
-export function createContextualError<Context extends Record<string, unknown>>(
+export function createContextualError<Context extends SomeRecord>(
   message: string,
   context: Context
 ): ContextualError<Context> {
@@ -417,3 +434,5 @@ export function prettyImportPath(id: string): string {
 
   return id
 }
+
+type SomeRecord = Record<string, unknown>
