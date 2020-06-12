@@ -133,7 +133,6 @@ describe('tsconfig', () => {
             },
           ],
           "rootDir": ".",
-          "skipLibCheck": true,
           "strict": true,
           "target": "es2016",
         },
