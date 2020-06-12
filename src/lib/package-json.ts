@@ -54,6 +54,7 @@ export function parse(contents: string, path: string) {
   )
   if (isLeft(errRawData)) return errRawData
   const rawData = errRawData.right
+  console.log(rawData)
   if (!isPlainObject(rawData))
     return left(new MalformedPackageJsonError('Package.json data is not an object', { path }))
   if (!isString(rawData.name))
