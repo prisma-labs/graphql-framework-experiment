@@ -117,8 +117,11 @@ export async function readOrScaffoldTsconfig(input: {
     )
   }
 
+  /**
+   * Setup source root (aka. rootDir)
+   */
+
   if (!tscfg.compilerOptions!.rootDir) {
-    // setup source root
     tscfg.compilerOptions!.rootDir = '.'
     const setting = renderSetting('compilerOptions.rootDir')
     log.warn(`Please set ${setting} to "${tscfg.compilerOptions!.rootDir}"`)
@@ -143,9 +146,11 @@ export async function readOrScaffoldTsconfig(input: {
    * Setup noEmit. Internally we always want emit to be on.
    */
 
-  tscfg.compilerOptions.noEmit = true
+  tscfg.compilerOptions.noEmit = false
 
-  // setup outDir
+  /**
+   * Setup out root (aka. outDir)
+   */
 
   if (input.overrides?.outRoot !== undefined) {
     tscfg.compilerOptions.outDir = input.overrides.outRoot
@@ -153,7 +158,9 @@ export async function readOrScaffoldTsconfig(input: {
     tscfg.compilerOptions.outDir = DEFAULT_BUILD_DIR_PATH_RELATIVE_TO_PROJECT_ROOT
   }
 
-  // check it
+  /**
+   * Validate the tsconfig
+   */
 
   const tsconfig = ts.parseJsonConfigFileContent(tscfg, ts.sys, projectRoot, undefined, tsconfigPath)
 
