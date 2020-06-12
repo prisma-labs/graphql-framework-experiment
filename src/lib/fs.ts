@@ -223,3 +223,12 @@ export function stripExt(filePath: string): string {
   const { dir, name } = Path.parse(filePath)
   return Path.join(dir, name)
 }
+
+/**
+ * Check if the CWD is empty of any files or folders.
+ * TODO we should make nice exceptions for known meaningless files, like .DS_Store
+ */
+export async function isEmptyDir(dirPath: string): Promise<boolean> {
+  const contents = await FS.listAsync(dirPath)
+  return contents === undefined || contents.length === 0
+}

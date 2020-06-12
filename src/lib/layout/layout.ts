@@ -1,3 +1,4 @@
+import { rightOrThrow } from '@nexus/logger/dist/utils'
 import Chalk from 'chalk'
 import { stripIndent } from 'common-tags'
 import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
@@ -6,9 +7,11 @@ import * as Path from 'path'
 import * as ts from 'ts-morph'
 import { PackageJson } from 'type-fest'
 import type { ParsedCommandLine } from 'typescript'
-import { findFile, findFileRecurisvelyUpwardSync } from '../../lib/fs'
+import { findFile, isEmptyDir } from '../../lib/fs'
 import { START_MODULE_NAME } from '../../runtime/start/start-module'
+import { rewordError } from '../contextual-error'
 import { rootLogger } from '../nexus-logger'
+import * as PJ from '../package-json'
 import * as PackageManager from '../package-manager'
 import { createContextualError } from '../utils'
 import { readOrScaffoldTsconfig } from './tsconfig'
@@ -194,7 +197,10 @@ export async function create(options?: Options): Promise<Either<Error, Layout>> 
 
   // TODO lodash merge defaults or something
 
-  const scanResult = await scan({ cwd, entrypointPath: normalizedEntrypoint })
+  const errScanResult = await scan({ cwd, entrypointPath: normalizedEntrypoint })
+  if (isLeft(errScanResult)) return errScanResult
+  const scanResult = errScanResult.right
+
   const buildInfo = getBuildInfo(options?.buildOutputDir, scanResult, options?.asBundle)
 
   log.trace('layout build info', { data: buildInfo })
@@ -255,16 +261,23 @@ export function createFromData(layoutData: Data): Layout {
  * Analyze the user's project files/folders for how conventions are being used
  * and where key modules exist.
  */
-export async function scan(opts?: { cwd?: string; entrypointPath?: string }): Promise<ScanResult> {
+export async function scan(opts?: {
+  cwd?: string
+  entrypointPath?: string
+}): Promise<Either<Error, ScanResult>> {
   log.trace('starting scan')
   const projectRoot = opts?.cwd ?? process.cwd()
   const packageManagerType = await PackageManager.detectProjectPackageManager({ projectRoot })
-  const maybePackageJson = findPackageJson({ projectRoot })
+  const maybeErrPackageJson = PJ.findRecurisvelyUpwardSync({ cwd: projectRoot })
   const maybeAppModule = opts?.entrypointPath ?? findAppModule({ projectRoot })
   const tsConfig = await readOrScaffoldTsconfig({
     projectRoot,
   })
   const nexusModules = findNexusModules(tsConfig, maybeAppModule)
+
+  if (maybeErrPackageJson && isLeft(maybeErrPackageJson.contents)) {
+    return maybeErrPackageJson.contents
+  }
 
   const result: ScanResult = {
     app:
@@ -277,7 +290,9 @@ export async function scan(opts?: { cwd?: string; entrypointPath?: string }): Pr
     project: readProjectInfo(opts),
     tsConfig,
     packageManagerType,
-    packageJson: maybePackageJson,
+    packageJson: maybeErrPackageJson
+      ? { ...maybeErrPackageJson, content: rightOrThrow(maybeErrPackageJson.contents) }
+      : maybeErrPackageJson,
   }
 
   log.trace('completed scan', { result })
@@ -288,7 +303,7 @@ export async function scan(opts?: { cwd?: string; entrypointPath?: string }): Pr
     process.exit(1)
   }
 
-  return result
+  return right(result)
 }
 
 // todo allow user to configure these for their project
@@ -347,44 +362,44 @@ export async function scanProjectType(opts: {
   cwd: string
 }): Promise<
   | { type: 'unknown' | 'new' }
+  | { type: 'malformed_package_json'; error: PJ.MalformedPackageJsonError }
   | {
       type: 'NEXUS_project' | 'node_project'
       packageJson: {}
       packageJsonLocation: { path: string; dir: string }
     }
 > {
-  const packageJsonLocation = findPackageJsonRecursivelyUpward(opts)
+  const packageJson = PJ.findRecurisvelyUpwardSync(opts)
 
-  if (packageJsonLocation === null) {
-    if (await isEmptyCWD()) {
+  if (packageJson === null) {
+    if (await isEmptyDir(opts.cwd)) {
       return { type: 'new' }
     }
     return { type: 'unknown' }
   }
 
-  const packageJson = FS.read(packageJsonLocation.path, 'json')
-  if (packageJson?.dependencies?.['nexus']) {
+  if (isLeft(packageJson.contents)) {
+    const e = packageJson.contents.left
+    return {
+      type: 'malformed_package_json',
+      error: rewordError(`A package.json was found at ${e.context.path} but it was malformed`, e),
+    }
+  }
+
+  const pjc = rightOrThrow(packageJson.contents) // will never throw, check above
+  if (pjc.dependencies?.['nexus']) {
     return {
       type: 'NEXUS_project',
-      packageJson: packageJsonLocation,
-      packageJsonLocation: packageJsonLocation,
+      packageJson: packageJson,
+      packageJsonLocation: packageJson,
     }
   }
 
   return {
     type: 'node_project',
-    packageJson: packageJsonLocation,
-    packageJsonLocation: packageJsonLocation,
+    packageJson: packageJson,
+    packageJsonLocation: packageJson,
   }
-}
-
-/**
- * Check if the CWD is empty of any files or folders.
- * TODO we should make nice exceptions for known meaningless files, like .DS_Store
- */
-async function isEmptyCWD(): Promise<boolean> {
-  const contents = await FS.listAsync()
-  return contents === undefined || contents.length === 0
 }
 
 const ENV_VAR_DATA_NAME = 'NEXUS_LAYOUT'
@@ -430,33 +445,6 @@ function readProjectInfo(opts?: { cwd?: string }): ScanResult['project'] {
   return {
     name: 'anonymous',
     isAnonymous: true,
-  }
-}
-
-/**
- * Find the package.json file path. Looks recursively upward to disk root.
- * Starts looking in CWD If no package.json found along search, returns null.
- */
-function findPackageJsonRecursivelyUpward(opts: { cwd: string }) {
-  return findFileRecurisvelyUpwardSync('package.json', opts)
-}
-
-/**
- *
- */
-function findPackageJson(opts: { projectRoot: string }): ScanResult['packageJson'] {
-  const packageJsonPath = FS.path(opts.projectRoot, 'package.json')
-
-  try {
-    const content = FS.read(packageJsonPath, 'json')
-
-    return {
-      content,
-      path: packageJsonPath,
-      dir: Path.dirname(packageJsonPath),
-    }
-  } catch {
-    return null
   }
 }
 

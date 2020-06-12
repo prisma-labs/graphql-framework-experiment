@@ -3,7 +3,7 @@ import * as fs from 'fs-jetpack'
 import { Command } from '../../lib/cli'
 import * as Layout from '../../lib/layout'
 import { rootLogger } from '../../lib/nexus-logger'
-import { CWDProjectNameOrGenerate, generateProjectName } from '../../lib/utils'
+import { casesHandled, CWDProjectNameOrGenerate, generateProjectName } from '../../lib/utils'
 import { run as runCreateApp } from './create/app'
 import { Dev } from './dev'
 
@@ -72,6 +72,12 @@ export class __Default implements Command {
         console.log() // space after codeblock
 
         break
+      case 'malformed_package_json':
+        // todo test this case
+        log.fatal(projectType.error.message)
+        break
+      default:
+        casesHandled(projectType)
     }
   }
 }
