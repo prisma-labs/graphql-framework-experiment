@@ -45,10 +45,7 @@ process.stdout.columns = 300
  * Helpers
  */
 
-/**
- * Create tsconfig content. Defaults to minimum valid tsconfig needed by Nexus. Passed config will override and merge using lodash deep defaults.
- */
-function tsconfigSource(input?: TsConfigJson): string {
+function tsconfig(input?: TsConfigJson): TsConfigJson {
   const defaultTsConfigContent: TsConfigJson = {
     compilerOptions: {
       noEmit: true,
@@ -57,7 +54,13 @@ function tsconfigSource(input?: TsConfigJson): string {
     },
     include: ['.'],
   }
-  return JSON.stringify(defaultsDeep(input, defaultTsConfigContent))
+  return defaultsDeep(input, defaultTsConfigContent)
+}
+/**
+ * Create tsconfig content. Defaults to minimum valid tsconfig needed by Nexus. Passed config will override and merge using lodash deep defaults.
+ */
+function tsconfigSource(input?: TsConfigJson): string {
+  return JSON.stringify(tsconfig(input))
 }
 
 const ctx = TC.create(
@@ -191,6 +194,29 @@ describe('tsconfig', () => {
   })
 
   describe('linting', () => {
+    it('enforces noEmit is true (explicit false)', async () => {
+      ctx.setup({
+        'tsconfig.json': tsconfigSource({ compilerOptions: { noEmit: false } }),
+      })
+      await ctx.createLayoutThrow()
+      expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
+        "▲ nexus:tsconfig Please set [93m\`compilerOptions.noEmit\`[39m to true. This will ensure you do not accidentally emit using [93m\`$ tsc\`[39m. Use [93m\`$ nexus build\`[39m to build your app and emit JavaScript.
+        "
+      `)
+    })
+    it('enforces noEmit is true (undefined)', async () => {
+      const tscfg = tsconfig()
+      delete tscfg.compilerOptions?.noEmit
+
+      ctx.setup({
+        'tsconfig.json': JSON.stringify(tscfg),
+      })
+      await ctx.createLayoutThrow()
+      expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
+        "▲ nexus:tsconfig Please set [93m\`compilerOptions.noEmit\`[39m to true. This will ensure you do not accidentally emit using [93m\`$ tsc\`[39m. Use [93m\`$ nexus build\`[39m to build your app and emit JavaScript.
+        "
+      `)
+    })
     it('warns if reserved settings are in use', async () => {
       ctx.setup({
         'tsconfig.json': tsconfigSource({
@@ -208,18 +234,17 @@ describe('tsconfig', () => {
       `)
     })
     it('warns if rootDir or include not set and sets them in memory', async () => {
+      const tscfg = tsconfig()
+      delete tscfg.compilerOptions?.rootDir
+      delete tscfg.include
+
       ctx.setup({
-        'tsconfig.json': '',
+        'tsconfig.json': JSON.stringify(tscfg),
       })
       const layout = await ctx.createLayoutThrow()
       expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
-        "▲ nexus:tsconfig You have not setup the Nexus TypeScript Language Service Plugin. Add this to your compiler options:
-
-            \\"plugins\\": [{ \\"name\\": \\"nexus/typescript-language-service\\" }]
-
-        ▲ nexus:tsconfig Please set [93m\`compilerOptions.rootDir\`[39m to \\".\\"
+        "▲ nexus:tsconfig Please set [93m\`compilerOptions.rootDir\`[39m to \\".\\"
         ▲ nexus:tsconfig Please set [93m\`include\`[39m to have \\".\\"
-        ▲ nexus:tsconfig Please set [93m\`compilerOptions.noEmit\`[39m to true. This will ensure you do not accidentally emit using [93m\`$ tsc\`[39m. Use [93m\`$ nexus build\`[39m to build your app and emit JavaScript.
         "
       `)
       expect(layout.tsConfig.content.raw.compilerOptions.rootDir).toEqual('.')
