@@ -9,7 +9,6 @@ import { PackageJson } from 'type-fest'
 import type { ParsedCommandLine } from 'typescript'
 import { findFile, isEmptyDir } from '../../lib/fs'
 import { START_MODULE_NAME } from '../../runtime/start/start-module'
-import { rewordError } from '../contextual-error'
 import { rootLogger } from '../nexus-logger'
 import * as PJ from '../package-json'
 import * as PackageManager from '../package-manager'
@@ -379,10 +378,9 @@ export async function scanProjectType(opts: {
   }
 
   if (isLeft(packageJson.contents)) {
-    const e = packageJson.contents.left
     return {
       type: 'malformed_package_json',
-      error: rewordError(`A package.json was found at ${e.context.path} but it was malformed`, e),
+      error: packageJson.contents.left,
     }
   }
 

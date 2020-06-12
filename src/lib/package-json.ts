@@ -4,9 +4,14 @@ import { isEmpty, isPlainObject, isString } from 'lodash'
 import parseJson from 'parse-json'
 import * as Path from 'path'
 import { PackageJson } from 'type-fest'
-import { ContextualError } from './contextual-error'
+import { execeptionType } from './utils'
 
-export class MalformedPackageJsonError extends ContextualError<{ path: string }> {}
+const malformedPackageJson = execeptionType<'MalformedPackageJson', { path: string; reason: string }>(
+  'MalformedPackageJson',
+  (c) => `package.json at ${c.path} was malformed\n\n${c.reason}`
+)
+
+export type MalformedPackageJsonError = ReturnType<typeof malformedPackageJson>
 
 export type Result = {
   path: string
@@ -49,21 +54,21 @@ export function findRecurisvelyUpwardSync(opts: { cwd: string }): Result {
  */
 export function parse(contents: string, path: string) {
   const errRawData = tryCatch(
-    () => parseJson(contents),
-    (e) => new MalformedPackageJsonError(toError(e).message, { path })
+    () => parseJson(contents, path),
+    (e) => malformedPackageJson({ path, reason: toError(e).message })
   )
   if (isLeft(errRawData)) return errRawData
   const rawData = errRawData.right
   console.log(rawData)
   if (!isPlainObject(rawData))
-    return left(new MalformedPackageJsonError('Package.json data is not an object', { path }))
+    return left(malformedPackageJson({ path, reason: 'Package.json data is not an object' }))
   if (!isString(rawData.name))
-    return left(new MalformedPackageJsonError('Package.json name field is not a string', { path }))
+    return left(malformedPackageJson({ path, reason: 'Package.json name field is not a string' }))
   if (isEmpty(rawData.name))
-    return left(new MalformedPackageJsonError('Package.json name field is empty', { path }))
+    return left(malformedPackageJson({ path, reason: 'Package.json name field is empty' }))
   if (!isString(rawData.version))
-    return left(new MalformedPackageJsonError('Package.json version field is not a string', { path }))
+    return left(malformedPackageJson({ path, reason: 'Package.json version field is not a string' }))
   if (isEmpty(rawData.version))
-    return left(new MalformedPackageJsonError('Package.json version field is empty', { path }))
+    return left(malformedPackageJson({ path, reason: 'Package.json version field is empty' }))
   return right(rawData as PackageJson & { name: string; version: string })
 }
