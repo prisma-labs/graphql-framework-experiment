@@ -49,8 +49,9 @@ process.stdout.columns = 300
  * Create tsconfig content. Defaults to minimum valid tsconfig needed by Nexus. Passed config will override and merge using lodash deep defaults.
  */
 function tsconfigSource(input?: TsConfigJson): string {
-  const defaultTsConfigContent = {
+  const defaultTsConfigContent: TsConfigJson = {
     compilerOptions: {
+      noEmit: true,
       rootDir: '.',
       plugins: [{ name: NEXUS_TS_LSP_IMPORT_ID }],
     },
@@ -172,6 +173,7 @@ describe('tsconfig', () => {
             "esnext",
           ],
           "module": "commonjs",
+          "noEmit": true,
           "plugins": Array [
             Object {
               "name": "nexus/typescript-language-service",
@@ -200,8 +202,8 @@ describe('tsconfig', () => {
       })
       await ctx.createLayoutThrow()
       expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
-        "▲ nexus:tsconfig You have set [93m\`compilerOptions.tsBuildInfoFile\`[39m in your tsconfig.json but it will be ignored by Nexus. Nexus manages this value internally.
-        ▲ nexus:tsconfig You have set [93m\`compilerOptions.incremental\`[39m in your tsconfig.json but it will be ignored by Nexus. Nexus manages this value internally.
+        "▲ nexus:tsconfig You have set [93m\`compilerOptions.tsBuildInfoFile\`[39m but it will be ignored by Nexus. Nexus manages this value internally.
+        ▲ nexus:tsconfig You have set [93m\`compilerOptions.incremental\`[39m but it will be ignored by Nexus. Nexus manages this value internally.
         "
       `)
     })
@@ -211,12 +213,13 @@ describe('tsconfig', () => {
       })
       const layout = await ctx.createLayoutThrow()
       expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
-        "▲ nexus:tsconfig You have not setup the Nexus TypeScript Language Service Plugin. Add this to your tsconfig compiler options:
+        "▲ nexus:tsconfig You have not setup the Nexus TypeScript Language Service Plugin. Add this to your compiler options:
 
             \\"plugins\\": [{ \\"name\\": \\"nexus/typescript-language-service\\" }]
 
-        ▲ nexus:tsconfig Please set your tsconfig.json [93m\`compilerOptions.rootDir\`[39m to \\".\\"
-        ▲ nexus:tsconfig Please set your tsconfig.json [93m\`include\`[39m to have \\".\\"
+        ▲ nexus:tsconfig Please set [93m\`compilerOptions.rootDir\`[39m to \\".\\"
+        ▲ nexus:tsconfig Please set [93m\`include\`[39m to have \\".\\"
+        ▲ nexus:tsconfig Please set [93m\`compilerOptions.noEmit\`[39m to true. This will ensure you do not accidentally emit using [93m\`$ tsc\`[39m. Use [93m\`$ nexus build\`[39m to build your app and emit JavaScript.
         "
       `)
       expect(layout.tsConfig.content.raw.compilerOptions.rootDir).toEqual('.')
@@ -231,7 +234,7 @@ describe('tsconfig', () => {
 
       await ctx.createLayoutThrow()
       expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
-        "▲ nexus:tsconfig You have not added the Nexus TypeScript Language Service Plugin to your configured TypeScript plugins. Add this to your tsconfig compiler options:
+        "▲ nexus:tsconfig You have not added the Nexus TypeScript Language Service Plugin to your configured TypeScript plugins. Add this to your compilerOptions:
 
             [93m\\"plugins\\": [{\\"name\\":\\"foobar\\"},{\\"name\\":\\"nexus/typescript-language-service\\"}][39m
 
@@ -244,7 +247,7 @@ describe('tsconfig', () => {
       })
       await ctx.createLayoutThrow()
       expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
-        "■ nexus:tsconfig You have set [93m\`compilerOptions.types\`[39m in your tsconfig.json but Nexus does not support it. If you do not remove your customization you may/will (e.g. VSCode) see inconsistent results between your IDE and what Nexus tells you at build time. If you would like to see Nexus support this setting please chime in at https://github.com/graphql-nexus/nexus/issues/1036.
+        "■ nexus:tsconfig You have set [93m\`compilerOptions.types\`[39m but Nexus does not support it. If you do not remove your customization you may/will (e.g. VSCode) see inconsistent results between your IDE and what Nexus tells you at build time. If you would like to see Nexus support this setting please chime in at https://github.com/graphql-nexus/nexus/issues/1036.
         "
       `)
     })
@@ -254,7 +257,7 @@ describe('tsconfig', () => {
       })
       await ctx.createLayoutThrow()
       expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
-        "■ nexus:tsconfig You have set [93m\`compilerOptions.typeRoots\`[39m in your tsconfig.json but Nexus does not support it. If you do not remove your customization you may/will (e.g. VSCode) see inconsistent results between your IDE and what Nexus tells you at build time. If you would like to see Nexus support this setting please chime in at https://github.com/graphql-nexus/nexus/issues/1036.
+        "■ nexus:tsconfig You have set [93m\`compilerOptions.typeRoots\`[39m but Nexus does not support it. If you do not remove your customization you may/will (e.g. VSCode) see inconsistent results between your IDE and what Nexus tells you at build time. If you would like to see Nexus support this setting please chime in at https://github.com/graphql-nexus/nexus/issues/1036.
         "
       `)
     })
@@ -264,7 +267,7 @@ describe('tsconfig', () => {
       })
       await ctx.createLayoutThrow()
       expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
-        "■ nexus:tsconfig You have set [93m\`compilerOptions.typeRoots\`[39m and [93m\`compilerOptions.types\`[39m in your tsconfig.json but Nexus does not support them. If you do not remove your customization you may/will (e.g. VSCode) see inconsistent results between your IDE and what Nexus tells you at build time. If you would like to see Nexus support these settings please chime in at https://github.com/graphql-nexus/nexus/issues/1036.
+        "■ nexus:tsconfig You have set [93m\`compilerOptions.typeRoots\`[39m and [93m\`compilerOptions.types\`[39m but Nexus does not support them. If you do not remove your customization you may/will (e.g. VSCode) see inconsistent results between your IDE and what Nexus tells you at build time. If you would like to see Nexus support these settings please chime in at https://github.com/graphql-nexus/nexus/issues/1036.
         "
       `)
     })
@@ -287,12 +290,13 @@ describe('tsconfig', () => {
 
       --- process.exit(1) ---
 
-      ▲ nexus:tsconfig You have not setup the Nexus TypeScript Language Service Plugin. Add this to your tsconfig compiler options:
+      ▲ nexus:tsconfig You have not setup the Nexus TypeScript Language Service Plugin. Add this to your compiler options:
 
           \\"plugins\\": [{ \\"name\\": \\"nexus/typescript-language-service\\" }]
 
-      ▲ nexus:tsconfig Please set your tsconfig.json \`compilerOptions.rootDir\` to \\".\\"
-      ▲ nexus:tsconfig Please set your tsconfig.json \`include\` to have \\".\\"
+      ▲ nexus:tsconfig Please set \`compilerOptions.rootDir\` to \\".\\"
+      ▲ nexus:tsconfig Please set \`include\` to have \\".\\"
+      ▲ nexus:tsconfig Please set \`compilerOptions.noEmit\` to true. This will ensure you do not accidentally emit using \`$ tsc\`. Use \`$ nexus build\` to build your app and emit JavaScript.
       "
     `)
   })
@@ -303,12 +307,13 @@ describe('tsconfig', () => {
     })
     await ctx.createLayoutThrow()
     expect(stripAnsi(mockedStdoutBuffer)).toMatchInlineSnapshot(`
-      "▲ nexus:tsconfig You have not setup the Nexus TypeScript Language Service Plugin. Add this to your tsconfig compiler options:
+      "▲ nexus:tsconfig You have not setup the Nexus TypeScript Language Service Plugin. Add this to your compiler options:
 
           \\"plugins\\": [{ \\"name\\": \\"nexus/typescript-language-service\\" }]
 
-      ▲ nexus:tsconfig Please set your tsconfig.json \`compilerOptions.rootDir\` to \\".\\"
-      ▲ nexus:tsconfig Please set your tsconfig.json \`include\` to have \\".\\"
+      ▲ nexus:tsconfig Please set \`compilerOptions.rootDir\` to \\".\\"
+      ▲ nexus:tsconfig Please set \`include\` to have \\".\\"
+      ▲ nexus:tsconfig Please set \`compilerOptions.noEmit\` to true. This will ensure you do not accidentally emit using \`$ tsc\`. Use \`$ nexus build\` to build your app and emit JavaScript.
       ✕ nexus:tsconfig Your tsconfig.json is invalid
 
       error TS5024: Compiler option 'exclude' requires a value of type Array.

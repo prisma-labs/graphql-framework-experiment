@@ -71,7 +71,7 @@ export async function readOrScaffoldTsconfig(input: {
       const pluginsFixed = tscfg.compilerOptions.plugins.concat([{ name: NEXUS_TS_LSP_IMPORT_ID }])
       log.warn(
         stripIndent`
-          You have not added the Nexus TypeScript Language Service Plugin to your configured TypeScript plugins. Add this to your tsconfig compiler options:
+          You have not added the Nexus TypeScript Language Service Plugin to your configured TypeScript plugins. Add this to your compilerOptions:
 
               ${chalk.yellowBright(`"plugins": ${JSON.stringify(pluginsFixed)}`)}
         ` + EOL
@@ -80,7 +80,7 @@ export async function readOrScaffoldTsconfig(input: {
   } else {
     log.warn(
       stripIndent`
-        You have not setup the Nexus TypeScript Language Service Plugin. Add this to your tsconfig compiler options:
+        You have not setup the Nexus TypeScript Language Service Plugin. Add this to your compiler options:
 
             "plugins": [{ "name": "${NEXUS_TS_LSP_IMPORT_ID}" }]
       ` + EOL
@@ -90,17 +90,13 @@ export async function readOrScaffoldTsconfig(input: {
   if (tscfg.compilerOptions.tsBuildInfoFile) {
     delete tscfg.compilerOptions.tsBuildInfoFile
     const setting = renderSetting(`compilerOptions.tsBuildInfoFile`)
-    log.warn(
-      `You have set ${setting} in your tsconfig.json but it will be ignored by Nexus. Nexus manages this value internally.`
-    )
+    log.warn(`You have set ${setting} but it will be ignored by Nexus. Nexus manages this value internally.`)
   }
 
   if (tscfg.compilerOptions.incremental) {
     delete tscfg.compilerOptions.incremental
     const setting = renderSetting('compilerOptions.incremental')
-    log.warn(
-      `You have set ${setting} in your tsconfig.json but it will be ignored by Nexus. Nexus manages this value internally.`
-    )
+    log.warn(`You have set ${setting} but it will be ignored by Nexus. Nexus manages this value internally.`)
   }
 
   const { typeRoots, types } = tscfg.compilerOptions
@@ -117,7 +113,7 @@ export async function readOrScaffoldTsconfig(input: {
     const thisThese = typeRoots && types ? 'these' : 'this'
     const s = typeRoots && types ? 's' : ''
     log.error(
-      `You have set ${settingsSet} in your tsconfig.json but Nexus does not support ${itThem}. If you do not remove your customization you may/will (e.g. VSCode) see inconsistent results between your IDE and what Nexus tells you at build time. If you would like to see Nexus support ${thisThese} setting${s} please chime in at https://github.com/graphql-nexus/nexus/issues/1036.`
+      `You have set ${settingsSet} but Nexus does not support ${itThem}. If you do not remove your customization you may/will (e.g. VSCode) see inconsistent results between your IDE and what Nexus tells you at build time. If you would like to see Nexus support ${thisThese} setting${s} please chime in at https://github.com/graphql-nexus/nexus/issues/1036.`
     )
   }
 
@@ -125,19 +121,21 @@ export async function readOrScaffoldTsconfig(input: {
     // setup source root
     tscfg.compilerOptions!.rootDir = '.'
     const setting = renderSetting('compilerOptions.rootDir')
-    log.warn(`Please set your tsconfig.json ${setting} to "${tscfg.compilerOptions!.rootDir}"`)
+    log.warn(`Please set ${setting} to "${tscfg.compilerOptions!.rootDir}"`)
   }
 
   if (!tscfg.include.includes(tscfg.compilerOptions!.rootDir!)) {
     tscfg.include.push(tscfg.compilerOptions!.rootDir!)
     const setting = renderSetting('include')
-    log.warn(`Please set your tsconfig.json ${setting} to have "${tscfg.compilerOptions!.rootDir}"`)
+    log.warn(`Please set ${setting} to have "${tscfg.compilerOptions!.rootDir}"`)
   }
 
-  if (tscfg.compilerOptions.noEmit === true) {
+  if (tscfg.compilerOptions.noEmit !== true) {
     const setting = renderSetting('compilerOptions.noEmit')
     log.warn(
-      `You have set ${setting} in your tsconfig.json. This will prevent \`$ nexus build\` from emitting code.`
+      `Please set ${setting} to true. This will ensure you do not accidentally emit using ${chalk.yellowBright(
+        `\`$ tsc\``
+      )}. Use ${chalk.yellowBright(`\`$ nexus build\``)} to build your app and emit JavaScript.`
     )
   }
 
@@ -181,6 +179,7 @@ export function tsconfigTemplate(input: { sourceRootRelative: string; outRootRel
       lib: ['esnext'],
       strict: true,
       rootDir: sourceRelative,
+      noEmit: true,
       plugins: [{ name: 'nexus/typescript-language-service' }],
     },
     include: [sourceRelative],
