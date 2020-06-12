@@ -5,7 +5,7 @@ import * as Path from 'path'
 import { TsConfigJson } from 'type-fest'
 import * as ts from 'typescript'
 import { rootLogger } from '../nexus-logger'
-import { DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT } from './layout'
+import { DEFAULT_BUILD_DIR_PATH_RELATIVE_TO_PROJECT_ROOT } from './build'
 
 export const NEXUS_TS_LSP_IMPORT_ID = 'nexus/typescript-language-service'
 
@@ -27,7 +27,7 @@ export async function readOrScaffoldTsconfig(input: {
     tsconfigPath = Path.join(input.projectRoot, 'tsconfig.json')
     const tsconfigContent = tsconfigTemplate({
       sourceRootRelative: '.',
-      outRootRelative: DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT,
+      outRootRelative: DEFAULT_BUILD_DIR_PATH_RELATIVE_TO_PROJECT_ROOT,
     })
     log.warn('We could not find a "tsconfig.json" file')
     log.warn(`We scaffolded one for you at ${tsconfigPath}`)
@@ -123,7 +123,7 @@ export async function readOrScaffoldTsconfig(input: {
   if (input.overrides?.outRoot !== undefined) {
     tscfg.compilerOptions.outDir = input.overrides.outRoot
   } else if (!tscfg.compilerOptions.outDir) {
-    tscfg.compilerOptions.outDir = DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT
+    tscfg.compilerOptions.outDir = DEFAULT_BUILD_DIR_PATH_RELATIVE_TO_PROJECT_ROOT
   }
 
   // check it

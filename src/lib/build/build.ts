@@ -45,7 +45,7 @@ export async function buildNexusApp(settings: BuildSettings) {
       buildOutputDir: buildOutput,
       asBundle: settings.asBundle,
       entrypointPath: settings.entrypoint,
-      cwd: settings.cwd,
+      projectRoot: settings.cwd,
     })
   )
 

@@ -555,7 +555,7 @@ async function scaffoldBaseFiles(options: InternalConfig) {
       'tsconfig.json',
       tsconfigTemplate({
         sourceRootRelative,
-        outRootRelative: Layout.DEFAULT_BUILD_FOLDER_PATH_RELATIVE_TO_PROJECT_ROOT,
+        outRootRelative: Layout.DEFAULT_BUILD_DIR_PATH_RELATIVE_TO_PROJECT_ROOT,
       })
     ),
 

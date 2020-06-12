@@ -2,19 +2,12 @@
 title: Project Layout
 ---
 
-## Project Layout
-
 ## Working With tsconfig.json
 
 - Nexus honours settings within `tsconfig.json`.
 - This ensures that Nexus and your IDE perform identical static analysis.
-- If no `tsconfig.json` is present then Nexus will scaffold one for you.
+- If no `tsconfig.json` is present in the project root then Nexus will scaffold one for you. This will make ([VSCode treat it as the project root too](https://vscode.readthedocs.io/en/latest/languages/typescript/#typescript-files-and-projects)).
 - Nexus interacts with `tsconfig.json` in the following ways.
-
-### Project Root
-
-- Project Root is the CWD (current working directory) for all CLI invocations.
-- Nexus ([like VSCode](https://vscode.readthedocs.io/en/latest/languages/typescript/#typescript-files-and-projects)) considers the folder containing a `tsconfig.json` to be the project root.
 
 ### Source Root
 
@@ -49,6 +42,16 @@ Autocomplete with Nexus TS LSP:
 ## Conventions
 
 Nexus imposes a few requirements about how you structure your codebase.
+
+### Project Root
+
+The project root is the directory from which all all Nexus CLI commands base their CWD upon. It is also the directory that configuration paths in Nexus (e.g. `--entrypoint` flag) are often relative to as well (in other cases it can be source root).
+
+To find the project root Nexus starts with the current working directory (CWD). This usually means the current directory you're in when invoking the Nexus CLI. From this location Nexus will do the following:
+
+1. If a directory in the current hierarchy, including CWD, contains a [valid](https://docs.npmjs.com/creating-a-package-json-file#required-name-and-version-fields) `package.json` then it will be considered the project root. In case multiple such files are present in the hierarchy, only the first one is considered (in other words the one closest to CWD).
+
+2. If no `package.json` files exist then the CWD itself is taken to be the project root.
 
 ### Nexus module(s)
 

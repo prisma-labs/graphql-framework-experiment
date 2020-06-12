@@ -3,8 +3,10 @@ import * as FS from 'fs-jetpack'
 import { isEmpty, isPlainObject, isString } from 'lodash'
 import parseJson from 'parse-json'
 import * as Path from 'path'
-import { PackageJson } from 'type-fest'
+import * as TypeFest from 'type-fest'
 import { exceptionType } from './utils'
+
+export type ValidPackageJson = TypeFest.PackageJson & { name: string; version: string }
 
 const malformedPackageJson = exceptionType<'MalformedPackageJson', { path: string; reason: string }>(
   'MalformedPackageJson',
@@ -16,7 +18,7 @@ export type MalformedPackageJsonError = ReturnType<typeof malformedPackageJson>
 export type Result = {
   path: string
   dir: string
-  contents: Either<MalformedPackageJsonError, PackageJson>
+  content: Either<MalformedPackageJsonError, ValidPackageJson>
 } | null
 
 /**
@@ -34,8 +36,8 @@ export function findRecurisvelyUpwardSync(opts: { cwd: string }): Result {
     const rawContents = localFS.read(filePath)
 
     if (rawContents) {
-      const contents = parse(rawContents, filePath)
-      found = { dir: currentDir, path: filePath, contents }
+      const content = parse(rawContents, filePath)
+      found = { dir: currentDir, path: filePath, content }
       break
     }
 
@@ -70,5 +72,5 @@ export function parse(contents: string, path: string) {
     return left(malformedPackageJson({ path, reason: 'Package.json version field is not a string' }))
   if (isEmpty(rawData.version))
     return left(malformedPackageJson({ path, reason: 'Package.json version field is empty' }))
-  return right(rawData as PackageJson & { name: string; version: string })
+  return right(rawData as ValidPackageJson)
 }
