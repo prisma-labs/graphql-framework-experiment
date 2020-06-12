@@ -483,3 +483,19 @@ describe('source root', () => {
     expect(result.sourceRoot).toMatchInlineSnapshot(`"__DYNAMIC__/api"`)
   })
 })
+
+describe('scanProjectType', () => {
+  it('if malformed package.json in cwd then error', async () => {
+    ctx.fs.write('package.json', 'bad')
+    const res = await Layout.scanProjectType({ cwd: ctx.fs.cwd() })
+    expect(res.type).toMatchInlineSnapshot(`"malformed_package_json"`)
+  })
+  it('if malformed package.json in hierarchy then error', async () => {
+    const projectRootPath = ctx.fs.path('project_root')
+    ctx.fs.dir(projectRootPath)
+    ctx.fs = ctx.fs.cwd(projectRootPath)
+    ctx.fs.write('package.json', 'bad')
+    const res = await Layout.scanProjectType({ cwd: ctx.fs.cwd() })
+    expect(res.type).toMatchInlineSnapshot(`"malformed_package_json"`)
+  })
+})
