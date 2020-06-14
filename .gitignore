@@ -67,3 +67,5 @@ dist*
 
 # website
 website/.cache
+
+.vercel
