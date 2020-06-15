@@ -1,6 +1,6 @@
 import * as NexusLogger from '@nexus/logger'
 import * as NexusSchema from '@nexus/schema'
-import { GraphQLFieldResolver, GraphQLResolveInfo } from 'graphql'
+import { GraphQLFieldResolver, GraphQLResolveInfo, GraphQLScalarType } from 'graphql'
 import * as HTTP from 'http'
 import { createNexusSchemaStateful, NexusSchemaStatefulBuilders } from '../../lib/nexus-schema-stateful'
 import { RuntimeContributions } from '../../lib/plugin'
@@ -10,16 +10,19 @@ import { assertAppNotAssembled } from '../utils'
 import { log } from './logger'
 import { createSchemaSettingsManager, SchemaSettingsManager } from './settings'
 import { mapSettingsAndPluginsToNexusSchemaConfig } from './settings-mapper'
+import * as Scalars from '../../lib/scalars'
 
 export type LazyState = {
   contextContributors: ContextContributor[]
   plugins: NexusSchema.core.NexusPlugin[]
+  scalars: Scalars.Scalars
 }
 
 function createLazyState(): LazyState {
   return {
     contextContributors: [],
     plugins: [],
+    scalars: {}
   }
 }
 
@@ -72,6 +75,7 @@ export interface SchemaInternal {
     assemble(
       plugins: RuntimeContributions[]
     ): { schema: NexusSchema.core.NexusGraphQLSchema; missingTypes: Index<NexusSchema.core.MissingType> }
+    beforeAssembly(): void
     reset(): void
   }
   public: Schema
@@ -110,11 +114,19 @@ export function create(appState: AppState): SchemaInternal {
       settings: settings,
       reset() {
         statefulNexusSchema.state.types = []
+        statefulNexusSchema.state.scalars = {}
         appState.schemaComponent.contextContributors = []
         appState.schemaComponent.plugins = []
       },
-      assemble: (plugins) => {
+      beforeAssembly() {
+        appState.schemaComponent.scalars = {
+          ...Scalars.builtinScalars,
+          ...statefulNexusSchema.state.scalars
+        }
+      },
+      assemble(plugins) {
         const nexusSchemaConfig = mapSettingsAndPluginsToNexusSchemaConfig(plugins, settings.data)
+        nexusSchemaConfig.types.push(Scalars.mapBuiltinScalarsToNexusSchemaTypes())
         nexusSchemaConfig.types.push(...statefulNexusSchema.state.types)
         nexusSchemaConfig.plugins!.push(...appState.schemaComponent.plugins)
         const { schema, missingTypes } = NexusSchema.core.makeSchemaInternal(nexusSchemaConfig)

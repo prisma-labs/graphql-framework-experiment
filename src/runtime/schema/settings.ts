@@ -60,7 +60,7 @@ export type SettingsInput = {
   /**
    * Disable or configure the authorization plugin
    */
-  authorization?: false | NexusSchema.core.FieldAuthorizePluginConfig,
+  authorization?: false | NexusSchema.core.FieldAuthorizePluginConfig
   /**
    * Should a [GraphQL SDL file](https://www.prisma.io/blog/graphql-sdl-schema-definition-language-6755bcb9ce51) be generated when the app is built and to where?
    *
@@ -171,7 +171,7 @@ function defaultSettings(): SettingsData {
         ...connectionPluginConfigManagedByNexus,
       },
     },
-    authorization: {}
+    authorization: {},
   }
 
   return data

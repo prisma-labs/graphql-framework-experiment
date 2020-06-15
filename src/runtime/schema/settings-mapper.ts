@@ -5,6 +5,7 @@ import * as NexusSchema from '@nexus/schema'
 import * as Plugin from '../../lib/plugin'
 import { log as schemaLogger } from './logger'
 import { SettingsData } from './settings'
+import { GraphQLScalarType } from 'graphql'
 
 type NexusSchemaConfig = NexusSchema.core.SchemaConfig
 

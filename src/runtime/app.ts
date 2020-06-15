@@ -148,6 +148,8 @@ export function create(): App {
     assemble() {
       if (appState.assembled) return
 
+      schemaComponent.private.beforeAssembly()
+
       /**
        * Plugin reflection is run in the same process (eval). This means if the
        * process is the app, which it is during testing for example, then we
@@ -159,7 +161,10 @@ export function create(): App {
 
       appState.assembled = {} as AppState['assembled']
 
-      const loadedPlugins = Plugin.importAndLoadRuntimePlugins(appState.plugins)
+      const loadedPlugins = Plugin.importAndLoadRuntimePlugins(
+        appState.plugins,
+        appState.schemaComponent.scalars
+      )
       appState.assembled!.loadedPlugins = loadedPlugins
 
       const { schema, missingTypes } = schemaComponent.private.assemble(loadedPlugins)

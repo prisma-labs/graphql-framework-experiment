@@ -1,5 +1,6 @@
 import * as Lo from 'lodash'
 import prompts from 'prompts'
+import * as Scalars from '../scalars'
 import * as Layout from '../layout'
 import { rootLogger } from '../nexus-logger'
 import * as Process from '../process'
@@ -17,10 +18,11 @@ export function createBaseLens(pluginName: string): Lens {
   }
 }
 
-export function createRuntimeLens(pluginName: string): RuntimeLens {
+export function createRuntimeLens(pluginName: string, scalars: Scalars.Scalars): RuntimeLens {
   return {
     ...createBaseLens(pluginName),
     shouldGenerateArtifacts: isReflectionStage('typegen'),
+    scalars,
   }
 }
 
