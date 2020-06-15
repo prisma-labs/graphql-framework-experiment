@@ -1,3 +1,5 @@
+import * as HTTP from 'http'
+import * as Net from 'net'
 import * as Path from 'path'
 import Git from 'simple-git/promise'
 import { JsonObject, PackageJson, Primitive } from 'type-fest'
@@ -436,3 +438,23 @@ export function prettyImportPath(id: string): string {
 }
 
 type SomeRecord = Record<string, unknown>
+
+export function httpListen(server: HTTP.Server, options: Net.ListenOptions): Promise<void> {
+  return new Promise((res, rej) => {
+    server.listen(options, () => {
+      res()
+    })
+  })
+}
+
+export function httpClose(server: HTTP.Server): Promise<void> {
+  return new Promise((res, rej) => {
+    server.close((err) => {
+      if (err) {
+        rej(err)
+      } else {
+        res()
+      }
+    })
+  })
+}

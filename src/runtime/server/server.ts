@@ -5,7 +5,7 @@ import { HttpError } from 'http-errors'
 import * as Net from 'net'
 import stripAnsi from 'strip-ansi'
 import * as Plugin from '../../lib/plugin'
-import { MaybePromise, noop } from '../../lib/utils'
+import { httpClose, httpListen, MaybePromise, noop } from '../../lib/utils'
 import { AppState } from '../app'
 import * as DevMode from '../dev-mode'
 import { ContextContributor } from '../schema/schema'
@@ -19,7 +19,18 @@ const resolverLogger = log.child('graphql')
 
 export type NexusRequestHandler = (req: HTTP.IncomingMessage, res: HTTP.ServerResponse) => void
 
+/**
+ * Public interface of the server component
+ */
 export interface Server {
+  /**
+   * Escape hatch to access Nexus server internals.
+   *
+   * For advanced use only.
+   */
+  raw: {
+    engine: HTTP.Server
+  }
   express: Express
   handlers: {
     playground: NexusRequestHandler
@@ -39,6 +50,9 @@ export function create(appState: AppState) {
   const state = { ...defaultState }
 
   const api: Server = {
+    raw: {
+      engine: state.httpServer,
+    },
     express,
     handlers: {
       get playground() {
@@ -193,24 +207,4 @@ function createContextCreator(
   }
 
   return createContext
-}
-
-function httpListen(server: HTTP.Server, options: Net.ListenOptions): Promise<void> {
-  return new Promise((res, rej) => {
-    server.listen(options, () => {
-      res()
-    })
-  })
-}
-
-function httpClose(server: HTTP.Server): Promise<void> {
-  return new Promise((res, rej) => {
-    server.close((err) => {
-      if (err) {
-        rej(err)
-      } else {
-        res()
-      }
-    })
-  })
 }
