@@ -10,7 +10,7 @@ import { findFile, isEmptyDir } from '../../lib/fs'
 import { rootLogger } from '../nexus-logger'
 import * as PJ from '../package-json'
 import * as PackageManager from '../package-manager'
-import { createContextualError } from '../utils'
+import { exception } from '../utils'
 import { BuildLayout, getBuildLayout } from './build'
 import { saveDataForChildProcess } from './cache'
 import { readOrScaffoldTsconfig } from './tsconfig'
@@ -160,9 +160,11 @@ export async function create(options?: Options): Promise<Either<Error, Layout>> 
 
   const packageManagerType = await PackageManager.detectProjectPackageManager({ projectRoot })
   const maybeAppModule = normalizedEntrypoint ?? findAppModule({ projectRoot })
-  const tsConfig = await readOrScaffoldTsconfig({
-    projectRoot,
-  })
+
+  const errTsConfig = await readOrScaffoldTsconfig({ projectRoot })
+  if (isLeft(errTsConfig)) return errTsConfig
+  const tsConfig = errTsConfig.right
+
   const nexusModules = findNexusModules(tsConfig, maybeAppModule)
   const project = packageJson
     ? {
@@ -344,12 +346,12 @@ function normalizeEntrypoint(
   const absoluteEntrypoint = Path.isAbsolute(entrypoint) ? entrypoint : Path.join(projectRoot, entrypoint)
 
   if (!absoluteEntrypoint.endsWith('.ts')) {
-    const error = createContextualError('Entrypoint must be a .ts file', { path: absoluteEntrypoint })
+    const error = exception('Entrypoint must be a .ts file', { path: absoluteEntrypoint })
     return left(error)
   }
 
   if (!FS.exists(absoluteEntrypoint)) {
-    const error = createContextualError('Entrypoint does not exist', { path: absoluteEntrypoint })
+    const error = exception('Entrypoint does not exist', { path: absoluteEntrypoint })
     return left(error)
   }
 

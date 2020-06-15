@@ -1,5 +1,6 @@
 import { Either, isLeft, isRight } from 'fp-ts/lib/Either'
 import * as Path from 'path'
+import { inspect } from 'util'
 import { findFileRecurisvelyUpwardSync } from '../fs'
 import { fatal } from '../process'
 
@@ -45,6 +46,14 @@ export function getRight<A, B>(e: Either<A, B>): B | undefined {
 export function rightOrThrow<A extends Error, B>(x: Either<A, B>): B {
   if (isLeft(x)) throw x.left
   return x.right
+}
+
+/**
+ * Extract the left value from an Either or throw.
+ */
+export function leftOrThrow<A, B>(x: Either<A, B>): A {
+  if (isLeft(x)) return x.left
+  throw new Error(`Unexpected Either.right:\n${inspect(x.right)}`)
 }
 
 /**

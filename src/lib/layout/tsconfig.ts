@@ -1,11 +1,13 @@
 import chalk from 'chalk'
 import { stripIndent } from 'common-tags'
+import { Either, left, right } from 'fp-ts/lib/Either'
 import * as fs from 'fs-jetpack'
 import { EOL } from 'os'
 import * as Path from 'path'
 import { TsConfigJson } from 'type-fest'
 import * as ts from 'typescript'
 import { rootLogger } from '../nexus-logger'
+import { exception, exceptionType } from '../utils'
 import { DEFAULT_BUILD_DIR_PATH_RELATIVE_TO_PROJECT_ROOT } from './build'
 
 export const NEXUS_TS_LSP_IMPORT_ID = 'nexus/typescript-language-service'
@@ -18,10 +20,19 @@ const diagnosticHost: ts.FormatDiagnosticsHost = {
   getCanonicalFileName: (path) => path,
 }
 
+/**
+ * An error following the parsing of tsconfig. Kinds of errors include type validations like if include field is an array.
+ */
+const invalidTsConfig = exceptionType<'invalid_tsconfig', { diagnostics: ts.Diagnostic[] }>(
+  'invalid_tsconfig',
+  ({ diagnostics }) =>
+    'Your tsconfig.json is invalid\n\n' + ts.formatDiagnosticsWithColorAndContext(diagnostics, diagnosticHost)
+)
+
 export async function readOrScaffoldTsconfig(input: {
   projectRoot: string
   overrides?: { outRoot?: string }
-}): Promise<{ content: ts.ParsedCommandLine; path: string }> {
+}): Promise<Either<Error, { content: ts.ParsedCommandLine; path: string }>> {
   let tsconfigPath = ts.findConfigFile(input.projectRoot, ts.sys.fileExists, 'tsconfig.json')
 
   if (!tsconfigPath) {
@@ -40,11 +51,16 @@ export async function readOrScaffoldTsconfig(input: {
   const tscfgReadResult = ts.readConfigFile(tsconfigPath, ts.sys.readFile)
 
   if (tscfgReadResult.error) {
-    log.fatal(
-      'Unable to read your tsconifg.json\n\n' +
-        ts.formatDiagnosticsWithColorAndContext([tscfgReadResult.error], diagnosticHost)
+    return left(
+      exception(
+        'Unable to read your tsconifg.json\n\n' +
+          ts.formatDiagnosticsWithColorAndContext([tscfgReadResult.error], diagnosticHost),
+        {
+          // todo leads to circ ref error in json serialize
+          // diagnostics: [tscfgReadResult.error],
+        }
+      )
     )
-    process.exit(1)
   }
 
   const tscfg: TsConfigJson = tscfgReadResult.config
@@ -61,7 +77,11 @@ export async function readOrScaffoldTsconfig(input: {
     // If the include is present but not array it must mean a mal-formed tsconfig.
     // Exit early, if we contintue we will have a runtime error when we try .push on a non-array.
     // todo testme once we're not relying on mock process exit
-    checkNoTsConfigErrors(ts.parseJsonConfigFileContent(tscfg, ts.sys, projectRoot, undefined, tsconfigPath))
+    const diagnostics = ts.parseJsonConfigFileContent(tscfg, ts.sys, projectRoot, undefined, tsconfigPath)
+      .errors
+    if (diagnostics.length > 0) {
+      return left(invalidTsConfig({ diagnostics }))
+    }
   }
 
   // Lint
@@ -164,22 +184,13 @@ export async function readOrScaffoldTsconfig(input: {
 
   const tsconfig = ts.parseJsonConfigFileContent(tscfg, ts.sys, projectRoot, undefined, tsconfigPath)
 
-  checkNoTsConfigErrors(tsconfig)
+  if (tsconfig.errors.length > 0) {
+    return left(invalidTsConfig({ diagnostics: tsconfig.errors }))
+  }
 
   log.trace('finished read')
 
-  return { content: tsconfig, path: tsconfigPath }
-}
-
-function checkNoTsConfigErrors(tsconfig: ts.ParsedCommandLine) {
-  if (tsconfig.errors.length > 0) {
-    // Kinds of errors include type validations like if include field is an array.
-    log.fatal(
-      'Your tsconfig.json is invalid\n\n' +
-        ts.formatDiagnosticsWithColorAndContext(tsconfig.errors, diagnosticHost)
-    )
-    process.exit(1)
-  }
+  return right({ content: tsconfig, path: tsconfigPath })
 }
 
 export function tsconfigTemplate(input: { sourceRootRelative: string; outRootRelative: string }): string {
