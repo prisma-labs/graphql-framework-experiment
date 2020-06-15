@@ -26,13 +26,13 @@ export interface Server {
   /**
    * Escape hatch to access Nexus server internals.
    *
-   * For advanced use only.
+   * These things are available mostly as escape hatches, and maybe a few valid advanced use-cases. If you haven't already/are not sure, consider [opening an issue](https://nxs.li/issues/create/feature) for your use-case. Maybe Nexus can and should provide better first-class support for what you are trying to do!
    */
   raw: {
     /**
      * The underlying [Node HTTP Server](https://nodejs.org/api/http.html#http_class_http_server) instance.
      *
-     * Access to this is made available mostly as an escape hatch, and maybe a few valid advanced use-cases. If you haven't already/are not sure, consider [opening an issue](https://nxs.li/issues/create/feature) for your use-case.
+     * Access to this is made available mostly as an escape hatch, and maybe a few valid advanced use-cases. If you haven't already/are not sure, consider [opening an issue](https://nxs.li/issues/create/feature) for your use-case. Maybe Nexus can and should provide better first-class support for what you are trying to do!
      */
     engine: HTTP.Server
   }
