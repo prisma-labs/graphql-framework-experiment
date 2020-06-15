@@ -117,6 +117,7 @@ export function create(appState: AppState): SchemaInternal {
         statefulNexusSchema.state.scalars = {}
         appState.schemaComponent.contextContributors = []
         appState.schemaComponent.plugins = []
+        appState.schemaComponent.scalars = {}
       },
       beforeAssembly() {
         appState.schemaComponent.scalars = {
