@@ -18,3 +18,9 @@ import { server } from 'nexus'
 
 server.express.use(cors())
 ```
+
+### `raw.engine`
+
+Gives you access to the underlying [Node HTTP `Server`](https://nodejs.org/api/http.html#http_class_http_server) instance.
+
+This is an escape hatch. Only use for advanced use-cases.
