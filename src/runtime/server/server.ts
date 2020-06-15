@@ -29,6 +29,11 @@ export interface Server {
    * For advanced use only.
    */
   raw: {
+    /**
+     * The underlying [Node HTTP Server](https://nodejs.org/api/http.html#http_class_http_server) instance.
+     *
+     * Access to this is made available mostly as an escape hatch, and maybe a few valid advanced use-cases. If you haven't already/are not sure, consider [opening an issue](https://nxs.li/issues/create/feature) for your use-case.
+     */
     engine: HTTP.Server
   }
   express: Express
