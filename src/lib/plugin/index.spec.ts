@@ -46,10 +46,11 @@ describe('manifest', () => {
             "plugin": Object {
               "packageJsonPath": "<project root>/package.json",
             },
-          },
-          "message": "Failed to read the the package.json file.
+            "reason": "Failed to read the the package.json file.
 
       Error: Cannot find module '<project root>/package.json' from 'src/lib/plugin/manifest.ts'",
+          },
+          "type": "get_manifest_error",
         },
       }
     `)
@@ -66,8 +67,9 @@ describe('manifest', () => {
             "plugin": Object {
               "packageJsonPath": "<project root>/package.json",
             },
+            "reason": "\`name\` property is missing in the package.json",
           },
-          "message": "\`name\` property is missing in package.json",
+          "type": "get_manifest_error",
         },
       }
     `)
@@ -85,8 +87,9 @@ describe('manifest', () => {
             "plugin": Object {
               "packageJsonPath": "<project root>/package.json",
             },
+            "reason": "\`main\` property is missing in the package.json",
           },
-          "message": "\`main\` property is missing in package.json",
+          "type": "get_manifest_error",
         },
       }
     `)
