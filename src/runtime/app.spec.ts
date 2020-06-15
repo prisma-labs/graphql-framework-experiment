@@ -1,4 +1,5 @@
 import { log } from '@nexus/logger'
+import * as HTTP from 'http'
 import * as Lo from 'lodash'
 import { removeReflectionStage, setReflectionStage } from '../lib/reflection'
 import * as App from './app'
@@ -83,18 +84,24 @@ describe('checks', () => {
   })
 })
 
-describe('server handlers', () => {
-  it('under reflection are noops', () => {
-    setReflectionStage('plugin')
-    const g = app.server.handlers.graphql as any
-    const p = app.server.handlers.playground as any
-    expect(g()).toBeUndefined()
-    expect(p()).toBeUndefined()
-    removeReflectionStage()
+describe('server', () => {
+  it('has raw.http to get access to underling node http server', () => {
+    expect(app.server.raw.http).toBeInstanceOf(HTTP.Server)
   })
 
-  // todo, process exit poop
-  it.todo('if accessed before assembly, and not under reflection, error')
+  describe('handlers', () => {
+    it('under reflection are noops', () => {
+      setReflectionStage('plugin')
+      const g = app.server.handlers.graphql as any
+      const p = app.server.handlers.playground as any
+      expect(g()).toBeUndefined()
+      expect(p()).toBeUndefined()
+      removeReflectionStage()
+    })
+
+    // todo, process exit poop
+    it.todo('if accessed before assembly, and not under reflection, error')
+  })
 })
 
 /**

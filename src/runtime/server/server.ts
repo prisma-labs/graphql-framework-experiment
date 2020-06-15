@@ -5,7 +5,7 @@ import { HttpError } from 'http-errors'
 import * as Net from 'net'
 import stripAnsi from 'strip-ansi'
 import * as Plugin from '../../lib/plugin'
-import { MaybePromise, noop } from '../../lib/utils'
+import { httpClose, httpListen, MaybePromise, noop } from '../../lib/utils'
 import { AppState } from '../app'
 import * as DevMode from '../dev-mode'
 import { ContextContributor } from '../schema/schema'
@@ -19,7 +19,23 @@ const resolverLogger = log.child('graphql')
 
 export type NexusRequestHandler = (req: HTTP.IncomingMessage, res: HTTP.ServerResponse) => void
 
+/**
+ * Public interface of the server component
+ */
 export interface Server {
+  /**
+   * Escape hatches to various Nexus server internals.
+   *
+   * These things are available mostly as escape hatches, and maybe a few valid advanced use-cases. If you haven't already/are not sure, consider [opening an issue](https://nxs.li/issues/create/feature) for your use-case. Maybe Nexus can and should provide better first-class support for what you are trying to do!
+   */
+  raw: {
+    /**
+     * The underlying [Node HTTP Server](https://nodejs.org/api/http.html#http_class_http_server) instance.
+     *
+     * Access to this is made available mostly as an escape hatch, and maybe a few valid advanced use-cases. If you haven't already/are not sure, consider [opening an issue](https://nxs.li/issues/create/feature) for your use-case. Maybe Nexus can and should provide better first-class support for what you are trying to do!
+     */
+    http: HTTP.Server
+  }
   express: Express
   handlers: {
     playground: NexusRequestHandler
@@ -39,6 +55,9 @@ export function create(appState: AppState) {
   const state = { ...defaultState }
 
   const api: Server = {
+    raw: {
+      http: state.httpServer,
+    },
     express,
     handlers: {
       get playground() {
@@ -193,24 +212,4 @@ function createContextCreator(
   }
 
   return createContext
-}
-
-function httpListen(server: HTTP.Server, options: Net.ListenOptions): Promise<void> {
-  return new Promise((res, rej) => {
-    server.listen(options, () => {
-      res()
-    })
-  })
-}
-
-function httpClose(server: HTTP.Server): Promise<void> {
-  return new Promise((res, rej) => {
-    server.close((err) => {
-      if (err) {
-        rej(err)
-      } else {
-        res()
-      }
-    })
-  })
 }
