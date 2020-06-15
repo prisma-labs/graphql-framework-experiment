@@ -196,10 +196,6 @@ export async function create(options?: Options): Promise<Either<Error, Layout>> 
     process.exit(1)
   }
 
-  // const errScanResult = await scan({ projectRoot, packageJson, entrypointPath: normalizedEntrypoint })
-  // if (isLeft(errScanResult)) return errScanResult
-  // const scanResult = errScanResult.right
-
   const buildInfo = getBuildLayout(options?.buildOutputDir, scanResult, options?.asBundle)
 
   log.trace('layout build info', { data: buildInfo })

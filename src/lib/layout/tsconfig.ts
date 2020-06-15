@@ -2,10 +2,12 @@ import chalk from 'chalk'
 import { stripIndent } from 'common-tags'
 import { Either, left, right } from 'fp-ts/lib/Either'
 import * as fs from 'fs-jetpack'
+import { cloneDeep } from 'lodash'
 import { EOL } from 'os'
 import * as Path from 'path'
 import { TsConfigJson } from 'type-fest'
 import * as ts from 'typescript'
+import { isDeepStrictEqual } from 'util'
 import { rootLogger } from '../nexus-logger'
 import { exception, exceptionType } from '../utils'
 import { DEFAULT_BUILD_DIR_PATH_RELATIVE_TO_PROJECT_ROOT } from './build'
@@ -33,6 +35,7 @@ export async function readOrScaffoldTsconfig(input: {
   projectRoot: string
   overrides?: { outRoot?: string }
 }): Promise<Either<Error, { content: ts.ParsedCommandLine; path: string }>> {
+  log.trace('start read')
   let tsconfigPath = ts.findConfigFile(input.projectRoot, ts.sys.fileExists, 'tsconfig.json')
 
   if (!tsconfigPath) {
@@ -63,32 +66,55 @@ export async function readOrScaffoldTsconfig(input: {
     )
   }
 
-  const tscfg: TsConfigJson = tscfgReadResult.config
+  const tsconfigSource: TsConfigJson = tscfgReadResult.config
 
   // setup zero values
 
-  if (!tscfg.compilerOptions) {
-    tscfg.compilerOptions = {}
+  if (!tsconfigSource.compilerOptions) {
+    tsconfigSource.compilerOptions = {}
   }
 
-  if (!tscfg.include) {
-    tscfg.include = []
-  } else if (!Array.isArray(tscfg.include)) {
+  if (!tsconfigSource.compilerOptions.plugins) {
+    tsconfigSource.compilerOptions.plugins = []
+  }
+
+  if (!tsconfigSource.include) {
+    tsconfigSource.include = []
+  } else if (!Array.isArray(tsconfigSource.include)) {
     // If the include is present but not array it must mean a mal-formed tsconfig.
     // Exit early, if we contintue we will have a runtime error when we try .push on a non-array.
     // todo testme once we're not relying on mock process exit
-    const diagnostics = ts.parseJsonConfigFileContent(tscfg, ts.sys, projectRoot, undefined, tsconfigPath)
-      .errors
+    const diagnostics = ts.parseJsonConfigFileContent(
+      tsconfigSource,
+      ts.sys,
+      projectRoot,
+      undefined,
+      tsconfigPath
+    ).errors
     if (diagnostics.length > 0) {
       return left(invalidTsConfig({ diagnostics }))
     }
   }
 
+  const tsconfigSourceOriginal = cloneDeep(tsconfigSource)
+  let tsconfigParsed = ts.parseJsonConfigFileContent(
+    tsconfigSourceOriginal,
+    ts.sys,
+    projectRoot,
+    undefined,
+    tsconfigPath
+  )
+
   // Lint
 
-  if (tscfg.compilerOptions.plugins && tscfg.compilerOptions.plugins.length) {
-    if (!tscfg.compilerOptions.plugins.map((p) => p.name).includes('nexus/typescript-language-service')) {
-      const pluginsFixed = tscfg.compilerOptions.plugins.concat([{ name: NEXUS_TS_LSP_IMPORT_ID }])
+  // plugins compiler option is not inheried by extends
+  // thus we should not be working with parsed tsconfig here
+  const plugins = tsconfigSource.compilerOptions.plugins
+
+  if (plugins.length) {
+    if (!plugins.map((p) => p.name).includes('nexus/typescript-language-service')) {
+      // work with the local tsconfig for fix
+      const pluginsFixed = tsconfigSource.compilerOptions.plugins.concat([{ name: NEXUS_TS_LSP_IMPORT_ID }])
       log.warn(
         stripIndent`
           You have not added the Nexus TypeScript Language Service Plugin to your configured TypeScript plugins. Add this to your compilerOptions:
@@ -107,22 +133,22 @@ export async function readOrScaffoldTsconfig(input: {
     )
   }
 
-  if (tscfg.compilerOptions.tsBuildInfoFile) {
-    delete tscfg.compilerOptions.tsBuildInfoFile
+  if (tsconfigParsed.options.tsBuildInfoFile) {
+    delete tsconfigParsed.options.tsBuildInfoFile
     const setting = renderSetting(`compilerOptions.tsBuildInfoFile`)
     log.warn(`You have set ${setting} but it will be ignored by Nexus. Nexus manages this value internally.`)
   }
 
-  if (tscfg.compilerOptions.incremental) {
-    delete tscfg.compilerOptions.incremental
+  if (tsconfigParsed.options.incremental) {
+    delete tsconfigParsed.options.incremental
     const setting = renderSetting('compilerOptions.incremental')
     log.warn(`You have set ${setting} but it will be ignored by Nexus. Nexus manages this value internally.`)
   }
 
-  const { typeRoots, types } = tscfg.compilerOptions
+  const { typeRoots, types } = tsconfigParsed.options
   if (typeRoots || types) {
-    if (typeRoots) delete tscfg.compilerOptions.typeRoots
-    if (types) delete tscfg.compilerOptions.types
+    delete tsconfigParsed.options.typeRoots
+    delete tsconfigParsed.options.types
     const settingsSet =
       typeRoots && types
         ? `${renderSetting('compilerOptions.typeRoots')} and ${renderSetting('compilerOptions.types')}`
@@ -141,19 +167,29 @@ export async function readOrScaffoldTsconfig(input: {
    * Setup source root (aka. rootDir)
    */
 
-  if (!tscfg.compilerOptions!.rootDir) {
-    tscfg.compilerOptions!.rootDir = '.'
+  // Do not edit paths of tsconfig parsed
+  // Doing so is dangerous because the input in tsconfig source is processed by parsing
+  // To edit tsconfig parsed directly would be to know/redo that parsing, which we don't
+
+  if (!tsconfigSource.compilerOptions.rootDir) {
+    tsconfigSource.compilerOptions.rootDir = '.'
     const setting = renderSetting('compilerOptions.rootDir')
-    log.warn(`Please set ${setting} to "${tscfg.compilerOptions!.rootDir}"`)
+    log.warn(`Please set ${setting} to "${tsconfigSource.compilerOptions.rootDir}"`)
   }
 
-  if (!tscfg.include.includes(tscfg.compilerOptions!.rootDir!)) {
-    tscfg.include.push(tscfg.compilerOptions!.rootDir!)
+  if (!tsconfigSource.include.includes(tsconfigSource.compilerOptions.rootDir!)) {
+    tsconfigSource.include.push(tsconfigSource.compilerOptions.rootDir!)
     const setting = renderSetting('include')
-    log.warn(`Please set ${setting} to have "${tscfg.compilerOptions!.rootDir}"`)
+    log.warn(`Please set ${setting} to have "${tsconfigSource.compilerOptions.rootDir}"`)
   }
 
-  if (tscfg.compilerOptions.noEmit !== true) {
+  /**
+   * Handle noEmit
+   * Users should also set to true
+   * But inernally we enable
+   */
+
+  if (tsconfigParsed.options.noEmit !== true) {
     const setting = renderSetting('compilerOptions.noEmit')
     log.warn(
       `Please set ${setting} to true. This will ensure you do not accidentally emit using ${chalk.yellowBright(
@@ -162,35 +198,46 @@ export async function readOrScaffoldTsconfig(input: {
     )
   }
 
-  /**
-   * Setup noEmit. Internally we always want emit to be on.
-   */
-
-  tscfg.compilerOptions.noEmit = false
+  tsconfigParsed.options.noEmit = false
 
   /**
    * Setup out root (aka. outDir)
    */
 
+  // todo what's the point of letting users modify this?
+  // Just that if they disable bundle they need an output path?
   if (input.overrides?.outRoot !== undefined) {
-    tscfg.compilerOptions.outDir = input.overrides.outRoot
-  } else if (!tscfg.compilerOptions.outDir) {
-    tscfg.compilerOptions.outDir = DEFAULT_BUILD_DIR_PATH_RELATIVE_TO_PROJECT_ROOT
+    tsconfigParsed.options.outDir = input.overrides.outRoot
+  } else if (!tsconfigParsed.options.outDir) {
+    tsconfigParsed.options.outDir = DEFAULT_BUILD_DIR_PATH_RELATIVE_TO_PROJECT_ROOT
+  }
+
+  /**
+   * Rebuild the parsed tsconfig if it changed
+   * For example if we adjusted include or rootDir we need those paths to be expanded.
+   */
+
+  if (!isDeepStrictEqual(tsconfigSource, tsconfigSourceOriginal)) {
+    tsconfigParsed = ts.parseJsonConfigFileContent(
+      tsconfigSource,
+      ts.sys,
+      projectRoot,
+      tsconfigParsed.options,
+      tsconfigPath
+    )
   }
 
   /**
    * Validate the tsconfig
    */
 
-  const tsconfig = ts.parseJsonConfigFileContent(tscfg, ts.sys, projectRoot, undefined, tsconfigPath)
-
-  if (tsconfig.errors.length > 0) {
-    return left(invalidTsConfig({ diagnostics: tsconfig.errors }))
+  if (tsconfigParsed.errors.length > 0) {
+    return left(invalidTsConfig({ diagnostics: tsconfigParsed.errors }))
   }
 
   log.trace('finished read')
 
-  return right({ content: tsconfig, path: tsconfigPath })
+  return right({ content: tsconfigParsed, path: tsconfigPath })
 }
 
 export function tsconfigTemplate(input: { sourceRootRelative: string; outRootRelative: string }): string {

@@ -8,22 +8,22 @@ import * as TC from '../test-context'
 import { repalceInObject, replaceEvery } from '../utils'
 import { NEXUS_TS_LSP_IMPORT_ID } from './tsconfig'
 
-let mockedStdoutBuffer: string = ''
+let logs: string = ''
 
 log.settings({
   output: {
     write(data) {
-      mockedStdoutBuffer += data
+      logs += data
     },
   },
 })
 
 afterEach(() => {
-  mockedStdoutBuffer = ''
+  logs = ''
 })
 
 const mockExit = jest.spyOn(process, 'exit').mockImplementation(((n: any) => {
-  mockedStdoutBuffer += `\n\n--- process.exit(${n}) ---\n\n`
+  logs += `\n\n--- process.exit(${n}) ---\n\n`
 }) as any)
 
 /**
@@ -55,6 +55,7 @@ function tsconfig(input?: TsConfigJson): TsConfigJson {
   }
   return defaultsDeep(input, defaultTsConfigContent)
 }
+
 /**
  * Create tsconfig content. Defaults to minimum valid tsconfig needed by Nexus. Passed config will override and merge using lodash deep defaults.
  */
@@ -78,22 +79,22 @@ const ctx = TC.create(
       async createLayoutThrow(opts?: { entrypointPath?: string; buildOutput?: string }) {
         const data = rightOrThrow(
           await Layout.create({
-            projectRoot: ctx.tmpDir,
+            projectRoot: ctx.fs.cwd(),
             entrypointPath: opts?.entrypointPath,
             buildOutputDir: opts?.buildOutput,
             asBundle: false,
           })
         )
-        mockedStdoutBuffer = mockedStdoutBuffer.split(ctx.tmpDir).join('__DYNAMIC__')
-        return repalceInObject(ctx.tmpDir, '__DYNAMIC__', data.data)
+        logs = logs.split(ctx.fs.cwd()).join('__DYNAMIC__')
+        return repalceInObject(ctx.fs.cwd(), '__DYNAMIC__', data.data)
       },
       async createLayout(opts?: { entrypointPath?: string; buildOutput?: string }) {
         return Layout.create({
-          projectRoot: ctx.tmpDir,
+          projectRoot: ctx.fs.cwd(),
           entrypointPath: opts?.entrypointPath,
           buildOutputDir: opts?.buildOutput,
           asBundle: false,
-        }).then((v) => repalceInObject(ctx.tmpDir, '__DYNAMIC__', v))
+        }).then((v) => repalceInObject(ctx.fs.cwd(), '__DYNAMIC__', v))
       },
     }
   })
@@ -161,7 +162,7 @@ describe('tsconfig', () => {
             Object {
               "category": 1,
               "code": 18003,
-              "messageText": "No inputs were found in config file '__DYNAMIC__/tsconfig.json'. Specified 'include' paths were '[\\".\\"]' and 'exclude' paths were '[\\".nexus/build\\"]'.",
+              "messageText": "No inputs were found in config file '__DYNAMIC__/tsconfig.json'. Specified 'include' paths were '[\\".\\"]' and 'exclude' paths were '[]'.",
             },
           ],
         },
@@ -172,7 +173,7 @@ describe('tsconfig', () => {
 
   it('will scaffold tsconfig if not present', async () => {
     await ctx.createLayoutThrow()
-    expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
+    expect(logs).toMatchInlineSnapshot(`
       "▲ nexus:tsconfig We could not find a \\"tsconfig.json\\" file
       ▲ nexus:tsconfig We scaffolded one for you at __DYNAMIC__/tsconfig.json
       "
@@ -201,13 +202,34 @@ describe('tsconfig', () => {
     `)
   })
 
+  describe('composite projects', () => {
+    it('inheritable settigs are recognized but include rootDir and plugins must be local', async () => {
+      nestTmpDir()
+      ctx.fs.write('src/app.ts', '')
+      ctx.fs.write('../tsconfig.packages.json', tsconfigSource())
+      ctx.fs.write('tsconfig.json', {
+        extends: '../tsconfig.packages.json',
+      } as TsConfigJson)
+      await ctx.createLayoutThrow()
+      expect(logs).toMatchInlineSnapshot(`
+        "▲ nexus:tsconfig You have not setup the Nexus TypeScript Language Service Plugin. Add this to your compiler options:
+
+            \\"plugins\\": [{ \\"name\\": \\"nexus/typescript-language-service\\" }]
+
+        ▲ nexus:tsconfig Please set [93m\`compilerOptions.rootDir\`[39m to \\".\\"
+        ▲ nexus:tsconfig Please set [93m\`include\`[39m to have \\".\\"
+        "
+      `)
+    })
+  })
+
   describe('linting', () => {
     it('enforces noEmit is true (explicit false)', async () => {
       ctx.setup({
         'tsconfig.json': tsconfigSource({ compilerOptions: { noEmit: false } }),
       })
       await ctx.createLayoutThrow()
-      expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
+      expect(logs).toMatchInlineSnapshot(`
         "▲ nexus:tsconfig Please set [93m\`compilerOptions.noEmit\`[39m to true. This will ensure you do not accidentally emit using [93m\`$ tsc\`[39m. Use [93m\`$ nexus build\`[39m to build your app and emit JavaScript.
         "
       `)
@@ -220,7 +242,7 @@ describe('tsconfig', () => {
         'tsconfig.json': JSON.stringify(tscfg),
       })
       await ctx.createLayoutThrow()
-      expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
+      expect(logs).toMatchInlineSnapshot(`
         "▲ nexus:tsconfig Please set [93m\`compilerOptions.noEmit\`[39m to true. This will ensure you do not accidentally emit using [93m\`$ tsc\`[39m. Use [93m\`$ nexus build\`[39m to build your app and emit JavaScript.
         "
       `)
@@ -235,7 +257,7 @@ describe('tsconfig', () => {
         }),
       })
       await ctx.createLayoutThrow()
-      expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
+      expect(logs).toMatchInlineSnapshot(`
         "▲ nexus:tsconfig You have set [93m\`compilerOptions.tsBuildInfoFile\`[39m but it will be ignored by Nexus. Nexus manages this value internally.
         ▲ nexus:tsconfig You have set [93m\`compilerOptions.incremental\`[39m but it will be ignored by Nexus. Nexus manages this value internally.
         "
@@ -250,7 +272,7 @@ describe('tsconfig', () => {
         'tsconfig.json': JSON.stringify(tscfg),
       })
       const layout = await ctx.createLayoutThrow()
-      expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
+      expect(logs).toMatchInlineSnapshot(`
         "▲ nexus:tsconfig Please set [93m\`compilerOptions.rootDir\`[39m to \\".\\"
         ▲ nexus:tsconfig Please set [93m\`include\`[39m to have \\".\\"
         "
@@ -266,7 +288,7 @@ describe('tsconfig', () => {
       })
 
       await ctx.createLayoutThrow()
-      expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
+      expect(logs).toMatchInlineSnapshot(`
         "▲ nexus:tsconfig You have not added the Nexus TypeScript Language Service Plugin to your configured TypeScript plugins. Add this to your compilerOptions:
 
             [93m\\"plugins\\": [{\\"name\\":\\"foobar\\"},{\\"name\\":\\"nexus/typescript-language-service\\"}][39m
@@ -279,7 +301,7 @@ describe('tsconfig', () => {
         'tsconfig.json': tsconfigSource({ compilerOptions: { types: [] } }),
       })
       await ctx.createLayoutThrow()
-      expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
+      expect(logs).toMatchInlineSnapshot(`
         "■ nexus:tsconfig You have set [93m\`compilerOptions.types\`[39m but Nexus does not support it. If you do not remove your customization you may/will (e.g. VSCode) see inconsistent results between your IDE and what Nexus tells you at build time. If you would like to see Nexus support this setting please chime in at https://github.com/graphql-nexus/nexus/issues/1036.
         "
       `)
@@ -289,7 +311,7 @@ describe('tsconfig', () => {
         'tsconfig.json': tsconfigSource({ compilerOptions: { typeRoots: [] } }),
       })
       await ctx.createLayoutThrow()
-      expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
+      expect(logs).toMatchInlineSnapshot(`
         "■ nexus:tsconfig You have set [93m\`compilerOptions.typeRoots\`[39m but Nexus does not support it. If you do not remove your customization you may/will (e.g. VSCode) see inconsistent results between your IDE and what Nexus tells you at build time. If you would like to see Nexus support this setting please chime in at https://github.com/graphql-nexus/nexus/issues/1036.
         "
       `)
@@ -299,7 +321,7 @@ describe('tsconfig', () => {
         'tsconfig.json': tsconfigSource({ compilerOptions: { typeRoots: [], types: [] } }),
       })
       await ctx.createLayoutThrow()
-      expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
+      expect(logs).toMatchInlineSnapshot(`
         "■ nexus:tsconfig You have set [93m\`compilerOptions.typeRoots\`[39m and [93m\`compilerOptions.types\`[39m but Nexus does not support them. If you do not remove your customization you may/will (e.g. VSCode) see inconsistent results between your IDE and what Nexus tells you at build time. If you would like to see Nexus support these settings please chime in at https://github.com/graphql-nexus/nexus/issues/1036.
         "
       `)
@@ -359,7 +381,7 @@ it('fails if no entrypoint and no nexus modules', async () => {
 
   await ctx.createLayoutThrow()
 
-  expect(mockedStdoutBuffer).toMatchInlineSnapshot(`
+  expect(logs).toMatchInlineSnapshot(`
     "■ nexus:layout We could not find any modules that imports 'nexus' or app.ts entrypoint
     ■ nexus:layout Please do one of the following:
 
