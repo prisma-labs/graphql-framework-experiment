@@ -19,7 +19,7 @@ import { server } from 'nexus'
 server.express.use(cors())
 ```
 
-### `raw.engine`
+### `raw.http`
 
 The underlying [Node HTTP Server](https://nodejs.org/api/http.html#http_class_http_server) instance.
 

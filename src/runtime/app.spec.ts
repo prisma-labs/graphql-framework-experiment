@@ -85,8 +85,8 @@ describe('checks', () => {
 })
 
 describe('server', () => {
-  it('has raw.engine to get access to underling node http server', () => {
-    expect(app.server.raw.engine).toBeInstanceOf(HTTP.Server)
+  it('has raw.http to get access to underling node http server', () => {
+    expect(app.server.raw.http).toBeInstanceOf(HTTP.Server)
   })
 
   describe('handlers', () => {
