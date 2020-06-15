@@ -24,7 +24,7 @@ export type NexusRequestHandler = (req: HTTP.IncomingMessage, res: HTTP.ServerRe
  */
 export interface Server {
   /**
-   * Escape hatch to access Nexus server internals.
+   * Escape hatches to various Nexus server internals.
    *
    * These things are available mostly as escape hatches, and maybe a few valid advanced use-cases. If you haven't already/are not sure, consider [opening an issue](https://nxs.li/issues/create/feature) for your use-case. Maybe Nexus can and should provide better first-class support for what you are trying to do!
    */
