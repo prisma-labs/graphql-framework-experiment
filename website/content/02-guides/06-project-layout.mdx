@@ -43,9 +43,30 @@ Autocomplete with Nexus TS LSP:
 
 Nexus has some conventions about `tsconfig.json` settings designed to support your zero-config experience.
 
-#### Local Typing Declaration File
+#### Local Package Typings
 
-Sometimes you need to augment or provide outright types for some third party library. Do this by creating a `types.d.ts` in your project root. Nexus automatically configures `tsconfig.json` to pick this file up.
+Sometimes you need to augment or provide outright types for some third party library. You can do this one of two ways.
+
+If you only have to write some minor typings for one or few packages then you can create a `<project-root>/types.d.ts` file.
+
+If you have to write a lot of typings for multiple packages then you can create typing files with this pattern:
+
+```
+<project-roo>/types/       <-- A "types" folder instead of "types.d.ts" file
+  <package-name>/          <-- Name not technically significant, just for human readability, do what you want
+    index.d.ts             <-- Typings
+```
+
+#### noEmit
+
+Nexus enforces that `compilerOptions.noEmit` is `true`. It handles this setting internally. If for some reason you want to run `tsc` you won't need to remember to pass the `--noEmit` flag.
+
+#### typeRoots
+
+Nexus enforces that your `compilerOptions.typeRoots` includes:
+
+- `"node_modules/@types"` –– TypeScript's default value for `typeRoots`. Used by [Definitely Typed](https://github.com/DefinitelyTyped/DefinitelyTyped) packages. Importantly where Nexus outputs its typegen to, so you _must_ have this value.
+- `"types"` –– A convention provided by Nexus about where to store your local package typings.
 
 ## Conventions
 

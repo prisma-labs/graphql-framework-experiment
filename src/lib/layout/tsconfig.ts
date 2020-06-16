@@ -158,6 +158,7 @@ export async function readOrScaffoldTsconfig(input: {
   /**
    * Setup typeRoots
    */
+
   const { typeRoots } = tsconfigSourceOriginal.compilerOptions!
   const nameAtTypes = 'node_modules/@types'
   const nameTypes = 'types'
