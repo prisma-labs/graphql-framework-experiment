@@ -131,9 +131,8 @@ export function create(appState: AppState): SchemaInternal {
       },
       checks() {
         NexusSchema.core.assertNoMissingTypes(appState.assembled!.schema, appState.assembled!.missingTypes)
-        /**
-         * TODO: We should separate types added by the framework and the ones added by users
-         */
+        
+        // TODO: We should separate types added by the framework and the ones added by users
         if (
           statefulNexusSchema.state.types.length === 2 &&
           statefulNexusSchema.state.types.every((t) => Scalars.builtinScalars[t.name] !== undefined)
