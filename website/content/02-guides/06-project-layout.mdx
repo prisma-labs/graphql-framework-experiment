@@ -39,6 +39,14 @@ Autocomplete with Nexus TS LSP:
 
 ![](https://user-images.githubusercontent.com/284476/82776802-1cef3b00-9e1a-11ea-88c3-065869407380.png)
 
+### Conventions
+
+Nexus has some conventions about `tsconfig.json` settings designed to support your zero-config experience.
+
+#### Local Typing Declaration File
+
+Sometimes you need to augment or provide outright types for some third party library. Do this by creating a `types.d.ts` in your project root. Nexus automatically configures `tsconfig.json` to pick this file up.
+
 ## Conventions
 
 Nexus imposes a few requirements about how you structure your codebase.

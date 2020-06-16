@@ -164,6 +164,19 @@ export async function readOrScaffoldTsconfig(input: {
   }
 
   /**
+   * Setup types declaration file support
+   */
+
+  if (!tsconfigSourceOriginal.include?.includes('types.d.ts')) {
+    tsconfigSource.include.push('types.d.ts')
+    const val = chalk.yellowBright(`"types.d.ts"`)
+    const setting = chalk.yellowBright(`"include"`)
+    log.warn(
+      `Please add ${val} to your ${setting} array. If you do not then results from Nexus and your IDE will not agree if the declaration file is used in your project.`
+    )
+  }
+
+  /**
    * Setup source root (aka. rootDir)
    */
 
@@ -174,7 +187,8 @@ export async function readOrScaffoldTsconfig(input: {
   if (!tsconfigSource.compilerOptions.rootDir) {
     tsconfigSource.compilerOptions.rootDir = '.'
     const setting = renderSetting('compilerOptions.rootDir')
-    log.warn(`Please set ${setting} to "${tsconfigSource.compilerOptions.rootDir}"`)
+    const val = renderValString(tsconfigSource.compilerOptions.rootDir)
+    log.warn(`Please set ${setting} to ${val}`)
   }
 
   if (!tsconfigSource.include.includes(tsconfigSource.compilerOptions.rootDir!)) {
@@ -240,6 +254,9 @@ export async function readOrScaffoldTsconfig(input: {
   return right({ content: tsconfigParsed, path: tsconfigPath })
 }
 
+/**
+ * Create tsconfig source contents, optimized for Nexus
+ */
 export function tsconfigTemplate(input: { sourceRootRelative: string; outRootRelative: string }): string {
   // Render empty source root as '.' which is what node path module relative func will do when same dir.
   const sourceRelative = input.sourceRootRelative || '.'
@@ -253,14 +270,21 @@ export function tsconfigTemplate(input: { sourceRootRelative: string; outRootRel
       noEmit: true,
       plugins: [{ name: 'nexus/typescript-language-service' }],
     },
-    include: [sourceRelative],
+    include: ['types.d.ts', sourceRelative],
   }
   return JSON.stringify(config, null, 2)
 }
 
 /**
- * Prettifier a property path for terminal output.
+ * Prettify a property path for terminal output.
  */
 function renderSetting(setting: string) {
   return chalk.yellowBright(`\`${setting}\``)
+}
+
+/**
+ * Prettify a JSON string value for terminal output.
+ */
+function renderValString(val: string): string {
+  return chalk.yellowBright(`"${val}"`)
 }

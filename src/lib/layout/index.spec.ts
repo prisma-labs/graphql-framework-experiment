@@ -51,7 +51,7 @@ function tsconfig(input?: TsConfigJson): TsConfigJson {
       rootDir: '.',
       plugins: [{ name: NEXUS_TS_LSP_IMPORT_ID }],
     },
-    include: ['.'],
+    include: ['types.d.ts', '.'],
   }
   return defaultsDeep(input, defaultTsConfigContent)
 }
@@ -152,6 +152,17 @@ describe('tsconfig', () => {
     ctx.setup({ 'app.ts': '' })
   })
 
+  it('warns if "types.d.ts" is missing from include', async () => {
+    ctx.setup({
+      'tsconfig.json': tsconfigSource({ include: ['.'] }),
+    })
+    await ctx.createLayoutThrow()
+    expect(logs).toMatchInlineSnapshot(`
+      "▲ nexus:tsconfig Please add [93m\\"types.d.ts\\"[39m to your [93m\\"include\\"[39m array. If you do not then results from Nexus and your IDE will not agree if the declaration file is used in your project.
+      "
+    `)
+  })
+
   it('fails if tsconfig settings does not lead to matching any source files', async () => {
     ctx.fs.remove('app.ts')
     const res = await ctx.createLayout().then(leftOrThrow)
@@ -162,7 +173,7 @@ describe('tsconfig', () => {
             Object {
               "category": 1,
               "code": 18003,
-              "messageText": "No inputs were found in config file '__DYNAMIC__/tsconfig.json'. Specified 'include' paths were '[\\".\\"]' and 'exclude' paths were '[]'.",
+              "messageText": "No inputs were found in config file '__DYNAMIC__/tsconfig.json'. Specified 'include' paths were '[\\"types.d.ts\\",\\".\\"]' and 'exclude' paths were '[]'.",
             },
           ],
         },
@@ -196,6 +207,7 @@ describe('tsconfig', () => {
           "target": "es2016",
         },
         "include": Array [
+          "types.d.ts",
           ".",
         ],
       }
@@ -203,7 +215,7 @@ describe('tsconfig', () => {
   })
 
   describe('composite projects', () => {
-    it('inheritable settigs are recognized but include rootDir and plugins must be local', async () => {
+    it('inheritable settigs are recognized but "include", "rootDir", "plugins" must be local', async () => {
       nestTmpDir()
       ctx.fs.write('src/app.ts', '')
       ctx.fs.write('../tsconfig.packages.json', tsconfigSource())
@@ -216,7 +228,8 @@ describe('tsconfig', () => {
 
             \\"plugins\\": [{ \\"name\\": \\"nexus/typescript-language-service\\" }]
 
-        ▲ nexus:tsconfig Please set [93m\`compilerOptions.rootDir\`[39m to \\".\\"
+        ▲ nexus:tsconfig Please add [93m\\"types.d.ts\\"[39m to your [93m\\"include\\"[39m array. If you do not then results from Nexus and your IDE will not agree if the declaration file is used in your project.
+        ▲ nexus:tsconfig Please set [93m\`compilerOptions.rootDir\`[39m to [93m\\".\\"[39m
         ▲ nexus:tsconfig Please set [93m\`include\`[39m to have \\".\\"
         "
       `)
@@ -273,12 +286,13 @@ describe('tsconfig', () => {
       })
       const layout = await ctx.createLayoutThrow()
       expect(logs).toMatchInlineSnapshot(`
-        "▲ nexus:tsconfig Please set [93m\`compilerOptions.rootDir\`[39m to \\".\\"
+        "▲ nexus:tsconfig Please add [93m\\"types.d.ts\\"[39m to your [93m\\"include\\"[39m array. If you do not then results from Nexus and your IDE will not agree if the declaration file is used in your project.
+        ▲ nexus:tsconfig Please set [93m\`compilerOptions.rootDir\`[39m to [93m\\".\\"[39m
         ▲ nexus:tsconfig Please set [93m\`include\`[39m to have \\".\\"
         "
       `)
       expect(layout.tsConfig.content.raw.compilerOptions.rootDir).toEqual('.')
-      expect(layout.tsConfig.content.raw.include).toEqual(['.'])
+      expect(layout.tsConfig.content.raw.include).toEqual(['types.d.ts', '.'])
     })
     it('need the Nexus TS LSP setup', async () => {
       ctx.setup({
