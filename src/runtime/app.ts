@@ -10,6 +10,7 @@ import * as Server from './server'
 import { ContextCreator } from './server/server'
 import * as Settings from './settings'
 import { assertAppNotAssembled } from './utils'
+import { builtinScalars } from '../lib/scalars'
 
 const log = Logger.log.child('app')
 
@@ -120,17 +121,7 @@ export function create(): App {
     log: Logger.log,
   })
 
-  /**
-   * Setup default log filter
-   */
-
-  settingsComponent.public.change({
-    logger: {
-      filter: 'app:*, nexus:*@info+, *@warn+',
-    },
-  })
-
-  const api: App = {
+  const app: App = {
     log: log,
     settings: settingsComponent.public,
     schema: schemaComponent.public,
@@ -199,8 +190,23 @@ export function create(): App {
     },
   }
 
+  /**
+   * Setup default log filter
+   */
+  app.settings.change({
+    logger: {
+      filter: 'app:*, nexus:*@info+, *@warn+',
+    },
+  })
+
+  /**
+   * Setup default scalar types
+   */
+  app.schema.importType(builtinScalars.Date, 'date')
+  app.schema.importType(builtinScalars.Json, 'json')
+
   return {
-    ...api,
+    ...app,
     private: {
       state: appState,
     },

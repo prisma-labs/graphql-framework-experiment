@@ -22,7 +22,7 @@ function createLazyState(): LazyState {
   return {
     contextContributors: [],
     plugins: [],
-    scalars: {}
+    scalars: {},
   }
 }
 
@@ -120,14 +120,10 @@ export function create(appState: AppState): SchemaInternal {
         appState.schemaComponent.scalars = {}
       },
       beforeAssembly() {
-        appState.schemaComponent.scalars = {
-          ...Scalars.builtinScalars,
-          ...statefulNexusSchema.state.scalars
-        }
+        appState.schemaComponent.scalars = statefulNexusSchema.state.scalars
       },
       assemble(plugins) {
         const nexusSchemaConfig = mapSettingsAndPluginsToNexusSchemaConfig(plugins, settings.data)
-        nexusSchemaConfig.types.push(Scalars.mapBuiltinScalarsToNexusSchemaTypes())
         nexusSchemaConfig.types.push(...statefulNexusSchema.state.types)
         nexusSchemaConfig.plugins!.push(...appState.schemaComponent.plugins)
         const { schema, missingTypes } = NexusSchema.core.makeSchemaInternal(nexusSchemaConfig)
@@ -135,7 +131,10 @@ export function create(appState: AppState): SchemaInternal {
       },
       checks() {
         NexusSchema.core.assertNoMissingTypes(appState.assembled!.schema, appState.assembled!.missingTypes)
-        if (statefulNexusSchema.state.types.length === 0) {
+        if (
+          statefulNexusSchema.state.types.length === 2 &&
+          statefulNexusSchema.state.types.every((t) => Scalars.builtinScalars[t.name] !== undefined)
+        ) {
           log.warn(emptyExceptionMessage())
         }
       },
