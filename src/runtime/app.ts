@@ -202,7 +202,7 @@ export function create(): App {
   /**
    * Setup default scalar types
    */
-  app.schema.importType(builtinScalars.Date, 'date')
+  app.schema.importType(builtinScalars.DateTime, 'date')
   app.schema.importType(builtinScalars.Json, 'json')
 
   return {
