@@ -145,32 +145,74 @@ export async function readOrScaffoldTsconfig(input: {
     log.warn(`You have set ${setting} but it will be ignored by Nexus. Nexus manages this value internally.`)
   }
 
-  const { typeRoots, types } = tsconfigParsed.options
-  if (typeRoots || types) {
+  const { types } = tsconfigParsed.options
+  if (types) {
     delete tsconfigParsed.options.typeRoots
     delete tsconfigParsed.options.types
-    const settingsSet =
-      typeRoots && types
-        ? `${renderSetting('compilerOptions.typeRoots')} and ${renderSetting('compilerOptions.types')}`
-        : typeRoots
-        ? renderSetting('compilerOptions.typeRoots')
-        : renderSetting('compilerOptions.types')
-    const itThem = typeRoots && types ? 'them' : 'it'
-    const thisThese = typeRoots && types ? 'these' : 'this'
-    const s = typeRoots && types ? 's' : ''
+    const setting = renderSetting('compilerOptions.types')
     log.error(
-      `You have set ${settingsSet} but Nexus does not support ${itThem}. If you do not remove your customization you may/will (e.g. VSCode) see inconsistent results between your IDE and what Nexus tells you at build time. If you would like to see Nexus support ${thisThese} setting${s} please chime in at https://github.com/graphql-nexus/nexus/issues/1036.`
+      `You have set ${setting} but Nexus does not support it. If you do not remove your customization you may/will (e.g. VSCode) see inconsistent results between your IDE and what Nexus tells you at build time. If you would like to see Nexus support this setting please chime in at https://github.com/graphql-nexus/nexus/issues/1036.`
     )
   }
 
   /**
-   * Setup types declaration file support
+   * Setup typeRoots
+   */
+
+  const { typeRoots } = tsconfigSourceOriginal.compilerOptions!
+  const nameAtTypes = 'node_modules/@types'
+  const nameTypes = 'types'
+  const explainAtTypes = `"${nameAtTypes}" is the TypeScript default for types packages and where Nexus outputs typegen to.`
+  const explainTypes = `"${nameTypes}" is the Nexus convention for _local_ types packages.`
+  if (!typeRoots) {
+    const setting = renderSetting('compilerOptions.typeRoots')
+    const val = renderVal([nameAtTypes, nameTypes])
+    const explainsRendered = [explainAtTypes, explainTypes].join(' ')
+    tsconfigSource.compilerOptions.typeRoots = [nameAtTypes, nameTypes]
+    log.warn(`Please set ${setting} to ${val}. ${explainsRendered}`)
+  } else {
+    const vals: string[] = []
+    let missingAtTypes = false
+    let explainAtTypes = ''
+    let explainTypes = ''
+    let explains: string[] = []
+    if (!typeRoots.includes(nameAtTypes)) {
+      missingAtTypes = true
+      explains.push(explainAtTypes)
+      tsconfigSource.compilerOptions.typeRoots!.push(nameAtTypes)
+      vals.push(nameAtTypes)
+    }
+    if (!typeRoots.includes(nameTypes)) {
+      explains.push(explainTypes)
+      tsconfigSource.compilerOptions.typeRoots!.push(nameTypes)
+      vals.push(nameTypes)
+    }
+    if (vals.length) {
+      const setting = renderSetting('compilerOptions.typeRoots')
+      const valsRendered = vals.map(renderVal).join(', ')
+      const explainsRendered = explains.join(' ')
+      // If typeRoots are specified but node_modules/@types is not in them
+      // that's really bad! So elevate log to error level.
+      if (missingAtTypes) {
+        log.error(`Please add ${valsRendered} to your ${setting} array. ${explainsRendered}`)
+      } else {
+        log.warn(`Please add ${valsRendered} to your ${setting} array. ${explainsRendered}`)
+      }
+    }
+  }
+
+  /**
+   * Setup types declaration file support.
+   * Work with local tsconfig source contents as the Nexus convention is
+   * supporting a types.d.ts file at project root and "include" is relative to
+   * the tsconfig it shows up in. Thus We want to lint for local config
+   * presence, not inherited.
    */
 
   if (!tsconfigSourceOriginal.include?.includes('types.d.ts')) {
     tsconfigSource.include.push('types.d.ts')
-    const val = chalk.yellowBright(`"types.d.ts"`)
-    const setting = chalk.yellowBright(`"include"`)
+    const val = renderVal('types.d.ts')
+    const setting = renderVal('include')
     log.warn(
       `Please add ${val} to your ${setting} array. If you do not then results from Nexus and your IDE will not agree if the declaration file is used in your project.`
     )
@@ -187,7 +229,7 @@ export async function readOrScaffoldTsconfig(input: {
   if (!tsconfigSource.compilerOptions.rootDir) {
     tsconfigSource.compilerOptions.rootDir = '.'
     const setting = renderSetting('compilerOptions.rootDir')
-    const val = renderValString(tsconfigSource.compilerOptions.rootDir)
+    const val = renderVal(tsconfigSource.compilerOptions.rootDir)
     log.warn(`Please set ${setting} to ${val}`)
   }
 
@@ -212,8 +254,6 @@ export async function readOrScaffoldTsconfig(input: {
     )
   }
 
-  tsconfigParsed.options.noEmit = false
-
   /**
    * Setup out root (aka. outDir)
    */
@@ -236,10 +276,16 @@ export async function readOrScaffoldTsconfig(input: {
       tsconfigSource,
       ts.sys,
       projectRoot,
-      tsconfigParsed.options,
+      undefined,
       tsconfigPath
     )
   }
+
+  /**
+   * Forced internal settings
+   */
+
+  tsconfigParsed.options.noEmit = false
 
   /**
    * Validate the tsconfig
@@ -269,6 +315,7 @@ export function tsconfigTemplate(input: { sourceRootRelative: string; outRootRel
       rootDir: sourceRelative,
       noEmit: true,
       plugins: [{ name: 'nexus/typescript-language-service' }],
+      typeRoots: ['node_modules/@types', 'types'],
     },
     include: ['types.d.ts', sourceRelative],
   }
@@ -283,8 +330,8 @@ function renderSetting(setting: string) {
 }
 
 /**
- * Prettify a JSON string value for terminal output.
+ * Prettify a JSON value for terminal output.
  */
-function renderValString(val: string): string {
-  return chalk.yellowBright(`"${val}"`)
+function renderVal(val: unknown): string {
+  return chalk.yellowBright(JSON.stringify(val))
 }

@@ -50,6 +50,7 @@ function tsconfig(input?: TsConfigJson): TsConfigJson {
       noEmit: true,
       rootDir: '.',
       plugins: [{ name: NEXUS_TS_LSP_IMPORT_ID }],
+      typeRoots: ['node_modules/@types', 'types'],
     },
     include: ['types.d.ts', '.'],
   }
@@ -205,6 +206,10 @@ describe('tsconfig', () => {
           "rootDir": ".",
           "strict": true,
           "target": "es2016",
+          "typeRoots": Array [
+            "node_modules/@types",
+            "types",
+          ],
         },
         "include": Array [
           "types.d.ts",
@@ -215,7 +220,7 @@ describe('tsconfig', () => {
   })
 
   describe('composite projects', () => {
-    it('inheritable settigs are recognized but "include", "rootDir", "plugins" must be local', async () => {
+    it('inheritable settigs are recognized but "include", "rootDir", "plugins", "typeRoots" must be local', async () => {
       nestTmpDir()
       ctx.fs.write('src/app.ts', '')
       ctx.fs.write('../tsconfig.packages.json', tsconfigSource())
@@ -228,6 +233,7 @@ describe('tsconfig', () => {
 
             \\"plugins\\": [{ \\"name\\": \\"nexus/typescript-language-service\\" }]
 
+        ▲ nexus:tsconfig Please set [93m\`compilerOptions.typeRoots\`[39m to [93m[\\"node_modules/@types\\",\\"types\\"][39m. \\"node_modules/@types\\" is the TypeScript default for types packages and where Nexus outputs typegen to. \\"types\\" is the Nexus convention for _local_ types packages.
         ▲ nexus:tsconfig Please add [93m\\"types.d.ts\\"[39m to your [93m\\"include\\"[39m array. If you do not then results from Nexus and your IDE will not agree if the declaration file is used in your project.
         ▲ nexus:tsconfig Please set [93m\`compilerOptions.rootDir\`[39m to [93m\\".\\"[39m
         ▲ nexus:tsconfig Please set [93m\`include\`[39m to have \\".\\"
@@ -236,30 +242,34 @@ describe('tsconfig', () => {
     })
   })
 
-  describe('linting', () => {
-    it('enforces noEmit is true (explicit false)', async () => {
+  describe('no emit', () => {
+    it('warns if "noEmit" is not true (explicit false), and sets "noEmit" to false in memory', async () => {
       ctx.setup({
         'tsconfig.json': tsconfigSource({ compilerOptions: { noEmit: false } }),
       })
-      await ctx.createLayoutThrow()
+      const res = await ctx.createLayoutThrow()
       expect(logs).toMatchInlineSnapshot(`
         "▲ nexus:tsconfig Please set [93m\`compilerOptions.noEmit\`[39m to true. This will ensure you do not accidentally emit using [93m\`$ tsc\`[39m. Use [93m\`$ nexus build\`[39m to build your app and emit JavaScript.
         "
       `)
+      expect(res.tsConfig.content.options.noEmit).toEqual(false)
     })
-    it('enforces noEmit is true (undefined)', async () => {
+    it('warns if "noEmit" is not true (undefined), and sets "noEmit" to false in memory', async () => {
       const tscfg = tsconfig()
       delete tscfg.compilerOptions?.noEmit
 
       ctx.setup({
         'tsconfig.json': JSON.stringify(tscfg),
       })
-      await ctx.createLayoutThrow()
+      const res = await ctx.createLayoutThrow()
       expect(logs).toMatchInlineSnapshot(`
         "▲ nexus:tsconfig Please set [93m\`compilerOptions.noEmit\`[39m to true. This will ensure you do not accidentally emit using [93m\`$ tsc\`[39m. Use [93m\`$ nexus build\`[39m to build your app and emit JavaScript.
         "
       `)
+      expect(res.tsConfig.content.options.noEmit).toEqual(false)
     })
+  })
+  describe('linting', () => {
     it('warns if reserved settings are in use', async () => {
       ctx.setup({
         'tsconfig.json': tsconfigSource({
@@ -320,25 +330,81 @@ describe('tsconfig', () => {
         "
       `)
     })
-    it('does not support use of compilerOptions.rootTypes', async () => {
-      ctx.setup({
-        'tsconfig.json': tsconfigSource({ compilerOptions: { typeRoots: [] } }),
+
+    describe('typeRoots', () => {
+      it('logs error if typeRoots present but missing "node_modules/@types", and adds it in-memory', async () => {
+        const tscfg = tsconfig()
+        tscfg.compilerOptions!.typeRoots = ['types']
+        ctx.setup({
+          'tsconfig.json': JSON.stringify(tscfg),
+        })
+        const res = await ctx.createLayout().then(rightOrThrow)
+        expect(logs).toMatchInlineSnapshot(`
+                  "■ nexus:tsconfig Please add [93m\\"node_modules/@types\\"[39m to your [93m\`compilerOptions.typeRoots\`[39m array. 
+                  "
+              `)
+        expect(res.tsConfig.content.options.typeRoots).toMatchInlineSnapshot(`
+                  Array [
+                    "__DYNAMIC__/types",
+                    "__DYNAMIC__/node_modules/@types",
+                  ]
+              `)
       })
-      await ctx.createLayoutThrow()
-      expect(logs).toMatchInlineSnapshot(`
-        "■ nexus:tsconfig You have set [93m\`compilerOptions.typeRoots\`[39m but Nexus does not support it. If you do not remove your customization you may/will (e.g. VSCode) see inconsistent results between your IDE and what Nexus tells you at build time. If you would like to see Nexus support this setting please chime in at https://github.com/graphql-nexus/nexus/issues/1036.
-        "
-      `)
-    })
-    it('outputs warning only once if both types and typeRoots is set', async () => {
-      ctx.setup({
-        'tsconfig.json': tsconfigSource({ compilerOptions: { typeRoots: [], types: [] } }),
+      it('logs warning if "typeRoots" present but msising "types", and adds it in-memory', async () => {
+        const tscfg = tsconfig()
+        tscfg.compilerOptions!.typeRoots = ['node_modules/@types']
+        ctx.setup({
+          'tsconfig.json': JSON.stringify(tscfg),
+        })
+        const res = await ctx.createLayout().then(rightOrThrow)
+        expect(logs).toMatchInlineSnapshot(`
+                  "▲ nexus:tsconfig Please add [93m\\"types\\"[39m to your [93m\`compilerOptions.typeRoots\`[39m array. 
+                  "
+              `)
+        expect(res.tsConfig.content.options.typeRoots).toMatchInlineSnapshot(`
+                  Array [
+                    "__DYNAMIC__/node_modules/@types",
+                    "__DYNAMIC__/types",
+                  ]
+              `)
       })
-      await ctx.createLayoutThrow()
-      expect(logs).toMatchInlineSnapshot(`
-        "■ nexus:tsconfig You have set [93m\`compilerOptions.typeRoots\`[39m and [93m\`compilerOptions.types\`[39m but Nexus does not support them. If you do not remove your customization you may/will (e.g. VSCode) see inconsistent results between your IDE and what Nexus tells you at build time. If you would like to see Nexus support these settings please chime in at https://github.com/graphql-nexus/nexus/issues/1036.
-        "
-      `)
+      it('logs warning if "typeRoots" missing, and add its in-memory', async () => {
+        const tscfg = tsconfig()
+        delete tscfg.compilerOptions!.typeRoots
+        ctx.setup({
+          'tsconfig.json': JSON.stringify(tscfg),
+        })
+        const res = await ctx.createLayout().then(rightOrThrow)
+        expect(logs).toMatchInlineSnapshot(`
+          "▲ nexus:tsconfig Please set [93m\`compilerOptions.typeRoots\`[39m to [93m[\\"node_modules/@types\\",\\"types\\"][39m. \\"node_modules/@types\\" is the TypeScript default for types packages and where Nexus outputs typegen to. \\"types\\" is the Nexus convention for _local_ types packages.
+          "
+        `)
+        expect(res.tsConfig.content.options.typeRoots).toMatchInlineSnapshot(`
+                  Array [
+                    "__DYNAMIC__/node_modules/@types",
+                    "__DYNAMIC__/types",
+                  ]
+              `)
+      })
+      it('preserves any "typeRoot" settings present', async () => {
+        const tscfg = tsconfig()
+        tscfg.compilerOptions!.typeRoots = ['node_modules/@types', 'custom']
+        ctx.setup({
+          'tsconfig.json': JSON.stringify(tscfg),
+        })
+        const res = await ctx.createLayout().then(rightOrThrow)
+        expect(logs).toMatchInlineSnapshot(`
+                  "▲ nexus:tsconfig Please add [93m\\"types\\"[39m to your [93m\`compilerOptions.typeRoots\`[39m array. 
+                  "
+              `)
+        expect(res.tsConfig.content.options.typeRoots).toMatchInlineSnapshot(`
+                  Array [
+                    "__DYNAMIC__/node_modules/@types",
+                    "__DYNAMIC__/custom",
+                    "__DYNAMIC__/types",
+                  ]
+              `)
+      })
     })
   })
 
