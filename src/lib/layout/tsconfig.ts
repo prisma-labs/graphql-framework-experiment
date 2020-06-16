@@ -253,8 +253,6 @@ export async function readOrScaffoldTsconfig(input: {
     )
   }
 
-  tsconfigParsed.options.noEmit = false
-
   /**
    * Setup out root (aka. outDir)
    */
@@ -281,6 +279,12 @@ export async function readOrScaffoldTsconfig(input: {
       tsconfigPath
     )
   }
+
+  /**
+   * Forced internal settings
+   */
+
+  tsconfigParsed.options.noEmit = false
 
   /**
    * Validate the tsconfig

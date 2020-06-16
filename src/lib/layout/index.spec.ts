@@ -242,30 +242,34 @@ describe('tsconfig', () => {
     })
   })
 
-  describe('linting', () => {
-    it('enforces noEmit is true (explicit false)', async () => {
+  describe('no emit', () => {
+    it('warns if "noEmit" is not true (explicit false), and sets "noEmit" to false in memory', async () => {
       ctx.setup({
         'tsconfig.json': tsconfigSource({ compilerOptions: { noEmit: false } }),
       })
-      await ctx.createLayoutThrow()
+      const res = await ctx.createLayoutThrow()
       expect(logs).toMatchInlineSnapshot(`
         "▲ nexus:tsconfig Please set [93m\`compilerOptions.noEmit\`[39m to true. This will ensure you do not accidentally emit using [93m\`$ tsc\`[39m. Use [93m\`$ nexus build\`[39m to build your app and emit JavaScript.
         "
       `)
+      expect(res.tsConfig.content.options.noEmit).toEqual(false)
     })
-    it('enforces noEmit is true (undefined)', async () => {
+    it('warns if "noEmit" is not true (undefined), and sets "noEmit" to false in memory', async () => {
       const tscfg = tsconfig()
       delete tscfg.compilerOptions?.noEmit
 
       ctx.setup({
         'tsconfig.json': JSON.stringify(tscfg),
       })
-      await ctx.createLayoutThrow()
+      const res = await ctx.createLayoutThrow()
       expect(logs).toMatchInlineSnapshot(`
         "▲ nexus:tsconfig Please set [93m\`compilerOptions.noEmit\`[39m to true. This will ensure you do not accidentally emit using [93m\`$ tsc\`[39m. Use [93m\`$ nexus build\`[39m to build your app and emit JavaScript.
         "
       `)
+      expect(res.tsConfig.content.options.noEmit).toEqual(false)
     })
+  })
+  describe('linting', () => {
     it('warns if reserved settings are in use', async () => {
       ctx.setup({
         'tsconfig.json': tsconfigSource({
