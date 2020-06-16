@@ -3,6 +3,7 @@ import { Either, left, right } from 'fp-ts/lib/Either'
 import * as Lo from 'lodash'
 import * as Layout from '../layout'
 import { rootLogger } from '../nexus-logger'
+import * as Scalars from '../scalars'
 import { partition } from '../utils'
 import { importPluginDimension } from './import'
 import { createBaseLens, createRuntimeLens, createWorktimeLens } from './lens'
@@ -14,7 +15,7 @@ const log = rootLogger.child('plugin')
 /**
  * Fully import and load the runtime plugins, if any, amongst the given plugins.
  */
-export function importAndLoadRuntimePlugins(plugins: Plugin[]) {
+export function importAndLoadRuntimePlugins(plugins: Plugin[], scalars: Scalars.Scalars) {
   const validPlugins = filterValidPlugins(plugins)
 
   const gotManifests = getPluginManifests(validPlugins)
@@ -30,7 +31,7 @@ export function importAndLoadRuntimePlugins(plugins: Plugin[]) {
     })
     .map((plugin) => {
       log.trace('loading runtime plugin', { name: plugin.manifest.name })
-      return plugin.run(createRuntimeLens(plugin.manifest.name))
+      return plugin.run(createRuntimeLens(plugin.manifest.name, scalars))
     })
 }
 

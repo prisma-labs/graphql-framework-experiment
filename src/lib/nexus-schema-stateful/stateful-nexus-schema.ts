@@ -1,11 +1,13 @@
 import * as NexusSchema from '@nexus/schema'
 import * as GraphQL from 'graphql'
 import * as CustomTypes from './custom-types'
+import * as Scalars from '../scalars'
 
 // todo use this as return type of constructor
 export interface StatefulNexusSchema {
   state: {
     types: NexusSchemaTypeDef[]
+    scalars: Scalars.Scalars
   }
   builders: NexusSchemaStatefulBuilders
 }
@@ -81,6 +83,7 @@ type NexusSchemaTypeDef =
 export function createNexusSchemaStateful() {
   const state: StatefulNexusSchema['state'] = {
     types: [],
+    scalars: {},
   }
 
   function objectType<TypeName extends string>(
@@ -112,6 +115,7 @@ export function createNexusSchemaStateful() {
   ): NexusSchema.core.NexusScalarTypeDef<TypeName> {
     const typeDef = NexusSchema.scalarType(config)
     state.types.push(typeDef)
+    state.scalars[typeDef.name] = new GraphQL.GraphQLScalarType(config)
     return typeDef
   }
 
@@ -159,6 +163,7 @@ export function createNexusSchemaStateful() {
     if (type instanceof GraphQL.GraphQLScalarType && methodName) {
       const typeDef = NexusSchema.asNexusMethod(type, methodName)
       state.types.push(typeDef)
+      state.scalars[typeDef.name] = typeDef
       return typeDef
     }
 
