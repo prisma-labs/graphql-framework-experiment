@@ -1,3 +1,4 @@
+import { cloneDeep } from 'lodash'
 import { createSchemaSettingsManager, SchemaSettingsManager } from './settings'
 
 let sm: SchemaSettingsManager
@@ -24,4 +25,12 @@ it('has defaults', () => {
       "rootTypingsGlobPattern": "./**/*.ts",
     }
   `)
+})
+
+describe('connctions', () => {
+  it('can be changed, preserving the core defaults', () => {
+    const original = cloneDeep(sm.data)
+    sm.change({ connections: {} })
+    expect(sm.data).toEqual(original)
+  })
 })

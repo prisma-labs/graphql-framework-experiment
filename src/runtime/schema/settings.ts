@@ -146,11 +146,7 @@ export function changeSettings(state: SettingsData, newSettings: SettingsInput):
   }
 
   if (newSettings.connections) {
-    // todo deep merge
-    Object.assign(state.connections, {
-      ...newSettings.connections,
-      ...connectionPluginConfigManagedByNexus,
-    })
+    Lo.merge(state.connections, newSettings.connections)
   }
 }
 
