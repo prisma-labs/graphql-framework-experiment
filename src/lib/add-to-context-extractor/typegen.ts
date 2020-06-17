@@ -5,7 +5,7 @@ import { hardWriteFile } from '../fs'
 import * as Layout from '../layout'
 import { rootLogger } from '../nexus-logger'
 import { createTSProgram } from '../tsc'
-import { extractContextTypes, ExtractedContextTypes } from './extractor'
+import { ContribType, extractContextTypes, ExtractedContextTypes } from './extractor'
 
 const log = rootLogger.child('addToContextExtractor')
 
@@ -39,9 +39,13 @@ export async function generateContextExtractionArtifacts(
  * Output the context types to a typegen file.
  */
 export async function writeContextTypeGenFile(contextTypes: ExtractedContextTypes) {
-  const addToContextInterfaces = contextTypes.types
-    .map((result) => `interface Context ${result}`)
+  let addToContextInterfaces = contextTypes.types
+    .map(renderContextInterfaceForExtractedReturnType)
     .join('\n\n')
+
+  if (addToContextInterfaces.trim() === '') {
+    addToContextInterfaces = `interface Context {} // none\n\n`
+  }
 
   const content = codeBlock`
     import app from 'nexus'
@@ -60,7 +64,7 @@ export async function writeContextTypeGenFile(contextTypes: ExtractedContextType
 
     // The context types extracted from the app.
 
-    ${addToContextInterfaces.length > 0 ? addToContextInterfaces : `interface Context {}`}
+    ${addToContextInterfaces}
   `
 
   await hardWriteFile(NEXUS_DEFAULT_RUNTIME_CONTEXT_TYPEGEN_PATH, content)
@@ -68,4 +72,13 @@ export async function writeContextTypeGenFile(contextTypes: ExtractedContextType
 
 function renderImport(input: { from: string; names: string[] }) {
   return `import { ${input.names.join(', ')} } from '${input.from}'`
+}
+
+function renderContextInterfaceForExtractedReturnType(contribType: ContribType): string {
+  switch (contribType.kind) {
+    case 'literal':
+      return `interface Context ${contribType.value}`
+    case 'ref':
+      return `interface Context extends ${contribType.name} {}`
+  }
 }
