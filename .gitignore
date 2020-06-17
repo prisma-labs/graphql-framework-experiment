@@ -64,6 +64,7 @@ dist*
 /plugin.d.ts
 /plugin.js
 /components
+typescript-language-service
 
 # website
 website/.cache

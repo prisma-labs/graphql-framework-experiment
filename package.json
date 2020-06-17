@@ -102,7 +102,7 @@
     "release:pr": "dripip pr",
     "format": "prettier --write '.'",
     "build": "yarn clean && node scripts/build-module-facades && tsc --project tsconfig.cjs.json && tsc --project tsconfig.esm.json",
-    "clean": "git clean -fX && rm -rf dist*",
+    "clean": "git clean -fX && rm -rf dist* && rm -rf typescript-language-service",
     "postpublish": "yarn clean",
     "postinstall": "node scripts/postinstall",
     "prepublishOnly": "yarn build",
