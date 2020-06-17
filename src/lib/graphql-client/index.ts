@@ -16,7 +16,10 @@ export class GraphQLClient {
   }
 
   send(queryString: string, variables?: Variables) {
-    const headers = this.fetchHeaders
+    const headers = {}
+    for (const [key: string, value: string] of this.fetchHeaders.entries()) {
+      headers[key] = value
+    }
     const url = this.url
     const client = new GQLR.GraphQLClient(url, { headers })
     return client.request(queryString, variables)
