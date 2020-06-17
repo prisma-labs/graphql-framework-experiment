@@ -21,7 +21,6 @@ const fs = require('fs-jetpack')
 const os = require('os')
 const lo = require('lodash')
 const path = require('path')
-const { stripIndent } = require('common-tags')
 
 // prettier-ignore
 const facades = [

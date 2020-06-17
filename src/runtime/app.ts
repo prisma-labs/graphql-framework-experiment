@@ -10,6 +10,7 @@ import * as Server from './server'
 import { ContextCreator } from './server/server'
 import * as Settings from './settings'
 import { assertAppNotAssembled } from './utils'
+import { builtinScalars } from '../lib/scalars'
 
 const log = Logger.log.child('app')
 
@@ -120,17 +121,7 @@ export function create(): App {
     log: Logger.log,
   })
 
-  /**
-   * Setup default log filter
-   */
-
-  settingsComponent.public.change({
-    logger: {
-      filter: 'app:*, nexus:*@info+, *@warn+',
-    },
-  })
-
-  const api: App = {
+  const app: App = {
     log: log,
     settings: settingsComponent.public,
     schema: schemaComponent.public,
@@ -148,6 +139,8 @@ export function create(): App {
     assemble() {
       if (appState.assembled) return
 
+      schemaComponent.private.beforeAssembly()
+
       /**
        * Plugin reflection is run in the same process (eval). This means if the
        * process is the app, which it is during testing for example, then we
@@ -159,7 +152,10 @@ export function create(): App {
 
       appState.assembled = {} as AppState['assembled']
 
-      const loadedPlugins = Plugin.importAndLoadRuntimePlugins(appState.plugins)
+      const loadedPlugins = Plugin.importAndLoadRuntimePlugins(
+        appState.plugins,
+        appState.schemaComponent.scalars
+      )
       appState.assembled!.loadedPlugins = loadedPlugins
 
       const { schema, missingTypes } = schemaComponent.private.assemble(loadedPlugins)
@@ -194,8 +190,23 @@ export function create(): App {
     },
   }
 
+  /**
+   * Setup default log filter
+   */
+  app.settings.change({
+    logger: {
+      filter: 'app:*, nexus:*@info+, *@warn+',
+    },
+  })
+
+  /**
+   * Setup default scalar types
+   */
+  app.schema.importType(builtinScalars.DateTime, 'date')
+  app.schema.importType(builtinScalars.Json, 'json')
+
   return {
-    ...api,
+    ...app,
     private: {
       state: appState,
     },

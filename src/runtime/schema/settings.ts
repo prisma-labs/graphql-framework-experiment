@@ -60,7 +60,7 @@ export type SettingsInput = {
   /**
    * Disable or configure the authorization plugin
    */
-  authorization?: false | NexusSchema.core.FieldAuthorizePluginConfig,
+  authorization?: false | NexusSchema.core.FieldAuthorizePluginConfig
   /**
    * Should a [GraphQL SDL file](https://www.prisma.io/blog/graphql-sdl-schema-definition-language-6755bcb9ce51) be generated when the app is built and to where?
    *
@@ -146,11 +146,7 @@ export function changeSettings(state: SettingsData, newSettings: SettingsInput):
   }
 
   if (newSettings.connections) {
-    // todo deep merge
-    Object.assign(state.connections, {
-      ...newSettings.connections,
-      ...connectionPluginConfigManagedByNexus,
-    })
+    Lo.merge(state.connections, newSettings.connections)
   }
 }
 
@@ -171,7 +167,7 @@ function defaultSettings(): SettingsData {
         ...connectionPluginConfigManagedByNexus,
       },
     },
-    authorization: {}
+    authorization: {},
   }
 
   return data

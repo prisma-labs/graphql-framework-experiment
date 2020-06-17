@@ -1,6 +1,7 @@
 import * as Logger from '@nexus/logger'
 import * as NexusSchema from '@nexus/schema'
 import * as Prompts from 'prompts'
+import * as Scalars from '../../scalars'
 import * as Testing from '../../../testing/testing'
 import * as Layout from '../../layout'
 import * as PackageManager from '../../package-manager'
@@ -147,6 +148,7 @@ export type Lens = {
 
 export interface RuntimeLens extends Lens {
   shouldGenerateArtifacts: boolean // TODO: Should probably become isReflectionPhase
+  scalars: Scalars.Scalars
 }
 
 export interface TesttimeLens extends Lens {}

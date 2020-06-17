@@ -40,7 +40,7 @@ type Options = {
    * Add a `t.crud` method in your definition block to generate CRUD resolvers in your `Query` and `Mutation` GraphQL Object Type.
    *
    * @default false
-   */  
+   */
   experimentalCRUD?: boolean
   /**
    * nexus-prisma will call this to get a reference to an instance of the Prisma Client.
@@ -54,7 +54,6 @@ type Options = {
    * and permits the same environment variables.
    */
   shouldGenerateArtifacts?: boolean
-
   inputs?: {
     /**
      * What is the path to the Prisma Client package? By default looks in
@@ -63,6 +62,16 @@ type Options = {
      */
     prismaClient?: string
   }
+  /**
+   * Select the pagination strategy.
+   *
+   * 'prisma' strategy results in GraphQL pagination arguments mirroring those of Prisma: skip, cursor, take
+   *
+   * 'relay' strategy results in GraphQL pagination arguments matching those of the [GraphQL Relay specification](https://relay.dev/graphql/connections. htm): before, after, first, last.
+   *
+   * @default 'relay'
+   */
+  paginationStrategy?: 'relay' | 'prisma'
   outputs?: {
     /**
      * Where should typegen be put on disk? By default emits into `node_modules/@types`.
@@ -70,6 +79,14 @@ type Options = {
     typegen?: string
   }
   computedInputs?: GlobalComputedInputs
+  /**
+   * Map of GraphQL scalar types to be used by the library for the Prisma scalars
+   *
+   * When not provided, the scalar types will be passthrough.
+   *
+   * @default {}
+   */
+  scalars?: Partial<Record<string, GraphQLScalarType>>
 }
 ```
 

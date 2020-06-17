@@ -1,3 +1,5 @@
+import * as HTTP from 'http'
+import * as Net from 'net'
 import * as Path from 'path'
 import Git from 'simple-git/promise'
 import { JsonObject, PackageJson, Primitive } from 'type-fest'
@@ -319,13 +321,6 @@ export function getPackageJsonMain(packageJson: PackageJson & { main: string }):
     : Path.dirname(packageJson.main)
 }
 
-/**
- * An error with additional contextual data.
- */
-export type ContextualError<Context extends Record<string, unknown> = {}> = Error & {
-  context: Context
-}
-
 export interface Exception<T extends string, C extends SomeRecord> extends Error {
   type: T
   context: C
@@ -333,10 +328,16 @@ export interface Exception<T extends string, C extends SomeRecord> extends Error
 
 export function exceptionType<Type extends string, Context extends SomeRecord>(
   type: Type,
-  template: (ctx: Context) => string
+  messageOrTemplate: string | ((ctx: Context) => string)
 ) {
+  // todo overload function (or two functions)
+  // make template optional
+  // if given, return factory that only accepts context
+  // if not given, return factory that accepts message + context
   return (ctx: Context) => {
-    const e = new Error(template(ctx)) as Exception<Type, Context>
+    const e = new Error(
+      typeof messageOrTemplate === 'string' ? messageOrTemplate : messageOrTemplate(ctx)
+    ) as Exception<Type, Context>
     e.type = type
     e.context = ctx
     return e
@@ -352,11 +353,11 @@ export function exceptionType<Type extends string, Context extends SomeRecord>(
  * strongly typed with the Either contstruct, making it so the error contextual
  * data flows with inference through your program.
  */
-export function createContextualError<Context extends SomeRecord>(
+export function exception<Context extends SomeRecord = {}>(
   message: string,
   context: Context
-): ContextualError<Context> {
-  const e = new Error(message) as ContextualError<Context>
+): Exception<'generic', Context> {
+  const e = new Error(message) as Exception<'generic', Context>
 
   Object.defineProperty(e, 'message', {
     enumerable: true,
@@ -364,6 +365,7 @@ export function createContextualError<Context extends SomeRecord>(
   })
 
   e.context = context
+  e.type = 'generic'
 
   return e
 }
@@ -436,3 +438,23 @@ export function prettyImportPath(id: string): string {
 }
 
 type SomeRecord = Record<string, unknown>
+
+export function httpListen(server: HTTP.Server, options: Net.ListenOptions): Promise<void> {
+  return new Promise((res, rej) => {
+    server.listen(options, () => {
+      res()
+    })
+  })
+}
+
+export function httpClose(server: HTTP.Server): Promise<void> {
+  return new Promise((res, rej) => {
+    server.close((err) => {
+      if (err) {
+        rej(err)
+      } else {
+        res()
+      }
+    })
+  })
+}
