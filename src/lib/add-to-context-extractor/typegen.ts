@@ -79,6 +79,6 @@ function renderContextInterfaceForExtractedReturnType(contribType: ContribType):
     case 'literal':
       return `interface Context ${contribType.value}`
     case 'ref':
-      return `interface Context extends ${contribType.name}`
+      return `interface Context extends ${contribType.name} {}`
   }
 }
