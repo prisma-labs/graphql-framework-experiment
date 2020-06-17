@@ -71,9 +71,7 @@ type Options = {
    *
    * @default 'relay'
    */
-  paginationStrategy?:
-    | 'relay'
-    | 'prisma'
+  paginationStrategy?: 'relay' | 'prisma'
   outputs?: {
     /**
      * Where should typegen be put on disk? By default emits into `node_modules/@types`.
