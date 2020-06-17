@@ -357,6 +357,23 @@ it.todo('truncates import paths when detected to be an external package')
 it.todo('props with union types where one union member is a type reference')
 it.todo('props with union intersection types where one intersection member is a type reference')
 
+it.only('with return type as an alias', () => {
+  expect(
+    extract(`
+        export interface A {}
+        const a: A
+        schema.addToContext(req => { return null as A })
+      `)
+  ).toMatchInlineSnapshot(`
+    Object {
+      "typeImports": Array [],
+      "types": Array [
+        "A",
+      ],
+    }
+  `)
+})
+
 it('dedupes imports', () => {
   expect(
     extract(`

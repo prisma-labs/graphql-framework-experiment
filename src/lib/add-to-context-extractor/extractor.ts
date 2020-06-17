@@ -107,12 +107,14 @@ export function extractContextTypes(program: ts.Program): ExtractedContextTypes 
         const contextAdderSig = contextAdderSigs[0]
         const contextAdderRetType = checker.getReturnTypeOfSignature(contextAdderSig)
         const unwrappedContextAdderRetType = unwrapMaybePromise(contextAdderRetType, checker)
+        console.log(unwrappedContextAdderRetType.getSymbol()?.getName())
         const contextAdderRetTypeString = checker.typeToString(
           unwrappedContextAdderRetType,
           undefined,
           ts.TypeFormatFlags.NoTruncation
         )
 
+        log.trace('got return type', { type: contextAdderRetTypeString })
         contextTypeContributions.types.push(contextAdderRetTypeString)
 
         // search for named references, they will require importing later on

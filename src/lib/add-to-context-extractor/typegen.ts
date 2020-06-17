@@ -60,7 +60,7 @@ export async function writeContextTypeGenFile(contextTypes: ExtractedContextType
 
     // The context types extracted from the app.
 
-    ${addToContextInterfaces.length > 0 ? addToContextInterfaces : `interface Context {}`}
+    ${addToContextInterfaces.length > 0 ? addToContextInterfaces : `interface Context {} // none`}
   `
 
   await hardWriteFile(NEXUS_DEFAULT_RUNTIME_CONTEXT_TYPEGEN_PATH, content)
