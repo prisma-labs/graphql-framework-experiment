@@ -38,7 +38,10 @@ it('extracts from returned object of primitive values from single call', () => {
     Object {
       "typeImports": Array [],
       "types": Array [
-        "{ a: number; }",
+        Object {
+          "kind": "literal",
+          "value": "{ a: number; }",
+        },
       ],
     }
   `)
@@ -54,8 +57,14 @@ it('extracts from returned object of primitive values from multiple calls', () =
     Object {
       "typeImports": Array [],
       "types": Array [
-        "{ a: number; }",
-        "{ b: number; }",
+        Object {
+          "kind": "literal",
+          "value": "{ a: number; }",
+        },
+        Object {
+          "kind": "literal",
+          "value": "{ b: number; }",
+        },
       ],
     }
   `)
@@ -71,7 +80,10 @@ it('extracts from returned object of referenced primitive value', () => {
     Object {
       "typeImports": Array [],
       "types": Array [
-        "{ a: number; }",
+        Object {
+          "kind": "literal",
+          "value": "{ a: number; }",
+        },
       ],
     }
   `)
@@ -88,7 +100,10 @@ it('extracts from returned object of referenced object value', () => {
     Object {
       "typeImports": Array [],
       "types": Array [
-        "{ foo: { bar: { baz: string; }; }; }",
+        Object {
+          "kind": "literal",
+          "value": "{ foo: { bar: { baz: string; }; }; }",
+        },
       ],
     }
   `)
@@ -109,7 +124,10 @@ it('extracts from returned object of referenced object with inline type', () => 
     Object {
       "typeImports": Array [],
       "types": Array [
-        "{ foo: { bar: { baz: string; }; }; }",
+        Object {
+          "kind": "literal",
+          "value": "{ foo: { bar: { baz: string; }; }; }",
+        },
       ],
     }
   `)
@@ -139,7 +157,10 @@ it('captures required imports information', () => {
         },
       ],
       "types": Array [
-        "{ foo: Foo; }",
+        Object {
+          "kind": "literal",
+          "value": "{ foo: Foo; }",
+        },
       ],
     }
   `)
@@ -169,7 +190,10 @@ it('detects if a referenced type is not exported', () => {
         },
       ],
       "types": Array [
-        "{ foo: Foo; }",
+        Object {
+          "kind": "literal",
+          "value": "{ foo: Foo; }",
+        },
       ],
     }
   `)
@@ -186,7 +210,10 @@ it('extracts optionality from props', () => {
     Object {
       "typeImports": Array [],
       "types": Array [
-        "{ foo: { bar?: { baz?: string; }; }; }",
+        Object {
+          "kind": "literal",
+          "value": "{ foo: { bar?: { baz?: string; }; }; }",
+        },
       ],
     }
   `)
@@ -216,7 +243,10 @@ it('extracts from type alias', () => {
         },
       ],
       "types": Array [
-        "{ foo: Foo; }",
+        Object {
+          "kind": "literal",
+          "value": "{ foo: Foo; }",
+        },
       ],
     }
   `)
@@ -246,7 +276,10 @@ it('prop type intersection', () => {
         },
       ],
       "types": Array [
-        "{ foo: Foo & Bar; }",
+        Object {
+          "kind": "literal",
+          "value": "{ foo: Foo & Bar; }",
+        },
       ],
     }
   `)
@@ -271,7 +304,10 @@ it('prop type aliased intersection', () => {
         },
       ],
       "types": Array [
-        "{ foo: Qux; }",
+        Object {
+          "kind": "literal",
+          "value": "{ foo: Qux; }",
+        },
       ],
     }
   `)
@@ -301,7 +337,10 @@ it('prop type union', () => {
         },
       ],
       "types": Array [
-        "{ foo: Foo | Bar; }",
+        Object {
+          "kind": "literal",
+          "value": "{ foo: Foo | Bar; }",
+        },
       ],
     }
   `)
@@ -326,7 +365,10 @@ it('prop type aliased union', () => {
         },
       ],
       "types": Array [
-        "{ foo: Qux; }",
+        Object {
+          "kind": "literal",
+          "value": "{ foo: Qux; }",
+        },
       ],
     }
   `)
@@ -357,21 +399,59 @@ it.todo('truncates import paths when detected to be an external package')
 it.todo('props with union types where one union member is a type reference')
 it.todo('props with union intersection types where one intersection member is a type reference')
 
-it.only('with return type as an alias', () => {
-  expect(
-    extract(`
+describe('extracted type refs', () => {
+  it('an alias', () => {
+    expect(
+      extract(`
+        export type A {}
+        const a: A
+        schema.addToContext(req => { return null as A })
+      `)
+    ).toMatchInlineSnapshot(`
+    Object {
+      "typeImports": Array [
+        Object {
+          "isExported": true,
+          "isNode": false,
+          "modulePath": "/src/a",
+          "name": "A",
+        },
+      ],
+      "types": Array [
+        Object {
+          "kind": "ref",
+          "name": "A",
+        },
+      ],
+    }
+  `)
+  })
+  it('an interface', () => {
+    expect(
+      extract(`
         export interface A {}
         const a: A
         schema.addToContext(req => { return null as A })
       `)
-  ).toMatchInlineSnapshot(`
+    ).toMatchInlineSnapshot(`
     Object {
-      "typeImports": Array [],
+      "typeImports": Array [
+        Object {
+          "isExported": true,
+          "isNode": false,
+          "modulePath": "/src/a",
+          "name": "A",
+        },
+      ],
       "types": Array [
-        "A",
+        Object {
+          "kind": "ref",
+          "name": "A",
+        },
       ],
     }
   `)
+  })
 })
 
 it('dedupes imports', () => {
@@ -392,8 +472,14 @@ it('dedupes imports', () => {
         },
       ],
       "types": Array [
-        "{ foo: Qux; bar: Qux; }",
-        "{ mar: Qux; }",
+        Object {
+          "kind": "literal",
+          "value": "{ foo: Qux; bar: Qux; }",
+        },
+        Object {
+          "kind": "literal",
+          "value": "{ mar: Qux; }",
+        },
       ],
     }
   `)
@@ -408,7 +494,10 @@ it('does not import array types', () => {
     Object {
       "typeImports": Array [],
       "types": Array [
-        "{ foo: string[]; }",
+        Object {
+          "kind": "literal",
+          "value": "{ foo: string[]; }",
+        },
       ],
     }
   `)
@@ -445,7 +534,10 @@ it('support async/await', () => {
     Object {
       "typeImports": Array [],
       "types": Array [
-        "{ foo: string[]; }",
+        Object {
+          "kind": "literal",
+          "value": "{ foo: string[]; }",
+        },
       ],
     }
   `)

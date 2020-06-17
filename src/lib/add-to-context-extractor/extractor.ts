@@ -12,10 +12,23 @@ interface TypeImportInfo {
   isNode: boolean
 }
 
+type A = { a: 2 }
+
+export type ContribTypeRef = { kind: 'ref'; name: string }
+export type ContribTypeLiteral = { kind: 'literal'; value: string }
+export type ContribType = ContribTypeRef | ContribTypeLiteral
+
 export interface ExtractedContextTypes {
   typeImports: TypeImportInfo[]
-  // types: Record<string, string>[]
-  types: string[]
+  types: ContribType[]
+}
+
+function contribTypeRef(name: string): ContribTypeRef {
+  return { kind: 'ref', name }
+}
+
+function contribTypeLiteral(value: string): ContribTypeLiteral {
+  return { kind: 'literal', value }
 }
 
 /**
@@ -67,7 +80,6 @@ export function extractContextTypes(program: ts.Program): ExtractedContextTypes 
 
     const expText = exp.getExpression().getText()
     const propName = exp.getName()
-    console.log(expText, propName)
 
     if (expText !== 'schema' || propName !== 'addToContext') {
       n.forEachChild(visit)
@@ -115,7 +127,16 @@ export function extractContextTypes(program: ts.Program): ExtractedContextTypes 
       tsm.ts.TypeFormatFlags.NoTruncation
     )
 
-    contextTypeContributions.types.push(contextAdderRetTypeString)
+    if (unwrappedContextAdderRetType.isInterface() || unwrappedContextAdderRetType.getAliasSymbol()) {
+      const info = extractTypeImportInfoFromType(unwrappedContextAdderRetType)
+      if (info) {
+        typeImportsIndex[info.name] = info
+      }
+      contextTypeContributions.types.push(contribTypeRef(contextAdderRetTypeString))
+      return
+    }
+
+    contextTypeContributions.types.push(contribTypeLiteral(contextAdderRetTypeString))
 
     // search for named references, they will require importing later on
     const contextAdderRetProps = unwrappedContextAdderRetType.getProperties()
