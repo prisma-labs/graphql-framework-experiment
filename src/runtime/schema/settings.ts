@@ -146,6 +146,12 @@ export function changeSettings(state: SettingsData, newSettings: SettingsInput):
   }
 
   if (newSettings.connections) {
+    Object.keys(newSettings.connections)
+      // must already have the defaults
+      .filter((key) => state.connections[key] === undefined)
+      .forEach((key) => {
+        state.connections[key] = Lo.merge(state.connections[key], connectionPluginConfigManagedByNexus)
+      })
     Lo.merge(state.connections, newSettings.connections)
   }
 }

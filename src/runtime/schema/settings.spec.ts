@@ -28,9 +28,45 @@ it('has defaults', () => {
 })
 
 describe('connctions', () => {
-  it('can be changed, preserving the core defaults', () => {
+  it('can be set empty, doing nothing', () => {
     const original = cloneDeep(sm.data)
     sm.change({ connections: {} })
     expect(sm.data).toEqual(original)
+  })
+  it('new types can be added getting the core settings', () => {
+    sm.change({ connections: { a: {} } })
+    expect(sm.data.connections).toMatchInlineSnapshot(`
+      Object {
+        "a": Object {
+          "nexusFieldName": "connection",
+          "nexusSchemaImportId": "nexus/components/schema",
+        },
+        "default": Object {
+          "nexusFieldName": "connection",
+          "nexusSchemaImportId": "nexus/components/schema",
+        },
+      }
+    `)
+  })
+  it('existing custom types can be changed, preserving its core settings', () => {
+    sm.change({ connections: { a: {} } }) // test above says this has the core settings
+    sm.change({ connections: { a: { disableForwardPagination: true } } })
+    expect(sm.data.connections.a).toMatchInlineSnapshot(`
+      Object {
+        "disableForwardPagination": true,
+        "nexusFieldName": "connection",
+        "nexusSchemaImportId": "nexus/components/schema",
+      }
+    `)
+  })
+  it('default types can be changed, preserving its core settings', () => {
+    sm.change({ connections: { default: { disableForwardPagination: true } } })
+    expect(sm.data.connections.default).toMatchInlineSnapshot(`
+      Object {
+        "disableForwardPagination": true,
+        "nexusFieldName": "connection",
+        "nexusSchemaImportId": "nexus/components/schema",
+      }
+    `)
   })
 })
