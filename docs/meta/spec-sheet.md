@@ -6,6 +6,14 @@
 - **Discussions** https://github.com/graphql-nexus/nexus/discussions
 - **Changelog** https://github.com/graphql-nexus/nexus/releases ([canary](https://github.com/graphql-nexus/nexus/releases/tag/next))
 
+### Repos & Packages
+
+<div class="Row WideM">
+
+![Repos & Packages](https://dsc.cloud/661643/repos-and-packages.png)
+
+</div>
+
 ### Features
 
 - Pervasive zero-config philosophy.
