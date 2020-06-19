@@ -70,6 +70,10 @@ like so:
 npm add nexus-plugin-prisma
 ```
 
+<div class="NextIs Note"></div>
+
+> Like we mentioned in Chapter 1, the simplicity of the dependency story here is no accident. Nexus Prisma plugin bundles deps like `@prisma/client` for you. If you're curious about Nexus' philosophy on dependency management [we've written about it here](/meta/architecture#dependency-philosophy).
+
 ```ts
 // api/app.ts
 
