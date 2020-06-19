@@ -10,7 +10,7 @@ To install, add the `connectionPlugin` to the `makeSchema.plugins` array, along 
 you'd like to include:
 
 ```ts
-import { makeSchema, connectionPlugin } from "@nexus/schema";
+import { makeSchema, connectionPlugin } from '@nexus/schema'
 
 const schema = makeSchema({
   // ... types, etc,
@@ -18,7 +18,7 @@ const schema = makeSchema({
     // ... other plugins
     connectionPlugin(),
   ],
-});
+})
 ```
 
 By default, the plugin will install a `t.connectionField` method available on the object definition builder:
@@ -45,16 +45,16 @@ If you have custom logic you'd like to provide in resolving the connection, we a
 You can use this with helpers provided via [graphql-relay-js](https://github.com/graphql/graphql-relay-js).
 
 ```ts
-import { connectionFromArray } from "graphql-relay";
+import { connectionFromArray } from 'graphql-relay'
 
 export const usersQueryField = queryField((t) => {
-  t.connectionField("users", {
+  t.connectionField('users', {
     type: User,
     async resolve(root, args, ctx, info) {
-      return connectionFromArray(await ctx.resolveUserNodes(), args);
+      return connectionFromArray(await ctx.resolveUserNodes(), args)
     },
-  });
-});
+  })
+})
 ```
 
 ### With `nodes`
@@ -63,34 +63,34 @@ When providing a `nodes` property, we make some assumptions about the structure 
 require you return a list of rows to resolve based on the connection, and then we will automatically infer the `hasNextPage`, `hasPreviousPage`, and `cursor` values for you.
 
 ```ts
-t.connectionField("users", {
+t.connectionField('users', {
   type: User,
   nodes(root, args, ctx, info) {
     // [{ id: 1,  ... }, ..., { id: 10, ... }]
-    return ctx.users.resolveForConnection(root, args, ctx, info);
+    return ctx.users.resolveForConnection(root, args, ctx, info)
   },
-});
+})
 ```
 
 One limitation of the `nodes` property, is that you cannot paginate backward without a `cursor`, or without defining a `cursorFromNode` property on either the field or plugin config. This is because we can't know how long the connection list may be to begin paginating backward.
 
 ```ts
-t.connectionField("usersConnectionNodes", {
+t.connectionField('usersConnectionNodes', {
   type: User,
   cursorFromNode(node, args, ctx, info, { index, nodes }) {
     if (args.last && !args.before) {
-      const totalCount = USERS_DATA.length;
-      return `cursor:${totalCount - args.last! + index + 1}`;
+      const totalCount = USERS_DATA.length
+      return `cursor:${totalCount - args.last! + index + 1}`
     }
     return connectionPlugin.defaultCursorFromNode(node, args, ctx, info, {
       index,
       nodes,
-    });
+    })
   },
   nodes() {
     // ...
   },
-});
+})
 ```
 
 ### Including a `nodes` field:
@@ -100,7 +100,7 @@ If you want to include a `nodes` field, which includes the nodes of the connecti
 ```ts
 connectionPlugin({
   includeNodesField: true,
-});
+})
 ```
 
 ```graphql
@@ -123,13 +123,13 @@ The `queryField` or `mutationField` helpers may accept a function rather than a 
 
 ```ts
 export const usersField = queryField((t) => {
-  t.connectionField("users", {
+  t.connectionField('users', {
     type: Users,
     nodes(root, args, ctx, info) {
-      return ctx.users.forConnection(root, args);
+      return ctx.users.forConnection(root, args)
     },
-  });
-});
+  })
+})
 ```
 
 There are properties on the plugin to help configure this including, `cursorFromNode`, which allows you to customize how the cursor is created, or `pageInfoFromNodes` to customize how `hasNextPage` or `hasPreviousPage` are set.
@@ -141,18 +141,18 @@ There are properties on the plugin to help configure this including, `cursorFrom
 You may specify `additionalArgs` on either the plugin or the field config, to add additional arguments to the connection:
 
 ```ts
-t.connectionField("userConnectionAdditionalArgs", {
+t.connectionField('userConnectionAdditionalArgs', {
   type: User,
   disableBackwardPagination: true,
   additionalArgs: {
     isEven: booleanArg({
-      description: "If true, filters the users with an odd pk",
+      description: 'If true, filters the users with an odd pk',
     }),
   },
   resolve() {
     // ...
   },
-});
+})
 ```
 
 If you have specified args on the field, they will overwrite any custom args defined on the plugin config, unless `inheritAdditionalArgs` is set to true.
@@ -175,16 +175,16 @@ connectionPlugin({
   validateArgs(args, info) {
     // ... custom validate logic
   },
-});
+})
 
 // or
 
-t.connectionField("users", {
+t.connectionField('users', {
   // ...
   validateArgs: (args, info) => {
     // custom validate logic
   },
-});
+})
 ```
 
 ## Extending Connection / Edge types
@@ -196,31 +196,31 @@ There are two ways to extend the connection type, one is by providing `extendCon
 ```ts
 connectionPlugin({
   extendConnection: {
-    totalCount: { type: "Int" },
+    totalCount: { type: 'Int' },
   },
-});
+})
 
-t.connectionField("users", {
+t.connectionField('users', {
   type: User,
   nodes: () => {
     // ...
   },
   totalCount() {
-    return ctx.users.totalCount(args);
+    return ctx.users.totalCount(args)
   },
-});
+})
 ```
 
 ### One-off / per-field
 
 ```ts
-t.connectionField("users", {
+t.connectionField('users', {
   extendConnection(t) {
-    t.int("totalCount", {
+    t.int('totalCount', {
       resolve: (source, args, ctx) => ctx.users.totalCount(args),
-    });
+    })
   },
-});
+})
 ```
 
 The field-level customization approach will result in a custom connection type specific to that type/field, e.g. `QueryUsers_Connection`, since the modification is specific to the individual field.
@@ -232,20 +232,20 @@ You can create multiple field connection types with varying defaults, available 
 Custom Usage:
 
 ```ts
-import { makeSchema, connectionPlugin } from "@nexus/schema";
+import { makeSchema, connectionPlugin } from '@nexus/schema'
 
 const schema = makeSchema({
   // ... types, etc,
   plugins: [
     connectionPlugin({
-      typePrefix: "Analytics",
-      nexusFieldName: "analyticsConnection",
+      typePrefix: 'Analytics',
+      nexusFieldName: 'analyticsConnection',
       extendConnection: {
-        totalCount: { type: "Int" },
-        avgDuration: { type: "Int" },
+        totalCount: { type: 'Int' },
+        avgDuration: { type: 'Int' },
       },
     }),
     connectionPlugin({}),
   ],
-});
+})
 ```

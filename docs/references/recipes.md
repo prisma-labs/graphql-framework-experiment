@@ -3,7 +3,7 @@
 1. Install the prisma plugin
 
    ```cli
-   npm install nexus-plugin-prisma
+   npm add nexus-plugin-prisma
    ```
 
 1. Enable the plugin

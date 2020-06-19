@@ -14,7 +14,7 @@ const MediaType = unionType({
   description: 'Any container type that can be rendered into the feed',
   definition(t) {
     t.members('Post', 'Image', 'Card')
-    t.resolveType(item => item.name)
+    t.resolveType((item) => item.name)
   },
 })
 ```

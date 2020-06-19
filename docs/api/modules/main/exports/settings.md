@@ -160,7 +160,6 @@ false | { formatError?: (authConfig: AuthConfig) => Error }
 
 Disable or configure the `authorize` field behaviour.
 
-
 #### `schema.rootTypingsGlobPattern`
 
 <div class="OneLineSignature"></div>

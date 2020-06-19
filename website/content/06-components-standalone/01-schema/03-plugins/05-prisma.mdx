@@ -9,7 +9,7 @@ Refer to the [framework Prisma plugin docs](/plugins/prisma#runtime-integration)
 ## Installation {docsify-ignore}
 
 ```cli
-npm install nexus-prisma
+npm add nexus-prisma
 ```
 
 ## Usage {docsify-ignore}
@@ -46,7 +46,8 @@ type Options = {
    * Add a `t.crud` method in your definition block to generate CRUD resolvers in your `Query` and `Mutation` GraphQL Object Type.
    *
    * @default false
-   */  
+   */
+
   experimentalCRUD?: boolean
   /**
    * nexus-prisma will call this to get a reference to an instance of the Prisma Client.

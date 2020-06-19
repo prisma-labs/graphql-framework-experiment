@@ -2,7 +2,6 @@ Prior to version `0.20`, the `nexus` package comprised only the schema definitio
 
 For users of `nexus` version `0.12` and below, you can either migrate to the `@nexus/schema` package, or to the new Nexus framework. The former is more straightforward, but the latter may significantly simplify your configuration and give you the benefit of baked-in sensible defaults and best practices (especially if you were previously using `graphql-yoga` or `express-graphql`). This guide will cover both scenarios.
 
-
 ### Using `@nexus/schema`
 
 Run `npm rm nexus` and `npm i @nexus/schema` to migrate to the updated package name.
@@ -23,7 +22,6 @@ Change any imports of `nexus` to `@nexus/schema`:
 ```
 
 If you were previously a user of `nexus-prisma`, it still exists! It currently remains published to NPM under the same package name and you can upgrade it and continue using it as before. (But note that [this may change in a future release](https://github.com/graphql-nexus/nexus-schema-plugin-prisma/issues/630).) You can find it on GitHub under its updated repository name: [`nexus-schema-plugin-prisma`](https://github.com/graphql-nexus/nexus-schema-plugin-prisma). (Note that the Nexus framework has a distinct but similarly-named plugin, [`nexus-plugin-prisma`](https://github.com/graphql-nexus/nexus-plugin-prisma), which is covered below.)
-
 
 ### Using `nexus`
 

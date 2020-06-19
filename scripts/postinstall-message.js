@@ -35,5 +35,3 @@ let message = `
 `
 
 process.stdout.write(message)
-
-

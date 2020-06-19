@@ -75,7 +75,7 @@ makeSchema({
       {
         source: '@packages/types/src/db.ts',
         alias: 'dbt',
-        typeMatch: name => new RegExp(`(?:interface|type|class)\\s+(${name}s?)\\W`, 'g'),
+        typeMatch: (name) => new RegExp(`(?:interface|type|class)\\s+(${name}s?)\\W`, 'g'),
       },
       // We also need to import this source in order to provide it as the `contextType` below.
       {
@@ -143,7 +143,7 @@ Optional, allows you to override the `printSchema` when outputting the generated
 ```ts
 makeSchema({
   // ...
-  customPrintSchemaFn: schema => {
+  customPrintSchemaFn: (schema) => {
     return printSchema(schema, { commentDescriptions: true })
   },
 })

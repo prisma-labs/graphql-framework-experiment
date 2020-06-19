@@ -29,8 +29,8 @@ GraphQL Nexus can be installed with either `npm` or `yarn`.
 <!--npm-->
 
 ```sh
-npm install nexus
-npm install graphql # required as a peer dependency
+npm add nexus
+npm add graphql # required as a peer dependency
 ```
 
 <!--yarn-->
@@ -56,47 +56,47 @@ import {
   intArg,
   arg,
   makeSchema,
-} from "@nexus/schema";
+} from '@nexus/schema'
 
 const Node = interfaceType({
-  name: "Node",
+  name: 'Node',
   definition(t) {
-    t.id("id", { description: "Unique identifier for the resource" });
-    t.resolveType(() => null);
+    t.id('id', { description: 'Unique identifier for the resource' })
+    t.resolveType(() => null)
   },
-});
+})
 
 const Account = objectType({
-  name: "Account",
+  name: 'Account',
   definition(t) {
-    t.implements(Node); // or t.implements("Node")
-    t.string("username");
-    t.string("email");
+    t.implements(Node) // or t.implements("Node")
+    t.string('username')
+    t.string('email')
   },
-});
+})
 
 const StatusEnum = enumType({
-  name: "StatusEnum",
-  members: ["ACTIVE", "DISABLED"],
-});
+  name: 'StatusEnum',
+  members: ['ACTIVE', 'DISABLED'],
+})
 
 const Query = queryType({
   definition(t) {
-    t.field("account", {
+    t.field('account', {
       type: Account, // or "Account"
       args: {
         name: stringArg(),
-        status: arg({ type: "StatusEnum" }),
+        status: arg({ type: 'StatusEnum' }),
       },
-    });
-    t.list.field("accountsById", {
+    })
+    t.list.field('accountsById', {
       type: Account, // or "Account"
       args: {
         ids: intArg({ list: true }),
       },
-    });
+    })
   },
-});
+})
 
 // Recursively traverses the value passed to types looking for
 // any valid Nexus or graphql-js objects to add to the schema,
@@ -105,7 +105,7 @@ const schema = makeSchema({
   types: [Account, Node, Query, StatusEnum],
   // or types: { Account, Node, Query }
   // or types: [Account, [Node], { Query }]
-});
+})
 ```
 
 ## Nullability & Default Values
@@ -132,13 +132,13 @@ One common idiom in GraphQL is exposing fields that mask or rename the property 
 
 ```ts
 const User = objectType({
-  name: "User",
+  name: 'User',
   definition(t) {
-    t.id("id", (o) => o.user_id);
-    t.string("name", (o) => o.user_name);
-    t.string("description", (o) => o.user_description);
+    t.id('id', (o) => o.user_id)
+    t.string('name', (o) => o.user_name)
+    t.string('description', (o) => o.user_description)
   },
-});
+})
 ```
 
 ## Auto-Generated Artifacts
@@ -153,10 +153,10 @@ const schema = makeSchema({
     /* All schema types provided here */
   ],
   outputs: {
-    schema: path.join(__dirname, "../../my-schema.graphql"),
-    typegen: path.join(__dirname, "../../my-generated-types.d.ts"),
+    schema: path.join(__dirname, '../../my-schema.graphql'),
+    typegen: path.join(__dirname, '../../my-generated-types.d.ts'),
   },
-});
+})
 ```
 
 Read more about how the automatic [type generation](type-generation.md) works.

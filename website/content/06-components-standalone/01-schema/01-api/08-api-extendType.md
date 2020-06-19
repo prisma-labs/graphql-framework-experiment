@@ -9,7 +9,7 @@ Defines a way to incrementally build types, by "extending" a type from multiple 
 ```ts
 export const AddUserById = extendType({
   type: 'Query',
-  definition: t => {
+  definition: (t) => {
     t.field('userById', {
       type: 'User',
       args: { id: intArg('id of the user') },
@@ -22,7 +22,7 @@ export const AddUserById = extendType({
 
 export const AddPostById = extendType({
   type: 'Query',
-  definition: t => {
+  definition: (t) => {
     t.field('postById', {
       type: 'Post',
       args: { id: intArg('id of the post') },
