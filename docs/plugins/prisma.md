@@ -22,7 +22,7 @@ Prisma is a next-generation developer-centric toolkit focused on making the data
 **1. Install the plugin**
 
 ```cli
-npm install nexus-plugin-prisma
+npm add nexus-plugin-prisma
 ```
 
 <div class="NextIs Warn"></div>

@@ -3,7 +3,7 @@ Refer to the [framework Prisma plugin docs](/plugins/prisma#runtime-integration)
 ## Installation {docsify-ignore}
 
 ```cli
-npm install nexus-prisma
+npm add nexus-prisma
 ```
 
 ## Usage {docsify-ignore}
@@ -71,7 +71,9 @@ type Options = {
    *
    * @default 'relay'
    */
-  paginationStrategy?: 'relay' | 'prisma'
+  paginationStrategy?:
+    | 'relay'
+    | 'prisma'
   outputs?: {
     /**
      * Where should typegen be put on disk? By default emits into `node_modules/@types`.
@@ -86,7 +88,12 @@ type Options = {
    *
    * @default {}
    */
-  scalars?: Partial<Record<string, GraphQLScalarType>>
+  scalars?: Partial<
+    Record<
+      string,
+      GraphQLScalarType
+    >
+  >
 }
 ```
 

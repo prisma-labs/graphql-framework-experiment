@@ -5,7 +5,7 @@ If you prefer, you can install Nexus globally and then use the global CLI to wor
 <div class="TightRow">
 
 ```cli
-npm install --global nexus
+npm add --global nexus
 ```
 
 ```cli

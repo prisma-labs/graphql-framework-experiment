@@ -128,7 +128,7 @@ export class Link {
       env: {
         ...process.env,
         ...this.options.environmentAdditions,
-        ...this.ttyLinker?.parent.serialize() ?? {},
+        ...(this.ttyLinker?.parent.serialize() ?? {}),
         ENTRYPOINT_SCRIPT: this.options.entrypointScript,
       },
     }) as nodecp.ChildProcessWithoutNullStreams

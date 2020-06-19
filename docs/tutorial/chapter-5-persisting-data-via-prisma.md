@@ -307,7 +307,7 @@ schema.extendType({
           data: {
             published: true,
           },
-        });
+        })
       },
     })
   },

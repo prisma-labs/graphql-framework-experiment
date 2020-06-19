@@ -97,7 +97,7 @@ Integration between Nexus' test and database systems is young and still missing 
 1. Install new development dependencies for upcoming test utilities.
 
    ```cli
-   npm install --save-dev nanoid pg jest-environment-node
+   npm add --save-dev nanoid pg jest-environment-node
    ```
 
 1. Create a specialized "jest environment" that will manage a real database for your tests to run against.

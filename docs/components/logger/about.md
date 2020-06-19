@@ -3,5 +3,5 @@
 Delightful logging library that is pretty practical & performant
 
 ```cli
-npm install @nexus/logger
+npm add @nexus/logger
 ```

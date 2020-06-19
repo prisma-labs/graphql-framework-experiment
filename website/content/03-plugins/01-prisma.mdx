@@ -26,7 +26,7 @@ Prisma is a next-generation developer-centric toolkit focused on making the data
 **1. Install the plugin**
 
 ```cli
-npm install nexus-plugin-prisma
+npm add nexus-plugin-prisma
 ```
 
 
@@ -269,18 +269,10 @@ input DateTimeFilter {
 }
 
 type Mutation {
-  createOnePost(
-    data: PostCreateInput!
-  ): Post!
-  createOneUser(
-    data: UserCreateInput!
-  ): User!
-  deleteOnePost(
-    where: PostWhereUniqueInput!
-  ): Post
-  deleteOneUser(
-    where: UserWhereUniqueInput!
-  ): User
+  createOnePost(data: PostCreateInput!): Post!
+  createOneUser(data: UserCreateInput!): User!
+  deleteOnePost(where: PostWhereUniqueInput!): Post
+  deleteOneUser(where: UserWhereUniqueInput!): User
 }
 
 enum OrderByArg {
@@ -289,12 +281,7 @@ enum OrderByArg {
 }
 
 type Post {
-  author(
-    after: String
-    before: String
-    first: Int
-    last: Int
-  ): [User!]!
+  author(after: String, before: String, first: Int, last: Int): [User!]!
   id: ID!
 }
 
@@ -331,26 +318,10 @@ input PostWhereUniqueInput {
 }
 
 type Query {
-  post(
-    where: PostWhereUniqueInput!
-  ): Post
-  posts(
-    after: String
-    before: String
-    first: Int
-    last: Int
-    where: PostWhereInput
-  ): [Post!]!
-  user(
-    where: UserWhereUniqueInput!
-  ): User
-  users(
-    after: String
-    before: String
-    first: Int
-    last: Int
-    orderBy: UserOrderByInput
-  ): [User!]!
+  post(where: PostWhereUniqueInput!): Post
+  posts(after: String, before: String, first: Int, last: Int, where: PostWhereInput): [Post!]!
+  user(where: UserWhereUniqueInput!): User
+  users(after: String, before: String, first: Int, last: Int, orderBy: UserOrderByInput): [User!]!
 }
 
 input StringFilter {
@@ -371,12 +342,7 @@ type User {
   birthDate: DateTime!
   email: String!
   id: ID!
-  posts(
-    after: String
-    before: String
-    first: Int
-    last: Int
-  ): [Post!]!
+  posts(after: String, before: String, first: Int, last: Int): [Post!]!
 }
 
 input UserCreateInput {
@@ -484,9 +450,11 @@ export type Settings = {
 import { use } from 'nexus'
 import { prisma } from 'nexus-plugin-prisma'
 
-use(prisma({
-  client: { options: { log: ['query'] } }
-}))
+use(
+  prisma({
+    client: { options: { log: ['query'] } },
+  })
+)
 ```
 
 #### Using a custom instance of the Prisma Client
@@ -496,9 +464,11 @@ import { use } from 'nexus'
 import { prisma } from 'nexus-plugin-prisma'
 import { PrismaClient } from 'nexus-plugin-prisma/client'
 
-use(prisma({
-  client: { instance: new PrismaClient() }
-}))
+use(
+  prisma({
+    client: { instance: new PrismaClient() },
+  })
+)
 ```
 
 ## Recipes
@@ -638,11 +608,7 @@ schema.mutationType({
     */
     t.crud.createOneUser({
       computedInputs: {
-        createdByBrowser: ({
-          args,
-          ctx,
-          info,
-        }) => ctx.session.browser,
+        createdByBrowser: ({ args, ctx, info }) => ctx.session.browser,
       },
     })
   },
@@ -687,12 +653,7 @@ mutation createOnePost {
   createOnePost(
     data: {
       title: "Automatically generate clean APIs!"
-      image: {
-        url: "https://example.com/images/prancing-unicorns"
-        user: {
-          connect: { id: 1 }
-        }
-      }
+      image: { url: "https://example.com/images/prancing-unicorns", user: { connect: { id: 1 } } }
       user: { connect: { id: 1 } }
     }
   )
@@ -706,9 +667,7 @@ mutation createOnePost {
   createOnePost(
     data: {
       title: "Automatically generate clean APIs!"
-      image: {
-        url: "https://example.com/images/prancing-unicorns"
-      }
+      image: { url: "https://example.com/images/prancing-unicorns" }
     }
   )
 }
@@ -734,14 +693,8 @@ schema.mutationType({
           nullable: true,
         }),
       },
-      resolve: (
-        parent,
-        { title, content },
-        ctx
-      ) => {
-        return ctx.prisma.posts.createPost(
-          { title, content }
-        )
+      resolve: (parent, { title, content }, ctx) => {
+        return ctx.prisma.posts.createPost({ title, content })
       },
     })
 
@@ -751,19 +704,13 @@ schema.mutationType({
       args: {
         id: idArg(),
       },
-      resolve(
-        parent,
-        { id },
-        ctx
-      ) {
-        return ctx.prisma.posts.updatePost(
-          {
-            where: { id },
-            data: {
-              published: true,
-            },
-          }
-        )
+      resolve(parent, { id }, ctx) {
+        return ctx.prisma.posts.updatePost({
+          where: { id },
+          data: {
+            published: true,
+          },
+        })
       },
     })
   },
@@ -1260,9 +1207,7 @@ schema.objectType({
 
 ```graphql
 type Mutation {
-  createOneUser(
-    data: UserCreateInput!
-  ): User!
+  createOneUser(data: UserCreateInput!): User!
 }
 
 type Post {
@@ -1301,39 +1246,20 @@ input UserCreateInput {
 
 ```graphql
 mutation simple {
-  createOneUser(
-    data: {
-      email: "newton@prisma.io"
-    }
-  ) {
+  createOneUser(data: { email: "newton@prisma.io" }) {
     id
   }
 }
 
 mutation connectRelation {
-  createOneUser(
-    data: {
-      email: "newton@prisma.io"
-      posts: { connect: [1643] }
-    }
-  ) {
+  createOneUser(data: { email: "newton@prisma.io", posts: { connect: [1643] } }) {
     id
   }
 }
 
 mutation createRelation {
   createOneUser(
-    data: {
-      email: "newton@prisma.io"
-      posts: {
-        create: [
-          {
-            title: "..."
-            body: "..."
-          }
-        ]
-      }
-    }
+    data: { email: "newton@prisma.io", posts: { create: [{ title: "...", body: "..." }] } }
   ) {
     id
     posts {
@@ -1396,9 +1322,7 @@ schema.queryType({
 
 ```graphql
 type Query {
-  user(
-    where: UserWhereUniqueInput!
-  ): User
+  user(where: UserWhereUniqueInput!): User
 }
 
 type User {
@@ -1414,11 +1338,7 @@ input UserWhereUniqueInput {
 
 ```graphql
 query simple {
-  user(
-    where: {
-      email: "newton@prisma.io"
-    }
-  ) {
+  user(where: { email: "newton@prisma.io" }) {
     id
   }
 }
@@ -1554,10 +1474,7 @@ input IntFilter {
 }
 
 type Mutation {
-  updateOneUser(
-    data: UserUpdateInput!
-    where: UserWhereUniqueInput!
-  ): User
+  updateOneUser(data: UserUpdateInput!, where: UserWhereUniqueInput!): User
 }
 
 type Post {
@@ -1663,12 +1580,7 @@ input UserWhereUniqueInput {
 
 ```graphql
 mutation simple {
-  updateOneUser(
-    where: { id: 1643 }
-    data: {
-      email: "locke@prisma.io"
-    }
-  ) {
+  updateOneUser(where: { id: 1643 }, data: { email: "locke@prisma.io" }) {
     id
     email
   }
@@ -1787,9 +1699,7 @@ schema.objectType({
 
 ```graphql
 type Mutation {
-  deleteOneUser(
-    where: UserWhereUniqueInput!
-  ): User
+  deleteOneUser(where: UserWhereUniqueInput!): User
 }
 
 type Post {
@@ -1812,9 +1722,7 @@ input UserWhereUniqueInput {
 
 ```graphql
 mutation simple {
-  deleteOneUser(
-    where: { id: 1643 }
-  ) {
+  deleteOneUser(where: { id: 1643 }) {
     id
     email
     posts {
@@ -2117,7 +2025,6 @@ undefined | (root: Root, args: Args, ctx: Context, info: GraphQLResolverInfo, or
 Enable the usage of a custom resolver on any resolver generated by the plugin via `t.crud` or `t.model`.
 You can either entirely replace the generated resolver, or wrap it via the use of the `originalResolve` parameter.
 
-
 ##### Example
 
 Adding custom business logic before and after a generated resolver
@@ -2131,9 +2038,9 @@ queryType({
         const res = await originalResolve(root, args, ctx, info)
         console.log('logic after the resolver')
         return res
-      }
+      },
     })
-  }
+  },
 })
 ```
 
@@ -2229,12 +2136,8 @@ schema.queryType({
 
 ```graphql
 type Query {
-  user(
-    where: UserWhereUniqueInput!
-  ): User
-  users(
-    orderBy: UserOrderByInput
-  ): [User!]!
+  user(where: UserWhereUniqueInput!): User
+  users(orderBy: UserOrderByInput): [User!]!
 }
 
 type Post {
@@ -2246,9 +2149,7 @@ type Post {
 type User {
   id: Int!
   name: String!
-  posts(
-    orderBy: UserPostsOrderByInput
-  ): [Post!]!
+  posts(orderBy: UserPostsOrderByInput): [Post!]!
 }
 
 input UserOrderByInput {
@@ -2280,9 +2181,7 @@ query entrypointOrdering {
 
 query relationOrdering {
   user(where: { id: 1643 }) {
-    posts(
-      orderBy: { title: dsc }
-    ) {
+    posts(orderBy: { title: dsc }) {
       title
       body
     }
@@ -2382,10 +2281,7 @@ schema.queryType({
 
 ```graphql
 query batchReadAfter {
-  users(
-    after: { id: 1234 }
-    first: 50
-  ) {
+  users(after: { id: 1234 }, first: 50) {
     id
     name
   }
@@ -2548,12 +2444,7 @@ input IntFilter {
 
 type Post {
   author: User!
-  comments(
-    after: String
-    before: String
-    first: Int
-    last: Int
-  ): [Comment!]!
+  comments(after: String, before: String, first: Int, last: Int): [Comment!]!
   rating: Float!
 }
 
@@ -2574,16 +2465,8 @@ input PostWhereInput {
 }
 
 type Query {
-  user(
-    where: UserWhereUniqueInput!
-  ): User
-  users(
-    after: String
-    before: String
-    first: Int
-    last: Int
-    where: UserWhereInput
-  ): [User!]!
+  user(where: UserWhereUniqueInput!): User
+  users(after: String, before: String, first: Int, last: Int, where: UserWhereInput): [User!]!
 }
 
 input StringFilter {
@@ -2712,11 +2595,7 @@ schema.mutationType({
   definition(t: any) {
     t.crud.createOneUser({
       computedInputs: {
-        createdWithBrowser: ({
-          args,
-          ctx,
-          info,
-        }) => ctx.browser,
+        createdWithBrowser: ({ args, ctx, info }) => ctx.browser,
       },
     })
   },
@@ -2733,15 +2612,11 @@ schema.objectType({
 
 ```graphql
 type Mutation {
-  createOneUser(
-    data: UserCreateInput!
-  ): User!
+  createOneUser(data: UserCreateInput!): User!
 }
 
 type Query {
-  user(
-    where: UserWhereUniqueInput!
-  ): User
+  user(where: UserWhereUniqueInput!): User
 }
 
 type User {
@@ -2853,23 +2728,15 @@ nexusPrismaPlugin({
   representing the browser from which the request was made.
   */
   computedInputs: {
-    createdWithBrowser: ({
-      args,
-      ctx,
-      info,
-    }) => ctx.browser,
+    createdWithBrowser: ({ args, ctx, info }) => ctx.browser,
   },
 })
 ```
 
 ```graphql
 type Mutation {
-  createOneUser(
-    data: UserCreateInput!
-  ): User!
-  createOneNested(
-    data: NestedCreateInput!
-  ): Nested!
+  createOneUser(data: UserCreateInput!): User!
+  createOneNested(data: NestedCreateInput!): Nested!
 }
 
 type Nested {
@@ -2897,20 +2764,13 @@ input NestedWhereUniqueInput {
 }
 
 type Query {
-  user(
-    where: UserWhereUniqueInput!
-  ): User
+  user(where: UserWhereUniqueInput!): User
 }
 
 type User {
   id: Int!
   name: String!
-  nested(
-    after: Int
-    before: Int
-    first: Int
-    last: Int
-  ): [Nested!]!
+  nested(after: Int, before: Int, first: Int, last: Int): [Nested!]!
   createdWithBrowser: String!
 }
 
@@ -2991,23 +2851,12 @@ mutation createOneNested {
  *  the request's input and returns the value to pass to the Prisma Client
  *  arg of the same name.
  */
-export type LocalComputedInputs<
-  MethodName extends MutationMethodName
-> = Record<
+export type LocalComputedInputs<MethodName extends MutationMethodName> = Record<
   string,
-  (
-    params: LocalMutationResolverParams<
-      MethodName
-    >
-  ) => unknown
+  (params: LocalMutationResolverParams<MethodName>) => unknown
 >
 
-export type GlobalComputedInputs = Record<
-  string,
-  (
-    params: GlobalMutationResolverParams
-  ) => unknown
->
+export type GlobalComputedInputs = Record<string, (params: GlobalMutationResolverParams) => unknown>
 
 type BaseMutationResolverParams = {
   info: GraphQLResolveInfo
@@ -3023,18 +2872,12 @@ export type GlobalMutationResolverParams = BaseMutationResolverParams & {
 export type LocalMutationResolverParams<
   MethodName extends MutationMethodName
 > = BaseMutationResolverParams & {
-  args: core.GetGen<
-    'argTypes'
-  >['Mutation'][MethodName]
+  args: core.GetGen<'argTypes'>['Mutation'][MethodName]
 }
 
-export type MutationMethodName = keyof core.GetGen<
-  'argTypes'
->['Mutation']
+export type MutationMethodName = keyof core.GetGen<'argTypes'>['Mutation']
 
-export type Context = core.GetGen<
-  'context'
->
+export type Context = core.GetGen<'context'>
 ```
 
 ### GraphQL Schema Contributions

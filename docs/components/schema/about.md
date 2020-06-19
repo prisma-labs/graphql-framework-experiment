@@ -1,7 +1,7 @@
 # `@nexus/schema`
 
 ```cli
-npm install @nexus/schema
+npm add @nexus/schema
 ```
 
 #### Why Nexus? {docsify-ignore}
