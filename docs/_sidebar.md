@@ -2,7 +2,11 @@
 
 - [Welcome To Nexus](README)
 - [Tutorial](tutorial/introduction)
-- [Migrate from Nexus Schema](getting-started/migrate-from-nexus-schema)
+
+- Migration Guides
+
+- [Prisma Users](migration-guides/prisma-users)
+- [Nexus Schema Users](getting-started/migrate-from-nexus-schema)
 
 - Guides
 
