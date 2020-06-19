@@ -76,7 +76,7 @@ schema.objectType({
 
 Once you've saved this file change to disk, your app will be restarted and the previous warning you had about an empty GraphQL schema should be gone.
 
-You may notice that there's also now a new `schema.graphql` file at your project root. It contains a representation of your schema in a syntax called the GraphQL Schema Definition Language (SDL for short). In dev mode Nexus generates this for you at every app restart. In it you should see the following:
+You may notice that there's also now a new `api.graphql` file at your project root. It contains a representation of your schema in a syntax called the GraphQL Schema Definition Language (SDL for short). In dev mode Nexus generates this for you at every app restart. In it you should see the following:
 
 ```graphql
 type Post {
@@ -106,15 +106,16 @@ We'll start by letting API clients read the drafts of your blog.
 
 <!-- prettier-ignore -->
 ```ts
-// api/graphql/Post.ts     // 1
+// api/graphql/Post.ts      // 1
 // ...
 
 schema.extendType({
   type: 'Query',            // 2
   definition(t) {
-    t.field('drafts', {      // 3
-      type: 'Post',         // 4
-      list: true,           // 5
+    t.field('drafts', {     // 3
+      nullable: false,      // 4
+      type: 'Post',         // 5
+      list: true,           // 6
     })
   },
 })
@@ -122,7 +123,7 @@ schema.extendType({
 
 ```graphql
 type Query {
-  drafts: [Post!]
+  drafts: [Post!]!
 }
 ```
 
@@ -131,6 +132,10 @@ type Query {
 1. The Query object is a central place in your schema where many other types will appear. Like before with the modular GraphQL types decision we again can decide to be modular here. We could either create a new `api/graphql/Query.ts` module (not modular), or we could _collocate_ the exposure of Post object with its definition in `api/graphql/Post.ts` (modular). Staying consistent with before, we'll take the modular way.
 1. To achieve collocation in Nexus we'll use `schema.extendType`. Its API is _very_ similar to `schema.objectType` with the difference that the defined fields are merged into the _targeted_ type.
 1. The first parameter specifies the field's name, here `drafts`
+1. `nullable: false` specifies that clients will always get a value for this field. By default, in Nexus, all "output types" (types returned by fields) are nullable. This is for [best practice reasons](https://graphql.org/learn/best-practices/#nullability). In this case though we indeed want to guarantee that a list will always be returned, never `null`.
+
+   If you're ever dissatisfied with Nexus' defaults, not to worry, [you can change them](https://www.nexusjs.org/#/api/modules/main/exports/settings?id=schemanullableinputs).
+
 1. `type: 'Post'` specifies what the field's type should be. Here, a `Post`
 1. `list: true` augments the field's type spec, making it wrapped by a List type. Here, a `[Post]`. Nexus also provides the following shorthand for this 👇
 

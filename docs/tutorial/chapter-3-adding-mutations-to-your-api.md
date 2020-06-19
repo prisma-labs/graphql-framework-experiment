@@ -63,7 +63,6 @@ Now let's use this data to re-implement the `Query.drafts` resolver from the pre
 
 ```diff
 schema.queryType({
-  type: 'Query',
   definition(t) {
     t.list.field('drafts', {
       type: 'Post',
@@ -105,7 +104,7 @@ schema.extendType({
   definition(t) {
     t.field('createDraft', {
       type: 'Post',
-      nullable: false,              // 1
+      nullable: false,
       resolve(_root, args, ctx) {
         ctx.db.posts.push(/*...*/)
         return // ...
@@ -122,10 +121,6 @@ Mutation {
 ```
 
 </div>
-
-1. By default in Nexus all output types are nullable. This is for [best practice reasons](https://graphql.org/learn/best-practices/#nullability). In this case, we want to guarantee [to the client] that a Post object will always be returned upon a successful signup mutation.
-
-   If you're ever dissatisfied with Nexus' defaults, not to worry, [you can change them globally](https://www.nexusjs.org/#/api/modules/main/exports/settings?id=schemanullableinputs).
 
 We need to get the client's input data to complete our resolver. This brings us to a new concept, GraphQL arguments. Every field in GraphQL may accept them. Effectively you can think of each field in GraphQL like a function, accepting some input, doing something, and returning an output. Most of the time "doing something" is a matter of some read-like operation but with `Mutation` fields the "doing something" usually entails a process with side-effects (e.g. writing to the database).
 
@@ -232,7 +227,7 @@ schema.extendType({
     t.list.field('posts', {
       type: 'Post',
       resolve(_root, _args, ctx) {
-        return ctx.inDb.posts.filter((p) => p.published === true)
+        return ctx.db.posts.filter((p) => p.published === true)
       },
     })
   },
