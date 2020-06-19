@@ -124,6 +124,45 @@ t
    - typescript not hooked into module extensions
    - plugins are imported for tree-shaking
 
+## Dependency Philosophy
+
+Nexus takes a different perspective on the arguably mainstream approach of Node dependency management. In Node it is common practice to write and share tiny reusable modules. Then, users build their applications by assembling these many smaller packages how they need to.
+
+Nexus takes a batteries included approach. Aside from being featureful, it also means bundling things that would typically be peer dependencies in other systems: `graphql` and `@nexus/schema` for Nexus itself, and for prisma plugin `@prisma/cli`, `@prisma/sdk`, and `@prisma/client`. There are numerous benefits to this.
+
+1. Setting up dependency automation tools like renovate lead to simpler experiences.
+
+   For example when `graphql` 0.15 was released, bothering `nexus` users to upgrade it wouldn't have made sense since `@nexus/schema` didn't support it yet.
+
+2. Integration bugs are owned by the core team
+
+   For example when TypeScript 3.9 was released `nexus-prisma` was incompatible with it. The types it generated led to static errors that were previously not there due to a change in how TS dealt with `any` as a type generic default.
+
+3. Simpler upgrade paths for you
+
+   It is easier to piece together an upgrade path from one dep to another than a combination of `n` deps to another combination of `n` deps. In pratice what happens is the migration guide is written with a discrete set of `n` rather than all possible `n`.
+
+4. More "honest" than peer dependenies
+
+   Peer dependencies in a nutshell are a loose contract encoding thus: "I, author of lib A, declare that A supports a _range_ of lib B that, you, user, will bring to the party". This sounds great, but how is this claim enforced? Its very likely not, at least rigorously. Trust in semver and a test suite against one version of `B` is probably how the majority of situations go. And so of course a not insubstantial burden falls onto users' laps.
+
+   If Nexus, especially with Prisma plugin, were going to leverage peer dependencies (implying a range of lib support or what's the point?) doing it honestly would mean a test suite running against a matrix of the combinations of the supported ranges of peer deps. Nexus already runs a matrix of Node versions and OSs. Adding peer deps to the mix would further strain an already strained test setup. Then, of course, there would be the actual burden of supporting whatever idiosyncracies exist along the ranges. Our internal implementations would complexify, more tests would be needed, more room for bugs.
+
+5. Yarn `resolutions` to the rescue
+
+   _But what if I **really** need an older or newer version of X transient dep!?_
+
+   If the bundled versions of deps in Nexus or Prisma plugin aren't meeting your needs and there is an urgent issue you can use the [yarn resolutions](https://classic.yarnpkg.com/en/docs/selective-version-resolutions) option. If you aren't using `yarn` or a package manager with similar capability, and you aren't willing to, then you probably don't havev an urgent issue.
+
+   Of course by doing this you're going outside what a given version of Nexus officially supports, so, YMMV "your mileage may vary"! But its not like if Nexus were using peer dep ranges that this caveat would magically go away.
+
+In conclusion, from both a DX and engineering resource perspective we believe the best dep strategy for Nexus is not peer deps but internalized deps. Recapping the tradeoffs:
+
+- **Cost:** Giving you less flexibility to tailor the packages you use  
+  ...but even then _not really_. You _can_ have final say via Yarn's `resolutions` setting.
+
+- **Benefit:** For us, lowering our implementation complexity, tests, and test infrastructure; The number of bugs which we in turn have to spend more time triaging, reproducting, and investigating. For you, less things to install, think about; More confidence that integration works; More overhead around dep management, changelog consumption, upgrade paths, and, invariably, bug reporting.
+
 ## Glossary
 
 ### Assembly

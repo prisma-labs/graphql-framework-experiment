@@ -29,7 +29,8 @@ Prisma is a next-generation developer-centric toolkit focused on making the data
 npm add nexus-plugin-prisma
 ```
 
-> Note: `nexus-plugin-prisma` bundles the Prisma CLI. You can invoke it using `npm run prisma` or `yarn prisma`.
+
+> Warning: All Prisma deps are bundled, so do _not_ install e.g. `@prisma/cli` or `@prisma/client`. If you are wondering _why_ you can read through [Nexus' philosophy on dependency management](/meta/architecture#dependency-philosophy). You can still find the the prisma CLI by running `npm run prisma` or `yarn prisma`. In an emergency you can still control version of prisma deps with Yarn [`"resolutions"`](https://classic.yarnpkg.com/en/docs/selective-version-resolutions).
 
 **2. Enable the plugin**
 

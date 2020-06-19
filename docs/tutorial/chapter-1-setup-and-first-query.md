@@ -19,6 +19,10 @@ npm add nexus
 
 Nexus comes out of the box with a CLI. You'll use it often while working on your app. While you can access the CLI of your local nexus via `yarn` or npm scripts or `npx` but there's an even easier way. Install `nexus` globally. Then you can access the CLI from anywhere. Nexus is smart enough to delegate all invocations to the _local_ nexus. This is the idiomatic way to work with Nexus, but you aren't forced to do this.
 
+<div class="NextIs Note"></div>
+
+> The simplicity of the dependencies you need is no accident. We're not hiding complexity to kick off this tutorial only for it to pounce upon you later. This is it. If you're curious about Nexus' philosophy on dependency management [we've written about it here](/meta/architecture#dependency-philosophy).
+
 ```markdown
 npm add --global nexus
 ```
