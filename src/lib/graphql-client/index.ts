@@ -16,10 +16,7 @@ export class GraphQLClient {
   }
 
   send(queryString: string, variables?: Variables) {
-    const headers: Record<string, string> = {}
-    for (const [key, value] of this.fetchHeaders.entries()) {
-      headers[key] = value
-    }
+    let headers = fetchHeadersToObject(this.fetchHeaders)
     const url = this.url
     const client = new GQLR.GraphQLClient(url, { headers })
     return client.request(queryString, variables)
@@ -82,4 +79,15 @@ export class Headers {
   entries() {
     return this.fetchHeaders.entries()
   }
+}
+
+/**
+ * Convert fetch headers to plain object.
+ */
+function fetchHeadersToObject(headers: globalThis.Headers): Record<string, string> {
+  let obj: Record<string, string> = {}
+  for (const [name, value] of headers.entries()) {
+    obj[name] = value
+  }
+  return obj
 }
