@@ -39,7 +39,7 @@ If you were previously a user of `nexus-prisma`, it still exists! It currently r
 
 ### Dependencies
 
-1. Remove `nexus@0.12` and add `nexus@0.20` (or higher) in its place.
+1. Remove `nexus@0.12` and add the latest `nexus` in its place (will be something greater than `0.20`).
 1. Remove dependency `graphql` as `nexus` bundles it.
 
 ```diff
@@ -47,13 +47,13 @@ If you were previously a user of `nexus-prisma`, it still exists! It currently r
    "dependencies": {
 -     "graphql": "...",
 -     "nexus": "0.12.0",
-+     "nexus": "next"
++     "nexus": "^0.24"
    }
 ```
 
 ### Project Layout
 
-Not much to do but your source must include a `graphql` module or directory, and/or `app` entrypoint. More details in the [convention guide](/guides/project-layout#conventions). Nexus will give informative feedback if you get this wrong.
+Not much to do but your source must include a module that imports `nexus` and/or a module named `app`. More details in the [convention guide](/guides/project-layout#conventions-1). Nexus will give informative feedback if you get this wrong.
 
 ### Type Defs (aka. schema)
 
