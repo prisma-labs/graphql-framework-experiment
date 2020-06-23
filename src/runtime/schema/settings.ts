@@ -145,6 +145,10 @@ export function changeSettings(state: SettingsData, newSettings: SettingsInput):
     state.rootTypingsGlobPattern = newSettings.rootTypingsGlobPattern
   }
 
+  if (newSettings.authorization) {
+    state.authorization = newSettings.authorization
+  }
+
   if (newSettings.connections) {
     // todo deep merge
     Object.assign(state.connections, {
