@@ -158,6 +158,10 @@ export function changeSettings(state: SettingsData, newSettings: SettingsInput):
   }
 }
 
+function defaultAuthorizationErrorFormatter(config: NexusSchema.core.FieldAuthorizePluginErrorConfig) {
+  return config.error
+}
+
 /**
  * Get the default settings.
  */
@@ -175,7 +179,9 @@ function defaultSettings(): SettingsData {
         ...connectionPluginConfigManagedByNexus,
       },
     },
-    authorization: {},
+    authorization: {
+      formatError: defaultAuthorizationErrorFormatter,
+    },
   }
 
   return data
