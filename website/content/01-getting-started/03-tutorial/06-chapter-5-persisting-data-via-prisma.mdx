@@ -70,7 +70,7 @@ Now that you know a bit about Prisma and Nexus plugins, let's get going! Do the 
 
 like so:
 
-```bash
+```bash-symbol
 npm add nexus-plugin-prisma
 ```
 
@@ -145,13 +145,13 @@ With our database schema specified, we're now ready to proceed to our first data
 
 Generate our migration files...
 
-```bash
+```bash-symbol
 npx prisma migrate save --experimental
 ```
 
 Then, apply the migration...
 
-```bash
+```bash-symbol
 npx prisma migrate up --experimental
 ```
 
@@ -159,7 +159,7 @@ npx prisma migrate up --experimental
 
 Now let's finally ditch our in-memory data! Let's start by removing the `api/db.ts` module and then be guided by TypeScript errors.
 
-```bash
+```bash-symbol
 rm api/db.ts
 ```
 

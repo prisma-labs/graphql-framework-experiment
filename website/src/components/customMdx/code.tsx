@@ -196,8 +196,9 @@ const LineNo = styled.span`
 const LineContent = styled.span`
   padding: 0 1em;
   &.break-words {
-    display: table-cell;
+    display: inline-table;
     white-space: break-spaces;
+    width: 95%;
   }
 
   &.token-line {
