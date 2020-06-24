@@ -59,7 +59,7 @@ exports.createPages = ({ graphql, actions }) => {
     `).then(result => {
       result.data.allMdx.edges.forEach(({ node }) => {
         createPage({
-          path: node.fields.slug ? node.fields.slug.replace(/\d+-/g, '') : '/',
+          path: node.fields.modSlug ? node.fields.modSlug.replace(/\d+-/g, '') : '/',
           component: path.resolve(`./src/layouts/articleLayout.tsx`),
           context: {
             id: node.fields.id,
