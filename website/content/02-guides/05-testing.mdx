@@ -1,5 +1,6 @@
 ---
 title: Testing
+toc: true
 ---
 
 ## Testing
@@ -17,7 +18,7 @@ Nexus comes with a special testing module that you can import from `nexus/testin
 > For the curious...  
 > Since `jest` runs test suites in parallel it means multiple instances of your `app` will be run in parallel too. The testing module takes care of abstracting the mechanics of making this work from you. For example it assigns random ports to each app to run its server and makes sure each test suite's app client is configured to be talking with its respective app instance. You should _never_ have to think about these kinds of details though, and if it turns out you do please open a GitHub issue so we can try to seal the leak you've found in Nexus' abstraction!
 
-##### A Little Helper {docsify-ignore}
+##### A Little Helper
 
 Before jumping into test suites we will wrap the `createTestContext` with a pattern that more tightly integrates it into `jest`. Nexus will probably ship something like as follows or better in the future, but for now you can copy this into your projects:
 

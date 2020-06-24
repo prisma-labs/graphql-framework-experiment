@@ -16,7 +16,7 @@ Postgres is a well known open-source relational database. Prisma is a new way of
 
 Its important to understand that Nexus does not _require_ these technology choices and _could_ actually be used with any database and abstractions over them (raw SQL, query builder, ORM..). However, Nexus is built by a team at Prisma (the company) and unsurprisingly there is great integration between its tools and Nexus.
 
-## Prisma?
+## What is Prisma?
 
 So, what _is_ Prisma? It is an open source database toolkit that consists of the following parts:
 
@@ -42,7 +42,7 @@ Another convention that they usually follow is that they use the default export 
 
 Plugins are easy to use:
 
-```bash
+```bash-symbol
 npm add nexus-plugin-foo
 ```
 
@@ -85,13 +85,13 @@ import { prisma } from 'nexus-plugin-prisma'
 use(prisma())
 ```
 
-```bash
+```bash-symbol
 mkdir prisma
 touch prisma/schema.prisma
 touch prisma/.env
 ```
 
-```groovy
+```prisma
 // prisma/schema.prisma
 
 datasource postgres {
@@ -107,8 +107,8 @@ DATABASE_URL="<postgres_connection_url>"
 
 Almost done, but we still need to setup a Postgres database for our app to connect to. There are a ton of ways to do this so we're just going to show the most straight forward cross-platform way we know how. First, make sure you have [docker installed](https://docs.docker.com/get-docker/). Then, simply run this command:
 
-```
-❯ docker run --detach --publish 5432:5432 -e POSTGRES_PASSWORD=postgres --name postgres postgres:10.12
+```bash-symbol
+docker run --detach --publish 5432:5432 -e POSTGRES_PASSWORD=postgres --name postgres postgres:10.12
 ```
 
 That's it. You now have a Postgres server running. You can connect to it at a URL like:
@@ -324,10 +324,8 @@ schema.extendType({
 
 Awesome, you're ready to open up the playground and create a draft! If all goes well, good job! If not, no worries, there's a lot of integration pieces in this chapter where something could have gone wrong. If after reviewing your steps you still don't understand the issue, feel free to open up a [discussion](https://nxs.li/discussions) asking for help.
 
-## Wrapping Up
+## Wrapping up
 
 We've just changed our code, so we must be due or overdue for a test update right? Well, in the next chapter we'll do just that, and show you how Nexus testing works with Prisma.
-
-<div class="NextIs NextChapter"></div>
 
 [➳](/tutorial/chapter-6-testing-with-prisma)

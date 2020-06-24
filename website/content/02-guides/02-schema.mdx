@@ -2,7 +2,7 @@
 title: 'Schema'
 ---
 
-## Schema
+## Overview
 
 [API Reference](/api/modules/main/exports/schema) ⌁ [issues](https://nxs.li/issues/component/schema) / [features](https://nxs.li/issues/components/schema/features) | [bugs](https://nxs.li/issues/component/schema/bugs)
 
@@ -21,8 +21,6 @@ import { schema } from 'nexus' // named-export style
 
 app.schema === schema // true
 ```
-
-<p class="NextIs Tip"></p>
 
 > Leverage [VSCode auto-import](https://code.visualstudio.com/docs/languages/typescript#_auto-imports). Anywhere in a TypeScript module in your project type either `app` to summon auto-import for the default style or `schema` for named-export style.
 
@@ -43,7 +41,7 @@ schema.objectType({
 })
 ```
 
-## GraphQL Type Builders
+## GraphQL type builders
 
 We will now begin exploring the GraphQL schema building parts of the schema component. Having prior knowledge of GraphQL language itself will greatly help. If you are new to GraphQL you may want to read some of the resources listed below.
 
@@ -55,7 +53,7 @@ We will now begin exploring the GraphQL schema building parts of the schema comp
 
 [graphql.org Object Types](https://graphql.org/learn/schema/#object-types-and-fields)
 
-#### Basic Anatomy
+#### Basic anatomy
 
 <!-- prettier-ignore -->
 ```ts
@@ -106,9 +104,7 @@ We will now begin exploring the GraphQL schema building parts of the schema comp
                                       })
 ```
 
-#### Scalar Fields
-
-<cols>
+#### Scalar fields
 
 ```ts
 schema.objectType({
@@ -133,11 +129,7 @@ type Alpha {
 }
 ```
 
-</cols>
-
-#### Relational Fields
-
-<cols>
+#### Relational fields
 
 ```ts
 schema.objectType({
@@ -169,11 +161,7 @@ type Beta {
 }
 ```
 
-</cols>
-
 ###### Lists & Nullability
-
-<cols>
 
 ```ts
 schema.objectType({
@@ -198,7 +186,6 @@ type Alpha {
 }
 ```
 
-</cols>
 
 ### Entrypoint Types
 
@@ -208,7 +195,7 @@ Enum types are a scalar with a finite set of allowed values. They can be used as
 
 [graphql.org Enumeration Types docs](https://graphql.org/learn/schema/#enumeration-types)
 
-<cols>
+
 
 ```ts
 schema.enum({
@@ -224,11 +211,11 @@ enum Alpha {
 }
 ```
 
-</cols>
 
-#### Example: As argument type & field type
 
-<cols>
+#### Example: As argument type and field type
+
+
 
 ```ts
 schema.queryType({
@@ -265,8 +252,8 @@ type Query {
 }
 ```
 
-</cols>
-<cols>
+
+
 
 ```graphql
 query {
@@ -284,7 +271,7 @@ query {
 }
 ```
 
-</cols>
+
 
 ### Union Type
 
@@ -345,7 +332,7 @@ If an arg has been given a default value, then it will be used when the client p
 
 #### Example: Default Nullability Settings
 
-<cols>
+
 
 ```ts
 schema.queryType({
@@ -368,11 +355,11 @@ type Query {
 }
 ```
 
-</cols>
+
 
 #### Example: Nullability Flipped at Global Level
 
-<cols>
+
 
 ```ts
 settings.change({
@@ -404,11 +391,11 @@ type Query {
 }
 ```
 
-</cols>
+
 
 #### Example: Nullability Flipped at Type Level
 
-<cols>
+
 
 ```ts
 schema.queryType({
@@ -435,11 +422,11 @@ type Query {
 }
 ```
 
-</cols>
+
 
 #### Example: Nullability Flipped at Input & Field Level
 
-<cols>
+
 
 ```ts
 schema.queryType({
@@ -466,13 +453,13 @@ type Query {
 }
 ```
 
-</cols>
+
 
 #### Example: Mixing Levels
 
 It is possible to use type and input/field layers together. This provides flexibility to optimize for local sections of your API that have different characteristics. For example here, a type deviates from the global default for all but but one field and its input.
 
-<cols>
+
 
 ```ts
 schema.queryType({
@@ -508,13 +495,13 @@ type Query {
 }
 ```
 
-</cols>
+
 
 #### Example: Args That Have Default Values
 
 When an arg has a default you might think that then it should be nullable to the client but non-nullable within your resolver logic. However it turns out that if the client passes an _explicit_ `null` then that is considered an actual value, and hence is not subject to being assigned the default value. Thus, and then, the resolver still can observe null from the client. If you are curious about seeing this change and/or become configurable then please refer to [#485](https://github.com/graphql-nexus/nexus/issues/485).
 
-<cols>
+
 
 ```ts
 schema.queryType({
@@ -542,8 +529,8 @@ type Query {
 }}
 ```
 
-</cols>
-<cols>
+
+
 
 ```graphql
 query {
@@ -561,7 +548,7 @@ query {
 }
 ```
 
-</cols>
+
 
 ## Backing Types in Principal
 
