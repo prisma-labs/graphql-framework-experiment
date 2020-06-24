@@ -133,23 +133,23 @@ export type SettingsData = {
  * Mutate the settings data with new settings input.
  */
 export function changeSettings(state: SettingsData, newSettings: SettingsInput): void {
-  if (newSettings.nullable) {
+  if (newSettings.nullable !== undefined) {
     Lo.merge(state.nullable, newSettings.nullable)
   }
 
-  if (newSettings.generateGraphQLSDLFile) {
+  if (newSettings.generateGraphQLSDLFile !== undefined) {
     state.generateGraphQLSDLFile = newSettings.generateGraphQLSDLFile
   }
 
-  if (newSettings.rootTypingsGlobPattern) {
+  if (newSettings.rootTypingsGlobPattern !== undefined) {
     state.rootTypingsGlobPattern = newSettings.rootTypingsGlobPattern
   }
 
-  if (newSettings.authorization) {
+  if (newSettings.authorization !== undefined) {
     state.authorization = newSettings.authorization
   }
 
-  if (newSettings.connections) {
+  if (newSettings.connections !== undefined) {
     Object.keys(newSettings.connections)
       // must already have the defaults
       .filter((key) => state.connections[key] === undefined)
