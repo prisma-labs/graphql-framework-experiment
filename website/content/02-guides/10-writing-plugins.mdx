@@ -27,7 +27,7 @@ title: Writing Plugins
   // runtime.ts
   import { RuntimePlugin } from 'nexus/plugin'
 
-  export const plugin: RuntimePlugin = () => (project) => {
+  export const plugin: RuntimePlugin = () => project => {
     /* ... */
   }
   ```
@@ -36,7 +36,7 @@ title: Writing Plugins
   // testtime.ts
   import { TesttimePlugin } from 'nexus/plugin'
 
-  export const plugin: TesttimePlugin = () => (project) => {
+  export const plugin: TesttimePlugin = () => project => {
     /* ... */
   }
   ```
@@ -45,7 +45,7 @@ title: Writing Plugins
   // worktime.ts
   import { WorktimePlugin } from 'nexus/plugin'
 
-  export const plugin: WorktimePlugin = () => (project) => {
+  export const plugin: WorktimePlugin = () => project => {
     /* ... */
   }
   ```
@@ -53,7 +53,7 @@ title: Writing Plugins
 - The `project` parameter gives you access to utils and core components
 
   ```ts
-  export const plugin: TesttimePlugin = () => (project) => {
+  export const plugin: TesttimePlugin = () => project => {
     project.utils.log.trace('hello')
   }
   ```
@@ -83,7 +83,7 @@ title: Writing Plugins
   }
   ```
 
-- With worktime plugins you can hook onto various events grouped by subsystem:
+- With worktime plugins you can hook onto various events grouped by sub-system:
 
   ```ts
   export const plugin: WorktimePlugin = () => project => {
@@ -153,7 +153,7 @@ title: Writing Plugins
 
 - Import the `Settings` type in your entrypoint, and pass it as generic to `PluginEntrypoint`.
 
-  > Note: You must return the settings untouched in your entrypoint.
+  > **Note**: You must return the settings untouched in your entrypoint.
   > The framework is then responsible for passing the settings to your runtime/worktime/testtime plugins .
 
   ```ts
@@ -174,7 +174,7 @@ title: Writing Plugins
   import { RuntimePlugin } from 'nexus/plugin'
   import { Settings } from './settings'
 
-  export const plugin: RuntimePlugin<Settings> = (settings) => (project) => {
+  export const plugin: RuntimePlugin<Settings> = settings => project => {
     // ...
   }
   ```
@@ -188,7 +188,7 @@ title: Writing Plugins
   import { PluginEntrypoint } from 'nexus/plugin'
   import { Settings } from './settings'
 
-  export const fancyPlugin: PluginEntrypoint<Settings, 'required'> = (settings) => ({
+  export const fancyPlugin: PluginEntrypoint<Settings, 'required'> = settings => ({
     settings,
     // ...
   })
@@ -197,7 +197,7 @@ title: Writing Plugins
   import { RuntimePlugin } from 'nexus/plugin'
   import { Settings } from './settings'
 
-  export const plugin: RuntimePlugin<Settings, 'required'> = (settings) => (project) => {
+  export const plugin: RuntimePlugin<Settings, 'required'> = settings => project => {
     // ...
   }
   ```

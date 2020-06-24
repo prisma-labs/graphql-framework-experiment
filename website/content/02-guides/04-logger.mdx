@@ -14,7 +14,7 @@ Your app should only output logs via Nexus Logger. This ensures that you maintai
 
 All logs are sent to stdout (not stderr). Logs are formatted as JSON but there is a pretty mode designed for development.
 
-## Child Loggers
+## Child loggers
 
 ```ts
 log.addToContext({ user: 'Toto' })
@@ -33,6 +33,6 @@ foo.info('foo')
 
 You can create child loggers recursively starting from the root logger. A child logger extends their parent's component path and inherits their parent's context. Children can add context that is visible to themselves and their descendents.
 
-Child loggers are useful when you want to pass a logger to something that should be tracked as its own subsystem and/or may add context that you want isolated from the rest of the system. For example a classic use-case is the logger-instance-per-request pattern where a request-scoped logger is used for all logs in a request-response code path. This makes it much easier in production to group logs in your logging platform by request-response lifecycles.
+Child loggers are useful when you want to pass a logger to something that should be tracked as its own sub-system and/or may add context that you want isolated from the rest of the system. For example a classic use-case is the logger-instance-per-request pattern where a request-scoped logger is used for all logs in a request-response code path. This makes it much easier in production to group logs in your logging platform by request-response lifecycles.
 
-All runtime logs in your app (including from plugins come from either the `logger` itself or descendents thereof. This means if you wish absolutely every log being emitted by your app to contain some additional context you can do so simply by adding context to the root logger.
+All runtime logs in your app (including from plugins come from either the `logger` itself or descendents thereof). This means if you wish absolutely every log being emitted by your app to contain some additional context you can do so simply by adding context to the root logger.

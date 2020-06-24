@@ -968,7 +968,7 @@ schema.middleware((config: CreateFieldResolverInfo) => MiddlewareFn | undefined)
 
 If the current middleware function does not end the request-response cycle, it must call `next` to pass control to the next middleware function, until the actual GraphQL resolver gets called.
 
-> Note: You can skip the creation of a middleware by returning `undefined` instead of a middleware.
+> **Note**:  You can skip the creation of a middleware by returning `undefined` instead of a middleware.
 
 #### Example: Simple middlewares
 
