@@ -145,6 +145,10 @@ export function changeSettings(state: SettingsData, newSettings: SettingsInput):
     state.rootTypingsGlobPattern = newSettings.rootTypingsGlobPattern
   }
 
+  if (newSettings.authorization) {
+    state.authorization = newSettings.authorization
+  }
+
   if (newSettings.connections) {
     Object.keys(newSettings.connections)
       // must already have the defaults
@@ -154,6 +158,10 @@ export function changeSettings(state: SettingsData, newSettings: SettingsInput):
       })
     Lo.merge(state.connections, newSettings.connections)
   }
+}
+
+function defaultAuthorizationErrorFormatter(config: NexusSchema.core.FieldAuthorizePluginErrorConfig) {
+  return config.error
 }
 
 /**
@@ -173,7 +181,9 @@ function defaultSettings(): SettingsData {
         ...connectionPluginConfigManagedByNexus,
       },
     },
-    authorization: {},
+    authorization: {
+      formatError: defaultAuthorizationErrorFormatter,
+    },
   }
 
   return data
