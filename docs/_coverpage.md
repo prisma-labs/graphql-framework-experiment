@@ -1,6 +1,6 @@
 ![logo](/assets/nexus-logo-white.png)
 
-### Delightful GraphQL Application Framework
+### GraphQL Application Framework
 
 <p>
   <a  class="BigButton" href="https://github.com/graphql-nexus/nexus" target="_blank", rel="noopener">GitHub</a>
@@ -10,15 +10,10 @@
 
 <br>
 <br>
-<br>
 
 ```cli
 npx nexus
 ```
-
-<div id="TerminalContainer">
-  <img src="/assets/nexus-terminal.png" />
-</div>
 
 <!-- background color -->
 
