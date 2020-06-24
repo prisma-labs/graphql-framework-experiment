@@ -198,18 +198,20 @@ const Footer = ({ footerProps }: FooterViewProps) => {
               <Link to={findus.twitterLink}>
                 <Twitter />
               </Link>
-              {/*               <Link to={findus.fbLink}>
+              {
+                /*               <Link to={findus.fbLink}>
                 <Facebook />
               </Link>
               <Link to={findus.youtubeLink}>
                 <Youtube />
-              </Link> */}
+              </Link> 
               <Link to={findus.slackLink}>
                 <Slack />
-              </Link>
-              <Link to={findus.gitLink}>
-                <Github />
-              </Link>
+              </Link>*/
+                <Link to={findus.gitLink}>
+                  <Github />
+                </Link>
+              }
             </div>
 
             <p className="social-text">Prisma © 2018-2020</p>

@@ -69,8 +69,8 @@ const config = {
       // { name: 'Prisma Enterprise', link: '/' },
     ],
     community: [
-      { name: 'Github', link: 'https://github.com/prisma' },
-      { name: 'Discussions', link: 'https://github.com/prisma/prisma/discussions' },
+      { name: 'GitHub', link: 'https://github.com/graphql-nexus' },
+      { name: 'GitHub Discussions', link: 'https://github.com/graphql-nexus/nexus/discussions' },
       { name: 'GraphQL Meetup', link: 'https://www.meetup.com/graphql-berlin/' },
     ],
     resources: [
@@ -87,6 +87,7 @@ const config = {
       { name: 'How to GraphQL', link: 'https://www.howtographql.com/' },
       { name: 'PostgreSQL Tutorial', link: 'https://www.prisma.io/tutorials/?tag=postgresql' },
     ],
+    /* start NOT USED */
     company: [
       { name: 'About', link: 'https://www.prisma.io/about' },
       { name: 'Jobs', link: 'https://www.prisma.io/jobs' },
@@ -96,6 +97,7 @@ const config = {
         link: 'https://gist.github.com/nikolasburk/c0f34b0cc50d3403e2e0d40c0e6510aa',
       },
     ],
+    /* end NOT USED */
     findus: {
       twitterLink: 'https://twitter.com/nexusgql',
       gitLink: 'https://github.com/graphql-nexus/',
