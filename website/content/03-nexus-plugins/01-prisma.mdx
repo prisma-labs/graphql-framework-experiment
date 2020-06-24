@@ -1,21 +1,24 @@
 ---
-title: '`prisma`'
+title: 'prisma'
 ---
 
-## Prisma
+## Overview
 
 [`issues`](https://github.com/graphql-nexus/nexus/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc+label%3Aplugin%2Fprisma) – [features](https://github.com/graphql-nexus/nexus/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc+label%3Aplugin%2Fprisma+label%3Atype%2Ffeat) ⬝ [bugs](https://github.com/graphql-nexus/nexus/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc+label%3Aplugin%2Fprisma+label%3Atype%2Fbug)
 
 Prisma is a next-generation developer-centric toolkit focused on making the data layer easy. This plugin gives you:
 
-1. **Workflow Integration**  
-   Nexus `build` and `dev` workflows are enhanced to run your Prisma generators.
+###  Workflow integration
 
-1. **Runtime Integration**  
-   Nexus schema component [GraphQL type builders](/guides/schema#graphql-type-builders) are augmented with `.model` and `.crud` methods. These make it easy for you to project your Prisma models and expose operations against them in your GraphQL API. Resolvers are dynamically created for you removing the need for traditional ORMs/query builders like TypeORM, Sequelize, or Knex. Out-of-box features include pagination, filtering, and ordering. And when you do need to drop down to custom resolvers a [`Prisma Client`](https://github.com/prisma/prisma-client-js) instance on `context` is ready to go.
+Nexus `build` and `dev` workflows are enhanced to run your Prisma generators.
 
-1. **Testtime Integration**  
-   Nexus testing component is augmented with an instance of the [`Prisma Client`](https://github.com/prisma/prisma-client-js), to help you easily seed your database for your tests.
+### Runtime integration  
+
+Nexus schema component [GraphQL type builders](/guides/schema#graphql-type-builders) are augmented with `.model` and `.crud` methods. These make it easy for you to project your Prisma models and expose operations against them in your GraphQL API. Resolvers are dynamically created for you removing the need for traditional ORMs/query builders like TypeORM, Sequelize, or Knex. Out-of-box features include pagination, filtering, and ordering. And when you do need to drop down to custom resolvers a [`Prisma Client`](https://github.com/prisma/prisma-client-js) instance on `context` is ready to go.
+
+### Testtime integration
+
+Nexus testing component is augmented with an instance of the [`Prisma Client`](https://github.com/prisma/prisma-client-js), to help you easily seed your database for your tests.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -23,16 +26,15 @@ Prisma is a next-generation developer-centric toolkit focused on making the data
 
 ## Installation
 
-**1. Install the plugin**
+### 1. Install the plugin
 
-```cli
+```bash-symbol
 npm add nexus-plugin-prisma
 ```
 
-
 > Warning: All Prisma deps are bundled, so do _not_ install e.g. `@prisma/cli` or `@prisma/client`. If you are wondering _why_ you can read through [Nexus' philosophy on dependency management](/meta/architecture#dependency-philosophy). You can still find the the prisma CLI by running `npm run prisma` or `yarn prisma`. In an emergency you can still control version of prisma deps with Yarn [`"resolutions"`](https://classic.yarnpkg.com/en/docs/selective-version-resolutions).
 
-**2. Enable the plugin**
+### 2. Enable the plugin
 
 ```ts
 import { use } from 'nexus'
