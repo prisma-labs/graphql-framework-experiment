@@ -3,9 +3,9 @@ import styled from 'styled-components'
 
 export default (props: any) => (
   <Logo
-    width="178"
+    width="120"
     height="24"
-    viewBox="0 0 178 24"
+    viewBox="0 0 120 24"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     {...props}
