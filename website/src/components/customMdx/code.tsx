@@ -27,7 +27,7 @@ function cleanTokens(tokens: any[]) {
   return tokens
 }
 
-const propList = ['copy', 'line-number', 'bash-symbol']
+const propList = ['copy', 'bash-symbol']
 
 const Code = ({ children, className, ...props }: PreCodeProps) => {
   let language = className && className.replace(/language-/, '')
@@ -40,7 +40,7 @@ const Code = ({ children, className, ...props }: PreCodeProps) => {
   const code = stringify(children)
 
   const hasCopy = props['copy'] || language === 'copy'
-  const hasLineNo = props['line-number'] || language === 'line-number'
+  const hasNoLine = props['no-lines'] || language === 'no-lines'
   const hasTerminalSymbol = props['bash-symbol'] || language === 'bash-symbol'
   const tokenCopyClass = `${hasCopy ? 'has-copy-button' : ''} ${breakWords ? 'break-words' : ''}`
 
@@ -116,7 +116,7 @@ const Code = ({ children, className, ...props }: PreCodeProps) => {
                   return (
                     <Line key={line + i} {...lineProps}>
                       {hasTerminalSymbol && !isDiff && <LineNo>$</LineNo>}
-                      {hasLineNo && !isDiff && <LineNo>{i + 1}</LineNo>}
+                      {!hasTerminalSymbol && !isDiff && !hasNoLine && <LineNo>{i + 1}</LineNo>}
                       {isDiff && (
                         <LineNo style={{ color: lineClass.symbColor }}>
                           {diffSymbol !== '|' ? diffSymbol : i + 1}
@@ -196,8 +196,9 @@ const LineNo = styled.span`
 const LineContent = styled.span`
   padding: 0 1em;
   &.break-words {
-    display: table-cell;
+    display: inline-table;
     white-space: break-spaces;
+    width: 95%;
   }
 
   &.token-line {
