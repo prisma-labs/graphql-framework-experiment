@@ -180,7 +180,7 @@ function assertNoMissingTypesDev(
           .join(', ')} ?`
       }
 
-      log.error(`Missing type "${chalk.greenBright(typeName)}" in your GraphQL Schema.${suggestionsString}`)
+      log.error(`Missing type "${chalk.redBright(typeName)}" in your GraphQL Schema.${suggestionsString}`)
     })
   } else {
     Process.fatal(
