@@ -18,7 +18,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: yarn --frozen-lockfile
       - run: yarn -s build
-      - run: yarn -s test graphql-client
+      - run: yarn -s test runtime/app runtime/schema/settings lib/layout lib/build graphql-client
 
   unit-tests:
     runs-on: ubuntu-latest
@@ -32,7 +32,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - run: yarn --frozen-lockfile
-      - run: yarn build
+      - run: yarn -s build
       - run: yarn -s test:unit
 
   system-tests:
