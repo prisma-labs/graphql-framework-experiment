@@ -735,7 +735,7 @@ When running `nexus build`, `nexus-plugin-prisma` will make sure your [`Prisma C
 
 `nexus-plugin-prisma` augments the testing component of Nexus with an instance of the [`Prisma Client`](https://github.com/prisma/prisma-client-js), to help you easily seed your database for your tests.
 
-To learn more about its usage, [head to the Testing section](/guides/testing?id=with-a-database).
+To learn more about its usage, [head to the Testing section](../../guides/testing#with-a-database).
 
 ## Runtime Integration
 
@@ -763,7 +763,7 @@ schema.objectType({
 
 ### `t.model`
 
-Only available within [`schema.objectType`](/api/modules/main/exports/schema?id=objecttype) definitions.
+Only available within [`schema.objectType`](../../api/nexus/schema#objecttype) definitions.
 
 `t.model` contains configurable _field projectors_ that you use for projecting fields of your [Prisma models](https://github.com/prisma/prisma2/blob/master/docs/data-modeling.md#models) onto your [GraphQL Objects](https://graphql.github.io/graphql-spec/June2018/#sec-Objects). The precise behaviour of field projectors vary by the Prisma type being projected. Refer to the respective sub-sections for details.
 
@@ -1954,7 +1954,7 @@ undefined | String
 
 **Applies To**
 
-`t.crud.<*>` [`t.model.<Relation>`](#relation-field) [`t.model.<ListRelation>`](#list-field)
+`t.crud.<*>` [`t.model.<Relation>`](#relation) [`t.model.<ListRelation>`](#list-relation)
 
 **About**
 
@@ -2561,7 +2561,7 @@ Note: This is an abbreviated version of the ComputedInputs type. The most import
 
 **Applies To**
 
-[`t.crud.<mutations>`](#t.crud)
+[`t.crud.<mutations>`](#tcrud)
 
 **About**
 
