@@ -76,16 +76,9 @@ const config = {
     resources: [
       { name: 'Docs', link: '/' },
 
-      { name: 'Get started', link: 'https://www.prisma.io/docs/getting-started/quickstart' },
+      { name: 'Tutorial', link: '/getting-started/tutorial/chapter-introduction' },
 
-      {
-        name: 'API Reference',
-        link:
-          'https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/generating-prisma-client',
-      },
-      { name: 'Examples', link: 'https://github.com/prisma/prisma-examples' },
       { name: 'How to GraphQL', link: 'https://www.howtographql.com/' },
-      { name: 'PostgreSQL Tutorial', link: 'https://www.prisma.io/tutorials/?tag=postgresql' },
     ],
     /* start NOT USED */
     company: [
