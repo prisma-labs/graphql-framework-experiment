@@ -1,5 +1,5 @@
 import { stripIndent } from 'common-tags'
-import { EOL } from 'os'
+import { EOL, platform } from 'os'
 import * as Path from 'path'
 import ts, { EmitAndSemanticDiagnosticsBuilderProgram } from 'typescript'
 import { stripExt } from '../../lib/fs'
@@ -139,6 +139,10 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     app.assemble()
     app.start()
   `
+
+  if (platform() === 'win32') {
+    content = content.replace(/\\/g, '/')
+  }
 
   log.trace('created start module', { content })
   return content
