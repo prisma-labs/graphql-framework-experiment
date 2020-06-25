@@ -5,6 +5,21 @@ on:
     branches: [master]
 
 jobs:
+  unit-tests-windows:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        node-version: [12.x]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: yarn --frozen-lockfile
+      - run: yarn -s build
+      - run: yarn -s test graphql-client
+
   unit-tests:
     runs-on: ubuntu-latest
     strategy:
@@ -42,7 +57,7 @@ jobs:
           git config --global user.email labs@prisma.io
       - run: yarn -s test system/${{matrix.test-case}}
   publish:
-    needs: [unit-tests, system-tests]
+    needs: [unit-tests, unit-tests-windows, system-tests]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
