@@ -11,19 +11,15 @@ In this chapter you're going to write your first schema. You'll learn about:
 - GraphQL SDL file generation
 - Enhanced type safety & autocompletion
 
-<div class="NextIs SectionDivider"></div>
-
-## What About That Server?
+## What about that server?
 
 In the last chapter you probably noticed the minimal setup required to get up and running. In fact, you might even be confused and wondering:
 
-"Hey, all I have is an empty `app.ts` file, how can my server even be running?"
+> "Hey, all I have is an empty `app.ts` file, how can my server even be running?"
 
 Well, Nexus comes with a server out of the box. There's no need for you to start or stop the server or otherwise think about it beyond your domain logic. Nexus wants you to focus on what makes your GraphQL API unique.
 
 If your lock-in fears are tingling, know that **you still have _full_ access** to the underlying server instance. So if you need to add custom middlewares, routes, and so on, you can. It happens that currently it is an `express` instance but this area of Nexus will evolve ([#295](https://github.com/graphql-nexus/nexus/issues/295)).
-
-<div class="NextIs SectionDivider"></div>
 
 ## Reflection?
 
@@ -39,19 +35,17 @@ Architecturally there's a lot more to say about reflection but for now, from a u
 
 > There are plans to run Nexus Reflection as a separate process integrated into your IDE. You can learn more about and track the feature here ([#949](https://github.com/graphql-nexus/nexus/issues/949))
 
-<div class="NextIs SectionDivider"></div>
-
-## Model The Domain
+## Model the domain
 
 Let's get started with our blog schema by modeling some key entities in the domain. We'll begin with the concept of a `Post`. A post will represent a page in your blog. When not published, we'll call it a _draft_.
 
 Your modeling work is going to start on the API layer as opposed to the database layer. This API-first approach can be a good way to collaborate with frontend teams, getting their input in shaping the data early.
 
-> A note about terminology. We will be talking about the Post Object not Post Model. The difference is that at the API layer we have objects but at the database layer we have models. The name difference helps us talk about these different layers without confusion. It is also how GraphQL (API layer) and Prisma (database layer, discussed later) respectively refer to these things.
+> A note about terminology. We will be talking about the _Post Object_, not the _Post Model_. The difference is that at the API layer we have objects but at the database layer we have models. The name difference helps us talk about these different layers without confusion. It is also how GraphQL (API layer) and Prisma (database layer, discussed later) respectively refer to these things.
 
 Create a new module for your Post object at `api/graphql/Post.ts`. We _could_ write our whole schema within say `api/app.ts` or `api/graphql.ts`, but modularizing your GraphQL type definitions can help scale your codebase. Neither approach is inherently wrong though, so do as you see you fit. For this tutorial we'll use the modular style.
 
-```bash
+```bash-symbol
 mkdir api/graphql && touch api/graphql/Post.ts
 ```
 
@@ -98,9 +92,7 @@ You are free to disable this file (settings discussed later) but its existence h
 
 For the remainder of this tutorial we'll be keeping SDL to the right of Nexus code blocks.
 
-<div class="NextIs SectionDivider"></div>
-
-## Your First Home Grown Query
+## Your first home-grown query
 
 Your `Post` object is in place now but there's still no way for clients to read that data. Let's change that. You'll use the special `Query` object to expose your Post object.
 
@@ -228,4 +220,6 @@ Congratulations! You've successfully got your first GraphQL schema up and runnin
 
 <div class="NextIs NextChapter"></div>
 
-[➳](/tutorial/chapter-3-adding-mutations-to-your-api)
+<ButtonLink color="dark" type="primary" href="/getting-started/tutorial/chapter-adding-mutations-to-your-api">
+  Next &rarr;
+</ButtonLink>

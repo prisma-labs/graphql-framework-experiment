@@ -6,7 +6,7 @@ const config = {
   redirects: [],
   header: {
     logoLink: 'https://www.nexusjs.org', // replace with nexus site
-    title: 'GraphQL Nexus',
+    title: 'Nexus',
     // check all links
     // links: [
     //   { name: 'Docs', link: 'https://www.nexusjs.org/docs' },
@@ -28,20 +28,20 @@ const config = {
     },
   },
   siteMetadata: {
-    title: 'GraphQL Nexus - title',
-    description: 'GraphQL Nexus - desc',
+    title: 'Nexus - title',
+    description: 'Nexus - desc',
     keywords: 'Docs, nexus, 1.0',
     docsLocation: 'https://github.com/graphql-nexus/nexus/tree/master/website/content',
     twitter: {
-      site: '@nexus',
-      creator: '@nexus',
+      site: '@nexusgql',
+      creator: '@nexusgql',
       image: '/social/docs-social.png',
     },
     og: {
-      site_name: 'GraphQL Nexus',
+      site_name: 'Nexus',
       type: 'website',
       image: {
-        alt: 'GraphQL Nexus',
+        alt: 'Nexus',
         height: '630',
         type: 'image/png',
         url: '/social/docs-social.png', //replace social image
@@ -57,7 +57,7 @@ const config = {
   },
   footer: {
     logoLink: '/',
-    title: 'Prisma',
+    title: 'Nexus',
     products: [
       {
         name: 'Prisma Client',
@@ -69,12 +69,9 @@ const config = {
       // { name: 'Prisma Enterprise', link: '/' },
     ],
     community: [
-      { name: 'Meet the community', link: 'https://www.prisma.io/community' },
-      { name: 'Slack', link: 'https://slack.prisma.io/' },
-      { name: 'Github', link: 'https://github.com/prisma' },
-      { name: 'Discussions', link: 'https://github.com/prisma/prisma/discussions' },
+      { name: 'GitHub', link: 'https://github.com/graphql-nexus' },
+      { name: 'GitHub Discussions', link: 'https://github.com/graphql-nexus/nexus/discussions' },
       { name: 'GraphQL Meetup', link: 'https://www.meetup.com/graphql-berlin/' },
-      { name: 'TypeScript Meetup', link: 'https://www.meetup.com/TypeScript-Berlin/' },
     ],
     resources: [
       { name: 'Docs', link: '/' },
@@ -90,6 +87,7 @@ const config = {
       { name: 'How to GraphQL', link: 'https://www.howtographql.com/' },
       { name: 'PostgreSQL Tutorial', link: 'https://www.prisma.io/tutorials/?tag=postgresql' },
     ],
+    /* start NOT USED */
     company: [
       { name: 'About', link: 'https://www.prisma.io/about' },
       { name: 'Jobs', link: 'https://www.prisma.io/jobs' },
@@ -99,15 +97,16 @@ const config = {
         link: 'https://gist.github.com/nikolasburk/c0f34b0cc50d3403e2e0d40c0e6510aa',
       },
     ],
-    newsletter: {
-      text: 'Stay up to date with the latest features and changes to Prisma',
-    },
+    /* end NOT USED */
     findus: {
-      twitterLink: 'https://twitter.com/prisma',
-      youtubeLink: 'https://www.youtube.com/channel/UCptAHlN1gdwD89tFM3ENb6w',
-      fbLink: 'https://www.facebook.com/prisma.io',
-      slackLink: 'https://slack.prisma.io/',
-      gitLink: 'https://github.com/prisma',
+      twitterLink: 'https://twitter.com/nexusgql',
+      gitLink: 'https://github.com/graphql-nexus/',
+      slackLink: '',
+      fbLink: '',
+      youtubeLink: '',
+    },
+    newsletter: {
+      text: '',
     },
   },
 }
