@@ -1,5 +1,5 @@
 ---
-title: '`schema`'
+title: 'schema'
 ---
 
 ## `import { schema }`
@@ -28,13 +28,9 @@ objectType(config: {
 ```
 
 - `name` **(required)** The name of this object.
-
 - `definition` **(required)** The function used to define the fields of this object. See below for the various field builders available.
-
 - `description` The description of this object. Tools like GraphQL Playground can display this content.
-
 - `nonNullDefaults` <code class="TypeRef">[NonNullConfig](#i-nonnullconfig)</code>
-
 - `rootTyping` <code class="TypeRef">[NexusGenBackingTypes](#s-nexusgenbackingtypes)</code>
 
 #### Example
@@ -972,7 +968,7 @@ schema.middleware((config: CreateFieldResolverInfo) => MiddlewareFn | undefined)
 
 If the current middleware function does not end the request-response cycle, it must call `next` to pass control to the next middleware function, until the actual GraphQL resolver gets called.
 
-> Note: You can skip the creation of a middleware by returning `undefined` instead of a middleware.
+> **Note**:  You can skip the creation of a middleware by returning `undefined` instead of a middleware.
 
 #### Example: Simple middlewares
 
