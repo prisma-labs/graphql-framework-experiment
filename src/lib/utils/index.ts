@@ -1,4 +1,5 @@
 import * as HTTP from 'http'
+import { clone, isPlainObject, isString } from 'lodash'
 import * as Net from 'net'
 import * as Path from 'path'
 import Git from 'simple-git/promise'
@@ -238,6 +239,32 @@ export function areWorkerThreadsAvailable(): boolean {
     }
     throw error
   }
+}
+
+export function normalizePathsInData<C extends object>(data: C, basePath?: string, baesPathName?: string): C {
+  const dataCopy: any = clone(data)
+
+  for (const [k, v] of Object.entries(data)) {
+    if (isPlainObject(v)) {
+      dataCopy[k] = normalizePathsInData(v, basePath, baesPathName)
+    } else if (isString(v)) {
+      if (basePath) {
+        dataCopy[k] = replaceEvery(v, basePath, baesPathName ?? '<dynamic>')
+      }
+      dataCopy[k] = replaceEvery(dataCopy[k], Path.sep, '/')
+    } else if (v instanceof Error) {
+      if (basePath) {
+        v.message = replaceEvery(v.message, basePath, baesPathName ?? '<dynamic>')
+        if (v.stack) v.stack = replaceEvery(v.stack, basePath, baesPathName ?? '<dynamic>')
+      }
+      v.message = replaceEvery(v.message, Path.sep, '/')
+      if (v.stack) v.stack = replaceEvery(v.stack, Path.sep, '/')
+
+      dataCopy[k] = normalizePathsInData(v, basePath, baesPathName)
+    }
+  }
+
+  return dataCopy
 }
 
 // todo extends Json
