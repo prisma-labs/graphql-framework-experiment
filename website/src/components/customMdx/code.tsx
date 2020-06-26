@@ -27,7 +27,7 @@ function cleanTokens(tokens: any[]) {
   return tokens
 }
 
-const propList = ['copy', 'bash-symbol']
+const propList = ['copy', 'line-number', 'bash-symbol']
 
 const Code = ({ children, className, ...props }: PreCodeProps) => {
   let language = className && className.replace(/language-/, '')
@@ -40,7 +40,7 @@ const Code = ({ children, className, ...props }: PreCodeProps) => {
   const code = stringify(children)
 
   const hasCopy = props['copy'] || language === 'copy'
-  const hasNoLine = props['no-lines'] || language === 'no-lines'
+  const hasLineNo = props['line-number'] || language === 'line-number'
   const hasTerminalSymbol = props['bash-symbol'] || language === 'bash-symbol'
   const tokenCopyClass = `${hasCopy ? 'has-copy-button' : ''} ${breakWords ? 'break-words' : ''}`
 
@@ -116,7 +116,7 @@ const Code = ({ children, className, ...props }: PreCodeProps) => {
                   return (
                     <Line key={line + i} {...lineProps}>
                       {hasTerminalSymbol && !isDiff && <LineNo>$</LineNo>}
-                      {!hasTerminalSymbol && !isDiff && !hasNoLine && <LineNo>{i + 1}</LineNo>}
+                      {hasLineNo && !isDiff && <LineNo>{i + 1}</LineNo>}
                       {isDiff && (
                         <LineNo style={{ color: lineClass.symbColor }}>
                           {diffSymbol !== '|' ? diffSymbol : i + 1}
