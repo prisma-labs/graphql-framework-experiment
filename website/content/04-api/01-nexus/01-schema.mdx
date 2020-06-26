@@ -30,8 +30,8 @@ objectType(config: {
 - `name` **(required)** The name of this object.
 - `definition` **(required)** The function used to define the fields of this object. See below for the various field builders available.
 - `description` The description of this object. Tools like GraphQL Playground can display this content.
-- `nonNullDefaults` <code class="TypeRef">[NonNullConfig](#i-nonnullconfig)</code>
-- `rootTyping` <code class="TypeRef">[NexusGenBackingTypes](#s-nexusgenbackingtypes)</code>
+- `nonNullDefaults` ([`NonNullConfig`](#i-nonnullconfig))
+- `rootTyping` ([`NexusGenBackingTypes`](#s-nexusgenbackingtypes))
 
 #### Example
 
@@ -186,239 +186,239 @@ Unlike with `nodes` approach, this approach makes no assumptions about values fo
 
 ###### `nodes` ([`NodeResolver`](#u-graphqltype))
 
-    ##### Optionality
+##### Optionality
 
-    Forbidden if `resolve` given. Required otherwise.
+Forbidden if `resolve` given. Required otherwise.
 
-    ##### Remarks
+##### Remarks
 
-    When you use this approach (instead of `resolve`), Nexus makes some assumptions about the structure of the connection. You are only required to return a list of nodes to resolve based on the connection, and then we will automatically infer the `hasNextPage`, `hasPreviousPage`, and `cursor` values for you.
+When you use this approach (instead of `resolve`), Nexus makes some assumptions about the structure of the connection. You are only required to return a list of nodes to resolve based on the connection, and then we will automatically infer the `hasNextPage`, `hasPreviousPage`, and `cursor` values for you.
 
-    The returned array of nodes should have a length of one greater than the requested item count. The additional item should be placed according to this pattern:
+The returned array of nodes should have a length of one greater than the requested item count. The additional item should be placed according to this pattern:
 
-    - paginating forward / selecting `first`: last
-    - paginating backward / selecting `last`: first
+- paginating forward / selecting `first`: last
+- paginating backward / selecting `last`: first
 
-    For example, if the query is paginating forward, and there are 20 nodes in the returned array:
+For example, if the query is paginating forward, and there are 20 nodes in the returned array:
 
-    ```
-    Query Args     Returned Nodes
+```
+Query Args     Returned Nodes
 
-    (first: 2)     [{id: 1}, {id: 2}, {id: 3}]
-                                    ~~~~~~~ ------------------- Extra
-    (last: 2)      [{id: 18}, {id: 19}, {id: 20}]
-                   ~~~~~~~~ ------------------------------------- Extra
-    ```
+(first: 2)     [{id: 1}, {id: 2}, {id: 3}]
+                                ~~~~~~~ ------------------- Extra
+(last: 2)      [{id: 18}, {id: 19}, {id: 20}]
+                ~~~~~~~~ ------------------------------------- Extra
+```
 
-    Nexus then slices the array in the paginating direction, and if there are more than "N" node results, Nexus takes this to mean that there is another page in the paginating direction.
+Nexus then slices the array in the paginating direction, and if there are more than "N" node results, Nexus takes this to mean that there is another page in the paginating direction.
 
-    If you set `assumeExactNodeCount` to `true` in `schema.connections` setting then this heuristic changes. Nexus then assumes that a next page exists if the returned array length is `>=` to requested node count.
+If you set `assumeExactNodeCount` to `true` in `schema.connections` setting then this heuristic changes. Nexus then assumes that a next page exists if the returned array length is `>=` to requested node count.
 
-  * `additionalArgs` <code class="TypeRef" >Args</code>  
-    Additional arguments to use for just this field.
+* `additionalArgs` <code class="TypeRef" >Args</code>  
+Additional arguments to use for just this field.
 
-    ##### Default
+##### Default
 
-    `undefined`
+`undefined`
 
-    ##### Remarks
+##### Remarks
 
-    When used, the `additionalArgs` in app settings `schema.connections` will not be inherited. If you do wish to inherit them, enable that with `inheritAdditionalArgs`.
+When used, the `additionalArgs` in app settings `schema.connections` will not be inherited. If you do wish to inherit them, enable that with `inheritAdditionalArgs`.
 
-  * `inheritAdditionalArgs`  
-    Whether to inherit the `additionalArgs` from app settings `schema.connections`
+* `inheritAdditionalArgs`  
+Whether to inherit the `additionalArgs` from app settings `schema.connections`
 
-    ##### Default
+##### Default
 
-    `true` if `additionalArgs` is not set, `false` otherwise.
+`true` if `additionalArgs` is not set, `false` otherwise.
 
-  * `disableForwardPagination`  
-    If `true` then `first` and `after` args are _not_ present. When disabled, `last` arg becomes required, unless you disable `strictArgs`.
+* `disableForwardPagination`  
+If `true` then `first` and `after` args are _not_ present. When disabled, `last` arg becomes required, unless you disable `strictArgs`.
 
-    ##### Default
+##### Default
 
-    `false`
+`false`
 
-  - `disableBackwardPagination`  
-    If `true` then `last` and `before` args are _not_ present. When disabled, `first` arg becomes required, unless you disable `strictArgs`.
+- `disableBackwardPagination`  
+If `true` then `last` and `before` args are _not_ present. When disabled, `first` arg becomes required, unless you disable `strictArgs`.
 
-    ##### Default
+##### Default
 
-    `false`
+`false`
 
-  - `strictArgs`  
-    Whether `first`/`last` arg nullability should reflect the forward/backward pagination configuration. When `true`, then the following pattern is used:
+- `strictArgs`  
+Whether `first`/`last` arg nullability should reflect the forward/backward pagination configuration. When `true`, then the following pattern is used:
 
-    - when _only_ forward pagination enabled
-      - meaning, `disableForwardPagination && !disableBackwardPagination`
-      - then, `last` arg is required
-    - when _only_ backward pagination enabled
-      - meaning, `!disableForwardPagination && disableBackwardPagination`
-      - then, `first` arg is required
+- when _only_ forward pagination enabled
+  - meaning, `disableForwardPagination && !disableBackwardPagination`
+  - then, `last` arg is required
+- when _only_ backward pagination enabled
+  - meaning, `!disableForwardPagination && disableBackwardPagination`
+  - then, `first` arg is required
 
-    ##### Default
+##### Default
 
-    `true`
+`true`
 
-  - `validateArgs`  
-    Custom logic to validate the args. Throw an error to signal validation failure.
+- `validateArgs`  
+Custom logic to validate the args. Throw an error to signal validation failure.
 
-    ##### Signature
+##### Signature
 
-    <p class="OneLineSignature"></p>
+<p class="OneLineSignature"></p>
 
-    ```ts
-    (args: Args, info: ResolverInfo) => void
-    ```
+```ts
+(args: Args, info: ResolverInfo) => void
+```
 
-    ##### Default
+##### Default
 
-    Validates that client passes a `first` or a `last` arg, and not both.
+Validates that client passes a `first` or a `last` arg, and not both.
 
-  - `extendConnection`
-    Dynamically add additional fields to the GraphQL connection object. Similar to `extendEdge`.
+- `extendConnection`
+Dynamically add additional fields to the GraphQL connection object. Similar to `extendEdge`.
 
-    ##### Signature
+##### Signature
 
-    <p class="OneLineSignature"></p>
+<p class="OneLineSignature"></p>
 
-    ```ts
-    (t: TypeBuilder) => void
-    ```
+```ts
+(t: TypeBuilder) => void
+```
 
-    ##### Default
+##### Default
 
-    `undefined`
+`undefined`
 
-    ##### Remarks
+##### Remarks
 
-    Because this customizes the GraphQL connection object type, the _name_ of the type will necessarily be changed as well. If it didn't, it would conflict with the non-extended connection type in your schema (if any). The following pattern will be used to name the GraphQL object type:
+Because this customizes the GraphQL connection object type, the _name_ of the type will necessarily be changed as well. If it didn't, it would conflict with the non-extended connection type in your schema (if any). The following pattern will be used to name the GraphQL object type:
 
-    <p class="OneLineSignature"></p>
+<p class="OneLineSignature"></p>
 
-    ```
-    {camelCaseJoin: <typeName><fieldName>}_Connection
-    ```
+```
+{camelCaseJoin: <typeName><fieldName>}_Connection
+```
 
-    ##### Example
+##### Example
 
-    ```ts
-    schema.queryType({
-      name: 'Query',
-      definition(t) {
-        t.connection("toto", {
-          type: 'Boolean',
-          extendConnection(t) {
-            t.string('foo', () => 'bar')
-          }
-        }),
-        ...
+```ts
+schema.queryType({
+  name: 'Query',
+  definition(t) {
+    t.connection("toto", {
+      type: 'Boolean',
+      extendConnection(t) {
+        t.string('foo', () => 'bar')
       }
-    })
-    ```
-
-    ```graphql
-    type QueryToto_Connection {
-      edges: [BooleanEdge]
-      pageInfo: PageInfo!
-      foo: String!
-    }
+    }),
     ...
-    ```
+  }
+})
+```
 
-  - `extendEdge`  
-    Dynamically add additional fields to the GraphQL edge object. Similar to `extendConnection`.
+```graphql
+type QueryToto_Connection {
+  edges: [BooleanEdge]
+  pageInfo: PageInfo!
+  foo: String!
+}
+...
+```
 
-    ##### Signature
+- `extendEdge`  
+Dynamically add additional fields to the GraphQL edge object. Similar to `extendConnection`.
 
-    <p class="OneLineSignature"></p>
+##### Signature
 
-    ```ts
-    (t: TypeBuilder) => void
-    ```
+<p class="OneLineSignature"></p>
 
-    ##### Default
+```ts
+(t: TypeBuilder) => void
+```
 
-    `undefined`
+##### Default
 
-    ##### Remarks
+`undefined`
 
-    Because this customizes the GraphQL edge object type, the _name_ of the type will necessarily be changed as well. If it didn't, it would conflict with the non-extended edge type in your schema (if any). The following pattern will be used to name the GraphQL object type:
+##### Remarks
 
-    <p class="OneLineSignature"></p>
+Because this customizes the GraphQL edge object type, the _name_ of the type will necessarily be changed as well. If it didn't, it would conflict with the non-extended edge type in your schema (if any). The following pattern will be used to name the GraphQL object type:
 
-    ```
-    {camelCaseJoin: <typeName><fieldName>}_Edge
-    ```
+<p class="OneLineSignature"></p>
 
-    ##### Example
+```
+{camelCaseJoin: <typeName><fieldName>}_Edge
+```
 
-    ```ts
-    schema.queryType({
-      name: 'Query',
-      definition(t) {
-        t.connection("toto", {
-          type: 'Boolean',
-          extendEdge(t) {
-            t.string('foo', () => 'bar')
-          }
-        }),
-        ...
+##### Example
+
+```ts
+schema.queryType({
+  name: 'Query',
+  definition(t) {
+    t.connection("toto", {
+      type: 'Boolean',
+      extendEdge(t) {
+        t.string('foo', () => 'bar')
       }
-    })
-    ```
-
-    ```graphql
-    type QueryToto_Edge {
-      cursor: String!
-      node: Boolean!
-      foo: String!
-    }
+    }),
     ...
-    ```
+  }
+})
+```
 
-  * `pageInfoFromNodes`  
-    Override the default algorithm to determine `hasNextPage` and `hasPreviousPage` page info fields. Often needed when using `cursorFromNode`. See `nodes` for what default algorithm is.
+```graphql
+type QueryToto_Edge {
+  cursor: String!
+  node: Boolean!
+  foo: String!
+}
+...
+```
 
-    ##### Signature
+* `pageInfoFromNodes`  
+Override the default algorithm to determine `hasNextPage` and `hasPreviousPage` page info fields. Often needed when using `cursorFromNode`. See `nodes` for what default algorithm is.
 
-    ```ts
-    (
-      nodes:   Node[],
-      args:    Args,
-      context: Context,
-      info:    ResolverInfo
-    ) => {
-      hasNextPage:     boolean,
-      hasPreviousPage: boolean
-    }
-    ```
+##### Signature
 
-    ##### Default
+```ts
+(
+  nodes:   Node[],
+  args:    Args,
+  context: Context,
+  info:    ResolverInfo
+) => {
+  hasNextPage:     boolean,
+  hasPreviousPage: boolean
+}
+```
 
-    `undefined`
+##### Default
 
-  * `cursorFromNode`
-    Approach we use to transform a node into a cursor
+`undefined`
 
-    ##### Signature
+* `cursorFromNode`
+Approach we use to transform a node into a cursor
 
-    ```ts
-    (
-      node:    Node,
-      args:    Args,
-      context: Context,
-      info:    ResolverInfo,
-      forCursor: {
-        index: number
-        nodes: Node[]
-      }
-    ) => MaybePromise<string>
-    ```
+##### Signature
 
-    ##### Default
+```ts
+(
+  node:    Node,
+  args:    Args,
+  context: Context,
+  info:    ResolverInfo,
+  forCursor: {
+    index: number
+    nodes: Node[]
+  }
+) => MaybePromise<string>
+```
 
-    `'nodeField'`
+##### Default
+
+`'nodeField'`
 
 #### SchemaContributions {docsify-ignore}
 
@@ -768,19 +768,12 @@ scalarType(config: NexusScalarTypeConfig): NexusScalarTypeDef
 #### `NexusScalarTypeConfig` options
 
 - `name` **(required)**: Name of your type
-
 - `serialize` **(required)**: Serializes an internal value to include in a response
-
 - `description` _(optional)_: The description to annotate the GraphQL SDL
-
 - `deprecation` _(optional)_: Any deprecation info for this scalar type
-
 - `parseValue` _(optional)_: Parses an externally provided value to use as an input
-
 - `parseLiteral` _(optional)_: Parses an externally provided literal value to use as an input
-
 - `asNexusMethod` _(optional)_: Adds this type as a method on the Object/Interface definition blocks
-
 - `rootTyping` _(optional)_: Root type information for this type. By default, types are extracted for any .ts file in your project. You can configure that from the `schema.rootTypingsGlobPattern` setting
 
 #### Example
@@ -823,11 +816,8 @@ unionType(config: NexusUnionTypeConfig): NexusUnionTypeDef
 #### `NexusUnionTypeConfig` options
 
 - `name` **(required)**: Name of your type
-
 - `description` _(optional)_: The description to annotate the GraphQL SDL
-
 - `deprecation` _(optional)_: Info about a field deprecation. Formatted as a string and provided with the deprecated directive on field/enum types and as a comment on input field
-
 - `rootTyping` _(optional)_: Root type information for this type. By default, types are extracted for any .ts file in your project. You can configure that from the `schema.rootTypingsGlobPattern` setting
 
 #### Example
@@ -863,28 +853,18 @@ schema.unionType({
 }) => NexusArgDef
 ```
 
-- `type`  
-  The type of the argument.
-
-- `required`  
-  Whether the argument is required or not.
-
-  When `true` then `nullable` is `false`.
-
-- `nullable`  
-  Whether the argument is nullable or not.
-
-  When `true` then `required` is `false`.
-
-- `list`  
-  Whether the argument is a list or not.
-
-  When `true` it is a list.
-
-  When an array, the inner boolean specifies whether the list member can be nullable.
-
-- `description`  
-  The description to annotate the GraphQL SDL
+- `type` The type of the argument.
+- `required` 
+  - Whether the argument is required or not. 
+  - When `true` then `nullable` is `false`.
+- `nullable`
+  - Whether the argument is nullable or not.
+  - When `true` then `required` is `false`.
+- `list`
+  - Whether the argument is a list or not.
+  - When `true` it is a list.
+  - When an array, the inner boolean specifies whether the list member can be nullable.
+- `description` The description to annotate the GraphQL SDL
 
 #### Example
 
