@@ -247,7 +247,13 @@ export function repalceInObject<C extends object>(
   content: C
 ): C {
   return JSON.parse(
-    JSON.stringify(content).split(JSON.stringify(dynamicPattern).replace(/^"|"$/g, '')).join(replacement)
+    JSON.stringify(content)
+      .split(JSON.stringify(dynamicPattern).replace(/^"|"$/g, ''))
+      .join(replacement)
+      // Normalize snapshotted paths across OSs
+      // Namely turn Windows "\" into "/"
+      .split(Path.sep)
+      .join('/')
   )
 }
 
