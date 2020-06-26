@@ -1,5 +1,5 @@
 import * as HTTP from 'http'
-import { clone, isPlainObject, isString } from 'lodash'
+import { clone, isArray, isPlainObject, isString } from 'lodash'
 import * as Net from 'net'
 import * as Path from 'path'
 import Git from 'simple-git/promise'
@@ -244,32 +244,43 @@ export function areWorkerThreadsAvailable(): boolean {
 /**
  * Iterate through all values in a plain object and convert platform path separators into "/" and replace basePath if given and found with baesPathMask if given otherwise "<dynamic>".
  *
- * Special handling is given for errors, replacing its message and stack properties which are not enumerable. Errors are also traversed although are not plain objects.
+ * Special handling is given for errors, turning them into plain objects, stack and message properties dropped, enumerable props processed.
  */
-export function normalizePathsInData<C extends object>(data: C, basePath?: string, baesPathMask?: string): C {
-  const dataCopy: any = clone(data)
-
-  for (const [k, v] of Object.entries(data)) {
-    if (isPlainObject(v)) {
-      dataCopy[k] = normalizePathsInData(v, basePath, baesPathMask)
-    } else if (isString(v)) {
-      if (basePath) {
-        dataCopy[k] = replaceEvery(v, basePath, baesPathMask ?? '<dynamic>')
-      }
-      dataCopy[k] = replaceEvery(dataCopy[k], Path.sep, '/')
-    } else if (v instanceof Error) {
-      if (basePath) {
-        v.message = replaceEvery(v.message, basePath, baesPathMask ?? '<dynamic>')
-        if (v.stack) v.stack = replaceEvery(v.stack, basePath, baesPathMask ?? '<dynamic>')
-      }
-      v.message = replaceEvery(v.message, Path.sep, '/')
-      if (v.stack) v.stack = replaceEvery(v.stack, Path.sep, '/')
-
-      dataCopy[k] = normalizePathsInData(v, basePath, baesPathMask)
+export function normalizePathsInData<X>(x: X, basePath?: string, basePathMask?: string): X {
+  if (isString(x)) {
+    let x_: string = x
+    if (basePath) {
+      x_ = replaceEvery(x_, basePath, basePathMask ?? '<dynamic>')
     }
+    x_ = replaceEvery(x_, Path.sep, '/')
+    return x_ as any
   }
 
-  return dataCopy
+  if (isArray(x)) {
+    return x.map((item) => {
+      return normalizePathsInData(item, basePath, basePathMask)
+    }) as any
+  }
+
+  if (isPlainObject(x)) {
+    const x_ = {} as any
+    for (const [k, v] of Object.entries(x)) {
+      x_[k] = normalizePathsInData(v, basePath, basePathMask)
+    }
+    return x_
+  }
+
+  if (x instanceof Error) {
+    const x_ = clone(x)
+    for (const [k, v] of Object.entries(x)) {
+      const anyx_ = x_ as any
+      anyx_[k] = normalizePathsInData(v, basePath, basePathMask)
+    }
+
+    return x_ as any
+  }
+
+  return x
 }
 
 // todo extends Json
