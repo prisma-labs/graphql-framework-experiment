@@ -8,7 +8,7 @@ title: Recipes
 
 1. Install the prisma plugin
 
-   ```cli
+   ```bash-symbol
    npm add nexus-plugin-prisma
    ```
 
@@ -38,7 +38,7 @@ title: Recipes
 
 1. Initialize your database
 
-   ```cli
+   ```bash-symbol
    yarn prisma migrate save --experimental && yarn prisma migrate up --experimental
    ```
 
@@ -83,13 +83,13 @@ title: Recipes
 
 1. Scaffold Your plugin project
 
-   ```cli
+   ```bash-symbol
    npx nexus create plugin
    ```
 
 2. Publish it
 
-   ```cli
+   ```bash-symbol
    yarn publish
    ```
 
@@ -99,7 +99,7 @@ title: Recipes
 
 For trying things out in a deployed setting you can try Heroku's free postgres tier. Setting it up is simple:
 
-```bash
+```bash-symbol
 heroku create
 heroku addons:create heroku-postgresql
 
@@ -115,7 +115,7 @@ The recommended way to run postgres locally is with docker, because it is easy f
 
 1. Start a postgres server for your app:
 
-   ```cli
+   ```bash-symbol
    docker run --detach --publish 5432:5432 -e POSTGRES_PASSWORD=postgres --name 'postgres' postgres:10.12
    ```
 
@@ -177,7 +177,7 @@ If you don't want to use a docker, here are some links to alternative approaches
 
    1. Install `direnv`
 
-      ```cli
+      ```bash-symbol
       brew install direnv
       ```
 
@@ -190,7 +190,7 @@ If you don't want to use a docker, here are some links to alternative approaches
       ```
 
    1. Approve the `.envrc` file (one time, every time the envrc file changes).
-      ```cli
+      ```bash-symbol
       direnv allow .
       ```
    1. Done. Now when you work within your project with a shell, all your commands will be run with access to the environment variables defined in your `.envrc` file. The magic of `direnv` is that these environment variables are automatically exported to and removed from your environment based on you being within your project directory or not.
@@ -246,7 +246,7 @@ If you don't want to use a docker, here are some links to alternative approaches
 
 We made it very simple to debug your app with VS Code.
 
-> Note: If you used `npx nexus` to initialize your project, jump straight to step 2.
+> **Note**: If you used `npx nexus` to initialize your project, jump straight to step 2.
 
 1. Create a `.vscode/launch.json` file and paste the following content
 

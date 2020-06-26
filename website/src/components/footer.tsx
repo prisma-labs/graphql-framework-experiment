@@ -126,8 +126,8 @@ const Footer = ({ footerProps }: FooterViewProps) => {
     products,
     resources,
     community,
-    company,
-    newsletter,
+    /*    company,
+    newsletter, */
     findus,
   } = footerProps
   return (
@@ -148,14 +148,14 @@ const Footer = ({ footerProps }: FooterViewProps) => {
           <Title>{title}</Title>
         </div>
         <div>
-          <LinkList>
+          {/*           <LinkList>
             <h3>PRODUCTS</h3>
             {products.map((item: any, index: number) => (
               <li key={index}>
                 <Link to={item.link}>{item.name}</Link>
               </li>
             ))}
-          </LinkList>
+          </LinkList> */}
 
           <LinkList>
             <h3>RESOURCES</h3>
@@ -176,7 +176,7 @@ const Footer = ({ footerProps }: FooterViewProps) => {
             ))}
           </LinkList>
 
-          <LinkList>
+          {/*           <LinkList>
             <h3>COMPANY</h3>
             {company.map((item: any, index: number) => (
               <li key={index}>
@@ -186,30 +186,32 @@ const Footer = ({ footerProps }: FooterViewProps) => {
                 </Link>
               </li>
             ))}
-          </LinkList>
+          </LinkList> */}
         </div>
 
         <SocialWrapper>
-          <NewsLetter newsletter={newsletter} />
+          {/* <NewsLetter newsletter={newsletter} /> */}
 
-          <div className="social">
+          <div>
             <h3>FIND US</h3>
             <div className="social-links">
               <Link to={findus.twitterLink}>
                 <Twitter />
               </Link>
-              <Link to={findus.fbLink}>
+              {
+                /*               <Link to={findus.fbLink}>
                 <Facebook />
               </Link>
               <Link to={findus.youtubeLink}>
                 <Youtube />
-              </Link>
+              </Link> 
               <Link to={findus.slackLink}>
                 <Slack />
-              </Link>
-              <Link to={findus.gitLink}>
-                <Github />
-              </Link>
+              </Link>*/
+                <Link to={findus.gitLink}>
+                  <Github />
+                </Link>
+              }
             </div>
 
             <p className="social-text">Prisma © 2018-2020</p>

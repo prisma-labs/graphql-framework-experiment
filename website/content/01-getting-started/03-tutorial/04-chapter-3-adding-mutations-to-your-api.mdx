@@ -2,7 +2,7 @@
 title: 3. Adding Mutations to Your API
 ---
 
-## Chapter 3 <br/> Adding Mutations to Your API
+## Chapter 3: Adding Mutations to Your API
 
 In this chapter you're going to add some write capability to your API. You'll learn about:
 
@@ -13,7 +13,7 @@ In this chapter you're going to add some write capability to your API. You'll le
 
 To keep our learning gradual we'll stick to in-memory data for now but rest assured a proper databases is coming in an upcoming chapter.
 
-## Wire Up The Context
+## Wire up the context
 
 The first thing we'll do is setup an in-memory database and expose it to our resolvers using the _GraphQL context_.
 
@@ -21,7 +21,7 @@ The GraphQL Context is a plain JavaScript object shared across all resolvers. Ne
 
 So go ahead and create the database.
 
-```bash
+```bash-symbol
 touch api/db.ts
 ```
 
@@ -61,7 +61,7 @@ module global {
 > **Note** For those familiar with GraphQL, you might be grimacing that we’re attaching static things to the context, instead of using export/import.
 > This is a matter of convenience. Feel free to take a purer approach in your apps if you want.
 
-## Use The Context
+## Use the context
 
 Now let's use this data to re-implement the `Query.drafts` resolver from the previous chapter.
 
@@ -85,7 +85,7 @@ schema.queryType({
 
 **Did you notice?** Still no TypeScript type annotations required from you yet everything is still totally type safe. Prove it to yourself by hovering over the `ctx.db.posts` property and witness the correct type information it gives you. This is the type propagation we just mentioned in action. 🙌
 
-## Your First Mutation
+## Your first mutation
 
 Alright, now that we know how to wire things into our context, let's implement our first mutation. We're going to make it possible for your API clients to create new drafts.
 
@@ -95,8 +95,6 @@ This mutation will need a name. Rather than simply call it `createPost` we'll us
 - We can colocate mutation fields with the objects they relate to or centralize all mutation fields.
 
 As before we will take the collocation approach.
-
-<div class="TightRow">
 
 <!-- prettier-ignore -->
 ```ts
@@ -124,13 +122,9 @@ Mutation {
 }
 ```
 
-</div>
-
 We need to get the client's input data to complete our resolver. This brings us to a new concept, GraphQL arguments. Every field in GraphQL may accept them. Effectively you can think of each field in GraphQL like a function, accepting some input, doing something, and returning an output. Most of the time "doing something" is a matter of some read-like operation but with `Mutation` fields the "doing something" usually entails a process with side-effects (e.g. writing to the database).
 
 Let's revise our implementation with GraphQL arguments.
-
-<div class="IntrinsicRow">
 
 ```diff
 schema.extendType({
@@ -166,17 +160,13 @@ Mutation {
 }
 ```
 
-</div>
-
 1. Add an `args` property to the field definition to define its args. Keys are arg names and values are type specifications.
 2. Use the Nexus helpers for defining an arg type. There is one such helper for every GraphQL scalar such as `schema.intArg` and `schema.booleanArg`. If you want to reference a type like some InputObject then use `schema.arg({ type: "..." })`.
 3. In our resolver, access the args we specified above and pass them through to our custom logic. If you hover over the `args` parameter you'll see that Nexus has properly typed them including the fact that they cannot be undefined.
 
-## Model The Domain pt 2
+## Model the domain: Part 2
 
 Before we wrap this chapter let's flush out our schema a bit more. We'll add a `publish` mutation to transform a draft into an actual published post, then we'll let API clients read the the published posts.
-
-<div class="IntrinsicRow">
 
 ```ts
 // api/graphql/Post.ts
@@ -193,7 +183,7 @@ schema.extendType({
         draftId: schema.intArg({ required: true }),
       },
       resolve(_root, args, ctx) {
-        let draftToPublish = ctx.db.posts.find((p) => p.id === args.draftId)
+        let draftToPublish = ctx.db.posts.find(p => p.id === args.draftId)
 
         if (!draftToPublish) {
           throw new Error('Could not find draft with id ' + args.draftId)
@@ -215,10 +205,6 @@ type Mutation {
 }
 ```
 
-</div>
-
-<div class="IntrinsicRow">
-
 ```ts
 // api/graphql/Post.ts
 
@@ -231,7 +217,7 @@ schema.extendType({
     t.list.field('posts', {
       type: 'Post',
       resolve(_root, _args, ctx) {
-        return ctx.db.posts.filter((p) => p.published === true)
+        return ctx.db.posts.filter(p => p.published === true)
       },
     })
   },
@@ -245,13 +231,9 @@ type Query {
 }
 ```
 
-</div>
-
-## Try It Out
+## Try it out
 
 Great, now head on over to the GraphQL Playground and run this query (left). If everything went well, you should see a response like this (right):
-
-<div class="TightRow">
 
 ```graphql
 mutation {
@@ -277,11 +259,7 @@ mutation {
 }
 ```
 
-</div>
-
 Now, that published draft should be visible via the `posts` Query. Run this query (left) and expect the following response (right):
-
-<div class="TightRow">
 
 ```graphql
 query {
@@ -309,14 +287,12 @@ query {
 }
 ```
 
-</div>
-
-## Wrapping Up
+## Wrapping up
 
 Congratulations! You can now read and write to your API.
 
 But, so far you've been validating your work by manually interacting with the Playground. That may be reasonable at first (depending on your relationship to TDD) but it will not scale. At some point you are going to want automated testing. Nexus takes testing seriously and in the next chapter we'll show you how. See you there!
 
-<div class="NextIs NextChapter"></div>
-
-[➳](/tutorial/chapter-4-testing-your-api)
+<ButtonLink color="dark" type="primary" href="/getting-started/tutorial/chapter-testing-your-api">
+  Next &rarr;
+</ButtonLink>

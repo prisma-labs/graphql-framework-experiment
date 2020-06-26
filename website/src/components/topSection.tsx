@@ -33,6 +33,9 @@ const TopSection = ({ title, slug, toc }: any) => {
     <TopSectionWrapper>
       <ParentTitle slug={slug} />
       <MainTitle>{title}</MainTitle>
+      <div className="tech-switch-block">
+        <hr />
+      </div>
       {toc && toc.items && toc.items.length > 0 && <TOC headings={toc.items} />}
     </TopSectionWrapper>
   )
