@@ -18,7 +18,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: yarn --frozen-lockfile
       - run: yarn -s build
-      - run: yarn -s test runtime/app runtime/schema/settings lib/build runtime/schema/index lib/nexus-schema-backing-types lib/graphql-client runtime/server lib/plugin
+      - run: yarn -s test runtime/app runtime/schema/settings lib/build runtime/schema/index lib/nexus-schema-backing-types lib/graphql-client runtime/server runtime/schema/settings-mapper lib/watcher
       # - run: yarn -s test runtime/app runtime/schema/settings >> lib/layout << lib/build lib/add-to-context-extractor lib/graphql-client
       # todo all
       # - run: yarn -s test runtime/app runtime/schema/settings lib/layout lib/build lib/add-to-context-extractor runtime/schema/index lib/nexus-schema-backing-types lib/graphql-client runtime/server lib/plugin lib/glocal runtime/schema/settings-mapper lib/watcher
