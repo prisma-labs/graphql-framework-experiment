@@ -166,23 +166,25 @@ This field builder helps you implement paginated associations between types in y
 ) => void
 ```
 
-- param `config`
+##### param `config`
 
-  - `type` <code class="TypeRef" >[GraphQLType](#graphqltype)</code>  
-    The type of this field.
+###### `type` ([`GraphQLType`](#u-graphqltype))
 
-  - `resolve` <code class="TypeRef" >[Resolver](#graphqltype)</code>  
-    Implement everything yourself.
+The type of this field.
 
-    Useful for more complex pagination cases, where you may want to use utilities from other libraries like [`graphql-relay`](https://github.com/graphql/graphql-relay-js), and only use Nexus for the construction and type-safety.
+###### `resolve` ([`Resolver`](#u-graphqltype))
 
-    Unlike with `nodes` approach, this approach makes no assumptions about values for the `edges` `cursor` `pageInfo` properties.
+Implement everything yourself.
 
-    ##### Optionality
+Useful for more complex pagination cases, where you may want to use utilities from other libraries like [`graphql-relay`](https://github.com/graphql/graphql-relay-js), and only use Nexus for the construction and type-safety.
+
+Unlike with `nodes` approach, this approach makes no assumptions about values for the `edges` `cursor` `pageInfo` properties.
+
+**Optionality**
 
     Forbidden if `nodes` given. Required otherwise.
 
-  - `nodes` <code class="TypeRef" >[NodeResolver](#graphqltype)</code>
+###### `nodes` ([`NodeResolver`](#u-graphqltype))
 
     ##### Optionality
 
@@ -212,7 +214,7 @@ This field builder helps you implement paginated associations between types in y
 
     If you set `assumeExactNodeCount` to `true` in `schema.connections` setting then this heuristic changes. Nexus then assumes that a next page exists if the returned array length is `>=` to requested node count.
 
-  * `additionalArgs` <code class="TypeRef" >[Args](#args)</code>  
+  * `additionalArgs` <code class="TypeRef" >Args</code>  
     Additional arguments to use for just this field.
 
     ##### Default
@@ -1115,31 +1117,31 @@ Object.values(existingSchema.getTypeMap()).forEach(schema.importType)
 
 ### `O` `Args`
 
-todo
+🚧 Work in progress.
 
 ### `U` `GraphQLType`
 
-todo
+🚧 Work in progress.
 
 ### `I` `TypeBuilder`
 
-todo
+🚧 Work in progress.
 
 ### `I` `Context`
 
-todo
+🚧 Work in progress.
 
 ### `I` `ResolverInfo`
 
-todo
+🚧 Work in progress.
 
 ### `I` `Node`
 
-todo
+🚧 Work in progress.
 
 ### `I` `NonNullConfig`
 
-todo
+🚧 Work in progress.
 
 ```ts
 {
