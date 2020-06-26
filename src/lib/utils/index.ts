@@ -1,4 +1,5 @@
 import * as HTTP from 'http'
+import { clone, isArray, isPlainObject, isString } from 'lodash'
 import * as Net from 'net'
 import * as Path from 'path'
 import Git from 'simple-git/promise'
@@ -240,13 +241,63 @@ export function areWorkerThreadsAvailable(): boolean {
   }
 }
 
+/**
+ * Iterate through all values in a plain object and convert platform path separators into "/" and replace basePath if given and found with baesPathMask if given otherwise "<dynamic>".
+ *
+ * Special handling is given for errors, turning them into plain objects, stack and message properties dropped, enumerable props processed.
+ */
+export function normalizePathsInData<X>(x: X, basePath?: string, basePathMask?: string): X {
+  if (isString(x)) {
+    let x_: string = x
+    if (basePath) {
+      x_ = replaceEvery(x_, basePath, basePathMask ?? '<dynamic>')
+    }
+    x_ = replaceEvery(x_, Path.sep, '/')
+    return x_ as any
+  }
+
+  if (isArray(x)) {
+    return x.map((item) => {
+      return normalizePathsInData(item, basePath, basePathMask)
+    }) as any
+  }
+
+  if (isPlainObject(x)) {
+    const x_ = {} as any
+    for (const [k, v] of Object.entries(x)) {
+      x_[k] = normalizePathsInData(v, basePath, basePathMask)
+    }
+    return x_
+  }
+
+  if (x instanceof Error) {
+    const x_ = clone(x)
+    for (const [k, v] of Object.entries(x)) {
+      const anyx_ = x_ as any
+      anyx_[k] = normalizePathsInData(v, basePath, basePathMask)
+    }
+
+    return x_ as any
+  }
+
+  return x
+}
+
 // todo extends Json
 export function repalceInObject<C extends object>(
   dynamicPattern: string | RegExp,
   replacement: string,
   content: C
 ): C {
-  return JSON.parse(JSON.stringify(content).split(dynamicPattern).join(replacement))
+  return JSON.parse(
+    JSON.stringify(content)
+      .split(JSON.stringify(dynamicPattern).replace(/^"|"$/g, ''))
+      .join(replacement)
+      // Normalize snapshotted paths across OSs
+      // Namely turn Windows "\" into "/"
+      .split(Path.sep)
+      .join('/')
+  )
 }
 
 export function replaceEvery(str: string, dynamicPattern: string, replacement: string): string {
