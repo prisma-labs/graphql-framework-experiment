@@ -21,7 +21,6 @@ jobs:
       - run: yarn -s test runtime/app runtime/schema/settings lib/build runtime/schema/index lib/nexus-schema-backing-types lib/graphql-client runtime/server runtime/schema/settings-mapper lib/plugin lib/add-to-context-extractor
       # todo
       # lib/layout
-      # lib/add-to-context-extractor
       # lib/glocal
       # lib/watcher
 
