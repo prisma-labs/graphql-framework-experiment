@@ -241,26 +241,31 @@ export function areWorkerThreadsAvailable(): boolean {
   }
 }
 
-export function normalizePathsInData<C extends object>(data: C, basePath?: string, baesPathName?: string): C {
+/**
+ * Iterate through all values in a plain object and convert platform path separators into "/" and replace basePath if given and found with baesPathMask if given otherwise "<dynamic>".
+ *
+ * Special handling is given for errors, replacing its message and stack properties which are not enumerable. Errors are also traversed although are not plain objects.
+ */
+export function normalizePathsInData<C extends object>(data: C, basePath?: string, baesPathMask?: string): C {
   const dataCopy: any = clone(data)
 
   for (const [k, v] of Object.entries(data)) {
     if (isPlainObject(v)) {
-      dataCopy[k] = normalizePathsInData(v, basePath, baesPathName)
+      dataCopy[k] = normalizePathsInData(v, basePath, baesPathMask)
     } else if (isString(v)) {
       if (basePath) {
-        dataCopy[k] = replaceEvery(v, basePath, baesPathName ?? '<dynamic>')
+        dataCopy[k] = replaceEvery(v, basePath, baesPathMask ?? '<dynamic>')
       }
       dataCopy[k] = replaceEvery(dataCopy[k], Path.sep, '/')
     } else if (v instanceof Error) {
       if (basePath) {
-        v.message = replaceEvery(v.message, basePath, baesPathName ?? '<dynamic>')
-        if (v.stack) v.stack = replaceEvery(v.stack, basePath, baesPathName ?? '<dynamic>')
+        v.message = replaceEvery(v.message, basePath, baesPathMask ?? '<dynamic>')
+        if (v.stack) v.stack = replaceEvery(v.stack, basePath, baesPathMask ?? '<dynamic>')
       }
       v.message = replaceEvery(v.message, Path.sep, '/')
       if (v.stack) v.stack = replaceEvery(v.stack, Path.sep, '/')
 
-      dataCopy[k] = normalizePathsInData(v, basePath, baesPathName)
+      dataCopy[k] = normalizePathsInData(v, basePath, baesPathMask)
     }
   }
 
