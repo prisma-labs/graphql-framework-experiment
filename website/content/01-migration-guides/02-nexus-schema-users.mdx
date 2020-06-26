@@ -211,17 +211,18 @@ schema.objectType({
 
 By default Nexus Schema has [outputs as guaranteed](https://nexus.js.org/docs/getting-started#nullability-default-values). Nexus Framework has outputs as nullable.
 
-- If you rely heavily on the Nexus Schema defaults then please wait for [#483](https://github.com/graphql-nexus/nexus/issues/483) so that you can turn them back on that way in the framework.
-- If you use the following settings in your app currently then you can migrate seamlessly to Nexus framework, since this config is now the default:
+If you rely heavily on the Nexus Schema defaults then please wait for [#483](https://github.com/graphql-nexus/nexus/issues/483) so that you can turn them back on that way in the framework.
 
-  ```ts
-  makeSchema({
-    nonNullDefaults: {
-      input: false,
-      output: false,
-    },
-  })
-  ```
+If you use the following settings in your app currently then you can migrate seamlessly to Nexus framework, since this config is now the default:
+
+```ts
+makeSchema({
+  nonNullDefaults: {
+    input: false,
+    output: false,
+  },
+})
+```
 
 ### Logging
 
