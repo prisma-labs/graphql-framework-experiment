@@ -35,7 +35,7 @@ export const createUser = extendType({
 })
 ```
 
-You can also use it with a function as the first argument, which will pass the `t` provided to the definition block, especially useful when using with the [connection plugin](plugin-connection.md):
+You can also use it with a function as the first argument, which will pass the `t` provided to the definition block, especially useful when using with the [connection plugin](../plugins/connection):
 
 ```ts
 export const usersQueryField = queryField(t => {

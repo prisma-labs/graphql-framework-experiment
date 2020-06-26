@@ -68,7 +68,7 @@ plugin({
 ### onAfterBuild(schema)
 
 The "onAfterBuild" hook is provided the schema, and is useful to validate contract of the schema
-with the expectations of the plugin. The [nullabilityGuard](plugin-nullabilityGuard.md)
+with the expectations of the plugin. The [nullabilityGuard](../plugins/nullability-guard)
 
 ```ts
 plugin({
@@ -145,3 +145,5 @@ const ResourceTypePlugin = plugin({
 ```
 
 #### Builder Object
+
+🚧 Work in progress.
