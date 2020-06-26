@@ -246,11 +246,9 @@ export function repalceInObject<C extends object>(
   replacement: string,
   content: C
 ): C {
-  return JSON.parse(JSON.stringify(content).split(dynamicPattern).join(replacement))
-}
-
-export function replaceEvery(str: string, dynamicPattern: string, replacement: string): string {
-  return str.split(dynamicPattern).join(replacement)
+  return JSON.parse(
+    JSON.stringify(content).split(JSON.stringify(dynamicPattern).replace(/^"|"$/g, '')).join(replacement)
+  )
 }
 
 /**
