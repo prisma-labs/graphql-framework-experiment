@@ -71,6 +71,7 @@ interface Input {
  * version available.
  */
 export function detectExecLayout(input: Input): ExecScenario {
+  console.log(1)
   const cwd = input.cwd ?? process.cwd()
   let thisProcessScriptPath = input.scriptPath ?? process.argv[1]
 
@@ -96,6 +97,7 @@ export function detectExecLayout(input: Input): ExecScenario {
   }
   let projectDir = null
 
+  console.log(2)
   try {
     projectDir = findFileRecurisvelyUpwardSync('package.json', { cwd })?.dir
   } catch (e) {}
@@ -122,6 +124,7 @@ export function detectExecLayout(input: Input): ExecScenario {
     toolBinRealPath: null,
   }
 
+  console.log(3)
   let isToolProject = null
   try {
     isToolProject =
