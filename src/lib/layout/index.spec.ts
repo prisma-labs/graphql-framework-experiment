@@ -86,7 +86,7 @@ const ctx = TC.create(
             asBundle: false,
           })
         )
-        logs = logs.split(ctx.fs.cwd()).join('__DYNAMIC__')
+        logs = normalizePathsInData(logs, ctx.fs.cwd(), '__DYNAMIC__')
         return normalizePathsInData(data.data, ctx.fs.cwd(), '__DYNAMIC__')
       },
       async createLayout(opts?: { entrypointPath?: string; buildOutput?: string }) {
