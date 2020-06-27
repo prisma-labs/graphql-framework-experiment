@@ -53,39 +53,39 @@ describe('node project detection', () => {
       runningLocalTool: false,
     })
   })
-  it('if package.json not present then is not a node project', () => {
-    expect(ctx.detectExecLayout().nodeProject).toEqual(false)
-    expect(ctx.detectExecLayout()).toMatchObject({
-      nodeProject: false,
-      toolProject: false,
-      toolCurrentlyPresentInNodeModules: false,
-      runningLocalTool: false,
-    })
-  })
+  // it('if package.json not present then is not a node project', () => {
+  //   expect(ctx.detectExecLayout().nodeProject).toEqual(false)
+  //   expect(ctx.detectExecLayout()).toMatchObject({
+  //     nodeProject: false,
+  //     toolProject: false,
+  //     toolCurrentlyPresentInNodeModules: false,
+  //     runningLocalTool: false,
+  //   })
+  // })
 })
 
-describe('tool project detection', () => {
-  beforeEach(() => {
-    ctx.fs.write('package.json', '{}')
-  })
-  it('if tool not listed as package dep then project not considered of that tool', () => {
-    expect(ctx.detectExecLayout()).toMatchObject({
-      nodeProject: true,
-      toolProject: false,
-      toolCurrentlyPresentInNodeModules: false,
-      runningLocalTool: false,
-    })
-  })
-  it('if tool listed as package dep then project considered of that tool', () => {
-    ctx.fs.write('package.json', '{ "dependencies": { "a": "foo" } }')
-    expect(ctx.detectExecLayout()).toMatchObject({
-      nodeProject: true,
-      toolProject: true,
-      toolCurrentlyPresentInNodeModules: false,
-      runningLocalTool: false,
-    })
-  })
-})
+// describe('tool project detection', () => {
+//   beforeEach(() => {
+//     ctx.fs.write('package.json', '{}')
+//   })
+//   it('if tool not listed as package dep then project not considered of that tool', () => {
+//     expect(ctx.detectExecLayout()).toMatchObject({
+//       nodeProject: true,
+//       toolProject: false,
+//       toolCurrentlyPresentInNodeModules: false,
+//       runningLocalTool: false,
+//     })
+//   })
+//   it('if tool listed as package dep then project considered of that tool', () => {
+//     ctx.fs.write('package.json', '{ "dependencies": { "a": "foo" } }')
+//     expect(ctx.detectExecLayout()).toMatchObject({
+//       nodeProject: true,
+//       toolProject: true,
+//       toolCurrentlyPresentInNodeModules: false,
+//       runningLocalTool: false,
+//     })
+//   })
+// })
 
 // describe('local available detection', () => {
 //   beforeEach(installTool)
