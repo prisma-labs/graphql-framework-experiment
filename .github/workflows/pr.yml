@@ -22,38 +22,38 @@ jobs:
       # todo
       # lib/layout
       # lib/watcher
-  # unit-tests:
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     matrix:
-  #       node-version: [10.x, 12.x]
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Use Node.js ${{ matrix.node-version }}
-  #       uses: actions/setup-node@v1
-  #       with:
-  #         node-version: ${{ matrix.node-version }}
-  #     - run: yarn --frozen-lockfile
-  #     - run: yarn -s build
-  #     - run: yarn -s test:unit
-  # system-tests:
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     matrix:
-  #       node-version: [10.x, 12.x]
-  #       test-case: [kitchen-sink, create-prisma-app]
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Use Node.js ${{ matrix.node-version }}
-  #       uses: actions/setup-node@v1
-  #       with:
-  #         node-version: ${{ matrix.node-version }}
-  #     - name: Install deps
-  #       run: yarn --frozen-lockfile
-  #     - run: yarn -s build
-  #     - name: Setup global git user
-  #       run: |
-  #         # For nexus create app flow which will make an init commit
-  #         git config --global user.name prisma-labs
-  #         git config --global user.email labs@prisma.io
-  #     - run: yarn -s test system/${{matrix.test-case}}
+  unit-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: yarn --frozen-lockfile
+      - run: yarn -s build
+      - run: yarn -s test:unit
+  system-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x]
+        test-case: [kitchen-sink, create-prisma-app]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install deps
+        run: yarn --frozen-lockfile
+      - run: yarn -s build
+      - name: Setup global git user
+        run: |
+          # For nexus create app flow which will make an init commit
+          git config --global user.name prisma-labs
+          git config --global user.email labs@prisma.io
+      - run: yarn -s test system/${{matrix.test-case}}
