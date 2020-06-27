@@ -116,89 +116,89 @@ describe('local available detection', () => {
   })
 })
 
-// describe('running locally detection', () => {
-//   beforeEach(installTool)
-//   it('if process script path matches path to tool in project bin then considered running locally', () => {
-//     expect(ctx.detectExecLayout({ scriptPath: ctx.fs.path('node_modules/.bin/a') })).toMatchObject({
-//       nodeProject: true,
-//       toolProject: true,
-//       toolCurrentlyPresentInNodeModules: true,
-//       runningLocalTool: true,
-//     })
-//   })
-//   it('if process script path does not match path to tool in project bin then not considered running locally', () => {
-//     expect(ctx.detectExecLayout({ scriptPath: ctx.fs.path('some/other/bin/a') })).toMatchObject({
-//       nodeProject: true,
-//       toolProject: true,
-//       toolCurrentlyPresentInNodeModules: true,
-//       runningLocalTool: false,
-//     })
-//   })
-// })
+describe('running locally detection', () => {
+  beforeEach(installTool)
+  it('if process script path matches path to tool in project bin then considered running locally', () => {
+    expect(ctx.detectExecLayout({ scriptPath: ctx.fs.path('node_modules/.bin/a') })).toMatchObject({
+      nodeProject: true,
+      toolProject: true,
+      toolCurrentlyPresentInNodeModules: true,
+      runningLocalTool: true,
+    })
+  })
+  it('if process script path does not match path to tool in project bin then not considered running locally', () => {
+    expect(ctx.detectExecLayout({ scriptPath: ctx.fs.path('some/other/bin/a') })).toMatchObject({
+      nodeProject: true,
+      toolProject: true,
+      toolCurrentlyPresentInNodeModules: true,
+      runningLocalTool: false,
+    })
+  })
+})
 
-// describe('this process analysis', () => {
-//   beforeEach(() => {
-//     ctx.fs.write('a/b/c/real.js', '')
-//     ctx.fs.symlink(ctx.fs.path('a/b/c/real.js'), 'x/y/z/fake')
-//   })
-//   it('finds the real path of the script node executed', () => {
-//     const data = ctx.detectExecLayout({ scriptPath: ctx.fs.path('x/y/z/fake') })
-//     expect(data.thisProcessToolBin).toMatchInlineSnapshot(`
-//       Object {
-//         "dir": "/__dynamic__/x/y/z",
-//         "name": "fake",
-//         "path": "/__dynamic__/x/y/z/fake",
-//         "realDir": "/__dynamic__/a/b/c",
-//         "realPath": "/__dynamic__/a/b/c/real.js",
-//       }
-//     `)
-//   })
-//   it('supports node running script without extension', () => {
-//     const data = ctx.detectExecLayout({ scriptPath: ctx.fs.path('a/b/c/real') })
-//     expect(data.thisProcessToolBin).toMatchInlineSnapshot(`
-//       Object {
-//         "dir": "/__dynamic__/a/b/c",
-//         "name": "real.js",
-//         "path": "/__dynamic__/a/b/c/real.js",
-//         "realDir": "/__dynamic__/a/b/c",
-//         "realPath": "/__dynamic__/a/b/c/real.js",
-//       }
-//     `)
-//   })
-// })
+describe('this process analysis', () => {
+  beforeEach(() => {
+    ctx.fs.write('a/b/c/real.js', '')
+    ctx.fs.symlink(ctx.fs.path('a/b/c/real.js'), 'x/y/z/fake')
+  })
+  it('finds the real path of the script node executed', () => {
+    const data = ctx.detectExecLayout({ scriptPath: ctx.fs.path('x/y/z/fake') })
+    expect(data.thisProcessToolBin).toMatchInlineSnapshot(`
+      Object {
+        "dir": "/__dynamic__/x/y/z",
+        "name": "fake",
+        "path": "/__dynamic__/x/y/z/fake",
+        "realDir": "/__dynamic__/a/b/c",
+        "realPath": "/__dynamic__/a/b/c/real.js",
+      }
+    `)
+  })
+  it('supports node running script without extension', () => {
+    const data = ctx.detectExecLayout({ scriptPath: ctx.fs.path('a/b/c/real') })
+    expect(data.thisProcessToolBin).toMatchInlineSnapshot(`
+      Object {
+        "dir": "/__dynamic__/a/b/c",
+        "name": "real.js",
+        "path": "/__dynamic__/a/b/c/real.js",
+        "realDir": "/__dynamic__/a/b/c",
+        "realPath": "/__dynamic__/a/b/c/real.js",
+      }
+    `)
+  })
+})
 
-// describe('project analysis', () => {
-//   it('null if not a node project', () => {
-//     const data = ctx.detectExecLayout()
-//     expect(data.nodeProject).toEqual(false)
-//     expect(data.project).toEqual(null)
-//   })
-//   it('info if a node project', () => {
-//     nodeProject()
-//     const data = ctx.detectExecLayout()
-//     expect(data.nodeProject).toEqual(true)
-//     expect(data.project).toMatchInlineSnapshot(`
-//       Object {
-//         "binDir": "/__dynamic__/node_modules/.bin",
-//         "dir": "/__dynamic__",
-//         "nodeModulesDir": "/__dynamic__/node_modules",
-//         "toolBinPath": "/__dynamic__/node_modules/.bin/a",
-//         "toolBinRealPath": null,
-//       }
-//     `)
-//   })
-//   it('finds real path of local bin if present', () => {
-//     installTool()
-//     const data = ctx.detectExecLayout()
-//     expect(data.toolProject).toEqual(true)
-//     expect(data.project).toMatchInlineSnapshot(`
-//       Object {
-//         "binDir": "/__dynamic__/node_modules/.bin",
-//         "dir": "/__dynamic__",
-//         "nodeModulesDir": "/__dynamic__/node_modules",
-//         "toolBinPath": "/__dynamic__/node_modules/.bin/a",
-//         "toolBinRealPath": "/__dynamic__/node_modules/a/index.js",
-//       }
-//     `)
-//   })
-// })
+describe('project analysis', () => {
+  it('null if not a node project', () => {
+    const data = ctx.detectExecLayout()
+    expect(data.nodeProject).toEqual(false)
+    expect(data.project).toEqual(null)
+  })
+  it('info if a node project', () => {
+    nodeProject()
+    const data = ctx.detectExecLayout()
+    expect(data.nodeProject).toEqual(true)
+    expect(data.project).toMatchInlineSnapshot(`
+      Object {
+        "binDir": "/__dynamic__/node_modules/.bin",
+        "dir": "/__dynamic__",
+        "nodeModulesDir": "/__dynamic__/node_modules",
+        "toolBinPath": "/__dynamic__/node_modules/.bin/a",
+        "toolBinRealPath": null,
+      }
+    `)
+  })
+  it('finds real path of local bin if present', () => {
+    installTool()
+    const data = ctx.detectExecLayout()
+    expect(data.toolProject).toEqual(true)
+    expect(data.project).toMatchInlineSnapshot(`
+      Object {
+        "binDir": "/__dynamic__/node_modules/.bin",
+        "dir": "/__dynamic__",
+        "nodeModulesDir": "/__dynamic__/node_modules",
+        "toolBinPath": "/__dynamic__/node_modules/.bin/a",
+        "toolBinRealPath": "/__dynamic__/node_modules/a/index.js",
+      }
+    `)
+  })
+})

@@ -122,8 +122,6 @@ export function detectExecLayout(input: Input): ExecScenario {
     toolBinRealPath: null,
   }
 
-  console.log(3)
-  return null as any
   let isToolProject = null
   try {
     isToolProject =
