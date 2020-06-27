@@ -182,7 +182,7 @@ export async function create(options?: Options): Promise<Either<Error, Layout>> 
         ? ({ exists: false, path: maybeAppModule } as const)
         : ({ exists: true, path: maybeAppModule } as const),
     projectRoot,
-    sourceRoot: tsConfig.content.options.rootDir!,
+    sourceRoot: Path.normalize(tsConfig.content.options.rootDir!),
     nexusModules,
     project,
     tsConfig,
