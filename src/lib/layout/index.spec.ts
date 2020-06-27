@@ -1,6 +1,7 @@
 import { log } from '@nexus/logger'
 import { defaultsDeep } from 'lodash'
 import { TsConfigJson } from 'type-fest'
+import { inspect } from 'util'
 import * as Layout from '.'
 import { FSSpec, writeFSSpec } from '../../lib/testing-utils'
 import { leftOrThrow, rightOrThrow } from '../glocal/utils'
@@ -96,8 +97,8 @@ const ctx = TC.create(
           buildOutputDir: opts?.buildOutput,
           asBundle: false,
         }).then((v) => {
-          console.log(ctx.fs.cwd())
-          console.log(normalizePathsInData(v, ctx.fs.cwd(), '__DYNAMIC__'))
+          console.log(inspect(v, { depth: null }))
+          console.log(inspect(normalizePathsInData(v, ctx.fs.cwd(), '__DYNAMIC__'), { depth: null }))
           return normalizePathsInData(v, ctx.fs.cwd(), '__DYNAMIC__')
         })
       },
