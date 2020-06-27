@@ -72,6 +72,7 @@ interface Input {
  */
 export function detectExecLayout(input: Input): ExecScenario {
   console.log(1)
+  return null as any
   const cwd = input.cwd ?? process.cwd()
   let thisProcessScriptPath = input.scriptPath ?? process.argv[1]
 
