@@ -90,13 +90,16 @@ const ctx = TC.create(
         return normalizePathsInData(data.data, ctx.fs.cwd(), '__DYNAMIC__')
       },
       async createLayout(opts?: { entrypointPath?: string; buildOutput?: string }) {
-        console.log(ctx.fs.cwd())
         return Layout.create({
           projectRoot: ctx.fs.cwd(),
           entrypointPath: opts?.entrypointPath,
           buildOutputDir: opts?.buildOutput,
           asBundle: false,
-        }).then((v) => normalizePathsInData(v, ctx.fs.cwd(), '__DYNAMIC__'))
+        }).then((v) => {
+          console.log(ctx.fs.cwd())
+          console.log(normalizePathsInData(v, ctx.fs.cwd(), '__DYNAMIC__'))
+          return normalizePathsInData(v, ctx.fs.cwd(), '__DYNAMIC__')
+        })
       },
     }
   })

@@ -248,8 +248,10 @@ export function areWorkerThreadsAvailable(): boolean {
  */
 export function normalizePathsInData<X>(x: X, basePath?: string, basePathMask?: string): X {
   if (isString(x)) {
+    console.log('found string', x)
     let x_: string = x
     if (basePath) {
+      console.log('found string', x.split(basePath))
       x_ = replaceEvery(x_, basePath, basePathMask ?? '<dynamic>')
     }
     x_ = replaceEvery(x_, Path.sep, '/')
