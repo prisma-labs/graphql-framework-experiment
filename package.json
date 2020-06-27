@@ -81,6 +81,7 @@
     "doctoc": "1.4.0",
     "dripip": "0.9.0",
     "jest": "26.0.1",
+    "jest-extended": "^0.11.5",
     "nock": "^12.0.3",
     "node-pty": "0.9.0",
     "prettier": "2.0.5",
@@ -91,7 +92,10 @@
   },
   "jest": {
     "preset": "ts-jest",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "setupFilesAfterEnv": [
+      "jest-extended"
+    ]
   },
   "scripts": {
     "dev:docs": "docsify serve docs",

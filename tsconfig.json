@@ -6,6 +6,6 @@
     "allowJs": true,
     "resolveJsonModule": true
   },
-  "include": ["src"],
+  "include": ["src", "types.d.ts."],
   "exclude": ["src/**/*.spec.ts"]
 }
