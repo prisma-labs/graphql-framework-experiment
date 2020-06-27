@@ -34,18 +34,18 @@ beforeEach(() => {
 })
 
 describe('node project detection', () => {
-  it('works?', () => {
-    // pass
-  })
-  // it('if package.json is present then is a node project', () => {
-  //   ctx.fs.write('package.json', '{}')
-  //   expect(ctx.detectExecLayout()).toMatchObject({
-  //     nodeProject: true,
-  //     toolProject: false,
-  //     toolCurrentlyPresentInNodeModules: false,
-  //     runningLocalTool: false,
-  //   })
+  // it('works?', () => {
+  //   // pass
   // })
+  it('if package.json is present then is a node project', () => {
+    ctx.fs.write('package.json', '{}')
+    expect(ctx.detectExecLayout()).toMatchObject({
+      nodeProject: true,
+      toolProject: false,
+      toolCurrentlyPresentInNodeModules: false,
+      runningLocalTool: false,
+    })
+  })
   // it('if package.json is present in ancestor dir then is a node project', () => {
   //   ctx.fs.write('package.json', '{}')
   //   expect(ctx.detectExecLayout({ cwd: path.join(ctx.tmpDir, 'a', 'b', 'c') })).toMatchObject({
