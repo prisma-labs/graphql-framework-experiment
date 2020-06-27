@@ -116,22 +116,22 @@ describe('projectRoot', () => {
     const projectRoot = ctx.fs.path('./foobar')
     ctx.fs.write('./foobar/app.ts', '')
     ctx.fs.dir(projectRoot)
-    expect(Layout.create({ projectRoot }).then(rightOrThrow)).resolves.toMatchObject({ projectRoot })
+    // expect(Layout.create({ projectRoot }).then(rightOrThrow)).resolves.toMatchObject({ projectRoot })
   })
-  it('otherwise uses first dir in hierarchy with a package.json', () => {
-    nestTmpDir()
-    ctx.fs.write('../package.json', { version: '0.0.0', name: 'foo' })
-    ctx.fs.write('app.ts', '')
-    expect(Layout.create({ cwd: ctx.fs.cwd() }).then(rightOrThrow)).resolves.toMatchObject({
-      projectRoot: ctx.fs.path('..'),
-    })
-  })
-  it('otherwise finally falls back to process cwd', () => {
-    ctx.fs.write('app.ts', '')
-    expect(Layout.create({ cwd: ctx.fs.cwd() }).then(rightOrThrow)).resolves.toMatchObject({
-      projectRoot: ctx.fs.cwd(),
-    })
-  })
+  // it('otherwise uses first dir in hierarchy with a package.json', () => {
+  //   nestTmpDir()
+  //   ctx.fs.write('../package.json', { version: '0.0.0', name: 'foo' })
+  //   ctx.fs.write('app.ts', '')
+  //   expect(Layout.create({ cwd: ctx.fs.cwd() }).then(rightOrThrow)).resolves.toMatchObject({
+  //     projectRoot: ctx.fs.path('..'),
+  //   })
+  // })
+  // it('otherwise finally falls back to process cwd', () => {
+  //   ctx.fs.write('app.ts', '')
+  //   expect(Layout.create({ cwd: ctx.fs.cwd() }).then(rightOrThrow)).resolves.toMatchObject({
+  //     projectRoot: ctx.fs.cwd(),
+  //   })
+  // })
 })
 
 // describe('sourceRoot', () => {
