@@ -1,3 +1,4 @@
+import * as path from 'path'
 import * as TestContext from '../test-context'
 import { normalizePathsInData, Param1 } from '../utils'
 import { detectExecLayout } from './detect-exec-layout'
@@ -34,24 +35,24 @@ beforeEach(() => {
 })
 
 describe('node project detection', () => {
-  // it('if package.json is present then is a node project', () => {
-  //   ctx.fs.write('package.json', '{}')
-  //   expect(ctx.detectExecLayout()).toMatchObject({
-  //     nodeProject: true,
-  //     toolProject: false,
-  //     toolCurrentlyPresentInNodeModules: false,
-  //     runningLocalTool: false,
-  //   })
-  // })
-  // it('if package.json is present in ancestor dir then is a node project', () => {
-  //   ctx.fs.write('package.json', '{}')
-  //   expect(ctx.detectExecLayout({ cwd: path.join(ctx.tmpDir, 'a', 'b', 'c') })).toMatchObject({
-  //     nodeProject: true,
-  //     toolProject: false,
-  //     toolCurrentlyPresentInNodeModules: false,
-  //     runningLocalTool: false,
-  //   })
-  // })
+  it('if package.json is present then is a node project', () => {
+    ctx.fs.write('package.json', '{}')
+    expect(ctx.detectExecLayout()).toMatchObject({
+      nodeProject: true,
+      toolProject: false,
+      toolCurrentlyPresentInNodeModules: false,
+      runningLocalTool: false,
+    })
+  })
+  it('if package.json is present in ancestor dir then is a node project', () => {
+    ctx.fs.write('package.json', '{}')
+    expect(ctx.detectExecLayout({ cwd: path.join(ctx.tmpDir, 'a', 'b', 'c') })).toMatchObject({
+      nodeProject: true,
+      toolProject: false,
+      toolCurrentlyPresentInNodeModules: false,
+      runningLocalTool: false,
+    })
+  })
   it('if package.json not present then is not a node project', () => {
     expect(ctx.detectExecLayout()).toMatchObject({
       nodeProject: false,
@@ -62,58 +63,58 @@ describe('node project detection', () => {
   })
 })
 
-// describe('tool project detection', () => {
-//   beforeEach(() => {
-//     ctx.fs.write('package.json', '{}')
-//   })
-//   it('if tool not listed as package dep then project not considered of that tool', () => {
-//     expect(ctx.detectExecLayout()).toMatchObject({
-//       nodeProject: true,
-//       toolProject: false,
-//       toolCurrentlyPresentInNodeModules: false,
-//       runningLocalTool: false,
-//     })
-//   })
-//   it('if tool listed as package dep then project considered of that tool', () => {
-//     ctx.fs.write('package.json', '{ "dependencies": { "a": "foo" } }')
-//     expect(ctx.detectExecLayout()).toMatchObject({
-//       nodeProject: true,
-//       toolProject: true,
-//       toolCurrentlyPresentInNodeModules: false,
-//       runningLocalTool: false,
-//     })
-//   })
-// })
+describe('tool project detection', () => {
+  beforeEach(() => {
+    ctx.fs.write('package.json', '{}')
+  })
+  it('if tool not listed as package dep then project not considered of that tool', () => {
+    expect(ctx.detectExecLayout()).toMatchObject({
+      nodeProject: true,
+      toolProject: false,
+      toolCurrentlyPresentInNodeModules: false,
+      runningLocalTool: false,
+    })
+  })
+  it('if tool listed as package dep then project considered of that tool', () => {
+    ctx.fs.write('package.json', '{ "dependencies": { "a": "foo" } }')
+    expect(ctx.detectExecLayout()).toMatchObject({
+      nodeProject: true,
+      toolProject: true,
+      toolCurrentlyPresentInNodeModules: false,
+      runningLocalTool: false,
+    })
+  })
+})
 
-// describe('local available detection', () => {
-//   beforeEach(installTool)
-//   it('if tool in deps and installed in node_modules and symlinked in local bin, then considered available', () => {
-//     expect(ctx.detectExecLayout()).toMatchObject({
-//       nodeProject: true,
-//       toolProject: true,
-//       toolCurrentlyPresentInNodeModules: true,
-//       runningLocalTool: false,
-//     })
-//   })
-//   it('if just bin missing, discounts being available', () => {
-//     ctx.fs.remove('node_modules/.bin/a')
-//     expect(ctx.detectExecLayout()).toMatchObject({
-//       nodeProject: true,
-//       toolProject: true,
-//       toolCurrentlyPresentInNodeModules: false,
-//       runningLocalTool: false,
-//     })
-//   })
-//   it('if just node_module/dir missing, discounts being available', () => {
-//     ctx.fs.remove('node_modules/a')
-//     expect(ctx.detectExecLayout()).toMatchObject({
-//       nodeProject: true,
-//       toolProject: true,
-//       toolCurrentlyPresentInNodeModules: false,
-//       runningLocalTool: false,
-//     })
-//   })
-// })
+describe('local available detection', () => {
+  beforeEach(installTool)
+  it('if tool in deps and installed in node_modules and symlinked in local bin, then considered available', () => {
+    expect(ctx.detectExecLayout()).toMatchObject({
+      nodeProject: true,
+      toolProject: true,
+      toolCurrentlyPresentInNodeModules: true,
+      runningLocalTool: false,
+    })
+  })
+  it('if just bin missing, discounts being available', () => {
+    ctx.fs.remove('node_modules/.bin/a')
+    expect(ctx.detectExecLayout()).toMatchObject({
+      nodeProject: true,
+      toolProject: true,
+      toolCurrentlyPresentInNodeModules: false,
+      runningLocalTool: false,
+    })
+  })
+  it('if just node_module/dir missing, discounts being available', () => {
+    ctx.fs.remove('node_modules/a')
+    expect(ctx.detectExecLayout()).toMatchObject({
+      nodeProject: true,
+      toolProject: true,
+      toolCurrentlyPresentInNodeModules: false,
+      runningLocalTool: false,
+    })
+  })
+})
 
 // describe('running locally detection', () => {
 //   beforeEach(installTool)
