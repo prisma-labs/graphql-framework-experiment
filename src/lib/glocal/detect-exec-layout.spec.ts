@@ -1,3 +1,4 @@
+import * as path from 'path'
 import * as TestContext from '../test-context'
 import { normalizePathsInData, Param1 } from '../utils'
 import { detectExecLayout } from './detect-exec-layout'
@@ -34,9 +35,6 @@ beforeEach(() => {
 })
 
 describe('node project detection', () => {
-  // it('works?', () => {
-  //   // pass
-  // })
   it('if package.json is present then is a node project', () => {
     ctx.fs.write('package.json', '{}')
     expect(ctx.detectExecLayout()).toMatchObject({
@@ -46,24 +44,24 @@ describe('node project detection', () => {
       runningLocalTool: false,
     })
   })
-  // it('if package.json is present in ancestor dir then is a node project', () => {
-  //   ctx.fs.write('package.json', '{}')
-  //   expect(ctx.detectExecLayout({ cwd: path.join(ctx.tmpDir, 'a', 'b', 'c') })).toMatchObject({
-  //     nodeProject: true,
-  //     toolProject: false,
-  //     toolCurrentlyPresentInNodeModules: false,
-  //     runningLocalTool: false,
-  //   })
-  // })
-  // it('if package.json not present then is not a node project', () => {
-  //   expect(ctx.detectExecLayout().nodeProject).toEqual(false)
-  //   expect(ctx.detectExecLayout()).toMatchObject({
-  //     nodeProject: false,
-  //     toolProject: false,
-  //     toolCurrentlyPresentInNodeModules: false,
-  //     runningLocalTool: false,
-  //   })
-  // })
+  it('if package.json is present in ancestor dir then is a node project', () => {
+    ctx.fs.write('package.json', '{}')
+    expect(ctx.detectExecLayout({ cwd: path.join(ctx.tmpDir, 'a', 'b', 'c') })).toMatchObject({
+      nodeProject: true,
+      toolProject: false,
+      toolCurrentlyPresentInNodeModules: false,
+      runningLocalTool: false,
+    })
+  })
+  it('if package.json not present then is not a node project', () => {
+    expect(ctx.detectExecLayout().nodeProject).toEqual(false)
+    expect(ctx.detectExecLayout()).toMatchObject({
+      nodeProject: false,
+      toolProject: false,
+      toolCurrentlyPresentInNodeModules: false,
+      runningLocalTool: false,
+    })
+  })
 })
 
 // describe('tool project detection', () => {
