@@ -1,7 +1,6 @@
 import { log } from '@nexus/logger'
 import { defaultsDeep } from 'lodash'
 import { TsConfigJson } from 'type-fest'
-import { inspect } from 'util'
 import * as Layout from '.'
 import { FSSpec, writeFSSpec } from '../../lib/testing-utils'
 import { leftOrThrow, rightOrThrow } from '../glocal/utils'
@@ -97,8 +96,6 @@ const ctx = TC.create(
           buildOutputDir: opts?.buildOutput,
           asBundle: false,
         }).then((v) => {
-          console.log(inspect(v, { depth: null }))
-          console.log(inspect(normalizePathsInData(v, ctx.fs.cwd(), '__DYNAMIC__'), { depth: null }))
           return normalizePathsInData(v, ctx.fs.cwd(), '__DYNAMIC__')
         })
       },
@@ -140,7 +137,7 @@ describe('projectRoot', () => {
 })
 
 describe('sourceRoot', () => {
-  it.only('defaults to project dir', async () => {
+  it('defaults to project dir', async () => {
     ctx.setup({ 'tsconfig.json': '', 'app.ts': '' })
     const res = await ctx.createLayout().then(rightOrThrow)
     expect(res.sourceRoot).toEqual('__DYNAMIC__')
