@@ -90,6 +90,7 @@ const ctx = TC.create(
         return normalizePathsInData(data.data, ctx.fs.cwd(), '__DYNAMIC__')
       },
       async createLayout(opts?: { entrypointPath?: string; buildOutput?: string }) {
+        console.log(ctx.fs.cwd())
         return Layout.create({
           projectRoot: ctx.fs.cwd(),
           entrypointPath: opts?.entrypointPath,
@@ -135,7 +136,7 @@ describe('projectRoot', () => {
 })
 
 describe('sourceRoot', () => {
-  it('defaults to project dir', async () => {
+  it.only('defaults to project dir', async () => {
     ctx.setup({ 'tsconfig.json': '', 'app.ts': '' })
     const res = await ctx.createLayout().then(rightOrThrow)
     expect(res.sourceRoot).toEqual('__DYNAMIC__')
