@@ -3,7 +3,6 @@ import 'jest-extended'
 import { defaultsDeep } from 'lodash'
 import * as Path from 'path'
 import { TsConfigJson } from 'type-fest'
-import { inspect } from 'util'
 import * as Layout from '.'
 import { FSSpec, writeFSSpec } from '../../lib/testing-utils'
 import { leftOrThrow, rightOrThrow } from '../glocal/utils'
@@ -92,6 +91,14 @@ const ctx = TC.create(
         logs = replaceEvery(logs, ctx.fs.cwd(), '__DYNAMIC__')
         return normalizePathsInData(data.data, ctx.fs.cwd(), '__DYNAMIC__')
       },
+      async createLayout2(opts?: { entrypointPath?: string; buildOutput?: string }) {
+        return Layout.create({
+          projectRoot: ctx.fs.cwd(),
+          entrypointPath: opts?.entrypointPath,
+          buildOutputDir: opts?.buildOutput,
+          asBundle: false,
+        })
+      },
       async createLayout(opts?: { entrypointPath?: string; buildOutput?: string }) {
         return Layout.create({
           projectRoot: ctx.fs.cwd(),
@@ -99,8 +106,8 @@ const ctx = TC.create(
           buildOutputDir: opts?.buildOutput,
           asBundle: false,
         }).then((v) => {
-          console.log(inspect(v, { depth: null }))
-          console.log(inspect(normalizePathsInData(v, ctx.fs.cwd(), '__DYNAMIC__'), { depth: null }))
+          // console.log(inspect(v, { depth: null }))
+          // console.log(inspect(normalizePathsInData(v, ctx.fs.cwd(), '__DYNAMIC__'), { depth: null }))
           return normalizePathsInData(v, ctx.fs.cwd(), '__DYNAMIC__')
         })
       },
@@ -151,7 +158,7 @@ describe('sourceRoot', () => {
   it('uses the value in tsconfig compilerOptions.rootDir if present', async () => {
     ctx.setup({ 'tsconfig.json': tsconfigSource({ compilerOptions: { rootDir: 'api' } }), 'api/app.ts': '' })
     const res = await ctx.createLayout().then(rightOrThrow)
-    expect(res.sourceRoot).toMatchInlineSnapshot(`"__DYNAMIC__/api"`)
+    expect(res.sourceRoot).toEqual(Path.posix.join('__DYNAMIC__/api'))
   })
 })
 
@@ -196,7 +203,7 @@ describe('tsconfig', () => {
 
   it('will scaffold tsconfig if not present', async () => {
     await ctx.createLayoutThrow()
-    expect(logs).toMatchInlineSnapshot(`
+    expect(normalizePathsInData(logs)).toMatchInlineSnapshot(`
       "▲ nexus:tsconfig We could not find a \\"tsconfig.json\\" file
       ▲ nexus:tsconfig We scaffolded one for you at __DYNAMIC__/tsconfig.json
       "
@@ -349,14 +356,14 @@ describe('tsconfig', () => {
         ctx.setup({
           'tsconfig.json': JSON.stringify(tscfg),
         })
-        const res = await ctx.createLayout().then(rightOrThrow)
+        const res = await ctx.createLayout2().then(rightOrThrow)
         expect(logs).toMatchInlineSnapshot(`
           "■ nexus:tsconfig Please add [93m\\"node_modules/@types\\"[39m to your [93m\`compilerOptions.typeRoots\`[39m array. 
           "
         `)
-        expect(res.tsConfig.content.options.typeRoots).toMatchObject([
-          Path.join('__DYNAMIC__/types'),
-          Path.join('__DYNAMIC__/node_modules/@types'),
+        expect(res.tsConfig.content.options.typeRoots).toIncludeSameMembers([
+          ctx.fs.path('types'),
+          ctx.fs.path('node_modules/@types'),
         ])
       })
       it('logs warning if "typeRoots" present but msising "types", and adds it in-memory', async () => {
@@ -386,12 +393,10 @@ describe('tsconfig', () => {
           "▲ nexus:tsconfig Please set [93m\`compilerOptions.typeRoots\`[39m to [93m[\\"node_modules/@types\\",\\"types\\"][39m. \\"node_modules/@types\\" is the TypeScript default for types packages and where Nexus outputs typegen to. \\"types\\" is the Nexus convention for _local_ types packages.
           "
         `)
-        expect(res.tsConfig.content.options.typeRoots).toMatchInlineSnapshot(`
-                  Array [
-                    "__DYNAMIC__/node_modules/@types",
-                    "__DYNAMIC__/types",
-                  ]
-              `)
+        expect(res.tsConfig.content.options.typeRoots).toIncludeSameMembers([
+          '__DYNAMIC__/node_modules/@types',
+          '__DYNAMIC__/types',
+        ])
       })
       it('preserves any "typeRoot" settings present', async () => {
         const tscfg = tsconfig()
@@ -404,13 +409,11 @@ describe('tsconfig', () => {
           "▲ nexus:tsconfig Please add [93m\\"types\\"[39m to your [93m\`compilerOptions.typeRoots\`[39m array. 
           "
         `)
-        expect(res.tsConfig.content.options.typeRoots).toMatchInlineSnapshot(`
-                  Array [
-                    "__DYNAMIC__/node_modules/@types",
-                    "__DYNAMIC__/custom",
-                    "__DYNAMIC__/types",
-                  ]
-              `)
+        expect(res.tsConfig.content.options.typeRoots).toIncludeSameMembers([
+          '__DYNAMIC__/node_modules/@types',
+          '__DYNAMIC__/custom',
+          '__DYNAMIC__/types',
+        ])
       })
     })
   })
