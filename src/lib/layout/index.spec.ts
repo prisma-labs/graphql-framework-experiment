@@ -361,7 +361,8 @@ describe('tsconfig', () => {
           "■ nexus:tsconfig Please add [93m\\"node_modules/@types\\"[39m to your [93m\`compilerOptions.typeRoots\`[39m array. 
           "
         `)
-        expect(res.tsConfig.content.options.typeRoots).toIncludeSameMembers([
+        // todo normalize in layout module???
+        expect(res.tsConfig.content.options.typeRoots.map(Path.normalize)).toIncludeSameMembers([
           ctx.fs.path('types'),
           ctx.fs.path('node_modules/@types'),
         ])
