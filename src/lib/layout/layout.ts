@@ -182,7 +182,7 @@ export async function create(options?: Options): Promise<Either<Error, Layout>> 
         ? ({ exists: false, path: maybeAppModule } as const)
         : ({ exists: true, path: maybeAppModule } as const),
     projectRoot,
-    sourceRoot: tsConfig.content.options.rootDir!,
+    sourceRoot: Path.normalize(tsConfig.content.options.rootDir!),
     nexusModules,
     project,
     tsConfig,
@@ -370,13 +370,17 @@ export function findNexusModules(tsConfig: Data['tsConfig'], maybeAppModule: str
       .getSourceFiles()
       .filter((s) => {
         // Do not add app module to nexus modules
-        if (s.getFilePath().toString() === maybeAppModule) {
+        // todo normalize because ts in windows is like "C:/.../.../" instead of "C:\...\..." ... why???
+        if (Path.normalize(s.getFilePath().toString()) === maybeAppModule) {
           return false
         }
 
         return s.getImportDeclaration('nexus') !== undefined
       })
-      .map((s) => s.getFilePath().toString())
+      .map((s) => {
+        // todo normalize because ts in windows is like "C:/.../.../" instead of "C:\...\..." ... why???
+        return Path.normalize(s.getFilePath().toString())
+      })
 
     log.trace('done finding nexus modules', { modules })
 

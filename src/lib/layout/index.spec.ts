@@ -1,11 +1,13 @@
 import { log } from '@nexus/logger'
+import 'jest-extended'
 import { defaultsDeep } from 'lodash'
+import * as Path from 'path'
 import { TsConfigJson } from 'type-fest'
 import * as Layout from '.'
 import { FSSpec, writeFSSpec } from '../../lib/testing-utils'
 import { leftOrThrow, rightOrThrow } from '../glocal/utils'
 import * as TC from '../test-context'
-import { repalceInObject, replaceEvery } from '../utils'
+import { normalizePathsInData, repalceInObject, replaceEvery } from '../utils'
 import { NEXUS_TS_LSP_IMPORT_ID } from './tsconfig'
 
 let logs: string = ''
@@ -86,8 +88,16 @@ const ctx = TC.create(
             asBundle: false,
           })
         )
-        logs = logs.split(ctx.fs.cwd()).join('__DYNAMIC__')
-        return repalceInObject(ctx.fs.cwd(), '__DYNAMIC__', data.data)
+        logs = replaceEvery(logs, ctx.fs.cwd(), '__DYNAMIC__')
+        return normalizePathsInData(data.data, ctx.fs.cwd(), '__DYNAMIC__')
+      },
+      async createLayout2(opts?: { entrypointPath?: string; buildOutput?: string }) {
+        return Layout.create({
+          projectRoot: ctx.fs.cwd(),
+          entrypointPath: opts?.entrypointPath,
+          buildOutputDir: opts?.buildOutput,
+          asBundle: false,
+        })
       },
       async createLayout(opts?: { entrypointPath?: string; buildOutput?: string }) {
         return Layout.create({
@@ -95,7 +105,9 @@ const ctx = TC.create(
           entrypointPath: opts?.entrypointPath,
           buildOutputDir: opts?.buildOutput,
           asBundle: false,
-        }).then((v) => repalceInObject(ctx.fs.cwd(), '__DYNAMIC__', v))
+        }).then((v) => {
+          return normalizePathsInData(v, ctx.fs.cwd(), '__DYNAMIC__')
+        })
       },
     }
   })
@@ -144,7 +156,7 @@ describe('sourceRoot', () => {
   it('uses the value in tsconfig compilerOptions.rootDir if present', async () => {
     ctx.setup({ 'tsconfig.json': tsconfigSource({ compilerOptions: { rootDir: 'api' } }), 'api/app.ts': '' })
     const res = await ctx.createLayout().then(rightOrThrow)
-    expect(res.sourceRoot).toMatchInlineSnapshot(`"__DYNAMIC__/api"`)
+    expect(res.sourceRoot).toEqual(Path.posix.join('__DYNAMIC__/api'))
   })
 })
 
@@ -174,7 +186,11 @@ describe('tsconfig', () => {
             Object {
               "category": 1,
               "code": 18003,
+              "file": undefined,
+              "length": undefined,
               "messageText": "No inputs were found in config file '__DYNAMIC__/tsconfig.json'. Specified 'include' paths were '[\\"types.d.ts\\",\\".\\"]' and 'exclude' paths were '[]'.",
+              "reportsUnnecessary": undefined,
+              "start": undefined,
             },
           ],
         },
@@ -185,7 +201,7 @@ describe('tsconfig', () => {
 
   it('will scaffold tsconfig if not present', async () => {
     await ctx.createLayoutThrow()
-    expect(logs).toMatchInlineSnapshot(`
+    expect(normalizePathsInData(logs)).toMatchInlineSnapshot(`
       "▲ nexus:tsconfig We could not find a \\"tsconfig.json\\" file
       ▲ nexus:tsconfig We scaffolded one for you at __DYNAMIC__/tsconfig.json
       "
@@ -338,17 +354,15 @@ describe('tsconfig', () => {
         ctx.setup({
           'tsconfig.json': JSON.stringify(tscfg),
         })
-        const res = await ctx.createLayout().then(rightOrThrow)
+        const res = await ctx.createLayout2().then(rightOrThrow)
         expect(logs).toMatchInlineSnapshot(`
-                  "■ nexus:tsconfig Please add [93m\\"node_modules/@types\\"[39m to your [93m\`compilerOptions.typeRoots\`[39m array. 
-                  "
-              `)
-        expect(res.tsConfig.content.options.typeRoots).toMatchInlineSnapshot(`
-                  Array [
-                    "__DYNAMIC__/types",
-                    "__DYNAMIC__/node_modules/@types",
-                  ]
-              `)
+          "■ nexus:tsconfig Please add [93m\\"node_modules/@types\\"[39m to your [93m\`compilerOptions.typeRoots\`[39m array. 
+          "
+        `)
+        // todo normalize in layout module???
+        expect(res.tsConfig.content.options.typeRoots?.map(Path.normalize)).toIncludeSameMembers(
+          ['types', 'node_modules/@types'].map((relPath) => ctx.fs.path(relPath))
+        )
       })
       it('logs warning if "typeRoots" present but msising "types", and adds it in-memory', async () => {
         const tscfg = tsconfig()
@@ -356,17 +370,14 @@ describe('tsconfig', () => {
         ctx.setup({
           'tsconfig.json': JSON.stringify(tscfg),
         })
-        const res = await ctx.createLayout().then(rightOrThrow)
+        const res = await ctx.createLayout2().then(rightOrThrow)
         expect(logs).toMatchInlineSnapshot(`
-                  "▲ nexus:tsconfig Please add [93m\\"types\\"[39m to your [93m\`compilerOptions.typeRoots\`[39m array. 
-                  "
-              `)
-        expect(res.tsConfig.content.options.typeRoots).toMatchInlineSnapshot(`
-                  Array [
-                    "__DYNAMIC__/node_modules/@types",
-                    "__DYNAMIC__/types",
-                  ]
-              `)
+          "▲ nexus:tsconfig Please add [93m\\"types\\"[39m to your [93m\`compilerOptions.typeRoots\`[39m array. 
+          "
+        `)
+        expect(res.tsConfig.content.options.typeRoots?.map(Path.normalize)).toIncludeSameMembers(
+          ['types', 'node_modules/@types'].map((relPath) => ctx.fs.path(relPath))
+        )
       })
       it('logs warning if "typeRoots" missing, and add its in-memory', async () => {
         const tscfg = tsconfig()
@@ -374,17 +385,14 @@ describe('tsconfig', () => {
         ctx.setup({
           'tsconfig.json': JSON.stringify(tscfg),
         })
-        const res = await ctx.createLayout().then(rightOrThrow)
+        const res = await ctx.createLayout2().then(rightOrThrow)
         expect(logs).toMatchInlineSnapshot(`
           "▲ nexus:tsconfig Please set [93m\`compilerOptions.typeRoots\`[39m to [93m[\\"node_modules/@types\\",\\"types\\"][39m. \\"node_modules/@types\\" is the TypeScript default for types packages and where Nexus outputs typegen to. \\"types\\" is the Nexus convention for _local_ types packages.
           "
         `)
-        expect(res.tsConfig.content.options.typeRoots).toMatchInlineSnapshot(`
-                  Array [
-                    "__DYNAMIC__/node_modules/@types",
-                    "__DYNAMIC__/types",
-                  ]
-              `)
+        expect(res.tsConfig.content.options.typeRoots?.map(Path.normalize)).toIncludeSameMembers(
+          ['node_modules/@types', 'types'].map((relPath) => ctx.fs.path(relPath))
+        )
       })
       it('preserves any "typeRoot" settings present', async () => {
         const tscfg = tsconfig()
@@ -392,18 +400,14 @@ describe('tsconfig', () => {
         ctx.setup({
           'tsconfig.json': JSON.stringify(tscfg),
         })
-        const res = await ctx.createLayout().then(rightOrThrow)
+        const res = await ctx.createLayout2().then(rightOrThrow)
         expect(logs).toMatchInlineSnapshot(`
-                  "▲ nexus:tsconfig Please add [93m\\"types\\"[39m to your [93m\`compilerOptions.typeRoots\`[39m array. 
-                  "
-              `)
-        expect(res.tsConfig.content.options.typeRoots).toMatchInlineSnapshot(`
-                  Array [
-                    "__DYNAMIC__/node_modules/@types",
-                    "__DYNAMIC__/custom",
-                    "__DYNAMIC__/types",
-                  ]
-              `)
+          "▲ nexus:tsconfig Please add [93m\\"types\\"[39m to your [93m\`compilerOptions.typeRoots\`[39m array. 
+          "
+        `)
+        expect(res.tsConfig.content.options.typeRoots?.map(Path.normalize)).toIncludeSameMembers(
+          ['node_modules/@types', 'custom', 'types'].map((relPath) => ctx.fs.path(relPath))
+        )
       })
     })
   })
@@ -412,20 +416,12 @@ describe('tsconfig', () => {
     ctx.setup({
       'tsconfig.json': 'bad json',
     })
-    const res = await ctx.createLayout().then(leftOrThrow)
-    expect(res).toMatchInlineSnapshot(`
-      Object {
-        "context": Object {},
-        "message": "Unable to read your tsconifg.json
-
-      [96m../../../../..__DYNAMIC__/tsconfig.json[0m:[93m1[0m:[93m1[0m - [91merror[0m[90m TS1005: [0m'{' expected.
-
-      [7m1[0m bad json
-      [7m [0m [91m~~~[0m
-      ",
-        "type": "generic",
-      }
-    `)
+    const res = await ctx.createLayout2().then(leftOrThrow)
+    expect(res).toMatchObject({
+      context: {},
+      type: 'generic',
+      message: expect.stringMatching(".*error.*TS1005.*'{' expected"),
+    })
   })
 
   it('will return exception if invalid tsconfig schema', async () => {
@@ -440,7 +436,11 @@ describe('tsconfig', () => {
             Object {
               "category": 1,
               "code": 5024,
+              "file": undefined,
+              "length": undefined,
               "messageText": "Compiler option 'exclude' requires a value of type Array.",
+              "reportsUnnecessary": undefined,
+              "start": undefined,
             },
           ],
         },
@@ -497,18 +497,18 @@ describe('nexusModules', () => {
       },
     })
 
-    const result = await ctx.createLayoutThrow()
+    const result = await ctx.createLayout2().then(rightOrThrow)
 
-    expect(result.nexusModules).toMatchInlineSnapshot(`
-          Array [
-            "__DYNAMIC__/src/graphql/1.ts",
-            "__DYNAMIC__/src/graphql/2.ts",
-            "__DYNAMIC__/src/graphql/graphql/3.ts",
-            "__DYNAMIC__/src/graphql/graphql/4.ts",
-            "__DYNAMIC__/src/graphql/graphql/graphql/5.ts",
-            "__DYNAMIC__/src/graphql/graphql/graphql/6.ts",
-          ]
-      `)
+    expect(result.nexusModules).toIncludeSameMembers(
+      [
+        'src/graphql/1.ts',
+        'src/graphql/2.ts',
+        'src/graphql/graphql/3.ts',
+        'src/graphql/graphql/4.ts',
+        'src/graphql/graphql/graphql/5.ts',
+        'src/graphql/graphql/graphql/6.ts',
+      ].map((relPath) => ctx.fs.path(relPath))
+    )
   })
 
   it('does not take custom entrypoint as nexus module if contains a nexus import', async () => {
@@ -517,21 +517,15 @@ describe('nexusModules', () => {
       'app.ts': `import { schema } from 'nexus'`,
       'graphql.ts': `import { schema } from 'nexus'`,
     })
-    const result = await ctx.createLayoutThrow({ entrypointPath: './app.ts' })
-    expect({
-      app: result.app,
-      nexusModules: result.nexusModules,
-    }).toMatchInlineSnapshot(`
-          Object {
-            "app": Object {
-              "exists": true,
-              "path": "__DYNAMIC__/app.ts",
-            },
-            "nexusModules": Array [
-              "__DYNAMIC__/graphql.ts",
-            ],
-          }
-      `)
+    const result = await ctx.createLayout2({ entrypointPath: './app.ts' }).then(rightOrThrow)
+    // result.nexusModules
+    expect(result).toMatchObject({
+      app: {
+        exists: true,
+        path: expect.stringContaining(ctx.fs.path('app.ts')),
+      },
+      nexusModules: [ctx.fs.path('graphql.ts')],
+    })
   })
 })
 
@@ -613,18 +607,13 @@ describe('build', () => {
   it(`defaults to .nexus/build`, async () => {
     await ctx.setup({ 'tsconfig.json': tsconfigSource(), 'graphql.ts': '' })
     const result = await ctx.createLayoutThrow()
-
-    expect({
-      tsOutputDir: result.build.tsOutputDir,
-      startModuleInPath: result.build.startModuleInPath,
-      startModuleOutPath: result.build.startModuleOutPath,
-    }).toMatchInlineSnapshot(`
-      Object {
-        "startModuleInPath": "__DYNAMIC__/index.ts",
-        "startModuleOutPath": "__DYNAMIC__/.nexus/build/index.js",
-        "tsOutputDir": "__DYNAMIC__/.nexus/build",
-      }
-    `)
+    expect(result).toMatchObject({
+      build: {
+        startModuleInPath: '__DYNAMIC__/index.ts',
+        startModuleOutPath: '__DYNAMIC__/.nexus/build/index.js',
+        tsOutputDir: '__DYNAMIC__/.nexus/build',
+      },
+    })
   })
 
   it(`use tsconfig.json outDir is no custom output is used`, async () => {
@@ -636,19 +625,14 @@ describe('build', () => {
       }),
       'graphql.ts': '',
     })
-    const result = await ctx.createLayoutThrow()
-
-    expect({
-      tsOutputDir: result.build.tsOutputDir,
-      startModuleInPath: result.build.startModuleInPath,
-      startModuleOutPath: result.build.startModuleOutPath,
-    }).toMatchInlineSnapshot(`
-      Object {
-        "startModuleInPath": "__DYNAMIC__/index.ts",
-        "startModuleOutPath": "__DYNAMIC__/dist/index.js",
-        "tsOutputDir": "__DYNAMIC__/dist",
-      }
-    `)
+    const result = await ctx.createLayout2().then(rightOrThrow)
+    expect(result).toMatchObject({
+      build: {
+        startModuleInPath: ctx.fs.path('index.ts'),
+        startModuleOutPath: ctx.fs.path('dist/index.js'),
+        tsOutputDir: ctx.fs.path('dist'),
+      },
+    })
   })
   it(`override tsconfig.json outDir is a custom output is used`, async () => {
     await ctx.setup({

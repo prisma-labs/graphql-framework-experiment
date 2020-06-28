@@ -4,6 +4,7 @@ import { isEmpty, isPlainObject, isString } from 'lodash'
 import parseJson from 'parse-json'
 import * as Path from 'path'
 import * as TypeFest from 'type-fest'
+import { isRootPath } from './fs'
 import { exceptionType } from './utils'
 
 export type ValidPackageJson = TypeFest.PackageJson & { name: string; version: string }
@@ -41,7 +42,7 @@ export function findRecurisvelyUpwardSync(opts: { cwd: string }): Result {
       break
     }
 
-    if (currentDir === '/') {
+    if (isRootPath(currentDir)) {
       break
     }
 

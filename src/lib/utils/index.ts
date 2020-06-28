@@ -242,7 +242,7 @@ export function areWorkerThreadsAvailable(): boolean {
 }
 
 /**
- * Iterate through all values in a plain object and convert platform path separators into "/" and replace basePath if given and found with baesPathMask if given otherwise "<dynamic>".
+ * Iterate through all values in a plain object and convert all paths into posix ones, and replace basePath if given and found with baesPathMask if given otherwise "<dynamic>".
  *
  * Special handling is given for errors, turning them into plain objects, stack and message properties dropped, enumerable props processed.
  */
@@ -252,7 +252,7 @@ export function normalizePathsInData<X>(x: X, basePath?: string, basePathMask?: 
     if (basePath) {
       x_ = replaceEvery(x_, basePath, basePathMask ?? '<dynamic>')
     }
-    x_ = replaceEvery(x_, Path.sep, '/')
+    x_ = replaceEvery(x_, Path.sep, Path.posix.sep)
     return x_ as any
   }
 
