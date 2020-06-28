@@ -362,10 +362,9 @@ describe('tsconfig', () => {
           "
         `)
         // todo normalize in layout module???
-        expect(res.tsConfig.content.options.typeRoots?.map(Path.normalize)).toIncludeSameMembers([
-          ctx.fs.path('types'),
-          ctx.fs.path('node_modules/@types'),
-        ])
+        expect(res.tsConfig.content.options.typeRoots?.map(Path.normalize)).toIncludeSameMembers(
+          ['types', 'node_modules/@types'].map((relPath) => ctx.fs.path(relPath))
+        )
       })
       it('logs warning if "typeRoots" present but msising "types", and adds it in-memory', async () => {
         const tscfg = tsconfig()
@@ -373,15 +372,14 @@ describe('tsconfig', () => {
         ctx.setup({
           'tsconfig.json': JSON.stringify(tscfg),
         })
-        const res = await ctx.createLayout().then(rightOrThrow)
+        const res = await ctx.createLayout2().then(rightOrThrow)
         expect(logs).toMatchInlineSnapshot(`
           "▲ nexus:tsconfig Please add [93m\\"types\\"[39m to your [93m\`compilerOptions.typeRoots\`[39m array. 
           "
         `)
-        expect(res.tsConfig.content.options.typeRoots?.map(Path.normalize)).toIncludeSameMembers([
-          Path.join('__DYNAMIC__/types'),
-          Path.join('__DYNAMIC__/node_modules/@types'),
-        ])
+        expect(res.tsConfig.content.options.typeRoots?.map(Path.normalize)).toIncludeSameMembers(
+          ['types', 'node_modules/@types'].map((relPath) => ctx.fs.path(relPath))
+        )
       })
       it('logs warning if "typeRoots" missing, and add its in-memory', async () => {
         const tscfg = tsconfig()
@@ -389,15 +387,14 @@ describe('tsconfig', () => {
         ctx.setup({
           'tsconfig.json': JSON.stringify(tscfg),
         })
-        const res = await ctx.createLayout().then(rightOrThrow)
+        const res = await ctx.createLayout2().then(rightOrThrow)
         expect(logs).toMatchInlineSnapshot(`
           "▲ nexus:tsconfig Please set [93m\`compilerOptions.typeRoots\`[39m to [93m[\\"node_modules/@types\\",\\"types\\"][39m. \\"node_modules/@types\\" is the TypeScript default for types packages and where Nexus outputs typegen to. \\"types\\" is the Nexus convention for _local_ types packages.
           "
         `)
-        expect(res.tsConfig.content.options.typeRoots?.map(Path.normalize)).toIncludeSameMembers([
-          '__DYNAMIC__/node_modules/@types',
-          '__DYNAMIC__/types',
-        ])
+        expect(res.tsConfig.content.options.typeRoots?.map(Path.normalize)).toIncludeSameMembers(
+          ['node_modules/@types', 'types'].map((relPath) => ctx.fs.path(relPath))
+        )
       })
       it('preserves any "typeRoot" settings present', async () => {
         const tscfg = tsconfig()
@@ -405,16 +402,14 @@ describe('tsconfig', () => {
         ctx.setup({
           'tsconfig.json': JSON.stringify(tscfg),
         })
-        const res = await ctx.createLayout().then(rightOrThrow)
+        const res = await ctx.createLayout2().then(rightOrThrow)
         expect(logs).toMatchInlineSnapshot(`
           "▲ nexus:tsconfig Please add [93m\\"types\\"[39m to your [93m\`compilerOptions.typeRoots\`[39m array. 
           "
         `)
-        expect(res.tsConfig.content.options.typeRoots?.map(Path.normalize)).toIncludeSameMembers([
-          '__DYNAMIC__/node_modules/@types',
-          '__DYNAMIC__/custom',
-          '__DYNAMIC__/types',
-        ])
+        expect(res.tsConfig.content.options.typeRoots?.map(Path.normalize)).toIncludeSameMembers(
+          ['node_modules/@types', 'custom', 'types'].map((relPath) => ctx.fs.path(relPath))
+        )
       })
     })
   })
@@ -423,20 +418,12 @@ describe('tsconfig', () => {
     ctx.setup({
       'tsconfig.json': 'bad json',
     })
-    const res = await ctx.createLayout().then(leftOrThrow)
-    expect(res).toMatchInlineSnapshot(`
-      Object {
-        "context": Object {},
-        "message": "Unable to read your tsconifg.json
-
-      [96m../../../../..__DYNAMIC__/tsconfig.json[0m:[93m1[0m:[93m1[0m - [91merror[0m[90m TS1005: [0m'{' expected.
-
-      [7m1[0m bad json
-      [7m [0m [91m~~~[0m
-      ",
-        "type": "generic",
-      }
-    `)
+    const res = await ctx.createLayout2().then(leftOrThrow)
+    expect(res).toMatchObject({
+      context: {},
+      type: 'generic',
+      message: expect.stringMatching(".*error.*TS1005.*'{' expected"),
+    })
   })
 
   it('will return exception if invalid tsconfig schema', async () => {
@@ -514,7 +501,8 @@ describe('nexusModules', () => {
 
     const result = await ctx.createLayout2().then(rightOrThrow)
 
-    expect(result.nexusModules).toIncludeSameMembers(
+    // todo normalize because ts in windows is like "C:/.../.../" instead of "C:\...\..." ... why???
+    expect(result.nexusModules.map((path) => Path.normalize(path))).toIncludeSameMembers(
       [
         'src/graphql/1.ts',
         'src/graphql/2.ts',
