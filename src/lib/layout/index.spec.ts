@@ -362,7 +362,7 @@ describe('tsconfig', () => {
           "
         `)
         // todo normalize in layout module???
-        expect(res.tsConfig.content.options.typeRoots.map(Path.normalize)).toIncludeSameMembers([
+        expect(res.tsConfig.content.options.typeRoots?.map(Path.normalize)).toIncludeSameMembers([
           ctx.fs.path('types'),
           ctx.fs.path('node_modules/@types'),
         ])
