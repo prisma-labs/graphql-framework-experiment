@@ -524,7 +524,7 @@ describe('nexusModules', () => {
     expect(result).toMatchObject({
       app: {
         exists: true,
-        path: expect.stringMatching(ctx.fs.path('app.ts')),
+        path: expect.stringContaining(ctx.fs.path('app.ts')),
       },
       nexusModules: [ctx.fs.path('graphql.ts')],
     })
