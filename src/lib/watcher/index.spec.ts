@@ -69,7 +69,7 @@ async function testSimpleCase(params: {
   return { bufferedEvents }
 }
 
-it.only('restarts when a file is changed', async () => {
+it('restarts when a file is changed', async () => {
   const { bufferedEvents } = await testSimpleCase({
     entrypoint: `process.stdout.write('hello')`,
     fsUpdate: () => {
