@@ -501,8 +501,7 @@ describe('nexusModules', () => {
 
     const result = await ctx.createLayout2().then(rightOrThrow)
 
-    // todo normalize because ts in windows is like "C:/.../.../" instead of "C:\...\..." ... why???
-    expect(result.nexusModules.map((path) => Path.normalize(path))).toIncludeSameMembers(
+    expect(result.nexusModules).toIncludeSameMembers(
       [
         'src/graphql/1.ts',
         'src/graphql/2.ts',
@@ -521,6 +520,7 @@ describe('nexusModules', () => {
       'graphql.ts': `import { schema } from 'nexus'`,
     })
     const result = await ctx.createLayout2({ entrypointPath: './app.ts' }).then(rightOrThrow)
+    // result.nexusModules
     expect(result).toMatchObject({
       app: {
         exists: true,
@@ -609,18 +609,13 @@ describe('build', () => {
   it(`defaults to .nexus/build`, async () => {
     await ctx.setup({ 'tsconfig.json': tsconfigSource(), 'graphql.ts': '' })
     const result = await ctx.createLayoutThrow()
-
-    expect({
-      tsOutputDir: result.build.tsOutputDir,
-      startModuleInPath: result.build.startModuleInPath,
-      startModuleOutPath: result.build.startModuleOutPath,
-    }).toMatchInlineSnapshot(`
-      Object {
-        "startModuleInPath": "__DYNAMIC__/index.ts",
-        "startModuleOutPath": "__DYNAMIC__/.nexus/build/index.js",
-        "tsOutputDir": "__DYNAMIC__/.nexus/build",
-      }
-    `)
+    expect(result).toMatchObject({
+      build: {
+        startModuleInPath: '__DYNAMIC__/index.ts',
+        startModuleOutPath: '__DYNAMIC__/.nexus/build/index.js',
+        tsOutputDir: '__DYNAMIC__/.nexus/build',
+      },
+    })
   })
 
   it(`use tsconfig.json outDir is no custom output is used`, async () => {

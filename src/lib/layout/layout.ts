@@ -376,7 +376,10 @@ export function findNexusModules(tsConfig: Data['tsConfig'], maybeAppModule: str
 
         return s.getImportDeclaration('nexus') !== undefined
       })
-      .map((s) => s.getFilePath().toString())
+      .map((s) => {
+        // todo normalize because ts in windows is like "C:/.../.../" instead of "C:\...\..." ... why???
+        return Path.normalize(s.getFilePath().toString())
+      })
 
     log.trace('done finding nexus modules', { modules })
 
