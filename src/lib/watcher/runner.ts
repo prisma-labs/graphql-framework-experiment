@@ -80,7 +80,5 @@ async function main() {
     IPC.client.senders.moduleImported({ filePath })
   })
 
-  console.log('about to eval:\n\n%s', process.env.ENTRYPOINT_SCRIPT)
-  console.log('about to eval fixed:\n\n%s', process.env.ENTRYPOINT_SCRIPT.replace(/\\/g, '/'))
   eval(process.env.ENTRYPOINT_SCRIPT.replace(/\\/g, '/'))
 }
