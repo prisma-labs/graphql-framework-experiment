@@ -632,19 +632,14 @@ describe('build', () => {
       }),
       'graphql.ts': '',
     })
-    const result = await ctx.createLayoutThrow()
-
-    expect({
-      tsOutputDir: result.build.tsOutputDir,
-      startModuleInPath: result.build.startModuleInPath,
-      startModuleOutPath: result.build.startModuleOutPath,
-    }).toMatchInlineSnapshot(`
-      Object {
-        "startModuleInPath": "__DYNAMIC__/index.ts",
-        "startModuleOutPath": "__DYNAMIC__/dist/index.js",
-        "tsOutputDir": "__DYNAMIC__/dist",
-      }
-    `)
+    const result = await ctx.createLayout2().then(rightOrThrow)
+    expect(result).toMatchObject({
+      build: {
+        startModuleInPath: ctx.fs.path('index.ts'),
+        startModuleOutPath: ctx.fs.path('dist/index.js'),
+        tsOutputDir: ctx.fs.path('dist'),
+      },
+    })
   })
   it(`override tsconfig.json outDir is a custom output is used`, async () => {
     await ctx.setup({
