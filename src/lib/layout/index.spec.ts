@@ -378,7 +378,7 @@ describe('tsconfig', () => {
           "▲ nexus:tsconfig Please add [93m\\"types\\"[39m to your [93m\`compilerOptions.typeRoots\`[39m array. 
           "
         `)
-        expect(res.tsConfig.content.options.typeRoots).toIncludeSameMembers([
+        expect(res.tsConfig.content.options.typeRoots?.map(Path.normalize)).toIncludeSameMembers([
           Path.join('__DYNAMIC__/types'),
           Path.join('__DYNAMIC__/node_modules/@types'),
         ])
@@ -394,7 +394,7 @@ describe('tsconfig', () => {
           "▲ nexus:tsconfig Please set [93m\`compilerOptions.typeRoots\`[39m to [93m[\\"node_modules/@types\\",\\"types\\"][39m. \\"node_modules/@types\\" is the TypeScript default for types packages and where Nexus outputs typegen to. \\"types\\" is the Nexus convention for _local_ types packages.
           "
         `)
-        expect(res.tsConfig.content.options.typeRoots).toIncludeSameMembers([
+        expect(res.tsConfig.content.options.typeRoots?.map(Path.normalize)).toIncludeSameMembers([
           '__DYNAMIC__/node_modules/@types',
           '__DYNAMIC__/types',
         ])
@@ -410,7 +410,7 @@ describe('tsconfig', () => {
           "▲ nexus:tsconfig Please add [93m\\"types\\"[39m to your [93m\`compilerOptions.typeRoots\`[39m array. 
           "
         `)
-        expect(res.tsConfig.content.options.typeRoots).toIncludeSameMembers([
+        expect(res.tsConfig.content.options.typeRoots?.map(Path.normalize)).toIncludeSameMembers([
           '__DYNAMIC__/node_modules/@types',
           '__DYNAMIC__/custom',
           '__DYNAMIC__/types',
@@ -512,18 +512,18 @@ describe('nexusModules', () => {
       },
     })
 
-    const result = await ctx.createLayoutThrow()
+    const result = await ctx.createLayout2().then(rightOrThrow)
 
-    expect(result.nexusModules).toMatchInlineSnapshot(`
-          Array [
-            "__DYNAMIC__/src/graphql/1.ts",
-            "__DYNAMIC__/src/graphql/2.ts",
-            "__DYNAMIC__/src/graphql/graphql/3.ts",
-            "__DYNAMIC__/src/graphql/graphql/4.ts",
-            "__DYNAMIC__/src/graphql/graphql/graphql/5.ts",
-            "__DYNAMIC__/src/graphql/graphql/graphql/6.ts",
-          ]
-      `)
+    expect(result.nexusModules).toIncludeSameMembers(
+      [
+        'src/graphql/1.ts',
+        'src/graphql/2.ts',
+        'src/graphql/graphql/3.ts',
+        'src/graphql/graphql/4.ts',
+        'src/graphql/graphql/graphql/5.ts',
+        'src/graphql/graphql/graphql/6.ts',
+      ].map((relPath) => ctx.fs.path(relPath))
+    )
   })
 
   it('does not take custom entrypoint as nexus module if contains a nexus import', async () => {
@@ -532,21 +532,14 @@ describe('nexusModules', () => {
       'app.ts': `import { schema } from 'nexus'`,
       'graphql.ts': `import { schema } from 'nexus'`,
     })
-    const result = await ctx.createLayoutThrow({ entrypointPath: './app.ts' })
-    expect({
-      app: result.app,
-      nexusModules: result.nexusModules,
-    }).toMatchInlineSnapshot(`
-          Object {
-            "app": Object {
-              "exists": true,
-              "path": "__DYNAMIC__/app.ts",
-            },
-            "nexusModules": Array [
-              "__DYNAMIC__/graphql.ts",
-            ],
-          }
-      `)
+    const result = await ctx.createLayout2({ entrypointPath: './app.ts' }).then(rightOrThrow)
+    expect(result).toMatchObject({
+      app: {
+        exists: true,
+        path: expect.stringMatching(ctx.fs.path('app.ts')),
+      },
+      nexusModules: [ctx.fs.path('graphql.ts')],
+    })
   })
 })
 
