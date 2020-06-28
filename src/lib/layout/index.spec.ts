@@ -106,8 +106,6 @@ const ctx = TC.create(
           buildOutputDir: opts?.buildOutput,
           asBundle: false,
         }).then((v) => {
-          // console.log(inspect(v, { depth: null }))
-          // console.log(inspect(normalizePathsInData(v, ctx.fs.cwd(), '__DYNAMIC__'), { depth: null }))
           return normalizePathsInData(v, ctx.fs.cwd(), '__DYNAMIC__')
         })
       },
