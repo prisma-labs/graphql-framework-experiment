@@ -1,10 +1,13 @@
 import * as Lo from 'lodash'
 import * as path from 'path'
+/**
+ * Test agains the built JS so the runner when spawned is using require instead of import syntax which will throw in Node.
+ */
+import { createWatcher } from '../../../dist/lib/watcher'
 import * as ExitSystem from '../exit-system'
 import * as TC from '../test-context'
 import { FSSpec, writeFSSpec } from '../testing-utils'
 import { Event } from './types'
-import { createWatcher } from './watcher'
 
 ExitSystem.install()
 process.env.DEBUG = 'true'
