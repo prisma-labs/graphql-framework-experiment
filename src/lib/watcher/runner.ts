@@ -81,6 +81,6 @@ async function main() {
   })
 
   console.log('about to eval:\n\n%s', process.env.ENTRYPOINT_SCRIPT)
-  console.log('about to eval fixed:\n\n%s', process.env.ENTRYPOINT_SCRIPT.replace(/\\/, '/'))
-  eval(process.env.ENTRYPOINT_SCRIPT.replace(/\\/, '/'))
+  console.log('about to eval fixed:\n\n%s', process.env.ENTRYPOINT_SCRIPT.replace(/\\/g, '/'))
+  eval(process.env.ENTRYPOINT_SCRIPT.replace(/\\/g, '/'))
 }
