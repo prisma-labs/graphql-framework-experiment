@@ -370,7 +370,8 @@ export function findNexusModules(tsConfig: Data['tsConfig'], maybeAppModule: str
       .getSourceFiles()
       .filter((s) => {
         // Do not add app module to nexus modules
-        if (s.getFilePath().toString() === maybeAppModule) {
+        // todo normalize because ts in windows is like "C:/.../.../" instead of "C:\...\..." ... why???
+        if (Path.normalize(s.getFilePath().toString()) === maybeAppModule) {
           return false
         }
 
