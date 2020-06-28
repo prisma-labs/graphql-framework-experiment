@@ -1,10 +1,10 @@
 import * as Lo from 'lodash'
 import * as path from 'path'
-import { createWatcher } from '../../../dist/lib/watcher'
 import * as ExitSystem from '../exit-system'
 import * as TC from '../test-context'
 import { FSSpec, writeFSSpec } from '../testing-utils'
 import { Event } from './types'
+import { createWatcher } from './watcher'
 
 ExitSystem.install()
 process.env.DEBUG = 'true'
@@ -66,7 +66,7 @@ async function testSimpleCase(params: {
   return { bufferedEvents }
 }
 
-it('restarts when a file is changed', async () => {
+it.only('restarts when a file is changed', async () => {
   const { bufferedEvents } = await testSimpleCase({
     entrypoint: `process.stdout.write('hello')`,
     fsUpdate: () => {
