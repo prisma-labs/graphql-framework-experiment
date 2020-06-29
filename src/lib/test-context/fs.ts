@@ -35,7 +35,8 @@ export const fs = () =>
       console.log(fs.path(...relativePath).replace(/\\/g, '\\\\'))
       console.log(UPath.normalize(fs.path(...relativePath)))
       console.log(UPath.normalize(fs.path(...relativePath).replace(/\\/g, '\\\\')))
-      return UPath.normalize(fs.path(...relativePath))
+      // return UPath.normalize(fs.path(...relativePath))
+      return fs.path(...relativePath).replace(/\\/g, '/')
     }
 
     return {
@@ -43,3 +44,5 @@ export const fs = () =>
       path,
     }
   })
+
+console.log(UPath.normalize('C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\7705495513157834\\entrypoint'))
