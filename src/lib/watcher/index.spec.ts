@@ -1,5 +1,4 @@
 import * as Lo from 'lodash'
-import * as path from 'path'
 /**
  * Test agains the built JS so the runner when spawned is using require instead of import syntax which will throw in Node.
  */
@@ -27,7 +26,7 @@ const ctx = TC.create(TC.tmpDir(), TC.fs(), (ctx) => {
       const bufferedEvents: Event[] = []
       await new Promise((res) => setTimeout(res, 10))
       const watcher = await createWatcher({
-        entrypointScript: `require('${path.join(ctx.tmpDir, 'entrypoint')}')`,
+        entrypointScript: `require('${ctx.path('entrypoint')}')`,
         sourceRoot: ctx.tmpDir,
         cwd: ctx.tmpDir,
         plugins: [],
