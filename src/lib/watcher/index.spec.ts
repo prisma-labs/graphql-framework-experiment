@@ -289,7 +289,7 @@ it('handles lots of restarts', async () => {
 
 it('does not watch node_modules, even if required', async () => {
   const { bufferedEvents } = await testSimpleCase({
-    entrypoint: `require('${ctx.fs.path('node_modules', 'some_file.js')}')`,
+    entrypoint: `require('${ctx.path('node_modules/some_file.js')}')`,
     additionalInitialFiles: {
       node_modules: {
         'some_file.js': `process.stdout.write('test')`,
