@@ -34,6 +34,7 @@ export const fs = () =>
       console.log(fs.path(...relativePath))
       console.log(fs.path(...relativePath).replace(/\\/g, '\\\\'))
       console.log(UPath.normalize(fs.path(...relativePath)))
+      console.log(UPath.normalize(fs.path(...relativePath).replace(/\\/g, '\\\\')))
       return UPath.normalize(fs.path(...relativePath))
     }
 
@@ -42,5 +43,3 @@ export const fs = () =>
       path,
     }
   })
-
-console.log(UPath.normalize('C:\\a\\b'))
