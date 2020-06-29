@@ -58,13 +58,13 @@
     "prompts": "^2.3.0",
     "rxjs": "^6.5.4",
     "simple-git": "^2.0.0",
+    "slash": "^3.0.0",
     "strip-ansi": "^6.0.0",
     "ts-morph": "^7.1.0",
     "ts-node": "^8.10.1",
     "tslib": "^2.0.0",
     "type-fest": "^0.15.0",
-    "typescript": "3.9.x",
-    "upath": "^1.2.0"
+    "typescript": "3.9.x"
   },
   "devDependencies": {
     "@prisma-labs/prettier-config": "0.1.0",
