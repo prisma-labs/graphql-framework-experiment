@@ -16,7 +16,7 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - run: yarn --frozen-lockfile
+      - uses: bahmutov/npm-install@v1
       - run: yarn -s build
       - run: yarn -s test runtime/app runtime/schema/settings lib/build runtime/schema/index lib/nexus-schema-backing-types lib/graphql-client runtime/server runtime/schema/settings-mapper lib/plugin lib/add-to-context-extractor lib/glocal lib/layout lib/watcher
 
@@ -31,7 +31,7 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - run: yarn --frozen-lockfile
+      - uses: bahmutov/npm-install@v1
       - run: yarn -s build
       - run: yarn -s test:unit
 
@@ -47,8 +47,7 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Install deps
-        run: yarn --frozen-lockfile
+      - uses: bahmutov/npm-install@v1
       - run: yarn -s build
       - name: Setup global git user
         run: |
