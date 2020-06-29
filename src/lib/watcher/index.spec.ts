@@ -302,7 +302,7 @@ it.only('does not watch node_modules, even if required', async () => {
     },
   })
   ctx.write({
-    'entrypoint.js': `require('${ctx.fs.path('node_modules', 'some_file.js')}')`,
+    'entrypoint.js': `require('${ctx.path('node_modules/some_file.js')}')`,
     node_modules: {
       'some_file.js': `process.stdout.write('test')`,
     },
