@@ -18,7 +18,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: yarn --frozen-lockfile
       - run: yarn -s build
-      - run: yarn -s test runtime/app runtime/schema/settings lib/build runtime/schema/index lib/nexus-schema-backing-types lib/graphql-client runtime/server runtime/schema/settings-mapper lib/plugin lib/add-to-context-extractor lib/glocal lib/layout lib/watcher
+      - run: yarn -s test:unit
 
   unit-tests:
     runs-on: ubuntu-latest
