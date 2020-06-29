@@ -58,6 +58,7 @@
     "prompts": "^2.3.0",
     "rxjs": "^6.5.4",
     "simple-git": "^2.0.0",
+    "slash": "^3.0.0",
     "strip-ansi": "^6.0.0",
     "ts-morph": "^7.1.0",
     "ts-node": "^8.10.1",
