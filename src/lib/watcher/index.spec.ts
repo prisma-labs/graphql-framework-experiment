@@ -1,6 +1,6 @@
 import * as Lo from 'lodash'
 /**
- * Test agains the built JS so the runner when spawned is using require instead of import syntax which will throw in Node.
+ * Test against the built JS so the runner when spawned is using require instead of import syntax which will throw in Node.
  */
 import { createWatcher } from '../../../dist/lib/watcher'
 import * as ExitSystem from '../exit-system'
