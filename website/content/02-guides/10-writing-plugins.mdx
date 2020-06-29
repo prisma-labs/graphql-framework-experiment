@@ -2,7 +2,7 @@
 title: Writing Plugins
 ---
 
-## Here be dragons
+## Overview
 
 - Writing plugins is an expressive and exciting part of Nexus
 - But please note that it is one of the least stable components
@@ -142,40 +142,39 @@ export const fancyPlugin: PluginEntrypoint = () => ({
 
 1. Create a `settings.ts` file and export a type `Settings` containing your settings
 
-```ts
-// settings.ts
-export type Settings = {
-  myCustomOption?: boolean
-}
-```
+   ```ts
+   // settings.ts
+   export type Settings = {
+     myCustomOption?: boolean
+   }
+   ```
 
 2. Import the `Settings` type in your entrypoint, and pass it as generic to `PluginEntrypoint`.
 
-> **Note**: You must return the settings untouched in your entrypoint.
-> The framework is then responsible for passing the settings to your runtime/worktime/testtime plugins .
+   > **Note**: You must return the settings untouched in your entrypoint. The framework is then responsible for passing the settings to your runtime/worktime/testtime plugins .
 
-```ts
-//entrypoint.ts
-import { PluginEntrypoint } from 'nexus/plugin'
-import { Settings } from './settings'
+   ```ts
+   //entrypoint.ts
+   import { PluginEntrypoint } from 'nexus/plugin'
+   import { Settings } from './settings'
 
-export const fancyPlugin: PluginEntrypoint<Settings> = settings => ({
-  settings,
-  ...
-})
-```
+   export const fancyPlugin: PluginEntrypoint<Settings> = settings => ({
+     settings,
+     ...
+   })
+   ```
 
 3. Repeat the operation for your runtime/worktime/testtime plugins.
 
-```ts
-// runtime.ts
-import { RuntimePlugin } from 'nexus/plugin'
-import { Settings } from './settings'
+   ```ts
+   // runtime.ts
+   import { RuntimePlugin } from 'nexus/plugin'
+   import { Settings } from './settings'
 
-export const plugin: RuntimePlugin<Settings> = settings => project => {
-  // ...
-}
-```
+   export const plugin: RuntimePlugin<Settings> = settings => project => {
+     // ...
+   }
+   ```
 
 By default, settings will always be optional.
 

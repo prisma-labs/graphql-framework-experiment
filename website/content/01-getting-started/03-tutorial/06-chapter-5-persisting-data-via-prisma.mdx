@@ -86,9 +86,7 @@ use(prisma())
 ```
 
 ```bash-symbol
-mkdir prisma
-touch prisma/schema.prisma
-touch prisma/.env
+npx prisma inita
 ```
 
 ```prisma
@@ -168,7 +166,7 @@ rm api/db.ts
 In `api/app.ts` module, remove the db import and the `schema.addToContext` call.
 
 ```diff
-+++ api/app.ts
+// api/app.ts
 
 - import { schema, use } from 'nexus'
 + import { use } from 'nexus'

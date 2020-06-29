@@ -2,10 +2,6 @@
 title: 'log'
 ---
 
-## `import { log }`
-
-[issues](https://nxs.li/issues/component/logger) / [features](https://nxs.li/issues/components/logger/features) | [bugs](https://nxs.li/issues/component/logger/bugs)
-
 ## `fatal`
 
 A log that outputs at `fatal` (6) level.
@@ -105,28 +101,28 @@ foo.info('foo')
 (event: string, context?: Record<string, unknown>) => void
 ```
 
-Parameters:
+**Parameters**
 
-- `event`
+`event`
 
-  The event name of this log. Maps to the `event` property in the output JSON.
+The event name of this log. Maps to the `event` property in the output JSON.
 
-  ##### Remarks
+**Remarks**
 
-  The log api is designed to get you thinking about logs in terms of events with structured data instead of strings of interpolated data. This approach gets you significantly more leverage out of your logs once they hit your logging platform, e.g. [ELK](https://www.elastic.co/what-is/elk-stack)
+The log api is designed to get you thinking about logs in terms of events with structured data instead of strings of interpolated data. This approach gets you significantly more leverage out of your logs once they hit your logging platform, e.g. [ELK](https://www.elastic.co/what-is/elk-stack)
 
-- `context`
+`context`
 
-  Contextual information about this log. The object passed here is deeply merged under the log's `context` property.
+Contextual information about this log. The object passed here is deeply merged under the log's `context` property.
 
-  ##### Example
+**Example**
 
-  ```ts
-  log.info('hello', { user: 'Toto' })
-  // { "context": { "user": "Toto"  }, ... }
-  ```
+```ts
+log.info('hello', { user: 'Toto' })
+// { "context": { "user": "Toto"  }, ... }
+```
 
-##### Example
+**Example**
 
 ```ts
 import { log } from 'nexus'

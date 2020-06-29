@@ -97,6 +97,13 @@ section h6 {
   color: var(--main-font-color) !important;
 }
 
+section h3 {
+  border-top: 1px solid var(--border-color);
+  padding: 24px 40px 0;
+  margin-left: -40px;
+  margin-right: -40px;
+}
+
 .title-link {
   margin-left: -24px;
   margin-right: 5px;
@@ -152,8 +159,8 @@ li {
 
 kbd {
   background: var(--white-color);
-  box-shadow: 0px 1px 1px rgba(47, 55, 71, 0.6),0px 1px 4px rgba(47, 55, 71, 0.2);;
-  border-bottom: 1px solid  rgba(47, 55, 71, 0.2);
+  box-shadow: 0px 1px 1px rgba(47, 55, 71, 0.6), 0px 1px 4px rgba(47, 55, 71, 0.2);
+  border-bottom: 1px solid rgba(47, 55, 71, 0.2);
   border-radius: 4px;
   padding: 2px 6px;
   vertical-align: baseline;

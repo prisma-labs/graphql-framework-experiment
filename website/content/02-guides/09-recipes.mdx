@@ -2,8 +2,6 @@
 title: Recipes
 ---
 
-## Recipes
-
 ## Use Prisma
 
 1. Install the prisma plugin
@@ -250,23 +248,23 @@ We made it very simple to debug your app with VS Code.
 
 1. Create a `.vscode/launch.json` file and paste the following content
 
-```json
-{
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Debug Nexus App",
-      "protocol": "inspector",
-      "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/nexus",
-      "runtimeArgs": ["dev"],
-      "sourceMaps": true,
-      "console": "integratedTerminal"
-    }
-  ]
-}
-```
+   ```json
+   {
+     "version": "0.2.0",
+     "configurations": [
+       {
+         "type": "node",
+         "request": "launch",
+         "name": "Debug Nexus App",
+         "protocol": "inspector",
+         "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/nexus",
+         "runtimeArgs": ["dev"],
+         "sourceMaps": true,
+         "console": "integratedTerminal"
+       }
+     ]
+   }
+   ```
 
 2. Click on the `Run` tab on the left side of VS Code
 

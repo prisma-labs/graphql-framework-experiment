@@ -125,7 +125,7 @@ There's one thing we can do though. If you remember our previous test, the only 
 
 Let's use the `ctx.app.db` property to fetch our database right after we've published the draft to ensure that it's been created by snapshotting the result.
 
-```diff
+```ts
 // tests/Post.test.ts
 
 it('ensures that a draft can be created and published', async () => {
@@ -166,7 +166,7 @@ it('ensures that a draft can be created and published', async () => {
 
 The new snapshot should look like the following. It proves that our database did persist that data and that we have exactly one item in it.
 
-```diff
+```ts
 expect(persistedData).toMatchInlineSnapshot(`
 +   Array [
 +     Object {
