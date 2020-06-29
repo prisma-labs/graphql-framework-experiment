@@ -19,7 +19,6 @@ const ctx = TC.create(TC.tmpDir(), TC.fs(), (ctx) => {
   return {
     write(vfs: FSSpec) {
       const tmpDir = ctx.tmpDir
-
       writeFSSpec(tmpDir, vfs)
     },
     async createWatcher() {
@@ -286,8 +285,7 @@ it('handles lots of restarts', async () => {
   `)
 })
 
-it('does not watch node_modules, even if required', async () => {
-  console.log(ctx.path('node_modules/some_file.js'))
+it.only('does not watch node_modules, even if required', async () => {
   const { bufferedEvents } = await testSimpleCase({
     entrypoint: `require('${ctx.path('node_modules/some_file.js')}')`,
     additionalInitialFiles: {

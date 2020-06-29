@@ -28,6 +28,12 @@ export const fs = () =>
     const fs = FS.cwd(ctx.tmpDir)
 
     function path(...relativePath: string[]) {
+      console.log(relativePath)
+      console.log(fs.path())
+      console.log(fs.cwd())
+      console.log(fs.path(...relativePath))
+      console.log(fs.path(...relativePath).replace(/\\/g, '\\\\'))
+      console.log(UPath.normalize(fs.path(...relativePath)))
       return UPath.normalize(fs.path(...relativePath))
     }
 
@@ -36,3 +42,5 @@ export const fs = () =>
       path,
     }
   })
+
+console.log(UPath.normalize('C:\\a\\b'))
