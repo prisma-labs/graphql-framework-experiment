@@ -24,10 +24,6 @@ afterEach(() => {
   logs = ''
 })
 
-const mockExit = jest.spyOn(process, 'exit').mockImplementation(((n: any) => {
-  logs += `\n\n--- process.exit(${n}) ---\n\n`
-}) as any)
-
 /**
  * Disable logger timeDiff and color to allow snapshot matching
  */
