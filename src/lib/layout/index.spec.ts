@@ -24,10 +24,6 @@ afterEach(() => {
   logs = ''
 })
 
-const mockExit = jest.spyOn(process, 'exit').mockImplementation(((n: any) => {
-  logs += `\n\n--- process.exit(${n}) ---\n\n`
-}) as any)
-
 /**
  * Disable logger timeDiff and color to allow snapshot matching
  */
@@ -459,21 +455,17 @@ it('fails if no entrypoint and no nexus modules', async () => {
     },
   })
 
-  await ctx.createLayoutThrow()
+  const res = await ctx.createLayout()
 
-  expect(logs).toMatchInlineSnapshot(`
-    "■ nexus:layout We could not find any modules that imports 'nexus' or app.ts entrypoint
-    ■ nexus:layout Please do one of the following:
-
-      1. Create a file, import { schema } from 'nexus' and write your GraphQL type definitions in it.
-      2. Create an [33mapp.ts[39m file.
-
-
-    --- process.exit(1) ---
-
-    "
+  expect(res).toMatchInlineSnapshot(`
+    Object {
+      "_tag": "Left",
+      "left": Object {
+        "context": Object {},
+        "type": "no_app_or_schema_modules",
+      },
+    }
   `)
-  expect(mockExit).toHaveBeenCalledWith(1)
 })
 
 describe('nexusModules', () => {
@@ -550,7 +542,7 @@ describe('entrypoint', () => {
   })
 
   it('set app.exists = false if no entrypoint', async () => {
-    await ctx.setup({ 'tsconfig.json': tsconfigSource(), 'graphql.ts': '' })
+    await ctx.setup({ 'tsconfig.json': tsconfigSource(), 'foo.ts': 'import "nexus"' })
     const result = await ctx.createLayoutThrow()
     expect(result.app).toMatchInlineSnapshot(`
           Object {
@@ -605,7 +597,7 @@ describe('entrypoint', () => {
 
 describe('build', () => {
   it(`defaults to .nexus/build`, async () => {
-    await ctx.setup({ 'tsconfig.json': tsconfigSource(), 'graphql.ts': '' })
+    await ctx.setup({ 'tsconfig.json': tsconfigSource(), 'foo.ts': 'import "nexus"' })
     const result = await ctx.createLayoutThrow()
     expect(result).toMatchObject({
       build: {
@@ -623,7 +615,7 @@ describe('build', () => {
           outDir: 'dist',
         },
       }),
-      'graphql.ts': '',
+      'foo.ts': 'import "nexus"',
     })
     const result = await ctx.createLayout2().then(rightOrThrow)
     expect(result).toMatchObject({
@@ -641,7 +633,7 @@ describe('build', () => {
           outDir: 'dist',
         },
       }),
-      'graphql.ts': '',
+      'foo.ts': 'import "nexus"',
     })
     const result = await ctx.createLayoutThrow({ buildOutput: 'custom-output' })
 
