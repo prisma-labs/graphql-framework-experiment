@@ -10,7 +10,7 @@ import { findFile, isEmptyDir } from '../../lib/fs'
 import { rootLogger } from '../nexus-logger'
 import * as PJ from '../package-json'
 import * as PackageManager from '../package-manager'
-import { exception } from '../utils'
+import { exception, exceptionType } from '../utils'
 import { BuildLayout, getBuildLayout } from './build'
 import { saveDataForChildProcess } from './cache'
 import { readOrScaffoldTsconfig } from './tsconfig'
@@ -190,10 +190,7 @@ export async function create(options?: Options): Promise<Either<Error, Layout>> 
   }
 
   if (scanResult.app.exists === false && scanResult.nexusModules.length === 0) {
-    // todo return left
-    log.error(checks.no_app_or_nexus_modules.explanations.problem)
-    log.error(checks.no_app_or_nexus_modules.explanations.solution)
-    process.exit(1)
+    return left(noAppOrNexusModules({}))
   }
 
   const buildInfo = getBuildLayout(options?.buildOutputDir, scanResult, options?.asBundle)
@@ -268,6 +265,13 @@ const checks = {
     }
   },
 }
+
+const noAppOrNexusModules = exceptionType<'no_app_or_schema_modules', {}>(
+  'no_app_or_schema_modules',
+  checks.no_app_or_nexus_modules.explanations.problem +
+    '\n' +
+    checks.no_app_or_nexus_modules.explanations.solution
+)
 
 /**
  * Find the (optional) app module in the user's project.
