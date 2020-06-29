@@ -80,5 +80,5 @@ async function main() {
     IPC.client.senders.moduleImported({ filePath })
   })
 
-  eval(process.env.ENTRYPOINT_SCRIPT.replace(/\\/g, '/'))
+  eval(process.env.ENTRYPOINT_SCRIPT)
 }
