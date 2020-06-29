@@ -3,6 +3,7 @@ import Chalk from 'chalk'
 import { stripIndent } from 'common-tags'
 import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
 import * as FS from 'fs-jetpack'
+import * as OS from 'os'
 import * as Path from 'path'
 import * as ts from 'ts-morph'
 import type { ParsedCommandLine } from 'typescript'
@@ -269,7 +270,7 @@ const checks = {
 const noAppOrNexusModules = exceptionType<'no_app_or_schema_modules', {}>(
   'no_app_or_schema_modules',
   checks.no_app_or_nexus_modules.explanations.problem +
-    '\n' +
+    OS.EOL +
     checks.no_app_or_nexus_modules.explanations.solution
 )
 
