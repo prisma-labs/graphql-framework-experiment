@@ -4,39 +4,33 @@ const green = '\u001b[32;1m'
 const purple = '\u001b[35;1m'
 const CR = '\u001b[31;1m'
 const blue = '\u001b[36;1m'
-const red = '\u001b[1;31m'
 const yellow = '\u001b[33;1m'
 const gray = '\u001b[30;1m'
 
 let message = `
-┌───────────────────────────────────────────────────────────────────┐
-│                                                                   │
-│   ${purple}nexus-prisma has migrated!${reset}                                      │
-│   ${purple}nexus-prisma has migrated!${reset}                                      │
-│   ${purple}nexus-prisma has migrated!${reset}                                      │
-│                                                                   │
-│   ${boldWhite}Please change your dependencies:${reset}                                │
-│                                                                   │
-│   npm remove nexus-prisma @prisma/client @prisma/cli              │
-│   npm add nexus-plugin-prisma                                     │
-│                                                                   │
-│   ${boldWhite}Please change your imports:${reset}                                     │
-│                                                                   │
-│   import { nexusPluginPrisma } from ${red}'nexus-prisma'${reset}                │
-│   import { nexusPluginPrisma } from ${green}'nexus-plugin-prisma/schema'${reset}  │
-│                                                                   │
-│-------------------------------------------------------------------│
-│                                                                   │
-│   ${boldWhite}Learn about the transition:${reset}	                                    │
-│   https://nxs.li/nexus-prisma-to-nexus-plugin-prisma/about        │
-│                                                                   │
-│   ${boldWhite}Learn about the framework plugin:${reset}                               │
-│   https://nxs.li/plugins/prisma                                   │
-│                                                                   │
-│   ${boldWhite}Learn how to migrate to the framework:${reset}                          │
-│   https://nxs.li/schema-to-framework/migrate                      │
-│                                                                   │
-└───────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│   ${yellow}Nexus has become a framework!${reset}                             │
+│   ${yellow}Nexus has become a framework!${reset}                             │
+│   ${yellow}Nexus has become a framework!${reset}                             │
+│                                                             │
+│   Starting from 0.20.0 the nexus package is a framework.    │
+│                                                             │
+│   ${boldWhite}Learn more about the transition:${reset}	                      │
+│   https://nxs.li/schema-to-framework/about                  │
+│                                                             │
+│   ${boldWhite}Learn more about the framework:${reset}                           │
+│   https://nexusjs.org                                       │
+│                                                             │
+│   ${boldWhite}Migrate to the framework:${reset}                                 │
+│   https://nxs.li/schema-to-framework/migrate                │
+│                                                             │
+│   ${boldWhite}Were you looking for the old Nexus?${reset}                       │
+│   ${purple}@nexus/schema${reset}                                             │
+│                                                             │
+│                                                             │
+│   ${gray}This post-install notice will be removed on July 1 2020${reset}   │
+└─────────────────────────────────────────────────────────────┘
 
 `
 
