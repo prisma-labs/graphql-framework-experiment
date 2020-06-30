@@ -92,7 +92,7 @@ export function createTestContext() {
 
 Alright, now you will test your `publish` mutation. Because we want to start from a clean database, we'll just remove the pre-seeded data in the in-memory database that we've been using up until now.
 
-```diff
+```ts
 // api/db.ts
 export const db = {
 - posts: [{ id: 1, title: 'Nexus', body: '...', published: false }],
@@ -177,9 +177,9 @@ npm run test
 
 Draft snapshot
 
-```diff
-  // Snapshot that draft and expect `published` to be false
-  expect(result).toMatchInlineSnapshot(`
+```ts
+// Snapshot that draft and expect `published` to be false
+expect(result).toMatchInlineSnapshot(`
 +   Object {
 +     "publish": Object {
 +       "id": 1,
@@ -193,9 +193,9 @@ Draft snapshot
 
 Published draft snapshot
 
-```diff
-  // Snapshot that draft and expect `published` to be false
-  expect(result).toMatchInlineSnapshot(`
+```ts
+// Snapshot that draft and expect `published` to be false
+expect(result).toMatchInlineSnapshot(`
 +   Object {
 +     "publish": Object {
 +       "id": 1,
