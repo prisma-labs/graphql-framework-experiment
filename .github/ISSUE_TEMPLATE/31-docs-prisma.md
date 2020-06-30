@@ -2,9 +2,7 @@
 name: 📗 Docs –– Prisma plugin
 about: You have feedback or ideas about the documentation for Prisma plugin
 title: ''
-labels:
-  - type/docs
-  - plugin/prisma
+labels: type/docs, plugin/prisma
 assignees: ''
 ---
 
