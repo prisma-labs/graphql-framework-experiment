@@ -14,8 +14,7 @@ type HeaderViewProps = {
 }
 
 const HeaderWrapper = styled.div`
-  background: linear-gradient(180deg, rgba(13, 15, 20, 0.18) 0%, rgba(27, 32, 43, 0) 100%),
-    var(--header-gradient-color);
+  background: #4c5661;
   height: 150px;
   img {
     margin-bottom: 0;
