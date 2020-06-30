@@ -4,8 +4,6 @@ title: 'settings'
 
 ## `import { settings }`
 
-[issues](https://github.com/graphql-nexus/nexus/labels/scope%2Fsettings) - [`feature`](https://github.com/graphql-nexus/nexus/issues?q=is%3Aopen+label%3Ascope%2Fsettings+label%3Atype%2Ffeat) [`bug`](https://github.com/graphql-nexus/nexus/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3Ascope%2Fsettings+label%3Atype%2Fbug+)
-
 Use the settings to centrally configure various aspects of the various components.
 
 ## `change`
@@ -157,9 +155,9 @@ The default glob pattern used id `./**/*.ts`
 Record<string, ConnectionConfig>
 ```
 
-todo
+🚧 Work in progress.
 
-###### Example of adding a specialized kind of connection field builder {docsify-ignore}
+###### Example of adding a specialized kind of connection field builder
 
 ```ts
 import { settings } from 'nexus'
@@ -179,7 +177,7 @@ settings.change({
 })
 ```
 
-###### Example of including a `nodes` field like GitHub API globally {docsify-ignore}
+###### Example of including a `nodes` field like GitHub API globally
 
 If you want to include a `nodes` field, which includes the nodes of the connection flattened into an array similar to how GitHub does in their [GraphQL API](https://developer.github.com/v4/), set schema setting `includeNodesField` to `true`.
 
@@ -313,9 +311,9 @@ LOG_DEMO=true nexus dev
 ```
 
 ```
------------
-LOGGER DEMO
------------
+ -----------
+ LOGGER DEMO
+ -----------
   4 ✕ root:foo  --  lib: /see/
   0 ■ root:foo
       | har  { mar: 'tek' }
@@ -344,7 +342,7 @@ LOGGER DEMO
       | on       false
   0 ○ root:foo  --  foo: 'bar'
   0 — root:foo  --  a: 1  b: 2  c: 'three'
------------
+ -----------
 ```
 
 #### `logger.pretty.color`
@@ -411,4 +409,4 @@ A reference to the original settings object.
 
 #### SettingsData
 
-todo
+🚧 Work in progress.

@@ -1,8 +1,8 @@
 ---
-title: 5. Persisting Data (via Prisma)
+title: 5. Persisting data (via Prisma)
 ---
 
-## Chapter 5: Persisting Data (via Prisma)
+## Overview
 
 So far we have been working with in-memory data while we learn about other parts of Nexus in a focused manner, but in this chapter we're going to put the focus squarely on data and show how Nexus can be used with a database. This marks an important step toward your blog app becoming more real. You'll learn about:
 
@@ -20,9 +20,9 @@ Its important to understand that Nexus does not _require_ these technology choic
 
 So, what _is_ Prisma? It is an open source database toolkit that consists of the following parts:
 
-**Prisma Client**: Auto-generated and type-safe query builder for Node.js & TypeScript  
-**Prisma Migrate** (experimental): Declarative data modeling & migration system  
-**Prisma Studio** (experimental): GUI to view and edit data in your database
+- **Prisma Client**: Auto-generated and type-safe query builder for Node.js & TypeScript
+- **Prisma Migrate** (experimental): Declarative data modeling & migration system
+- **Prisma Studio** (experimental): GUI to view and edit data in your database
 
 At the heart of Prisma is the _Prisma Schema,_ a file usually called `schema.prisma`, that you will see later in this tutorial. It is a declarative file wherein using a domain specific language you encode your database schema, connection to the database, and more.
 
@@ -32,9 +32,9 @@ Prisma has great [docs](https://www.prisma.io/docs/understand-prisma/introductio
 
 Now we're ready to actually use Prisma with Nexus! This is going to be achieved by way of a Nexus _plugin_. What? Yep, Nexus has a plugin ecosystem which can be used to enhance your app and development experience in a number of ways! Nexus Plugins broadly breakdown into three areas of enhancement:
 
-1. **worktime:** watch new file types, hook onto events, attach new CLI commands, ...
-2. **runtime:** add schema middleware, setting presets, field builders, custom scalars, ...
-3. **testtime:** attach data to the Nexus Test Context
+- **worktime:** watch new file types, hook onto events, attach new CLI commands, ...
+- **runtime:** add schema middleware, setting presets, field builders, custom scalars, ...
+- **testtime:** attach data to the Nexus Test Context
 
 Plugin packages are usually named after the following convention: `nexus-plugin-<name>` and we refer to them just by either name suffix part. So for the example when we say that Prisma and Nexus integrate together via the Nexus `prisma` plugin that means `nexus-plugin-prisma`.
 
@@ -86,9 +86,7 @@ use(prisma())
 ```
 
 ```bash-symbol
-mkdir prisma
-touch prisma/schema.prisma
-touch prisma/.env
+npx prisma init
 ```
 
 ```prisma
@@ -121,7 +119,9 @@ If you prefer setting up your local Postgres another way go for it. If our sugge
 
 Finally, in the `prisma/.env` file you've created before, replace `<postgres_connection_url>` with your actual database URL.
 
-Confirm things are setup correctly by ... **TODO: find a way to make sure their connection url is working**
+<!-- **TODO: find a way to make sure their connection url is working** 
+Confirm things are setup correctly by ...
+-->
 
 ## Create your database schema
 
@@ -166,7 +166,7 @@ rm api/db.ts
 In `api/app.ts` module, remove the db import and the `schema.addToContext` call.
 
 ```diff
-+++ api/app.ts
+// api/app.ts
 
 - import { schema, use } from 'nexus'
 + import { use } from 'nexus'
@@ -320,7 +320,7 @@ schema.extendType({
 })
 ```
 
-## Try It Out
+## Try it out
 
 Awesome, you're ready to open up the playground and create a draft! If all goes well, good job! If not, no worries, there's a lot of integration pieces in this chapter where something could have gone wrong. If after reviewing your steps you still don't understand the issue, feel free to open up a [discussion](https://nxs.li/discussions) asking for help.
 

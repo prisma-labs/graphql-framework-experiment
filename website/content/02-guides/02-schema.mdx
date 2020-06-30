@@ -4,7 +4,7 @@ title: 'Schema'
 
 ## Overview
 
-This is the Nexus schema component guide. Here you will find concepts explained and a survey of how to use the API. If you are not familiar with Nexus this is a good document to read. If you are familiar, then the [Schema API Docs](/api/modules/main/exports/schema) may be of more use to you.
+This is the Nexus schema component guide. Here you will find concepts explained and a survey of how to use the API. If you are not familiar with Nexus this is a good document to read. If you are familiar, then the [Schema API Docs](../../api/nexus/schema) may be of more use to you.
 
 ## Introduction
 
@@ -159,7 +159,7 @@ type Beta {
 }
 ```
 
-###### Lists & Nullability
+##### Lists and nullability
 
 ```ts
 schema.objectType({
@@ -185,9 +185,9 @@ type Alpha {
 ```
 
 
-### Entrypoint Types
+### Entrypoint types
 
-### Enum Type
+### Enum type
 
 Enum types are a scalar with a finite set of allowed values. They can be used as argument types and as field types.
 
@@ -273,17 +273,31 @@ query {
 
 ### Union Type
 
+🚧 Work in progress.
+
 ### Interface Type
+
+🚧 Work in progress.
 
 ### Field Arguments
 
+🚧 Work in progress.
+
 ### Input Object Type
+
+🚧 Work in progress.
 
 ### Lists
 
+🚧 Work in progress.
+
 ### Descriptions
 
+🚧 Work in progress.
+
 ### Deprecations
+
+🚧 Work in progress.
 
 ## Data Modelling
 
@@ -295,7 +309,7 @@ As the API author, there are three design tasks you will invariable perform over
 
 This is an iterative process that can generally be seen as an finite loop wherein your team gradually refines and expands (or contracts!) the data graph as you respond to changing client app needs, business needs, and so on. Data modelling is hard work. For one thing it is a subtle art, occasionally underappreciated. There are typically multiple ways to model any one thing and competing tradeoffs that leave no obvious winner abound. If the process of data modelling itself or data modelling in GraphQL is new to you, you may find this book by [Marc-Andre Giroux](https://twitter.com/__xuorig__) helpful: [Production Ready GraphQL](https://book.productionreadygraphql.com/).
 
-## Nullability in Principal
+## Nullability in principle
 
 When creating an API, especially before going to production or lifting features out of beta, thinking about if arguments and input object fields (_inputs_) should be required and if object type fields (_outputs_) should be nullable is an important design consideration. How easy your API is to consume trades for how easy it is to change and some reliability characteristics.
 
@@ -318,7 +332,7 @@ Nexus defaults to both inputs and outputs being nullable. This means by default 
 - Client developers work more to processing API responses, having to handle null conditions.
 - You're forced to frontload some hard thinking about inputs, since realizing something should have been required later will require breaking clients.
 - Client developers work less to satisfy minimum query requirements.
-- The "null blast radius" (refer to [Nullability in Principal](#nullability-in-principal)) is reduced to zero.
+- The "null blast radius" (refer to [Nullability in Principal](#nullability-in-principle)) is reduced to zero.
 
 There is no right or wrong answer to nullability. These are just defaults, not judgments. Understand the tradeoffs, and react to your use-case, above all.
 
@@ -328,7 +342,7 @@ When you make an input nullable then Nexus will alter its TypeScript type inside
 
 If an arg has been given a default value, then it will be used when the client passes nothing, but since clients can still pass explicit `null`, resolvers must still handle nullability. If this surprises you then you may be interested in [#485](https://github.com/graphql-nexus/nexus/issues/485).
 
-#### Example: Default Nullability Settings
+#### Example: Default nullability settings
 
 
 
@@ -355,7 +369,7 @@ type Query {
 
 
 
-#### Example: Nullability Flipped at Global Level
+#### Example: Nullability flipped at global level
 
 
 
@@ -391,7 +405,7 @@ type Query {
 
 
 
-#### Example: Nullability Flipped at Type Level
+#### Example: Nullability flipped at type level
 
 
 
@@ -422,7 +436,7 @@ type Query {
 
 
 
-#### Example: Nullability Flipped at Input & Field Level
+#### Example: Nullability flipped at input and field level
 
 
 
@@ -453,7 +467,7 @@ type Query {
 
 
 
-#### Example: Mixing Levels
+#### Example: Mixing levels
 
 It is possible to use type and input/field layers together. This provides flexibility to optimize for local sections of your API that have different characteristics. For example here, a type deviates from the global default for all but but one field and its input.
 
@@ -495,7 +509,7 @@ type Query {
 
 
 
-#### Example: Args That Have Default Values
+#### Example: Args that have default values
 
 When an arg has a default you might think that then it should be nullable to the client but non-nullable within your resolver logic. However it turns out that if the client passes an _explicit_ `null` then that is considered an actual value, and hence is not subject to being assigned the default value. Thus, and then, the resolver still can observe null from the client. If you are curious about seeing this change and/or become configurable then please refer to [#485](https://github.com/graphql-nexus/nexus/issues/485).
 
@@ -548,7 +562,7 @@ query {
 
 
 
-## Backing Types in Principal
+## Backing types in principle
 
 As you begin to implement a schema for the first time you will notice something that may not have been obvious at first. The data that the client sees in the data graph is _not_ the same data flowing through the internal resolvers used to fulfill that graph. The client sees the API types but the API author deals with something else, _backing types_.
 
@@ -682,9 +696,9 @@ schema.object({
 
 </details>
 
-## Backing Types in Nexus
+## Backing types in Nexus
 
-#### Inferred Types
+#### Inferred types
 
 When you first begin creating your schema, you may have objects without backing types setup. In these cases Nexus infers that the backing type is an exact match of the GraphQL type. Take this schema for example:
 
@@ -727,7 +741,7 @@ schema.queryType({                     // |
 
 This may suffice well enough for some time, but most apps will eventually see their GraphQL and backing types diverge. Once this happens, you can tell Nexus about it using the `rootTyping` object type config property.
 
-#### rootTyping Property
+#### `rootTyping` property
 
 ```ts
 export interface MyDBUser {
@@ -776,7 +790,7 @@ Nexus does not care about where `MyDBUser` is defined. So long as it is defined 
 
 The `rootTyping` property is statically typed as a union of all the valid possible types your app makes available. Thus, your IDE will/should give you autocompletion here.
 
-#### Third-Party Types
+#### Third-party types
 
 If you would like to use types from a third party package, you can just re-export them in your own app. Here's the above example re-visited using some third party typings:
 
@@ -819,6 +833,4 @@ schema.queryType({
 })
 ```
 
-<p class="NextIs Detail"></p>
-
-> The backing type configuration is co-located with the GraphQL object because Nexus takes the view that a GraphQL object owns its backing type requirements and all nodes in the graph pointing to it must then satisfy those requirements in their own resolvers. We saw a bit of this in the Backing Types Conepts section before, where `User` object was related to by multiple nodes in the graph, and those various nodes passed the same kinds of backing types during resolution.
+> **Note**: The backing type configuration is co-located with the GraphQL object because Nexus takes the view that a GraphQL object owns its backing type requirements and all nodes in the graph pointing to it must then satisfy those requirements in their own resolvers. We saw a bit of this in the Backing Types Conepts section before, where `User` object was related to by multiple nodes in the graph, and those various nodes passed the same kinds of backing types during resolution.

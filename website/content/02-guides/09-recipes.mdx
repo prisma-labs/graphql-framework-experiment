@@ -2,8 +2,6 @@
 title: Recipes
 ---
 
-## Recipes
-
 ## Use Prisma
 
 1. Install the prisma plugin
@@ -42,44 +40,44 @@ title: Recipes
    yarn prisma migrate save --experimental && yarn prisma migrate up --experimental
    ```
 
-1. Now your app has the following
+Your app now includes the following:
 
-   1. `nexus-prisma` Nexus plugin allowing e.g.:
+`nexus-prisma` Nexus plugin allowing e.g.:
 
-      ```diff
-      +++ src/graphql.ts
-        objectType({
-          name: 'User',
-          definition(t) {
-      -     t.id('id)
-      -     t.string('name')
-      +     t.model.id()
-      +     t.model.name()
-          },
-        })
-      ```
+    ```diff
+    +++ src/graphql.ts
+      objectType({
+        name: 'User',
+        definition(t) {
+    -     t.id('id)
+    -     t.string('name')
+    +     t.model.id()
+    +     t.model.name()
+        },
+      })
+    ```
 
-   2. An instance of the generated Prisma Client is a added to context under the `db` property, allowing e.g.:
+An instance of the generated Prisma Client is a added to context under the `db` property, allowing e.g.:
 
-      ```diff
-      +++ src/graphql.ts
-        queryType({
-          definition(t) {
-            t.list.field('users', {
-              type: 'User',
-      -       resolve() {
-      -         return [{ id: '1643', name: 'newton' }]
-      +       resolve(_root, _args, ctx) {
-      +         return ctx.db.users.findMany()
-              },
-            })
-          },
-        })
-      ```
+    ```diff
+    +++ src/graphql.ts
+      queryType({
+        definition(t) {
+          t.list.field('users', {
+            type: 'User',
+    -       resolve() {
+    -         return [{ id: '1643', name: 'newton' }]
+    +       resolve(_root, _args, ctx) {
+    +         return ctx.db.users.findMany()
+            },
+          })
+        },
+      })
+    ```
 
-   3. The TypeScript types representing your Prisma models are registered as a Nexus data source. In short this enables proper typing of `parent` parameters in your resolves. They reflect the data of the correspondingly named Prisma model.
+The TypeScript types representing your Prisma models are registered as a Nexus data source. In short this enables proper typing of `parent` parameters in your resolves. They reflect the data of the correspondingly named Prisma model.
 
-## Create a Consumable Plugin
+## Create a consumable plugin
 
 1. Scaffold Your plugin project
 
@@ -250,23 +248,23 @@ We made it very simple to debug your app with VS Code.
 
 1. Create a `.vscode/launch.json` file and paste the following content
 
-```json
-{
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Debug Nexus App",
-      "protocol": "inspector",
-      "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/nexus",
-      "runtimeArgs": ["dev"],
-      "sourceMaps": true,
-      "console": "integratedTerminal"
-    }
-  ]
-}
-```
+   ```json
+   {
+     "version": "0.2.0",
+     "configurations": [
+       {
+         "type": "node",
+         "request": "launch",
+         "name": "Debug Nexus App",
+         "protocol": "inspector",
+         "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/nexus",
+         "runtimeArgs": ["dev"],
+         "sourceMaps": true,
+         "console": "integratedTerminal"
+       }
+     ]
+   }
+   ```
 
 2. Click on the `Run` tab on the left side of VS Code
 
@@ -313,14 +311,14 @@ We made it very simple to debug your app with VS Code.
 
 ### Notes
 
-- Overall, here are the limitations with Next.js integration that you will not find in a "normal" Nexus project.
+Overall, here are the limitations with Next.js integration that you will not find in a "normal" Nexus project.
 
-  1. You must use CommonJS `require` as opposed to ES module `import` syntax for your Nexus api module. This is to preserve import order.
-  1. You must run `app.assemble()` before accessing the server handlers.
-  1. In development, you must run `app.reset()` in your Nexus api module, before anything else.
-  1. Make sure that you only have one Nexus api module, or else you may experience difficulties in development.
-  1. Make sure that your Nexus modules (ones using the `nexus` package) are only part of the import graph of your Nexus api module.
-  1. If you would like to use GraphQL Playground, do not rely on the one packaged with Nexus. Instead you can use an external one like [this standalone electron one](https://www.electronjs.org/apps/graphql-playground).
-  1. You will not be able to use the Nexus testing component
+1. You must use CommonJS `require` as opposed to ES module `import` syntax for your Nexus api module. This is to preserve import order.
+1. You must run `app.assemble()` before accessing the server handlers.
+1. In development, you must run `app.reset()` in your Nexus api module, before anything else.
+1. Make sure that you only have one Nexus api module, or else you may experience difficulties in development.
+1. Make sure that your Nexus modules (ones using the `nexus` package) are only part of the import graph of your Nexus api module.
+1. If you would like to use GraphQL Playground, do not rely on the one packaged with Nexus. Instead you can use an external one like [this standalone electron one](https://www.electronjs.org/apps/graphql-playground).
+1. You will not be able to use the Nexus testing component
 
-- Integration with Next.js should improve [once it supports plugins](https://github.com/zeit/next.js/issues/9133). For example you will probably not need to think about `app.assemble()` and `app.reset()` anymore and be able to use ES module syntax in your Nexus api module.
+Integration with Next.js should improve [once it supports plugins](https://github.com/zeit/next.js/issues/9133). For example you will probably not need to think about `app.assemble()` and `app.reset()` anymore and be able to use ES module syntax in your Nexus api module.

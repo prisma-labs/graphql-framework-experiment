@@ -75,7 +75,7 @@ makeSchema({
       {
         source: '@packages/types/src/db.ts',
         alias: 'dbt',
-        typeMatch: (name) => new RegExp(`(?:interface|type|class)\\s+(${name}s?)\\W`, 'g'),
+        typeMatch: name => new RegExp(`(?:interface|type|class)\\s+(${name}s?)\\W`, 'g'),
       },
       // We also need to import this source in order to provide it as the `contextType` below.
       {
@@ -130,7 +130,7 @@ Controls the nullability of the input / output types emitted by `nexus`. The cur
 
 You should make a decision on this and supply the option yourself, it may be changed / required in the future.
 
-Read more on this in the [getting-started](getting-started.md) guide.
+Read more on this in the [getting-started](../../../getting-started) guide.
 
 ### typegenConfig, formatTypegen
 
@@ -143,7 +143,7 @@ Optional, allows you to override the `printSchema` when outputting the generated
 ```ts
 makeSchema({
   // ...
-  customPrintSchemaFn: (schema) => {
+  customPrintSchemaFn: schema => {
     return printSchema(schema, { commentDescriptions: true })
   },
 })
