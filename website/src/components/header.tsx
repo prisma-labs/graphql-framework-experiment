@@ -14,7 +14,14 @@ type HeaderViewProps = {
 }
 
 const HeaderWrapper = styled.div`
-  background: #4c5661;
+  background: radial-gradient(
+      37.86% 77.79% at 50% 100%,
+      rgba(113, 128, 150, 0.25) 0%,
+      rgba(113, 128, 150, 0) 100%
+    ),
+    linear-gradient(180deg, var(--main-font-color) 0%, var(--tag-media-color) 100%),
+    linear-gradient(180deg, var(--gradient2-color) 0%, rgba(27, 32, 43, 0) 100%),
+    var(--gradient1-color);
   height: 150px;
   img {
     margin-bottom: 0;
@@ -137,8 +144,14 @@ const SearchContainer = styledTS<{ isSticky: boolean }>(styled.div)`
       margin-top: 0;
       margin-left: -8px;
       width: 100% !important;
-      background: linear-gradient(180deg, rgba(13, 15, 20, 0.18) 0%, rgba(27, 32, 43, 0) 100%),
-        var(--header-gradient-color);
+      background: radial-gradient(
+          37.86% 77.79% at 50% 100%,
+          rgba(113, 128, 150, 0.25) 0%,
+          rgba(113, 128, 150, 0) 100%
+        ),
+        linear-gradient(180deg, var(--main-font-color) 0%, var(--tag-media-color) 100%),
+        linear-gradient(180deg, var(--gradient2-color) 0%, rgba(27, 32, 43, 0) 100%),
+        var(--gradient1-color);
     `};
 `
 
