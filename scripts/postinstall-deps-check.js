@@ -10,56 +10,15 @@ const gray = '\u001b[30;1m'
 
 const path = require('path')
 
-let foundPrismaDeps = []
+/**
+ * data
+ */
 
-const pj = getPackageJson()
-
-const deps = pj.dependencies || []
-foundPrismaDeps.push(...Object.keys(deps).filter(isPrismaDep))
-
-const devDeps = pj.devDependencies || []
-foundPrismaDeps.push(
-  ...Object.keys(devDeps)
-    .filter(isPrismaDep)
-    // dedupe
-    .filter((name) => !foundPrismaDeps.includes(name))
-)
-
-const message = `
-${red}│${reset}  ${red}WARNING${reset} from ${boldWhite}nexus-plugin-prisma${reset}
-${red}│${reset}  ${red}WARNING${reset} from ${boldWhite}nexus-plugin-prisma${reset}
-${red}│${reset}  ${red}WARNING${reset} from ${boldWhite}nexus-plugin-prisma${reset}
-${red}│${reset} 
-${red}│${reset}  ${yellow}nexus-plugin-prisma${reset} bundles ${yellow}@prisma${reset} dependencies. So
-${red}│${reset}  please uninstall the ones you have installed or you may
-${red}│${reset}  encounter problems.
-${red}│${reset}  
-${red}│${reset}  Run the following command to fix this issue:
-${red}│${reset} 
-${red}│${reset}  ${green}${getPackageManagerBinName()} remove ${foundPrismaDeps.join(' ')}${reset}
-${red}│${reset} 
-${red}│${reset}  If you absolutely need to control the versions of your
-${red}│${reset}  ${yellow}@prisma${reset} dependencies then use yarn and its ${yellow}resolutions${reset}
-${red}│${reset}  feature:
-${red}│${reset} 
-${red}│${reset}  ${boldWhite}https://classic.yarnpkg.com/en/docs/selective-version-resolutions${reset}
-${red}│${reset} 
-${red}│${reset}  If you are curious why ${yellow}nexus-plugin-prisma${reset} bundles
-${red}│${reset}  the ${yellow}@prisma${reset} dependencies then take a look at the Nexus
-${red}│${reset}  doc explaining this strategy.
-${red}│${reset} 
-${red}│${reset}  ${boldWhite}https://nxs.li/why/bundle-dependencies${reset}
-`
-
-if (foundPrismaDeps.length > 0) console.log(message)
+const bundledDeps = ['graphql', '@nexus/schema']
 
 /**
  * Helpers
  */
-
-function isPrismaDep(name) {
-  return name.startsWith('@prisma/')
-}
 
 function getPackageManagerBinName() {
   const userAgent = process.env.npm_config_user_agent || ''
@@ -83,4 +42,59 @@ function getPackageJson() {
   }
 
   return data
+}
+
+function findDepsDeDuped(pj, bundledDeps) {
+  const foundDeps = []
+
+  const deps = pj.dependencies || []
+  foundDeps.push(...Object.keys(deps).filter(isBundledDep))
+
+  const devDeps = pj.devDependencies || []
+  foundDeps.push(
+    ...Object.keys(devDeps)
+      .filter(isBundledDep)
+      // dedupe
+      .filter((name) => !foundDeps.includes(name))
+  )
+
+  return foundDeps
+
+  function isBundledDep(name) {
+    return bundledDeps.includes(name)
+  }
+}
+
+/**
+ * script
+ */
+
+let foundDeps = findDepsDeDuped(getPackageJson(), bundledDeps)
+
+const message = `
+${red}│${reset}  ${red}WARNING${reset} from ${boldWhite}nexus${reset}
+${red}│${reset}  ${red}WARNING${reset} from ${boldWhite}nexus${reset}
+${red}│${reset}  ${red}WARNING${reset} from ${boldWhite}nexus${reset}
+${red}│${reset} 
+${red}│${reset}  ${yellow}nexus${reset} bundles ${yellow}graphql${reset} and ${yellow}@nexus/schema${reset} dependencies.
+${red}│${reset}  So please uninstall the ones you have installed or you
+${red}│${reset}  may encounter problems.
+${red}│${reset}  
+${red}│${reset}  Run the following command to fix this issue:
+${red}│${reset} 
+${red}│${reset}  ${green}${getPackageManagerBinName()} remove ${foundDeps.join(' ')}${reset}
+${red}│${reset} 
+${red}│${reset}  If you absolutely need to control the versions of these
+${red}│${reset}  dependencies then use Yarn and its ${yellow}resolutions${reset} feature:
+${red}│${reset} 
+${red}│${reset}  ${boldWhite}https://classic.yarnpkg.com/en/docs/selective-version-resolutions${reset}
+${red}│${reset} 
+${red}│${reset}  If you are curious why ${yellow}nexus${reset} bundles these dependencies
+${red}│${reset}  then refer to the Nexus doc explaining this strategy.
+${red}│${reset} 
+${red}│${reset}  ${boldWhite}https://nxs.li/why/bundle-dependencies${reset}
+`
+
+if (foundDeps.length > 0) {
+  console.log(message)
 }
