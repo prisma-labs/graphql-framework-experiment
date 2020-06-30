@@ -1,7 +1,7 @@
 import { stripIndent } from 'common-tags'
 import { ts } from 'ts-morph'
 import { arg, Command, isError } from '../../lib/cli'
-import { rightOrFatal } from '../../lib/glocal/utils'
+import { rightOrFatal } from '../../lib/utils'
 import * as Layout from '../../lib/layout'
 import { rootLogger } from '../../lib/nexus-logger'
 import { ownPackage } from '../../lib/own-package'
