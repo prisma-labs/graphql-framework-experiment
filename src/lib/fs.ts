@@ -86,7 +86,7 @@ export function findFileRecurisvelyUpwardSync(
  * inside `@types/` packages.
  *
  * For more details that motivated this utility refer to the originating issue
- * https://github.com/prisma-labs/nexus-prisma/issues/453.
+ * https://github.com/graphql-nexus/nexus-plugin-prisma/issues/453.
  */
 export function hardWriteFileSync(filePath: string, data: string) {
   FS.remove(Path.dirname(filePath))

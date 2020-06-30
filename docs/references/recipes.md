@@ -38,7 +38,7 @@
 
 1. Now your app has the following
 
-   1. `nexus-prisma` Nexus plugin allowing e.g.:
+   1. `t.model` and `t.crud` field builders e.g.:
 
       ```diff
       +++ src/graphql.ts

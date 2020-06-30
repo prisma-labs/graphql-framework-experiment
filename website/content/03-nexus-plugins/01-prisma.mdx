@@ -805,11 +805,11 @@ When a Prisma enum field is projected, the corresponding enum type will be autom
 
 _Member Customization_
 
-You can customize the projected enum members by defining the enum yourself in Nexus. `nexus-prisma` will treat the name collision as an intent to override and so disable auto-projection.
+You can customize the projected enum members by defining the enum yourself in Nexus. `nexus-plugin-prisma` will treat the name collision as an intent to override and so disable auto-projection.
 
 _Option Notes_
 
-Currently Prisma enums cannot be [aliased](#alias) ([issue](https://github.com/prisma-labs/nexus-prisma/issues/474)). They also cannot be [type mapped](#type) since enum types cannot be mapped yet ([issue](https://github.com/prisma-labs/nexus-prisma/issues/473)).
+Currently Prisma enums cannot be [aliased](#alias) ([issue](https://github.com/graphql-nexus/nexus-plugin-prisma/issues/474)). They also cannot be [type mapped](#type) since enum types cannot be mapped yet ([issue](https://github.com/graphql-nexus/nexus-plugin-prisma/issues/473)).
 
 ##### Options
 
@@ -967,7 +967,7 @@ model User {
 
 #### Relation
 
-Projecting relational fields only affects the current GraphQL object being defined. That is, the model that the field relates to is not auto-projected. This is a design choice intended to keep the `nexus-prisma` system predictable for you. If you forget to project a relation you will receive feedback at build/boot time letting you know.
+Projecting relational fields only affects the current GraphQL object being defined. That is, the model that the field relates to is not auto-projected. This is a design choice intended to keep the `nexus-plugin-prisma` system predictable for you. If you forget to project a relation you will receive feedback at build/boot time letting you know.
 
 ##### Options
 
@@ -1011,7 +1011,7 @@ type User {
 
 #### List Enum
 
-Like [enums](#enum). It is not possible to order ([issue](https://github.com/prisma-labs/nexus-prisma/issues/466)) paginate ([issue](https://github.com/prisma-labs/nexus-prisma/issues/468)) or filter ([issue](https://github.com/prisma-labs/nexus-prisma/issues/467)) enum lists.
+Like [enums](#enum). It is not possible to order ([issue](https://github.com/graphql-nexus/nexus-plugin-prisma/issues/466)) paginate ([issue](https://github.com/graphql-nexus/nexus-plugin-prisma/issues/468)) or filter ([issue](https://github.com/graphql-nexus/nexus-plugin-prisma/issues/467)) enum lists.
 
 ##### GraphQL Schema Contributions [`?`](#graphql-schema-contributions 'How to read this')
 
@@ -1028,7 +1028,7 @@ enum E {
 
 #### List Scalar
 
-Like [scalars](#scalar). It is not possible to order ([issue](https://github.com/prisma-labs/nexus-prisma/issues/470)) paginate ([issue](https://github.com/prisma-labs/nexus-prisma/issues/471)) or filter ([issue](https://github.com/prisma-labs/nexus-prisma/issues/469)) scalar lists.
+Like [scalars](#scalar). It is not possible to order ([issue](https://github.com/graphql-nexus/nexus-plugin-prisma/issues/470)) paginate ([issue](https://github.com/graphql-nexus/nexus-plugin-prisma/issues/471)) or filter ([issue](https://github.com/graphql-nexus/nexus-plugin-prisma/issues/469)) scalar lists.
 
 ##### GraphQL Schema Contributions [`?`](#graphql-schema-contributions 'How to read this')
 
@@ -1932,7 +1932,7 @@ undefined | String
 
 - `undefined` (default) Point Prisma field to a GraphQL object whose name matches that of the Prisma field model type.
 
-- `string` Point Prisma field to the given GraphQL object. This option can become necessary when you've have done [model-object mapping](#model-object-mapping) and other Prisma models in your schema have relations to the name-mapped Prisma model. We are interested in developing further the model-object mapping API to automate this better ([issue](https://github.com/prisma-labs/nexus-prisma/issues/461)).
+- `string` Point Prisma field to the given GraphQL object. This option can become necessary when you've have done [model-object mapping](#model-object-mapping) and other Prisma models in your schema have relations to the name-mapped Prisma model. We are interested in developing further the model-object mapping API to automate this better ([issue](https://github.com/graphql-nexus/nexus-plugin-prisma/issues/461)).
 
 ##### GraphQL Schema Contributions [`?`](#graphql-schema-contributions 'How to read this')
 
@@ -2908,7 +2908,7 @@ input RM_ScalarWhereInput {
 
 **Scalar filters**
 
-`ID` scalars use `StringFilter` ([issue](https://github.com/prisma-labs/nexus-prisma/issues/485)). We are considering a tailored `DateTime` filter ([issue](https://github.com/prisma-labs/nexus-prisma/issues/484)).
+`ID` scalars use `StringFilter` ([issue](https://github.com/graphql-nexus/nexus-plugin-prisma/issues/485)). We are considering a tailored `DateTime` filter ([issue](https://github.com/graphql-nexus/nexus-plugin-prisma/issues/484)).
 
 ```graphql
 input BooleanFilter {

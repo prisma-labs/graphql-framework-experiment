@@ -31,7 +31,21 @@ Change any imports of `nexus` to `@nexus/schema`:
 + import { makeSchema } from "@nexus/schema";
 ```
 
-If you were previously a user of `nexus-prisma`, it still exists! It currently remains published to NPM under the same package name and you can upgrade it and continue using it as before. (But note that [this may change in a future release](https://github.com/graphql-nexus/nexus-schema-plugin-prisma/issues/630).) You can find it on GitHub under its updated repository name: [`nexus-schema-plugin-prisma`](https://github.com/graphql-nexus/nexus-schema-plugin-prisma). (Note that the Nexus framework has a distinct but similarly-named plugin, [`nexus-plugin-prisma`](https://github.com/graphql-nexus/nexus-plugin-prisma), which is covered below.)
+If you are a `nexus-prisma` there is almost nothing extra to do. But note it has migrated to `nexus-plugin-prisma`. Learn more about the transition [here](https://github.com/graphql-nexus/nexus-plugin-prisma/issues/630). Do the following to keep using it:
+
+Your Dependencies
+
+```
+npm remove nexus-prisma @prisma/client @prisma/cli
+npm add nexus-plugin-prisma
+```
+
+Your Imports
+
+```ts
+- import { nexusPluginPrisma } from 'nexus-prisma'
++ import { nexusSchemaPlugin } from 'nexus-plugin-prisma/schema'
+```
 
 ## Using `nexus`
 
@@ -236,7 +250,7 @@ import { log } from 'nexus'
 
 ### Prisma
 
-If you were a [`nexus-prisma`](https://github.com/prisma-labs/nexus-prisma) user, you will now become a [`nexus-plugin-prisma`](https://github.com/graphql-nexus/plugin-prisma) user. Install the plugin, and enable it in your project.
+If you were a `nexus-prisma` user, you will now become a [`nexus-plugin-prisma`](https://github.com/graphql-nexus/plugin-prisma) user. Install the plugin, and enable it in your project.
 
 ```json
 ---+++package.json
@@ -260,4 +274,4 @@ If you were a [`nexus-prisma`](https://github.com/prisma-labs/nexus-prisma) user
 + use(prisma())
 ```
 
-You should still use the Prisma CLI. Only `$ prisma generate` will be taken care of for you.
+For now you should still use the Prisma CLI as only `$ prisma generate` is taken care of for you.
