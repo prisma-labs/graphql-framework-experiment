@@ -274,8 +274,10 @@ function getAbsoluteImportPath(sourceFile: tsm.SourceFile) {
   return { isNode, modulePath }
 }
 
+type PropertyInfo = { isOptional: boolean; type: string }
+
 export function mergeUnionTypes(unionTypes: tsm.Type<tsm.ts.Type>[]) {
-  const properties = unionTypes.reduce<Record<string, { isOptional: boolean; type: string }[]>>((acc, u) => {
+  const properties = unionTypes.reduce<Record<string, PropertyInfo[]>>((acc, u) => {
     u.getProperties().forEach((p) => {
       const name = p.getName()
       const isOptional = p.hasFlags(tsm.ts.SymbolFlags.Optional)
@@ -295,7 +297,9 @@ export function mergeUnionTypes(unionTypes: tsm.Type<tsm.ts.Type>[]) {
 
   const stringifiedProps = Object.entries(properties)
     .map(([name, propertiesInfo]) => {
-      const isOptional = propertiesInfo.some((p) => p.isOptional)
+      // If a property is not present across all members of the union type, force it to be optional
+      const isOptional =
+        propertiesInfo.length !== unionTypes.length ? true : propertiesInfo.some((p) => p.isOptional)
       const typesOfProperty = Lo(propertiesInfo)
         .flatMap((p) => p.type.split(' | '))
         .uniq()

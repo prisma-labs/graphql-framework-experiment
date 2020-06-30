@@ -641,6 +641,26 @@ describe('top-level union types', () => {
     `)
   })
 
+  it('sets properties to be optional if they are not part of every union members', () => {
+    expect(
+      extract(`
+          schema.addToContext(req => {
+            return {} as { a: 1 } | { a: 2 } | { b: 3 }
+          })
+        `)
+    ).toMatchInlineSnapshot(`
+      Object {
+        "typeImports": Array [],
+        "types": Array [
+          Object {
+            "kind": "literal",
+            "value": "{ a?: 1 | 2; b?: 3; }",
+          },
+        ],
+      }
+    `)
+  })
+
   it('preserves imports when reducing type aliases', () => {
     expect(
       extract(`
