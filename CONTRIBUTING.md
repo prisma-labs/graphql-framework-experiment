@@ -1,21 +1,23 @@
-# Development
+# Nexus Contributors Guide
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+Hey 👋
 
-- [Code Architecture](#code-architecture)
-- [Testing](#testing)
-- [Releasing](#releasing)
-- [Website](#website)
-- [Workflow Tips](#workflow-tips)
+Thanks for making or considering to make a contribution to Nexus. This document assumes you are already familiar with Nexus. If not, then before contributing you might want to brush up on what Nexus is. Start [here](http://nexusjs.org).
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+There are many ways you can help:
 
-<br>
+- Get active in [community discussions](https://nxs.li/discussions) and help other users
+- [Create bug reports](https://nxs.li/issues/create/bug) when you find an issue
+- [Create feature requests](https://nxs.li/issues/create/feature) when you hit a use-case that isn't served well or at all
+- Improve the documentation
 
-### Code Architecture
+If you want to contribute code, that's awesome! Here's how to do that.
 
-#### Overview
+<br/>
+
+#### Code Architecture
+
+##### Overview
 
 - Roughly speaking we have three distinct levels of code:
 
@@ -35,7 +37,7 @@
 
 - Overall status of the codebase is in a state of refactoring. `utils`, `watcher`, and more are undergoing source restructuring in the near future.
 
-#### Layout Overview
+##### Layout Overview
 
 ```
 /docs         -- The website
@@ -47,7 +49,7 @@
   /lib        -- Discrete modules
 ```
 
-#### `lib`
+##### `lib`
 
 The layout of a typical lib module looks like so:
 
@@ -65,13 +67,13 @@ Be careful about lib modules depending upon one another excessively. The more co
 
 The built-in exception to this heuristic is `lib/utils` which can be thought of as a bespoke `lodash` for our lib components. Use it for small utilities, which might be shared, are very generic, and are not numerous enough to justify their own dedicated lib module. For example there is a utility to make text span a given length using given pad character.
 
-<br>
+<br/>
 
-### Testing
+#### Testing
 
 We use GitHub Actions.
 
-#### Unit
+##### Unit
 
 ```bash
 yarn test:unit
@@ -84,7 +86,7 @@ yarn dev:test      # watch mode
 
 - /!\ Make sure you have compiled `nexus` with `yarn build` before running the watcher unit tests
 
-#### System
+##### System
 
 ```
 yarn test system/create-prisma
@@ -99,18 +101,16 @@ yarn test system/kitchen
 
 - You must run `yarn build` right before running these tests.
 
-#### E2E
+##### E2E
 
 ```
 yarn test e2e/create-prisma
 yarn test e2e/kitchen
 ```
 
-- Environment variables
-
 - Live under `/test/e2e`
 
-- `E2E_NEXUS_VERSION` – which version of Nexus to install during app creation
+- The `E2E_NEXUS_VERSION` envar controls which version of Nexus to install during app creation
 
 - The `create-prisma` e2e test always uses the `next` version of `nexus-plugin-prisma`. This is so that pre-releases can be made to fix Nexus PRs ([example](https://github.com/graphql-nexus/nexus/pull/859)).
 
@@ -118,9 +118,9 @@ yarn test e2e/kitchen
 
 - E2E tests can be run on your machine. They default to working with `latest` dist-tag. Use `E2E_NEXUS_VERSION` env var to set the desired version to test against.
 
-<br>
+<br/>
 
-### Continuous Delivery
+#### Continuous Delivery
 
 - We use [`dripip`](https://github.com/prisma-labs/dripip) to make releases.
 
@@ -162,7 +162,7 @@ yarn test e2e/kitchen
   yarn release:pr
   ```
 
-### Website
+#### Website
 
 - We use [docsifyjs/docsify](https://github.com/docsifyjs/docsify).
 - There is no build step
@@ -171,7 +171,7 @@ yarn test e2e/kitchen
 - Cover page is managed in `_coverpage.md`
 - Configuration and significant styling customizations are kept in `index.html`
 
-#### Getting started
+##### Getting started
 
 1. Fix bin
 
@@ -189,15 +189,15 @@ yarn test e2e/kitchen
    yarn docs:dev
    ```
 
-<br>
+<br/>
 
-### Workflow Tips
+#### Workflow Tips
 
-#### Working With Example Apps via Linking
+##### Working With Example Apps via Linking
 
 Refer to https://github.com/graphql-nexus/examples
 
-#### Developing `create app`
+##### Developing `create app`
 
 The strategy is to use a file path for the nexus dependency.
 
