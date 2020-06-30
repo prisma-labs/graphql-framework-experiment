@@ -5,28 +5,12 @@ on:
     branches: [master]
 
 jobs:
-  unit-tests-windows:
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        node-version: [12.x]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node-version }}
-      - run: yarn --frozen-lockfile
-      - run: yarn -s build
-      - run: yarn -s test runtime/app runtime/schema/settings lib/layout lib/build lib/graphql-client
-      # todo all
-      # - run: yarn -s test runtime/app runtime/schema/settings lib/layout lib/build lib/add-to-context-extractor runtime/schema/index lib/nexus-schema-backing-types lib/graphql-client runtime/server lib/plugin lib/glocal runtime/schema/settings-mapper lib/watcher
-
   unit-tests:
-    runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [10.x, 12.x]
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
@@ -54,7 +38,7 @@ jobs:
       - run: yarn -s build
       - name: Setup global git user
         run: |
-          # For nexus create app flow which will make an init commit 
+          # For nexus create app flow which will make an init commit
           git config --global user.name prisma-labs
           git config --global user.email labs@prisma.io
       - run: yarn -s test system/${{matrix.test-case}}

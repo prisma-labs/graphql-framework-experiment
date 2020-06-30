@@ -1,7 +1,7 @@
 import { isLeft } from 'fp-ts/lib/Either'
 import * as Path from 'path'
 import * as TC from '../test-context'
-import { repalceInObject } from '../utils'
+import { normalizePathsInData } from '../utils'
 import { importAndLoadTesttimePlugins } from './load'
 import { getPluginManifest } from './manifest'
 import { Dimension, Plugin, PluginWithoutSettings } from './types'
@@ -10,7 +10,7 @@ const ctx = TC.create(TC.tmpDir(), TC.fs())
 
 describe('manifest', () => {
   let plugin: Plugin
-  const run = () => repalceInObject(ctx.tmpDir, '<project root>', getPluginManifest(plugin))
+  const run = () => normalizePathsInData(getPluginManifest(plugin), ctx.tmpDir, '<project root>')
 
   it('processes the manifest input with defaults', () => {
     ctx.fs.write('package.json', `{ "name": "foo", "main": "./dist/index.js" }`)
@@ -64,6 +64,7 @@ describe('manifest', () => {
         "_tag": "Left",
         "left": Object {
           "context": Object {
+            "name": undefined,
             "plugin": Object {
               "packageJsonPath": "<project root>/package.json",
             },

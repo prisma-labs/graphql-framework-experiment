@@ -2,10 +2,10 @@
 // for side-effects.
 require('../tty-linker').create().child.install()
 
+import * as DevMode from '../../runtime/dev-mode'
 import { rootLogger } from '../nexus-logger'
 import hook from './hook'
 import * as IPC from './ipc'
-import * as DevMode from '../../runtime/dev-mode'
 
 const log = rootLogger.child('dev').child('runner')
 

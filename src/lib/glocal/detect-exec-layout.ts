@@ -124,8 +124,9 @@ export function detectExecLayout(input: Input): ExecScenario {
 
   let isToolProject = null
   try {
+    // todo test that not using Path.posix will break on windows
     isToolProject =
-      typeof require(Path.join(projectDir, 'package.json'))?.dependencies?.[input.depName] === 'string'
+      typeof require(Path.posix.join(projectDir, 'package.json'))?.dependencies?.[input.depName] === 'string'
   } catch (e) {
     console.log(e)
   }

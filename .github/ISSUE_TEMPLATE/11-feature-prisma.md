@@ -2,9 +2,7 @@
 name: 🚀 Feature –– Prisma plugin
 about: You have an idea for a new capability or a refinement to an existing one for Prisma plugin
 title: ''
-labels:
-  - type/feat
-  - plugin/prisma
+labels: type/feat, plugin/prisma
 assignees: ''
 ---
 

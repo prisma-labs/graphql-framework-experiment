@@ -69,7 +69,7 @@ export function findFileRecurisvelyUpwardSync(
       break
     }
 
-    if (currentDir === '/') {
+    if (isRootPath(currentDir)) {
       break
     }
 
@@ -231,4 +231,24 @@ export function stripExt(filePath: string): string {
 export async function isEmptyDir(dirPath: string): Promise<boolean> {
   const contents = await FS.listAsync(dirPath)
   return contents === undefined || contents.length === 0
+}
+
+// https://github.com/iojs/io.js/blob/5883a59b21a97e8b7339f435c977155a2c29ba8d/lib/path.js#L43
+const windowsPathRegex = /^(?:[a-zA-Z]:|[\\/]{2}[^\\/]+[\\/]+[^\\/]+)?[\\/]$/
+
+/**
+ * Ask whether the given path is a root path or not.
+ *
+ * @remarks
+ *
+ * Take from https://github.com/sindresorhus/is-root-path/blob/master/index.js
+ */
+export function isRootPath(path: string) {
+  path = path.trim()
+
+  if (path === '') {
+    return false
+  }
+
+  return process.platform === 'win32' ? windowsPathRegex.test(path) : path === '/'
 }

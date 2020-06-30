@@ -105,10 +105,12 @@ function getBuildOutputDir(
   buildOutput: string | undefined,
   scanResult: ScanResult
 ): string {
-  const output =
-    buildOutput ??
-    scanResult.tsConfig.content.options.outDir ??
-    DEFAULT_BUILD_DIR_PATH_RELATIVE_TO_PROJECT_ROOT
+  // todo normalize because ts in windows is like "C:/.../.../" instead of "C:\...\..." ... why???
+  const outDir = scanResult.tsConfig.content.options.outDir
+    ? Path.normalize(scanResult.tsConfig.content.options.outDir)
+    : undefined
+
+  const output = buildOutput ?? outDir ?? DEFAULT_BUILD_DIR_PATH_RELATIVE_TO_PROJECT_ROOT
 
   if (Path.isAbsolute(output)) {
     return output

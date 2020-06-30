@@ -1,5 +1,7 @@
 import * as Lo from 'lodash'
-import * as path from 'path'
+/**
+ * Test against the built JS so the runner when spawned is using require instead of import syntax which will throw in Node.
+ */
 import { createWatcher } from '../../../dist/lib/watcher'
 import * as ExitSystem from '../exit-system'
 import * as TC from '../test-context'
@@ -17,14 +19,13 @@ const ctx = TC.create(TC.tmpDir(), TC.fs(), (ctx) => {
   return {
     write(vfs: FSSpec) {
       const tmpDir = ctx.tmpDir
-
       writeFSSpec(tmpDir, vfs)
     },
     async createWatcher() {
       const bufferedEvents: Event[] = []
       await new Promise((res) => setTimeout(res, 10))
       const watcher = await createWatcher({
-        entrypointScript: `require('${path.join(ctx.tmpDir, 'entrypoint')}')`,
+        entrypointScript: `require('${ctx.path('entrypoint')}')`,
         sourceRoot: ctx.tmpDir,
         cwd: ctx.tmpDir,
         plugins: [],
@@ -286,7 +287,7 @@ it('handles lots of restarts', async () => {
 
 it('does not watch node_modules, even if required', async () => {
   const { bufferedEvents } = await testSimpleCase({
-    entrypoint: `require('${ctx.fs.path('node_modules', 'some_file.js')}')`,
+    entrypoint: `require('${ctx.path('node_modules/some_file.js')}')`,
     additionalInitialFiles: {
       node_modules: {
         'some_file.js': `process.stdout.write('test')`,
@@ -301,7 +302,7 @@ it('does not watch node_modules, even if required', async () => {
     },
   })
   ctx.write({
-    'entrypoint.js': `require('${ctx.fs.path('node_modules', 'some_file.js')}')`,
+    'entrypoint.js': `require('${ctx.path('node_modules/some_file.js')}')`,
     node_modules: {
       'some_file.js': `process.stdout.write('test')`,
     },

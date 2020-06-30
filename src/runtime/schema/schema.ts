@@ -1,16 +1,19 @@
 import * as NexusLogger from '@nexus/logger'
 import * as NexusSchema from '@nexus/schema'
-import { GraphQLFieldResolver, GraphQLResolveInfo, GraphQLScalarType } from 'graphql'
+import chalk from 'chalk'
+import { GraphQLFieldResolver, GraphQLResolveInfo } from 'graphql'
 import * as HTTP from 'http'
 import { createNexusSchemaStateful, NexusSchemaStatefulBuilders } from '../../lib/nexus-schema-stateful'
 import { RuntimeContributions } from '../../lib/plugin'
+import * as Process from '../../lib/process'
+import * as Scalars from '../../lib/scalars'
 import { Index, MaybePromise } from '../../lib/utils'
 import { AppState } from '../app'
+import * as DevMode from '../dev-mode'
 import { assertAppNotAssembled } from '../utils'
 import { log } from './logger'
 import { createSchemaSettingsManager, SchemaSettingsManager } from './settings'
 import { mapSettingsAndPluginsToNexusSchemaConfig } from './settings-mapper'
-import * as Scalars from '../../lib/scalars'
 
 export type LazyState = {
   contextContributors: ContextContributor[]
@@ -130,7 +133,7 @@ export function create(appState: AppState): SchemaInternal {
         return { schema, missingTypes }
       },
       checks() {
-        NexusSchema.core.assertNoMissingTypes(appState.assembled!.schema, appState.assembled!.missingTypes)
+        assertNoMissingTypesDev(appState.assembled!.schema, appState.assembled!.missingTypes)
 
         // TODO: We should separate types added by the framework and the ones added by users
         if (
@@ -148,4 +151,41 @@ export function create(appState: AppState): SchemaInternal {
 
 function emptyExceptionMessage() {
   return `Your GraphQL schema is empty. This is normal if you have not defined any GraphQL types yet. If you did however, check that your files are contained in the same directory specified in the \`rootDir\` property of your tsconfig.json file.`
+}
+
+function assertNoMissingTypesDev(
+  schema: NexusSchema.core.NexusGraphQLSchema,
+  missingTypes: Index<NexusSchema.core.MissingType>
+) {
+  const missingTypesNames = Object.keys(missingTypes)
+
+  if (missingTypesNames.length === 0) {
+    return
+  }
+
+  const schemaTypeMap = schema.getTypeMap()
+  const schemaTypeNames = Object.keys(schemaTypeMap).filter(
+    (typeName) => !NexusSchema.core.isUnknownType(schemaTypeMap[typeName])
+  )
+
+  if (DevMode.isDevMode()) {
+    missingTypesNames.map((typeName) => {
+      const suggestions = NexusSchema.core.suggestionList(typeName, schemaTypeNames)
+
+      let suggestionsString = ''
+
+      if (suggestions.length > 0) {
+        suggestionsString = ` Did you mean ${suggestions
+          .map((s) => `"${chalk.greenBright(s)}"`)
+          .join(', ')} ?`
+      }
+
+      log.error(`Missing type "${chalk.redBright(typeName)}" in your GraphQL Schema.${suggestionsString}`)
+    })
+  } else {
+    Process.fatal(
+      `Missing types ${missingTypesNames.map((t) => `"${t}"`).join(', ')} in your GraphQL Schema.`,
+      { missingTypesNames }
+    )
+  }
 }

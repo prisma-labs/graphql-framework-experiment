@@ -1,4 +1,5 @@
 import * as tsm from 'ts-morph'
+import { normalizePathsInData } from '../../lib/utils'
 import { extractContextTypes } from './extractor'
 
 describe('ignores cases that do not apply', () => {
@@ -576,5 +577,5 @@ function extract(...sources: string[]) {
     const moduleName = letters.shift()!
     project.createSourceFile(`./src/${moduleName}.ts`, source)
   }
-  return extractContextTypes(project.getProgram().compilerObject)
+  return normalizePathsInData(extractContextTypes(project.getProgram().compilerObject))
 }
