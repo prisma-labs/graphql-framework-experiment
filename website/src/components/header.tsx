@@ -189,7 +189,7 @@ const Header = ({ headerProps }: HeaderViewProps) => {
         ))}
       </NavLinks>
       <Link
-        to={'https://github.com/prisma'}
+        to={'https://github.com/graphql-nexus/nexus'}
         style={{
           color: 'white',
           textDecoration: 'none',
