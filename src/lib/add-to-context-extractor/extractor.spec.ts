@@ -617,6 +617,30 @@ describe('top-level union types', () => {
     `)
   })
 
+  it('reduces union types composed of different properties', () => {
+    expect(
+      extract(`
+          schema.addToContext(req => {
+            if (true) {
+              return { a: 1 }
+            } else {
+              return { b: 2 }
+            }
+          })
+        `)
+    ).toMatchInlineSnapshot(`
+      Object {
+        "typeImports": Array [],
+        "types": Array [
+          Object {
+            "kind": "literal",
+            "value": "{ a?: number; b?: number; }",
+          },
+        ],
+      }
+    `)
+  })
+
   it('preserves imports when reducing type aliases', () => {
     expect(
       extract(`
