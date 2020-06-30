@@ -2,9 +2,7 @@
 name: 🐛 Bug –– Prisma Plugin
 about: You encountered something that is not working the way it should for Prisma plugin
 title: ''
-labels:
-  - type/bug
-  - plugin/prisma
+labels: type/bug, plugin/prisma
 assignees: ''
 ---
 

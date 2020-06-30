@@ -500,7 +500,7 @@ schema.queryType({
 
 ```graphql
 type Query {
-  foo(bar: String): String!
+  echo(message: String!): String!
 }
 ```
 

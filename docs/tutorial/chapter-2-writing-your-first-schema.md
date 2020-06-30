@@ -7,8 +7,6 @@ In this chapter you're going to write your first schema. You'll learn about:
 - GraphQL SDL file generation
 - Enhanced type safety & autocompletion
 
-<div class="NextIs SectionDivider"></div>
-
 ## What About That Server?
 
 In the last chapter you probably noticed the minimal setup required to get up and running. In fact, you might even be confused and wondering:

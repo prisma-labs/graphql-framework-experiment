@@ -1,21 +1,22 @@
 ---
-title: '`prisma`'
+title: 'prisma'
 ---
 
-## Prisma
-
-[`issues`](https://github.com/graphql-nexus/nexus/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc+label%3Aplugin%2Fprisma) – [features](https://github.com/graphql-nexus/nexus/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc+label%3Aplugin%2Fprisma+label%3Atype%2Ffeat) ⬝ [bugs](https://github.com/graphql-nexus/nexus/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc+label%3Aplugin%2Fprisma+label%3Atype%2Fbug)
+## Overview
 
 Prisma is a next-generation developer-centric toolkit focused on making the data layer easy. This plugin gives you:
 
-1. **Workflow Integration**  
-   Nexus `build` and `dev` workflows are enhanced to run your Prisma generators.
+###  Workflow integration
 
-1. **Runtime Integration**  
-   Nexus schema component [GraphQL type builders](/guides/schema#graphql-type-builders) are augmented with `.model` and `.crud` methods. These make it easy for you to project your Prisma models and expose operations against them in your GraphQL API. Resolvers are dynamically created for you removing the need for traditional ORMs/query builders like TypeORM, Sequelize, or Knex. Out-of-box features include pagination, filtering, and ordering. And when you do need to drop down to custom resolvers a [`Prisma Client`](https://github.com/prisma/prisma-client-js) instance on `context` is ready to go.
+Nexus `build` and `dev` workflows are enhanced to run your Prisma generators.
 
-1. **Testtime Integration**  
-   Nexus testing component is augmented with an instance of the [`Prisma Client`](https://github.com/prisma/prisma-client-js), to help you easily seed your database for your tests.
+### Runtime integration  
+
+Nexus schema component [GraphQL type builders](/guides/schema#graphql-type-builders) are augmented with `.model` and `.crud` methods. These make it easy for you to project your Prisma models and expose operations against them in your GraphQL API. Resolvers are dynamically created for you removing the need for traditional ORMs/query builders like TypeORM, Sequelize, or Knex. Out-of-box features include pagination, filtering, and ordering. And when you do need to drop down to custom resolvers a [`Prisma Client`](https://github.com/prisma/prisma-client-js) instance on `context` is ready to go.
+
+### Testtime integration
+
+Nexus testing component is augmented with an instance of the [`Prisma Client`](https://github.com/prisma/prisma-client-js), to help you easily seed your database for your tests.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -23,23 +24,22 @@ Prisma is a next-generation developer-centric toolkit focused on making the data
 
 ## Installation
 
-**1. Install the plugin**
+1. Install the plugin
 
-```cli
-npm add nexus-plugin-prisma
-```
+    ```bash-symbol
+    npm add nexus-plugin-prisma
+    ```
 
+    > Warning: All Prisma deps are bundled, so do _not_ install e.g. `@prisma/cli` or `@prisma/client`. If you are wondering _why_ you can read through [Nexus' philosophy on dependency management](/meta/architecture#dependency-philosophy). You can still find the the prisma CLI by running `npm run prisma` or `yarn prisma`. In an emergency you can still control version of prisma deps with Yarn [`"resolutions"`](https://classic.yarnpkg.com/en/docs/selective-version-resolutions).
 
-> Warning: All Prisma deps are bundled, so do _not_ install e.g. `@prisma/cli` or `@prisma/client`. If you are wondering _why_ you can read through [Nexus' philosophy on dependency management](/meta/architecture#dependency-philosophy). You can still find the the prisma CLI by running `npm run prisma` or `yarn prisma`. In an emergency you can still control version of prisma deps with Yarn [`"resolutions"`](https://classic.yarnpkg.com/en/docs/selective-version-resolutions).
+2. Enable the plugin
 
-**2. Enable the plugin**
+    ```ts
+    import { use } from 'nexus'
+    import { prisma } from 'nexus-plugin-prisma'
 
-```ts
-import { use } from 'nexus'
-import { prisma } from 'nexus-plugin-prisma'
-
-use(prisma())
-```
+    use(prisma())
+    ```
 
 ## Getting started
 
@@ -47,75 +47,71 @@ There are two ways you can start with the Prisma plugin. Either from scratch, or
 
 ### From scratch
 
-**1. Create a `schema.prisma` file**
+1. Create a `schema.prisma` file
 
-```prisma
-//schema.prisma
+    ```prisma
+    //schema.prisma
 
-generator prisma_client {
-  provider = "prisma-client-js"
-}
+    generator prisma_client {
+      provider = "prisma-client-js"
+    }
 
-model User {
-  id   Int @id @default(autoincrement())
-  name String
-}
-```
+    model User {
+      id   Int @id @default(autoincrement())
+      name String
+    }
+    ```
 
-**2. Add a datasource to your schema**
+2. Add a datasource to your schema. We recommend you use Postgres but MySQL and SQLite are also supported.
 
-We recommend you use Postgres but MySQL and SQLite are also supported.
+    To add your datasource, simply copy/paste one of the block below at the top of your `schema.prisma` file
 
-To add your datasource, simply copy/paste one of the block below at the top of your `schema.prisma` file
+    > **Note**:  You can also pass the database credentials via a `.env` file. [Read more about it here](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-schema/prisma-schema-file#using-environment-variables)
 
-> Note: You can also pass the database credentials via a `.env` file. [Read more about it here](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-schema/prisma-schema-file#using-environment-variables)
+    Using PostgreSQL:
 
-**Using Postgres**
+        ```prisma
+        //schema.prisma
 
-```prisma
-//schema.prisma
+        datasource db {
+          provider = "postgres"
+          url = "postgresql://USER:PASSWORD@localhost:5432/DATABASE"
+        }
+        ```
 
-datasource db {
-  provider = "postgres"
-  url = "postgresql://USER:PASSWORD@localhost:5432/DATABASE"
-}
-```
+      Using MySQL:
 
-**Using MySQL**
+      ```prisma
+      //schema.prisma
 
-```prisma
-//schema.prisma
+      datasource db {
+        provider = "mysql"
+        url = "mysql://USER:PASSWORD@localhost:3306/DATABASE"
+      }
+      ```
 
-datasource db {
-  provider = "mysql"
-  url = "mysql://USER:PASSWORD@localhost:3306/DATABASE"
-}
-```
+      Using SQLite:
 
-**Using SQLite**
+      ```prisma
+      //schema.prisma
 
-```prisma
-//schema.prisma
+      datasource db {
+        provider = "sqlite"
+        url = "file:./dev.db"
+      }
+      ```
 
-datasource db {
-  provider = "sqlite"
-  url = "file:./dev.db"
-}
-```
+3. Create a migration file:
 
-**3. Create a migration file**
+    ```bash-symbol
+    npm run prisma migrate save --experimental
+    ```
 
-```sh
-npm run prisma migrate save --experimental
-```
+4. Migrate your database: 
 
-**4. Migrate your database**
-
-```sh
-npm run prisma migrate up --experimental
-```
-
-**5. You're all set**
+    ```bash-symbol
+    npm run prisma migrate up --experimental
+    ```
 
 You're ready to start working!
 
@@ -123,64 +119,60 @@ You're ready to start working!
 
 When starting from an existing database, you should use [Prisma's introspection](https://www.prisma.io/docs/reference/tools-and-interfaces/introspection) feature.
 
-**1. Create a `schema.prisma` file**
+1. Create a `schema.prisma` file.
 
-Create a `schema.prisma` file and add your database credentials in it so that Prisma can introspect your database schema.
+  Create a `schema.prisma` file and add your database credentials in it so that Prisma can introspect your database schema.
 
-> Note: You can also pass the database credentials via a `.env` file. [Read more about it here](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-schema/prisma-schema-file#using-environment-variables)
+  > **Note**:  You can also pass the database credentials via a `.env` file. [Read more about it here](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-schema/prisma-schema-file#using-environment-variables)
 
-**Using Postgres**
+    Using PostgreSQL:
 
-```prisma
-//schema.prisma
+    ```prisma
+    //schema.prisma
 
-datasource db {
-  provider = "postgres"
-  url = "postgresql://USER:PASSWORD@localhost:5432/DATABASE"
-}
-```
+    datasource db {
+      provider = "postgres"
+      url = "postgresql://USER:PASSWORD@localhost:5432/DATABASE"
+    }
+    ```
 
-**Using MySQL**
+    Using MySQL:
 
-```prisma
-//schema.prisma
+    ```prisma
+    //schema.prisma
 
-datasource db {
-  provider = "mysql"
-  url = "mysql://USER:PASSWORD@localhost:3306/DATABASE"
-}
-```
+    datasource db {
+      provider = "mysql"
+      url = "mysql://USER:PASSWORD@localhost:3306/DATABASE"
+    }
+    ```
 
-**Using SQLite**
+    Using SQLite:
 
-```prisma
-//schema.prisma
+    ```prisma
+    //schema.prisma
 
-datasource db {
-  provider = "sqlite"
-  url = "file:./dev.db"
-}
-```
+    datasource db {
+      provider = "sqlite"
+      url = "file:./dev.db"
+    }
+    ```
 
-**2. Introspect your database**
+2. Introspect your database:
 
-```
-npm run prisma introspect
-```
+  ```bash-symbol
+  npm run prisma introspect
+  ```
 
-**3. Generate the Prisma Client**
+3. Generate the Prisma Client. Add the following block at the top of your `schema.prisma` file:
 
-Add the following block at the top of your `schema.prisma` file:
+  ```
+  generator prisma_client {
+    provider = "prisma-client-js"
+  }
+  ```
 
-```
-generator prisma_client {
-  provider = "prisma-client-js"
-}
-```
-
-The plugin will take care of generating the Prisma Client for you after that.
-
-**4. You're all set**
+  The plugin will take care of generating the Prisma Client for you after that.
 
 You're ready to start working!
 
@@ -188,7 +180,7 @@ You're ready to start working!
 
 Given a [Prisma schema](https://github.com/prisma/prisma2/blob/master/docs/prisma-schema-file.md) (left), you will be able to project these Prisma models onto your API and expose operations against them (middle) resulting in the GraphQL Schema (right).
 
-> Note: `t.crud` is an experimental feature. You must explicitly enable it [via the plugin options](#type-definition).
+> **Note**:  `t.crud` is an experimental feature. You must explicitly enable it [via the plugin options](#type-definition).
 
 <div class="Row Collapsable">
 
@@ -473,7 +465,7 @@ use(
 
 ## Recipes
 
-### Projecting Prisma Model Fields
+### Projecting Prisma model fields
 
 Exposing one of your Prisma models in your GraphQL API
 
@@ -488,7 +480,7 @@ schema.objectType({
 })
 ```
 
-### Simple Computed GraphQL Fields
+### Simple computed GraphQL fields
 
 You can add computed fields to a GraphQL object using the standard GraphQL Nexus API.
 
@@ -508,7 +500,7 @@ schema.objectType({
 })
 ```
 
-### Complex Computed GraphQL Fields
+### Complex computed GraphQL fields
 
 If you need more complicated logic for your computed field (e.g. have access to some information from the database), you can use the `prisma` instance that's attached to the context and implement your resolver based on that.
 
@@ -529,7 +521,7 @@ schema.objectType({
 })
 ```
 
-### Project a Prisma Field to a Differently Named GraphQL Field
+### Project a Prisma field to a differently named GraphQL field
 
 ```ts
 schema.objectType({
@@ -543,7 +535,7 @@ schema.objectType({
 })
 ```
 
-### Publish Full-Featured Reads on a Prisma Model
+### Publish full-featured reads on a Prisma model
 
 `t.crud` is an experimental feature. You must explicitly enable it [via the plugin options](#type-definition).
 
@@ -559,7 +551,7 @@ schema.queryType({
 })
 ```
 
-### Publish Writes on a Prisma Model
+### Publish writes on a Prisma model
 
 `t.crud` is an experimental feature. You must explicitly enable it [via the plugin options](#type-definition).
 
@@ -576,7 +568,7 @@ schema.mutationType({
 })
 ```
 
-### Publish Customized Reads on a Prisma Model
+### Publish customized reads on a Prisma model
 
 `t.crud` is an experimental feature. You must explicitly enable it [via the plugin options](#type-definition).
 
@@ -594,7 +586,7 @@ schema.queryType({
 })
 ```
 
-### Publish Autogenerated Mutations with Computed Input Values
+### Publish autogenerated mutations with computed input values
 
 `t.crud` is an experimental feature. You must explicitly enable it [via the plugin options](#type-definition).
 
@@ -615,9 +607,11 @@ schema.mutationType({
 })
 ```
 
-### Globally Remove a Field from Input Types and Infer its Value
+### Globally remove a field from input types and infer its value
 
-todo (this is not possible in the framework yet)
+🚧 Work in progress.
+
+> **Note** Not yet possible in framework.
 
 ```ts
 nexusPrismaPlugin({
@@ -646,7 +640,7 @@ schema.mutationType({
 })
 ```
 
-Without computedInputs:
+Without `computedInputs`:
 
 ```graphql
 mutation createOnePost {
@@ -660,7 +654,7 @@ mutation createOnePost {
 }
 ```
 
-With computedInputs:
+With `computedInputs`:
 
 ```graphql
 mutation createOnePost {
@@ -673,7 +667,7 @@ mutation createOnePost {
 }
 ```
 
-### Publish Model Writes Along Side Prisma Client-Resolved Fields
+### Publish model writes along side Prisma Client-resolved fields
 
 `t.crud` is an experimental feature. You must explicitly enable it [via the plugin options](#type-definition).
 
@@ -717,7 +711,7 @@ schema.mutationType({
 })
 ```
 
-## Worktime Integration
+## Worktime integration
 
 ### `nexus dev`
 
@@ -729,13 +723,13 @@ Updates to your `schema.prisma` file will also be detected and will give you hin
 
 When running `nexus build`, `nexus-plugin-prisma` will make sure your [`Prisma Client`](https://github.com/prisma/prisma-client-js) is up-to-date with your Prisma Schema, thus making sure your application is safely accessing your database.
 
-## Testtime Integration
+## Testtime integration
 
 `nexus-plugin-prisma` augments the testing component of Nexus with an instance of the [`Prisma Client`](https://github.com/prisma/prisma-client-js), to help you easily seed your database for your tests.
 
-To learn more about its usage, [head to the Testing section](/guides/testing?id=with-a-database).
+To learn more about its usage, [head to the Testing section](../../guides/testing#with-a-database).
 
-## Runtime Integration
+## Runtime integration
 
 ### Access to the Prisma Client
 
@@ -761,17 +755,15 @@ schema.objectType({
 
 ### `t.model`
 
-Only available within [`schema.objectType`](/api/modules/main/exports/schema?id=objecttype) definitions.
+Only available within [`schema.objectType`](../../api/nexus/schema#objecttype) definitions.
 
 `t.model` contains configurable _field projectors_ that you use for projecting fields of your [Prisma models](https://github.com/prisma/prisma2/blob/master/docs/data-modeling.md#models) onto your [GraphQL Objects](https://graphql.github.io/graphql-spec/June2018/#sec-Objects). The precise behaviour of field projectors vary by the Prisma type being projected. Refer to the respective sub-sections for details.
 
-#### Model-Object Mapping
+#### Model-object mapping
 
 `t.model` will either have field projectors for the Prisma model whose name matches that of the GraphQL `Object`, or if the GraphQL `Object` is of a name that does not match any of your Prisma models then `t.model` becomes a function allowing you to specify the mapping, after which the field projectors become available.
 
 ##### Example
-
-<div class="Row Collapsable">
 
 ```prisma
 model User {
@@ -805,8 +797,6 @@ type Person {
 }
 ```
 
-</div>
-
 #### Enum
 
 _Auto-Projection_
@@ -825,7 +815,7 @@ Currently Prisma enums cannot be [aliased](#alias) ([issue](https://github.com/p
 
 n/a
 
-##### GraphQL Schema Contributions [`?`](#graphql-schema-contributions 'How to read this')
+##### GraphQL Schema contributions [`?`](#graphql-schema-contributions 'How to read this')
 
 ```graphql
 type M {
@@ -903,15 +893,15 @@ _Scalar Mapping_
 [Prisma scalars](https://github.com/prisma/prisma2/blob/master/docs/data-modeling.md#scalar-types) are mapped to [GraphQL scalars](https://graphql.org/learn/schema/#scalar-types) as follows:
 
 ```
-Prisma       GraphQL
-------       -------
-Boolean   <>  Boolean
-String    <>  String
-Int       <>  Int
-Float     <>  Float
-cuid()    <>  ID
-DateTime  <>  DateTime (custom scalar)
-uuid()    <>  UUID (custom scalar)
+  Prisma       GraphQL
+  ------       -------
+  Boolean   <>  Boolean
+  String    <>  String
+  Int       <>  Int
+  Float     <>  Float
+  cuid()    <>  ID
+  DateTime  <>  DateTime (custom scalar)
+  uuid()    <>  UUID (custom scalar)
 ```
 
 _Auto-Projection_
@@ -922,7 +912,7 @@ _Option Notes_
 
 It is not possible to use [`type`](#type) because there is currently no way for a Prisma scalar to map to a differently named GraphQL scalar.
 
-##### GraphQL Schema Contributions [`?`](#graphql-schema-contributions 'How to read this')
+##### GraphQL Schema contributions [`?`](#graphql-schema-contributions 'How to read this')
 
 ```graphql
 type M {
@@ -938,8 +928,6 @@ scalar S
 [`alias`](#alias) [`resolve`](#resolve)
 
 ##### Example
-
-<div class="Row Collapsable">
 
 ```graphql
 type Post {
@@ -977,8 +965,6 @@ model User {
 }
 ```
 
-</div>
-
 #### Relation
 
 Projecting relational fields only affects the current GraphQL object being defined. That is, the model that the field relates to is not auto-projected. This is a design choice intended to keep the `nexus-prisma` system predictable for you. If you forget to project a relation you will receive feedback at build/boot time letting you know.
@@ -996,8 +982,6 @@ type M {
 ```
 
 ##### Example
-
-<div class="Row Collapsable">
 
 ```prisma
 model User {
@@ -1024,8 +1008,6 @@ type User {
   latestPost: Post
 }
 ```
-
-</div>
 
 #### List Enum
 
@@ -1084,8 +1066,6 @@ There are 8 kinds of operations (reflecting a subset of [Prisma Client](https://
 
 ##### Example
 
-<div class="Row Collapsable">
-
 ```prisma
 model User {
   ...
@@ -1113,8 +1093,6 @@ schema.mutationType({
 })
 ```
 
-</div>
-
 #### Create
 
 ```
@@ -1135,7 +1113,7 @@ Inlined creates are very similar to top-level ones but have the important differ
 
 [`type`](#type) [`alias`](#alias) [`resolve`](#resolve)
 
-##### GraphQL Schema Contributions [`?`](#graphql-schema-contributions 'How to read this')
+##### GraphQL Schema contributions [`?`](#graphql-schema-contributions 'How to read this')
 
 ```graphql
 mutation {
@@ -1160,8 +1138,6 @@ input RM_CreateWithout_M_Input = RM_CreateInput - RMRF: M
 ```
 
 ##### Example
-
-<div class="Row Collapsable">
 
 ```prisma
 model User {
@@ -1269,8 +1245,6 @@ mutation createRelation {
 }
 ```
 
-</div>
-
 #### Read
 
 ```
@@ -1281,7 +1255,7 @@ Allow clients to find one particular record of the respective Prisma model. They
 
 The ability for list fields to be [filtered](#filtering), [ordered](#ordering), or [paginated](#pagination) depends upon if those features have been enabled for those GraphQL objects via [`t.model.<ListRelation>`](#list-relation).
 
-**Underlying Prisma Client Function**
+**Underlying Prisma Client function**
 
 [`findOne`](https://github.com/prisma/prisma2/blob/master/docs/prisma-client-js/api.md#findone)
 
@@ -1289,7 +1263,7 @@ The ability for list fields to be [filtered](#filtering), [ordered](#ordering), 
 
 [`type`](#type) [`alias`](#alias) [`resolve`](#resolve)
 
-##### GraphQL Schema Contributions [`?`](#graphql-schema-contributions 'How to read this')
+##### GraphQL Schema contributions [`?`](#graphql-schema-contributions 'How to read this')
 
 ```graphql
 mutation {
@@ -1354,7 +1328,7 @@ t.crud.updateOne<M>
 
 Allow clients to update one particular record at a time of the respective Prisma model.
 
-**Underlying Prisma Client Function**
+**Underlying Prisma Client function**
 
 [`update`](https://github.com/prisma/prisma2/blob/master/docs/prisma-client-js/api.md#update)
 
@@ -1362,7 +1336,7 @@ Allow clients to update one particular record at a time of the respective Prisma
 
 [`type`](#type) [`alias`](#alias) [`resolve`](#resolve)
 
-##### GraphQL Schema Contributions [`?`](#graphql-schema-contributions 'How to read this')
+##### GraphQL Schema contributions [`?`](#graphql-schema-contributions 'How to read this')
 
 ```graphql
 mutation {
@@ -1597,7 +1571,7 @@ t.crud.upsertOne<M>
 
 Allow clients to update or create (aka. insert) one particular record at a time of the respective Prisma model. This operation is a combination of [create](#create) and [update](#update). The generated GraphQL mutation matches `data` and `where` args to those of update, and `create` to that of `data` arg in create. Unlike update, upsert guarantees a return value.
 
-**Underlying Prisma Client Function**
+**Underlying Prisma Client function**
 
 [`upsert`](https://github.com/prisma/prisma2/blob/master/docs/prisma-client-js/api.md#upsert)
 
@@ -1605,7 +1579,7 @@ Allow clients to update or create (aka. insert) one particular record at a time 
 
 [`type`](#type) [`alias`](#alias) [`resolve`](#resolve)
 
-##### GraphQL Schema Contributions [`?`](#graphql-schema-contributions 'How to read this')
+##### GraphQL Schema contributions [`?`](#graphql-schema-contributions 'How to read this')
 
 ```graphql
 mutation {
@@ -1632,7 +1606,7 @@ t.crud.deleteOne<M>
 
 Allow clients to delete one particular record at a time of the respective Prisma model.
 
-**Underlying Prisma Client Function**
+**Underlying Prisma Client function**
 
 [`delete`](https://github.com/prisma/prisma2/blob/master/docs/prisma-client-js/api.md#delete)
 
@@ -1640,7 +1614,7 @@ Allow clients to delete one particular record at a time of the respective Prisma
 
 [`type`](#type) [`alias`](#alias) [`resolve`](#resolve)
 
-##### GraphQL Schema Contributions [`?`](#graphql-schema-contributions 'How to read this')
+##### GraphQL Schema contributions [`?`](#graphql-schema-contributions 'How to read this')
 
 ```graphql
 mutation {
@@ -1952,7 +1926,7 @@ undefined | String
 
 **Applies To**
 
-`t.crud.<*>` [`t.model.<Relation>`](#relation-field) [`t.model.<ListRelation>`](#list-field)
+`t.crud.<*>` [`t.model.<Relation>`](#relation) [`t.model.<ListRelation>`](#list-relation)
 
 **About**
 
@@ -1965,8 +1939,6 @@ undefined | String
 n/a
 
 ##### Example
-
-<div class="Row Collapsable">
 
 ```prisma
 model User {
@@ -2007,8 +1979,6 @@ type User {
   articles: [Article]
 }
 ```
-
-</div>
 
 #### `resolve`
 
@@ -2197,7 +2167,7 @@ query relationOrdering {
 undefined | true | false
 ```
 
-**Applies To**
+**Applies to**
 
 [`t.crud.<BatchRead>`](#batch-read) [`t.model.<ListRelation>`](#list-relation)
 
@@ -2207,7 +2177,7 @@ undefined | true | false
 - `true` Enable pagination
 - `false` Disable pagination
 
-##### GraphQL Schema Contributions
+##### GraphQL Schema contributions
 
 ```graphql
 # t.crud.<BatchRead>
@@ -2316,7 +2286,7 @@ query batchReadRelation {
 undefined | true | false | ModelWhitelist
 ```
 
-**Applies To**
+**Applies to**
 
 [`t.crud.<BatchRead>`](#batch-read) [`t.model.<ListRelation>`](#list-relation)
 
@@ -2327,7 +2297,7 @@ undefined | true | false | ModelWhitelist
 - `false` Disable filtering
 - `ModelWhitelist` (`Record<string, true>`) Enable ordering by just Model scalar fields appearing in the given whitelist.
 
-##### GraphQL Schema Contributions [`?`](#graphql-schema-contributions 'How to read this')
+##### GraphQL Schema contributions [`?`](#graphql-schema-contributions 'How to read this')
 
 See [batch filtering contributions](#batch-filtering)
 
@@ -2557,9 +2527,9 @@ Record<string, ({ args, ctx, info }: MutationResolverParams) => unknown>
 
 Note: This is an abbreviated version of the ComputedInputs type. The most important thing to understand each of the object's values will be a function that takes an object with "args", "ctx", and "info" keys that represent the runtime values of the corresponding parameters that are passed to your resolver. For the full type, see [ComputedInputs Type Details](#computedinputs-type-details).
 
-**Applies To**
+**Applies to**
 
-[`t.crud.<mutations>`](#t.crud)
+[`t.crud.<mutations>`](#tcrud)
 
 **About**
 
@@ -2569,7 +2539,7 @@ Allow clients to omit fields from one mutation's corresponding input type and in
 
   Keys in the ComputedInputs object will be omitted from the mutation's corresponding input type. When resolving the mutation at runtime, each omitted key will be passed to Prisma Client based on the return value of that key's corresponding function in the ComputedInputs object when passed that resolver's parameters at runtime.
 
-##### GraphQL Schema Contributions
+##### GraphQL Schema contributions
 
 The mutation's input type fields with a name that is in the ComputedInputs object are omitted from the GraphQL schema. This modifies one existing input type but does not add new types or remove existing types.
 
@@ -2654,7 +2624,7 @@ Record<string, ({ args, ctx, info}: MutationResolverParams) => any>
 
 Note: This is an abbreviated version of the ComputedInputs type. The most important thing to understand each of the object's values will be a function that takes an object with "args", "ctx", and "info" keys that represent the runtime values of the corresponding parameters that are passed to your resolver. For the full type, see [ComputedInputs Type Details](#computedinputs-type-details).
 
-**Applies To**
+**Applies to**
 
 [`nexusPrismaPlugin()`](#Example)
 
@@ -2666,13 +2636,11 @@ Allow clients to omit fields with a given name across all of their GraphQL schem
 
   Keys in the ComputedInputs object will be omitted from all input types. When resolving any mutation at runtime, that mutation's input type will be recursively searched for the omitted keys. Any time one of those keys would have appeared anywhere in the mutation's input type, a value will be passed to Prisma Client based on the return value of that key's corresponding function in the ComputedInputs object when passed the resolver's parameters at runtime.
 
-##### GraphQL Schema Contributions
+##### GraphQL Schema contributions
 
 All input type fields with a name that is in the ComputedInputs object are omitted from the GraphQL schema. This modifies existing input types but does not add new types or remove existing types.
 
 ##### Example
-
-<div class="Row Collapsable">
 
 ```prisma
 model User {
@@ -2816,8 +2784,6 @@ mutation createOneNested {
 }
 ```
 
-</div>
-
 If `{user: {connect: {where: {id: 1}}}}` looks familiar, global computedInputs can also be used to determine the user making a request and automatically populate mutations affecting a single user accordingly. For example, assuming Prisma Client' context includes a "userId" key, adding a user key to global computedInputs can simplify the "createOneNested" mutation from the previous example:
 
 ```ts
@@ -2840,7 +2806,7 @@ mutation createOneNested {
 }
 ```
 
-#### `ComputedInputs` Type Details
+#### `ComputedInputs` type details
 
 ```ts
 /**
@@ -2880,15 +2846,15 @@ export type MutationMethodName = keyof core.GetGen<'argTypes'>['Mutation']
 export type Context = core.GetGen<'context'>
 ```
 
-### GraphQL Schema Contributions
+### GraphQL Schema contributions
 
-#### How to Read
+#### How to read
 
 ```
 M = model   F = field   L = list   S = scalar   R = relation   E = enum   V = value
 ```
 
-#### Batch Filtering
+#### Batch filtering
 
 **Sources**
 
@@ -2940,7 +2906,7 @@ input RM_ScalarWhereInput {
 }
 ```
 
-**Scalar Filters**
+**Scalar filters**
 
 `ID` scalars use `StringFilter` ([issue](https://github.com/prisma-labs/nexus-prisma/issues/485)). We are considering a tailored `DateTime` filter ([issue](https://github.com/prisma-labs/nexus-prisma/issues/484)).
 
@@ -2982,15 +2948,13 @@ input StringFilter {
 input UUIDFilter {} # like StringFilter
 ```
 
-## System Behaviours
+## System behaviours
 
-### Null-Free Lists
+### Null-free lists
 
 Projection for Prisma list types always project as a fully non-nullable GraphQL type. This is because Prisma list fields (and list member type) can themselves never be null, and because Prisma does not support `@default` on list types.
 
 For consistency we also apply the same pattern for `t.crud.<BatchRead>`.
-
-<div class="Row Collapsable">
 
 ```Prisma
 model User {
@@ -3021,5 +2985,3 @@ type User {
   posts: [Post!]!
 }
 ```
-
-</div>

@@ -229,7 +229,11 @@ export function clearConsole() {
   /**
    * For convenience, we disable clearing the console when debugging
    */
-  if (process.env.DEBUG !== undefined) {
+  if (
+    process.env.LOG_LEVEL !== undefined ||
+    process.env.LOG_FILTER !== undefined ||
+    process.env.NEXUS_NO_CLEAR !== undefined
+  ) {
     return
   }
 

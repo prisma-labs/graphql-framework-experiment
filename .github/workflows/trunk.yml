@@ -6,10 +6,11 @@ on:
 
 jobs:
   unit-tests:
-    runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [10.x, 12.x]
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
@@ -17,7 +18,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - run: yarn --frozen-lockfile
-      - run: yarn build
+      - run: yarn -s build
       - run: yarn -s test:unit
 
   system-tests:
@@ -42,7 +43,7 @@ jobs:
           git config --global user.email labs@prisma.io
       - run: yarn -s test system/${{matrix.test-case}}
   publish:
-    needs: [unit-tests, system-tests]
+    needs: [unit-tests, unit-tests-windows, system-tests]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

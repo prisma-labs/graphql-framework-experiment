@@ -27,8 +27,8 @@ Nexus is young, but growing fast. Every two weeks [a new release is cut]() and w
 - Generate clients
 - Query your database
 - Manage app configuration
+- Manage your HTTP server
 - Log structured data
-- Build your HTTP server
 - System test your GraphQL API
 
 **The Nexus CLI supports you with:**

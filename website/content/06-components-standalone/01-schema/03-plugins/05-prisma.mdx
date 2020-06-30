@@ -4,15 +4,15 @@ title: Prisma
 
 ## Prisma
 
-Refer to the [framework Prisma plugin docs](/plugins/prisma#runtime-integration) for API reference and concepts. What follows here are aspects that are particular to the schema plugin only.
+Refer to the [framework Prisma plugin docs](../../../nexus-plugins/prisma#runtime-integration) for API reference and concepts. What follows here are aspects that are particular to the schema plugin only.
 
-## Installation {docsify-ignore}
+## Installation
 
-```cli
+```bash-symbol
 npm add nexus-prisma
 ```
 
-## Usage {docsify-ignore}
+## Usage
 
 1. Import `nexusPrismaPlugin` from `nexus-prisma`
 1. Create and configure it if needed (shouldn't be)
@@ -33,9 +33,9 @@ const schema = makeSchema({
 
 You can find runnable examples in the [repo examples folder](https://github.com/graphql-nexus/nexus-schema-plugin-prisma/tree/master/examples).
 
-> Note: If you're looking for CRUD capabilities, you must enable the `experimentalCRUD` option.
+> **Note**: If you're looking for CRUD capabilities, you must enable the `experimentalCRUD` option.
 
-## Configuration {docsify-ignore}
+## Configuration
 
 Note that, In most cases, you should not need to configure anything.
 
@@ -80,7 +80,7 @@ type Options = {
 }
 ```
 
-## Project Setup {docsify-ignore}
+## Project Setup
 
 These are tips to help you with a successful project workflow
 
@@ -117,6 +117,6 @@ These are tips to help you with a successful project workflow
    }
    ```
 
-## Legacy Note {docsify-ignore}
+## Legacy Note
 
 If you are still using `nexus-prisma@0.3` / Prisma 1 you can find the old docs [here](https://github.com/graphql-nexus/schema/blob/8cf2d6b3e22a9dec1f7c23f384bf33b7be5a25cc/docs/database-access-with-prisma.md). Please note that `nexus-prisma@0.3` is only compatible with `nexus` up to `0.12.0-beta.14` ([issue](https://github.com/graphql-nexus/nexus-prisma/issues/520)). We do not currently have plans to update `nexus-prisma@0.3` to become compatible with versions of `nexus` newer than that.

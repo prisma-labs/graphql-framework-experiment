@@ -1,8 +1,8 @@
 ---
-title: 1. Setup & First Query
+title: 1. Setup and first query
 ---
 
-## Chapter 1 <br/> Setup & First Query
+## Overview
 
 In this first chapter we're just going to get the bare minimum of a Nexus project setup. You'll learn about:
 
@@ -15,7 +15,7 @@ In this first chapter we're just going to get the bare minimum of a Nexus projec
 
 Start by creating your project directory, initializing your `package.json`, and adding the `nexus` dependency.
 
-```bash
+```bash-symbol
 mkdir nexus-tutorial && cd nexus-tutorial
 npm init -y
 npm add nexus
@@ -23,7 +23,7 @@ npm add nexus
 
 Nexus comes out of the box with a CLI. You'll use it often while working on your app. While you can access the CLI of your local nexus via `yarn` or npm scripts or `npx` but there's an even easier way. Install `nexus` globally. Then you can access the CLI from anywhere. Nexus is smart enough to delegate all invocations to the _local_ nexus. This is the idiomatic way to work with Nexus, but you aren't forced to do this.
 
-```markdown
+```bash-symbol
 npm add --global nexus
 ```
 
@@ -43,37 +43,37 @@ Despite having the global Nexus CLI, using package scripts can be a handy way of
 }
 ```
 
-## Conventional Entrypoint
+## Conventional entrypoint
 
 We'll now create our first module at `api/app.ts`:
 
-```bash
+```bash-symbol
 mkdir api && touch api/app.ts
 ```
 
 The directory name `api` is arbitrary but the module name `app` has special meaning. Nexus will find `app.ts` wherever you put it within your project and treat it as your entrypoint. Furthermore, every module that imports `nexus` will be automatically included into the final build by Nexus. This makes growing and refactoring your project easy as you are freed from managing import/export tedium. You might be wondering how import order is managed. The answer is that Nexus' APIs are declarative and so designed to be order independent.
 
-## Contextual Feedback
+## Contextual feedback
 
 Ok, with our entrypoint setup, let's boot up dev mode and see what happens.
 
-```bash
+```bash-symbol
 nexus dev
 ```
 
 Woops? You should be seeing a warning from Nexus:
 
-```bash
+```bash-symbol
 ▲ nexus:schema Your GraphQL schema is empty. [...]
 ```
 
 All good, you indeed haven't added any types to your GraphQL schema yet so Nexus is right here. This is the first example of Nexus' rich development mode contextual feedback. One of the goals of Nexus is to never leave you in a confused disoriented state. If Nexus can give you in inline feedback it should. Add rich jsDoc and precise TypeScript types into the mix, and ideally you can largely avoid getting lost and _needing_ to consult the Nexus website, community, so on.
 
-## Try It Out
+## Try it out
 
 Aside from the warning, you should also see a message indicating that your server is running, and where.
 
-```bash
+```bash-symbol
 ● nexus:server listening  --  url: 'http://localhost:4000/'
 ```
 
@@ -85,10 +85,14 @@ This is a graphical user interface for interacting with GraphQL APIs. If you pre
 
 Take a look at the right-hand side SCHEMA tab. There you'll see a default schema that Nexus has provided for you. This, along with the warning you say before, will go away once you begin your own schema.
 
-## Wrapping Up
+## Wrapping up
 
 That's it! In the next chapter you'll begin working on your app's schema.
 
-<div class="NextIs NextChapter"></div>
-
-[➳](/tutorial/chapter-2-writing-your-first-schema)
+<ButtonLink
+  color="dark"
+  type="primary"
+  href="/getting-started/tutorial/chapter-writing-your-first-schema"
+>
+  Next &rarr;
+</ButtonLink>

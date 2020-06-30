@@ -1,20 +1,20 @@
 import * as path from 'path'
 import * as TestContext from '../test-context'
-import { Param1, repalceInObject } from '../utils'
+import { normalizePathsInData, Param1 } from '../utils'
 import { detectExecLayout } from './detect-exec-layout'
 
 const ctx = TestContext.compose(TestContext.tmpDir(), TestContext.fs(), (ctx) => {
   return {
     detectExecLayout: (input?: Partial<Param1<typeof detectExecLayout>>) => {
-      return repalceInObject(
-        ctx.tmpDir,
-        '/__dynamic__',
+      return normalizePathsInData(
         detectExecLayout({
           depName: 'a',
           cwd: ctx.tmpDir,
           scriptPath: ctx.fs.path('some/other/bin/a'),
           ...input,
-        })
+        }),
+        ctx.tmpDir,
+        '/__dynamic__'
       )
     },
   }
@@ -54,7 +54,6 @@ describe('node project detection', () => {
     })
   })
   it('if package.json not present then is not a node project', () => {
-    expect(ctx.detectExecLayout().nodeProject).toEqual(false)
     expect(ctx.detectExecLayout()).toMatchObject({
       nodeProject: false,
       toolProject: false,
