@@ -1,10 +1,11 @@
 import { codeBlock } from 'common-tags'
-import { Either, isLeft, right } from 'fp-ts/lib/Either'
+import { Either, isLeft } from 'fp-ts/lib/Either'
 import * as fs from 'fs-jetpack'
 import { hardWriteFile } from '../fs'
 import * as Layout from '../layout'
 import { rootLogger } from '../nexus-logger'
 import { createTSProgram } from '../tsc'
+import { Exception } from '../utils'
 import { ContribType, extractContextTypes, ExtractedContextTypes } from './extractor'
 
 const log = rootLogger.child('addToContextExtractor')
@@ -21,18 +22,22 @@ export const NEXUS_DEFAULT_RUNTIME_CONTEXT_TYPEGEN_PATH = fs.path(
  */
 export async function generateContextExtractionArtifacts(
   layout: Layout.Layout
-): Promise<Either<Error, ExtractedContextTypes>> {
+): Promise<Either<Exception, ExtractedContextTypes>> {
   log.trace('starting context type extraction')
   const errProgram = createTSProgram(layout, { withCache: true })
   if (isLeft(errProgram)) return errProgram
   const program = errProgram.right
   const contextTypes = extractContextTypes(program.getProgram())
 
-  await writeContextTypeGenFile(contextTypes)
+  if (isLeft(contextTypes)) {
+    return contextTypes
+  }
+
+  await writeContextTypeGenFile(contextTypes.right)
 
   log.trace('finished context type extraction', { contextTypes })
 
-  return right(contextTypes)
+  return contextTypes
 }
 
 /**

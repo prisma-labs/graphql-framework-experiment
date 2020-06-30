@@ -1,3 +1,4 @@
+import { isLeft } from 'fp-ts/lib/Either'
 import * as tsm from 'ts-morph'
 import { normalizePathsInData } from '../../lib/utils'
 import { extractContextTypes } from './extractor'
@@ -213,7 +214,7 @@ it('extracts optionality from props', () => {
       "types": Array [
         Object {
           "kind": "literal",
-          "value": "{ foo: { bar?: { baz?: string; }; }; }",
+          "value": "{ foo: { bar?: { baz?: string | undefined; } | undefined; }; }",
         },
       ],
     }
@@ -409,23 +410,23 @@ describe('extracted type refs', () => {
         schema.addToContext(req => { return null as A })
       `)
     ).toMatchInlineSnapshot(`
-    Object {
-      "typeImports": Array [
-        Object {
-          "isExported": true,
-          "isNode": false,
-          "modulePath": "/src/a",
-          "name": "A",
-        },
-      ],
-      "types": Array [
-        Object {
-          "kind": "ref",
-          "name": "A",
-        },
-      ],
-    }
-  `)
+      Object {
+        "typeImports": Array [
+          Object {
+            "isExported": true,
+            "isNode": false,
+            "modulePath": "/src/a",
+            "name": "A",
+          },
+        ],
+        "types": Array [
+          Object {
+            "kind": "ref",
+            "name": "A",
+          },
+        ],
+      }
+    `)
   })
   it('an interface', () => {
     expect(
@@ -435,23 +436,23 @@ describe('extracted type refs', () => {
         schema.addToContext(req => { return null as A })
       `)
     ).toMatchInlineSnapshot(`
-    Object {
-      "typeImports": Array [
-        Object {
-          "isExported": true,
-          "isNode": false,
-          "modulePath": "/src/a",
-          "name": "A",
-        },
-      ],
-      "types": Array [
-        Object {
-          "kind": "ref",
-          "name": "A",
-        },
-      ],
-    }
-  `)
+      Object {
+        "typeImports": Array [
+          Object {
+            "isExported": true,
+            "isNode": false,
+            "modulePath": "/src/a",
+            "name": "A",
+          },
+        ],
+        "types": Array [
+          Object {
+            "kind": "ref",
+            "name": "A",
+          },
+        ],
+      }
+    `)
   })
 })
 
@@ -544,6 +545,163 @@ it('support async/await', () => {
   `)
 })
 
+describe('top-level union types', () => {
+  it('reduces literal union types', () => {
+    expect(
+      extract(`
+          schema.addToContext(req => {
+            return {} as { jwt: string } | { jwt: null }
+          })
+        `)
+    ).toMatchInlineSnapshot(`
+      Object {
+        "typeImports": Array [],
+        "types": Array [
+          Object {
+            "kind": "literal",
+            "value": "{ jwt: string | null; }",
+          },
+        ],
+      }
+    `)
+  })
+
+  it('reduces interface union types', () => {
+    expect(
+      extract(`
+          interface A {
+            jwt: string
+          }
+          interface B {
+            jwt: null
+          }
+          schema.addToContext(req => {
+            return {} as A | B
+          })
+        `)
+    ).toMatchInlineSnapshot(`
+      Object {
+        "typeImports": Array [],
+        "types": Array [
+          Object {
+            "kind": "literal",
+            "value": "{ jwt: string | null; }",
+          },
+        ],
+      }
+    `)
+  })
+  it('reduces type alias union types', () => {
+    expect(
+      extract(`
+          type A = {
+            jwt: string
+          }
+          type B = {
+            jwt: null
+          }
+          schema.addToContext(req => {
+            return {} as A | B
+          })
+        `)
+    ).toMatchInlineSnapshot(`
+      Object {
+        "typeImports": Array [],
+        "types": Array [
+          Object {
+            "kind": "literal",
+            "value": "{ jwt: string | null; }",
+          },
+        ],
+      }
+    `)
+  })
+
+  it('reduces union types composed of different properties', () => {
+    expect(
+      extract(`
+          schema.addToContext(req => {
+            if (true) {
+              return { a: 1 }
+            } else {
+              return { b: 2 }
+            }
+          })
+        `)
+    ).toMatchInlineSnapshot(`
+      Object {
+        "typeImports": Array [],
+        "types": Array [
+          Object {
+            "kind": "literal",
+            "value": "{ a?: number; b?: number; }",
+          },
+        ],
+      }
+    `)
+  })
+
+  it('sets properties to be optional if they are not part of every union members', () => {
+    expect(
+      extract(`
+          schema.addToContext(req => {
+            return {} as { a: 1 } | { a: 2 } | { b: 3 }
+          })
+        `)
+    ).toMatchInlineSnapshot(`
+      Object {
+        "typeImports": Array [],
+        "types": Array [
+          Object {
+            "kind": "literal",
+            "value": "{ a?: 1 | 2; b?: 3; }",
+          },
+        ],
+      }
+    `)
+  })
+
+  it('preserves imports when reducing type aliases', () => {
+    expect(
+      extract(`
+          export type A = { jwt: string }
+          schema.addToContext(req => {
+            return {} as { jwt: A } | { jwt: null }
+          })
+        `)
+    ).toMatchInlineSnapshot(`
+      Object {
+        "typeImports": Array [
+          Object {
+            "isExported": true,
+            "isNode": false,
+            "modulePath": "/src/a",
+            "name": "A",
+          },
+        ],
+        "types": Array [
+          Object {
+            "kind": "literal",
+            "value": "{ jwt: A | null; }",
+          },
+        ],
+      }
+    `)
+  })
+
+  it('does not reduces top-level unions that are not entirely composed of interfaces, object literals, or type aliases that refers to object literals', () => {
+    expect(
+      extract(`
+          schema.addToContext(req => {
+            return {} as { jwt: string } | boolean
+          })
+        `)
+    ).toMatchInlineSnapshot(
+      `[Error: Error in schema.addToContext: Top-level union types that are not composed entirely of interfaces, object literals, or type aliases that refers to object literals are not supported.]`
+    )
+  })
+})
+
 // This test is only relevant so long as we're using the TS type to string
 // function
 // todo cannot find a case that leads to TS truncating...
@@ -572,10 +730,20 @@ function extract(...sources: string[]) {
   const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g']
   const project = new tsm.Project({
     useInMemoryFileSystem: true,
+    compilerOptions: {
+      strict: true,
+    },
   })
   for (const source of sources) {
     const moduleName = letters.shift()!
     project.createSourceFile(`./src/${moduleName}.ts`, source)
   }
-  return normalizePathsInData(extractContextTypes(project.getProgram().compilerObject))
+
+  const result = extractContextTypes(project.getProgram().compilerObject)
+
+  if (isLeft(result)) {
+    return result.left
+  }
+
+  return normalizePathsInData(result.right)
 }
