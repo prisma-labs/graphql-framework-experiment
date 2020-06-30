@@ -72,7 +72,7 @@ const NavLinks = styled.div`
     }
   }
 
-  margin: 0 9rem 0;
+  margin: 0 5rem 0;
   @media (min-width: 0px) and (max-width: 1024px) {
     margin: 0 3rem 0;
   }
@@ -111,13 +111,13 @@ const MobileOnlyNav = styled.div`
   top: 0px;
   transition: top 0.35s;
   background: radial-gradient(
-    37.86% 77.79% at 50% 100%,
-    rgba(113, 128, 150, 0.25) 0%,
-    rgba(113, 128, 150, 0) 100%
-  ),
-  linear-gradient(180deg, var(--main-font-color) 0%, var(--tag-media-color) 100%),
-  linear-gradient(180deg, var(--gradient2-color) 0%, rgba(27, 32, 43, 0) 100%),
-  var(--gradient1-color);
+      37.86% 77.79% at 50% 100%,
+      rgba(113, 128, 150, 0.25) 0%,
+      rgba(113, 128, 150, 0) 100%
+    ),
+    linear-gradient(180deg, var(--main-font-color) 0%, var(--tag-media-color) 100%),
+    linear-gradient(180deg, var(--gradient2-color) 0%, rgba(27, 32, 43, 0) 100%),
+    var(--gradient1-color);
 
   width: 100%;
   left: 0;
@@ -168,7 +168,7 @@ const MenuMobileBtn = styled.a`
 
 const NonMobileMenu = styled.div`
   display: flex;
-  width: 100%;
+  width: 50%;
   @media (min-width: 0px) and (max-width: 767px) {
     display: none;
   }
