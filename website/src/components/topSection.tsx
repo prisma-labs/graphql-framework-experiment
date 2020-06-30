@@ -23,6 +23,11 @@ const MainTitle = styled.h1`
   color: var(--main-font-color);
   margin: 0;
   margin-top: 4px;
+  inlinecode {
+    font-size: 2rem;
+    padding: 0px 0.2em;
+    line-height: 3rem;
+  }
   @media only screen and (max-width: 767px) {
     font-size: 24px;
   }
@@ -32,7 +37,7 @@ const TopSection = ({ title, slug, toc }: any) => {
   return (
     <TopSectionWrapper>
       <ParentTitle slug={slug} />
-      <MainTitle>{title}</MainTitle>
+      <MainTitle dangerouslySetInnerHTML={{ __html: title }} />
       {toc.items && (
         <div className="tech-switch-block">
           <hr />

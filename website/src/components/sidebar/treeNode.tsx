@@ -221,10 +221,10 @@ const TreeNode = ({
                 <ArrowRight className={`right ${isOpen}`} />
                 <ArrowDown className={`down ${isOpen}`} />
               </button>
-              {title}
+              <span dangerouslySetInnerHTML={{ __html: title }}/>
             </span>
           ) : (
-            <span>{title}</span>
+            <span dangerouslySetInnerHTML={{ __html: title }}/>
           )}
           {duration && <span className="tag">{duration}</span>}
           {experimental && <span className="tag small">Experimental</span>}
