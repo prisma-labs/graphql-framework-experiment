@@ -1,6 +1,6 @@
 const ReactGA = require('react-ga')
 
-const GA_TRACKING_ID = 'UA-XXXXXXXX-XX'
+const GA_TRACKING_ID = 'UA-74131346-21'
 const GA_ADDRESS = 'https://www.prisma.io/gastats.js'
 const COLLECT_ADDRESS = 'https://stats.prisma.workers.dev'
 

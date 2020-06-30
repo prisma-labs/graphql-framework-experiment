@@ -131,13 +131,6 @@ module.exports = {
     docsLocation: config.siteMetadata.docsLocation,
   },
   plugins: [
-    {
-      resolve: `gatsby-plugin-google-analytics`,
-      options: {
-        trackingId: 'UA-74131346-21',
-        anonymize: true,
-      },
-    },
     'gatsby-plugin-react-helmet',
     'gatsby-transformer-sharp',
     'gatsby-plugin-sharp',
@@ -146,10 +139,6 @@ module.exports = {
     'gatsby-plugin-styled-components',
     'gatsby-plugin-smoothscroll',
     'gatsby-plugin-catch-links',
-    // {
-    //   resolve: `gatsby-plugin-algolia`,
-    //   options: require(`./src/utils/algolia`),
-    // },
     {
       resolve: `gatsby-plugin-sitemap`,
       options: {
