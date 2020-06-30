@@ -65,6 +65,10 @@ const ListItem = styled.li`
       padding: 0;
       border: 0;
 
+      &.more-left {
+        left: 10px;
+      }
+
       .right,
       .down {
         transition: opacity 0.5s linear;
@@ -132,6 +136,9 @@ const ListItem = styled.li`
   }
   &.last-level {
     padding-left: 24px;
+    // &.more-padding {
+    //   padding-left: 30px;
+    // }
   }
   .collapse-title {
     cursor: pointer;
@@ -156,6 +163,7 @@ const TreeNode = ({
   experimental,
   lastLevel,
   hidePage,
+  codeStyle,
 }: any) => {
   const isCollapsed = collapsed[label]
   const collapse = () => {
@@ -175,10 +183,11 @@ const TreeNode = ({
   }
 
   const hasChildren = items.length !== 0
+  const level = slug ? slug.split('/').indexOf(label) : ''
 
   const calculatedClassName = `${className || ''} ${topLevel ? 'top-level' : ''} ${
     staticLink ? 'static-link' : ''
-  } ${lastLevel ? 'last-level' : ''}`
+  } ${lastLevel ? 'last-level' : ''} ${level > 2 ? 'more-padding' : ''}`
 
   items.sort((a: any, b: any) => {
     if (a.label < b.label) {
@@ -211,20 +220,24 @@ const TreeNode = ({
         <Link
           to={staticLink || topLevel ? null : url}
           activeClassName="active-item"
-          className={isCurrent ? 'active-item' : 'hh'}
+          className={isCurrent ? 'active-item' : 'non-active'}
           id={withPrefix(url)}
         >
           {hasExpandButton ? (
             <span className="collapse-title" onClick={collapse}>
-              <button aria-label="collapse" className="item-collapser" onClick={justExpand}>
+              <button
+                aria-label="collapse"
+                className={`item-collapser ${level > 2 ? 'more-left' : ''}`}
+                onClick={justExpand}
+              >
                 {/* Fix for issue https://github.com/prisma/prisma2-docs/issues/161 */}
                 <ArrowRight className={`right ${isOpen}`} />
                 <ArrowDown className={`down ${isOpen}`} />
               </button>
-              <span dangerouslySetInnerHTML={{ __html: title }}/>
+              <span className={`${codeStyle ? 'inline-code' : ''}`}>{title}</span>
             </span>
           ) : (
-            <span dangerouslySetInnerHTML={{ __html: title }}/>
+            <span className={`${codeStyle ? 'inline-code' : ''}`}>{title}</span>
           )}
           {duration && <span className="tag">{duration}</span>}
           {experimental && <span className="tag small">Experimental</span>}

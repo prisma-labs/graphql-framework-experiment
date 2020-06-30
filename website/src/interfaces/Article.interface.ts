@@ -14,6 +14,7 @@ export interface ArticleFrontmatter {
   experimental?: boolean
   toc?: boolean
   hidePage?: boolean
+  codeStyle?: boolean
 }
 
 export interface ArticleData {

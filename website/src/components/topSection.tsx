@@ -23,7 +23,7 @@ const MainTitle = styled.h1`
   color: var(--main-font-color);
   margin: 0;
   margin-top: 4px;
-  inlinecode {
+  &.inline-code {
     font-size: 2rem;
     padding: 0px 0.2em;
     line-height: 3rem;
@@ -33,11 +33,11 @@ const MainTitle = styled.h1`
   }
 `
 
-const TopSection = ({ title, slug, toc }: any) => {
+const TopSection = ({ title, slug, toc, codeStyle }: any) => {
   return (
     <TopSectionWrapper>
       <ParentTitle slug={slug} />
-      <MainTitle dangerouslySetInnerHTML={{ __html: title }} />
+      <MainTitle className={`${codeStyle ? 'inline-code': ''}`}>{title}</MainTitle>
       {toc.items && (
         <div className="tech-switch-block">
           <hr />
