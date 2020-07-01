@@ -1,7 +1,6 @@
 import { stripIndent } from 'common-tags'
 import { EOL } from 'os'
 import * as Path from 'path'
-import slash from 'slash'
 import ts, { EmitAndSemanticDiagnosticsBuilderProgram } from 'typescript'
 import { stripExt } from '../../lib/fs'
 import * as Layout from '../../lib/layout'
@@ -163,7 +162,10 @@ export function prepareStartModule(
  */
 export function printStaticImports(layout: Layout.Layout, opts?: { absolutePaths?: boolean }): string {
   return layout.nexusModules.reduce((script, modulePath) => {
-    const path = opts?.absolutePaths ? stripExt(modulePath) : relativeTranspiledImportPath(layout, modulePath)
+    const path = opts?.absolutePaths
+      ? stripExt(modulePath)
+      : // : slash(stripExt(layout.sourceRelative(modulePath)))
+        stripExt(layout.sourceRelative(modulePath))
     return `${script}\n${printSideEffectsImport(path)}`
   }, '')
 }
@@ -173,17 +175,6 @@ export function printStaticImports(layout: Layout.Layout, opts?: { absolutePaths
  */
 function printSideEffectsImport(modulePath: string): string {
   return `import '${modulePath}'`
-}
-
-/**
- * Build up what the import path will be for a module in its transpiled context.
- */
-export function relativeTranspiledImportPath(layout: Layout.Layout, modulePath: string): string {
-  return './' + stripExt(calcSourceRootToModule(layout, modulePath))
-}
-
-function calcSourceRootToModule(layout: Layout.Layout, modulePath: string) {
-  return slash(Path.relative(layout.sourceRoot, modulePath))
 }
 
 function relativeModuleImport(moduleName: string, absoluteModuleImport: string) {
