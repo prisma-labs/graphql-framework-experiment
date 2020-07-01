@@ -4,6 +4,7 @@ import { addHook } from 'pirates'
 import * as ts from 'typescript'
 import { Layout } from './layout'
 import { rootLogger } from './nexus-logger'
+import { exception, Exception } from './utils'
 
 const log = rootLogger.child('tsc')
 
@@ -17,7 +18,7 @@ interface ProgramOptions {
 export function createTSProgram(
   layout: Layout,
   options?: ProgramOptions
-): Either<Error, ts.EmitAndSemanticDiagnosticsBuilderProgram> {
+): Either<Exception, ts.EmitAndSemanticDiagnosticsBuilderProgram> {
   // Incremental option cannot be set when `noEmit: true`
   const compilerCacheOptions =
     options?.withCache && !layout.tsConfig.content.options.noEmit
@@ -51,7 +52,7 @@ export function createTSProgram(
     const message =
       'Your app is invalid\n\n' +
       ts.formatDiagnosticsWithColorAndContext([maybeSourceRootMustContainAllSourceFilesError], diagnosticHost)
-    return left(Error(message))
+    return left(exception(message))
   }
 
   return right(builder)

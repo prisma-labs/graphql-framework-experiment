@@ -14,7 +14,8 @@ body {
   --main-bgd-color: #f7fafc;
   --selection-bgd-color: #0c344b;
   --white-color: #ffffff;
-  --link-color: #3182ce;
+  --link-color: #69997b;
+  --nav-highlight-color: #69997b;
   --border-color: #e2e8f0;
   --code-bgd-color: #edf2f7;
   --list-bullet-color: #a0aec0;
@@ -25,7 +26,7 @@ body {
   --header-btn-color: #4a5568;
   --header-gradient-color: #2a6379;
   --header-bg-color: #255468;
-  --header-btn-color: #153d4e;
+  --header-btn-color: #4a5568;
   --placeholder-color: #7f9199;
 
   /* Code blocks */
@@ -50,7 +51,7 @@ body {
   --green-color: #15bd76;
   --grey-color: #3d556b;
   --grey-bg-color: #8fa6b2;
-  --dark-color: rgb(12, 52, 75);
+  --dark-color: #2e2c3f;
 
   margin: 0;
   font-family: 'Open Sans', sans-serif;

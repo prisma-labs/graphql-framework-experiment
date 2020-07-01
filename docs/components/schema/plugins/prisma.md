@@ -1,27 +1,27 @@
-Refer to the [framework Prisma plugin docs](/plugins/prisma#runtime-integration) for API reference and concepts. What follows here are aspects that are particular to the schema plugin only.
+Refer to the [framework docs](/plugins/prisma#runtime-integration) for API reference and concepts. What follows here are aspects that are particular to the schema plugin only.
 
 ## Installation {docsify-ignore}
 
 ```cli
-npm add nexus-prisma
+npm add nexus-plugin-prisma
 ```
 
 ## Usage {docsify-ignore}
 
-1. Import `nexusPrismaPlugin` from `nexus-prisma`
-1. Create and configure it if needed (shouldn't be)
+1. Import `nexusSchemaPrisma` from `nexus-plugin-prisma`
+1. Create and configure it if needed (usually not)
 1. Pass into `Nexus.makeSchema` `plugins` array
 
 **Example**
 
 ```ts
-import { nexusPrismaPlugin } from 'nexus-prisma'
+import { nexusSchemaPrisma } from 'nexus-plugin-prisma/schema'
 import { makeSchema } from '@nexus/schema'
 import * as types from './types'
 
 const schema = makeSchema({
   types,
-  plugins: [nexusPrismaPlugin()],
+  plugins: [nexusSchemaPrisma()],
 })
 ```
 
@@ -43,7 +43,7 @@ type Options = {
    */
   experimentalCRUD?: boolean
   /**
-   * nexus-prisma will call this to get a reference to an instance of the Prisma Client.
+   * nexus-plugin-prisma will call this to get a reference to an instance of the Prisma Client.
    * The function is passed the context object. Typically a Prisma Client instance will
    * be available on the context to support your custom resolvers. Therefore the
    * default getter returns `ctx.prisma`.

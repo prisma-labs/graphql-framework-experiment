@@ -9,7 +9,7 @@ import {
   prepareStartModule,
   START_MODULE_NAME,
 } from '../../runtime/start/start-module'
-import { rightOrFatal } from '../glocal/utils'
+import { rightOrFatal } from '../utils'
 import { rootLogger } from '../nexus-logger'
 import * as Plugin from '../plugin'
 import { fatal } from '../process'

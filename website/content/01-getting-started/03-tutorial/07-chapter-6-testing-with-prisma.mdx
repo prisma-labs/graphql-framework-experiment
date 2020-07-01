@@ -80,7 +80,7 @@ Leave the `/testing?schema=...` part though. This ensures that your tests will a
 
 Then, configure Jest to use that custom environment in your `package.json`
 
-```diff
+```json
 "jest": {
   "preset": "ts-jest",
 - "testEnvironment": "node",
@@ -92,27 +92,24 @@ Finally, thanks to the `nexus-plugin-prisma`, the test context that we previousl
 
 The last thing we need to do to setup our environment is to make sure that we properly close the database connection after all tests. To do that, head to your `tests/__helpers.ts` module and add the following
 
-```diff
-import {
-  createTestContext as originalCreateTestContext,
-  TestContext,
-} from 'nexus/testing';
+```ts
+import { createTestContext as originalCreateTestContext, TestContext } from 'nexus/testing'
 
 export function createTestContext(): TestContext {
-  let ctx = {} as TestContext;
+  let ctx = {} as TestContext
 
   beforeAll(async () => {
-    Object.assign(ctx, await originalCreateTestContext());
+    Object.assign(ctx, await originalCreateTestContext())
 
-    await ctx.app.start();
-  });
+    await ctx.app.start()
+  })
 
   afterAll(async () => {
-+   await ctx.app.db.client.disconnect();
-    await ctx.app.stop();
-  });
+    ;+(await ctx.app.db.client.disconnect())
+    await ctx.app.stop()
+  })
 
-  return ctx;
+  return ctx
 }
 ```
 

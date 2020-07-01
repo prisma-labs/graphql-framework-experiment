@@ -16,7 +16,7 @@ For users of `nexus` version `0.12` and below, you can either migrate to the `@n
 
 Run `npm rm nexus` and `npm i @nexus/schema` to migrate to the updated package name.
 
-```diff
+```json
 +++ package.json
    "dependencies": {
 -     "nexus": "0.12.0",
@@ -26,12 +26,26 @@ Run `npm rm nexus` and `npm i @nexus/schema` to migrate to the updated package n
 
 Change any imports of `nexus` to `@nexus/schema`:
 
-```diff
+```ts
 - import { makeSchema } from "nexus";
 + import { makeSchema } from "@nexus/schema";
 ```
 
-If you were previously a user of `nexus-prisma`, it still exists! It currently remains published to NPM under the same package name and you can upgrade it and continue using it as before. (But note that [this may change in a future release](https://github.com/graphql-nexus/nexus-schema-plugin-prisma/issues/630).) You can find it on GitHub under its updated repository name: [`nexus-schema-plugin-prisma`](https://github.com/graphql-nexus/nexus-schema-plugin-prisma). (Note that the Nexus framework has a distinct but similarly-named plugin, [`nexus-plugin-prisma`](https://github.com/graphql-nexus/nexus-plugin-prisma), which is covered below.)
+If you are a `nexus-prisma` there is almost nothing extra to do. But note it has migrated to `nexus-plugin-prisma`. Learn more about the transition [here](https://github.com/graphql-nexus/nexus-plugin-prisma/issues/630). Do the following to keep using it:
+
+Your Dependencies
+
+```
+npm remove nexus-prisma @prisma/client @prisma/cli
+npm add nexus-plugin-prisma
+```
+
+Your Imports
+
+```ts
+- import { nexusPluginPrisma } from 'nexus-prisma'
++ import { nexusSchemaPlugin } from 'nexus-plugin-prisma/schema'
+```
 
 ## Using `nexus`
 
@@ -40,7 +54,7 @@ If you were previously a user of `nexus-prisma`, it still exists! It currently r
 1. Remove `nexus@0.12` and add the latest `nexus` in its place (will be something greater than `0.20`).
 1. Remove dependency `graphql` as `nexus` bundles it.
 
-```diff
+```json
 +++ package.json
    "dependencies": {
 -     "graphql": "...",
@@ -57,7 +71,7 @@ Not much to do but your source must include a module that imports `nexus` and/or
 
 Nexus is based upon a singleton system. Import the `schema` component to get access to the nexus building blocks you're familiar with. But unlike before you will no longer need to export/import the type defs for passing into `makeSchema`. All of that is handled for you. To aid in this style of project code the framework has a convention that all `graphql` modules or child modules of `graphql` directories get auto-imported. Example:
 
-```diff
+```ts
 +++--- graphql/user.ts
 - import { objectType } from 'nexus'
 + import { schema } from 'nexus'
@@ -69,7 +83,7 @@ Nexus is based upon a singleton system. Import the `schema` component to get acc
 })
 ```
 
-```diff
+```ts
 --- main.ts
 - import { User } from './graphql/user'
 - import { makeSchema } from 'nexus'
@@ -82,7 +96,7 @@ Nexus is based upon a singleton system. Import the `schema` component to get acc
 
 Nexus has an API for adding to context.
 
-```diff
+```ts
 +++ app.ts
 + import { schema } from 'nexus'
 
@@ -106,7 +120,7 @@ The server migration is particularly dependent on your setup. Nexus bundles `exp
 
 If you are not doing any or much custom server logic you can get away with not dealing with the server at all. Just delete all code, Nexus will handle it for you.
 
-```diff
+```ts
 --- app.ts
 - import express from 'express'
 - import { GraphQLServer } from 'graphql-yoga'
@@ -117,7 +131,7 @@ If you are not doing any or much custom server logic you can get away with not d
 
 If you do have server logic that needs porting, and it is express based, use `server.express`:
 
-```diff
+```ts
 --- app.ts
 + import { server } from 'nexus'
 
@@ -130,7 +144,7 @@ We currently do not support any other server than `express`.
 
 You should only be working with the `nexus` CLI. Below shows the example scripts you might have had previously, versus what you'll now have (suggested).
 
-```diff
+```json
 ---+++package.json
   "scripts": {
 -    "start": "node dist/server",
@@ -228,18 +242,17 @@ makeSchema({
 
 Nexus ships with its own logger.
 
-```diff
+```ts
 import { log } from 'nexus'
-
-- console.log('hello world! %j', { population: 6_000_000 })
-+ log.info('hello world!', { population: 6_000_000 })
+;-console.log('hello world! %j', { population: 6_000_000 }) +
+  log.info('hello world!', { population: 6_000_000 })
 ```
 
 ### Prisma
 
-If you were a [`nexus-prisma`](https://github.com/prisma-labs/nexus-prisma) user, you will now become a [`nexus-plugin-prisma`](https://github.com/graphql-nexus/plugin-prisma) user. Install the plugin, and enable it in your project.
+If you were a `nexus-prisma` user, you will now become a [`nexus-plugin-prisma`](https://github.com/graphql-nexus/plugin-prisma) user. Install the plugin, and enable it in your project.
 
-```diff
+```json
 ---+++package.json
   dependencies: {
 -   "nexus-prisma": "...",
@@ -248,7 +261,7 @@ If you were a [`nexus-prisma`](https://github.com/prisma-labs/nexus-prisma) user
 +   "nexus-plugin-prisma": "...",
 ```
 
-```diff
+```ts
 ---+++app.ts
 - import { nexusPrismaPlugin } from 'nexus-prisma'
 
@@ -261,4 +274,4 @@ If you were a [`nexus-prisma`](https://github.com/prisma-labs/nexus-prisma) user
 + use(prisma())
 ```
 
-You should still use the Prisma CLI. Only `$ prisma generate` will be taken care of for you.
+For now you should still use the Prisma CLI as only `$ prisma generate` is taken care of for you.

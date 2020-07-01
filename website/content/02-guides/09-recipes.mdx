@@ -21,7 +21,7 @@ title: Recipes
 
 1. Add a `schema.prisma` file. Add a datasource. Here we're working with SQLite. Add Prisma Client.
 
-   ```diff
+   ```prisma
    +++ prisma/schema.prisma
    +
    +  datasource db {
@@ -42,9 +42,9 @@ title: Recipes
 
 Your app now includes the following:
 
-`nexus-prisma` Nexus plugin allowing e.g.:
+`t.model` and `t.crud` field builders e.g.:
 
-    ```diff
+    ```ts
     +++ src/graphql.ts
       objectType({
         name: 'User',
@@ -59,7 +59,7 @@ Your app now includes the following:
 
 An instance of the generated Prisma Client is a added to context under the `db` property, allowing e.g.:
 
-    ```diff
+    ```ts
     +++ src/graphql.ts
       queryType({
         definition(t) {
@@ -132,26 +132,26 @@ If you don't want to use a docker, here are some links to alternative approaches
 
 1. Add a build script
 
-   ```diff
+   ```json
    +++ package.json
    + "build": "nexus build"
    ```
 
 2. Add a start script
 
-   ```diff
+   ```json
    +++ package.json
    + "start": "node .nexus/build/api"
    ```
 
 3. In many cases this will be enough. Many deployment platforms will call into these scripts by default. You can customize where `build` outputs to if your deployment platform requires it. There are built in guides for `vercel` and `heroku` which will check your project is prepared for deployment to those respective platforms. Take advantage of them if applicable:
 
-   ```diff
+   ```json
    +++ package.json
    + "build": "nexus build --deployment vercel"
    ```
 
-   ```diff
+   ```json
    +++ package.json
    + "build": "nexus build --deployment heroku"
    ```
@@ -161,7 +161,7 @@ If you don't want to use a docker, here are some links to alternative approaches
 1. Confirm the name of the environment variable that Heroku will inject into your app at runtime for the database connection URL. In a simple setup, with a single attached database, it is `DATABASE_URL`.
 1. Update your Prisma Schema file to get the database connection URL from an environment variable of the same name as in step 1. Example:
 
-   ```diff
+   ```prisma
    --- prisma/schema.prisma
    +++ prisma/schema.prisma
      datasource postgresql {
@@ -182,7 +182,7 @@ If you don't want to use a docker, here are some links to alternative approaches
    1. Hook `direnv` into your shell ([instructions](https://direnv.net/docs/hook.html))
    1. Setup an `.envrc` file inside your project
 
-      ```diff
+      ```
       +++ .envrc
       + DATABASE_URL="postgresql://postgres:postgres@localhost:5432/myapp"
       ```

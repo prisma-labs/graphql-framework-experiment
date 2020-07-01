@@ -13,6 +13,7 @@ export const useAllArticlesQuery = () => {
               staticLink
               experimental
               hidePage
+              codeStyle
             }
             fields {
               slug

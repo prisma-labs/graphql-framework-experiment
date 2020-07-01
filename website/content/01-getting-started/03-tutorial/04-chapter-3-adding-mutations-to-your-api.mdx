@@ -65,7 +65,7 @@ module global {
 
 Now let's use this data to re-implement the `Query.drafts` resolver from the previous chapter.
 
-```diff
+```ts
 schema.queryType({
   definition(t) {
     t.list.field('drafts', {
@@ -126,7 +126,7 @@ We need to get the client's input data to complete our resolver. This brings us 
 
 Let's revise our implementation with GraphQL arguments.
 
-```diff
+```ts
 schema.extendType({
   type: 'Mutation',
   definition(t) {
@@ -153,7 +153,7 @@ schema.extendType({
 })
 ```
 
-```diff
+```ts
 Mutation {
 -  createDraft: Post
 +  createDraft(title: String!, body: String!): Post
@@ -198,7 +198,7 @@ schema.extendType({
 })
 ```
 
-```diff
+```ts
 type Mutation {
   createDraft(body: String!, title: String!): Post
 + publish(draftId: Int!): Post
@@ -224,7 +224,7 @@ schema.extendType({
 })
 ```
 
-```diff
+```ts
 type Query {
   drafts: [Post!]
 + posts: [Post!]

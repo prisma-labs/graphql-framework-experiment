@@ -119,7 +119,7 @@ If you prefer setting up your local Postgres another way go for it. If our sugge
 
 Finally, in the `prisma/.env` file you've created before, replace `<postgres_connection_url>` with your actual database URL.
 
-<!-- **TODO: find a way to make sure their connection url is working** 
+<!-- **TODO: find a way to make sure their connection url is working**
 Confirm things are setup correctly by ...
 -->
 
@@ -165,7 +165,7 @@ rm api/db.ts
 
 In `api/app.ts` module, remove the db import and the `schema.addToContext` call.
 
-```diff
+```ts
 // api/app.ts
 
 - import { schema, use } from 'nexus'
@@ -188,7 +188,7 @@ In this case, the prisma plugin adds a `db` property, an instance of Prisma Clie
 
 Let's now replace all our previous in-memory db interactions with calls to the Prisma Client
 
-```diff
+```ts
 schema.extendType({
   type: 'Query',
   definition(t) {
@@ -210,7 +210,7 @@ schema.extendType({
 });
 ```
 
-```diff
+```ts
 schema.extendType({
   type: 'Mutation',
   definition(t) {

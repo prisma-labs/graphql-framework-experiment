@@ -86,7 +86,7 @@ export function findFileRecurisvelyUpwardSync(
  * inside `@types/` packages.
  *
  * For more details that motivated this utility refer to the originating issue
- * https://github.com/prisma-labs/nexus-prisma/issues/453.
+ * https://github.com/graphql-nexus/nexus-plugin-prisma/issues/453.
  */
 export function hardWriteFileSync(filePath: string, data: string) {
   FS.remove(Path.dirname(filePath))
@@ -220,8 +220,7 @@ export function trimNodeModulesIfInPath(path: string) {
  * suitable for import like a user would do, not supplying the ext.
  */
 export function stripExt(filePath: string): string {
-  const { dir, name } = Path.parse(filePath)
-  return Path.join(dir, name)
+  return filePath.replace(/\.[^.]*$/, '')
 }
 
 /**

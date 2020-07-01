@@ -1,4 +1,5 @@
 import { Either, isLeft, isRight, left, Left, right, Right, toError, tryCatch } from 'fp-ts/lib/Either'
+import slash from 'slash'
 import { PackageJson } from 'type-fest'
 import { fatal } from '../process'
 import { exceptionType } from '../utils'
@@ -65,14 +66,35 @@ export function getPluginManifest(plugin: Plugin): Either<GetManifestError, Mani
 
   const validatedPackageJson = packageJson as ValidatedPackageJson
 
+  let worktime = null
+  let runtime = null
+  let testtime = null
+
+  if (plugin.worktime) {
+    plugin.worktime.module = slash(plugin.worktime.module)
+    worktime = plugin.worktime
+  }
+
+  if (plugin.runtime) {
+    plugin.runtime.module = slash(plugin.runtime.module)
+    runtime = plugin.runtime
+  }
+
+  if (plugin.testtime) {
+    plugin.testtime.module = slash(plugin.testtime.module)
+    testtime = plugin.testtime
+  }
+
+  const packageJsonPath = slash(plugin.packageJsonPath)
+
   return right({
     name: validatedPackageJson.name,
     settings: (plugin as any).settings ?? null,
-    packageJsonPath: plugin.packageJsonPath,
+    packageJsonPath: packageJsonPath,
     packageJson: validatedPackageJson,
-    worktime: plugin.worktime ?? null,
-    testtime: plugin.testtime ?? null,
-    runtime: plugin.runtime ?? null,
+    worktime,
+    testtime,
+    runtime,
   })
 }
 

@@ -71,7 +71,7 @@ export async function traceFiles(opts: Pick<BundleOptions, 'base' | 'plugins' | 
     base: opts.base,
     /**
      * - We ignore `prettier` because `@nexus/schema` requires it as a optional peer dependency
-     * - We ignore `@prisma/client/scripts` because `nexus-prisma` causes node-file-trace to include these scripts which causes `ncc` to be traces as well
+     * - We ignore `@prisma/client/scripts` because `nexus-plugin-prisma` causes node-file-trace to include these scripts which causes `ncc` to be traces as well
      */
     ignore: ['node_modules/prettier/index.js', 'node_modules/@prisma/client/scripts/**/*'],
     readFile(fsPath: string): Buffer | string | null {

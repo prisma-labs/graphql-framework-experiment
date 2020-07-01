@@ -1,5 +1,6 @@
 ---
 title: scalarType
+codeStyle: true
 ---
 
 ## scalarType
@@ -30,18 +31,18 @@ const DateScalar = scalarType({
 
 ## Example of Upload scalar
 
-```
-import { GraphQLUpload } from 'graphql-upload';
+```ts
+import { GraphQLUpload } from 'graphql-upload'
 
-export const Upload = GraphQLUpload;
+export const Upload = GraphQLUpload
 ```
 
 ## Example of DateTime scalar
 
-```
-import { GraphQLDate } from "graphql-iso-date";
+```ts
+import { GraphQLDate } from 'graphql-iso-date'
 
-export const DateTime = GraphQLDate;
+export const DateTime = GraphQLDate
 ```
 
 ## Exposing scalar as method

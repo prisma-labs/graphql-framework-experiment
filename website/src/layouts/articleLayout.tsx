@@ -17,7 +17,7 @@ const ArticleLayout = ({ data, ...props }: ArticleLayoutProps) => {
   const {
     mdx: {
       fields: { slug, modSlug },
-      frontmatter: { title, metaTitle, metaDescription, toc },
+      frontmatter: { title, metaTitle, metaDescription, toc, codeStyle },
       body,
       parent,
       tableOfContents,
@@ -32,6 +32,7 @@ const ArticleLayout = ({ data, ...props }: ArticleLayoutProps) => {
       <SEO title={metaTitle || title} description={metaDescription || title} />
       <section className="top-section">
         <TopSection
+          codeStyle={codeStyle}
           title={title}
           slug={modSlug}
           toc={toc || toc == null ? tableOfContents : []}
@@ -69,6 +70,7 @@ export const query = graphql`
         metaTitle
         metaDescription
         toc
+        codeStyle
       }
     }
   }
