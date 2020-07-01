@@ -195,5 +195,5 @@ function relativeModuleImport(moduleName: string, absoluteModuleImport: string) 
   const moduleNamePos = absoluteModuleImport.lastIndexOf(moduleName)
   const relativeModuleImport = absoluteModuleImport.substring(moduleNamePos)
 
-  return stripExt(relativeModuleImport)
+  return relativeImportId(relativeModuleImport)
 }
