@@ -35,8 +35,8 @@ npm add nexus-plugin-prisma
 Your Imports
 
 ```diff
-- import { nexusPluginPrisma } from 'nexus-prisma'
-+ import { nexusSchemaPlugin } from 'nexus-plugin-prisma/schema'
+- import { nexusPrismaPlugin } from 'nexus-prisma'
++ import { nexusSchemaPrisma } from 'nexus-plugin-prisma/schema'
 ```
 
 ### Using `nexus`
