@@ -1,8 +1,10 @@
 import * as HTTP from 'http'
 import { clone, isArray, isPlainObject, isString } from 'lodash'
+import Module from 'module'
 import * as Net from 'net'
 import * as Path from 'path'
 import Git from 'simple-git/promise'
+import slash from 'slash'
 import { JsonObject, PackageJson, Primitive } from 'type-fest'
 
 export * from './either'
@@ -253,6 +255,7 @@ export function normalizePathsInData<X>(x: X, basePath?: string, basePathMask?: 
     let x_: string = x
     if (basePath) {
       x_ = replaceEvery(x_, basePath, basePathMask ?? '<dynamic>')
+      x_ = replaceEvery(x_, slash(basePath), basePathMask ?? '<dynamic>')
     }
     x_ = replaceEvery(x_, Path.sep, Path.posix.sep)
     return x_ as any
@@ -513,5 +516,14 @@ export function httpClose(server: HTTP.Server): Promise<void> {
         res()
       }
     })
+  })
+}
+
+/**
+ * Run require resolve from the given path
+ */
+export function requireResolveFrom(moduleId: string, fromPath: string) {
+  return require.resolve(moduleId, {
+    paths: (Module as any)._nodeModulePaths(fromPath),
   })
 }
