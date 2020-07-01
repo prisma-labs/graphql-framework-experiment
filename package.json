@@ -63,7 +63,7 @@
     "ts-morph": "^7.1.0",
     "ts-node": "^8.10.1",
     "tslib": "^2.0.0",
-    "type-fest": "^0.15.0",
+    "type-fest": "^0.16.0",
     "typescript": "3.9.x"
   },
   "devDependencies": {
