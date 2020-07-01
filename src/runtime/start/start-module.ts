@@ -1,13 +1,14 @@
 import { stripIndent } from 'common-tags'
 import { EOL } from 'os'
 import * as Path from 'path'
+import slash from 'slash'
 import ts, { EmitAndSemanticDiagnosticsBuilderProgram } from 'typescript'
 import { stripExt } from '../../lib/fs'
 import * as Layout from '../../lib/layout'
 import { rootLogger } from '../../lib/nexus-logger'
 import * as Plugin from '../../lib/plugin'
 import { transpileModule } from '../../lib/tsc'
-import { resolveFrom } from './resolve-from'
+import { requireResolveFrom } from '../../lib/utils'
 
 const log = rootLogger.child('startModule')
 
@@ -53,7 +54,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     content += stripIndent`
       import { registerTypeScriptTranspile } from '${
         config.absoluteModuleImports
-          ? Path.dirname(resolveFrom('nexus', config.layout.projectRoot))
+          ? Path.dirname(requireResolveFrom('nexus', config.layout.projectRoot))
           : 'nexus/dist'
       }/lib/tsc'
       registerTypeScriptTranspile(${
@@ -74,7 +75,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     // Run framework initialization side-effects
     // Also, import the app for later use
     import app from "${
-      config.absoluteModuleImports ? resolveFrom('nexus', config.layout.projectRoot) : 'nexus'
+      config.absoluteModuleImports ? requireResolveFrom('nexus', config.layout.projectRoot) : 'nexus'
     }")
   `
 
@@ -167,6 +168,9 @@ export function printStaticImports(layout: Layout.Layout, opts?: { absolutePaths
   }, '')
 }
 
+/**
+ * Print a package import statement but do not important any members from it.
+ */
 function printSideEffectsImport(modulePath: string): string {
   return `import '${modulePath}'`
 }
@@ -179,7 +183,7 @@ export function relativeTranspiledImportPath(layout: Layout.Layout, modulePath: 
 }
 
 function calcSourceRootToModule(layout: Layout.Layout, modulePath: string) {
-  return Path.relative(layout.sourceRoot, modulePath)
+  return slash(Path.relative(layout.sourceRoot, modulePath))
 }
 
 function relativeModuleImport(moduleName: string, absoluteModuleImport: string) {

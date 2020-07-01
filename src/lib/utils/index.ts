@@ -1,5 +1,6 @@
 import * as HTTP from 'http'
 import { clone, isArray, isPlainObject, isString } from 'lodash'
+import Module from 'module'
 import * as Net from 'net'
 import * as Path from 'path'
 import Git from 'simple-git/promise'
@@ -513,5 +514,14 @@ export function httpClose(server: HTTP.Server): Promise<void> {
         res()
       }
     })
+  })
+}
+
+/**
+ * Run require resolve from the given path
+ */
+export function requireResolveFrom(moduleId: string, fromPath: string) {
+  return require.resolve(moduleId, {
+    paths: (Module as any)._nodeModulePaths(fromPath),
   })
 }
