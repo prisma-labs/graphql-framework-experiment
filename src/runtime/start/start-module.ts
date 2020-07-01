@@ -128,7 +128,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
           return `import { ${plugin.runtime!.export} as plugin_${i} } from '${
             config.absoluteModuleImports
               ? absoluteImportId(plugin.runtime!.module)
-              : relativeModuleImport(plugin.name, plugin.runtime!.module)
+              : relativeImportId(relativeModuleImport(plugin.name, plugin.runtime!.module))
           }'`
         })
         .join(EOL)}
@@ -195,5 +195,5 @@ function relativeModuleImport(moduleName: string, absoluteModuleImport: string) 
   const moduleNamePos = absoluteModuleImport.lastIndexOf(moduleName)
   const relativeModuleImport = absoluteModuleImport.substring(moduleNamePos)
 
-  return relativeImportId(relativeModuleImport)
+  return relativeModuleImport
 }
