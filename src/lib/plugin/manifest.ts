@@ -77,12 +77,12 @@ export function getPluginManifest(plugin: Plugin): Either<GetManifestError, Mani
 
   if (plugin.runtime) {
     plugin.runtime.module = slash(plugin.runtime.module)
-    worktime = plugin.runtime
+    runtime = plugin.runtime
   }
 
   if (plugin.testtime) {
     plugin.testtime.module = slash(plugin.testtime.module)
-    worktime = plugin.testtime
+    testtime = plugin.testtime
   }
 
   const packageJsonPath = slash(plugin.packageJsonPath)

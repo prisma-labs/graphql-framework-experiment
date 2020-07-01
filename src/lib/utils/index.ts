@@ -4,6 +4,7 @@ import Module from 'module'
 import * as Net from 'net'
 import * as Path from 'path'
 import Git from 'simple-git/promise'
+import slash from 'slash'
 import { JsonObject, PackageJson, Primitive } from 'type-fest'
 
 export * from './either'
@@ -254,6 +255,7 @@ export function normalizePathsInData<X>(x: X, basePath?: string, basePathMask?: 
     let x_: string = x
     if (basePath) {
       x_ = replaceEvery(x_, basePath, basePathMask ?? '<dynamic>')
+      x_ = replaceEvery(x_, slash(basePath), basePathMask ?? '<dynamic>')
     }
     x_ = replaceEvery(x_, Path.sep, Path.posix.sep)
     return x_ as any
