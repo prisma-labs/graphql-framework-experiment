@@ -114,7 +114,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
       // Import the user's app module
       require("${
         config.absoluteModuleImports
-          ? absoluteImportId(config.layout.app.path)
+          ? importId(config.layout.app.path)
           : relativeImportId(config.layout.sourceRelative(config.layout.app.path))
       }")
     `
@@ -127,8 +127,8 @@ export function createStartModuleContent(config: StartModuleConfig): string {
         .map((plugin, i) => {
           return `import { ${plugin.runtime!.export} as plugin_${i} } from '${
             config.absoluteModuleImports
-              ? absoluteImportId(plugin.runtime!.module)
-              : relativeImportId(relativeModuleImport(plugin.name, plugin.runtime!.module))
+              ? importId(plugin.runtime!.module)
+              : absolutePathToPackageImportId(plugin.name, plugin.runtime!.module)
           }'`
         })
         .join(EOL)}
@@ -164,16 +164,16 @@ export function prepareStartModule(
 export function printStaticImports(layout: Layout.Layout, opts?: { absolutePaths?: boolean }): string {
   return layout.nexusModules.reduce((script, modulePath) => {
     const path = opts?.absolutePaths
-      ? absoluteImportId(modulePath)
+      ? importId(modulePath)
       : relativeImportId(layout.sourceRelative(modulePath))
     return `${script}\n${printSideEffectsImport(path)}`
   }, '')
 }
 
 /**
- * Format given path to be a valid absolute module id. Extensions are stripped. posix path separators used.
+ * Format given path to be a valid module id. Extensions are stripped. Posix path separators used.
  */
-function absoluteImportId(filePath: string): string {
+function importId(filePath: string): string {
   return slash(stripExt(filePath))
 }
 
@@ -181,7 +181,20 @@ function absoluteImportId(filePath: string): string {
  * Format given path to be a valid relative module id. Extensions are stripped. Explicit "./" is added. posix path separators used.
  */
 function relativeImportId(filePath: string): string {
-  return slash(filePath.startsWith('./') ? stripExt(filePath) : './' + stripExt(filePath))
+  return importId(filePath.startsWith('./') ? filePath : './' + filePath)
+}
+
+/**
+ * Given an absolute path to a module within a package find the import id for it.
+ *
+ * The given package name is found within absolute path and considered the start of the import id.
+ */
+function absolutePathToPackageImportId(packageName: string, absoluteFilePath: string) {
+  // todo throw error if packageName not found in absoluteFilePath
+  const moduleNamePos = absoluteFilePath.lastIndexOf(packageName)
+  const relativeModuleImport = absoluteFilePath.substring(moduleNamePos)
+
+  return importId(relativeModuleImport)
 }
 
 /**
@@ -189,11 +202,4 @@ function relativeImportId(filePath: string): string {
  */
 function printSideEffectsImport(modulePath: string): string {
   return `import '${modulePath}'`
-}
-
-function relativeModuleImport(moduleName: string, absoluteModuleImport: string) {
-  const moduleNamePos = absoluteModuleImport.lastIndexOf(moduleName)
-  const relativeModuleImport = absoluteModuleImport.substring(moduleNamePos)
-
-  return relativeModuleImport
 }

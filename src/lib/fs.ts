@@ -220,8 +220,7 @@ export function trimNodeModulesIfInPath(path: string) {
  * suitable for import like a user would do, not supplying the ext.
  */
 export function stripExt(filePath: string): string {
-  const { dir, name } = Path.parse(filePath)
-  return Path.join(dir, name)
+  return filePath.replace(/\.[^.]*$/, '')
 }
 
 /**
