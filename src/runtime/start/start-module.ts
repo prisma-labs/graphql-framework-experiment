@@ -102,7 +102,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   if (staticImports !== '') {
     content += EOL + EOL + EOL
     content += stripIndent`
-        // Import the user's schema modules
+        // Import the user's Nexus modules
         ${staticImports}
       `
   }
@@ -165,9 +165,16 @@ export function printStaticImports(layout: Layout.Layout, opts?: { absolutePaths
     const path = opts?.absolutePaths
       ? stripExt(modulePath)
       : // : slash(stripExt(layout.sourceRelative(modulePath)))
-        stripExt(layout.sourceRelative(modulePath))
+        relativeImportId(layout.sourceRelative(modulePath))
     return `${script}\n${printSideEffectsImport(path)}`
   }, '')
+}
+
+/**
+ * Format given path to be a valid relative module id. Extensions are stripped. Explicit "./" is added.
+ */
+function relativeImportId(filePath: string): string {
+  return filePath.startsWith('./') ? stripExt(filePath) : './' + stripExt(filePath)
 }
 
 /**
