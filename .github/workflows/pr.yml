@@ -8,10 +8,8 @@ jobs:
   unit-tests:
     strategy:
       matrix:
-        # node-version: [10.x, 12.x]
-        node-version: [12.x]
-        # os: [ubuntu-latest, windows-latest]
-        os: [windows-latest]
+        node-version: [10.x, 12.x]
+        os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
@@ -24,7 +22,6 @@ jobs:
       - run: yarn -s test:unit
 
   system-tests:
-    if: 'false'
     runs-on: ubuntu-latest
     strategy:
       matrix:
