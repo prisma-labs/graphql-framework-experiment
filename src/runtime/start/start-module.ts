@@ -1,6 +1,7 @@
 import { stripIndent } from 'common-tags'
 import { EOL } from 'os'
 import * as Path from 'path'
+import slash from 'slash'
 import ts, { EmitAndSemanticDiagnosticsBuilderProgram } from 'typescript'
 import { stripExt } from '../../lib/fs'
 import * as Layout from '../../lib/layout'
@@ -113,8 +114,8 @@ export function createStartModuleContent(config: StartModuleConfig): string {
       // Import the user's app module
       require("${
         config.absoluteModuleImports
-          ? stripExt(config.layout.app.path)
-          : './' + stripExt(config.layout.sourceRelative(config.layout.app.path))
+          ? absoluteImportId(config.layout.app.path)
+          : relativeImportId(config.layout.sourceRelative(config.layout.app.path))
       }")
     `
   }
@@ -126,7 +127,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
         .map((plugin, i) => {
           return `import { ${plugin.runtime!.export} as plugin_${i} } from '${
             config.absoluteModuleImports
-              ? plugin.runtime!.module
+              ? absoluteImportId(plugin.runtime!.module)
               : relativeModuleImport(plugin.name, plugin.runtime!.module)
           }'`
         })
@@ -163,18 +164,24 @@ export function prepareStartModule(
 export function printStaticImports(layout: Layout.Layout, opts?: { absolutePaths?: boolean }): string {
   return layout.nexusModules.reduce((script, modulePath) => {
     const path = opts?.absolutePaths
-      ? stripExt(modulePath)
-      : // : slash(stripExt(layout.sourceRelative(modulePath)))
-        relativeImportId(layout.sourceRelative(modulePath))
+      ? absoluteImportId(modulePath)
+      : relativeImportId(layout.sourceRelative(modulePath))
     return `${script}\n${printSideEffectsImport(path)}`
   }, '')
 }
 
 /**
- * Format given path to be a valid relative module id. Extensions are stripped. Explicit "./" is added.
+ * Format given path to be a valid absolute module id. Extensions are stripped. posix path separators used.
+ */
+function absoluteImportId(filePath: string): string {
+  return slash(stripExt(filePath))
+}
+
+/**
+ * Format given path to be a valid relative module id. Extensions are stripped. Explicit "./" is added. posix path separators used.
  */
 function relativeImportId(filePath: string): string {
-  return filePath.startsWith('./') ? stripExt(filePath) : './' + stripExt(filePath)
+  return slash(filePath.startsWith('./') ? stripExt(filePath) : './' + stripExt(filePath))
 }
 
 /**
