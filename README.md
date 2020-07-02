@@ -2,13 +2,11 @@
   <br/>
   <a href="https://nexusjs.org"><img src="https://dsc.cloud/661643/nexus-logo-circle.png" height="150px"></a>
   <h1 align="center">Nexus</h1>
-  <br/>
 </p>
 <p align="center">
-<span>Code-First Type-Safe GraphQL Framework</span>
-  <br/>
-<span>Made with ♥️ by <a href="https://www.prisma.io/">Prisma</a> • Nexus Schema originally by <a href="https://github.com/tgriesser">Tim Griesser</a></span>
-<!-- 1px solid #eaecef -->
+  <span>Code-First Type-Safe GraphQL Framework</span>
+    <br/>
+  <span>Made with ♥️ by <a href="https://www.prisma.io/">Prisma</a> • Nexus Schema originally by <a href="https://github.com/tgriesser">Tim Griesser</a></span>
   <br/>
   <br/>
   <img src="https://github.com/graphql-nexus/nexus/workflows/trunk/badge.svg">
