@@ -4,7 +4,7 @@
   <h1 align="center">Nexus</h1>
 </p>
 <br />
-<p style="text-align:center;">
+<p align="center">
   <img src="https://github.com/graphql-nexus/nexus/workflows/trunk/badge.svg" />
 </p>
 <p align="center">
@@ -12,7 +12,7 @@
   <br/>
   <span>Made with ♥️ by <a href="https://www.prisma.io/">Prisma</a> • Nexus Schema originally by <a href="https://github.com/tgriesser">Tim Griesser</a></span>
 </p>
-<div style="text-align:center">
+<div align="center">
 
 [Tweets](https://nxs.li/tweets) // [Discussions](https://nxs.li/discussions) // [Issues](https://nxs.li/issues) // [Changelog](https://nxs.li/changelog) ([canary](https://nxs.li/changelog/canary)) // [Repo](https://nxs.li/repo)
 
