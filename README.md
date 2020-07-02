@@ -48,12 +48,12 @@ Please go to nxs.li/docs
 
 ## Links
 
-- nxs.li/docs
-- nxs.li/tweets
-- nxs.li/issues
-- nxs.li/discussions
-- nxs.li/changelog ([canary](https://nxs.li/changelog/canary))
-- nxs.li/contributing
+- [nxs.li/docs](https://nxs.li/docs)
+- [nxs.li/tweets](https://nxs.li/tweets)
+- [nxs.li/issues](https://nxs.li/issues)
+- [nxs.li/discussions](https://nxs.li/discussions)
+- [nxs.li/changelog](https://nxs.li/changelog) ([canary](https://nxs.li/changelog/canary))
+- [nxs.li/contributing](https://nxs.li/contributing)
 
 <br/>
 
