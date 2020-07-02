@@ -2,7 +2,7 @@
 
 <div style="text-align:center">
 
-[Tweets](https://twitter.com/nexusgql) // [Discussions](https://github.com/graphql-nexus/nexus/discussions) // [Issues](https://github.com/graphql-nexus/nexus/issues) // [Changelog](https://github.com/graphql-nexus/nexus/releases) ([canary](https://github.com/graphql-nexus/nexus/releases/tag/next)) // [Repo](https://github.com/graphql-nexus/nexus)
+[Tweets](https://nxs.li/tweets) // [Discussions](https://nxs.li/discussions) // [Issues](https://nxs.li/issues) // [Changelog](https://nxs.li/changelog) ([canary](https://nxs.li/changelog/canary)) // [Repo](https://nxs.li/repo)
 
 </div>
 
@@ -16,7 +16,7 @@ Nexus is a [Node.js](https://nodejs.org) [TypeScript](https://www.typescriptlang
 2. A CLI for supporting your daily workflows while working.
 3. A plugin system spaning API _and_ CLI for rich end-to-end plugins that you can use (or write) to fill in your niche needs.
 
-Nexus is young, but growing fast. Every two weeks [a new release is cut]() and we have a [roadmap]().
+Nexus is young, but growing fast. Every two weeks [a new release is cut](https://nxs.li/changelog) and we have a [roadmap](https://github.com/orgs/graphql-nexus/projects/1).
 
 **The Nexus API enables you to:**
 

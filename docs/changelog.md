@@ -1,3 +1,3 @@
-You can find notes for all releases at the [Nexus GitHub repo releases](https://github.com/graphql-nexus/nexus/releases) page.
+You can find notes for all releases at the [Nexus GitHub repo releases](https://nxs.li/changelog) page.
 
-Every commit to master is released under the `next` npm dist tag. You can always find its current release notes on the Nexus GitHub repo releases page [under the `next` tag](https://github.com/graphql-nexus/nexus/releases/tag/next). You can always find the raw code diff [here](https://github.com/graphql-nexus/nexus/compare/latest...next)
+Every commit to master is released under the `next` npm dist tag. You can always find its current release notes on the Nexus GitHub repo releases page [under the `next` tag](https://nxs.li/changelog/canary). You can always find the raw code diff [here](https://github.com/graphql-nexus/nexus/compare/latest...next)
