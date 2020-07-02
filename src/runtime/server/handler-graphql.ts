@@ -7,6 +7,7 @@ import {
   Source,
   validate,
   ValidationContext,
+  specifiedRules,
   FieldNode,
   GraphQLError,
 } from 'graphql'
@@ -76,8 +77,11 @@ export const createRequestHandlerGraphQL: CreateHandler = (schema, createContext
 
   const documentAST = errDocumentAST.right
 
-  const validationRules = !settings.introspection ? [NoIntrospection] : []
-  const validationFailures = validate(schema, documentAST, validationRules)
+  let rules = specifiedRules
+  if (!settings.introspection) {
+    rules = [...rules, NoIntrospection]
+  }
+  const validationFailures = validate(schema, documentAST, rules)
 
   if (validationFailures.length > 0) {
     // todo lots of rich info for clients in here, expose it to them
