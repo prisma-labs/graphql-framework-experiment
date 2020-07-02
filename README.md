@@ -4,15 +4,22 @@
   <h1 align="center">Nexus</h1>
 </p>
 <br />
-<p align="center">
-  <span>Code-First Type-Safe GraphQL Framework</span>
-    <br/>
-  <span>Made with ♥️ by <a href="https://www.prisma.io/">Prisma</a> • Nexus Schema originally by <a href="https://github.com/tgriesser">Tim Griesser</a></span>
-  <br/>
-  <br/>
-  <img src="https://github.com/graphql-nexus/nexus/workflows/trunk/badge.svg">
+<p style="text-align:center;">
+  <img src="https://github.com/graphql-nexus/nexus/workflows/trunk/badge.svg" />
 </p>
+<p align="center">
+  <span><strong>Code-First Type-Safe GraphQL Framework</strong></span>
+  <br/>
+  <span>Made with ♥️ by <a href="https://www.prisma.io/">Prisma</a> • Nexus Schema originally by <a href="https://github.com/tgriesser">Tim Griesser</a></span>
+</p>
+<div style="text-align:center">
 
+[Tweets](https://nxs.li/tweets) // [Discussions](https://nxs.li/discussions) // [Issues](https://nxs.li/issues) // [Changelog](https://nxs.li/changelog) ([canary](https://nxs.li/changelog/canary)) // [Repo](https://nxs.li/repo)
+
+</div>
+
+<br/>
+<br/>
 <br/>
 
 Nexus is a [Node.js](https://nodejs.org) [TypeScript](https://www.typescriptlang.org/)-focused [code-first](https://www.prisma.io/blog/series/what-is-nexus-wsobadcm7oju) [GraphQL](https://graphql.org/) framework. It has three complementary aspects that you interact with:

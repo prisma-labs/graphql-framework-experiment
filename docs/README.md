@@ -1,5 +1,18 @@
-# Welcome To Nexus {docsify-ignore}
+<h1 style="font-size:0;"></h1>
 
+<p align="center">
+  <br/>
+  <a href="https://nexusjs.org"><img src="https://dsc.cloud/661643/nexus-logo-circle.png" height="150px"></a>
+  <h1 style="border-bottom:1px solid #eee;padding-bottom:0.5em;margin-bottom:1.5em;" align="center">Welcome To Nexus</h1>
+</p>
+<p style="text-align:center;">
+  <img src="https://github.com/graphql-nexus/nexus/workflows/trunk/badge.svg" />
+</p>
+<p align="center">
+  <span><strong>Code-First Type-Safe GraphQL Framework</strong></span>
+  <br/>
+  <span>Made with ♥️ by <a href="https://www.prisma.io/">Prisma</a> • Nexus Schema originally by <a href="https://github.com/tgriesser">Tim Griesser</a></span>
+</P>
 <div style="text-align:center">
 
 [Tweets](https://nxs.li/tweets) // [Discussions](https://nxs.li/discussions) // [Issues](https://nxs.li/issues) // [Changelog](https://nxs.li/changelog) ([canary](https://nxs.li/changelog/canary)) // [Repo](https://nxs.li/repo)
