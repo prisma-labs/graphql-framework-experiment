@@ -1,5 +1,7 @@
 <p align="center">
+  <br/>
   <a href="https://nexusjs.org"><img src="https://dsc.cloud/661643/nexus-logo-circle.png" height="150px"></a>
+  <h1 align="center">Nexus</h1>
   <br/>
 <span>Code-First Type-Safe GraphQL Framework ▪ Made with ♥️ by <a href="https://www.prisma.io/">Prisma</a> ▪ Nexus Schema originally by <a href="https://github.com/tgriesser">Tim Griesser</a></span>
 
