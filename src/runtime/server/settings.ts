@@ -8,6 +8,10 @@ export type PlaygroundSettings = {
   path?: string
 }
 
+export type GraphqlSettings = {
+  introspection?: boolean
+}
+
 export type SettingsInput = {
   /**
    * todo
@@ -50,17 +54,26 @@ export type SettingsInput = {
     path: string
     playgroundPath?: string
   }) => void
+  /**
+   * todo
+   */
+  graphql?: GraphqlSettings
 }
 
-export type SettingsData = Omit<Utils.DeepRequired<SettingsInput>, 'host' | 'playground'> & {
+export type SettingsData = Omit<Utils.DeepRequired<SettingsInput>, 'host' | 'playground' | 'graphql'> & {
   host: string | undefined
   playground: false | Required<PlaygroundSettings>
+  graphql: Required<GraphqlSettings>
 }
 
 export const defaultPlaygroundPath = '/'
 
 export const defaultPlaygroundSettings: () => Readonly<Required<PlaygroundSettings>> = () => ({
   path: defaultPlaygroundPath,
+})
+
+export const defaultGraphqlSettings: () => Readonly<Required<GraphqlSettings>> = () => ({
+  introspection: process.env.NODE_ENV === 'production' ? false : true,
 })
 
 /**
@@ -86,6 +99,7 @@ export const defaultSettings: () => Readonly<SettingsData> = () => {
     },
     playground: process.env.NODE_ENV === 'production' ? false : defaultPlaygroundSettings(),
     path: '/graphql',
+    graphql: defaultGraphqlSettings(),
   }
 }
 
@@ -121,6 +135,10 @@ export function playgroundSettings(settings: SettingsInput['playground']): Setti
   }
 }
 
+export function graphqlSettings(settings: SettingsInput['graphql']): SettingsData['graphql'] {
+  return { ...defaultGraphqlSettings(), ...settings }
+}
+
 function validateGraphQLPath(path: string): string {
   let outputPath = path
 
@@ -147,6 +165,7 @@ export function changeSettings(state: SettingsData, newSettings: SettingsInput):
   state.path = validateGraphQLPath(updatedSettings.path)
   state.port = updatedSettings.port
   state.startMessage = updatedSettings.startMessage
+  state.graphql = graphqlSettings(updatedSettings.graphql)
 }
 
 export function createServerSettingsManager() {
