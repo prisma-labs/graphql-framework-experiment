@@ -1,6 +1,6 @@
 ![logo](/assets/nexus-logo-white.png)
 
-### GraphQL Application Framework
+### Code-First Type-Safe GraphQL Framework
 
 <p>
   <a  class="BigButton" href="https://github.com/graphql-nexus/nexus" target="_blank", rel="noopener">GitHub</a>

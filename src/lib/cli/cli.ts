@@ -193,7 +193,7 @@ export class CLI implements Command {
   // TODO generate this from cli tree
   // static help template
   private static help = format(`
-    Delightful GraphQL Application Framework - https://nexusjs.org
+    Code-First Type-Safe GraphQL Framework - https://nexusjs.org
 
     ${chalk.bold('Usage')}
 
