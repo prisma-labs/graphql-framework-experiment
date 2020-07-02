@@ -3,6 +3,7 @@
   <a href="https://nexusjs.org"><img src="https://dsc.cloud/661643/nexus-logo-circle.png" height="150px"></a>
   <h1 align="center">Nexus</h1>
 </p>
+<br />
 <p align="center">
   <span>Code-First Type-Safe GraphQL Framework</span>
     <br/>
