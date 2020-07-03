@@ -162,6 +162,9 @@ function createHandler(...types: any) {
     }),
     () => {
       return {}
+    },
+    {
+      introspection: true,
     }
   )
 }

@@ -74,7 +74,11 @@ export function create(appState: AppState) {
         return (
           assembledGuard(appState, 'app.server.handlers.graphql', () => {
             return wrapHandlerWithErrorHandling(
-              createRequestHandlerGraphQL(appState.assembled!.schema, appState.assembled!.createContext)
+              createRequestHandlerGraphQL(
+                appState.assembled!.schema,
+                appState.assembled!.createContext,
+                settings.data.graphql
+              )
             )
           }) ?? noop
         )
@@ -106,7 +110,7 @@ export function create(appState: AppState) {
           loadedRuntimePlugins
         )
 
-        const graphqlHandler = createRequestHandlerGraphQL(schema, createContext)
+        const graphqlHandler = createRequestHandlerGraphQL(schema, createContext, settings.data.graphql)
 
         express.post(settings.data.path, wrapHandlerWithErrorHandling(graphqlHandler))
         express.get(settings.data.path, wrapHandlerWithErrorHandling(graphqlHandler))

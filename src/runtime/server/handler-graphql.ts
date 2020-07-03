@@ -1,5 +1,16 @@
 import { Either, isLeft, left, right, toError, tryCatch } from 'fp-ts/lib/Either'
-import { execute, getOperationAST, GraphQLSchema, parse, Source, validate } from 'graphql'
+import {
+  execute,
+  getOperationAST,
+  GraphQLSchema,
+  parse,
+  Source,
+  validate,
+  ValidationContext,
+  specifiedRules,
+  FieldNode,
+  GraphQLError,
+} from 'graphql'
 import { IncomingMessage } from 'http'
 import createError, { HttpError } from 'http-errors'
 import url from 'url'
@@ -7,7 +18,15 @@ import { parseBody } from './parse-body'
 import { ContextCreator, NexusRequestHandler } from './server'
 import { sendError, sendErrorData, sendSuccess } from './utils'
 
-type CreateHandler = (schema: GraphQLSchema, createContext: ContextCreator) => NexusRequestHandler
+type Settings = {
+  introspection: boolean
+}
+
+type CreateHandler = (
+  schema: GraphQLSchema,
+  createContext: ContextCreator,
+  settings: Settings
+) => NexusRequestHandler
 
 type GraphQLParams = {
   query: null | string
@@ -16,10 +35,26 @@ type GraphQLParams = {
   raw: boolean
 }
 
+const NoIntrospection = (context: ValidationContext) => ({
+  Field(node: FieldNode) {
+    if (node.name.value === '__schema' || node.name.value === '__type') {
+      context.reportError(
+        new GraphQLError(
+          'GraphQL introspection is not allowed by Nexus, but the query contained __schema or __type. To enable introspection, pass introspection: true to Nexus graphql settings in production',
+          [node]
+        )
+      )
+    }
+  },
+})
+
 /**
  * Create a handler for graphql requests.
  */
-export const createRequestHandlerGraphQL: CreateHandler = (schema, createContext) => async (req, res) => {
+export const createRequestHandlerGraphQL: CreateHandler = (schema, createContext, settings) => async (
+  req,
+  res
+) => {
   const errParams = await getGraphQLParams(req)
 
   if (isLeft(errParams)) {
@@ -42,7 +77,11 @@ export const createRequestHandlerGraphQL: CreateHandler = (schema, createContext
 
   const documentAST = errDocumentAST.right
 
-  const validationFailures = validate(schema, documentAST)
+  let rules = specifiedRules
+  if (!settings.introspection) {
+    rules = [...rules, NoIntrospection]
+  }
+  const validationFailures = validate(schema, documentAST, rules)
 
   if (validationFailures.length > 0) {
     // todo lots of rich info for clients in here, expose it to them
