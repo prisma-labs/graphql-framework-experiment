@@ -20,7 +20,6 @@
 
 <br/>
 <br/>
-<br/>
 
 Nexus is a [Node.js](https://nodejs.org) [TypeScript](https://www.typescriptlang.org/)-focused [code-first](https://www.prisma.io/blog/series/what-is-nexus-wsobadcm7oju) [GraphQL](https://graphql.org/) framework. It has three complementary aspects that you interact with:
 
@@ -30,21 +29,15 @@ Nexus is a [Node.js](https://nodejs.org) [TypeScript](https://www.typescriptlang
 
 Nexus is young, but growing fast. Every two weeks [a new release is cut](https://nxs.li/changelog) and we have a [roadmap](https://github.com/orgs/graphql-nexus/projects/1).
 
-<br/>
-
 ## Quickstart
 
 ```
 npx nexus
 ```
 
-<br/>
-
 ## Documentation
 
-Please go to nxs.li/docs
-
-<br/>
+Checkout our website https://nxs.li/docs.
 
 ## Links
 
@@ -55,8 +48,10 @@ Please go to nxs.li/docs
 - [nxs.li/changelog](https://nxs.li/changelog) ([canary](https://nxs.li/changelog/canary))
 - [nxs.li/contributing](https://nxs.li/contributing)
 
-<br/>
-
 ## Repo / Package Overview
 
 ![Repos & Packages Diagram](https://dsc.cloud/661643/repos-and-packages.png)
+
+## License
+
+MIT License
