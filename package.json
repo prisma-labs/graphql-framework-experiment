@@ -47,7 +47,7 @@
     "fp-ts": "^2.5.4",
     "fs-jetpack": "^2.4.0",
     "get-port": "^5.1.0",
-    "graphql": "^14.5.8",
+    "graphql": "^15.0.0",
     "graphql-request": "^2.1.0-next.1",
     "graphql-scalars": "^1.1.5",
     "http-errors": "^1.7.3",
