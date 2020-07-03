@@ -38,7 +38,7 @@ const config = {
     twitter: {
       site: '@nexusgql',
       creator: '@nexusgql',
-      image: '/social/docs-social.png',
+      image: '/social/missing.png',
     },
     og: {
       site_name: 'Nexus',
@@ -47,7 +47,7 @@ const config = {
         alt: 'Nexus',
         height: '630',
         type: 'image/png',
-        url: '/social/docs-social.png', //replace social image
+        url: '/social/missing.png', //replace social image
         width: '1200',
       },
     },
