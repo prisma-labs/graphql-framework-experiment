@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import * as Path from 'path'
 import { findFileRecurisvelyUpwardSync } from '../fs'
+import { requireResolveFrom } from '../utils'
 
 export type ExecScenario = {
   /**
@@ -25,22 +26,12 @@ export type ExecScenario = {
   project: null | {
     dir: string
     nodeModulesDir: string
-    binDir: string
-    toolBinPath: string
-    /**
-     * Only present when the project is actually a tool project with dependencies installed.
-     */
-    toolBinRealPath: null | string
+    toolPath: string | null
   }
   /**
    * Information about this process bin
    */
-  thisProcessToolBin: {
-    path: string
-    dir: string
-    realPath: string
-    realDir: string
-  }
+  thisProcessScriptPath: string
 }
 
 interface Input {
@@ -72,28 +63,18 @@ interface Input {
  */
 export function detectExecLayout(input: Input): ExecScenario {
   const cwd = input.cwd ?? process.cwd()
-  let thisProcessScriptPath = input.scriptPath ?? process.argv[1]
+  let inputScriptPath = input.scriptPath ?? process.argv[1]
 
   // Node CLI supports omitting the ".js" ext like this: $ node a/b/c/foo
   // Handle that case otherwise the realpathSync below will fail.
-  if (Path.extname(thisProcessScriptPath) !== '.js') {
-    if (fs.existsSync(thisProcessScriptPath + '.js')) {
-      thisProcessScriptPath += '.js'
+  if (Path.extname(inputScriptPath) !== '.js') {
+    if (fs.existsSync(inputScriptPath + '.js')) {
+      inputScriptPath += '.js'
     }
   }
 
   // todo try-catch? can we guarantee this? If not, what is the fallback?
-  const thisProcessBinRealPath = fs.realpathSync(thisProcessScriptPath)
-  const thisProcessBinDir = Path.dirname(thisProcessScriptPath)
-  const thisProcessBinRealDir = Path.dirname(thisProcessBinRealPath)
-  const thisProcessBinName = Path.basename(thisProcessScriptPath)
-  const thisProcessToolBin = {
-    name: thisProcessBinName,
-    path: thisProcessScriptPath,
-    dir: thisProcessBinDir,
-    realPath: thisProcessBinRealPath,
-    realDir: thisProcessBinRealDir,
-  }
+  const thisProcessScriptPath = fs.realpathSync(inputScriptPath)
   let projectDir = null
 
   try {
@@ -106,25 +87,22 @@ export function detectExecLayout(input: Input): ExecScenario {
       toolProject: false,
       toolCurrentlyPresentInNodeModules: false,
       runningLocalTool: false,
-      thisProcessToolBin,
+      thisProcessScriptPath,
       project: null,
     }
   }
 
   const projectNodeModulesDir = Path.join(projectDir, 'node_modules')
   const projectBinDir = Path.join(projectNodeModulesDir, '.bin')
-  const projectToolBinPath = Path.join(projectBinDir, thisProcessToolBin.name)
-  const project = {
+  const projectToolBinPath = Path.join(projectBinDir, input.depName)
+  const project: ExecScenario['project'] = {
     dir: projectDir,
-    binDir: projectBinDir,
     nodeModulesDir: projectNodeModulesDir,
-    toolBinPath: projectToolBinPath,
-    toolBinRealPath: null,
+    toolPath: null,
   }
 
   let isToolProject = null
   try {
-    // todo test that not using Path.posix will break on windows
     isToolProject =
       typeof require(Path.posix.join(projectDir, 'package.json'))?.dependencies?.[input.depName] === 'string'
   } catch (e) {
@@ -137,29 +115,38 @@ export function detectExecLayout(input: Input): ExecScenario {
       toolProject: false,
       toolCurrentlyPresentInNodeModules: false,
       runningLocalTool: false,
-      thisProcessToolBin,
+      thisProcessScriptPath,
       project,
     }
   }
 
-  let projectToolBinRealPath = null
+  let projectToolPath: string | null = null
   try {
-    projectToolBinRealPath = fs.realpathSync(projectToolBinPath)
+    const toolDir = Path.dirname(requireResolveFrom(input.depName, projectDir))
+    const toolPackageJsonPath = Path.posix.join(toolDir, 'package.json')
+    const relativeProjectToolPath: string | undefined = require(toolPackageJsonPath)?.bin[input.depName]
+
+    if (relativeProjectToolPath) {
+      const absoluteProjectToolPath = Path.join(toolDir, relativeProjectToolPath)
+      if (fs.existsSync(absoluteProjectToolPath) && fs.existsSync(projectToolBinPath)) {
+        projectToolPath = absoluteProjectToolPath
+      }
+    }
   } catch (e) {}
 
-  if (!projectToolBinRealPath) {
+  if (!projectToolPath) {
     return {
       nodeProject: true,
       toolProject: true,
       toolCurrentlyPresentInNodeModules: false,
       runningLocalTool: false,
-      thisProcessToolBin,
+      thisProcessScriptPath,
       project,
     }
   }
 
   Object.assign(project, {
-    toolBinRealPath: projectToolBinRealPath,
+    toolPath: projectToolPath
   })
 
   /**
@@ -174,13 +161,13 @@ export function detectExecLayout(input: Input): ExecScenario {
    *    node_modules/.bin/nexus === node_modules/nexus/dist/cli/main.js
    */
 
-  if (thisProcessToolBin.realPath !== project.toolBinRealPath) {
+  if (thisProcessScriptPath !== project.toolPath) {
     return {
       nodeProject: true,
       toolProject: true,
       toolCurrentlyPresentInNodeModules: true,
       runningLocalTool: false,
-      thisProcessToolBin,
+      thisProcessScriptPath: thisProcessScriptPath,
       project,
     }
   }
@@ -190,7 +177,7 @@ export function detectExecLayout(input: Input): ExecScenario {
     toolProject: true,
     toolCurrentlyPresentInNodeModules: true,
     runningLocalTool: true,
-    thisProcessToolBin,
+    thisProcessScriptPath,
     project,
   }
 }

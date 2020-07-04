@@ -4,6 +4,7 @@ import { refCount } from 'rxjs/operators'
 import { createE2EContext, E2EContext } from '../../../src/lib/e2e-testing'
 import { rootLogger } from '../../../src/lib/nexus-logger'
 import { bufferOutput, takeUntilServerListening } from './utils'
+import * as which from 'which'
 
 const log = rootLogger.child('e2e').child('kitchenSink')
 
@@ -125,7 +126,9 @@ export async function e2eKitchenSink(app: E2EContext) {
     .pipe(refCount(), bufferOutput)
     .toPromise()
   app.fs.write(pjpath, pjoriginal)
-  expect(result.trim()).toEqual('nexus@0.0.0-local')
+
+  // Windows/node-pty seems to output a bunch of other characters
+  expect(result.trim()).toContain('nexus@0.0.0-local')
 
   //-------------------------------------------------
   log.warn('run dev & query graphql api')

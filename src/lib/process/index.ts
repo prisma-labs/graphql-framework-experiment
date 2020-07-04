@@ -64,6 +64,7 @@ export async function run(commandRaw: string, options?: RunOptions): Promise<Suc
 
   const child = spawn(command.name, command.args, {
     ...options,
+    shell: process.platform === 'win32',
     env,
   })
 

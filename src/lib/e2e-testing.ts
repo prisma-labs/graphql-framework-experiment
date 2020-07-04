@@ -14,6 +14,7 @@ import { GraphQLClient } from '../lib/graphql-client'
 import { getTmpDir } from './fs'
 import { rootLogger } from './nexus-logger'
 import { PackageManagerType } from './package-manager'
+import * as which from 'which'
 
 const log = rootLogger.child('e2eTesting')
 
@@ -131,40 +132,40 @@ export function createE2EContext(config: Config) {
     },
     localNexus: config.localNexus
       ? (args: string[]) => {
-          return spawn('node', [localNexusBinPath!, ...args], {
-            cwd: projectDir,
-            env: {
-              ...process.env,
-              LOG_LEVEL: 'trace',
-            },
-          })
-        }
+        return spawn('node.exe', [localNexusBinPath!, ...args], {
+          cwd: projectDir,
+          env: {
+            ...process.env,
+            LOG_LEVEL: 'trace',
+          },
+        })
+      }
       : null,
     localNexusCreateApp: config.localNexus
       ? (options: CreateAppOptions) => {
-          return spawn('node', [localNexusBinPath!], {
-            cwd: projectDir,
-            env: {
-              ...process.env,
-              NEXUS_PLUGIN_PRISMA_VERSION: options.prismaPluginVersion ?? 'latest',
-              CREATE_APP_CHOICE_PACKAGE_MANAGER_TYPE: options.packageManagerType,
-              CREATE_APP_CHOICE_DATABASE_TYPE: options.databaseType,
-              LOG_LEVEL: 'trace',
-            },
-          })
-        }
+        return spawn('node.exe', [localNexusBinPath!], {
+          cwd: projectDir,
+          env: {
+            ...process.env,
+            NEXUS_PLUGIN_PRISMA_VERSION: options.prismaPluginVersion ?? 'latest',
+            CREATE_APP_CHOICE_PACKAGE_MANAGER_TYPE: options.packageManagerType,
+            CREATE_APP_CHOICE_DATABASE_TYPE: options.databaseType,
+            LOG_LEVEL: 'trace',
+          },
+        })
+      }
       : null,
     localNexusCreatePlugin: config.localNexus
       ? (options: CreatePluginOptions) => {
-          return spawn('node', [localNexusBinPath!, 'create', 'plugin'], {
-            cwd: projectDir,
-            env: {
-              ...process.env,
-              CREATE_PLUGIN_CHOICE_NAME: options.name,
-              LOG_LEVEL: 'trace',
-            },
-          })
-        }
+        return spawn('node.exe', [localNexusBinPath!, 'create', 'plugin'], {
+          cwd: projectDir,
+          env: {
+            ...process.env,
+            CREATE_PLUGIN_CHOICE_NAME: options.name,
+            LOG_LEVEL: 'trace',
+          },
+        })
+      }
       : null,
   }
 
@@ -178,8 +179,10 @@ export function createE2EContext(config: Config) {
 export function spawn(command: string, args: string[], opts: IPtyForkOptions): ConnectableObservable<string> {
   const nodePty = requireNodePty()
   const subject = new Subject<string>()
+  const commandPath = which.sync(command)
+  console.log({ commandPath, args })
   const ob = new Observable<string>((sub) => {
-    const proc = nodePty.spawn(command, args, {
+    const proc = nodePty.spawn(commandPath, args, {
       cols: process.stdout.columns ?? 80,
       rows: process.stdout.rows ?? 80,
       ...opts,
@@ -226,4 +229,49 @@ function requireNodePty(): NodePty {
     rootLogger.error('Could not require `node-pty`. Please install it as a dev dependency')
     throw e
   }
+}
+
+function findExecutable(command: string, cwd: string) {
+  // If we have an absolute path then we take it.
+  if (Path.isAbsolute(command)) {
+    return command;
+  }
+  let dir = Path.dirname(command);
+  if (dir !== '.') {
+    // We have a directory and the directory is relative (see above). Make the path absolute
+    // to the current working directory.
+    return Path.join(cwd, command);
+  }
+  let paths = undefined;
+  if (paths === void 0 && typeof process.env.PATH === 'string') {
+    paths = process.env.PATH.split(Path.delimiter);
+  }
+  // No PATH environment. Make path absolute to the cwd.
+  if (paths === void 0 || paths.length === 0) {
+    return Path.join(cwd, command);
+  }
+  console.log({paths})
+  // We have a simple file name. We get the path variable from the env
+  // and try to find the executable on the path.
+  for (let pathEntry of paths) {
+    // The path entry is absolute.
+    let fullPath;
+    if (Path.isAbsolute(pathEntry)) {
+      fullPath = Path.join(pathEntry, command);
+    } else {
+      fullPath = Path.join(cwd, pathEntry, command);
+    }
+    if (FS.exists(fullPath) === 'file') {
+      return fullPath;
+    }
+    let withExtension = fullPath + '.cmd';
+    if (FS.exists(withExtension) === 'file') {
+      return withExtension;
+    }
+    withExtension = fullPath + '.exe';
+    if (FS.exists(withExtension) === 'file') {
+      return withExtension;
+    }
+  }
+  return Path.join(cwd, command);
 }

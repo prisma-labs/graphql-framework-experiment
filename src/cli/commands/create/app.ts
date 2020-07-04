@@ -83,7 +83,7 @@ export async function runBootstrapper(configInput?: Partial<ConfigInput>): Promi
     sourceRoot: Path.join(process.cwd(), 'api'),
     ...configInput,
   }
-  const nexusVersion = await getNexusVersion()
+  const nexusVersion = getNexusVersion()
   const packageManager = await getPackageManager(internalConfig.projectRoot)
 
   if (packageManager === 'sigtermed') {
@@ -213,7 +213,7 @@ async function getPackageManager(projectRoot: string): Promise<PackageManager.Pa
   return packageManager
 }
 
-async function getNexusVersion(): Promise<string> {
+function getNexusVersion(): string {
   const nexusVersionEnvVar = process.env.CREATE_APP_CHOICE_NEXUS_VERSION
   const nexusVersion = nexusVersionEnvVar ?? `${ownPackage.version}`
   return nexusVersion

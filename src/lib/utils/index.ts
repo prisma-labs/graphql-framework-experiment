@@ -522,8 +522,22 @@ export function httpClose(server: HTTP.Server): Promise<void> {
 /**
  * Run require resolve from the given path
  */
-export function requireResolveFrom(moduleId: string, fromPath: string) {
-  return require.resolve(moduleId, {
-    paths: (Module as any)._nodeModulePaths(fromPath),
-  })
+export function requireResolveFrom(moduleId: string, fromPath: string, opts?: { silent?: false }): string;
+export function requireResolveFrom(moduleId: string, fromPath: string, opts?: { silent?: true }): string | null;
+export function requireResolveFrom(moduleId: string, fromPath: string, opts?: { silent?: boolean }): string | null {
+  const resolveFileName = () => {
+    return require.resolve(moduleId, {
+      paths: (Module as any)._nodeModulePaths(fromPath),
+    })
+  }
+
+  try {
+    return slash(resolveFileName())
+  } catch (err) {
+    if (opts?.silent === false) {
+      throw err
+    } else {
+      return null
+    }
+  }
 }
