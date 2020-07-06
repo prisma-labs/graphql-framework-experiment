@@ -122,8 +122,8 @@ export function detectExecLayout(input: Input): ExecScenario {
 
   let projectToolPath: string | null = null
   try {
-    const toolDir = Path.dirname(requireResolveFrom(input.depName, projectDir))
-    const toolPackageJsonPath = Path.posix.join(toolDir, 'package.json')
+    const toolPackageJsonPath = requireResolveFrom(`${input.depName}/package.json`, projectDir)
+    const toolDir = Path.dirname(toolPackageJsonPath)
     const relativeProjectToolPath: string | undefined = require(toolPackageJsonPath)?.bin[input.depName]
 
     if (relativeProjectToolPath) {
