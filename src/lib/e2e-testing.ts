@@ -15,6 +15,7 @@ import { getTmpDir } from './fs'
 import { rootLogger } from './nexus-logger'
 import { PackageManagerType } from './package-manager'
 import * as which from 'which'
+import * as os from 'os'
 
 const log = rootLogger.child('e2eTesting')
 
@@ -60,6 +61,8 @@ interface Config {
   }
 }
 
+const NODE_PATH = os.platform() === 'win32' ? 'node.exe' : 'node'
+
 export function createE2EContext(config: Config) {
   Logger.log.settings({ filter: { level: 'trace' } })
   process.env.LOG_LEVEL = 'trace'
@@ -90,7 +93,7 @@ export function createE2EContext(config: Config) {
     fs: FS.cwd(projectDir),
     client: new GraphQLClient(`http://localhost:${config.serverPort}/graphql`),
     node(args: string[], opts: IPtyForkOptions = {}) {
-      return spawn('node', args, { cwd: projectDir, ...opts })
+      return spawn(NODE_PATH, args, { cwd: projectDir, ...opts })
     },
     spawn(binPathAndArgs: string[], opts: IPtyForkOptions = {}) {
       const [binPath, ...args] = binPathAndArgs
@@ -132,7 +135,7 @@ export function createE2EContext(config: Config) {
     },
     localNexus: config.localNexus
       ? (args: string[]) => {
-        return spawn('node.exe', [localNexusBinPath!, ...args], {
+        return spawn(NODE_PATH, [localNexusBinPath!, ...args], {
           cwd: projectDir,
           env: {
             ...process.env,
@@ -143,7 +146,7 @@ export function createE2EContext(config: Config) {
       : null,
     localNexusCreateApp: config.localNexus
       ? (options: CreateAppOptions) => {
-        return spawn('node.exe', [localNexusBinPath!], {
+        return spawn(NODE_PATH, [localNexusBinPath!], {
           cwd: projectDir,
           env: {
             ...process.env,
@@ -157,7 +160,7 @@ export function createE2EContext(config: Config) {
       : null,
     localNexusCreatePlugin: config.localNexus
       ? (options: CreatePluginOptions) => {
-        return spawn('node.exe', [localNexusBinPath!, 'create', 'plugin'], {
+        return spawn(NODE_PATH, [localNexusBinPath!, 'create', 'plugin'], {
           cwd: projectDir,
           env: {
             ...process.env,
@@ -180,7 +183,6 @@ export function spawn(command: string, args: string[], opts: IPtyForkOptions): C
   const nodePty = requireNodePty()
   const subject = new Subject<string>()
   const commandPath = which.sync(command)
-  console.log({ commandPath, args })
   const ob = new Observable<string>((sub) => {
     const proc = nodePty.spawn(commandPath, args, {
       cols: process.stdout.columns ?? 80,
@@ -229,49 +231,4 @@ function requireNodePty(): NodePty {
     rootLogger.error('Could not require `node-pty`. Please install it as a dev dependency')
     throw e
   }
-}
-
-function findExecutable(command: string, cwd: string) {
-  // If we have an absolute path then we take it.
-  if (Path.isAbsolute(command)) {
-    return command;
-  }
-  let dir = Path.dirname(command);
-  if (dir !== '.') {
-    // We have a directory and the directory is relative (see above). Make the path absolute
-    // to the current working directory.
-    return Path.join(cwd, command);
-  }
-  let paths = undefined;
-  if (paths === void 0 && typeof process.env.PATH === 'string') {
-    paths = process.env.PATH.split(Path.delimiter);
-  }
-  // No PATH environment. Make path absolute to the cwd.
-  if (paths === void 0 || paths.length === 0) {
-    return Path.join(cwd, command);
-  }
-  console.log({paths})
-  // We have a simple file name. We get the path variable from the env
-  // and try to find the executable on the path.
-  for (let pathEntry of paths) {
-    // The path entry is absolute.
-    let fullPath;
-    if (Path.isAbsolute(pathEntry)) {
-      fullPath = Path.join(pathEntry, command);
-    } else {
-      fullPath = Path.join(cwd, pathEntry, command);
-    }
-    if (FS.exists(fullPath) === 'file') {
-      return fullPath;
-    }
-    let withExtension = fullPath + '.cmd';
-    if (FS.exists(withExtension) === 'file') {
-      return withExtension;
-    }
-    withExtension = fullPath + '.exe';
-    if (FS.exists(withExtension) === 'file') {
-      return withExtension;
-    }
-  }
-  return Path.join(cwd, command);
 }
