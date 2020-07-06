@@ -4,7 +4,6 @@ import { refCount } from 'rxjs/operators'
 import { createE2EContext, E2EContext } from '../../../src/lib/e2e-testing'
 import { rootLogger } from '../../../src/lib/nexus-logger'
 import { bufferOutput, takeUntilServerListening } from './utils'
-import * as which from 'which'
 
 const log = rootLogger.child('e2e').child('kitchenSink')
 
@@ -128,6 +127,7 @@ export async function e2eKitchenSink(app: E2EContext) {
   app.fs.write(pjpath, pjoriginal)
 
   // Windows/node-pty seems to output a bunch of other characters
+  // so use `toContaine` instead of `toEqual`
   expect(result.trim()).toContain('nexus@0.0.0-local')
 
   //-------------------------------------------------

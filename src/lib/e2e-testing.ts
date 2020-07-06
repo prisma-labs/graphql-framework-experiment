@@ -5,17 +5,17 @@
 import * as Logger from '@nexus/logger'
 import * as FS from 'fs-jetpack'
 import { IPty, IPtyForkOptions, IWindowsPtyForkOptions } from 'node-pty'
+import * as os from 'os'
 import * as Path from 'path'
 import { ConnectableObservable, Observable, Subject } from 'rxjs'
 import { multicast } from 'rxjs/operators'
 import stripAnsi from 'strip-ansi'
+import * as which from 'which'
 import { Database } from '../cli/commands/create/app'
 import { GraphQLClient } from '../lib/graphql-client'
 import { getTmpDir } from './fs'
 import { rootLogger } from './nexus-logger'
 import { PackageManagerType } from './package-manager'
-import * as which from 'which'
-import * as os from 'os'
 
 const log = rootLogger.child('e2eTesting')
 
@@ -61,6 +61,9 @@ interface Config {
   }
 }
 
+/**
+ * The path at which to spawn node processes
+ */
 const NODE_PATH = os.platform() === 'win32' ? 'node.exe' : 'node'
 
 export function createE2EContext(config: Config) {
@@ -135,40 +138,40 @@ export function createE2EContext(config: Config) {
     },
     localNexus: config.localNexus
       ? (args: string[]) => {
-        return spawn(NODE_PATH, [localNexusBinPath!, ...args], {
-          cwd: projectDir,
-          env: {
-            ...process.env,
-            LOG_LEVEL: 'trace',
-          },
-        })
-      }
+          return spawn(NODE_PATH, [localNexusBinPath!, ...args], {
+            cwd: projectDir,
+            env: {
+              ...process.env,
+              LOG_LEVEL: 'trace',
+            },
+          })
+        }
       : null,
     localNexusCreateApp: config.localNexus
       ? (options: CreateAppOptions) => {
-        return spawn(NODE_PATH, [localNexusBinPath!], {
-          cwd: projectDir,
-          env: {
-            ...process.env,
-            NEXUS_PLUGIN_PRISMA_VERSION: options.prismaPluginVersion ?? 'latest',
-            CREATE_APP_CHOICE_PACKAGE_MANAGER_TYPE: options.packageManagerType,
-            CREATE_APP_CHOICE_DATABASE_TYPE: options.databaseType,
-            LOG_LEVEL: 'trace',
-          },
-        })
-      }
+          return spawn(NODE_PATH, [localNexusBinPath!], {
+            cwd: projectDir,
+            env: {
+              ...process.env,
+              NEXUS_PLUGIN_PRISMA_VERSION: options.prismaPluginVersion ?? 'latest',
+              CREATE_APP_CHOICE_PACKAGE_MANAGER_TYPE: options.packageManagerType,
+              CREATE_APP_CHOICE_DATABASE_TYPE: options.databaseType,
+              LOG_LEVEL: 'trace',
+            },
+          })
+        }
       : null,
     localNexusCreatePlugin: config.localNexus
       ? (options: CreatePluginOptions) => {
-        return spawn(NODE_PATH, [localNexusBinPath!, 'create', 'plugin'], {
-          cwd: projectDir,
-          env: {
-            ...process.env,
-            CREATE_PLUGIN_CHOICE_NAME: options.name,
-            LOG_LEVEL: 'trace',
-          },
-        })
-      }
+          return spawn(NODE_PATH, [localNexusBinPath!, 'create', 'plugin'], {
+            cwd: projectDir,
+            env: {
+              ...process.env,
+              CREATE_PLUGIN_CHOICE_NAME: options.name,
+              LOG_LEVEL: 'trace',
+            },
+          })
+        }
       : null,
   }
 

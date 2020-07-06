@@ -25,22 +25,16 @@ function nodeProject() {
   ctx.fs.write('package.json', '{}')
 }
 function installTool() {
-  ctx.fs.write(
-    'package.json',
-    JSON.stringify({
-      dependencies: { a: 'foo' },
-    })
-  )
+  ctx.fs.write('package.json', {
+    dependencies: { a: 'foo' },
+  })
   ctx.fs.write('node_modules/a/index.js', '')
-  ctx.fs.write(
-    'node_modules/a/package.json',
-    JSON.stringify({
-      name: 'a',
-      bin: {
-        a: 'index.js',
-      },
-    })
-  )
+  ctx.fs.write('node_modules/a/package.json', {
+    name: 'a',
+    bin: {
+      a: 'index.js',
+    },
+  })
   if (os.platform() === 'win32') {
     ctx.fs.write('node_modules/.bin/a', '')
   } else {
