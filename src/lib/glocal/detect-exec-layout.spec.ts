@@ -1,8 +1,8 @@
+import * as os from 'os'
 import * as path from 'path'
 import * as TestContext from '../test-context'
 import { normalizePathsInData, Param1 } from '../utils'
 import { detectExecLayout } from './detect-exec-layout'
-import * as os from 'os'
 
 const ctx = TestContext.compose(TestContext.tmpDir(), TestContext.fs(), (ctx) => {
   return {
@@ -11,7 +11,7 @@ const ctx = TestContext.compose(TestContext.tmpDir(), TestContext.fs(), (ctx) =>
         detectExecLayout({
           depName: 'a',
           cwd: ctx.tmpDir,
-          scriptPath: ctx.fs.path('node_modules/a/index.js'),
+          scriptPath: ctx.fs.path('some/other/bin/a'),
           ...input,
         }),
         ctx.tmpDir,
@@ -49,7 +49,7 @@ function installTool() {
 }
 
 beforeEach(() => {
-  ctx.fs.dir('some/other/bin/a')
+  ctx.fs.write('some/other/bin/a', '')
   ctx.fs.dir('node_modules/.bin')
 })
 
