@@ -135,6 +135,7 @@ export function detectExecLayout(input: Input): ExecScenario {
     const relativeProjectToolPath: string | undefined = require(toolPackageJsonPath)?.bin[input.depName]
 
     if (relativeProjectToolPath) {
+      console.log('relativeProjectToolPath join: %s / %s', toolDir, relativeProjectToolPath)
       const absoluteProjectToolPath = Path.join(toolDir, relativeProjectToolPath)
       if (fs.existsSync(absoluteProjectToolPath) && fs.existsSync(projectToolBinPath)) {
         projectToolPath = absoluteProjectToolPath
@@ -158,7 +159,7 @@ export function detectExecLayout(input: Input): ExecScenario {
   }
 
   Object.assign(project, {
-    toolPath: projectToolPath
+    toolPath: projectToolPath,
   })
 
   /**
