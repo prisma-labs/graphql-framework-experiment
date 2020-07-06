@@ -3,7 +3,7 @@ const fs = require('fs')
 
 console.log({
     tmp: os.tmpdir(),
-    runner1: fs.statSync('C:\\Users\\RUNNER~1'),
-    realPath: fs.realpathSync('C:\\Users\\RUNNER~1'),
-    dir: fs.readdirSync('C:\\Users')
+    runner1: fs.readdirSync('C:\\Users\\RUNNER~1'),
+    runneradmin: fs.readdirSync('C:\\Users\\runneradmin'),
+    test: fs.readlinkSync('C:\\Users\\RUNNER~1')
 })
