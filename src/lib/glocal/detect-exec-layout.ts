@@ -82,6 +82,10 @@ export function detectExecLayout(input: Input): ExecScenario {
   } catch (e) {}
 
   if (!projectDir) {
+    console.log('no project dir!!')
+    console.log('no project dir!!')
+    console.log('no project dir!!')
+    console.log('no project dir!!')
     return {
       nodeProject: false,
       toolProject: false,
@@ -110,6 +114,10 @@ export function detectExecLayout(input: Input): ExecScenario {
   }
 
   if (!isToolProject) {
+    console.log('no tool dir!!')
+    console.log('no tool dir!!')
+    console.log('no tool dir!!')
+    console.log('no tool dir!!')
     return {
       nodeProject: true,
       toolProject: false,
@@ -135,6 +143,10 @@ export function detectExecLayout(input: Input): ExecScenario {
   } catch (e) {}
 
   if (!projectToolPath) {
+    console.log('no project tool path!!')
+    console.log('no project tool path!!')
+    console.log('no project tool path!!')
+    console.log('no project tool path!!')
     return {
       nodeProject: true,
       toolProject: true,
@@ -162,6 +174,11 @@ export function detectExecLayout(input: Input): ExecScenario {
    */
 
   if (thisProcessScriptPath !== project.toolPath) {
+    console.log('process script path !== tool path')
+    console.log('process script path !== tool path')
+    console.log('process script path !== tool path')
+    console.log('process script path !== tool path')
+    console.log('process script path !== tool path')
     return {
       nodeProject: true,
       toolProject: true,
