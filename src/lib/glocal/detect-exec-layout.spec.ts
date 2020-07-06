@@ -16,7 +16,11 @@ const ctx = TestContext.compose(TestContext.tmpDir(), TestContext.fs(), (ctx) =>
       })
       console.log('%j %j %j', realpathSync(ctx.tmpDir), ctx.tmpDir, v)
       const normalizedPath = normalizePathsInData(v, ctx.tmpDir, '/__dynamic__')
-      const normalizedPathAndReal = normalizePathsInData(v, realpathSync(ctx.tmpDir), '/__dynamic__')
+      const normalizedPathAndReal = normalizePathsInData(
+        normalizedPath,
+        realpathSync(ctx.tmpDir),
+        '/__dynamic__'
+      )
       return normalizedPathAndReal
     },
   }
