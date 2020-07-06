@@ -11,7 +11,7 @@ const ctx = TestContext.compose(TestContext.tmpDir(), TestContext.fs(), (ctx) =>
         detectExecLayout({
           depName: 'a',
           cwd: ctx.tmpDir,
-          scriptPath: ctx.fs.path('some/other/bin/a'),
+          scriptPath: ctx.fs.path('node_modules/a/index.js'),
           ...input,
         }),
         ctx.tmpDir,
