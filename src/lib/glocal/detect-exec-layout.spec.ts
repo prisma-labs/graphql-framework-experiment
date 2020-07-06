@@ -1,22 +1,20 @@
+import * as os from 'os'
 import * as path from 'path'
 import * as TestContext from '../test-context'
 import { normalizePathsInData, Param1 } from '../utils'
 import { detectExecLayout } from './detect-exec-layout'
-import * as os from 'os'
 
 const ctx = TestContext.compose(TestContext.tmpDir(), TestContext.fs(), (ctx) => {
   return {
     detectExecLayout: (input?: Partial<Param1<typeof detectExecLayout>>) => {
-      return normalizePathsInData(
-        detectExecLayout({
-          depName: 'a',
-          cwd: ctx.tmpDir,
-          scriptPath: ctx.fs.path('some/other/bin/a'),
-          ...input,
-        }),
-        ctx.tmpDir,
-        '/__dynamic__'
-      )
+      const v = detectExecLayout({
+        depName: 'a',
+        cwd: ctx.tmpDir,
+        scriptPath: ctx.fs.path('some/other/bin/a'),
+        ...input,
+      })
+      console.log('%j %j', ctx.tmpDir, v)
+      return normalizePathsInData(v, ctx.tmpDir, '/__dynamic__')
     },
   }
 })
@@ -207,7 +205,7 @@ describe('project analysis', () => {
       }
     `)
   })
-  it('finds real path of local bin if present', () => {
+  it.only('finds real path of local bin if present', () => {
     installTool()
     const data = ctx.detectExecLayout()
     expect(data.toolProject).toEqual(true)
