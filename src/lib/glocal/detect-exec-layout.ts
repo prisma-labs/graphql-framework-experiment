@@ -129,7 +129,7 @@ export function detectExecLayout(input: Input): ExecScenario {
     if (relativeProjectToolPath) {
       const absoluteProjectToolPath = Path.join(toolDir, relativeProjectToolPath)
       if (fs.existsSync(absoluteProjectToolPath) && fs.existsSync(projectToolBinPath)) {
-        projectToolPath = fs.realpathSync(absoluteProjectToolPath)
+        projectToolPath = absoluteProjectToolPath
       }
     }
   } catch (e) {}
