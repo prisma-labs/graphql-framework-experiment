@@ -102,8 +102,8 @@ export async function hardWriteFile(filePath: string, data: string) {
  * Return the path to a temporary directory on the machine. This works around a
  * limitation in Node wherein a symlink is returned on macOS for `os.tmpdir`.
  */
-export function getTmpDir(prefix: string = '') {
-  const tmpDirPath = NodeFS.realpathSync(OS.tmpdir())
+export function getTmpDir(prefix: string = '', baseTmpDir?: string) {
+  const tmpDirPath = NodeFS.realpathSync(baseTmpDir ?? OS.tmpdir())
   const id = Math.random().toString().slice(2)
   const dirName = [prefix, id].filter((x) => x).join('-')
 
