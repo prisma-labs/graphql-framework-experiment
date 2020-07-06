@@ -118,6 +118,10 @@ describe('local available detection', () => {
       runningLocalTool: false,
     })
   })
+  // todo | Test disabled becuase on posix the symlink in node_modules/.bin
+  // todo |   dir is deleted when the node_modules package it links to is deleted
+  // todo |   meaning that the test is testing nothing.
+  // todo | Bring back just for windows?
   //  it('if just node_module/dir missing, discounts being available', () => {
   //    ctx.fs.remove('node_modules/a')
   //    expect(ctx.detectExecLayout()).toMatchObject({
@@ -149,7 +153,7 @@ describe('running locally detection', () => {
   })
 })
 
-describe('this process analysis', () => {
+describe('analysis about "this process"', () => {
   beforeEach(() => {
     ctx.fs.write('a/b/c/real.js', '')
     if (os.platform() === 'win32') {

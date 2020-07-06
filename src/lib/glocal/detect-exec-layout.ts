@@ -93,8 +93,8 @@ export function detectExecLayout(input: Input): ExecScenario {
   }
 
   const projectNodeModulesDir = Path.join(projectDir, 'node_modules')
-  const projectBinDir = Path.join(projectNodeModulesDir, '.bin')
-  const projectToolBinPath = Path.join(projectBinDir, input.depName)
+  const projectHoistedDotBinDir = Path.join(projectNodeModulesDir, '.bin')
+  const projectHoistedDotBinToolPath = Path.join(projectHoistedDotBinDir, input.depName)
   const project: ExecScenario['project'] = {
     dir: projectDir,
     nodeModulesDir: projectNodeModulesDir,
@@ -122,14 +122,24 @@ export function detectExecLayout(input: Input): ExecScenario {
 
   let projectToolPath: string | null = null
   try {
+    /**
+     * Find the project tool path by reverse engineering
+     * 1. find the tool package
+     * 2. find its local bin path
+     * 3. check that it AND the hoisted version at project dot-bin level exist
+     * 4. If yes yes yes then we've fonud our path!
+     *
+     * This logic is needed for Windows support because in Windows there are no
+     * symlinks we can follow for free.
+     */
     const toolPackageJsonPath = requireResolveFrom(`${input.depName}/package.json`, projectDir)
-    const toolDir = Path.dirname(toolPackageJsonPath)
-    const relativeProjectToolPath: string | undefined = require(toolPackageJsonPath)?.bin[input.depName]
+    const toolPackageDir = Path.dirname(toolPackageJsonPath)
+    const toolPackageRelativeBinPath: string | undefined = require(toolPackageJsonPath)?.bin[input.depName]
 
-    if (relativeProjectToolPath) {
-      const absoluteProjectToolPath = Path.join(toolDir, relativeProjectToolPath)
-      if (fs.existsSync(absoluteProjectToolPath) && fs.existsSync(projectToolBinPath)) {
-        projectToolPath = Path.resolve(absoluteProjectToolPath)
+    if (toolPackageRelativeBinPath) {
+      const absoluteToolBinPath = Path.join(toolPackageDir, toolPackageRelativeBinPath)
+      if (fs.existsSync(absoluteToolBinPath) && fs.existsSync(projectHoistedDotBinToolPath)) {
+        projectToolPath = Path.resolve(absoluteToolBinPath)
       }
     }
   } catch (e) {}
@@ -146,7 +156,7 @@ export function detectExecLayout(input: Input): ExecScenario {
   }
 
   Object.assign(project, {
-    toolPath: projectToolPath
+    toolPath: projectToolPath,
   })
 
   /**
@@ -164,14 +174,14 @@ export function detectExecLayout(input: Input): ExecScenario {
   if (thisProcessScriptPath !== project.toolPath) {
     console.log('process script path !== tool path', {
       thisProcessScriptPath,
-      toolPath: project.toolPath
+      toolPath: project.toolPath,
     })
     return {
       nodeProject: true,
       toolProject: true,
       toolCurrentlyPresentInNodeModules: true,
       runningLocalTool: false,
-      thisProcessScriptPath: thisProcessScriptPath,
+      thisProcessScriptPath,
       project,
     }
   }
