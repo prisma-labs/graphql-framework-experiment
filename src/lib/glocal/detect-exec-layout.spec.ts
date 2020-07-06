@@ -170,7 +170,7 @@ describe('this process analysis', () => {
     if (os.platform() === 'win32') {
       expect(data.thisProcessScriptPath).toMatchInlineSnapshot(`"/__dynamic__/x/y/z/fake"`)
     } else {
-      expect(data.thisProcessScriptPath).toMatchInlineSnapshot()
+      expect(data.thisProcessScriptPath).toMatchInlineSnapshot(`"/__dynamic__/a/b/c/real.js"`)
     }
   })
 
@@ -211,16 +211,12 @@ describe('project analysis', () => {
     installTool()
     const data = ctx.detectExecLayout()
     expect(data.toolProject).toEqual(true)
-    if (os.platform() === 'win32') {
-      expect(data.project).toMatchInlineSnapshot(`
-        Object {
-          "dir": "/__dynamic__",
-          "nodeModulesDir": "/__dynamic__/node_modules",
-          "toolPath": "/__dynamic__/node_modules/a/index.js",
-        }
-      `)
-    } else {
-      expect(data.project).toMatchInlineSnapshot()
+    expect(data.project).toMatchInlineSnapshot(`
+    Object {
+      "dir": "/__dynamic__",
+      "nodeModulesDir": "/__dynamic__/node_modules",
+      "toolPath": "/__dynamic__/node_modules/a/index.js",
     }
+  `)
   })
 })
