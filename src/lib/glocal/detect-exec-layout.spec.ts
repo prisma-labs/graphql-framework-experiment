@@ -1,3 +1,4 @@
+import { realpathSync } from 'fs'
 import * as os from 'os'
 import * as path from 'path'
 import * as TestContext from '../test-context'
@@ -13,8 +14,10 @@ const ctx = TestContext.compose(TestContext.tmpDir(), TestContext.fs(), (ctx) =>
         scriptPath: ctx.fs.path('some/other/bin/a'),
         ...input,
       })
-      console.log('%j %j', ctx.tmpDir, v)
-      return normalizePathsInData(v, ctx.tmpDir, '/__dynamic__')
+      console.log('%j %j %j', realpathSync(ctx.tmpDir), ctx.tmpDir, v)
+      const normalizedPath = normalizePathsInData(v, ctx.tmpDir, '/__dynamic__')
+      const normalizedPathAndReal = normalizePathsInData(v, realpathSync(ctx.tmpDir), '/__dynamic__')
+      return normalizedPathAndReal
     },
   }
 })
