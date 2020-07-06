@@ -1,7 +1,8 @@
 const os = require('os')
+const fs = require('fs')
+
 console.log({
-    filename: __filename,
     tmp: os.tmpdir(),
-    cwd: process.cwd(),
-    env: process.env
+    runner1: fs.statSync('C:\\Users\\RUNNER~1'),
+    realPath: fs.realpathSync('C:\\Users\\RUNNER~1')
 })
