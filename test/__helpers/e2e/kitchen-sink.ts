@@ -147,11 +147,13 @@ export async function e2eKitchenSink(app: E2EContext) {
   // app.fs.append('api/foo.ts', ' updated')
 
   output = await pendingOutput
-  expect(output).toEqual(undefined)
+  // todo leverage json logging to do structured asserts
+  // on macOS undefined, on linux ".\n", ... so we use a match instead of rigid equal check
+  expect(output).not.toMatch(/restarting|api\/\.foo\.ts/)
   sub.unsubscribe()
 
   //-------------------------------------------------
-  log.warn('run dev & query graphql api & test watcher settings')
+  log.warn('run dev & query graphql api')
 
   await devAndBuildApp()
 
