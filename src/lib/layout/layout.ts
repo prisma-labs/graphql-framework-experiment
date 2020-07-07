@@ -278,7 +278,7 @@ const noAppOrNexusModules = exceptionType<'no_app_or_schema_modules', {}>(
  * Find the (optional) app module in the user's project.
  */
 export function findAppModule(opts: { projectRoot: string }): string | null {
-  log.trace('looking for app module', { projectRoot: opts.projectRoot })
+  log.trace('looking for app module')
   const path = findFile(`./**/${CONVENTIONAL_ENTRYPOINT_FILE_NAME}`, { cwd: opts.projectRoot })
   log.trace('done looking for app module', { path })
   return path
