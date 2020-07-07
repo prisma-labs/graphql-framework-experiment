@@ -3,7 +3,7 @@ import * as NodeFS from 'fs'
 import * as FS from 'fs-jetpack'
 import * as OS from 'os'
 import * as Path from 'path'
-import { log } from './nexus-logger'
+import { log } from '../nexus-logger'
 
 /**
  * Write a file after forcefully removing it, so that VSC will observe the
