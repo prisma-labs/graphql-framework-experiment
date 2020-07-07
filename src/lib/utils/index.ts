@@ -522,8 +522,10 @@ export function httpClose(server: HTTP.Server): Promise<void> {
 /**
  * Run require resolve from the given path
  */
-export function requireResolveFrom(moduleId: string, fromPath: string) {
-  return require.resolve(moduleId, {
+export function requireResolveFrom(moduleId: string, fromPath: string): string {
+  const resolvedPath = require.resolve(moduleId, {
     paths: (Module as any)._nodeModulePaths(fromPath),
   })
+
+  return slash(resolvedPath)
 }

@@ -125,7 +125,10 @@ export async function e2eKitchenSink(app: E2EContext) {
     .pipe(refCount(), bufferOutput)
     .toPromise()
   app.fs.write(pjpath, pjoriginal)
-  expect(result.trim()).toEqual('nexus@0.0.0-local')
+
+  // Windows/node-pty seems to output a bunch of other characters
+  // so use `toContaine` instead of `toEqual`
+  expect(result.trim()).toContain('nexus@0.0.0-local')
 
   //-------------------------------------------------
   log.warn('run dev & test watcher settings')

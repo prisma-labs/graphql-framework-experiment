@@ -1,6 +1,7 @@
 import { codeBlock } from 'common-tags'
 import { Either, isLeft } from 'fp-ts/lib/Either'
 import * as fs from 'fs-jetpack'
+import slash from 'slash'
 import { hardWriteFile } from '../fs'
 import * as Layout from '../layout'
 import { rootLogger } from '../nexus-logger'
@@ -76,7 +77,7 @@ export async function writeContextTypeGenFile(contextTypes: ExtractedContextType
 }
 
 function renderImport(input: { from: string; names: string[] }) {
-  return `import { ${input.names.join(', ')} } from '${input.from}'`
+  return `import { ${input.names.join(', ')} } from '${slash(input.from)}'`
 }
 
 function renderContextInterfaceForExtractedReturnType(contribType: ContribType): string {
