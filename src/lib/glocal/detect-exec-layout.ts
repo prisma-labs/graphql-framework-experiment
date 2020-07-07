@@ -49,12 +49,10 @@ interface Input {
 
   cwd?: string
   /**
-   * The path to the script that was run by this process. Useful option for
-   * testing. Otherwise will usually rely on the default.
+   * The path to the script that was run by this process. Usually is `__filename`
    *
-   * @default process.argv[1]
    */
-  scriptPath?: string
+  scriptPath: string
 }
 
 /**
@@ -63,7 +61,7 @@ interface Input {
  */
 export function detectExecLayout(input: Input): ExecScenario {
   const cwd = input.cwd ?? process.cwd()
-  let inputScriptPath = input.scriptPath ?? process.argv[1]
+  let inputScriptPath = input.scriptPath
 
   // Node CLI supports omitting the ".js" ext like this: $ node a/b/c/foo
   // Handle that case otherwise the realpathSync below will fail.
@@ -127,7 +125,7 @@ export function detectExecLayout(input: Input): ExecScenario {
      * 1. find the tool package
      * 2. find its local bin path
      * 3. check that it AND the hoisted version at project dot-bin level exist
-     * 4. If yes yes yes then we've fonud our path!
+     * 4. If yes yes yes then we've found our path!
      *
      * This logic is needed for Windows support because in Windows there are no
      * symlinks we can follow for free.
@@ -172,10 +170,6 @@ export function detectExecLayout(input: Input): ExecScenario {
    */
 
   if (thisProcessScriptPath !== project.toolPath) {
-    console.log('process script path !== tool path', {
-      thisProcessScriptPath,
-      toolPath: project.toolPath,
-    })
     return {
       nodeProject: true,
       toolProject: true,

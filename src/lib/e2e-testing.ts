@@ -185,6 +185,7 @@ export function createE2EContext(config: Config) {
 export function spawn(command: string, args: string[], opts: IPtyForkOptions): ConnectableObservable<string> {
   const nodePty = requireNodePty()
   const subject = new Subject<string>()
+  // On windows, node-pty needs an absolute path to the executable. `which` is used to find that path.
   const commandPath = which.sync(command)
   const ob = new Observable<string>((sub) => {
     const proc = nodePty.spawn(commandPath, args, {
