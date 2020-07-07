@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import * as Path from 'path'
 import { findFileRecurisvelyUpwardSync } from '../fs'
+import { requireResolveFrom } from '../utils'
 
 export type ExecScenario = {
   /**
@@ -25,21 +26,16 @@ export type ExecScenario = {
   project: null | {
     dir: string
     nodeModulesDir: string
-    binDir: string
-    toolBinPath: string
-    /**
-     * Only present when the project is actually a tool project with dependencies installed.
-     */
-    toolBinRealPath: null | string
+    toolPath: string | null
   }
   /**
-   * Information about this process bin
+   * Information about this process
    */
-  thisProcessToolBin: {
-    path: string
-    dir: string
-    realPath: string
-    realDir: string
+  process: {
+    /**
+     * The script being executed by this process. Symlinks are followed, if any.
+     */
+    toolPath: string
   }
 }
 
@@ -55,15 +51,11 @@ interface Input {
    *
    * @default process.cwd()
    */
-
   cwd?: string
   /**
-   * The path to the script that was run by this process. Useful option for
-   * testing. Otherwise will usually rely on the default.
-   *
-   * @default process.argv[1]
+   * The path to the script that was run by this process. Usually is `__filename`
    */
-  scriptPath?: string
+  scriptPath: string
 }
 
 /**
@@ -72,28 +64,17 @@ interface Input {
  */
 export function detectExecLayout(input: Input): ExecScenario {
   const cwd = input.cwd ?? process.cwd()
-  let thisProcessScriptPath = input.scriptPath ?? process.argv[1]
+  let inputToolPath = input.scriptPath
 
   // Node CLI supports omitting the ".js" ext like this: $ node a/b/c/foo
   // Handle that case otherwise the realpathSync below will fail.
-  if (Path.extname(thisProcessScriptPath) !== '.js') {
-    if (fs.existsSync(thisProcessScriptPath + '.js')) {
-      thisProcessScriptPath += '.js'
+  if (Path.extname(inputToolPath) !== '.js') {
+    if (fs.existsSync(inputToolPath + '.js')) {
+      inputToolPath += '.js'
     }
   }
 
-  // todo try-catch? can we guarantee this? If not, what is the fallback?
-  const thisProcessBinRealPath = fs.realpathSync(thisProcessScriptPath)
-  const thisProcessBinDir = Path.dirname(thisProcessScriptPath)
-  const thisProcessBinRealDir = Path.dirname(thisProcessBinRealPath)
-  const thisProcessBinName = Path.basename(thisProcessScriptPath)
-  const thisProcessToolBin = {
-    name: thisProcessBinName,
-    path: thisProcessScriptPath,
-    dir: thisProcessBinDir,
-    realPath: thisProcessBinRealPath,
-    realDir: thisProcessBinRealDir,
-  }
+  const processToolPath = fs.realpathSync(inputToolPath)
   let projectDir = null
 
   try {
@@ -106,25 +87,22 @@ export function detectExecLayout(input: Input): ExecScenario {
       toolProject: false,
       toolCurrentlyPresentInNodeModules: false,
       runningLocalTool: false,
-      thisProcessToolBin,
+      process: { toolPath: processToolPath },
       project: null,
     }
   }
 
   const projectNodeModulesDir = Path.join(projectDir, 'node_modules')
-  const projectBinDir = Path.join(projectNodeModulesDir, '.bin')
-  const projectToolBinPath = Path.join(projectBinDir, thisProcessToolBin.name)
-  const project = {
+  const projectHoistedDotBinDir = Path.join(projectNodeModulesDir, '.bin')
+  const projectHoistedDotBinToolPath = Path.join(projectHoistedDotBinDir, input.depName)
+  const project: ExecScenario['project'] = {
     dir: projectDir,
-    binDir: projectBinDir,
     nodeModulesDir: projectNodeModulesDir,
-    toolBinPath: projectToolBinPath,
-    toolBinRealPath: null,
+    toolPath: null,
   }
 
   let isToolProject = null
   try {
-    // todo test that not using Path.posix will break on windows
     isToolProject =
       typeof require(Path.posix.join(projectDir, 'package.json'))?.dependencies?.[input.depName] === 'string'
   } catch (e) {
@@ -137,50 +115,57 @@ export function detectExecLayout(input: Input): ExecScenario {
       toolProject: false,
       toolCurrentlyPresentInNodeModules: false,
       runningLocalTool: false,
-      thisProcessToolBin,
+      process: { toolPath: processToolPath },
       project,
     }
   }
 
-  let projectToolBinRealPath = null
+  let projectToolPath: string | null = null
   try {
-    projectToolBinRealPath = fs.realpathSync(projectToolBinPath)
+    /**
+     * Find the project tool path by reverse engineering
+     * 1. find the tool package
+     * 2. find its local bin path
+     * 3. check that it AND the hoisted version at project dot-bin level exist
+     * 4. If yes yes yes then we've found our path!
+     *
+     * This logic is needed for Windows support because in Windows there are no
+     * symlinks we can follow for free.
+     */
+    const toolPackageJsonPath = requireResolveFrom(`${input.depName}/package.json`, projectDir)
+    const toolPackageDir = Path.dirname(toolPackageJsonPath)
+    const toolPackageRelativeBinPath: string | undefined = require(toolPackageJsonPath)?.bin[input.depName]
+
+    if (toolPackageRelativeBinPath) {
+      const absoluteToolBinPath = Path.join(toolPackageDir, toolPackageRelativeBinPath)
+      if (fs.existsSync(absoluteToolBinPath) && fs.existsSync(projectHoistedDotBinToolPath)) {
+        projectToolPath = Path.resolve(absoluteToolBinPath)
+      }
+    }
   } catch (e) {}
 
-  if (!projectToolBinRealPath) {
+  if (!projectToolPath) {
     return {
       nodeProject: true,
       toolProject: true,
       toolCurrentlyPresentInNodeModules: false,
       runningLocalTool: false,
-      thisProcessToolBin,
+      process: { toolPath: processToolPath },
       project,
     }
   }
 
   Object.assign(project, {
-    toolBinRealPath: projectToolBinRealPath,
+    toolPath: projectToolPath,
   })
 
-  /**
-   * Use real path to check if local tool version is being used. This is because
-   * some OS's follow symlinks in argv[1] while others do not. Since we create
-   * the path to the local tool bin and we don't know (check) which OS we're
-   * currently running on, we need some way to normalize both sides so that the
-   * check between our constructed path and the process info from OS are
-   * comparable at all. Otherwise for example we could end up in a situation
-   * like this (bad):
-   *
-   *    node_modules/.bin/nexus === node_modules/nexus/dist/cli/main.js
-   */
-
-  if (thisProcessToolBin.realPath !== project.toolBinRealPath) {
+  if (processToolPath !== project.toolPath) {
     return {
       nodeProject: true,
       toolProject: true,
       toolCurrentlyPresentInNodeModules: true,
       runningLocalTool: false,
-      thisProcessToolBin,
+      process: { toolPath: processToolPath },
       project,
     }
   }
@@ -190,7 +175,7 @@ export function detectExecLayout(input: Input): ExecScenario {
     toolProject: true,
     toolCurrentlyPresentInNodeModules: true,
     runningLocalTool: true,
-    thisProcessToolBin,
+    process: { toolPath: processToolPath },
     project,
   }
 }

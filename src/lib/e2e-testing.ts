@@ -5,10 +5,12 @@
 import * as Logger from '@nexus/logger'
 import * as FS from 'fs-jetpack'
 import { IPty, IPtyForkOptions, IWindowsPtyForkOptions } from 'node-pty'
+import * as os from 'os'
 import * as Path from 'path'
 import { ConnectableObservable, Observable, Subject } from 'rxjs'
 import { multicast } from 'rxjs/operators'
 import stripAnsi from 'strip-ansi'
+import * as which from 'which'
 import { Database } from '../cli/commands/create/app'
 import { GraphQLClient } from '../lib/graphql-client'
 import { getTmpDir } from './fs'
@@ -59,6 +61,11 @@ interface Config {
   }
 }
 
+/**
+ * The path at which to spawn node processes
+ */
+const NODE_PATH = os.platform() === 'win32' ? 'node.exe' : 'node'
+
 export function createE2EContext(config: Config) {
   Logger.log.settings({ filter: { level: 'trace' } })
   process.env.LOG_LEVEL = 'trace'
@@ -89,7 +96,7 @@ export function createE2EContext(config: Config) {
     fs: FS.cwd(projectDir),
     client: new GraphQLClient(`http://localhost:${config.serverPort}/graphql`),
     node(args: string[], opts: IPtyForkOptions = {}) {
-      return spawn('node', args, { cwd: projectDir, ...opts })
+      return spawn(NODE_PATH, args, { cwd: projectDir, ...opts })
     },
     spawn(binPathAndArgs: string[], opts: IPtyForkOptions = {}) {
       const [binPath, ...args] = binPathAndArgs
@@ -131,7 +138,7 @@ export function createE2EContext(config: Config) {
     },
     localNexus: config.localNexus
       ? (args: string[]) => {
-          return spawn('node', [localNexusBinPath!, ...args], {
+          return spawn(NODE_PATH, [localNexusBinPath!, ...args], {
             cwd: projectDir,
             env: {
               ...process.env,
@@ -142,7 +149,7 @@ export function createE2EContext(config: Config) {
       : null,
     localNexusCreateApp: config.localNexus
       ? (options: CreateAppOptions) => {
-          return spawn('node', [localNexusBinPath!], {
+          return spawn(NODE_PATH, [localNexusBinPath!], {
             cwd: projectDir,
             env: {
               ...process.env,
@@ -156,7 +163,7 @@ export function createE2EContext(config: Config) {
       : null,
     localNexusCreatePlugin: config.localNexus
       ? (options: CreatePluginOptions) => {
-          return spawn('node', [localNexusBinPath!, 'create', 'plugin'], {
+          return spawn(NODE_PATH, [localNexusBinPath!, 'create', 'plugin'], {
             cwd: projectDir,
             env: {
               ...process.env,
@@ -178,8 +185,10 @@ export function createE2EContext(config: Config) {
 export function spawn(command: string, args: string[], opts: IPtyForkOptions): ConnectableObservable<string> {
   const nodePty = requireNodePty()
   const subject = new Subject<string>()
+  // On windows, node-pty needs an absolute path to the executable. `which` is used to find that path.
+  const commandPath = which.sync(command)
   const ob = new Observable<string>((sub) => {
-    const proc = nodePty.spawn(command, args, {
+    const proc = nodePty.spawn(commandPath, args, {
       cols: process.stdout.columns ?? 80,
       rows: process.stdout.rows ?? 80,
       ...opts,
