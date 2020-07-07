@@ -31,7 +31,7 @@ export type ExecScenario = {
   /**
    * Information about this process bin
    */
-  thisProcessScriptPath: string
+  processToolPath: string
 }
 
 interface Input {
@@ -61,18 +61,18 @@ interface Input {
  */
 export function detectExecLayout(input: Input): ExecScenario {
   const cwd = input.cwd ?? process.cwd()
-  let inputScriptPath = input.scriptPath
+  let inputToolPath = input.scriptPath
 
   // Node CLI supports omitting the ".js" ext like this: $ node a/b/c/foo
   // Handle that case otherwise the realpathSync below will fail.
-  if (Path.extname(inputScriptPath) !== '.js') {
-    if (fs.existsSync(inputScriptPath + '.js')) {
-      inputScriptPath += '.js'
+  if (Path.extname(inputToolPath) !== '.js') {
+    if (fs.existsSync(inputToolPath + '.js')) {
+      inputToolPath += '.js'
     }
   }
 
   // todo try-catch? can we guarantee this? If not, what is the fallback?
-  const thisProcessScriptPath = fs.realpathSync(inputScriptPath)
+  const processToolPath = fs.realpathSync(inputToolPath)
   let projectDir = null
 
   try {
@@ -85,7 +85,7 @@ export function detectExecLayout(input: Input): ExecScenario {
       toolProject: false,
       toolCurrentlyPresentInNodeModules: false,
       runningLocalTool: false,
-      thisProcessScriptPath,
+      processToolPath: processToolPath,
       project: null,
     }
   }
@@ -113,7 +113,7 @@ export function detectExecLayout(input: Input): ExecScenario {
       toolProject: false,
       toolCurrentlyPresentInNodeModules: false,
       runningLocalTool: false,
-      thisProcessScriptPath,
+      processToolPath: processToolPath,
       project,
     }
   }
@@ -148,7 +148,7 @@ export function detectExecLayout(input: Input): ExecScenario {
       toolProject: true,
       toolCurrentlyPresentInNodeModules: false,
       runningLocalTool: false,
-      thisProcessScriptPath,
+      processToolPath,
       project,
     }
   }
@@ -157,25 +157,13 @@ export function detectExecLayout(input: Input): ExecScenario {
     toolPath: projectToolPath,
   })
 
-  /**
-   * Use real path to check if local tool version is being used. This is because
-   * some OS's follow symlinks in argv[1] while others do not. Since we create
-   * the path to the local tool bin and we don't know (check) which OS we're
-   * currently running on, we need some way to normalize both sides so that the
-   * check between our constructed path and the process info from OS are
-   * comparable at all. Otherwise for example we could end up in a situation
-   * like this (bad):
-   *
-   *    node_modules/.bin/nexus === node_modules/nexus/dist/cli/main.js
-   */
-
-  if (thisProcessScriptPath !== project.toolPath) {
+  if (processToolPath !== project.toolPath) {
     return {
       nodeProject: true,
       toolProject: true,
       toolCurrentlyPresentInNodeModules: true,
       runningLocalTool: false,
-      thisProcessScriptPath,
+      processToolPath,
       project,
     }
   }
@@ -185,7 +173,7 @@ export function detectExecLayout(input: Input): ExecScenario {
     toolProject: true,
     toolCurrentlyPresentInNodeModules: true,
     runningLocalTool: true,
-    thisProcessScriptPath,
+    processToolPath,
     project,
   }
 }

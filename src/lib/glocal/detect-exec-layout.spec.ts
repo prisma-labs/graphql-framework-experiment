@@ -182,15 +182,15 @@ describe('analysis about "this process"', () => {
     const data = ctx.detectExecLayout({ scriptPath: ctx.fs.path('x/y/z/fake') })
 
     if (isWindows) {
-      expect(data.thisProcessScriptPath).toMatchInlineSnapshot(`"/__dynamic__/x/y/z/fake"`)
+      expect(data.processToolPath).toMatchInlineSnapshot(`"/__dynamic__/x/y/z/fake"`)
     } else {
-      expect(data.thisProcessScriptPath).toMatchInlineSnapshot(`"/__dynamic__/a/b/c/real.js"`)
+      expect(data.processToolPath).toMatchInlineSnapshot(`"/__dynamic__/a/b/c/real.js"`)
     }
   })
 
   it('supports node running script without extension', () => {
     const data = ctx.detectExecLayout({ scriptPath: ctx.fs.path('a/b/c/real') })
-    expect(data.thisProcessScriptPath).toMatchInlineSnapshot(`"/__dynamic__/a/b/c/real.js"`)
+    expect(data.processToolPath).toMatchInlineSnapshot(`"/__dynamic__/a/b/c/real.js"`)
   })
 })
 

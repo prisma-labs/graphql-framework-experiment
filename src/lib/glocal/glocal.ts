@@ -89,7 +89,7 @@ function glocalMissingLocalToolOnDiskMessage({
 
     Please install your dependencies and try your command again.
 
-    Location of the ${toolName} CLI you invoked: ${execLayout.thisProcessScriptPath}
+    Location of the ${toolName} CLI you invoked: ${execLayout.processToolPath}
     Location of your project-local ${toolName} CLI: ${execLayout.project!.toolPath}
   `
 }
