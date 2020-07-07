@@ -175,17 +175,12 @@ export function sourceFilePathFromTranspiledPath({
  * Dot-folders, dot-files, node_modules are all always ignored
  */
 export function findFile(pattern: string, config: { ignore?: string[]; cwd: string }): null | string {
-  const projectRoot = config.cwd
   const cwd = config.cwd
   const ignore = ['node_modules/**', ...(config.ignore ?? [])]
   const foundFiles = Glob.sync(pattern, { cwd, ignore, absolute: true, dot: false })
 
   // TODO: What if several files were found?
-  if (foundFiles.length > 0) {
-    return Path.join(projectRoot, foundFiles[0])
-  }
-
-  return null
+  return foundFiles[0] ?? null
 }
 
 export async function findFiles(
