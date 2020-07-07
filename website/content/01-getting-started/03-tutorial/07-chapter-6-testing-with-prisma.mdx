@@ -23,6 +23,12 @@ To perform integration testing against a real database, here are the high level 
 
 To achieve some of the steps described above, we'll use a custom Jest environment.
 
+First, install `pg` and `nanoid` packages
+
+```bash
+npm add pg nanoid
+```
+
 Create a `tests/nexus-test-environment.js` module and copy & paste the following to it
 
 ```js
