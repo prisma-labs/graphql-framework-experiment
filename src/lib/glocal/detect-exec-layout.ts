@@ -29,9 +29,14 @@ export type ExecScenario = {
     toolPath: string | null
   }
   /**
-   * Information about this process bin
+   * Information about this process
    */
-  processToolPath: string
+  process: {
+    /**
+     * The script being executed by this process. Symlinks are followed, if any.
+     */
+    toolPath: string
+  }
 }
 
 interface Input {
@@ -46,11 +51,9 @@ interface Input {
    *
    * @default process.cwd()
    */
-
   cwd?: string
   /**
    * The path to the script that was run by this process. Usually is `__filename`
-   *
    */
   scriptPath: string
 }
@@ -71,7 +74,6 @@ export function detectExecLayout(input: Input): ExecScenario {
     }
   }
 
-  // todo try-catch? can we guarantee this? If not, what is the fallback?
   const processToolPath = fs.realpathSync(inputToolPath)
   let projectDir = null
 
@@ -85,7 +87,7 @@ export function detectExecLayout(input: Input): ExecScenario {
       toolProject: false,
       toolCurrentlyPresentInNodeModules: false,
       runningLocalTool: false,
-      processToolPath: processToolPath,
+      process: { toolPath: processToolPath },
       project: null,
     }
   }
@@ -113,7 +115,7 @@ export function detectExecLayout(input: Input): ExecScenario {
       toolProject: false,
       toolCurrentlyPresentInNodeModules: false,
       runningLocalTool: false,
-      processToolPath: processToolPath,
+      process: { toolPath: processToolPath },
       project,
     }
   }
@@ -148,7 +150,7 @@ export function detectExecLayout(input: Input): ExecScenario {
       toolProject: true,
       toolCurrentlyPresentInNodeModules: false,
       runningLocalTool: false,
-      processToolPath,
+      process: { toolPath: processToolPath },
       project,
     }
   }
@@ -163,7 +165,7 @@ export function detectExecLayout(input: Input): ExecScenario {
       toolProject: true,
       toolCurrentlyPresentInNodeModules: true,
       runningLocalTool: false,
-      processToolPath,
+      process: { toolPath: processToolPath },
       project,
     }
   }
@@ -173,7 +175,7 @@ export function detectExecLayout(input: Input): ExecScenario {
     toolProject: true,
     toolCurrentlyPresentInNodeModules: true,
     runningLocalTool: true,
-    processToolPath,
+    process: { toolPath: processToolPath },
     project,
   }
 }
