@@ -146,7 +146,7 @@ export async function e2eKitchenSink(app: E2EContext) {
   // app.fs.write('api/next/foo.ts', 'seeme')
   // app.fs.append('api/foo.ts', ' updated')
 
-  output = await pendingOutput
+  output = (await pendingOutput) ?? ''
   // todo leverage json logging to do structured asserts
   // on macOS undefined, on linux ".\n", ... so we use a match instead of rigid equal check
   expect(output).not.toMatch(/restarting|api\/\.foo\.ts/)
