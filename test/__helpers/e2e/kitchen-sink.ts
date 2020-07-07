@@ -1,6 +1,6 @@
 import { introspectionQuery } from 'graphql'
-import { ConnectableObservable, Subscription } from 'rxjs'
-import { refCount } from 'rxjs/operators'
+import { ConnectableObservable, Subscription, timer } from 'rxjs'
+import { refCount, takeUntil } from 'rxjs/operators'
 import { createE2EContext, E2EContext } from '../../../src/lib/e2e-testing'
 import { rootLogger } from '../../../src/lib/nexus-logger'
 import { bufferOutput, takeUntilServerListening } from './utils'
@@ -128,14 +128,37 @@ export async function e2eKitchenSink(app: E2EContext) {
   expect(result.trim()).toEqual('nexus@0.0.0-local')
 
   //-------------------------------------------------
-  log.warn('run dev & query graphql api')
+  log.warn('run dev & test watcher settings')
 
-  await buildApp()
+  proc = app.nexus(['dev'])
+  sub = proc.connect()
+  await proc.pipe(takeUntilServerListening).toPromise()
+
+  const pendingOutput = proc.pipe(bufferOutput, takeUntil(timer(5000))).toPromise()
+
+  // file events we should NOT see
+  app.fs.write('api/.foo.ts', 'ignoreme')
+  // app.fs.write('api/.next/foo.ts', 'ignoreme')
+  // app.fs.append('api/.foo.ts', ' updated')
+
+  // file events we should see
+  // app.fs.write('api/foo2.ts', 'seeme')
+  // app.fs.write('api/next/foo.ts', 'seeme')
+  // app.fs.append('api/foo.ts', ' updated')
+
+  output = await pendingOutput
+  expect(output).toEqual(undefined)
+  sub.unsubscribe()
+
+  //-------------------------------------------------
+  log.warn('run dev & query graphql api & test watcher settings')
+
+  await devAndBuildApp()
 
   log.warn('Build and dev again without an app.ts entrypoint')
   await app.fs.removeAsync('./api/app.ts')
 
-  await buildApp()
+  await devAndBuildApp()
 
   //-------------------------------------------------
   log.warn('create plugin')
@@ -220,7 +243,10 @@ export async function e2eKitchenSink(app: E2EContext) {
   expect(output).toContain('build.onStart hook from foobar')
   expect(output).toContain('success')
 
-  async function buildApp() {
+  /**
+   * run nexus dev & nexus build, along with a few checks within
+   */
+  async function devAndBuildApp() {
     proc = app.nexus(['dev'])
     sub = proc.connect()
 
