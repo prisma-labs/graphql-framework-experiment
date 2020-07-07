@@ -1,8 +1,9 @@
+import * as Glob from 'fast-glob'
 import * as NodeFS from 'fs'
 import * as FS from 'fs-jetpack'
 import * as OS from 'os'
 import * as Path from 'path'
-import { log } from './nexus-logger'
+import { log } from '../nexus-logger'
 
 /**
  * Write a file after forcefully removing it, so that VSC will observe the
@@ -168,24 +169,18 @@ export function sourceFilePathFromTranspiledPath({
   return Path.join(rootDir, maybeAppFolders, tsFileName)
 }
 
-export function findFile(
-  fileNames: string | string[],
-  config: { ignore?: string[]; projectRoot: string }
-): null | string {
-  const paths = Array.isArray(fileNames) ? fileNames : [fileNames]
-  const projectRoot = config.projectRoot
-  const localFs = FS.cwd(projectRoot)
-
-  const foundFiles = localFs.find({
-    matching: [...paths, '!node_modules/**/*', '!.yalc/**/*', ...(config?.ignore?.map((i) => `!${i}`) ?? [])],
-  })
+/**
+ * Find the given file within the directory tree under the given root path (cwd).
+ *
+ * Dot-folders, dot-files, node_modules are all always ignored
+ */
+export function findFile(pattern: string, config: { ignore?: string[]; cwd: string }): null | string {
+  const cwd = config.cwd
+  const ignore = ['node_modules/**', ...(config.ignore ?? [])]
+  const foundFiles = Glob.sync(pattern, { cwd, ignore, absolute: true, dot: false })
 
   // TODO: What if several files were found?
-  if (foundFiles.length > 0) {
-    return Path.join(projectRoot, foundFiles[0])
-  }
-
-  return null
+  return foundFiles[0] ?? null
 }
 
 export async function findFiles(
