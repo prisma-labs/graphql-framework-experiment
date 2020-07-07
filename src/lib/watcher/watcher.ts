@@ -89,7 +89,7 @@ export async function createWatcher(options: Options): Promise<Watcher> {
   })
 
   const watcher = Chok.watch([options.sourceRoot, ...pluginWatchContributions], {
-    ignored: ['./node_modules', './.*'],
+    ignored: ['./node_modules', /(^|[\/\\])\../],
     ignoreInitial: true,
     cwd: options.cwd, // prevent globbed files and required files from being watched twice,
   })
