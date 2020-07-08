@@ -1042,10 +1042,10 @@
   dependencies:
     "@types/yargs-parser" "*"
 
-"@zeit/node-file-trace@^0.6.0":
-  version "0.6.1"
-  resolved "https://registry.yarnpkg.com/@zeit/node-file-trace/-/node-file-trace-0.6.1.tgz#44d832c4bf71bc4d142cc5e2ef3e708673cdd2b4"
-  integrity sha512-rcaY2xxhjBzGJEtpdLFbS87HYx8bVbi/a+0MBVpMVvURrmjVAY58VL+Ynz4QPNs1C6o8e0FB1gVQFtN47ZnkMw==
+"@zeit/node-file-trace@^0.7.0":
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/@zeit/node-file-trace/-/node-file-trace-0.7.0.tgz#c63f2b5d8687e6a6cbd563245d3883ccaa71f81e"
+  integrity sha512-wVdNCwbW9ax6CXL9vTrociSePyklyjcjxviXZrlqQdpqq8plx4Pe7ulXSu3WExHnKl8Gs0HqabB1Tgxi/spMuA==
   dependencies:
     acorn "^7.1.1"
     acorn-class-fields "^0.3.2"
