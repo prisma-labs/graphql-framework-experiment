@@ -1,15 +1,17 @@
 import { Either, isLeft, left, right, toError, tryCatch } from 'fp-ts/lib/Either'
 import {
   execute,
+  FieldNode,
+  formatError,
   getOperationAST,
+  GraphQLError,
+  GraphQLFormattedError,
   GraphQLSchema,
   parse,
   Source,
+  specifiedRules,
   validate,
   ValidationContext,
-  specifiedRules,
-  FieldNode,
-  GraphQLError,
 } from 'graphql'
 import { IncomingMessage } from 'http'
 import createError, { HttpError } from 'http-errors'
@@ -20,6 +22,7 @@ import { sendError, sendErrorData, sendSuccess } from './utils'
 
 type Settings = {
   introspection: boolean
+  errorFormatterFn(graphqlError: GraphQLError): GraphQLFormattedError
 }
 
 type CreateHandler = (
@@ -56,6 +59,7 @@ export const createRequestHandlerGraphQL: CreateHandler = (schema, createContext
   res
 ) => {
   const errParams = await getGraphQLParams(req)
+  const errorFormatter = settings.errorFormatterFn ?? formatError
 
   if (isLeft(errParams)) {
     return sendError(res, errParams.left)
@@ -87,7 +91,9 @@ export const createRequestHandlerGraphQL: CreateHandler = (schema, createContext
     // todo lots of rich info for clients in here, expose it to them
     return sendErrorData(
       res,
-      createError(400, 'GraphQL operation validation failed', { data: validationFailures })
+      createError(400, 'GraphQL operation validation failed', {
+        graphqlErrors: validationFailures.map(errorFormatter),
+      })
     )
   }
 
@@ -105,19 +111,36 @@ export const createRequestHandlerGraphQL: CreateHandler = (schema, createContext
 
   const context = await createContext(req)
 
-  const result = await execute({
-    schema: schema,
-    document: documentAST,
-    contextValue: context,
-    variableValues: params.variables,
-    operationName: params.operationName,
-  })
+  try {
+    const result = await execute({
+      schema: schema,
+      document: documentAST,
+      contextValue: context,
+      variableValues: params.variables,
+      operationName: params.operationName,
+    })
 
-  if (result.errors) {
-    return sendErrorData(res, createError(500, 'failed while resolving client request', { data: result }))
+    if (result.errors) {
+      const formattedResult = {
+        ...result,
+        errors: result.errors?.map(errorFormatter),
+      }
+
+      return sendErrorData(
+        res,
+        createError(500, 'failed while resolving client request', { graphqlErrors: formattedResult })
+      )
+    }
+
+    return sendSuccess(res, result)
+  } catch (contextError) {
+    return sendErrorData(
+      res,
+      createError(400, 'GraphQL execution context error.', {
+        graphqlErrors: [errorFormatter(contextError)],
+      })
+    )
   }
-
-  return sendSuccess(res, result)
 }
 
 /**
