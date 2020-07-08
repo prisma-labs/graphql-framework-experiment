@@ -1,6 +1,9 @@
 import { Either, left, right } from 'fp-ts/lib/Either'
 import * as fs from 'fs-jetpack'
+import * as path from 'path'
 import { addHook } from 'pirates'
+import slash from 'slash'
+import * as sourceMapSupport from 'source-map-support'
 import * as ts from 'typescript'
 import { Layout } from './layout'
 import { rootLogger } from './nexus-logger'
@@ -141,20 +144,84 @@ function createTSError(diagnostics: ReadonlyArray<ts.Diagnostic>) {
  * This is strictly about transpilation, no type checking is done.
  */
 export function registerTypeScriptTranspile(compilerOptions?: ts.CompilerOptions) {
+  const outputCache = new Map<
+    string,
+    {
+      content: string
+    }
+  >()
+  const options = compilerOptions ?? {}
+  sourceMapSupport.install({
+    environment: 'node',
+    retrieveFile(path) {
+      return outputCache.get(slash(path))?.content || ''
+    },
+  })
+
+  /**
+   * Get the extension for a transpiled file.
+   */
+  const getExtension =
+    options.jsx === ts.JsxEmit.Preserve
+      ? (path: string) => (/\.[tj]sx$/.test(path) ? '.jsx' : '.js')
+      : (_: string) => '.js'
+
   addHook(
     (source, fileName) => {
       const transpiled = ts.transpileModule(source, {
         reportDiagnostics: true,
         fileName,
-        compilerOptions,
+        compilerOptions: {
+          ...options,
+          sourceMap: true,
+        },
       })
 
       if (transpiled.diagnostics && transpiled.diagnostics.length > 0) {
         throw createTSError(transpiled.diagnostics)
       }
 
+      const normalizedFileName = slash(fileName)
+      const output = updateOutput(
+        transpiled.outputText,
+        normalizedFileName,
+        transpiled.sourceMapText!,
+        getExtension
+      )
+      outputCache.set(normalizedFileName, { content: output })
+
       return transpiled.outputText
     },
     { exts: ['.ts'] }
   )
+}
+
+/**
+ * Update the output remapping the source map.
+ * Taken from ts-node
+ */
+function updateOutput(
+  outputText: string,
+  fileName: string,
+  sourceMap: string,
+  getExtension: (fileName: string) => string
+) {
+  const base64Map = Buffer.from(updateSourceMap(sourceMap, fileName), 'utf8').toString('base64')
+  const sourceMapContent = `data:application/json;charset=utf-8;base64,${base64Map}`
+  const sourceMapLength =
+    `${path.basename(fileName)}.map`.length + (getExtension(fileName).length - path.extname(fileName).length)
+
+  return outputText.slice(0, -sourceMapLength) + sourceMapContent
+}
+
+/**
+ * Update the source map contents for improved output.
+ * Taken from ts-node
+ */
+function updateSourceMap(sourceMapText: string, fileName: string) {
+  const sourceMap = JSON.parse(sourceMapText)
+  sourceMap.file = fileName
+  sourceMap.sources = [fileName]
+  delete sourceMap.sourceRoot
+  return JSON.stringify(sourceMap)
 }
