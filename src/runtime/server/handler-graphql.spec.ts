@@ -3,6 +3,7 @@ import { IncomingMessage, ServerResponse } from 'http'
 import { Socket } from 'net'
 import { createRequestHandlerGraphQL } from './handler-graphql'
 import { NexusRequestHandler } from './server'
+import { errorFormatter } from './error-formatter'
 
 let handler: NexusRequestHandler
 let socket: Socket
@@ -165,6 +166,7 @@ function createHandler(...types: any) {
     },
     {
       introspection: true,
+      errorFormatterFn: errorFormatter,
     }
   )
 }
