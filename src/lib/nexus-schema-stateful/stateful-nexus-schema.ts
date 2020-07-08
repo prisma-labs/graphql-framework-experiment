@@ -1,7 +1,7 @@
 import * as NexusSchema from '@nexus/schema'
 import * as GraphQL from 'graphql'
-import * as CustomTypes from './custom-types'
 import * as Scalars from '../scalars'
+import * as CustomTypes from './custom-types'
 
 // todo use this as return type of constructor
 export interface StatefulNexusSchema {
@@ -16,6 +16,7 @@ export interface StatefulNexusSchema {
 export interface NexusSchemaStatefulBuilders {
   queryType: typeof NexusSchema.queryType
   mutationType: typeof NexusSchema.mutationType
+  subscriptionType: typeof NexusSchema.subscriptionType
   objectType: ReturnType<typeof createNexusSchemaStateful>['builders']['objectType']
   enumType: ReturnType<typeof createNexusSchemaStateful>['builders']['enumType']
   scalarType: ReturnType<typeof createNexusSchemaStateful>['builders']['scalarType']
@@ -80,6 +81,9 @@ type NexusSchemaTypeDef =
   | NexusSchema.core.NexusExtendInputTypeDef<any>
   | NexusSchema.core.NexusExtendTypeDef<any>
 
+/**
+ * Create an instance of Stateful Nexus Schema
+ */
 export function createNexusSchemaStateful() {
   const state: StatefulNexusSchema['state'] = {
     types: [],
@@ -145,6 +149,12 @@ export function createNexusSchemaStateful() {
     return typeDef
   }
 
+  const subscriptionType: typeof NexusSchema.subscriptionType = (config) => {
+    const typeDef = NexusSchema.subscriptionType(config)
+    state.types.push(typeDef)
+    return typeDef
+  }
+
   const extendType: typeof NexusSchema.extendType = (config) => {
     const typeDef = NexusSchema.extendType(config)
     state.types.push(typeDef)
@@ -172,10 +182,15 @@ export function createNexusSchemaStateful() {
   }
 
   const arg = NexusSchema.arg
+
   const intArg = NexusSchema.intArg
+
   const stringArg = NexusSchema.stringArg
+
   const idArg = NexusSchema.idArg
+
   const floatArg = NexusSchema.floatArg
+
   const booleanArg = NexusSchema.booleanArg
 
   return {
@@ -183,6 +198,7 @@ export function createNexusSchemaStateful() {
     builders: {
       queryType,
       mutationType,
+      subscriptionType,
       objectType,
       inputObjectType,
       unionType,
