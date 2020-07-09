@@ -196,6 +196,7 @@ export function create(): App {
   app.settings.change({
     logger: {
       filter: 'app:*, nexus:*@info+, *@warn+',
+      pretty: { timeDiff: false },
     },
   })
 
