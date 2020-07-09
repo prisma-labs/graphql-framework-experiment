@@ -1,8 +1,9 @@
 import chalk from 'chalk'
 import * as fs from 'fs-jetpack'
+import * as os from 'os'
+import * as path from 'path'
 import * as stackTraceParser from 'stacktrace-parser'
 import { highlightTS } from './highlight'
-import * as os from 'os'
 
 function renderN(n: number, max: number): string {
   const wantedLetters = String(max).length
@@ -34,9 +35,13 @@ export const printStack = ({ callsite }: ErrorArgs): PrintStackResult => {
   // @ts-ignore
   if (callsite && typeof window === 'undefined') {
     const stack = stackTraceParser.parse(callsite)
+
     // TODO: more resilient logic to find the right trace
     // TODO: should not have hard-coded knowledge of prisma here
-    const trace = stack.find((t) => t.file && !t.file.includes('node_modules/nexus'))
+    const trace = stack.find(
+      (t) =>
+        t.file && !t.file.includes('node_modules/nexus') && !t.file.includes('node_modules/@nexus/schema')
+    )
     if (
       process.env.NEXUS_STAGE === 'dev' &&
       trace &&
@@ -46,8 +51,12 @@ export const printStack = ({ callsite }: ErrorArgs): PrintStackResult => {
       !trace.file.startsWith('internal/')
     ) {
       const lineNumber = trace.lineNumber
+      const projectRoot = getProjectRoot()
+      const tracePathRelToProjectRoot = projectRoot ? path.relative(projectRoot, trace.file) : trace.file
+      const tracePathRelToHomeDir = trace.file.replace(os.homedir(), '~')
+
       fileLineNumber = callsite
-        ? `${chalk.underline(`${trace.file.replace(os.homedir(), '~')}:${lineNumber}:${trace.column}`)}`
+        ? `${chalk.underline(`${tracePathRelToProjectRoot}:${lineNumber}:${trace.column}`)}`
         : ''
       if (fs.exists(trace.file)) {
         const file = fs.read(trace.file) as string
@@ -65,7 +74,9 @@ export const printStack = ({ callsite }: ErrorArgs): PrintStackResult => {
         const highlightedLines = highlightTS(lines.join('\n')).split('\n')
         prevLines = highlightedLines
           .map((l, i) => chalk.grey(renderN(i + start + 1, lineNumber + start + 1) + ' ') + chalk.reset() + l)
-          .map((l, i, _arr) => (i === 2 ? `${chalk.red.bold('→')} ${l}` : chalk.dim('  ' + l)))
+          .map((l, i, _arr) =>
+            i === 2 ? `${chalk.red.bold('→')} ${l} ${chalk.dim(tracePathRelToHomeDir)}` : chalk.dim('  ' + l)
+          )
           .join('\n')
       }
     }
@@ -77,4 +88,11 @@ export const printStack = ({ callsite }: ErrorArgs): PrintStackResult => {
     fileLineNumber,
     methodName,
   }
+}
+
+/**
+ * Stack overflow reference: https://stackoverflow.com/a/43960876
+ */
+function getProjectRoot(): string | null {
+  return process?.mainModule?.paths[0].split('node_modules')[0].slice(0, -1) ?? null
 }
