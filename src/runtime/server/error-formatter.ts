@@ -88,7 +88,7 @@ function printPrefixedLines(lines: Array<string[]>): string {
   return existingLines
     .map(
       ([prefix, line]) =>
-        chalk.grey(leftPad(padLen, prefix)) + (line ? chalk.grey(' | ') + line : chalk.grey(' |'))
+        chalk.dim(leftPad(padLen, prefix)) + (line ? chalk.dim(' | ') + line : chalk.dim(' |'))
     )
     .join('\n')
 }
