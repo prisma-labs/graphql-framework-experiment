@@ -55,22 +55,23 @@ export function printSourceLocation(source: Source, sourceLocation: SourceLocati
   const lines = body.split(/\r\n|[\n\r]/g)
   const locationLine = lines[lineIndex]
 
+  //TODO: bring back trimmed formatting later. We cannot break lines at random positions or it breaks the syntax highlighting
   // Special case for minified documents
-  if (locationLine.length > 120) {
-    const subLineIndex = Math.floor(columnNum / 80)
-    const subLineColumnNum = columnNum % 80
-    const subLines = []
-    for (let i = 0; i < locationLine.length; i += 80) {
-      subLines.push(locationLine.slice(i, i + 80))
-    }
+  // if (locationLine.length > 120) {
+  //   const subLineIndex = Math.floor(columnNum / 80)
+  //   const subLineColumnNum = columnNum % 80
+  //   const subLines = []
+  //   for (let i = 0; i < locationLine.length; i += 80) {
+  //     subLines.push(locationLine.slice(i, i + 80))
+  //   }
 
-    return printPrefixedLines([
-      [`${lineNum}`, subLines[0]],
-      ...subLines.slice(1, subLineIndex + 1).map((subLine) => ['', subLine]),
-      [' ', whitespace(subLineColumnNum - 1) + chalk.redBright('^')],
-      ['', subLines[subLineIndex + 1]],
-    ])
-  }
+  //   return printPrefixedLines([
+  //     [`${lineNum}`, subLines[0]],
+  //     ...subLines.slice(1, subLineIndex + 1).map((subLine) => ['', subLine]),
+  //     [' ', whitespace(subLineColumnNum - 1) + chalk.redBright('^')],
+  //     ['', subLines[subLineIndex + 1]],
+  //   ])
+  // }
 
   return printPrefixedLines([
     // Lines specified like this: ["prefix", "string"],
