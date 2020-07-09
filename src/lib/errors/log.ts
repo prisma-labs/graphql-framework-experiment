@@ -9,12 +9,19 @@ export function logPrettyError(log: Logger.Logger, err: Error, level: 'fatal'): 
 export function logPrettyError(log: Logger.Logger, err: Error, level: 'error'): void
 export function logPrettyError(log: Logger.Logger, err: Error, level: 'error' | 'fatal' = 'error'): void {
   if (process.env.NEXUS_STAGE === 'dev') {
-    const { stack, fileLineNumber, methodName } = printStack({ callsite: err.stack })
+    const { stack, fileLineNumber, methodName, filePathRelToHomeDir } = printStack({ callsite: err.stack })
 
     log[level](`${err.message} ${methodName ? `on \`${highlightTS(methodName)}\` ` : ''}at ${fileLineNumber}`)
     if (err.stack) {
       const cleanedStack = cleanStack(err.stack, { withoutMessage: true }).split('\n').slice(1)
-      const renderedStack = [indent('Stack:', 2), ...cleanedStack].join('\n')
+      const renderedStack = [indent('Stack:', 2), ...cleanedStack].map(s => {
+        // Highlight the line of the stack trace were the error happened in the user project
+        if (s.includes(filePathRelToHomeDir)) {
+          return chalk.bold(chalk.redBright(s))
+        }
+
+        return s
+      }).join('\n')
 
       console.log('\n' + indent(stack, 2) + '\n\n' + chalk.dim(renderedStack) + '\n')
     }

@@ -5,23 +5,33 @@ import * as path from 'path'
 import * as stackTraceParser from 'stacktrace-parser'
 import { highlightTS } from './highlight'
 
-function renderN(n: number, max: number): string {
-  const wantedLetters = String(max).length
-  const hasLetters = String(n).length
-  if (hasLetters >= wantedLetters) {
-    return String(n)
-  }
-
-  return String(' '.repeat(wantedLetters - hasLetters) + n)
-}
-
 export interface ErrorArgs {
+  /**
+   * Stack of the error
+   */
   callsite: string | undefined
 }
 
 export interface PrintStackResult {
+  /**
+   * Portion of the file where the error happened
+   */
   stack: string
+  /**
+   * File path where the error happened
+   */
+  filePath: string
+  /**
+   * File path where the error happened, including the location
+   */
   fileLineNumber: string
+  /**
+   * File path where the error happened, relative to the user home directory
+   */
+  filePathRelToHomeDir: string
+  /**
+   * Name of the method that caused the error
+   */
   methodName: string | null
 }
 
@@ -30,6 +40,8 @@ const schemaRegex = /(\S+(objectType|inputObjectType|interfaceType|unionType|enu
 export const printStack = ({ callsite }: ErrorArgs): PrintStackResult => {
   let fileLineNumber = ':'
   let prevLines = '\n'
+  let filePath = ''
+  let filePathRelToHomeDir = ''
   let methodName: string | null = null
 
   // @ts-ignore
@@ -59,8 +71,8 @@ export const printStack = ({ callsite }: ErrorArgs): PrintStackResult => {
         ? `${chalk.underline(`${tracePathRelToProjectRoot}:${lineNumber}:${trace.column}`)}`
         : ''
       if (fs.exists(trace.file)) {
-        const file = fs.read(trace.file) as string
-        const splitFile = file.split('\n')
+        const fileContent = fs.read(trace.file) as string
+        const splitFile = fileContent.split('\n')
         const start = Math.max(0, lineNumber - 3)
         const end = Math.min(lineNumber + 3, splitFile.length - 1)
         const lines = splitFile.slice(start, end)
@@ -78,6 +90,8 @@ export const printStack = ({ callsite }: ErrorArgs): PrintStackResult => {
             i === 2 ? `${chalk.red.bold('→')} ${l} ${chalk.dim(tracePathRelToHomeDir)}` : chalk.dim('  ' + l)
           )
           .join('\n')
+        filePath = trace.file
+        filePathRelToHomeDir = tracePathRelToHomeDir
       }
     }
   }
@@ -86,13 +100,25 @@ export const printStack = ({ callsite }: ErrorArgs): PrintStackResult => {
   return {
     stack: stackStr,
     fileLineNumber,
+    filePath,
+    filePathRelToHomeDir,
     methodName,
   }
+}
+
+function renderN(n: number, max: number): string {
+  const wantedLetters = String(max).length
+  const hasLetters = String(n).length
+  if (hasLetters >= wantedLetters) {
+    return String(n)
+  }
+
+  return String(' '.repeat(wantedLetters - hasLetters) + n)
 }
 
 /**
  * Stack overflow reference: https://stackoverflow.com/a/43960876
  */
-function getProjectRoot(): string | null {
+export function getProjectRoot(): string | null {
   return process?.mainModule?.paths[0].split('node_modules')[0].slice(0, -1) ?? null
 }
