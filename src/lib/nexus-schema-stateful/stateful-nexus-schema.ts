@@ -14,10 +14,6 @@ function validateInput<T extends Record<string, any>>(
   config: T | undefined,
   requiredProperties: RequiredKeys<T>[]
 ): never | true {
-  if (process.env.NEXUS_STAGE !== 'dev') {
-    return true
-  }
-
   if (!config) {
     logPrettyError(log, new Error('Missing config'), 'fatal')
   }
