@@ -1,9 +1,9 @@
 import * as Logger from '@nexus/logger'
 import chalk from 'chalk'
-import { printStack } from '.'
 import { indent } from '../utils'
 import { cleanStack } from './stacktrace/clean'
 import { highlightTS } from './stacktrace/highlight'
+import { printStack } from './stacktrace/print-stack'
 
 export function logPrettyError(log: Logger.Logger, err: Error, level: 'fatal'): never
 export function logPrettyError(log: Logger.Logger, err: Error, level: 'error'): void
