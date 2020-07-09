@@ -14,6 +14,7 @@ import { assertAppNotAssembled } from '../utils'
 import { log } from './logger'
 import { createSchemaSettingsManager, SchemaSettingsManager } from './settings'
 import { mapSettingsAndPluginsToNexusSchemaConfig } from './settings-mapper'
+import { logPrettyError } from '../../lib/errors'
 
 export type LazyState = {
   contextContributors: ContextContributor[]
@@ -129,8 +130,12 @@ export function create(appState: AppState): SchemaInternal {
         const nexusSchemaConfig = mapSettingsAndPluginsToNexusSchemaConfig(plugins, settings.data)
         nexusSchemaConfig.types.push(...statefulNexusSchema.state.types)
         nexusSchemaConfig.plugins!.push(...appState.schemaComponent.plugins)
-        const { schema, missingTypes } = NexusSchema.core.makeSchemaInternal(nexusSchemaConfig)
-        return { schema, missingTypes }
+        try {
+          const { schema, missingTypes } = NexusSchema.core.makeSchemaInternal(nexusSchemaConfig)
+          return { schema, missingTypes }
+        } catch (err) {
+          logPrettyError(log, err, 'fatal')
+        }
       },
       checks() {
         assertNoMissingTypesDev(appState.assembled!.schema, appState.assembled!.missingTypes)
