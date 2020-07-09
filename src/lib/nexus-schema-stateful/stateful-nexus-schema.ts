@@ -1,7 +1,47 @@
 import * as NexusSchema from '@nexus/schema'
+import chalk from 'chalk'
 import * as GraphQL from 'graphql'
+import { logPrettyError } from '../errors'
+import { rootLogger } from '../nexus-logger'
 import * as Scalars from '../scalars'
 import * as CustomTypes from './custom-types'
+
+type RequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T]
+
+const log = rootLogger.child('schema')
+
+function validateInput<T extends Record<string, any>>(
+  config: T | undefined,
+  requiredProperties: RequiredKeys<T>[]
+): never | true {
+  if (process.env.NEXUS_STAGE !== 'dev') {
+    return true
+  }
+
+  if (!config) {
+    logPrettyError(log, new Error('Missing config'), 'fatal')
+  }
+
+  for (const prop of requiredProperties) {
+    if (config[prop] === undefined) {
+      if (config.name) {
+        logPrettyError(
+          log,
+          new Error(
+            `Missing property \`${chalk.redBright(prop)}\` for GraphQL type "${chalk.greenBright(
+              config.name
+            )}"`
+          ),
+          'fatal'
+        )
+      } else {
+        logPrettyError(log, new Error(`Missing property \`${chalk.redBright(prop)}\``), 'fatal')
+      }
+    }
+  }
+
+  return true
+}
 
 // todo use this as return type of constructor
 export interface StatefulNexusSchema {
@@ -93,6 +133,8 @@ export function createNexusSchemaStateful() {
   function objectType<TypeName extends string>(
     config: CustomTypes.NexusObjectTypeConfig<TypeName>
   ): NexusSchema.core.NexusObjectTypeDef<TypeName> {
+    validateInput(config, ['name', 'definition'])
+
     const typeDef = NexusSchema.objectType(config)
     state.types.push(typeDef)
     return typeDef
@@ -101,6 +143,8 @@ export function createNexusSchemaStateful() {
   function interfaceType<TypeName extends string>(
     config: CustomTypes.NexusInterfaceTypeConfig<TypeName>
   ): NexusSchema.core.NexusInterfaceTypeDef<TypeName> {
+    validateInput(config, ['name', 'definition'])
+
     const typeDef = NexusSchema.interfaceType(config)
     state.types.push(typeDef)
     return typeDef
@@ -109,6 +153,8 @@ export function createNexusSchemaStateful() {
   function unionType<TypeName extends string>(
     config: CustomTypes.NexusUnionTypeConfig<TypeName>
   ): NexusSchema.core.NexusUnionTypeDef<TypeName> {
+    validateInput(config, ['name', 'definition'])
+
     const typeDef = NexusSchema.unionType(config)
     state.types.push(typeDef)
     return typeDef
@@ -117,6 +163,8 @@ export function createNexusSchemaStateful() {
   function scalarType<TypeName extends string>(
     config: CustomTypes.NexusScalarTypeConfig<TypeName>
   ): NexusSchema.core.NexusScalarTypeDef<TypeName> {
+    validateInput(config, ['name', 'serialize'])
+
     const typeDef = NexusSchema.scalarType(config)
     state.types.push(typeDef)
     state.scalars[typeDef.name] = new GraphQL.GraphQLScalarType(config)
@@ -126,42 +174,56 @@ export function createNexusSchemaStateful() {
   function enumType<TypeName extends string>(
     config: CustomTypes.NexusEnumTypeConfig<TypeName>
   ): NexusSchema.core.NexusEnumTypeDef<TypeName> {
+    validateInput(config, ['name', 'members'])
+
     const typeDef = NexusSchema.enumType(config)
     state.types.push(typeDef)
     return typeDef
   }
 
   const inputObjectType: typeof NexusSchema.inputObjectType = (config) => {
+    validateInput(config, ['name', 'definition'])
+
     const typeDef = NexusSchema.inputObjectType(config)
     state.types.push(typeDef)
     return typeDef
   }
 
   const queryType: typeof NexusSchema.queryType = (config) => {
+    validateInput(config, ['definition'])
+
     const typeDef = NexusSchema.queryType(config)
     state.types.push(typeDef)
     return typeDef
   }
 
   const mutationType: typeof NexusSchema.mutationType = (config) => {
+    validateInput(config, ['definition'])
+
     const typeDef = NexusSchema.mutationType(config)
     state.types.push(typeDef)
     return typeDef
   }
 
   const subscriptionType: typeof NexusSchema.subscriptionType = (config) => {
+    validateInput(config, ['definition'])
+
     const typeDef = NexusSchema.subscriptionType(config)
     state.types.push(typeDef)
     return typeDef
   }
 
   const extendType: typeof NexusSchema.extendType = (config) => {
+    validateInput(config, ['definition'])
+
     const typeDef = NexusSchema.extendType(config)
     state.types.push(typeDef)
     return typeDef
   }
 
   const extendInputType: typeof NexusSchema.extendInputType = (config) => {
+    validateInput(config, ['definition'])
+
     const typeDef = NexusSchema.extendInputType(config)
     state.types.push(typeDef)
     return typeDef
@@ -170,6 +232,8 @@ export function createNexusSchemaStateful() {
   function importType(type: GraphQL.GraphQLScalarType, methodName?: string): GraphQL.GraphQLScalarType
   function importType(type: GraphQL.GraphQLNamedType): GraphQL.GraphQLNamedType
   function importType(type: GraphQL.GraphQLNamedType, methodName?: string): GraphQL.GraphQLNamedType {
+    validateInput({ type }, ['type'])
+
     if (type instanceof GraphQL.GraphQLScalarType && methodName) {
       const typeDef = NexusSchema.asNexusMethod(type, methodName)
       state.types.push(typeDef)

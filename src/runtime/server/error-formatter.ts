@@ -1,5 +1,9 @@
+import chalk from 'chalk'
 import { GraphQLError, Source, SourceLocation } from 'graphql'
 import stripAnsi from 'strip-ansi'
+import { cleanStack } from '../../lib/errors'
+import { highlightGraphQL } from '../../lib/errors/stacktrace/highlight'
+import { indent } from '../../lib/utils'
 import { log } from './logger'
 
 const resolverLogger = log.child('graphql')
@@ -11,9 +15,11 @@ export function errorFormatter(graphQLError: GraphQLError) {
     resolverLogger.error(graphQLError.message)
 
     if (graphQLError.source && graphQLError.locations) {
-      console.log(indent(printSourceLocation(graphQLError.source, graphQLError.locations[0]), 5))
+      console.log(
+        '\n' + indent(printSourceLocation(graphQLError.source, graphQLError.locations[0]), 2) + '\n'
+      )
       if (graphQLError.stack) {
-        console.log(graphQLError.stack)
+        console.log(chalk.dim(cleanStack(graphQLError.stack, { withoutMessage: true })) + '\n')
       }
     }
   } else {
@@ -21,7 +27,7 @@ export function errorFormatter(graphQLError: GraphQLError) {
     resolverLogger.error('An exception occurred in one of your resolver', {
       error: {
         ...graphQLError,
-        stack: graphQLError.stack
+        stack: cleanStack(graphQLError.stack ?? ''),
       },
     })
   }
@@ -37,7 +43,7 @@ export function errorFormatter(graphQLError: GraphQLError) {
  */
 export function printSourceLocation(source: Source, sourceLocation: SourceLocation): string {
   const firstLineColumnOffset = source.locationOffset.column - 1
-  const body = whitespace(firstLineColumnOffset) + source.body
+  const body = whitespace(firstLineColumnOffset) + highlightGraphQL(source.body)
 
   const lineIndex = sourceLocation.line - 1
   const lineOffset = source.locationOffset.line - 1
@@ -61,7 +67,7 @@ export function printSourceLocation(source: Source, sourceLocation: SourceLocati
     return printPrefixedLines([
       [`${lineNum}`, subLines[0]],
       ...subLines.slice(1, subLineIndex + 1).map((subLine) => ['', subLine]),
-      [' ', whitespace(subLineColumnNum - 1) + '^'],
+      [' ', whitespace(subLineColumnNum - 1) + chalk.redBright('^')],
       ['', subLines[subLineIndex + 1]],
     ])
   }
@@ -70,7 +76,7 @@ export function printSourceLocation(source: Source, sourceLocation: SourceLocati
     // Lines specified like this: ["prefix", "string"],
     [`${lineNum - 1}`, lines[lineIndex - 1]],
     [`${lineNum}`, locationLine],
-    ['', whitespace(columnNum - 1) + '^'],
+    ['', whitespace(columnNum - 1) + chalk.redBright('^')],
     [`${lineNum + 1}`, lines[lineIndex + 1]],
   ])
 }
@@ -80,7 +86,10 @@ function printPrefixedLines(lines: Array<string[]>): string {
 
   const padLen = Math.max(...existingLines.map(([prefix]) => prefix.length))
   return existingLines
-    .map(([prefix, line]) => leftPad(padLen, prefix) + (line ? ' | ' + line : ' |'))
+    .map(
+      ([prefix, line]) =>
+        chalk.grey(leftPad(padLen, prefix)) + (line ? chalk.grey(' | ') + line : chalk.grey(' |'))
+    )
     .join('\n')
 }
 
@@ -90,11 +99,4 @@ function whitespace(len: number): string {
 
 function leftPad(len: number, str: string): string {
   return whitespace(len - str.length) + str
-}
-
-function indent(str: string, len: number, char: string = ' ') {
-  return str
-    .split('\n')
-    .map((s) => char.repeat(len) + s)
-    .join('\n')
 }
