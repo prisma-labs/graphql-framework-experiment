@@ -1,7 +1,11 @@
+import { Either, left, right } from 'fp-ts/lib/Either'
+import Lo from 'lodash'
 import * as Path from 'path'
 import * as tsm from 'ts-morph'
 import ts from 'typescript'
 import { rootLogger } from '../nexus-logger'
+import { exception, Exception } from '../utils'
+import { forbiddenUnionTypeError } from './errors'
 
 const log = rootLogger.child('addToContextExtractor')
 
@@ -11,8 +15,6 @@ interface TypeImportInfo {
   isExported: boolean
   isNode: boolean
 }
-
-type A = { a: 2 }
 
 export type ContribTypeRef = { kind: 'ref'; name: string }
 export type ContribTypeLiteral = { kind: 'literal'; value: string }
@@ -34,7 +36,7 @@ function contribTypeLiteral(value: string): ContribTypeLiteral {
 /**
  * Extract types from all `addToContext` calls.
  */
-export function extractContextTypes(program: ts.Program): ExtractedContextTypes {
+export function extractContextTypes(program: ts.Program): Either<Exception, ExtractedContextTypes> {
   const typeImportsIndex: Record<string, TypeImportInfo> = {}
 
   const checker = program.getTypeChecker()
@@ -51,7 +53,15 @@ export function extractContextTypes(program: ts.Program): ExtractedContextTypes 
     // files: appSourceFiles.map((sf) => sf.fileName),
   })
 
-  appSourceFiles.map((n) => tsm.createWrappedNode(n, { typeChecker: checker })).forEach(visit)
+  const wrappedNodes = appSourceFiles.map((n) => tsm.createWrappedNode(n, { typeChecker: checker }))
+
+  for (const wrappedNode of wrappedNodes) {
+    try {
+      visit(wrappedNode)
+    } catch (err) {
+      return left(err as Exception)
+    }
+  }
 
   log.trace('finished compiler extension processing', {
     contextTypeContributions,
@@ -60,7 +70,7 @@ export function extractContextTypes(program: ts.Program): ExtractedContextTypes 
   // flush deduped type imports
   contextTypeContributions.typeImports.push(...Object.values(typeImportsIndex))
 
-  return contextTypeContributions
+  return right(contextTypeContributions)
 
   /**
    * Given a node, traverse the tree of nodes under it.
@@ -120,15 +130,27 @@ export function extractContextTypes(program: ts.Program): ExtractedContextTypes 
     }
 
     const contextAdderSig = contextAdderSigs[0]
-    const contextAdderRetType = contextAdderSig.getReturnType()
-    const unwrappedContextAdderRetType = unwrapMaybePromise(contextAdderRetType)
-    const contextAdderRetTypeString = unwrappedContextAdderRetType.getText(
+    const contextAdderRetType = unwrapMaybePromise(contextAdderSig.getReturnType())
+    let contextAdderRetTypeString = contextAdderRetType.getText(
       undefined,
       tsm.ts.TypeFormatFlags.NoTruncation
     )
 
-    if (unwrappedContextAdderRetType.isInterface() || unwrappedContextAdderRetType.getAliasSymbol()) {
-      const info = extractTypeImportInfoFromType(unwrappedContextAdderRetType)
+    if (contextAdderRetType.isUnion()) {
+      const unionTypes = contextAdderRetType.getUnionTypes()
+
+      // If every member of the union are objects or interfaces
+      if (unionTypes.every((t) => t.isObject() || t.isInterface())) {
+        contextAdderRetTypeString = mergeUnionTypes(unionTypes)
+      } else {
+        throw forbiddenUnionTypeError({
+          unionType: contextAdderRetType.getText(undefined, tsm.ts.TypeFormatFlags.NoTruncation),
+        })
+      }
+    }
+
+    if (contextAdderRetType.isInterface() || contextAdderRetType.getAliasSymbol()) {
+      const info = extractTypeImportInfoFromType(contextAdderRetType)
       if (info) {
         typeImportsIndex[info.name] = info
       }
@@ -139,7 +161,7 @@ export function extractContextTypes(program: ts.Program): ExtractedContextTypes 
     contextTypeContributions.types.push(contribTypeLiteral(contextAdderRetTypeString))
 
     // search for named references, they will require importing later on
-    const contextAdderRetProps = unwrappedContextAdderRetType.getProperties()
+    const contextAdderRetProps = contextAdderRetType.getProperties()
     for (const prop of contextAdderRetProps) {
       log.trace('processing prop', { name: prop.getName() })
       const tsmn = prop.getDeclarations()[0]
@@ -210,7 +232,7 @@ function extractTypeImportInfoFromType(t: tsm.Type): null | TypeImportInfo {
   log.trace('found name?', { name })
   if (!name) return null
   const d = sym.getDeclarations()?.[0]
-  if (!d) throw new Error('A type with a symbol but the symbol has no declaration')
+  if (!d) throw exception('A type with a symbol but the symbol has no declaration', {})
   const sourceFile = d.getSourceFile()
   const { modulePath, isNode } = getAbsoluteImportPath(sourceFile)
   return {
@@ -224,8 +246,9 @@ function extractTypeImportInfoFromType(t: tsm.Type): null | TypeImportInfo {
 export function unwrapMaybePromise(type: tsm.Type) {
   if (type.getSymbol()?.getName() === 'Promise') {
     const typeArgs = type.getTypeArguments()
-    if (typeArgs.length) {
+    if (typeArgs.length > 0) {
       const wrappedType = typeArgs[0]
+
       return wrappedType
     }
   }
@@ -249,4 +272,44 @@ function getAbsoluteImportPath(sourceFile: tsm.SourceFile) {
   }
 
   return { isNode, modulePath }
+}
+
+type PropertyInfo = { isOptional: boolean; type: string }
+
+export function mergeUnionTypes(unionTypes: tsm.Type<tsm.ts.Type>[]) {
+  const properties = unionTypes.reduce<Record<string, PropertyInfo[]>>((acc, u) => {
+    u.getProperties().forEach((p) => {
+      const name = p.getName()
+      const isOptional = p.hasFlags(tsm.ts.SymbolFlags.Optional)
+      const propertyType = p
+        .getDeclarations()[0]
+        .getType()
+        .getText(undefined, tsm.ts.TypeFormatFlags.NoTruncation)
+
+      if (!acc[name]) {
+        acc[name] = []
+      }
+
+      acc[name].push({ isOptional, type: propertyType })
+    })
+    return acc
+  }, {})
+
+  const stringifiedProps = Object.entries(properties)
+    .map(([name, propertiesInfo]) => {
+      // If a property is not present across all members of the union type, force it to be optional
+      const isOptional =
+        propertiesInfo.length !== unionTypes.length ? true : propertiesInfo.some((p) => p.isOptional)
+      const typesOfProperty = Lo(propertiesInfo)
+        .flatMap((p) => p.type.split(' | '))
+        .uniq()
+        .value()
+        .join(' | ')
+
+      return `${name}${isOptional ? '?' : ''}: ${typesOfProperty};`
+    })
+    .join(' ')
+
+  // merge the properties
+  return `{ ${stringifiedProps} }`
 }

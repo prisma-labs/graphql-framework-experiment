@@ -1,13 +1,14 @@
 import { stripIndent } from 'common-tags'
 import { EOL } from 'os'
 import * as Path from 'path'
+import slash from 'slash'
 import ts, { EmitAndSemanticDiagnosticsBuilderProgram } from 'typescript'
 import { stripExt } from '../../lib/fs'
 import * as Layout from '../../lib/layout'
 import { rootLogger } from '../../lib/nexus-logger'
 import * as Plugin from '../../lib/plugin'
 import { transpileModule } from '../../lib/tsc'
-import { resolveFrom } from './resolve-from'
+import { requireResolveFrom } from '../../lib/utils'
 
 const log = rootLogger.child('startModule')
 
@@ -53,7 +54,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     content += stripIndent`
       import { registerTypeScriptTranspile } from '${
         config.absoluteModuleImports
-          ? Path.dirname(resolveFrom('nexus', config.layout.projectRoot))
+          ? Path.dirname(requireResolveFrom('nexus', config.layout.projectRoot))
           : 'nexus/dist'
       }/lib/tsc'
       registerTypeScriptTranspile(${
@@ -74,7 +75,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
     // Run framework initialization side-effects
     // Also, import the app for later use
     import app from "${
-      config.absoluteModuleImports ? resolveFrom('nexus', config.layout.projectRoot) : 'nexus'
+      config.absoluteModuleImports ? requireResolveFrom('nexus', config.layout.projectRoot) : 'nexus'
     }")
   `
 
@@ -102,7 +103,7 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   if (staticImports !== '') {
     content += EOL + EOL + EOL
     content += stripIndent`
-        // Import the user's schema modules
+        // Import the user's Nexus modules
         ${staticImports}
       `
   }
@@ -113,8 +114,8 @@ export function createStartModuleContent(config: StartModuleConfig): string {
       // Import the user's app module
       require("${
         config.absoluteModuleImports
-          ? stripExt(config.layout.app.path)
-          : './' + stripExt(config.layout.sourceRelative(config.layout.app.path))
+          ? importId(config.layout.app.path)
+          : relativeImportId(config.layout.sourceRelative(config.layout.app.path))
       }")
     `
   }
@@ -126,8 +127,8 @@ export function createStartModuleContent(config: StartModuleConfig): string {
         .map((plugin, i) => {
           return `import { ${plugin.runtime!.export} as plugin_${i} } from '${
             config.absoluteModuleImports
-              ? plugin.runtime!.module
-              : relativeModuleImport(plugin.name, plugin.runtime!.module)
+              ? importId(plugin.runtime!.module)
+              : absolutePathToPackageImportId(plugin.name, plugin.runtime!.module)
           }'`
         })
         .join(EOL)}
@@ -162,29 +163,43 @@ export function prepareStartModule(
  */
 export function printStaticImports(layout: Layout.Layout, opts?: { absolutePaths?: boolean }): string {
   return layout.nexusModules.reduce((script, modulePath) => {
-    const path = opts?.absolutePaths ? stripExt(modulePath) : relativeTranspiledImportPath(layout, modulePath)
+    const path = opts?.absolutePaths
+      ? importId(modulePath)
+      : relativeImportId(layout.sourceRelative(modulePath))
     return `${script}\n${printSideEffectsImport(path)}`
   }, '')
 }
 
-function printSideEffectsImport(modulePath: string): string {
-  return `import '${modulePath}'`
+/**
+ * Format given path to be a valid module id. Extensions are stripped. Posix path separators used.
+ */
+function importId(filePath: string): string {
+  return slash(stripExt(filePath))
 }
 
 /**
- * Build up what the import path will be for a module in its transpiled context.
+ * Format given path to be a valid relative module id. Extensions are stripped. Explicit "./" is added. posix path separators used.
  */
-export function relativeTranspiledImportPath(layout: Layout.Layout, modulePath: string): string {
-  return './' + stripExt(calcSourceRootToModule(layout, modulePath))
+function relativeImportId(filePath: string): string {
+  return importId(filePath.startsWith('./') ? filePath : './' + filePath)
 }
 
-function calcSourceRootToModule(layout: Layout.Layout, modulePath: string) {
-  return Path.relative(layout.sourceRoot, modulePath)
+/**
+ * Given an absolute path to a module within a package find the import id for it.
+ *
+ * The given package name is found within absolute path and considered the start of the import id.
+ */
+function absolutePathToPackageImportId(packageName: string, absoluteFilePath: string) {
+  // todo throw error if packageName not found in absoluteFilePath
+  const moduleNamePos = absoluteFilePath.lastIndexOf(packageName)
+  const relativeModuleImport = absoluteFilePath.substring(moduleNamePos)
+
+  return importId(relativeModuleImport)
 }
 
-function relativeModuleImport(moduleName: string, absoluteModuleImport: string) {
-  const moduleNamePos = absoluteModuleImport.lastIndexOf(moduleName)
-  const relativeModuleImport = absoluteModuleImport.substring(moduleNamePos)
-
-  return stripExt(relativeModuleImport)
+/**
+ * Print a package import statement but do not important any members from it.
+ */
+function printSideEffectsImport(modulePath: string): string {
+  return `import '${modulePath}'`
 }

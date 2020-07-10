@@ -1,11 +1,14 @@
-import { rightOrThrow } from '@nexus/logger/dist/utils'
 import * as NexusSchema from '@nexus/schema'
+import { isLeft } from 'fp-ts/lib/Either'
 import * as Schema from '../../runtime/schema'
 import { generateContextExtractionArtifacts } from '../add-to-context-extractor'
 import * as Layout from '../layout'
+import { rootLogger } from '../nexus-logger'
 import * as BackingTypes from '../nexus-schema-backing-types'
 import { generateArtifacts } from '../nexus-schema-stateful/typegen'
 import * as Plugin from '../plugin'
+
+const log = rootLogger.child('addToContextExtractor')
 
 interface TypegenParams {
   layout: Layout.Layout
@@ -36,5 +39,7 @@ export async function writeArtifacts(params: TypegenParams) {
     contextExtractorTypegenPromise,
   ])
 
-  rightOrThrow(contextExtractorTypegen)
+  if (isLeft(contextExtractorTypegen)) {
+    log.error(contextExtractorTypegen.left.message, contextExtractorTypegen.left.context)
+  }
 }

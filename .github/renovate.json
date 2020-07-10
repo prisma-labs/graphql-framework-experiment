@@ -1,3 +1,5 @@
 {
-  "extends": ["github>prisma-labs/renovate-config"]
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["github>prisma-labs/renovate-config"],
+  "ignorePaths": ["**/website/**"]
 }

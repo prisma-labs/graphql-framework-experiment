@@ -1,15 +1,15 @@
 import createExpress, { Express } from 'express'
-import { GraphQLSchema } from 'graphql'
+import { GraphQLError, GraphQLSchema } from 'graphql'
 import * as HTTP from 'http'
 import { HttpError } from 'http-errors'
 import * as Net from 'net'
-import stripAnsi from 'strip-ansi'
 import * as Plugin from '../../lib/plugin'
 import { httpClose, httpListen, MaybePromise, noop } from '../../lib/utils'
 import { AppState } from '../app'
 import * as DevMode from '../dev-mode'
 import { ContextContributor } from '../schema/schema'
 import { assembledGuard } from '../utils'
+import { errorFormatter } from './error-formatter'
 import { createRequestHandlerGraphQL } from './handler-graphql'
 import { createRequestHandlerPlayground } from './handler-playground'
 import { log } from './logger'
@@ -73,8 +73,13 @@ export function create(appState: AppState) {
       get graphql() {
         return (
           assembledGuard(appState, 'app.server.handlers.graphql', () => {
-            return wrapHandlerWithErrorHandling(
-              createRequestHandlerGraphQL(appState.assembled!.schema, appState.assembled!.createContext)
+            return createRequestHandlerGraphQL(
+              appState.assembled!.schema,
+              appState.assembled!.createContext,
+              {
+                ...settings.data.graphql,
+                errorFormatterFn: errorFormatter,
+              }
             )
           }) ?? noop
         )
@@ -106,10 +111,13 @@ export function create(appState: AppState) {
           loadedRuntimePlugins
         )
 
-        const graphqlHandler = createRequestHandlerGraphQL(schema, createContext)
+        const graphqlHandler = createRequestHandlerGraphQL(schema, createContext, {
+          ...settings.data.graphql,
+          errorFormatterFn: errorFormatter,
+        })
 
-        express.post(settings.data.path, wrapHandlerWithErrorHandling(graphqlHandler))
-        express.get(settings.data.path, wrapHandlerWithErrorHandling(graphqlHandler))
+        express.post(settings.data.path, graphqlHandler)
+        express.get(settings.data.path, graphqlHandler)
 
         return { createContext }
       },
@@ -155,18 +163,15 @@ const wrapHandlerWithErrorHandling = (handler: NexusRequestHandler): NexusReques
     await handler(req, res)
     if (res.statusCode !== 200 && (res as any).error) {
       const error: HttpError = (res as any).error
-      const colorlessMessage = stripAnsi(error.message)
+      const graphqlErrors: GraphQLError[] = error.graphqlErrors
 
-      if (process.env.NEXUS_STAGE === 'dev') {
-        resolverLogger.error(error.stack ?? error.message)
+      if (graphqlErrors.length > 0) {
+        graphqlErrors.forEach(errorFormatter)
       } else {
-        resolverLogger.error('An exception occured in one of your resolver', {
-          error: error.stack ? stripAnsi(error.stack) : colorlessMessage,
+        log.error(error.message, {
+          error,
         })
       }
-
-      // todo bring back payload sanitization for data sent to clients
-      // error.message = colorlessMessage
     }
   }
 }

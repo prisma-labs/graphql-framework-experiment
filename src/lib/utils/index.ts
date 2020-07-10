@@ -1,9 +1,13 @@
 import * as HTTP from 'http'
 import { clone, isArray, isPlainObject, isString } from 'lodash'
+import Module from 'module'
 import * as Net from 'net'
 import * as Path from 'path'
 import Git from 'simple-git/promise'
+import slash from 'slash'
 import { JsonObject, PackageJson, Primitive } from 'type-fest'
+
+export * from './either'
 
 export type MaybePromise<T = void> = T | Promise<T>
 
@@ -251,6 +255,7 @@ export function normalizePathsInData<X>(x: X, basePath?: string, basePathMask?: 
     let x_: string = x
     if (basePath) {
       x_ = replaceEvery(x_, basePath, basePathMask ?? '<dynamic>')
+      x_ = replaceEvery(x_, slash(basePath), basePathMask ?? '<dynamic>')
     }
     x_ = replaceEvery(x_, Path.sep, Path.posix.sep)
     return x_ as any
@@ -372,7 +377,9 @@ export function getPackageJsonMain(packageJson: PackageJson & { main: string }):
     : Path.dirname(packageJson.main)
 }
 
-export interface Exception<T extends string, C extends SomeRecord> extends Error {
+export type Exception = BaseException<'generic', any>
+
+export interface BaseException<T extends string, C extends SomeRecord> extends Error {
   type: T
   context: C
 }
@@ -388,7 +395,7 @@ export function exceptionType<Type extends string, Context extends SomeRecord>(
   return (ctx: Context) => {
     const e = new Error(
       typeof messageOrTemplate === 'string' ? messageOrTemplate : messageOrTemplate(ctx)
-    ) as Exception<Type, Context>
+    ) as BaseException<Type, Context>
     e.type = type
     e.context = ctx
     return e
@@ -406,16 +413,18 @@ export function exceptionType<Type extends string, Context extends SomeRecord>(
  */
 export function exception<Context extends SomeRecord = {}>(
   message: string,
-  context: Context
-): Exception<'generic', Context> {
-  const e = new Error(message) as Exception<'generic', Context>
+  context?: Context
+): BaseException<'generic', Context> {
+  const e = new Error(message) as BaseException<'generic', Context>
 
   Object.defineProperty(e, 'message', {
     enumerable: true,
     value: e.message,
   })
 
-  e.context = context
+  if (context) {
+    e.context = context
+  }
   e.type = 'generic'
 
   return e
@@ -508,4 +517,15 @@ export function httpClose(server: HTTP.Server): Promise<void> {
       }
     })
   })
+}
+
+/**
+ * Run require resolve from the given path
+ */
+export function requireResolveFrom(moduleId: string, fromPath: string): string {
+  const resolvedPath = require.resolve(moduleId, {
+    paths: (Module as any)._nodeModulePaths(fromPath),
+  })
+
+  return slash(resolvedPath)
 }

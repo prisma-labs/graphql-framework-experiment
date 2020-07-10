@@ -64,6 +64,9 @@ export async function run(commandRaw: string, options?: RunOptions): Promise<Suc
 
   const child = spawn(command.name, command.args, {
     ...options,
+    // Use shell on Windows so we don't have to specify absolute paths to commands
+    // https://stackoverflow.com/questions/37459717/error-spawn-enoent-on-windows/37487465
+    shell: process.platform === 'win32',
     env,
   })
 

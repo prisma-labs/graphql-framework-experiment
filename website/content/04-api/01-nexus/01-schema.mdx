@@ -1,5 +1,6 @@
 ---
-title: 'schema'
+title: schema
+codeStyle: true
 ---
 
 ## `import { schema }`
@@ -556,7 +557,45 @@ Refer to `objectType`. This is a shorthand where `config.name` is assigned `Muta
 
 ## `subscriptionType`
 
-Not implemented, please see [#447](https://github.com/graphql-nexus/nexus/issues/447).
+[GraphQL Spec](https://spec.graphql.org/June2018/#sec-Subscription-Operation-Definitions)
+
+Similar to [`objectType`](#objecttype). However, there are a few differences with regard to field configuration. Here is an overview. For details see below.
+
+```ts
+schema.subscriptionType({
+  // rootTyping          // There is no rootTyping configuration
+  definition(t) {
+    t.field({            // This and all other field builders...
+      subscribe() {}     // ... uniquely have a subscribe method
+      resolve(event) {}  // ... have an adjustment to the Backing type
+    })
+  }
+})
+```
+
+### Signature
+
+<!-- prettier-ignore -->
+```ts
+(config: {
+  definition:        SubscriptionDefinitionBlock
+  description?:      string
+  nonNullDefaults?:  NonNullConfig
+}) => NexusInputObjectType
+```
+
+### Field Configuration
+
+Extends field configurations of those found in [`objectType`](#objecttype) like so:
+
+```ts
+subscribe(root, args, ctx, info): MaybePromise<AsyncIterator<...>>
+resolve(event, args, ctx, info): MaybePromise<...>
+```
+
+- `subscribe` Called once when the initial subscription request is sent by the client. It must return an `AsyncIterator`. The values emitted via it flow into the peer method `resolve`. The point of this method is to setup the data link between your streaming data source and a client subscription. It is not concerned with shaping the data coming off the streaming data source into something comforming to the GraphQL type assigned to the field. that is the job of the peer method `resolve`.
+
+- `resolve` Called for every value emitted by the `AsyncIterator` returned by `subscribe`. The value is the first argument to `resolve`, replacing the backing data parameter that is usuaully passed there. The point of this method is to receive the raw event data from your data source and make it conform to the GraphQL type assigned to the field––just like all resolvers do. The only difference is that the backing data aspect.
 
 ## `inputObjectType`
 
@@ -569,9 +608,10 @@ Defines an object which can be passed as an input value.
 <!-- prettier-ignore -->
 ```ts
 (config: {
+  name:              string
+  definition:        InputObjectDefinitionBlock
   description?:      string
   nonNullDefaults?:  NonNullConfig
-  definition:        InputObjectDefinitionBlock
 }) => NexusInputObjectType
 ```
 

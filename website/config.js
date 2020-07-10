@@ -19,7 +19,10 @@ const config = {
     //   { name: 'Community', link: 'https://www.prisma.io/community/' },
     //   { name: 'FAQ', link: 'https://www.prisma.io/docs/more/faq' },
     // ],
-    links: [{ name: '', link: '' }],
+    links: [
+      { name: 'Nexus Framework', link: '/' },
+      { name: 'Nexus Schema', link: '/components-standalone/schema' },
+    ],
     search: {
       indexName: process.env.GATSBY_ALGOLIA_INDEX_NAME,
       algoliaAppId: process.env.GATSBY_ALGOLIA_APP_ID,
@@ -35,7 +38,7 @@ const config = {
     twitter: {
       site: '@nexusgql',
       creator: '@nexusgql',
-      image: '/social/docs-social.png',
+      image: '/social/missing.png',
     },
     og: {
       site_name: 'Nexus',
@@ -44,7 +47,7 @@ const config = {
         alt: 'Nexus',
         height: '630',
         type: 'image/png',
-        url: '/social/docs-social.png', //replace social image
+        url: '/social/missing.png', //replace social image
         width: '1200',
       },
     },
@@ -70,7 +73,7 @@ const config = {
     ],
     community: [
       { name: 'GitHub', link: 'https://github.com/graphql-nexus' },
-      { name: 'GitHub Discussions', link: 'https://github.com/graphql-nexus/nexus/discussions' },
+      { name: 'GitHub Discussions', link: 'https://nxs.li/discussions' },
       { name: 'GraphQL Meetup', link: 'https://www.meetup.com/graphql-berlin/' },
     ],
     resources: [
@@ -92,7 +95,7 @@ const config = {
     ],
     /* end NOT USED */
     findus: {
-      twitterLink: 'https://twitter.com/nexusgql',
+      twitterLink: 'https://nxs.li/tweets',
       gitLink: 'https://github.com/graphql-nexus/',
       slackLink: '',
       fbLink: '',

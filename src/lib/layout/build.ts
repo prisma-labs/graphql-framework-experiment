@@ -41,7 +41,7 @@ export type BuildLayout = {
    * When bundle case, this is different than `root` because it tells you where
    * the source starts, not the build environment.
    *
-   * For example, here `source_root` is `<out_root>/api` becuase the user has
+   * For example, here `source_root` is `<out_root>/api` because the user has
    * set their root dir to `api`:
    *
    * ```

@@ -161,7 +161,7 @@ Integration between Nexus' test and database systems is young and still missing 
 
 1. Update your jest config to use your new test environment.
 
-   ```diff
+   ```ts
    +++ jest.config.ts
    const { join } = require('path')
 
@@ -174,7 +174,7 @@ Integration between Nexus' test and database systems is young and still missing 
 
 1. Edit your `schema.prisma` file to use an environment variable.
 
-   ```diff
+   ```ts
    +++ schema.prisma
    datasource db {
      provider = "postgresql"
@@ -199,7 +199,7 @@ Integration between Nexus' test and database systems is young and still missing 
 
 1. For now, just update the `createTestContext` wrapper to integrate your app's db client:
 
-   ```diff
+   ```ts
    +++ nexus-test-environment.js
    afterAll(async () => {
      await ctx.app.server.stop()

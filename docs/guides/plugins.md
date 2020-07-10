@@ -1,3 +1,0 @@
-[API Reference](/api/modules/main/exports/use) ⌁ [issues](https://nxs.li/issues/component/plugins) / [features](https://nxs.li/issues/components/plugins/features) | [bugs](https://nxs.li/issues/component/plugins/bugs)
-
-todo

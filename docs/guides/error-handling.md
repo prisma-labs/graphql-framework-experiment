@@ -1,3 +1,0 @@
-## Global
-
-Nexus provides last-resort error handling for your app. It handles both of Node's [`uncaughtException`](https://nodejs.org/api/process.html#process_event_uncaughtexception) and [`unhandledRejection`](https://nodejs.org/api/process.html#process_event_unhandledrejection) process events. The error will be logged and then your app process will be terminated with exit code 1.
