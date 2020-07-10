@@ -1,8 +1,9 @@
 import * as NexusLogger from '@nexus/logger'
 import * as NexusSchema from '@nexus/schema'
 import chalk from 'chalk'
-import { GraphQLFieldResolver, GraphQLResolveInfo } from 'graphql'
+import * as GraphQL from 'graphql'
 import * as HTTP from 'http'
+import { logPrettyError } from '../../lib/errors'
 import { createNexusSchemaStateful, NexusSchemaStatefulBuilders } from '../../lib/nexus-schema-stateful'
 import { RuntimeContributions } from '../../lib/plugin'
 import * as Process from '../../lib/process'
@@ -14,7 +15,6 @@ import { assertAppNotAssembled } from '../utils'
 import { log } from './logger'
 import { createSchemaSettingsManager, SchemaSettingsManager } from './settings'
 import { mapSettingsAndPluginsToNexusSchemaConfig } from './settings-mapper'
-import { logPrettyError } from '../../lib/errors'
 
 export type LazyState = {
   contextContributors: ContextContributor[]
@@ -47,8 +47,8 @@ type MiddlewareFn = (
   source: any,
   args: any,
   context: NexusSchema.core.GetGen<'context'>,
-  info: GraphQLResolveInfo,
-  next: GraphQLFieldResolver<any, any>
+  info: GraphQL.GraphQLResolveInfo,
+  next: GraphQL.GraphQLFieldResolver<any, any>
 ) => any
 
 /**
@@ -132,6 +132,10 @@ export function create(appState: AppState): SchemaInternal {
         nexusSchemaConfig.plugins!.push(...appState.schemaComponent.plugins)
         try {
           const { schema, missingTypes } = NexusSchema.core.makeSchemaInternal(nexusSchemaConfig)
+          /**
+           * Validate the GraphQL schema
+           */
+          GraphQL.validate(schema, GraphQL.parse(GraphQL.introspectionQuery))
           return { schema, missingTypes }
         } catch (err) {
           logPrettyError(log, err, 'fatal')
