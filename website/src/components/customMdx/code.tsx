@@ -102,13 +102,6 @@ const Code = ({ children, className, ...props }: PreCodeProps) => {
                     isDiff = true
                   }
 
-                  // if (
-                  //   (line[0] && line[0].content.length && line[0].content[0] === '!') ||
-                  //   (line[0] && line[0].content === '' && line[1] && line[1].content === '!')
-                  // ) {
-                  //   isHidden = true
-                  // }
-
                   const lineProps = getLineProps({ line, key: i })
 
                   lineProps.style = { ...lineClass }
