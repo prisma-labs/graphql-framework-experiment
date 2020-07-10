@@ -38,6 +38,11 @@ export const schema = app.schema
 export const settings = app.settings
 
 /**
+ * [API Reference](https://nxs.li/docs/api/on) ⌁ [Issues](https://nxs.li/issues/components/on)
+ */
+export const on = app.on
+
+/**
  * [API Reference](https://nxs.li/docs/api/use-plugins) ⌁ [Issues](https://nxs.li/issues/components/plugins)
  */
 export const use = app.use

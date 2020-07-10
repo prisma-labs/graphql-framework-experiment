@@ -4,13 +4,14 @@ import { rootLogger } from '../lib/nexus-logger'
 import * as Plugin from '../lib/plugin'
 import { RuntimeContributions } from '../lib/plugin'
 import * as Reflection from '../lib/reflection/stage'
+import { builtinScalars } from '../lib/scalars'
 import { Index } from '../lib/utils'
+import * as On from './on'
 import * as Schema from './schema'
 import * as Server from './server'
 import { ContextCreator } from './server/server'
 import * as Settings from './settings'
 import { assertAppNotAssembled } from './utils'
-import { builtinScalars } from '../lib/scalars'
 
 const log = Logger.log.child('app')
 
@@ -33,6 +34,10 @@ export interface App {
    * [API Reference](https://nxs.li/docs/api/settings) ⌁ [Issues](https://nxs.li/issues/components/settings)
    */
   settings: Settings.Settings
+  /**
+   * [API Reference](https://nxs.li/docs/api/use-plugins) ⌁ [Issues](https://nxs.li/issues/components/plugins)
+   */
+  on: On.On
   /**
    * [API Reference](https://nxs.li/docs/api/use-plugins) ⌁ [Issues](https://nxs.li/issues/components/plugins)
    */
@@ -120,12 +125,14 @@ export function create(): App {
     schemaSettings: schemaComponent.private.settings,
     log: Logger.log,
   })
+  const onComponent = On.create()
 
   const app: App = {
     log: log,
     settings: settingsComponent.public,
     schema: schemaComponent.public,
     server: serverComponent.public,
+    on: onComponent.public,
     reset() {
       // todo once we have log filtering, make this debug level
       rootLogger.trace('resetting state')
@@ -135,6 +142,24 @@ export function create(): App {
       appState.assembled = null
       appState.plugins = []
       appState.running = false
+    },
+    async start() {
+      // todo encode fact, that, it is an error to start app before app is assembled
+      if (Reflection.isReflection()) return
+      if (appState.running) return
+      await onComponent.private.trigger.runtime.before()
+      await serverComponent.private.start()
+      appState.running = true
+    },
+    async stop() {
+      if (Reflection.isReflection()) return
+      if (!appState.running) return
+      await serverComponent.private.stop()
+      appState.running = false
+    },
+    use(plugin) {
+      assertAppNotAssembled(appState, 'app.use', 'The plugin you attempted to use will be ignored')
+      appState.plugins.push(plugin)
     },
     assemble() {
       if (appState.assembled) return
@@ -171,22 +196,6 @@ export function create(): App {
       appState.assembled!.settings = settings
 
       schemaComponent.private.checks()
-    },
-    async start() {
-      if (Reflection.isReflection()) return
-      if (appState.running) return
-      await serverComponent.private.start()
-      appState.running = true
-    },
-    async stop() {
-      if (Reflection.isReflection()) return
-      if (!appState.running) return
-      await serverComponent.private.stop()
-      appState.running = false
-    },
-    use(plugin) {
-      assertAppNotAssembled(appState, 'app.use', 'The plugin you attempted to use will be ignored')
-      appState.plugins.push(plugin)
     },
   }
 
