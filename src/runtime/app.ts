@@ -6,7 +6,7 @@ import { RuntimeContributions } from '../lib/plugin'
 import * as Reflection from '../lib/reflection/stage'
 import { builtinScalars } from '../lib/scalars'
 import { Index } from '../lib/utils'
-import * as On from './on'
+import * as Lifecycle from './lifecycle'
 import * as Schema from './schema'
 import * as Server from './server'
 import { ContextCreator } from './server/server'
@@ -35,9 +35,10 @@ export interface App {
    */
   settings: Settings.Settings
   /**
-   * [API Reference](https://nxs.li/docs/api/use-plugins) ⌁ [Issues](https://nxs.li/issues/components/plugins)
+   * [API Reference](https://nxs.li/docs/api/lifecycle) ⌁ [Issues](https://nxs.li/issues/components/lifecycle)
+   * todo create short links
    */
-  on: On.On
+  on: Lifecycle.Lifecycle
   /**
    * [API Reference](https://nxs.li/docs/api/use-plugins) ⌁ [Issues](https://nxs.li/issues/components/plugins)
    */
@@ -125,7 +126,7 @@ export function create(): App {
     schemaSettings: schemaComponent.private.settings,
     log: Logger.log,
   })
-  const onComponent = On.create()
+  const onComponent = Lifecycle.create()
 
   const app: App = {
     log: log,

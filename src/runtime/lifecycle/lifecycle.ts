@@ -31,7 +31,7 @@ function createLazyState(): LazyState {
 /**
  * Public component interface
  */
-export interface On {
+export interface Lifecycle {
   runtime: {
     /**
      * Register a callback on the the "start" event. It is triggered when your app boots. If you return a promise it will be awaited upon.
@@ -72,12 +72,12 @@ export interface Private {
  * Control this component
  */
 export interface Controller {
-  public: On
+  public: Lifecycle
   private: Private
 }
 
 /**
- * Create an instance of "On"
+ * Create an instance of Lifecycle
  */
 export function create(): Controller {
   const state = createLazyState()
