@@ -132,10 +132,11 @@ export function create(appState: AppState): SchemaInternal {
         nexusSchemaConfig.plugins!.push(...appState.schemaComponent.plugins)
         try {
           const { schema, missingTypes } = NexusSchema.core.makeSchemaInternal(nexusSchemaConfig)
-          /**
-           * Validate the GraphQL schema
-           */
-          GraphQL.validate(schema, GraphQL.parse(GraphQL.introspectionQuery))
+          if (process.env.NEXUS_STAGE === 'dev') {
+            // Validate GraphQL Schema
+            // TODO: This should be done in @nexus/schema
+            GraphQL.validate(schema, GraphQL.parse(GraphQL.getIntrospectionQuery()))
+          }
           return { schema, missingTypes }
         } catch (err) {
           logPrettyError(log, err, 'fatal')
