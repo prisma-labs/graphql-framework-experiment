@@ -52,7 +52,10 @@ export const printStack = ({ callsite }: ErrorArgs): PrintStackResult => {
     // TODO: should not have hard-coded knowledge of prisma here
     const trace = stack.find(
       (t) =>
-        t.file && !t.file.includes('node_modules/nexus') && !t.file.includes('node_modules/@nexus/schema')
+        t.file &&
+        !t.file.includes('node_modules/nexus') &&
+        !t.file.includes('node_modules/@nexus/schema') &&
+        !t.file.includes('node_modules/graphql')
     )
     if (
       process.env.NEXUS_STAGE === 'dev' &&
