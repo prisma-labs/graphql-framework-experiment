@@ -90,7 +90,11 @@ export const printStack = ({ callsite }: ErrorArgs): PrintStackResult => {
         prevLines = highlightedLines
           .map((l, i) => chalk.grey(renderN(i + start + 1, lineNumber + start + 1) + ' ') + chalk.reset() + l)
           .map((l, i, _arr) =>
-            i === 2 ? `${chalk.red.bold('→')} ${l} ${chalk.dim(tracePathRelToHomeDir)}` : chalk.dim('  ' + l)
+            i === 2
+              ? `${chalk.red.bold('→')} ${l} ${chalk.dim(
+                  `${tracePathRelToHomeDir}:${lineNumber}:${trace.column}`
+                )}`
+              : chalk.dim('  ' + l)
           )
           .join('\n')
         filePath = trace.file
