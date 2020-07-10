@@ -337,27 +337,33 @@ export function prettifyHost(host: string): string {
   return host === '::' ? 'localhost' : host
 }
 
+type UnPromisify<T> = T extends Promise<infer U> ? U : T
+
 /**
  * Makes sure, that there is only one execution at a time
  * and the last invocation doesn't get lost (tail behavior of debounce)
  * Mostly designed for watch mode
  */
-export function simpleDebounce<T extends (...args: any[]) => Promise<any>>(fn: T): T {
+export function simpleDebounce<T extends (...args: any[]) => Promise<any>>(
+  fn: T
+): (...args: Parameters<T>) => { type: 'result'; data: UnPromisify<ReturnType<T>> } | { type: 'executing' } {
   let executing = false
   let pendingExecution: any = null
+  let res: any
   return (async (...args: any[]) => {
     if (executing) {
       // if there's already an execution, make it pending
       pendingExecution = args
-      return null as any
+      return { type: 'executing' }
     }
     executing = true
-    await fn(...args).catch((e) => console.error(e))
+    res = await fn(...args).catch((e) => console.error(e))
     if (pendingExecution) {
-      await fn(...args).catch((e) => console.error(e))
+      res = await fn(...args).catch((e) => console.error(e))
       pendingExecution = null
     }
     executing = false
+    return { type: 'result', data: res }
   }) as any
 }
 
