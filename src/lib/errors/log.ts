@@ -9,21 +9,28 @@ export function logPrettyError(log: Logger.Logger, err: Error, level: 'fatal'): 
 export function logPrettyError(log: Logger.Logger, err: Error, level: 'error'): void
 export function logPrettyError(log: Logger.Logger, err: Error, level: 'error' | 'fatal' = 'error'): void {
   if (process.env.NEXUS_STAGE === 'dev') {
-    const { stack, fileLineNumber, methodName, filePathRelToHomeDir } = printStack({ callsite: err.stack })
+    const { preview, methodName, file } = printStack({
+      callsite: err.stack,
+    })
 
-    log[level](`${err.message} ${methodName ? `on \`${highlightTS(methodName)}\` ` : ''}at ${fileLineNumber}`)
+    const methodNameMessage = methodName ? `on \`${highlightTS(methodName)}\` ` : ''
+    const atMessage = file.pathLineNumber ? `at ${file.pathLineNumber}` : ''
+    log[level](`${err.message} ${methodNameMessage}${atMessage}`)
     if (err.stack) {
       const cleanedStack = cleanStack(err.stack, { withoutMessage: true }).split('\n').slice(1)
-      const renderedStack = [indent('Stack:', 2), ...cleanedStack].map(s => {
-        // Highlight the line of the stack trace were the error happened in the user project
-        if (s.includes(filePathRelToHomeDir)) {
-          return chalk.bold(chalk.redBright(s))
-        }
+      const renderedStack = [indent('Stack:', 2), ...cleanedStack]
+        .map((s) => {
+          // Highlight the line of the stack trace were the error happened in the user project
+          if (file.pathRelToHomeDir && s.includes(file.pathRelToHomeDir)) {
+            return chalk.bold(chalk.redBright(s))
+          }
 
-        return s
-      }).join('\n')
+          return s
+        })
+        .join('\n')
 
-      console.log('\n' + indent(stack, 2) + '\n\n' + chalk.dim(renderedStack) + '\n')
+      const filePreviewContent = preview ? `${indent(preview, 2)}\n\n` : ''
+      console.log('\n' + filePreviewContent + chalk.dim(renderedStack) + '\n')
     }
   } else {
     log[level](err.message, {

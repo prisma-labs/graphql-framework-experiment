@@ -16,32 +16,37 @@ export interface PrintStackResult {
   /**
    * Portion of the file where the error happened
    */
-  stack: string
-  /**
-   * File path where the error happened
-   */
-  filePath: string
-  /**
-   * File path where the error happened, including the location
-   */
-  fileLineNumber: string
-  /**
-   * File path where the error happened, relative to the user home directory
-   */
-  filePathRelToHomeDir: string
+  preview: string | null
   /**
    * Name of the method that caused the error
    */
   methodName: string | null
+  /**
+   * Information about the user file where the error happened
+   */
+  file: {
+    /**
+     * File path where the error happened
+     */
+    path: string | null
+    /**
+     * File path where the error happened, including the location
+     */
+    pathLineNumber: string | null
+    /**
+     * File path where the error happened, relative to the user home directory
+     */
+    pathRelToHomeDir: string | null
+  }
 }
 
 const schemaRegex = /(\S+(objectType|inputObjectType|interfaceType|unionType|enumType|queryType|mutationType|subscriptionType|extendType|scalarType|importType|)\()/
 
 export const printStack = ({ callsite }: ErrorArgs): PrintStackResult => {
-  let fileLineNumber = ':'
-  let prevLines = '\n'
-  let filePath = ''
-  let filePathRelToHomeDir = ''
+  let fileLineNumber: string | null = null
+  let filePreview: string | null = null
+  let filePath: string | null = null
+  let filePathRelToHomeDir: string | null = null
   let methodName: string | null = null
 
   // @ts-ignore
@@ -86,7 +91,7 @@ export const printStack = ({ callsite }: ErrorArgs): PrintStackResult => {
         }
 
         const highlightedLines = highlightTS(lines.join('\n')).split('\n')
-        prevLines = highlightedLines
+        filePreview = highlightedLines
           .map((l, i) => chalk.grey(renderN(i + start + 1, lineNumber + start + 1) + ' ') + chalk.reset() + l)
           .map((l, i, _arr) =>
             i === 2
@@ -102,13 +107,14 @@ export const printStack = ({ callsite }: ErrorArgs): PrintStackResult => {
     }
   }
 
-  const stackStr = `${prevLines}${chalk.reset()}`
   return {
-    stack: stackStr,
-    fileLineNumber,
-    filePath,
-    filePathRelToHomeDir,
+    preview: filePreview ? `${filePreview}${chalk.reset()}` : null,
     methodName,
+    file: {
+      path: filePath,
+      pathLineNumber: fileLineNumber,
+      pathRelToHomeDir: filePathRelToHomeDir,
+    },
   }
 }
 
