@@ -20,10 +20,12 @@ export type Message =
   | {
       type: 'success-typegen'
     }
-  | { type: 'error'; data: { serializedError: SerializedError } }
+  | { type: 'runtime-error' | 'ts-error'; data: { serializedError: SerializedError } }
 
 type ReflectionResultPlugins = { success: false; error: Error } | { success: true; plugins: Plugin[] }
-type ReflectionResultArtifactGeneration = { success: false; error: Error } | { success: true }
+type ReflectionResultArtifactGeneration =
+  | { success: false; error: Error; type: 'runtime-error' | 'ts-error' }
+  | { success: true }
 type ReflectionResult = ReflectionResultPlugins | ReflectionResultArtifactGeneration
 
 /**
@@ -95,8 +97,16 @@ export function runTypegenReflectionAsSubProcess(layout: Layout.Layout) {
         resolve({ success: true })
       }
 
-      if (message.type === 'error') {
-        resolve({ success: false, error: deserializeError(message.data.serializedError) })
+      if (message.type === 'ts-error') {
+        resolve({ success: false, type: 'ts-error', error: deserializeError(message.data.serializedError) })
+      }
+
+      if (message.type === 'runtime-error') {
+        resolve({
+          success: false,
+          type: 'runtime-error',
+          error: deserializeError(message.data.serializedError),
+        })
       }
     })
 
