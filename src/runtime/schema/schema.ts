@@ -1,8 +1,9 @@
 import * as NexusLogger from '@nexus/logger'
 import * as NexusSchema from '@nexus/schema'
 import chalk from 'chalk'
-import { GraphQLFieldResolver, GraphQLResolveInfo } from 'graphql'
+import * as GraphQL from 'graphql'
 import * as HTTP from 'http'
+import { logPrettyError } from '../../lib/errors'
 import { createNexusSchemaStateful, NexusSchemaStatefulBuilders } from '../../lib/nexus-schema-stateful'
 import { RuntimeContributions } from '../../lib/plugin'
 import * as Process from '../../lib/process'
@@ -46,8 +47,8 @@ type MiddlewareFn = (
   source: any,
   args: any,
   context: NexusSchema.core.GetGen<'context'>,
-  info: GraphQLResolveInfo,
-  next: GraphQLFieldResolver<any, any>
+  info: GraphQL.GraphQLResolveInfo,
+  next: GraphQL.GraphQLFieldResolver<any, any>
 ) => any
 
 /**
@@ -129,8 +130,17 @@ export function create(appState: AppState): SchemaInternal {
         const nexusSchemaConfig = mapSettingsAndPluginsToNexusSchemaConfig(plugins, settings.data)
         nexusSchemaConfig.types.push(...statefulNexusSchema.state.types)
         nexusSchemaConfig.plugins!.push(...appState.schemaComponent.plugins)
-        const { schema, missingTypes } = NexusSchema.core.makeSchemaInternal(nexusSchemaConfig)
-        return { schema, missingTypes }
+        try {
+          const { schema, missingTypes } = NexusSchema.core.makeSchemaInternal(nexusSchemaConfig)
+          if (process.env.NEXUS_STAGE === 'dev') {
+            // Validate GraphQL Schema
+            // TODO: This should be done in @nexus/schema
+            GraphQL.validate(schema, GraphQL.parse(GraphQL.getIntrospectionQuery()))
+          }
+          return { schema, missingTypes }
+        } catch (err) {
+          logPrettyError(log, err, 'fatal')
+        }
       },
       checks() {
         assertNoMissingTypesDev(appState.assembled!.schema, appState.assembled!.missingTypes)

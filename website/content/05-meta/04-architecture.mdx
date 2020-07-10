@@ -160,7 +160,7 @@ Nexus takes a batteries included approach. Aside from being featureful, it also 
 
    Of course by doing this you're going outside what a given version of Nexus officially supports, so, YMMV "your mileage may vary"! But its not like if Nexus were using peer dep ranges that this caveat would magically go away.
 
-   In conclusion, from both a DX and engineering resource perspective we believe the best dep strategy for Nexus is not peer deps but internalized deps. Recapping the tradeoffs:
+In conclusion, from both a DX and engineering resource perspective we believe the best dep strategy for Nexus is not peer deps but internalized deps. Recapping the tradeoffs:
 
 - **Cost:** Giving you less flexibility to tailor the packages you use  
   ...but even then _not really_. You _can_ have final say via Yarn's `resolutions` setting.

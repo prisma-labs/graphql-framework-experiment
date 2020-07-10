@@ -21,12 +21,13 @@ jobs:
       - run: yarn -s build
       - run: yarn -s test:unit
 
-  system-tests:
-    runs-on: ubuntu-latest
+  system-tests-windows:
     strategy:
       matrix:
+        os: [windows-latest]
         node-version: [10.x, 12.x]
-        test-case: [kitchen-sink, create-prisma-app]
+        test-case: [kitchen-sink]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
@@ -42,8 +43,32 @@ jobs:
           git config --global user.name prisma-labs
           git config --global user.email labs@prisma.io
       - run: yarn -s test system/${{matrix.test-case}}
+
+  system-tests:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node-version: [10.x, 12.x]
+        test-case: [kitchen-sink, create-prisma-app]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install deps
+        run: yarn --frozen-lockfile
+      - run: yarn -s build
+      - name: Setup global git user
+        run: |
+          # For nexus create app flow which will make an init commit
+          git config --global user.name prisma-labs
+          git config --global user.email labs@prisma.io
+      - run: yarn -s test system/${{matrix.test-case}}
+
   publish:
-    needs: [unit-tests, unit-tests-windows, system-tests]
+    needs: [unit-tests, system-tests, system-tests-windows]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

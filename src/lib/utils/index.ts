@@ -535,3 +535,10 @@ export function requireResolveFrom(moduleId: string, fromPath: string): string {
 
   return slash(resolvedPath)
 }
+
+export function indent(str: string, len: number, char: string = ' ') {
+  return str
+    .split('\n')
+    .map((s) => char.repeat(len) + s)
+    .join('\n')
+}
