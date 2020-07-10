@@ -1,14 +1,21 @@
-import { MaybePromise, SideEffector } from '../../lib/utils'
+import { rootLogger } from '../../lib/nexus-logger'
+import { isReflection } from '../../lib/reflection'
+import { SideEffector } from '../../lib/utils'
+
+const log = rootLogger.child('lifecycle')
 
 export type LazyState = {
   callbacks: {
     runtime: {
-      before: SideEffector[]
-      after: SideEffector[]
-      schema: {
+      start: {
         before: SideEffector[]
-        after: SideEffector[]
       }
+      // todo
+      // after: SideEffector[]
+      // schema: {
+      //   before: SideEffector[]
+      //   after: SideEffector[]
+      // }
     }
   }
 }
@@ -17,12 +24,15 @@ function createLazyState(): LazyState {
   return {
     callbacks: {
       runtime: {
-        before: [],
-        after: [],
-        schema: {
+        start: {
           before: [],
-          after: [],
         },
+        // todo
+        // after: [],
+        // schema: {
+        //   before: [],
+        //   after: [],
+        // },
       },
     },
   }
@@ -33,23 +43,15 @@ function createLazyState(): LazyState {
  */
 export interface Lifecycle {
   runtime: {
-    /**
-     * Register a callback on the the "start" event. It is triggered when your app boots. If you return a promise it will be awaited upon.
-     *
-     * @tips Use this event to run initialization logic. For example, setting up a global Redis connection pool. Be mindful that since returning promises are awaited upon before starting the server, they will necessarially slow your  thus slowing down your boot time, only return a promise if you need to, as it will slow down your boot time. This mostly
-     */
-    before(callback: () => MaybePromise): void
-    after(callback: () => MaybePromise): void
-    schema: {
-      before(callback: () => MaybePromise): void
-      after(callback: () => MaybePromise): void
-    }
+    (callback: () => void): void
+    now: boolean
   }
-  // todo - requires having these calls stripped at build time for tree-shaking
-  // reflect: {
-  //   before(callback: () => MaybePromise): void
-  //   after(callback: () => MaybePromise): void
+  // todo
+  // stage: {
+  //   now: 'production' | 'development'
   // }
+  // todo - requires having calls be stripped at build time for tree-shaking
+  // reflect: {}
 }
 
 /**
@@ -58,74 +60,76 @@ export interface Lifecycle {
 export interface Private {
   trigger: {
     runtime: {
-      before(): Promise<void>
-      after(): Promise<void>
-      schema: {
+      start: {
         before(): Promise<void>
-        after(): Promise<void>
+        // todo
+        // after(): Promise<void>
+        // schema: {
+        //   before(): Promise<void>
+        //   after(): Promise<void>
+        // }
       }
     }
   }
 }
 
 /**
- * Control this component
- */
-export interface Controller {
-  public: Lifecycle
-  private: Private
-}
-
-/**
  * Create an instance of Lifecycle
  */
-export function create(): Controller {
+export function create() {
   const state = createLazyState()
 
+  const api = {} as Lifecycle
+
+  api.runtime = function (callback) {
+    log.debug('registered callback')
+    state.callbacks.runtime.start.before.push(callback)
+  } as Lifecycle['runtime']
+
+  api.runtime.now = !isReflection()
+
   return {
-    public: {
-      runtime: {
-        before(callback) {
-          state.callbacks.runtime.before.push(callback)
-        },
-        after(callback) {
-          state.callbacks.runtime.after.push(callback)
-        },
-        schema: {
-          before(callback) {
-            state.callbacks.runtime.schema.before.push(callback)
-          },
-          after(callback) {
-            state.callbacks.runtime.schema.before.push(callback)
-          },
-        },
-      },
-    },
+    public: api,
     private: {
       trigger: {
         runtime: {
-          async before() {
-            for (const callback of state.callbacks.runtime.before) {
-              await callback()
-            }
-          },
-          async after() {
-            for (const callback of state.callbacks.runtime.after) {
-              await callback()
-            }
-          },
-          schema: {
-            async before() {
-              for (const callback of state.callbacks.runtime.schema.before) {
-                await callback()
-              }
-            },
-            async after() {
-              for (const callback of state.callbacks.runtime.schema.after) {
-                await callback()
+          start: {
+            before() {
+              for (const callback of state.callbacks.runtime.start.before) {
+                // todo error handling
+                log.debug('will run callback', { event: 'runtime.start.before' })
+                try {
+                  callback()
+                } catch (error) {
+                  const wrappedError = new Error(
+                    `Lifecycle callback error on event "runtime.start.before":\n\n${error.message}`
+                  )
+                  wrappedError.stack = error.stack
+                  throw wrappedError
+                }
+                log.debug('did run callback', { event: 'runtime.start.before' })
               }
             },
           },
+
+          // todo
+          // async after() {
+          //   for (const callback of state.callbacks.runtime.after) {
+          //     await callback()
+          //   }
+          // },
+          // schema: {
+          //   async before() {
+          //     for (const callback of state.callbacks.runtime.schema.before) {
+          //       await callback()
+          //     }
+          //   },
+          //   async after() {
+          //     for (const callback of state.callbacks.runtime.schema.after) {
+          //       await callback()
+          //     }
+          //   },
+          // },
         },
       },
     },

@@ -126,14 +126,14 @@ export function create(): App {
     schemaSettings: schemaComponent.private.settings,
     log: Logger.log,
   })
-  const onComponent = Lifecycle.create()
+  const lifecycleComponent = Lifecycle.create()
 
   const app: App = {
     log: log,
     settings: settingsComponent.public,
     schema: schemaComponent.public,
     server: serverComponent.public,
-    on: onComponent.public,
+    on: lifecycleComponent.public,
     reset() {
       // todo once we have log filtering, make this debug level
       rootLogger.trace('resetting state')
@@ -148,7 +148,6 @@ export function create(): App {
       // todo encode fact, that, it is an error to start app before app is assembled
       if (Reflection.isReflection()) return
       if (appState.running) return
-      await onComponent.private.trigger.runtime.before()
       await serverComponent.private.start()
       appState.running = true
     },
@@ -164,6 +163,10 @@ export function create(): App {
     },
     assemble() {
       if (appState.assembled) return
+
+      if (!Reflection.isReflection()) {
+        lifecycleComponent.private.trigger.runtime.start.before()
+      }
 
       schemaComponent.private.beforeAssembly()
 

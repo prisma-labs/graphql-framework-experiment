@@ -1,7 +1,7 @@
 import { log } from '@nexus/logger'
 import * as HTTP from 'http'
 import * as Lo from 'lodash'
-import { removeReflectionStage, setReflectionStage } from '../lib/reflection'
+import { setReflectionStage, unsetReflectionStage } from '../lib/reflection'
 import * as App from './app'
 
 let app: App.PrivateApp
@@ -68,6 +68,39 @@ describe('assemble', () => {
   })
 })
 
+describe('lifecycle', () => {
+  describe('runtime', () => {
+    it('.now is true if not under reflection', () => {
+      expect(app.on.runtime.now).toBe(true)
+    })
+    it('.now is false if under reflection', () => {
+      setReflectionStage('plugin')
+      expect(App.create().on.runtime.now).toBe(false)
+      unsetReflectionStage()
+    })
+    it('callback is called when app is assmebled', () => {
+      const fn = jest.fn()
+      app.on.runtime(fn)
+      app.assemble()
+      expect(fn.mock.calls).toMatchInlineSnapshot(`
+      Array [
+        Array [],
+      ]
+    `)
+    })
+    it('if callback throws error then Nexus shows a nice error', () => {
+      app.on.runtime(() => {
+        throw new Error('error from user code')
+      })
+      expect(app.assemble).toThrowErrorMatchingInlineSnapshot(`
+        "Lifecycle callback error on event \\"runtime.start.before\\":
+
+        error from user code"
+      `)
+    })
+  })
+})
+
 describe('checks', () => {
   const spy = createLogSpy()
 
@@ -96,7 +129,7 @@ describe('server', () => {
       const p = app.server.handlers.playground as any
       expect(g()).toBeUndefined()
       expect(p()).toBeUndefined()
-      removeReflectionStage()
+      unsetReflectionStage()
     })
 
     // todo, process exit poop
