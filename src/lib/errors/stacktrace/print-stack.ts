@@ -49,7 +49,6 @@ export const printStack = ({ callsite }: ErrorArgs): PrintStackResult => {
     const stack = stackTraceParser.parse(callsite)
 
     // TODO: more resilient logic to find the right trace
-    // TODO: should not have hard-coded knowledge of prisma here
     const trace = stack.find(
       (t) =>
         t.file &&
