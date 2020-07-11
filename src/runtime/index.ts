@@ -38,7 +38,7 @@ export const schema = app.schema
 export const settings = app.settings
 
 /**
- * [API Reference](https://nxs.li/docs/api/on) ⌁ [Issues](https://nxs.li/issues/components/on)
+ * [API Reference](https://nxs.li/docs/api/on) ⌁ [Issues](https://nxs.li/issues/components/lifecycle)
  */
 export const on = app.on
 
