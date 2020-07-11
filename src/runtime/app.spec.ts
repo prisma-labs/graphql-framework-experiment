@@ -99,7 +99,7 @@ describe('lifecycle', () => {
       })
       app.assemble()
       expect(await app.start().catch((e: Error) => e)).toMatchInlineSnapshot(`
-        [Error: Lifecycle callback error on event "runtime.start.before":
+        [Error: Lifecycle callback error on event "start":
 
         error from user code]
       `)

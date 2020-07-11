@@ -93,9 +93,7 @@ export function create(state: AppState): Controller {
             try {
               callback(data)
             } catch (error) {
-              const wrappedError = new Error(
-                `Lifecycle callback error on event "runtime.start.before":\n\n${error.message}`
-              )
+              const wrappedError = new Error(`Lifecycle callback error on event "start":\n\n${error.message}`)
               wrappedError.stack = error.stack
               throw wrappedError
             }
