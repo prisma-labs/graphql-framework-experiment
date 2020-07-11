@@ -1,12 +1,19 @@
 import * as NexusSchema from '@nexus/schema'
 import { rootLogger } from '../../lib/nexus-logger'
+import { AppState } from '../app'
 
 const log = rootLogger.child('lifecycle')
 
+/**
+ * The data we pass to callbacks
+ */
 type Data = {
   schema: NexusSchema.core.NexusGraphQLSchema
 }
 
+/**
+ * The function users can register
+ */
 type Callback = (data: Data) => void
 
 export type LazyState = {
@@ -15,7 +22,7 @@ export type LazyState = {
   }
 }
 
-function createLazyState(): LazyState {
+export function createLazyState(): LazyState {
   return {
     callbacks: {
       start: [],
@@ -46,30 +53,42 @@ export interface Lifecycle {
  * Internal component controls
  */
 export interface Private {
+  reset(): void
   trigger: {
     start(data: Data): void
   }
 }
 
 /**
+ * Control the Lifecycle component
+ */
+export interface Controller {
+  public: Lifecycle
+  private: Private
+}
+
+/**
  * Create an instance of Lifecycle
  */
-export function create() {
-  const state = createLazyState()
+export function create(state: AppState): Controller {
+  state.components.lifecycle = createLazyState()
 
   const api = {} as Lifecycle
 
   api.start = function (callback) {
     log.debug('registered callback', { event: 'start' })
-    state.callbacks.start.push(callback)
+    state.components.lifecycle.callbacks.start.push(callback)
   }
 
   return {
     public: api,
     private: {
+      reset() {
+        state.components.lifecycle.callbacks.start.length = 0
+      },
       trigger: {
         start(data) {
-          for (const callback of state.callbacks.start) {
+          for (const callback of state.components.lifecycle.callbacks.start) {
             log.debug('will run callback', { event: 'start' })
             try {
               callback(data)
@@ -84,6 +103,6 @@ export function create() {
           }
         },
       },
-    } as Private,
+    },
   }
 }

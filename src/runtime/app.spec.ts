@@ -5,6 +5,7 @@ import 'jest-extended'
 import * as Lo from 'lodash'
 import { setReflectionStage, unsetReflectionStage } from '../lib/reflection'
 import * as App from './app'
+import * as Lifecycle from './lifecycle'
 
 let app: App.PrivateApp
 
@@ -23,11 +24,13 @@ describe('reset', () => {
       schema: { connections: { foo: {} } },
     })
     app.schema.objectType({ name: 'Foo', definition() {} })
+    app.on.start(() => {})
     app.assemble()
     app.reset()
     expect(app.settings.current.server.path).toEqual(app.settings.original.server.path)
     expect(app.settings.current.schema).toEqual(app.settings.original.schema)
     expect(app.private.state).toEqual(originalAppState)
+    expect(app.private.state.components.lifecycle).toEqual(Lifecycle.createLazyState())
   })
 
   it('calling before assemble is fine', () => {

@@ -90,7 +90,10 @@ export type AppState = {
     createContext: ContextCreator
   }
   running: boolean
-  schemaComponent: Schema.LazyState
+  components: {
+    schema: Schema.LazyState
+    lifecycle: Lifecycle.LazyState
+  }
 }
 
 export type PrivateApp = App & {
@@ -105,13 +108,14 @@ export type PrivateApp = App & {
  * type says.
  */
 export function createAppState(): AppState {
-  const appState = {
+  const appState: AppState = {
     assembled: null,
     running: false,
     plugins: [],
-  } as Omit<AppState, 'schemaComponent'>
+    components: {} as any, // populated by components
+  }
 
-  return appState as any
+  return appState
 }
 
 /**
@@ -126,7 +130,7 @@ export function create(): App {
     schemaSettings: schemaComponent.private.settings,
     log: Logger.log,
   })
-  const lifecycleComponent = Lifecycle.create()
+  const lifecycleComponent = Lifecycle.create(state)
 
   const app: App = {
     log: log,
@@ -140,6 +144,7 @@ export function create(): App {
       schemaComponent.private.reset()
       serverComponent.private.reset()
       settingsComponent.private.reset()
+      lifecycleComponent.private.reset()
       state.assembled = null
       state.plugins = []
       state.running = false
@@ -182,7 +187,7 @@ export function create(): App {
 
       state.assembled = {} as AppState['assembled']
 
-      const loadedPlugins = Plugin.importAndLoadRuntimePlugins(state.plugins, state.schemaComponent.scalars)
+      const loadedPlugins = Plugin.importAndLoadRuntimePlugins(state.plugins, state.components.schema.scalars)
       state.assembled!.loadedPlugins = loadedPlugins
 
       const { schema, missingTypes } = schemaComponent.private.assemble(loadedPlugins)
