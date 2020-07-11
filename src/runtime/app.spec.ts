@@ -1,5 +1,7 @@
 import { log } from '@nexus/logger'
+import * as GraphQL from 'graphql'
 import * as HTTP from 'http'
+import 'jest-extended'
 import * as Lo from 'lodash'
 import { setReflectionStage, unsetReflectionStage } from '../lib/reflection'
 import * as App from './app'
@@ -69,33 +71,34 @@ describe('assemble', () => {
 })
 
 describe('lifecycle', () => {
-  describe('runtime', () => {
-    it('.now is true if not under reflection', () => {
-      expect(app.on.runtime.now).toBe(true)
+  beforeEach(() => {
+    app.settings.change({ server: { port: 7583 } })
+    app.schema.queryType({
+      definition(t) {
+        t.string('foo')
+      },
     })
-    it('.now is false if under reflection', () => {
-      setReflectionStage('plugin')
-      expect(App.create().on.runtime.now).toBe(false)
-      unsetReflectionStage()
-    })
-    it('callback is called when app is assmebled', () => {
+  })
+  afterEach(async () => {
+    await app.stop()
+  })
+  describe('start', () => {
+    it('callback is called with data when app is started', async () => {
       const fn = jest.fn()
-      app.on.runtime(fn)
+      app.on.start(fn)
       app.assemble()
-      expect(fn.mock.calls).toMatchInlineSnapshot(`
-      Array [
-        Array [],
-      ]
-    `)
+      await app.start()
+      expect(fn.mock.calls[0][0].schema instanceof GraphQL.GraphQLSchema).toBeTrue()
     })
-    it('if callback throws error then Nexus shows a nice error', () => {
-      app.on.runtime(() => {
+    it('if callback throws error then Nexus shows a nice error', async () => {
+      app.on.start(() => {
         throw new Error('error from user code')
       })
-      expect(app.assemble).toThrowErrorMatchingInlineSnapshot(`
-        "Lifecycle callback error on event \\"runtime.start.before\\":
+      app.assemble()
+      expect(await app.start().catch((e: Error) => e)).toMatchInlineSnapshot(`
+        [Error: Lifecycle callback error on event "runtime.start.before":
 
-        error from user code"
+        error from user code]
       `)
     })
   })

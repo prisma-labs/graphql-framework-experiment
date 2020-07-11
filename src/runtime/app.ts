@@ -118,10 +118,10 @@ export function createAppState(): AppState {
  * Create an app instance
  */
 export function create(): App {
-  const appState = createAppState()
-  const serverComponent = Server.create(appState)
-  const schemaComponent = Schema.create(appState)
-  const settingsComponent = Settings.create(appState, {
+  const state = createAppState()
+  const serverComponent = Server.create(state)
+  const schemaComponent = Schema.create(state)
+  const settingsComponent = Settings.create(state, {
     serverSettings: serverComponent.private.settings,
     schemaSettings: schemaComponent.private.settings,
     log: Logger.log,
@@ -140,33 +140,34 @@ export function create(): App {
       schemaComponent.private.reset()
       serverComponent.private.reset()
       settingsComponent.private.reset()
-      appState.assembled = null
-      appState.plugins = []
-      appState.running = false
+      state.assembled = null
+      state.plugins = []
+      state.running = false
     },
     async start() {
-      // todo encode fact, that, it is an error to start app before app is assembled
+      if (!state.assembled) {
+        throw new Error('Must call app.assemble before calling app.start')
+      }
       if (Reflection.isReflection()) return
-      if (appState.running) return
+      if (state.running) return
+      lifecycleComponent.private.trigger.start({
+        schema: state.assembled!.schema,
+      })
       await serverComponent.private.start()
-      appState.running = true
+      state.running = true
     },
     async stop() {
       if (Reflection.isReflection()) return
-      if (!appState.running) return
+      if (!state.running) return
       await serverComponent.private.stop()
-      appState.running = false
+      state.running = false
     },
     use(plugin) {
-      assertAppNotAssembled(appState, 'app.use', 'The plugin you attempted to use will be ignored')
-      appState.plugins.push(plugin)
+      assertAppNotAssembled(state, 'app.use', 'The plugin you attempted to use will be ignored')
+      state.plugins.push(plugin)
     },
     assemble() {
-      if (appState.assembled) return
-
-      if (!Reflection.isReflection()) {
-        lifecycleComponent.private.trigger.runtime.start.before()
-      }
+      if (state.assembled) return
 
       schemaComponent.private.beforeAssembly()
 
@@ -179,25 +180,22 @@ export function create(): App {
        */
       if (Reflection.isReflectionStage('plugin')) return
 
-      appState.assembled = {} as AppState['assembled']
+      state.assembled = {} as AppState['assembled']
 
-      const loadedPlugins = Plugin.importAndLoadRuntimePlugins(
-        appState.plugins,
-        appState.schemaComponent.scalars
-      )
-      appState.assembled!.loadedPlugins = loadedPlugins
+      const loadedPlugins = Plugin.importAndLoadRuntimePlugins(state.plugins, state.schemaComponent.scalars)
+      state.assembled!.loadedPlugins = loadedPlugins
 
       const { schema, missingTypes } = schemaComponent.private.assemble(loadedPlugins)
-      appState.assembled!.schema = schema
-      appState.assembled!.missingTypes = missingTypes
+      state.assembled!.schema = schema
+      state.assembled!.missingTypes = missingTypes
 
       if (Reflection.isReflectionStage('typegen')) return
 
       const { createContext } = serverComponent.private.assemble(loadedPlugins, schema)
-      appState.assembled!.createContext = createContext
+      state.assembled!.createContext = createContext
 
       const { settings } = settingsComponent.private.assemble()
-      appState.assembled!.settings = settings
+      state.assembled!.settings = settings
 
       schemaComponent.private.checks()
     },
@@ -221,7 +219,7 @@ export function create(): App {
   return {
     ...app,
     private: {
-      state: appState,
+      state: state,
     },
   } as App
 }

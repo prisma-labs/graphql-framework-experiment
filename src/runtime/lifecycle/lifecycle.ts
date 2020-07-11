@@ -1,39 +1,24 @@
+import * as NexusSchema from '@nexus/schema'
 import { rootLogger } from '../../lib/nexus-logger'
-import { isReflection } from '../../lib/reflection'
-import { SideEffector } from '../../lib/utils'
 
 const log = rootLogger.child('lifecycle')
 
+type Data = {
+  schema: NexusSchema.core.NexusGraphQLSchema
+}
+
+type Callback = (data: Data) => void
+
 export type LazyState = {
   callbacks: {
-    runtime: {
-      start: {
-        before: SideEffector[]
-      }
-      // todo
-      // after: SideEffector[]
-      // schema: {
-      //   before: SideEffector[]
-      //   after: SideEffector[]
-      // }
-    }
+    start: Callback[]
   }
 }
 
 function createLazyState(): LazyState {
   return {
     callbacks: {
-      runtime: {
-        start: {
-          before: [],
-        },
-        // todo
-        // after: [],
-        // schema: {
-        //   before: [],
-        //   after: [],
-        // },
-      },
+      start: [],
     },
   }
 }
@@ -42,16 +27,19 @@ function createLazyState(): LazyState {
  * Public component interface
  */
 export interface Lifecycle {
-  runtime: {
-    (callback: () => void): void
-    now: boolean
-  }
+  start(callback: (data: Data) => void): void
+  // idea - if we ever need it
+  // phase: {
+  //   now: 'reflection' | 'runtime'
+  //   reflection: boolean
+  //   runtime: boolean
+  // }
   // todo
   // stage: {
   //   now: 'production' | 'development'
   // }
   // todo - requires having calls be stripped at build time for tree-shaking
-  // reflect: {}
+  // reflection: {}
 }
 
 /**
@@ -59,17 +47,7 @@ export interface Lifecycle {
  */
 export interface Private {
   trigger: {
-    runtime: {
-      start: {
-        before(): Promise<void>
-        // todo
-        // after(): Promise<void>
-        // schema: {
-        //   before(): Promise<void>
-        //   after(): Promise<void>
-        // }
-      }
-    }
+    start(data: Data): void
   }
 }
 
@@ -81,57 +59,31 @@ export function create() {
 
   const api = {} as Lifecycle
 
-  api.runtime = function (callback) {
-    log.debug('registered callback')
-    state.callbacks.runtime.start.before.push(callback)
-  } as Lifecycle['runtime']
-
-  api.runtime.now = !isReflection()
+  api.start = function (callback) {
+    log.debug('registered callback', { event: 'start' })
+    state.callbacks.start.push(callback)
+  }
 
   return {
     public: api,
     private: {
       trigger: {
-        runtime: {
-          start: {
-            before() {
-              for (const callback of state.callbacks.runtime.start.before) {
-                // todo error handling
-                log.debug('will run callback', { event: 'runtime.start.before' })
-                try {
-                  callback()
-                } catch (error) {
-                  const wrappedError = new Error(
-                    `Lifecycle callback error on event "runtime.start.before":\n\n${error.message}`
-                  )
-                  wrappedError.stack = error.stack
-                  throw wrappedError
-                }
-                log.debug('did run callback', { event: 'runtime.start.before' })
-              }
-            },
-          },
-
-          // todo
-          // async after() {
-          //   for (const callback of state.callbacks.runtime.after) {
-          //     await callback()
-          //   }
-          // },
-          // schema: {
-          //   async before() {
-          //     for (const callback of state.callbacks.runtime.schema.before) {
-          //       await callback()
-          //     }
-          //   },
-          //   async after() {
-          //     for (const callback of state.callbacks.runtime.schema.after) {
-          //       await callback()
-          //     }
-          //   },
-          // },
+        start(data) {
+          for (const callback of state.callbacks.start) {
+            log.debug('will run callback', { event: 'start' })
+            try {
+              callback(data)
+            } catch (error) {
+              const wrappedError = new Error(
+                `Lifecycle callback error on event "runtime.start.before":\n\n${error.message}`
+              )
+              wrappedError.stack = error.stack
+              throw wrappedError
+            }
+            log.debug('did run callback', { event: 'start' })
+          }
         },
       },
-    },
+    } as Private,
   }
 }
