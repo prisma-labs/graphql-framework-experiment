@@ -36,7 +36,6 @@ export interface App {
   settings: Settings.Settings
   /**
    * [API Reference](https://nxs.li/docs/api/on) ⌁ [Issues](https://nxs.li/issues/components/lifecycle)
-   * todo create short links
    */
   on: Lifecycle.Lifecycle
   /**
