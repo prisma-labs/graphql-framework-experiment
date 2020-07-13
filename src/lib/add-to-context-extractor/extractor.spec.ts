@@ -4,19 +4,53 @@ import { normalizePathsInData } from '../../lib/utils'
 import { extractContextTypes } from './extractor'
 
 describe('syntax cases', () => {
-  it('will extract from schema.addToContext', () => {
+  it('will extract from import name of nexus default export', () => {
     expect(
-      extractOrThrow(`
-        schema.addToContext(req => ({ a: 1 }))
-      `).types.length
-    ).not.toEqual(0)
+      extractOrThrow(
+        `
+          import n from 'nexus'
+          n.schema.addToContext(req => ({ a: 1 }))
+        `,
+        { noImport: true }
+      ).types.length
+    ).toEqual(1)
   })
-  it('will extract from app.schema.addToContext', () => {
+  it('will extract from named import "schema" of nexus', () => {
     expect(
-      extractOrThrow(`
-        app.schema.addToContext(req => ({ a: 1 }))
-      `).types.length
-    ).not.toEqual(0)
+      extractOrThrow(
+        `
+          import { schema } from 'nexus'
+          schema.addToContext(req => ({ a: 1 }))
+        `,
+        { noImport: true }
+      ).types.length
+    ).toEqual(1)
+  })
+  it('will extract from named aliased import "schema" of nexus', () => {
+    expect(
+      extractOrThrow(
+        `
+          import { schema as s } from 'nexus'
+          s.addToContext(req => ({ a: 1 }))
+        `,
+        { noImport: true }
+      ).types.length
+    ).toEqual(1)
+  })
+  it('will extract from mix of all cases in single module', () => {
+    expect(
+      extractOrThrow(
+        `
+          import app from 'nexus'
+          import { schema } from 'nexus'
+          import { schema as s } from 'nexus'
+          app.schema.addToContext(req => ({ a: 1 }))
+          schema.addToContext(req => ({ a: 1 }))
+          s.addToContext(req => ({ a: 1 }))
+        `,
+        { noImport: true }
+      ).types.length
+    ).toEqual(3)
   })
   describe('does not extract when not relevant AST pattern', () => {
     it('case 1', () => {
@@ -742,7 +776,8 @@ describe('top-level union types', () => {
 // Helpers
 //
 
-function extract(...sources: string[]) {
+type Opts = { noImport: boolean }
+function extract(source: string, opts: Opts = { noImport: false }) {
   const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g']
   const project = new tsm.Project({
     useInMemoryFileSystem: true,
@@ -750,12 +785,15 @@ function extract(...sources: string[]) {
       strict: true,
     },
   })
-  for (const source of sources) {
-    const moduleName = letters.shift()!
-    project.createSourceFile(`./src/${moduleName}.ts`, source)
+
+  if (!opts.noImport) {
+    source = `import { schema } from 'nexus'\n\n${source}`
   }
 
-  const result = extractContextTypes(project.getProgram().compilerObject)
+  const moduleName = letters.shift()!
+  project.createSourceFile(`./src/${moduleName}.ts`, source)
+
+  const result = extractContextTypes(project)
 
   if (isLeft(result)) {
     return result.left
@@ -764,8 +802,8 @@ function extract(...sources: string[]) {
   return normalizePathsInData(result.right)
 }
 
-function extractOrThrow(...sources: string[]) {
-  const result = extract(...sources)
+function extractOrThrow(source: string, opts: Opts = { noImport: false }) {
+  const result = extract(source, opts)
   if (result instanceof Error) throw result
   else return result
 }

@@ -334,3 +334,47 @@ export function getAbsoluteImportPath(sourceFile: TSM.SourceFile) {
 
   return { isNode, modulePath }
 }
+
+/**
+ * Find the modules in the project that import the given dep and return info about how that dep is imported along with sourceFile ref itself.
+ */
+export function findModulesThatImportModule(project: TSM.Project, id: string) {
+  const data: ModulesWithImportSearchResult[] = []
+
+  for (const sourceFile of project.getSourceFiles()) {
+    if (sourceFile.getFilePath().includes('node_modules')) continue
+    let entry: ModulesWithImportSearchResult
+    for (const importDec of sourceFile.getImportDeclarations()) {
+      if (importDec.getModuleSpecifier().getText() === `'${id}'`) {
+        entry = entry! ?? { sourceFile, imports: [] }
+        const namedImports = importDec.getNamedImports()
+        const defaultImport = importDec.getDefaultImport() ?? null
+        entry.imports.push({
+          default: defaultImport,
+          named:
+            namedImports.length === 0
+              ? null
+              : namedImports.map((namedImport) => ({
+                  name: namedImport.getName(),
+                  alias: namedImport.getAliasNode()?.getText() ?? null,
+                })),
+        })
+      }
+    }
+    if (entry!) data.push(entry!)
+  }
+
+  return data
+}
+
+/**
+ * - "imports" list is non-empty array.
+ * - At least one of import props "default" or "named" will be non-null, possibly both
+ */
+export type ModulesWithImportSearchResult = {
+  sourceFile: TSM.SourceFile
+  imports: {
+    default: null | TSM.Identifier
+    named: null | { alias: null | string; name: string }[]
+  }[]
+}
