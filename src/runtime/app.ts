@@ -149,11 +149,11 @@ export function create(): App {
       state.running = false
     },
     async start() {
+      if (Reflection.isReflection()) return
+      if (state.running) return
       if (!state.assembled) {
         throw new Error('Must call app.assemble before calling app.start')
       }
-      if (Reflection.isReflection()) return
-      if (state.running) return
       lifecycleComponent.private.trigger.start({
         schema: state.assembled!.schema,
       })
