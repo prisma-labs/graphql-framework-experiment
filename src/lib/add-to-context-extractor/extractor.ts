@@ -90,7 +90,7 @@ export function extractContextTypes(program: ts.Program): Either<Exception, Extr
     const expText = exp.getExpression().getText()
     const propName = exp.getName()
 
-    if (expText !== 'schema' || propName !== 'addToContext') {
+    if (!((expText === 'schema' || expText === 'app.schema') && propName === 'addToContext')) {
       n.forEachChild(visit)
       return
     }

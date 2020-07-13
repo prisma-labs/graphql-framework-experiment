@@ -11,6 +11,13 @@ describe('syntax cases', () => {
       `).types.length
     ).not.toEqual(0)
   })
+  it('will extract from app.schema.addToContext', () => {
+    expect(
+      extractOrThrow(`
+        app.schema.addToContext(req => ({ a: 1 }))
+      `).types.length
+    ).not.toEqual(0)
+  })
   describe('does not extract when not relevant AST pattern', () => {
     it('case 1', () => {
       expect(
