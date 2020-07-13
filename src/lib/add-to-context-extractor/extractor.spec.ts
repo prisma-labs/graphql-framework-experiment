@@ -3,31 +3,40 @@ import * as tsm from 'ts-morph'
 import { normalizePathsInData } from '../../lib/utils'
 import { extractContextTypes } from './extractor'
 
-describe('ignores cases that do not apply', () => {
-  it('case 1', () => {
+describe('syntax cases', () => {
+  it('will extract from schema.addToContext', () => {
     expect(
-      extract(`
+      extractOrThrow(`
+        schema.addToContext(req => ({ a: 1 }))
+      `).types.length
+    ).not.toEqual(0)
+  })
+  describe('does not extract when not relevant AST pattern', () => {
+    it('case 1', () => {
+      expect(
+        extract(`
         foobar.addToContext(req => { return { a: 1 } })
       `)
-    ).toMatchInlineSnapshot(`
-      Object {
-        "typeImports": Array [],
-        "types": Array [],
-      }
-    `)
-  })
+      ).toMatchInlineSnapshot(`
+              Object {
+                "typeImports": Array [],
+                "types": Array [],
+              }
+          `)
+    })
 
-  it('case 2', () => {
-    expect(
-      extract(`
+    it('case 2', () => {
+      expect(
+        extract(`
         addToContext(req => { return { a: 1 } })
       `)
-    ).toMatchInlineSnapshot(`
-      Object {
-        "typeImports": Array [],
-        "types": Array [],
-      }
-    `)
+      ).toMatchInlineSnapshot(`
+              Object {
+                "typeImports": Array [],
+                "types": Array [],
+              }
+          `)
+    })
   })
 })
 
@@ -746,4 +755,10 @@ function extract(...sources: string[]) {
   }
 
   return normalizePathsInData(result.right)
+}
+
+function extractOrThrow(...sources: string[]) {
+  const result = extract(...sources)
+  if (result instanceof Error) throw result
+  else return result
 }

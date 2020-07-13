@@ -1,9 +1,12 @@
 import { Either, left, right } from 'fp-ts/lib/Either'
 import * as fs from 'fs-jetpack'
+import Lo from 'lodash'
 import * as path from 'path'
+import * as Path from 'path'
 import { addHook } from 'pirates'
 import slash from 'slash'
 import * as sourceMapSupport from 'source-map-support'
+import * as TSM from 'ts-morph'
 import * as ts from 'typescript'
 import { Layout } from './layout'
 import { rootLogger } from './nexus-logger'
@@ -224,4 +227,110 @@ function updateSourceMap(sourceMapText: string, fileName: string) {
   sourceMap.sources = [fileName]
   delete sourceMap.sourceRoot
   return JSON.stringify(sourceMap)
+}
+
+/**
+ * Given a type, if it is a Promise, return the inner type. Otherwise just returns the given type as is (passthrough).
+ *
+ * Does not recursively unwrap Promise types. Only the first Promise, if one, is unwrapped.
+ */
+export function unwrapMaybePromise(type: TSM.Type) {
+  if (type.getSymbol()?.getName() === 'Promise') {
+    const typeArgs = type.getTypeArguments()
+    if (typeArgs.length > 0) {
+      const wrappedType = typeArgs[0]
+
+      return wrappedType
+    }
+  }
+
+  return type
+}
+
+/**
+ * Check if the members of a union type are mergable. Only unions of interfaces and/or objects are considered mergable.
+ */
+export function isMergableUnion(type: TSM.Type): boolean {
+  return type.isUnion() && type.getUnionTypes().every((t) => t.isObject() || t.isInterface())
+}
+
+/**
+ * Merge a mergable union type into a single object. Returned as a string representation of TypeScript code. The given type should be validated by `isMergableUnion` first. The algorithm has the following rules:
+ *
+ * - A field with the same type accross all members results in simply that field
+ * - A field with different types between members results in a union merge
+ * - A field not shared by all members makes the field become optional
+ * - A field shared by all members but is optional in one or more members makes the field become optional
+ * - Field overloads are not supported, only the first declaration is considered
+ *
+ * @remarks This is useful in cases where you want to accept some user data and extract a single object type from it. What cases would single object types be explicitly desired over union types? One use-case is GraphQL context data. Its highly unlikely a user wants the context parameter of their resolver to be a union of types. Especially if the data contributions toward that type are not wholly owned by the user (e.g. plugins). Yet, users can and so will sometimes contribute data that leads to union types, for example because of conditional logic.
+ *
+ * TL;DR In general it is a bad idea to merge union members, but in some particular API design cases, the intent being modelled may warrant an exception.
+ */
+export function mergeUnionTypes(type: TSM.Type) {
+  type PropertyInfo = { isOptional: boolean; type: string }
+
+  const unionTypes = type.getUnionTypes()
+
+  if (Lo.isEmpty(unionTypes)) return '{ }'
+
+  const stringifiedProps = Lo.chain(unionTypes)
+    .reduce((acc, u) => {
+      u.getProperties().forEach((p) => {
+        const name = p.getName()
+        const isOptional = p.hasFlags(TSM.ts.SymbolFlags.Optional)
+        const propertyType = p
+          .getDeclarations()[0]
+          .getType()
+          .getText(undefined, TSM.ts.TypeFormatFlags.NoTruncation)
+
+        if (!acc[name]) {
+          acc[name] = []
+        }
+
+        acc[name].push({ isOptional, type: propertyType })
+      })
+      return acc
+    }, {} as Record<string, PropertyInfo[]>)
+    .entries()
+    .map(([name, propertiesInfo]) => {
+      // If a property is not present across all members of the union type, force it to be optional
+      const isOptional =
+        propertiesInfo.length !== unionTypes.length ? true : propertiesInfo.some((p) => p.isOptional)
+      const typesOfProperty = Lo(propertiesInfo)
+        .flatMap((p) => p.type.split(' | '))
+        .uniq()
+        .value()
+        .join(' | ')
+
+      return `${name}${isOptional ? '?' : ''}: ${typesOfProperty};`
+    })
+    .value()
+    .join(' ')
+
+  return `{ ${stringifiedProps} }`
+}
+
+/**
+ * Given a SourceFile get the absolute ID by which it would be imported.
+ */
+export function getAbsoluteImportPath(sourceFile: TSM.SourceFile) {
+  // NOTE TypeScript paths always work in terms of forwrd slashes, even on windows
+  // We rely on this normalization in path checks below.
+
+  let isNode = false
+  let modulePath = Path.join(Path.dirname(sourceFile.getFilePath()), sourceFile.getBaseNameWithoutExtension())
+
+  const nodeModule = modulePath.match(/node_modules\/@types\/node\/(.+)/)?.[1]
+  if (nodeModule) {
+    modulePath = nodeModule
+    isNode = true
+  } else {
+    const externalPackage = modulePath.match(/node_modules\/@types\/(.+)/)?.[1]
+    if (externalPackage) {
+      modulePath = externalPackage
+    }
+  }
+
+  return { isNode, modulePath }
 }

@@ -1,9 +1,8 @@
 import { Either, left, right } from 'fp-ts/lib/Either'
-import Lo from 'lodash'
-import * as Path from 'path'
 import * as tsm from 'ts-morph'
 import ts from 'typescript'
 import { rootLogger } from '../nexus-logger'
+import { getAbsoluteImportPath, isMergableUnion, mergeUnionTypes, unwrapMaybePromise } from '../tsc'
 import { exception, Exception } from '../utils'
 import { forbiddenUnionTypeError } from './errors'
 
@@ -136,17 +135,12 @@ export function extractContextTypes(program: ts.Program): Either<Exception, Extr
       tsm.ts.TypeFormatFlags.NoTruncation
     )
 
-    if (contextAdderRetType.isUnion()) {
-      const unionTypes = contextAdderRetType.getUnionTypes()
-
-      // If every member of the union are objects or interfaces
-      if (unionTypes.every((t) => t.isObject() || t.isInterface())) {
-        contextAdderRetTypeString = mergeUnionTypes(unionTypes)
-      } else {
-        throw forbiddenUnionTypeError({
-          unionType: contextAdderRetType.getText(undefined, tsm.ts.TypeFormatFlags.NoTruncation),
-        })
-      }
+    if (isMergableUnion(contextAdderRetType)) {
+      contextAdderRetTypeString = mergeUnionTypes(contextAdderRetType)
+    } else if (contextAdderRetType.isUnion()) {
+      throw forbiddenUnionTypeError({
+        unionType: contextAdderRetType.getText(undefined, tsm.ts.TypeFormatFlags.NoTruncation),
+      })
     }
 
     if (contextAdderRetType.isInterface() || contextAdderRetType.getAliasSymbol()) {
@@ -241,75 +235,4 @@ function extractTypeImportInfoFromType(t: tsm.Type): null | TypeImportInfo {
     isExported: sourceFile.getExportedDeclarations().has(name),
     isNode: isNode,
   }
-}
-
-export function unwrapMaybePromise(type: tsm.Type) {
-  if (type.getSymbol()?.getName() === 'Promise') {
-    const typeArgs = type.getTypeArguments()
-    if (typeArgs.length > 0) {
-      const wrappedType = typeArgs[0]
-
-      return wrappedType
-    }
-  }
-
-  return type
-}
-
-function getAbsoluteImportPath(sourceFile: tsm.SourceFile) {
-  let isNode = false
-  let modulePath = Path.join(Path.dirname(sourceFile.getFilePath()), sourceFile.getBaseNameWithoutExtension())
-
-  const nodeModule = modulePath.match(/node_modules\/@types\/node\/(.+)/)?.[1]
-  if (nodeModule) {
-    modulePath = nodeModule
-    isNode = true
-  } else {
-    const externalPackage = modulePath.match(/node_modules\/@types\/(.+)/)?.[1]
-    if (externalPackage) {
-      modulePath = externalPackage
-    }
-  }
-
-  return { isNode, modulePath }
-}
-
-type PropertyInfo = { isOptional: boolean; type: string }
-
-export function mergeUnionTypes(unionTypes: tsm.Type<tsm.ts.Type>[]) {
-  const properties = unionTypes.reduce<Record<string, PropertyInfo[]>>((acc, u) => {
-    u.getProperties().forEach((p) => {
-      const name = p.getName()
-      const isOptional = p.hasFlags(tsm.ts.SymbolFlags.Optional)
-      const propertyType = p
-        .getDeclarations()[0]
-        .getType()
-        .getText(undefined, tsm.ts.TypeFormatFlags.NoTruncation)
-
-      if (!acc[name]) {
-        acc[name] = []
-      }
-
-      acc[name].push({ isOptional, type: propertyType })
-    })
-    return acc
-  }, {})
-
-  const stringifiedProps = Object.entries(properties)
-    .map(([name, propertiesInfo]) => {
-      // If a property is not present across all members of the union type, force it to be optional
-      const isOptional =
-        propertiesInfo.length !== unionTypes.length ? true : propertiesInfo.some((p) => p.isOptional)
-      const typesOfProperty = Lo(propertiesInfo)
-        .flatMap((p) => p.type.split(' | '))
-        .uniq()
-        .value()
-        .join(' | ')
-
-      return `${name}${isOptional ? '?' : ''}: ${typesOfProperty};`
-    })
-    .join(' ')
-
-  // merge the properties
-  return `{ ${stringifiedProps} }`
 }
