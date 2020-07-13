@@ -33,3 +33,28 @@ export default (req, res) => {
 ```
 
 See the [Next.JS example](https://github.com/graphql-nexus/examples/tree/master/with-nextjs) for a functioning serverless reference.
+
+## Serverfull
+
+In `nexus` you can define both `graph` and `rest` endpoints. By access to express you can for example receive files uploaded to your service. To achieve it you need configure `body-parser`.
+
+```
+import { server } from 'nexus'
+const bodyParser = require('body-parser')
+
+const app = server.express
+
+app.use(bodyParser.raw({type: 'application/octet-stream', limit: '50mb'}))
+app.use(bodyParser.json({type: 'application/json'}))
+```
+
+If you want to increase size of body accepted by your endpoints you also achieve it configuring body parser.
+
+```
+import { server } from 'nexus'
+const bodyParser = require('body-parser')
+
+const app = server.express
+
+app.use(bodyParser.json({type: 'application/json', limit: '1mb'}))
+```
