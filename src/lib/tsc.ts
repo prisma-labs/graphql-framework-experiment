@@ -40,11 +40,15 @@ export function createTSProject(layout: Layout, options?: ProgramOptions): Eithe
     outDir: layout.build.tsOutputDir,
   }
 
-  const builder2 = new tsm.Project({
+  const project = new tsm.Project({
     compilerOptions: tsconfigOptions,
+    tsConfigFilePath: layout.tsConfig.path,
+    skipLoadingLibFiles: false,
+    skipFileDependencyResolution: false,
+    addFilesFromTsConfig: true,
   })
 
-  builder2.addSourceFilesAtPaths(layout.nexusModules.concat(layout.app.exists ? [layout.app.path] : []))
+  project.addSourceFilesAtPaths(layout.nexusModules.concat(layout.app.exists ? [layout.app.path] : []))
 
   // const builder = ts.createIncrementalProgram({
   //   rootNames: layout.nexusModules.concat(layout.app.exists ? [layout.app.path] : []),
@@ -57,18 +61,19 @@ export function createTSProject(layout: Layout, options?: ProgramOptions): Eithe
   // todo testme
 
   const SOURCE_ROOT_MUST_CONTAIN_ALL_SOURCE_FILES_ERROR_CODE = 6059
-  const errors = builder2.getPreEmitDiagnostics() //ts.getPreEmitDiagnostics(builder2.getProgram())
+  const errors = project.getPreEmitDiagnostics() //ts.getPreEmitDiagnostics(builder2.getProgram())
+  console.log(errors)
   const maybeSourceRootMustContainAllSourceFilesError = errors.find(
     (error) => error.getCode() === SOURCE_ROOT_MUST_CONTAIN_ALL_SOURCE_FILES_ERROR_CODE
   )
   if (maybeSourceRootMustContainAllSourceFilesError) {
     const message =
       'Your app is invalid\n\n' +
-      builder2.formatDiagnosticsWithColorAndContext([maybeSourceRootMustContainAllSourceFilesError])
+      project.formatDiagnosticsWithColorAndContext([maybeSourceRootMustContainAllSourceFilesError])
     return left(exception(message))
   }
 
-  return right(builder2)
+  return right(project)
 }
 
 export function deleteTSIncrementalFile(layout: Layout) {
@@ -88,7 +93,7 @@ interface CompileOptions {
  * compile a program. Throws an error if the program does not type check.
  */
 export function emitTSProgram(
-  builder: tsm.Project, // ts.EmitAndSemanticDiagnosticsBuilderProgram,
+  project: tsm.Project, // ts.EmitAndSemanticDiagnosticsBuilderProgram,
   layout: Layout,
   options?: CompileOptions
 ): void {
@@ -99,17 +104,18 @@ export function emitTSProgram(
 
   log.trace('emit transpiled modules', { dest: layout.build.tsOutputDir })
 
-  const emitResult = builder.emitSync()
+  const emitResult = project.emitSync()
   log.trace('done', { filesEmitted: emitResult.compilerObject.emittedFiles?.length ?? 0 })
 
   if (options?.skipTSErrors === true) {
     return
   }
 
-  const allDiagnostics = builder.getPreEmitDiagnostics().concat(emitResult.getDiagnostics())
+  const allDiagnostics = project.getPreEmitDiagnostics() //.concat(emitResult.getDiagnostics())
 
   if (allDiagnostics.length > 0) {
-    throw new Error(builder.formatDiagnosticsWithColorAndContext(allDiagnostics))
+    console.log(project.formatDiagnosticsWithColorAndContext(allDiagnostics))
+    throw new Error(project.formatDiagnosticsWithColorAndContext(allDiagnostics))
   }
 }
 
@@ -346,13 +352,27 @@ export function getAbsoluteImportPath(sourceFile: TSM.SourceFile) {
  * Find the modules in the project that import the given dep and return info about how that dep is imported along with sourceFile ref itself.
  */
 export function findModulesThatImportModule(project: TSM.Project, id: string) {
+  console.log(1)
   const data: ModulesWithImportSearchResult[] = []
 
   for (const sourceFile of project.getSourceFiles()) {
     if (sourceFile.getFilePath().includes('node_modules')) continue
     let entry: ModulesWithImportSearchResult
     for (const importDec of sourceFile.getImportDeclarations()) {
-      if (importDec.getModuleSpecifier().getText() === `'${id}'`) {
+      console.log(
+        importDec
+          .getModuleSpecifier()
+          .getText()
+          .replace(/^['"]|['"]$/g, ''),
+        id
+      )
+      if (
+        importDec
+          .getModuleSpecifier()
+          .getText()
+          .replace(/^['"]|['"]$/g, '') === id
+      ) {
+        console.log('hit')
         entry = entry! ?? { sourceFile, imports: [] }
         const namedImports = importDec.getNamedImports()
         const defaultImport = importDec.getDefaultImport() ?? null
