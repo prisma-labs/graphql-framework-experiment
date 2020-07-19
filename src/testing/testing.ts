@@ -89,7 +89,7 @@ export async function createTestContext(opts?: CreateTestContextOptions): Promis
   /**
    * If app ever calls app.settings.change, force some server settings anyway
    */
-  privateApp.settings.change = (newSettings) => {
+  privateApp.settings.change = (newSettings:any) => {
     if (newSettings.server !== undefined) {
       newSettings.server = {
         ...newSettings.server,

@@ -12,7 +12,6 @@ import {
 import { rootLogger } from '../nexus-logger'
 import * as Plugin from '../plugin'
 import { fatal } from '../process'
-import * as Reflection from '../reflection'
 import { rightOrFatal } from '../utils'
 import { bundle } from './bundle'
 import {
@@ -61,29 +60,6 @@ export async function buildNexusApp(settings: BuildSettings) {
     }
   }
 
-  log.info('get used plugins')
-
-  const pluginReflection = await Reflection.reflect(layout, { usedPlugins: true, onMainThread: true })
-
-  if (!pluginReflection.success) {
-    fatal('failed to get used plugins', { error: pluginReflection.error })
-  }
-
-  const { plugins } = pluginReflection
-  const worktimePlugins = Plugin.importAndLoadWorktimePlugins(plugins, layout)
-
-  for (const p of worktimePlugins) {
-    await p.hooks.build.onStart?.()
-  }
-
-  log.info('starting reflection')
-
-  const reflectionResult = await Reflection.reflect(layout, { artifacts: true })
-
-  if (!reflectionResult.success) {
-    fatal('reflection failed', { error: reflectionResult.error })
-  }
-
   log.info('building typescript program')
 
   const tsProject = rightOrThrow(createTSProject(layout, { withCache: false }))
@@ -96,6 +72,7 @@ export async function buildNexusApp(settings: BuildSettings) {
 
   emitTSProgram(tsProject, layout, { removePreviousBuild: false })
 
+  const plugins: any[] = []
   const gotManifests = Plugin.getPluginManifests(plugins)
 
   if (gotManifests.errors) Plugin.showManifestErrorsAndExit(gotManifests.errors)
@@ -123,7 +100,7 @@ export async function buildNexusApp(settings: BuildSettings) {
         entrypoint: layout.build.startModuleOutPath,
         tsOutputDir: layout.build.tsOutputDir,
         tsRootDir: layout.tsConfig.content.options.rootDir!,
-        plugins: pluginReflection.plugins,
+        plugins: plugins,
       })
       await FS.removeAsync(layout.build.tsOutputDir)
     }
