@@ -7,6 +7,7 @@ import { addHook } from 'pirates'
 import slash from 'slash'
 import * as sourceMapSupport from 'source-map-support'
 import * as TSM from 'ts-morph'
+import * as tsm from 'ts-morph'
 import * as ts from 'typescript'
 import { Layout } from './layout'
 import { rootLogger } from './nexus-logger'
@@ -21,10 +22,7 @@ interface ProgramOptions {
 /**
  * Create a TypeScript program.
  */
-export function createTSProgram(
-  layout: Layout,
-  options?: ProgramOptions
-): Either<Exception, ts.EmitAndSemanticDiagnosticsBuilderProgram> {
+export function createTSProject(layout: Layout, options?: ProgramOptions): Either<Exception, tsm.Project> {
   // Incremental option cannot be set when `noEmit: true`
   const compilerCacheOptions =
     options?.withCache && !layout.tsConfig.content.options.noEmit
@@ -36,32 +34,41 @@ export function createTSProgram(
 
   log.trace('Create TypeScript program')
 
-  const builder = ts.createIncrementalProgram({
-    rootNames: layout.nexusModules.concat(layout.app.exists ? [layout.app.path] : []),
-    options: {
-      ...compilerCacheOptions,
-      ...layout.tsConfig.content.options,
-      outDir: layout.build.tsOutputDir,
-    },
+  const tsconfigOptions = {
+    ...compilerCacheOptions,
+    ...layout.tsConfig.content.options,
+    outDir: layout.build.tsOutputDir,
+  }
+
+  const builder2 = new tsm.Project({
+    compilerOptions: tsconfigOptions,
   })
+
+  builder2.addSourceFilesAtPaths(layout.nexusModules.concat(layout.app.exists ? [layout.app.path] : []))
+
+  // const builder = ts.createIncrementalProgram({
+  //   rootNames: layout.nexusModules.concat(layout.app.exists ? [layout.app.path] : []),
+  //   options: tsconfigOptions,
+  // })
 
   // If the program has imports to modules outside the source root then TS out root will be forced
   // into an unexpected layout, and consequently the start module imports will fail. Check for this
   // specific kind of error now. All other error checking will be deferred until after typegen has been run however.
   // todo testme
+
   const SOURCE_ROOT_MUST_CONTAIN_ALL_SOURCE_FILES_ERROR_CODE = 6059
-  const errors = ts.getPreEmitDiagnostics(builder.getProgram())
+  const errors = builder2.getPreEmitDiagnostics() //ts.getPreEmitDiagnostics(builder2.getProgram())
   const maybeSourceRootMustContainAllSourceFilesError = errors.find(
-    (error) => error.code === SOURCE_ROOT_MUST_CONTAIN_ALL_SOURCE_FILES_ERROR_CODE
+    (error) => error.getCode() === SOURCE_ROOT_MUST_CONTAIN_ALL_SOURCE_FILES_ERROR_CODE
   )
   if (maybeSourceRootMustContainAllSourceFilesError) {
     const message =
       'Your app is invalid\n\n' +
-      ts.formatDiagnosticsWithColorAndContext([maybeSourceRootMustContainAllSourceFilesError], diagnosticHost)
+      builder2.formatDiagnosticsWithColorAndContext([maybeSourceRootMustContainAllSourceFilesError])
     return left(exception(message))
   }
 
-  return right(builder)
+  return right(builder2)
 }
 
 export function deleteTSIncrementalFile(layout: Layout) {
@@ -81,7 +88,7 @@ interface CompileOptions {
  * compile a program. Throws an error if the program does not type check.
  */
 export function emitTSProgram(
-  builder: ts.EmitAndSemanticDiagnosticsBuilderProgram,
+  builder: tsm.Project, // ts.EmitAndSemanticDiagnosticsBuilderProgram,
   layout: Layout,
   options?: CompileOptions
 ): void {
@@ -92,17 +99,17 @@ export function emitTSProgram(
 
   log.trace('emit transpiled modules', { dest: layout.build.tsOutputDir })
 
-  const emitResult = builder.emit()
-  log.trace('done', { filesEmitted: emitResult.emittedFiles?.length ?? 0 })
+  const emitResult = builder.emitSync()
+  log.trace('done', { filesEmitted: emitResult.compilerObject.emittedFiles?.length ?? 0 })
 
   if (options?.skipTSErrors === true) {
     return
   }
 
-  const allDiagnostics = ts.getPreEmitDiagnostics(builder.getProgram()).concat(emitResult.diagnostics)
+  const allDiagnostics = builder.getPreEmitDiagnostics().concat(emitResult.getDiagnostics())
 
   if (allDiagnostics.length > 0) {
-    throw new Error(ts.formatDiagnosticsWithColorAndContext(allDiagnostics, diagnosticHost))
+    throw new Error(builder.formatDiagnosticsWithColorAndContext(allDiagnostics))
   }
 }
 
