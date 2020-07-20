@@ -86,7 +86,7 @@ export async function buildNexusApp(settings: BuildSettings) {
 
   log.info('building typescript program')
 
-  const tsProject = rightOrThrow(createTSProject(layout, { withCache: false }))
+  const tsProject = rightOrThrow(createTSProject(layout, { withCache: true }))
 
   log.info('compiling a production build')
 

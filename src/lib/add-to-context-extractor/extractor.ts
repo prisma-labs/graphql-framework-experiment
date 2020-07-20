@@ -45,20 +45,16 @@ function contribTypeLiteral(value: string): ContribTypeLiteral {
 export function extractContextTypes(program: tsm.Project): Either<Exception, ExtractedContextTypes> {
   const typeImportsIndex: Record<string, TypeImportInfo> = {}
 
-  // const checker = program.getTypeChecker()
-
   const contextTypeContributions: ExtractedContextTypes = {
     typeImports: [],
     types: [],
   }
 
-  console.log(program.getSourceFiles().map((sf) => sf.getFilePath()))
   const appSourceFiles = findModulesThatImportModule(program, 'nexus')
-  console.log(appSourceFiles.map((sf) => sf.sourceFile.getFilePath()))
 
-  console.log('got app source files %j', {
+  log.trace('got app source files', {
     count: appSourceFiles.length,
-    sourceFiles: appSourceFiles.map((sf) => ({ imports: sf.imports, files: sf.sourceFile.getFilePath() })),
+    // sourceFiles: appSourceFiles.map((sf) => ({ imports: sf.imports, files: sf.sourceFile.getFilePath() })),
   })
 
   for (const item of appSourceFiles) {
@@ -69,7 +65,7 @@ export function extractContextTypes(program: tsm.Project): Either<Exception, Ext
     }
   }
 
-  console.log('finished compiler extension processing', {
+  log.trace('finished compiler extension processing', {
     contextTypeContributions,
   })
 
@@ -110,36 +106,32 @@ export function extractContextTypes(program: tsm.Project): Either<Exception, Ext
       }
     }
 
-    console.log(searchExpressions, expText, propName)
-
     if (!(searchExpressions.includes(expText) && propName === 'addToContext')) {
       n.forEachChild((n) => visit(item, n))
       return
     }
 
-    console.log('found call', { text: n.getText() })
+    log.trace('found call', { text: n.getText() })
 
     // Get the argument passed to addToContext so we can extract its type
     if (n.getArguments().length === 0) {
-      console.log('no args passed to call, the user should see a static type error, stopping extraction')
+      log.trace('no args passed to call, the user should see a static type error, stopping extraction')
       return
     }
 
     if (n.getArguments().length > 1) {
-      console.log(
-        'multiple args passed to call, the user should see a static type error, stopping extraction'
-      )
+      log.trace('multiple args passed to call, the user should see a static type error, stopping extraction')
       return
     }
 
     const contextAdder = n.getArguments()[0]
     const contextAdderType = contextAdder.getType() // checker.getTypeAtLocation(contextAdder)
     const contextAdderSigs = contextAdderType.getCallSignatures()
-    console.log('found call arg', { text: contextAdder.getText() })
+    log.trace('found call arg', { text: contextAdder.getText() })
 
     // Get the signature of the argument so we can extract its return type
     if (contextAdderSigs.length === 0) {
-      console.log(
+      log.trace(
         'arg had no signatures, this means the user passed a non-callable, the user should see a static type error, stopping context type extraction'
       )
       return
@@ -181,12 +173,12 @@ export function extractContextTypes(program: tsm.Project): Either<Exception, Ext
     // search for named references, they will require importing later on
     const contextAdderRetProps = contextAdderRetType.getProperties()
     for (const prop of contextAdderRetProps) {
-      console.log('processing prop', { name: prop.getName() })
+      log.trace('processing prop', { name: prop.getName() })
       const tsmn = prop.getDeclarations()[0]
       const t = tsmn.getType()
       if (t)
         if (t.getAliasSymbol()) {
-          console.log('found alias', {
+          log.trace('found alias', {
             type: t.getText(undefined, ts.TypeFormatFlags.NoTruncation),
           })
           const info = extractTypeImportInfoFromType(t)
@@ -194,7 +186,7 @@ export function extractContextTypes(program: tsm.Project): Either<Exception, Ext
             typeImportsIndex[info.name] = info
           }
         } else if (t.isIntersection()) {
-          console.log('found intersection', {
+          log.trace('found intersection', {
             types: t.getIntersectionTypes().map((t) => t.getText(undefined, ts.TypeFormatFlags.NoTruncation)),
           })
           const infos = t
@@ -207,7 +199,7 @@ export function extractContextTypes(program: tsm.Project): Either<Exception, Ext
             })
           }
         } else if (t.isUnion()) {
-          console.log('found union', {
+          log.trace('found union', {
             types: t.getUnionTypes().map((t) => t.getText(undefined, ts.TypeFormatFlags.NoTruncation)),
           })
           const infos = t
@@ -232,7 +224,7 @@ export function extractContextTypes(program: tsm.Project): Either<Exception, Ext
 function extractTypeImportInfoFromType(t: tsm.Type): null | TypeImportInfo {
   let sym = t.getAliasSymbol()
   let name = sym?.getName()
-  console.log('found prop type alias symbol?', { found: !!sym })
+  log.trace('found prop type alias symbol?', { found: !!sym })
 
   if (t.isArray()) {
     return extractTypeImportInfoFromType(t.getArrayElementTypeOrThrow())
@@ -240,14 +232,14 @@ function extractTypeImportInfoFromType(t: tsm.Type): null | TypeImportInfo {
 
   if (!sym) {
     sym = t.getSymbol()
-    console.log('found prop type symbol?', { found: !!sym })
+    log.trace('found prop type symbol?', { found: !!sym })
     if (!sym) return null
     name = sym.getName()
     // not alias but is inline, then skip
     if (name === '__object') return null
     if (name === '__type') return null
   }
-  console.log('found name?', { name })
+  log.trace('found name?', { name })
   if (!name) return null
   const d = sym.getDeclarations()?.[0]
   if (!d) throw exception('A type with a symbol but the symbol has no declaration', {})

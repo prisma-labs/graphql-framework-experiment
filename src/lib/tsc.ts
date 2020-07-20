@@ -42,18 +42,9 @@ export function createTSProject(layout: Layout, options?: ProgramOptions): Eithe
 
   const project = new tsm.Project({
     compilerOptions: tsconfigOptions,
-    tsConfigFilePath: layout.tsConfig.path,
-    skipLoadingLibFiles: false,
-    skipFileDependencyResolution: false,
-    addFilesFromTsConfig: true,
   })
 
   project.addSourceFilesAtPaths(layout.nexusModules.concat(layout.app.exists ? [layout.app.path] : []))
-
-  // const builder = ts.createIncrementalProgram({
-  //   rootNames: layout.nexusModules.concat(layout.app.exists ? [layout.app.path] : []),
-  //   options: tsconfigOptions,
-  // })
 
   // If the program has imports to modules outside the source root then TS out root will be forced
   // into an unexpected layout, and consequently the start module imports will fail. Check for this
@@ -111,7 +102,7 @@ export function emitTSProgram(
     return
   }
 
-  const allDiagnostics = project.getPreEmitDiagnostics() //.concat(emitResult.getDiagnostics())
+  const allDiagnostics = project.getPreEmitDiagnostics().concat(emitResult.getDiagnostics())
 
   if (allDiagnostics.length > 0) {
     console.log(project.formatDiagnosticsWithColorAndContext(allDiagnostics))
