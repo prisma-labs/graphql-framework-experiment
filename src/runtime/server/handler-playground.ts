@@ -67,7 +67,8 @@ export const createRequestHandlerPlayground: Handler = (settings) => (_req, res)
       <script>
         window.addEventListener('load', function (event) {
           GraphQLPlayground.init(document.getElementById('root'), {
-            endpoint: '${settings.graphqlEndpoint}'
+            endpoint: '${settings.graphqlEndpoint}',
+            subscriptionEndpoint: '${settings.subscriptionEndpoint}',
           })
         })
       </script>
