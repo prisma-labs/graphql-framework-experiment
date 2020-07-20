@@ -2,7 +2,8 @@ import type { NexusRequestHandler } from './server'
 import { sendResponse } from './utils'
 
 type Settings = {
-  graphqlEndpoint: string
+  graphqlEndpoint: string;
+  subscriptionEndpoint: string;
 }
 
 type Handler = (settings: Settings) => NexusRequestHandler
