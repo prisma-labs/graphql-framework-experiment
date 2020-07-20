@@ -92,21 +92,31 @@ export function extractContextTypes(program: tsm.Project): Either<Exception, Ext
 
     const expText = exp.getExpression().getText()
     const propName = exp.getName()
-
-    let searchExpressions: string[] = []
+    const importedIdentifiers: string[] = []
 
     for (const imp of item.imports) {
+      /**
+       * case of e.g. import app from 'nexus'
+       * Thus search for exp of "app.schema"
+       */
       if (imp.default) {
-        searchExpressions.push(imp.default.getText() + '.schema')
+        importedIdentifiers.push(imp.default.getText() + '.schema')
       }
 
+      /**
+       * case of e.g. import { schema } from 'nexus'
+       * thus search for exp of "schema"
+       *
+       * case of e.g. import { schema as foo } from 'nexus'
+       * thus search for exp of "foo"
+       */
       const namedSchemaImport = imp.named?.find((n) => n.name === 'schema')
       if (namedSchemaImport) {
-        searchExpressions.push(namedSchemaImport.alias ?? namedSchemaImport.name)
+        importedIdentifiers.push(namedSchemaImport.alias ?? namedSchemaImport.name)
       }
     }
 
-    if (!(searchExpressions.includes(expText) && propName === 'addToContext')) {
+    if (!(importedIdentifiers.includes(expText) && propName === 'addToContext')) {
       n.forEachChild((n) => visit(item, n))
       return
     }

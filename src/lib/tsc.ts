@@ -343,27 +343,13 @@ export function getAbsoluteImportPath(sourceFile: TSM.SourceFile) {
  * Find the modules in the project that import the given dep and return info about how that dep is imported along with sourceFile ref itself.
  */
 export function findModulesThatImportModule(project: TSM.Project, id: string) {
-  console.log(1)
   const data: ModulesWithImportSearchResult[] = []
 
   for (const sourceFile of project.getSourceFiles()) {
     if (sourceFile.getFilePath().includes('node_modules')) continue
     let entry: ModulesWithImportSearchResult
     for (const importDec of sourceFile.getImportDeclarations()) {
-      console.log(
-        importDec
-          .getModuleSpecifier()
-          .getText()
-          .replace(/^['"]|['"]$/g, ''),
-        id
-      )
-      if (
-        importDec
-          .getModuleSpecifier()
-          .getText()
-          .replace(/^['"]|['"]$/g, '') === id
-      ) {
-        console.log('hit')
+      if (getImportId(importDec) === id) {
         entry = entry! ?? { sourceFile, imports: [] }
         const namedImports = importDec.getNamedImports()
         const defaultImport = importDec.getDefaultImport() ?? null
@@ -383,6 +369,16 @@ export function findModulesThatImportModule(project: TSM.Project, id: string) {
   }
 
   return data
+}
+
+/**
+ * Gets the module id being imported. Syntax like quotes is stripped.
+ */
+function getImportId(importDec: TSM.ImportDeclaration) {
+  return importDec
+    .getModuleSpecifier()
+    .getText()
+    .replace(/^['"]|['"]$/g, '')
 }
 
 /**
