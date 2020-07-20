@@ -101,7 +101,7 @@ export function create(appState: AppState) {
           express.get(
             settings.data.playground.path,
             wrapHandlerWithErrorHandling(
-              createRequestHandlerPlayground({ graphqlEndpoint: settings.data.path })
+              createRequestHandlerPlayground({ graphqlEndpoint: settings.data.path, subscriptionEndpoint: "ws://" + settings.data.host + ":" + settings.data.port + settings.data.path })
             )
           )
         }
