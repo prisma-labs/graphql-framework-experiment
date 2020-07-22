@@ -4,14 +4,14 @@ import * as HTTP from 'http'
 import { HttpError } from 'http-errors'
 import * as Net from 'net'
 import * as Plugin from '../../lib/plugin'
-import { httpListen, MaybePromise, noop } from '../../lib/utils'
+import { httpListen, MaybePromise, noop, httpClose } from '../../lib/utils'
 import { AppState } from '../app'
 import * as DevMode from '../dev-mode'
 import { ContextContributor } from '../schema/schema'
 import { assembledGuard } from '../utils'
 import { errorFormatter } from './error-formatter'
 import { createRequestHandlerGraphQL } from './handler-graphql'
-import { createRequestHandlerPlayground } from './handler-playground'
+//import { createRequestHandlerPlayground } from './handler-playground'
 import { log } from './logger'
 import { createServerSettingsManager } from './settings'
 import { ApolloServer } from 'apollo-server-express'
@@ -39,7 +39,7 @@ export interface Server {
   }
   express: Express
   handlers: {
-    playground: NexusRequestHandler
+  //  playground: NexusRequestHandler
     graphql: NexusRequestHandler
   }
 }
@@ -62,16 +62,6 @@ export function create(appState: AppState) {
     },
     express,
     handlers: {
-      get playground() {
-        return (
-          assembledGuard(appState, 'app.server.handlers.playground', () => {
-            // todo should be accessing settings from assembled app state settings
-            return wrapHandlerWithErrorHandling(
-              createRequestHandlerPlayground({ graphqlEndpoint: settings.data.path })
-            )
-          }) ?? noop
-        )
-      },
       get graphql() {
         return (
           assembledGuard(appState, 'app.server.handlers.graphql', () => {
@@ -159,6 +149,7 @@ export function create(appState: AppState) {
           log.warn('You called `server.stop` but the server was not running.')
           return Promise.resolve()
         }
+        await httpClose(state.httpServer)
         await apolloServer?.stop()
         state.running = false
       },
