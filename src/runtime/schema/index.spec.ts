@@ -14,6 +14,6 @@ describe('use', () => {
   it('incrementally adds plugins', () => {
     schema.public.use(plugin({ name: 'foo' }))
     schema.public.use(plugin({ name: 'bar' }))
-    expect(appState.schemaComponent.plugins.length).toEqual(2)
+    expect(appState.components.schema.plugins.length).toEqual(2)
   })
 })

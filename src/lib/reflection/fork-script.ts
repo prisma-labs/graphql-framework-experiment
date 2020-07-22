@@ -29,7 +29,7 @@ async function run() {
     try {
       const plugins = Plugin.importAndLoadRuntimePlugins(
         app.private.state.plugins,
-        app.private.state.schemaComponent.scalars
+        app.private.state.components.schema.scalars
       )
       const artifactsRes = await writeArtifacts({
         graphqlSchema: app.private.state.assembled!.schema,

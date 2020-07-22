@@ -107,7 +107,7 @@ export function create(appState: AppState) {
         }
 
         const createContext = createContextCreator(
-          appState.schemaComponent.contextContributors,
+          appState.components.schema.contextContributors,
           loadedRuntimePlugins
         )
 

@@ -38,6 +38,13 @@ export const schema = app.schema
 export const settings = app.settings
 
 /**
+ * [API Reference](https://nxs.li/docs/api/on) ⌁ [Issues](https://nxs.li/issues/components/lifecycle)
+ *
+ * Use the lifecycle component to tap into application events.
+ */
+export const on = app.on
+
+/**
  * [API Reference](https://nxs.li/docs/api/use-plugins) ⌁ [Issues](https://nxs.li/issues/components/plugins)
  */
 export const use = app.use

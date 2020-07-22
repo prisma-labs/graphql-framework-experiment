@@ -15,8 +15,9 @@ export function setReflectionStage(type: ReflectionType) {
   process.env[REFLECTION_ENV_VAR] = type
 }
 
-export function removeReflectionStage() {
-  process.env[REFLECTION_ENV_VAR] = undefined
+export function unsetReflectionStage() {
+  // assigning `undefined` will result in envar becoming string 'undefined'
+  delete process.env[REFLECTION_ENV_VAR]
 }
 
 /**
