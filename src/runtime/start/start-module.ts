@@ -2,7 +2,8 @@ import { stripIndent } from 'common-tags'
 import { EOL } from 'os'
 import * as Path from 'path'
 import slash from 'slash'
-import ts, { EmitAndSemanticDiagnosticsBuilderProgram } from 'typescript'
+import * as TSM from 'ts-morph'
+import ts from 'typescript'
 import { stripExt } from '../../lib/fs'
 import * as Layout from '../../lib/layout'
 import { rootLogger } from '../../lib/nexus-logger'
@@ -145,12 +146,9 @@ export function createStartModuleContent(config: StartModuleConfig): string {
   return content
 }
 
-export function prepareStartModule(
-  tsBuilder: EmitAndSemanticDiagnosticsBuilderProgram,
-  startModule: string
-): string {
+export function prepareStartModule(tsProject: TSM.Project, startModule: string): string {
   log.trace('Transpiling start module')
-  return transpileModule(startModule, tsBuilder.getCompilerOptions())
+  return transpileModule(startModule, tsProject.getCompilerOptions())
 }
 
 /**

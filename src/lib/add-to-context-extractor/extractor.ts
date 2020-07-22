@@ -2,7 +2,14 @@ import { Either, left, right } from 'fp-ts/lib/Either'
 import * as tsm from 'ts-morph'
 import ts from 'typescript'
 import { rootLogger } from '../nexus-logger'
-import { getAbsoluteImportPath, isMergableUnion, mergeUnionTypes, unwrapMaybePromise } from '../tsc'
+import {
+  findModulesThatImportModule,
+  getAbsoluteImportPath,
+  isMergableUnion,
+  mergeUnionTypes,
+  ModulesWithImportSearchResult,
+  unwrapMaybePromise,
+} from '../tsc'
 import { exception, Exception } from '../utils'
 import { forbiddenUnionTypeError } from './errors'
 
@@ -35,28 +42,24 @@ function contribTypeLiteral(value: string): ContribTypeLiteral {
 /**
  * Extract types from all `addToContext` calls.
  */
-export function extractContextTypes(program: ts.Program): Either<Exception, ExtractedContextTypes> {
+export function extractContextTypes(program: tsm.Project): Either<Exception, ExtractedContextTypes> {
   const typeImportsIndex: Record<string, TypeImportInfo> = {}
-
-  const checker = program.getTypeChecker()
 
   const contextTypeContributions: ExtractedContextTypes = {
     typeImports: [],
     types: [],
   }
 
-  const appSourceFiles = program.getSourceFiles().filter((sf) => !sf.fileName.match(/node_modules/))
+  const appSourceFiles = findModulesThatImportModule(program, 'nexus')
 
   log.trace('got app source files', {
     count: appSourceFiles.length,
-    // files: appSourceFiles.map((sf) => sf.fileName),
+    // sourceFiles: appSourceFiles.map((sf) => ({ imports: sf.imports, files: sf.sourceFile.getFilePath() })),
   })
 
-  const wrappedNodes = appSourceFiles.map((n) => tsm.createWrappedNode(n, { typeChecker: checker }))
-
-  for (const wrappedNode of wrappedNodes) {
+  for (const item of appSourceFiles) {
     try {
-      visit(wrappedNode)
+      item.sourceFile.forEachChild((n) => visit(item, n))
     } catch (err) {
       return left(err as Exception)
     }
@@ -74,24 +77,47 @@ export function extractContextTypes(program: ts.Program): Either<Exception, Extr
   /**
    * Given a node, traverse the tree of nodes under it.
    */
-  function visit(n: tsm.Node) {
+  function visit(item: ModulesWithImportSearchResult, n: tsm.Node) {
     if (!tsm.Node.isCallExpression(n)) {
-      n.forEachChild(visit)
+      n.forEachChild((n) => visit(item, n))
       return
     }
 
     const exp = n.getExpression()
 
     if (!tsm.Node.isPropertyAccessExpression(exp)) {
-      n.forEachChild(visit)
+      n.forEachChild((n) => visit(item, n))
       return
     }
 
     const expText = exp.getExpression().getText()
     const propName = exp.getName()
+    const importedIdentifiers: string[] = []
 
-    if (!((expText === 'schema' || expText === 'app.schema') && propName === 'addToContext')) {
-      n.forEachChild(visit)
+    for (const imp of item.imports) {
+      /**
+       * case of e.g. import app from 'nexus'
+       * Thus search for exp of "app.schema"
+       */
+      if (imp.default) {
+        importedIdentifiers.push(imp.default.getText() + '.schema')
+      }
+
+      /**
+       * case of e.g. import { schema } from 'nexus'
+       * thus search for exp of "schema"
+       *
+       * case of e.g. import { schema as foo } from 'nexus'
+       * thus search for exp of "foo"
+       */
+      const namedSchemaImport = imp.named?.find((n) => n.name === 'schema')
+      if (namedSchemaImport) {
+        importedIdentifiers.push(namedSchemaImport.alias ?? namedSchemaImport.name)
+      }
+    }
+
+    if (!(importedIdentifiers.includes(expText) && propName === 'addToContext')) {
+      n.forEachChild((n) => visit(item, n))
       return
     }
 
