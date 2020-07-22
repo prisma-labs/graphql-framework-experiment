@@ -42,15 +42,20 @@ export class ApolloServerless extends ApolloServerBase {
         await this.handleFileUploads(req, res)
       }
 
-      ;(await this.handleHealthCheck({
-        req,
-        res,
-        disableHealthCheck,
-        onHealthCheck,
-      })) ||
-        this.handleGraphqlRequestsWithPlayground({ req, res }) ||
-        (await this.handleGraphqlRequestsWithServer({ req, res })) ||
-        sendError(res, createError(404, 'Something went wrong'))
+      if (this.isHealthCheckRequest(req, disableHealthCheck)) {
+        return this.handleHealthCheck({
+          req,
+          res,
+          disableHealthCheck,
+          onHealthCheck,
+        })
+      }
+
+      if (this.isPlaygroundRequest(req)) {
+        return this.handleGraphqlRequestsWithPlayground({ req, res })
+      }
+
+      return this.handleGraphqlRequestsWithServer({ req, res })
     }
   }
 
@@ -62,6 +67,14 @@ export class ApolloServerless extends ApolloServerBase {
   // This integration supports subscriptions.
   protected supportsSubscriptions(): boolean {
     return true
+  }
+
+  private isHealthCheckRequest(req: IncomingMessage, disableHealthCheck?: boolean) {
+    return !disableHealthCheck && req.url === '/.well-known/apollo/server-health'
+  }
+
+  private isPlaygroundRequest(req: IncomingMessage) {
+    return this.playgroundOptions && req.method === 'GET'
   }
 
   // If health checking is enabled, trigger the `onHealthCheck`
@@ -240,66 +253,3 @@ export function graphqlHandler(options: NexusGraphQLOptionsFunction) {
 
   return handler
 }
-
-type GraphQLParams = {
-  query: null | string
-  variables: null | Record<string, unknown>
-  operationName: null | string
-  raw: boolean
-}
-
-/**
- * Provided a "Request" provided by express or connect (typically a node style
- * HTTPClientRequest), Promise the GraphQL request parameters.
- */
-// async function getGraphQLParams(request: IncomingMessage): Promise<Either<HttpError, GraphQLParams>> {
-//   const bodyData = await parseBody(request)
-//   if (isLeft(bodyData)) return bodyData
-//   const urlData = (request.url && url.parse(request.url, true).query) || {}
-//   return parseGraphQLParams(urlData, bodyData.right)
-// }
-
-/**
- * Helper function to get the GraphQL params from the request.
- */
-// function parseGraphQLParams(
-//   urlData: Record<string, unknown>,
-//   bodyData: Record<string, unknown>
-// ): Either<HttpError, GraphQLParams> {
-//   let query: string | null
-//   const incomingQuery = urlData.query || bodyData.query
-
-//   if (typeof incomingQuery === 'string') {
-//     query = incomingQuery
-//   } else {
-//     query = null
-//   }
-
-//   let variables: null | Record<string, unknown>
-//   const incomingVariables = urlData.variables || bodyData.variables
-
-//   if (typeof incomingVariables === 'string') {
-//     try {
-//       variables = JSON.parse(incomingVariables)
-//     } catch (error) {
-//       return left(createError(400, 'Variables are invalid JSON.'))
-//     }
-//   } else if (typeof incomingVariables === 'object' && incomingVariables !== null) {
-//     variables = incomingVariables as Record<string, unknown>
-//   } else {
-//     variables = null
-//   }
-
-//   let operationName
-//   const incomingOperationName = urlData.operationName || bodyData.operationName
-
-//   if (typeof incomingOperationName === 'string') {
-//     operationName = incomingOperationName
-//   } else {
-//     operationName = null
-//   }
-
-//   const raw = urlData.raw !== undefined || bodyData.raw !== undefined
-
-//   return right({ query, variables, operationName, raw })
-// }
