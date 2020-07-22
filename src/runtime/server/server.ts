@@ -39,7 +39,7 @@ export interface Server {
   }
   express: Express
   handlers: {
-  //  playground: NexusRequestHandler
+    //  playground: NexusRequestHandler
     graphql: NexusRequestHandler
   }
 }
@@ -69,7 +69,9 @@ export function create(appState: AppState) {
               appState.assembled!.schema,
               appState.assembled!.createContext,
               {
-                ...settings.data.graphql,
+                path: settings.data.path,
+                introspection: settings.data.graphql.introspection,
+                playground: settings.data.playground,
                 errorFormatterFn: errorFormatter,
               }
             )

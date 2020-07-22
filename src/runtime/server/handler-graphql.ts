@@ -1,11 +1,13 @@
-import { ApolloServer as ApolloServerLambda } from 'apollo-server-lambda'
 import { GraphQLError, GraphQLFormattedError, GraphQLSchema } from 'graphql'
+import { ApolloServerless } from './apollo-server-serverless'
 import { log } from './logger'
 import { ContextCreator, NexusRequestHandler } from './server'
-import { ApolloServerless } from './apollo-server-serverless'
+import { PlaygroundSettings } from './settings'
 
 type Settings = {
   introspection: boolean
+  playground: false | PlaygroundSettings
+  path: string
   errorFormatterFn(graphqlError: GraphQLError): GraphQLFormattedError
 }
 
@@ -21,11 +23,12 @@ type CreateHandler = (
 export const createRequestHandlerGraphQL: CreateHandler = (schema, createContext, settings) => {
   const server = new ApolloServerless({
     schema,
+    context: createContext,
     formatError: settings.errorFormatterFn,
     logger: log,
-    context: createContext,
     introspection: settings.introspection,
+    playground: settings.playground,
   })
 
-  return server.createHandler()
+  return server.createHandler({ path: settings.path  })
 }
