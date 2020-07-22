@@ -1,0 +1,32 @@
+---
+title: on
+codeStyle: true
+---
+
+## `import { on }`
+
+Use the lifecycle component to tap into application events.
+
+## start
+
+#### Signature
+
+```ts
+(data: {
+  schema: NexusGraphQLSchema
+}) => void
+```
+
+#### Example
+
+```ts
+import { on, log } from 'nexus'
+
+on.start(data => {
+  log.info('app started', { schema: data.schema })
+})
+```
+
+#### Remarks
+
+Put initialization code here that you don't want run during [Nexus refletion](/guides/reflection).
