@@ -88,13 +88,13 @@ export class ApolloServerless extends ApolloServerBase {
         try {
           await onHealthCheck(req)
         } catch (error) {
-          sendJSON(res, 503, 'Fail', {}, { status: 'fail' })
+          sendJSON(res, 503, 'Service Unavailable', {}, { status: 'fail' })
           handled = true
         }
       }
 
       if (!handled) {
-        sendJSON(res, 200, 'Pass', {}, { status: 'pass' })
+        sendJSON(res, 200, 'Success', {}, { status: 'pass' })
         handled = true
       }
     }
