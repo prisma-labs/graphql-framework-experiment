@@ -51,7 +51,7 @@ schema.addToContext(() => {
 That's it. Behind the scenes Nexus will use the TypeScript compiler API to extract our return type here and propagate it to the parts of our app where the context is accessible. And if ever this process does not work for you for some reason you can use fallback to manually giving the types to Nexus like so:
 
 ```ts
-module global {
+declare global {
   interface NexusContext {
     // type information here
   }

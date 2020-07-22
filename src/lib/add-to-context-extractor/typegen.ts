@@ -5,7 +5,7 @@ import slash from 'slash'
 import { hardWriteFile } from '../fs'
 import * as Layout from '../layout'
 import { rootLogger } from '../nexus-logger'
-import { createTSProgram } from '../tsc'
+import { createTSProject } from '../tsc'
 import { Exception } from '../utils'
 import { ContribType, extractContextTypes, ExtractedContextTypes } from './extractor'
 
@@ -25,10 +25,10 @@ export async function generateContextExtractionArtifacts(
   layout: Layout.Layout
 ): Promise<Either<Exception, ExtractedContextTypes>> {
   log.trace('starting context type extraction')
-  const errProgram = createTSProgram(layout, { withCache: true })
-  if (isLeft(errProgram)) return errProgram
-  const program = errProgram.right
-  const contextTypes = extractContextTypes(program.getProgram())
+  const errProject = createTSProject(layout, { withCache: true })
+  if (isLeft(errProject)) return errProject
+  const tsProject = errProject.right
+  const contextTypes = extractContextTypes(tsProject)
 
   if (isLeft(contextTypes)) {
     return contextTypes
