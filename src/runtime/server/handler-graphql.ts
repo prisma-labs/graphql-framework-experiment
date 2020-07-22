@@ -19,6 +19,7 @@ import url from 'url'
 import { parseBody } from './parse-body'
 import { ContextCreator, NexusRequestHandler } from './server'
 import { sendError, sendErrorData, sendSuccess } from './utils'
+import { ApolloServer } from 'apollo-server-express'
 
 type Settings = {
   introspection: boolean

@@ -4,7 +4,7 @@ import * as HTTP from 'http'
 import { HttpError } from 'http-errors'
 import * as Net from 'net'
 import * as Plugin from '../../lib/plugin'
-import { httpClose, httpListen, MaybePromise, noop } from '../../lib/utils'
+import { httpListen, MaybePromise, noop } from '../../lib/utils'
 import { AppState } from '../app'
 import * as DevMode from '../dev-mode'
 import { ContextContributor } from '../schema/schema'
@@ -14,6 +14,7 @@ import { createRequestHandlerGraphQL } from './handler-graphql'
 import { createRequestHandlerPlayground } from './handler-playground'
 import { log } from './logger'
 import { createServerSettingsManager } from './settings'
+import { ApolloServer } from 'apollo-server-express'
 
 const resolverLogger = log.child('graphql')
 
@@ -52,6 +53,7 @@ export const defaultState = {
 export function create(appState: AppState) {
   const settings = createServerSettingsManager()
   const express = createExpress()
+  let apolloServer: null | ApolloServer = null
   const state = { ...defaultState }
 
   const api: Server = {
@@ -97,27 +99,40 @@ export function create(appState: AppState) {
       assemble(loadedRuntimePlugins: Plugin.RuntimeContributions[], schema: GraphQLSchema) {
         state.httpServer.on('request', express)
 
-        if (settings.data.playground) {
-          express.get(
-            settings.data.playground.path,
-            wrapHandlerWithErrorHandling(
-              createRequestHandlerPlayground({ graphqlEndpoint: settings.data.path })
-            )
-          )
-        }
+        // if (settings.data.playground) {
+        //   express.get(
+        //     settings.data.playground.path,
+        //     wrapHandlerWithErrorHandling(
+        //       createRequestHandlerPlayground({ graphqlEndpoint: settings.data.path })
+        //     )
+        //   )
+        // }
 
         const createContext = createContextCreator(
           appState.components.schema.contextContributors,
           loadedRuntimePlugins
         )
 
-        const graphqlHandler = createRequestHandlerGraphQL(schema, createContext, {
-          ...settings.data.graphql,
-          errorFormatterFn: errorFormatter,
+        apolloServer = new ApolloServer({
+          schema,
+          playground: settings.data.playground
+            ? {
+                endpoint: settings.data.path,
+              }
+            : false,
+          logger: resolverLogger,
+          formatError: errorFormatter,
         })
 
-        express.post(settings.data.path, graphqlHandler)
-        express.get(settings.data.path, graphqlHandler)
+        apolloServer.applyMiddleware({ app: express, path: settings.data.path })
+
+        // const graphqlHandler = createRequestHandlerGraphQL(schema, createContext, {
+        //   ...settings.data.graphql,
+        //   errorFormatterFn: errorFormatter,
+        // })
+
+        // express.post(settings.data.path, graphqlHandler)
+        // express.get(settings.data.path, graphqlHandler)
 
         return { createContext }
       },
@@ -136,7 +151,6 @@ export function create(appState: AppState) {
           host: address.address,
           ip: address.address,
           path: settings.data.path,
-          playgroundPath: settings.data.playground ? settings.data.playground.path : undefined,
         })
         DevMode.sendServerReadySignalToDevModeMaster()
       },
@@ -145,7 +159,7 @@ export function create(appState: AppState) {
           log.warn('You called `server.stop` but the server was not running.')
           return Promise.resolve()
         }
-        await httpClose(state.httpServer)
+        await apolloServer?.stop()
         state.running = false
       },
     },

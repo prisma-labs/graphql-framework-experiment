@@ -1,11 +1,12 @@
 import * as Process from '../../lib/process'
 import * as Utils from '../../lib/utils'
+import { PlaygroundRenderPageOptions } from 'apollo-server-express'
 import { log as serverLogger } from './logger'
 
 const log = serverLogger.child('settings')
 
 export type PlaygroundSettings = {
-  path?: string
+  settings: Partial<PlaygroundRenderPageOptions['settings']>
 }
 
 export type GraphqlSettings = {
@@ -47,13 +48,7 @@ export type SettingsInput = {
    * Create a message suitable for printing to the terminal about the server
    * having been booted.
    */
-  startMessage?: (address: {
-    port: number
-    host: string
-    ip: string
-    path: string
-    playgroundPath?: string
-  }) => void
+  startMessage?: (address: { port: number; host: string; ip: string; path: string }) => void
   /**
    * todo
    */
@@ -66,10 +61,20 @@ export type SettingsData = Omit<Utils.DeepRequired<SettingsInput>, 'host' | 'pla
   graphql: Required<GraphqlSettings>
 }
 
-export const defaultPlaygroundPath = '/'
+export const defaultPlaygroundPath = '/graphql'
 
 export const defaultPlaygroundSettings: () => Readonly<Required<PlaygroundSettings>> = () => ({
-  path: defaultPlaygroundPath,
+  settings: {
+    'general.betaUpdates': false,
+    'editor.theme': 'dark',
+    'editor.cursorShape': 'line',
+    'editor.reuseHeaders': true,
+    'tracing.hideTracingResponse': true,
+    'queryPlan.hideQueryPlanResponse': true,
+    'editor.fontSize': 14,
+    'editor.fontFamily': `'Source Code Pro', 'Consolas', 'Inconsolata', 'Droid Sans Mono', 'Monaco', monospace`,
+    'request.credentials': 'omit',
+  },
 })
 
 export const defaultGraphqlSettings: () => Readonly<Required<GraphqlSettings>> = () => ({
@@ -92,9 +97,9 @@ export const defaultSettings: () => Readonly<SettingsData> = () => {
         : process.env.NODE_ENV === 'production'
         ? 80
         : 4000,
-    startMessage: ({ port, host, path, playgroundPath }): void => {
+    startMessage: ({ port, host, path }): void => {
       serverLogger.info('listening', {
-        url: `http://${Utils.prettifyHost(host)}:${port}${playgroundPath ?? path}`,
+        url: `http://${Utils.prettifyHost(host)}:${port}${path}`,
       })
     },
     playground: process.env.NODE_ENV === 'production' ? false : defaultPlaygroundSettings(),
@@ -103,35 +108,23 @@ export const defaultSettings: () => Readonly<SettingsData> = () => {
   }
 }
 
-function playgroundPath(settings: true | PlaygroundSettings): string {
-  if (settings === true) {
-    return defaultPlaygroundPath
-  }
-
-  if (settings.path === undefined) {
-    return defaultPlaygroundPath
-  }
-
-  if (settings.path.length === 0) {
-    Process.fatal('Custom playground `path` cannot be empty and must start with a "/"')
-  }
-
-  if (settings.path.startsWith('/') === false) {
-    log.warn('Custom playground `path` must start with a "/". Please add it.')
-
-    return '/' + settings.path
-  }
-
-  return settings.path
-}
-
-export function playgroundSettings(settings: SettingsInput['playground']): SettingsData['playground'] {
-  if (!settings) {
+export function playgroundSettings(
+  playgroundSettings: SettingsInput['playground']
+): SettingsData['playground'] {
+  if (!playgroundSettings) {
     return false
   }
 
+  const defaultSettings = defaultPlaygroundSettings()
+
+  if (typeof playgroundSettings === 'boolean') {
+    return {
+      settings: defaultSettings.settings,
+    }
+  }
+
   return {
-    path: playgroundPath(settings),
+    settings: { ...defaultSettings.settings, ...playgroundSettings.settings },
   }
 }
 
