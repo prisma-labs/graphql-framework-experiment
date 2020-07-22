@@ -34,6 +34,13 @@ export function createLazyState(): LazyState {
  * Public component interface
  */
 export interface Lifecycle {
+  /**
+   * Register callback to be run when the application starts.
+   *
+   * @remarks
+   *
+   * Put initialization code here that you don't want run during [Nexus reflection](https://nxs.li/about/reflection).
+   */
   start(callback: (data: Data) => void): void
   // idea - if we ever need it
   // phase: {

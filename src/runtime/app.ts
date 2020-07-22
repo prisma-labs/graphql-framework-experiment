@@ -36,6 +36,8 @@ export interface App {
   settings: Settings.Settings
   /**
    * [API Reference](https://nxs.li/docs/api/on) ⌁ [Issues](https://nxs.li/issues/components/lifecycle)
+   *
+   * Use the lifecycle component to tap into application events.
    */
   on: Lifecycle.Lifecycle
   /**
