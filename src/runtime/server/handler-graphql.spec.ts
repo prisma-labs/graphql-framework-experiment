@@ -25,7 +25,7 @@ beforeEach(() => {
 })
 
 it('resolves a request', async () => {
-  reqBody(`{ foo }`)
+  reqPOST(`{ foo }`)
   await handler(req, res)
   expect(result(res)).toMatchInlineSnapshot(`
     "HTTP/1.1 200 Success
@@ -49,17 +49,17 @@ describe('internal errors', () => {
         },
       })
     )
-    reqBody(`{ foo }`)
+    reqPOST(`{ foo }`)
     await handler(req, res)
     expect(result(res)).toMatchInlineSnapshot(`
-    "HTTP/1.1 500 InternalServerError
-    Content-Type: application/json; charset=utf-8
-    Content-Length: 150
-    Date: __dynamic__
-    Connection: close
+      "HTTP/1.1 200 Success
+      Content-Type: application/json; charset=utf-8
+      Content-Length: 196
+      Date: __dynamic__
+      Connection: close
 
-    {\\"errors\\":[{\\"message\\":\\"Boolean cannot represent a non boolean value: \\\\\\"wrong type\\\\\\"\\",\\"locations\\":[{\\"line\\":1,\\"column\\":3}],\\"path\\":[\\"foo\\"]}],\\"data\\":null}"
-  `)
+      {\\"errors\\":[{\\"message\\":\\"Boolean cannot represent a non boolean value: \\\\\\"wrong type\\\\\\"\\",\\"locations\\":[{\\"line\\":1,\\"column\\":3}],\\"path\\":[\\"foo\\"],\\"extensions\\":{\\"code\\":\\"INTERNAL_SERVER_ERROR\\"}}],\\"data\\":null}"
+    `)
   })
   it('Handles throw errors in resolvers', async () => {
     createHandler(
@@ -71,65 +71,64 @@ describe('internal errors', () => {
         },
       })
     )
-    reqBody(`{ foo }`)
+    reqPOST(`{ foo }`)
     await handler(req, res)
     expect(result(res)).toMatchInlineSnapshot(`
-    "HTTP/1.1 500 InternalServerError
-    Content-Type: application/json; charset=utf-8
-    Content-Length: 94
-    Date: __dynamic__
-    Connection: close
+      "HTTP/1.1 200 Success
+      Content-Type: application/json; charset=utf-8
+      Content-Length: 140
+      Date: __dynamic__
+      Connection: close
 
-    {\\"errors\\":[{\\"message\\":\\"oops\\",\\"locations\\":[{\\"line\\":1,\\"column\\":3}],\\"path\\":[\\"foo\\"]}],\\"data\\":null}"
-  `)
+      {\\"errors\\":[{\\"message\\":\\"oops\\",\\"locations\\":[{\\"line\\":1,\\"column\\":3}],\\"path\\":[\\"foo\\"],\\"extensions\\":{\\"code\\":\\"INTERNAL_SERVER_ERROR\\"}}],\\"data\\":null}"
+    `)
   })
 })
 
 describe('client errors', () => {
   it('validates the query (e.g. selection set valid)', async () => {
-    reqBody(`{ bad }`)
+    reqPOST(`{ bad }`)
     await handler(req, res)
     expect(result(res)).toMatchInlineSnapshot(`
-      "HTTP/1.1 400 BadRequestError
+      "HTTP/1.1 400 HttpQueryError
       Content-Type: application/json; charset=utf-8
-      Content-Length: 97
+      Content-Length: 158
       Date: __dynamic__
       Connection: close
 
-      [{\\"message\\":\\"Cannot query field \\\\\\"bad\\\\\\" on type \\\\\\"Query\\\\\\".\\",\\"locations\\":[{\\"line\\":1,\\"column\\":3}]}]"
+      {\\"errors\\":[{\\"message\\":\\"Cannot query field \\\\\\"bad\\\\\\" on type \\\\\\"Query\\\\\\".\\",\\"locations\\":[{\\"line\\":1,\\"column\\":3}],\\"extensions\\":{\\"code\\":\\"GRAPHQL_VALIDATION_FAILED\\"}}]}"
     `)
   })
 
   it('body query prop is required', async () => {
-    reqBody({})
+    reqPOST({})
     await handler(req, res)
     expect(result(res)).toMatchInlineSnapshot(`
-          "HTTP/1.1 400 BadRequestError
-          Content-Type: application/json; charset=utf-8
-          Content-Length: 62
-          Date: __dynamic__
-          Connection: close
+      "HTTP/1.1 500 HttpQueryError
+      Content-Type: application/json; charset=utf-8
+      Content-Length: 75
+      Date: __dynamic__
+      Connection: close
 
-          {\\"message\\":\\"request.body json expected to have a query field\\"}"
-      `)
+      {\\"message\\":\\"POST body missing. Did you forget use body-parser middleware?\\"}"
+    `)
   })
   it('variables must be valid json', async () => {
-    reqBody({ query: '{ foo }', variables: '' })
+    reqPOST({ query: '{ foo }', variables: '' })
     await handler(req, res)
     expect(result(res)).toMatchInlineSnapshot(`
-          "HTTP/1.1 400 BadRequestError
-          Content-Type: application/json; charset=utf-8
-          Content-Length: 41
-          Date: __dynamic__
-          Connection: close
+      "HTTP/1.1 400 HttpQueryError
+      Content-Type: application/json; charset=utf-8
+      Content-Length: 214
+      Date: __dynamic__
+      Connection: close
 
-          {\\"message\\":\\"Variables are invalid JSON.\\"}"
-      `)
+      {\\"errors\\":[{\\"message\\":\\"Variables must be provided as an Object where each property is a variable value. Perhaps look to see if an unparsed JSON string was provided.\\",\\"extensions\\":{\\"code\\":\\"INTERNAL_SERVER_ERROR\\"}}]}"
+    `)
   })
 
   it('no mutation for GET', async () => {
-    req.method = 'GET'
-    reqBody({ query: 'mutation { foo }' })
+    reqGET({ query: 'mutation { foo }' })
     createHandler(
       mutationType({
         definition(t) {
@@ -139,15 +138,15 @@ describe('client errors', () => {
     )
     await handler(req, res)
     expect(result(res)).toMatchInlineSnapshot(`
-          "HTTP/1.1 405 MethodNotAllowedError
-          Allow: POST
-          Content-Type: application/json; charset=utf-8
-          Content-Length: 72
-          Date: __dynamic__
-          Connection: close
+      "HTTP/1.1 405 HttpQueryError
+      Allow: POST
+      Content-Type: application/json; charset=utf-8
+      Content-Length: 47
+      Date: __dynamic__
+      Connection: close
 
-          {\\"message\\":\\"Can only perform a mutation operation from a POST request.\\"}"
-      `)
+      {\\"message\\":\\"GET supports only query operation\\"}"
+    `)
   })
 })
 
@@ -167,11 +166,14 @@ function createHandler(...types: any) {
     {
       introspection: true,
       errorFormatterFn: errorFormatter,
+      path: '/graphql',
+      playground: false,
     }
   )
 }
 
-function reqBody(params: string | { query?: string; variables?: string }): void {
+function reqPOST(params: string | { query?: string; variables?: string }): void {
+  req.method = 'POST'
   if (typeof params === 'string') {
     ;(req as any).body = {
       query: params,
@@ -179,6 +181,15 @@ function reqBody(params: string | { query?: string; variables?: string }): void 
   } else {
     ;(req as any).body = params
   }
+}
+
+function reqGET(params: { query?: string; variables?: string }): void {
+  req.method = 'GET'
+  req.url = `http://localhost:4000/graphql?${new URLSearchParams({
+    query: params.query ?? '',
+    variables: params.variables ?? '',
+  }).toString()}`
+  console.log(req.url)
 }
 
 function result(res: ServerResponse): string {
