@@ -46,7 +46,6 @@ export class ApolloServerless extends ApolloServerBase {
         return this.handleHealthCheck({
           req,
           res,
-          disableHealthCheck,
           onHealthCheck,
         })
       }
@@ -82,37 +81,26 @@ export class ApolloServerless extends ApolloServerBase {
   private async handleHealthCheck({
     req,
     res,
-    disableHealthCheck,
     onHealthCheck,
   }: {
     req: IncomingMessage
     res: ServerResponse
-    disableHealthCheck?: boolean
     onHealthCheck?: (req: IncomingMessage) => Promise<any>
-  }): Promise<boolean> {
-    let handled = false
+  }): Promise<void> {
+    // Response follows
+    // https://tools.ietf.org/html/draft-inadarei-api-health-check-01
+    res.setHeader('Content-Type', 'application/health+json')
 
-    if (!disableHealthCheck && req.url === '/.well-known/apollo/server-health') {
-      // Response follows
-      // https://tools.ietf.org/html/draft-inadarei-api-health-check-01
-      res.setHeader('Content-Type', 'application/health+json')
-
-      if (onHealthCheck) {
-        try {
-          await onHealthCheck(req)
-        } catch (error) {
-          sendJSON(res, 503, 'Service Unavailable', {}, { status: 'fail' })
-          handled = true
-        }
-      }
-
-      if (!handled) {
-        sendJSON(res, 200, 'Success', {}, { status: 'pass' })
-        handled = true
+    if (onHealthCheck) {
+      try {
+        await onHealthCheck(req)
+      } catch (error) {
+        sendJSON(res, 503, 'Service Unavailable', {}, { status: 'fail' })
+        return
       }
     }
 
-    return handled
+    sendJSON(res, 200, 'Success', {}, { status: 'pass' })
   }
 
   // If the `playgroundOptions` are set, register a `graphql-playground` instance
@@ -124,30 +112,24 @@ export class ApolloServerless extends ApolloServerBase {
   }: {
     req: IncomingMessage
     res: ServerResponse
-  }): boolean {
-    let handled = false
+  }): void {
+    const accept = accepts(req)
+    const types = accept.types() as string[]
+    const prefersHTML =
+      types.find((x: string) => x === 'text/html' || x === 'application/json') === 'text/html'
 
-    if (this.playgroundOptions && req.method === 'GET') {
-      const accept = accepts(req)
-      const types = accept.types() as string[]
-      const prefersHTML =
-        types.find((x: string) => x === 'text/html' || x === 'application/json') === 'text/html'
-
-      if (prefersHTML) {
-        const middlewareOptions = {
-          endpoint: this.graphqlPath,
-          subscriptionEndpoint: this.subscriptionsPath,
-          ...this.playgroundOptions,
-        }
-        res.setHeader('Content-Type', 'text/html; charset=utf-8')
-        res.statusCode = 200
-        res.statusMessage = 'Success'
-        sendResponse(res, 'text/html', renderPlaygroundPage(middlewareOptions))
-        handled = true
+    if (prefersHTML) {
+      const middlewareOptions = {
+        endpoint: this.graphqlPath,
+        subscriptionEndpoint: this.subscriptionsPath,
+        ...this.playgroundOptions,
       }
+      res.setHeader('Content-Type', 'text/html; charset=utf-8')
+      res.statusCode = 200
+      res.statusMessage = 'Success'
+      sendResponse(res, 'text/html', renderPlaygroundPage(middlewareOptions))
+      return
     }
-
-    return handled
   }
 
   // Handle incoming GraphQL requests using Apollo Server.
@@ -157,9 +139,7 @@ export class ApolloServerless extends ApolloServerBase {
   }: {
     req: IncomingMessage
     res: ServerResponse
-  }): Promise<boolean> {
-    let handled = false
-
+  }): Promise<void> {
     const handler = graphqlHandler(() => {
       return this.createGraphQLServerOptions(req, res)
     })
@@ -169,10 +149,6 @@ export class ApolloServerless extends ApolloServerBase {
       res.statusMessage = 'Success'
       sendJSON(res, 200, 'Success', {}, JSON.parse(responseData))
     }
-
-    handled = true
-
-    return handled
   }
 
   // If file uploads are detected, prepare them for easier handling with
