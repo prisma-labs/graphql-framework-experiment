@@ -6,7 +6,7 @@ import * as Layout from '../layout'
 import { rootLogger } from '../nexus-logger'
 import { Plugin } from '../plugin'
 import { deserializeError, SerializedError } from '../utils'
-import { getReflectionStageEnv, removeReflectionStage, setReflectionStage } from './stage'
+import { getReflectionStageEnv, setReflectionStage, unsetReflectionStage } from './stage'
 
 const log = rootLogger.child('reflection')
 
@@ -72,7 +72,7 @@ export async function runPluginsReflectionOnMainThread(
   try {
     await appRunner.start()
 
-    removeReflectionStage()
+    unsetReflectionStage()
 
     return { success: true, plugins: app.private.state.plugins }
   } catch (error) {

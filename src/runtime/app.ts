@@ -4,13 +4,14 @@ import { rootLogger } from '../lib/nexus-logger'
 import * as Plugin from '../lib/plugin'
 import { RuntimeContributions } from '../lib/plugin'
 import * as Reflection from '../lib/reflection/stage'
+import { builtinScalars } from '../lib/scalars'
 import { Index } from '../lib/utils'
+import * as Lifecycle from './lifecycle'
 import * as Schema from './schema'
 import * as Server from './server'
 import { ContextCreator } from './server/server'
 import * as Settings from './settings'
 import { assertAppNotAssembled } from './utils'
-import { builtinScalars } from '../lib/scalars'
 
 const log = Logger.log.child('app')
 
@@ -33,6 +34,12 @@ export interface App {
    * [API Reference](https://nxs.li/docs/api/settings) ⌁ [Issues](https://nxs.li/issues/components/settings)
    */
   settings: Settings.Settings
+  /**
+   * [API Reference](https://nxs.li/docs/api/on) ⌁ [Issues](https://nxs.li/issues/components/lifecycle)
+   *
+   * Use the lifecycle component to tap into application events.
+   */
+  on: Lifecycle.Lifecycle
   /**
    * [API Reference](https://nxs.li/docs/api/use-plugins) ⌁ [Issues](https://nxs.li/issues/components/plugins)
    */
@@ -84,7 +91,10 @@ export type AppState = {
     createContext: ContextCreator
   }
   running: boolean
-  schemaComponent: Schema.LazyState
+  components: {
+    schema: Schema.LazyState
+    lifecycle: Lifecycle.LazyState
+  }
 }
 
 export type PrivateApp = App & {
@@ -99,45 +109,71 @@ export type PrivateApp = App & {
  * type says.
  */
 export function createAppState(): AppState {
-  const appState = {
+  const appState: AppState = {
     assembled: null,
     running: false,
     plugins: [],
-  } as Omit<AppState, 'schemaComponent'>
+    components: {} as any, // populated by components
+  }
 
-  return appState as any
+  return appState
 }
 
 /**
  * Create an app instance
  */
 export function create(): App {
-  const appState = createAppState()
-  const serverComponent = Server.create(appState)
-  const schemaComponent = Schema.create(appState)
-  const settingsComponent = Settings.create(appState, {
+  const state = createAppState()
+  const serverComponent = Server.create(state)
+  const schemaComponent = Schema.create(state)
+  const settingsComponent = Settings.create(state, {
     serverSettings: serverComponent.private.settings,
     schemaSettings: schemaComponent.private.settings,
     log: Logger.log,
   })
+  const lifecycleComponent = Lifecycle.create(state)
 
   const app: App = {
     log: log,
     settings: settingsComponent.public,
     schema: schemaComponent.public,
     server: serverComponent.public,
+    on: lifecycleComponent.public,
     reset() {
       // todo once we have log filtering, make this debug level
       rootLogger.trace('resetting state')
       schemaComponent.private.reset()
       serverComponent.private.reset()
       settingsComponent.private.reset()
-      appState.assembled = null
-      appState.plugins = []
-      appState.running = false
+      lifecycleComponent.private.reset()
+      state.assembled = null
+      state.plugins = []
+      state.running = false
+    },
+    async start() {
+      if (Reflection.isReflection()) return
+      if (state.running) return
+      if (!state.assembled) {
+        throw new Error('Must call app.assemble before calling app.start')
+      }
+      lifecycleComponent.private.trigger.start({
+        schema: state.assembled!.schema,
+      })
+      await serverComponent.private.start()
+      state.running = true
+    },
+    async stop() {
+      if (Reflection.isReflection()) return
+      if (!state.running) return
+      await serverComponent.private.stop()
+      state.running = false
+    },
+    use(plugin) {
+      assertAppNotAssembled(state, 'app.use', 'The plugin you attempted to use will be ignored')
+      state.plugins.push(plugin)
     },
     assemble() {
-      if (appState.assembled) return
+      if (state.assembled) return
 
       schemaComponent.private.beforeAssembly()
 
@@ -150,43 +186,24 @@ export function create(): App {
        */
       if (Reflection.isReflectionStage('plugin')) return
 
-      appState.assembled = {} as AppState['assembled']
+      state.assembled = {} as AppState['assembled']
 
-      const loadedPlugins = Plugin.importAndLoadRuntimePlugins(
-        appState.plugins,
-        appState.schemaComponent.scalars
-      )
-      appState.assembled!.loadedPlugins = loadedPlugins
+      const loadedPlugins = Plugin.importAndLoadRuntimePlugins(state.plugins, state.components.schema.scalars)
+      state.assembled!.loadedPlugins = loadedPlugins
 
       const { schema, missingTypes } = schemaComponent.private.assemble(loadedPlugins)
-      appState.assembled!.schema = schema
-      appState.assembled!.missingTypes = missingTypes
+      state.assembled!.schema = schema
+      state.assembled!.missingTypes = missingTypes
 
       if (Reflection.isReflectionStage('typegen')) return
 
       const { createContext } = serverComponent.private.assemble(loadedPlugins, schema)
-      appState.assembled!.createContext = createContext
+      state.assembled!.createContext = createContext
 
       const { settings } = settingsComponent.private.assemble()
-      appState.assembled!.settings = settings
+      state.assembled!.settings = settings
 
       schemaComponent.private.checks()
-    },
-    async start() {
-      if (Reflection.isReflection()) return
-      if (appState.running) return
-      await serverComponent.private.start()
-      appState.running = true
-    },
-    async stop() {
-      if (Reflection.isReflection()) return
-      if (!appState.running) return
-      await serverComponent.private.stop()
-      appState.running = false
-    },
-    use(plugin) {
-      assertAppNotAssembled(appState, 'app.use', 'The plugin you attempted to use will be ignored')
-      appState.plugins.push(plugin)
     },
   }
 
@@ -209,7 +226,7 @@ export function create(): App {
   return {
     ...app,
     private: {
-      state: appState,
+      state: state,
     },
   } as App
 }

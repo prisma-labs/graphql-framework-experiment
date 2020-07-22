@@ -5,7 +5,7 @@ import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
 import * as FS from 'fs-jetpack'
 import * as OS from 'os'
 import * as Path from 'path'
-import * as ts from 'ts-morph'
+import * as tsm from 'ts-morph'
 import type { ParsedCommandLine } from 'typescript'
 import { findFile, isEmptyDir } from '../../lib/fs'
 import { rootLogger } from '../nexus-logger'
@@ -364,7 +364,7 @@ function normalizeEntrypoint(
 export function findNexusModules(tsConfig: Data['tsConfig'], maybeAppModule: string | null): string[] {
   try {
     log.trace('finding nexus modules')
-    const project = new ts.Project({
+    const project = new tsm.Project({
       addFilesFromTsConfig: false, // Prevent ts-morph from re-parsing the tsconfig
     })
 

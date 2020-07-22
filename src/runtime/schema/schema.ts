@@ -22,7 +22,7 @@ export type LazyState = {
   scalars: Scalars.Scalars
 }
 
-function createLazyState(): LazyState {
+export function createLazyState(): LazyState {
   return {
     contextContributors: [],
     plugins: [],
@@ -85,19 +85,19 @@ export interface SchemaInternal {
   public: Schema
 }
 
-export function create(appState: AppState): SchemaInternal {
-  appState.schemaComponent = createLazyState()
+export function create(state: AppState): SchemaInternal {
+  state.components.schema = createLazyState()
   const statefulNexusSchema = createNexusSchemaStateful()
   const settings = createSchemaSettingsManager()
 
   const api: Schema = {
     ...statefulNexusSchema.builders,
     use(plugin) {
-      assertAppNotAssembled(appState, 'app.schema.use', 'The Nexus Schema plugin you used will be ignored.')
-      appState.schemaComponent.plugins.push(plugin)
+      assertAppNotAssembled(state, 'app.schema.use', 'The Nexus Schema plugin you used will be ignored.')
+      state.components.schema.plugins.push(plugin)
     },
     addToContext(contextContributor) {
-      appState.schemaComponent.contextContributors.push(contextContributor)
+      state.components.schema.contextContributors.push(contextContributor)
     },
     middleware(fn) {
       api.use(
@@ -119,17 +119,17 @@ export function create(appState: AppState): SchemaInternal {
       reset() {
         statefulNexusSchema.state.types = []
         statefulNexusSchema.state.scalars = {}
-        appState.schemaComponent.contextContributors = []
-        appState.schemaComponent.plugins = []
-        appState.schemaComponent.scalars = {}
+        state.components.schema.contextContributors = []
+        state.components.schema.plugins = []
+        state.components.schema.scalars = {}
       },
       beforeAssembly() {
-        appState.schemaComponent.scalars = statefulNexusSchema.state.scalars
+        state.components.schema.scalars = statefulNexusSchema.state.scalars
       },
       assemble(plugins) {
         const nexusSchemaConfig = mapSettingsAndPluginsToNexusSchemaConfig(plugins, settings.data)
         nexusSchemaConfig.types.push(...statefulNexusSchema.state.types)
-        nexusSchemaConfig.plugins!.push(...appState.schemaComponent.plugins)
+        nexusSchemaConfig.plugins!.push(...state.components.schema.plugins)
         try {
           const { schema, missingTypes } = NexusSchema.core.makeSchemaInternal(nexusSchemaConfig)
           if (process.env.NEXUS_STAGE === 'dev') {
@@ -143,7 +143,7 @@ export function create(appState: AppState): SchemaInternal {
         }
       },
       checks() {
-        assertNoMissingTypesDev(appState.assembled!.schema, appState.assembled!.missingTypes)
+        assertNoMissingTypesDev(state.assembled!.schema, state.assembled!.missingTypes)
 
         // TODO: We should separate types added by the framework and the ones added by users
         if (

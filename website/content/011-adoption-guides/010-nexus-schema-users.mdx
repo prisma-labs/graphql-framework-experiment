@@ -6,61 +6,40 @@ experimental: false
 staticLink: false
 ---
 
-## Migrate from Nexus Schema
+## Hello Nexus Schema User!
 
-Prior to version `0.20`, the `nexus` package comprised only the schema definition and code generation components of the Nexus framework. These components are now known as [`@nexus/schema`](../../components-standalone/schema), and while they're included as part of the Nexus framework, they remain available as a [standalone package](https://github.com/graphql-nexus/schema). (You can read more about the transition of Nexus from a schema library to a full-fledged framework in the [announcement in this GitHub issue](https://github.com/prisma-labs/nexus/issues/373).)
+This guide is for you if you use `@nexus/schema` on a project and are curious about if you should upgrade to the framework and/or how.
 
-For users of `nexus` version `0.12` and below, you can either migrate to the `@nexus/schema` package, or to the new Nexus framework. The former is more straightforward, but the latter may significantly simplify your configuration and give you the benefit of baked-in sensible defaults and best practices (especially if you were previously using `graphql-yoga` or `express-graphql`). This guide will cover both scenarios.
+Nexus is built on top of `@nexus/schema` adding many opinions and features. If you haven't you should check out the [tutorial](/getting-started/tutorial) and read the [introduction](/). But here's a quick rundown of the differences:
 
-## Using `@nexus/schema`
+| feature                                                              | `nexus` | `@nexus/schema` |
+| -------------------------------------------------------------------- | ------- | --------------- |
+| JavaScript Support                                                   | ✖       | ✔               |
+| `@nexus/schema` `makeSchema` Control                                 | ✖       | ✔               |
+| GraphQL Schema Builder API                                           | ✔       | ✔               |
+| Nexus Schema plugins                                                 | ✔       | ✔               |
+| Zero Config                                                          | ✔       | ✖               |
+| CLI                                                                  | ✔       | ✖               |
+| Development Mode                                                     | ✔       | ✖               |
+| Integrated Build Step with Bundling                                  | ✔       | ✖               |
+| Builtin Server                                                       | ✔       | ✖               |
+| Builtin Logger                                                       | ✔       | ✖               |
+| Bundled Scalars                                                      | ✔       | ✖               |
+| Type Discovery for Backing Types                                     | ✔       | ✖               |
+| Type Discovery for Context API                                       | ✔       | ✖               |
+| Module Discovery for Nexus modules                                   | ✔       | ✖               |
+| Framework Plugins                                                    | ✔       | ✖               |
+| Bundled Dependencies ([why](https://nxs.li/why/bundle-dependencies)) | ✔       | ✖               |
 
-Run `npm rm nexus` and `npm i @nexus/schema` to migrate to the updated package name.
-
-```json
-+++ package.json
-   "dependencies": {
--     "nexus": "0.12.0",
-+     "@nexus/schema": "0.13.1"
-   }
-```
-
-Change any imports of `nexus` to `@nexus/schema`:
-
-```ts
-- import { makeSchema } from "nexus";
-+ import { makeSchema } from "@nexus/schema";
-```
-
-If you are a `nexus-prisma` there is almost nothing extra to do. But note it has migrated to `nexus-plugin-prisma`. Learn more about the transition [here](https://github.com/graphql-nexus/nexus-plugin-prisma/issues/630). Do the following to keep using it:
-
-Your Dependencies
-
-```
-npm remove nexus-prisma @prisma/client @prisma/cli
-npm add nexus-plugin-prisma
-```
-
-Your Imports
-
-```ts
-- import { nexusPrismaPlugin } from 'nexus-prisma'
-+ import { nexusSchemaPrisma } from 'nexus-plugin-prisma/schema'
-```
-
-## Using `nexus`
+## Migrating
 
 ### Dependencies
 
-1. Remove `nexus@0.12` and add the latest `nexus` in its place (will be something greater than `0.20`).
-1. Remove dependency `graphql` as `nexus` bundles it.
+Remove `@nexus/schema` and add the latest `nexus` in its place. Also remove dependency `graphql` as `nexus` bundles it.
 
-```json
-+++ package.json
-   "dependencies": {
--     "graphql": "...",
--     "nexus": "0.12.0",
-+     "nexus": "^0.24"
-   }
+```
+npm remove @nexus/schema graphql
+npm add nexus
 ```
 
 ### Project Layout
