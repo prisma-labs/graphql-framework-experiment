@@ -153,7 +153,8 @@ export class ApolloServerless extends ApolloServerBase {
     const responseData = await handler(req, res)
 
     if (responseData) {
-      sendResponse(res, 'text/html', responseData ?? '')
+      res.statusMessage = 'Success'
+      sendJSON(res, 200, 'Success', {}, JSON.parse(responseData))
     }
 
     handled = true
@@ -224,13 +225,14 @@ export function graphqlHandler(options: NexusGraphQLOptionsFunction) {
 
       const e = error as HttpQueryError
 
-      if (e.headers) {
-        setHeaders(res, e.headers)
-      }
-
       res.statusCode = e.statusCode ?? 500
+      res.statusMessage = e.name
 
-      sendResponse(res, 'text/html', e.message)
+      if (e.isGraphQLError) {
+        sendJSON(res, res.statusCode, res.statusMessage, e.headers ?? {}, JSON.parse(e.message))
+      } else {
+        sendJSON(res, e.statusCode, e.name, e.headers ?? {}, { message: e.message })
+      }
 
       return null
     }
@@ -238,3 +240,66 @@ export function graphqlHandler(options: NexusGraphQLOptionsFunction) {
 
   return handler
 }
+
+type GraphQLParams = {
+  query: null | string
+  variables: null | Record<string, unknown>
+  operationName: null | string
+  raw: boolean
+}
+
+/**
+ * Provided a "Request" provided by express or connect (typically a node style
+ * HTTPClientRequest), Promise the GraphQL request parameters.
+ */
+// async function getGraphQLParams(request: IncomingMessage): Promise<Either<HttpError, GraphQLParams>> {
+//   const bodyData = await parseBody(request)
+//   if (isLeft(bodyData)) return bodyData
+//   const urlData = (request.url && url.parse(request.url, true).query) || {}
+//   return parseGraphQLParams(urlData, bodyData.right)
+// }
+
+/**
+ * Helper function to get the GraphQL params from the request.
+ */
+// function parseGraphQLParams(
+//   urlData: Record<string, unknown>,
+//   bodyData: Record<string, unknown>
+// ): Either<HttpError, GraphQLParams> {
+//   let query: string | null
+//   const incomingQuery = urlData.query || bodyData.query
+
+//   if (typeof incomingQuery === 'string') {
+//     query = incomingQuery
+//   } else {
+//     query = null
+//   }
+
+//   let variables: null | Record<string, unknown>
+//   const incomingVariables = urlData.variables || bodyData.variables
+
+//   if (typeof incomingVariables === 'string') {
+//     try {
+//       variables = JSON.parse(incomingVariables)
+//     } catch (error) {
+//       return left(createError(400, 'Variables are invalid JSON.'))
+//     }
+//   } else if (typeof incomingVariables === 'object' && incomingVariables !== null) {
+//     variables = incomingVariables as Record<string, unknown>
+//   } else {
+//     variables = null
+//   }
+
+//   let operationName
+//   const incomingOperationName = urlData.operationName || bodyData.operationName
+
+//   if (typeof incomingOperationName === 'string') {
+//     operationName = incomingOperationName
+//   } else {
+//     operationName = null
+//   }
+
+//   const raw = urlData.raw !== undefined || bodyData.raw !== undefined
+
+//   return right({ query, variables, operationName, raw })
+// }
