@@ -79,7 +79,12 @@ export class ApolloServerless extends ApolloServerBase {
   }
 
   private isPlaygroundRequest(req: IncomingMessage) {
-    return this.playgroundOptions && req.method === 'GET'
+    const playgroundEnabled = Boolean(this.playgroundOptions) && req.method === 'GET'
+    const acceptTypes = accepts(req).types() as string[]
+    const prefersHTML =
+      acceptTypes.find((x: string) => x === 'text/html') === 'text/html'
+
+    return playgroundEnabled && prefersHTML
   }
 
   // If health checking is enabled, trigger the `onHealthCheck`
@@ -119,23 +124,15 @@ export class ApolloServerless extends ApolloServerBase {
     req: IncomingMessage
     res: ServerResponse
   }): void {
-    const accept = accepts(req)
-    const types = accept.types() as string[]
-    const prefersHTML =
-      types.find((x: string) => x === 'text/html' || x === 'application/json') === 'text/html'
-
-    if (prefersHTML) {
-      const middlewareOptions = {
-        endpoint: this.graphqlPath,
-        subscriptionEndpoint: this.subscriptionsPath,
-        ...this.playgroundOptions,
-      }
-      res.setHeader('Content-Type', 'text/html; charset=utf-8')
-      res.statusCode = 200
-      res.statusMessage = 'Success'
-      sendResponse(res, 'text/html', renderPlaygroundPage(middlewareOptions))
-      return
+    const middlewareOptions = {
+      endpoint: this.graphqlPath,
+      subscriptionEndpoint: this.subscriptionsPath,
+      ...this.playgroundOptions,
     }
+    res.setHeader('Content-Type', 'text/html; charset=utf-8')
+    res.statusCode = 200
+    res.statusMessage = 'Success'
+    sendResponse(res, 'text/html', renderPlaygroundPage(middlewareOptions))
   }
 
   // Handle incoming GraphQL requests using Apollo Server.
