@@ -104,6 +104,7 @@ export function create(appState: AppState) {
 
         state.apolloServer = new ApolloServer({
           schema,
+          context: createContext,
           playground: settings.data.playground
             ? {
                 endpoint: settings.data.path,
