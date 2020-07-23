@@ -6,7 +6,7 @@ import { log as serverLogger } from './logger'
 const log = serverLogger.child('settings')
 
 export type PlaygroundSettings = {
-  settings: Partial<PlaygroundRenderPageOptions['settings']>
+  settings?: Omit<Partial<Exclude<PlaygroundRenderPageOptions['settings'], undefined>>, 'general.betaUpdates'>
 }
 
 export type GraphqlSettings = {
