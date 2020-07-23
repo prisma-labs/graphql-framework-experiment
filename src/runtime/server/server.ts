@@ -1,4 +1,3 @@
-import { ApolloServer } from 'apollo-server-express'
 import createExpress, { Express } from 'express'
 import { GraphQLError, GraphQLSchema } from 'graphql'
 import * as HTTP from 'http'
@@ -10,6 +9,7 @@ import { AppState } from '../app'
 import * as DevMode from '../dev-mode'
 import { ContextContributor } from '../schema/schema'
 import { assembledGuard } from '../utils'
+import { ApolloServerExpress } from './apollo-server'
 import { errorFormatter } from './error-formatter'
 import { createRequestHandlerGraphQL } from './handler-graphql'
 import { log } from './logger'
@@ -46,7 +46,7 @@ interface State {
   running: boolean
   httpServer: HTTP.Server
   createContext: null | (() => ContextCreator<Record<string, any>, Record<string, any>>)
-  apolloServer: null | ApolloServer
+  apolloServer: null | ApolloServerExpress
 }
 
 export const defaultState = {
@@ -102,16 +102,17 @@ export function create(appState: AppState) {
           loadedRuntimePlugins
         )
 
-        state.apolloServer = new ApolloServer({
+        state.apolloServer = new ApolloServerExpress({
           schema,
           context: createContext,
+          introspection: settings.data.graphql.introspection,
+          formatError: errorFormatter,
+          logger: resolverLogger,
           playground: settings.data.playground
             ? {
                 endpoint: settings.data.path,
               }
             : false,
-          logger: resolverLogger,
-          formatError: errorFormatter,
         })
 
         state.apolloServer.applyMiddleware({ app: express, path: settings.data.path })

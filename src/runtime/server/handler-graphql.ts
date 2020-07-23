@@ -1,5 +1,5 @@
 import { GraphQLError, GraphQLFormattedError, GraphQLSchema } from 'graphql'
-import { ApolloServerless } from './apollo-server-serverless'
+import { ApolloServerless } from './apollo-server'
 import { log } from './logger'
 import { ContextCreator, NexusRequestHandler } from './server'
 import { PlaygroundSettings } from './settings'
@@ -24,9 +24,9 @@ export const createRequestHandlerGraphQL: CreateHandler = (schema, createContext
   const server = new ApolloServerless({
     schema,
     context: createContext,
+    introspection: settings.introspection,
     formatError: settings.errorFormatterFn,
     logger: log,
-    introspection: settings.introspection,
     playground: settings.playground,
   })
 

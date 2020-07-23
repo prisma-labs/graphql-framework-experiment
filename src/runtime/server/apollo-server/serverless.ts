@@ -11,9 +11,10 @@ import {
 import { isLeft } from 'fp-ts/lib/Either'
 import { IncomingMessage, ServerResponse } from 'http'
 import createError from 'http-errors'
-import { parseBody, parseQuery } from './parse-body'
-import { sendError, sendJSON, sendResponse } from './utils'
-import { NexusRequestHandler } from './server'
+import { parseBody, parseQuery } from '../parse-body'
+import { sendError, sendJSON, sendResponse } from '../utils'
+import { NexusRequestHandler } from '../server'
+import { ApolloConfig } from './types'
 
 export interface ServerRegistration {
   path?: string
@@ -22,6 +23,10 @@ export interface ServerRegistration {
 }
 
 export class ApolloServerless extends ApolloServerBase {
+  constructor(config: ApolloConfig) {
+    super(config)
+  }
+
   // Extract Apollo Server options from the request.
   async createGraphQLServerOptions(req: IncomingMessage, res: ServerResponse): Promise<GraphQLOptions> {
     return super.graphQLServerOptions({ req, res })
