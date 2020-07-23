@@ -323,6 +323,7 @@ export function tsconfigTemplate(input: { sourceRootRelative: string; outRootRel
       noEmit: true,
       plugins: [{ name: 'nexus/typescript-language-service' }],
       typeRoots: ['node_modules/@types', 'types'],
+      esModuleInterop: true
     },
     include: ['types.d.ts', sourceRelative],
   }
