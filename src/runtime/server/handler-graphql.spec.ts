@@ -189,7 +189,6 @@ function reqGET(params: { query?: string; variables?: string }): void {
     query: params.query ?? '',
     variables: params.variables ?? '',
   }).toString()}`
-  console.log(req.url)
 }
 
 function result(res: ServerResponse): string {

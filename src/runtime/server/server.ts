@@ -53,6 +53,9 @@ export const defaultState = {
 export function create(appState: AppState) {
   const settings = createServerSettingsManager()
   const express = createExpress()
+  // TODO: Lazily create apollo server
+  // Intentional error below
+
   let apolloServer: null | ApolloServer = null
   const state = { ...defaultState }
 
@@ -91,15 +94,6 @@ export function create(appState: AppState) {
       assemble(loadedRuntimePlugins: Plugin.RuntimeContributions[], schema: GraphQLSchema) {
         state.httpServer.on('request', express)
 
-        // if (settings.data.playground) {
-        //   express.get(
-        //     settings.data.playground.path,
-        //     wrapHandlerWithErrorHandling(
-        //       createRequestHandlerPlayground({ graphqlEndpoint: settings.data.path })
-        //     )
-        //   )
-        // }
-
         const createContext = createContextCreator(
           appState.components.schema.contextContributors,
           loadedRuntimePlugins
@@ -117,14 +111,6 @@ export function create(appState: AppState) {
         })
 
         apolloServer.applyMiddleware({ app: express, path: settings.data.path })
-
-        // const graphqlHandler = createRequestHandlerGraphQL(schema, createContext, {
-        //   ...settings.data.graphql,
-        //   errorFormatterFn: errorFormatter,
-        // })
-
-        // express.post(settings.data.path, graphqlHandler)
-        // express.get(settings.data.path, graphqlHandler)
 
         return { createContext }
       },
