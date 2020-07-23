@@ -1,12 +1,67 @@
+import { PlaygroundRenderPageOptions } from 'apollo-server-express'
+import { CorsOptions as OriginalCorsOption } from 'cors'
 import * as Process from '../../lib/process'
 import * as Utils from '../../lib/utils'
-import { PlaygroundRenderPageOptions } from 'apollo-server-express'
 import { log as serverLogger } from './logger'
 
 const log = serverLogger.child('settings')
 
 export type PlaygroundSettings = {
   settings?: Omit<Partial<Exclude<PlaygroundRenderPageOptions['settings'], undefined>>, 'general.betaUpdates'>
+}
+
+export type CorsSettings = {
+  /**
+   * Configures the Access-Control-Allow-Origin CORS header. Possible values:
+   *
+   * Boolean - set origin to true to reflect the request origin, as defined by req.header('Origin'), or set it to false to disable CORS.
+   * String - set origin to a specific origin. For example if you set it to "http://example.com" only requests from "http://example.com" will be allowed.
+   * RegExp - set origin to a regular expression pattern which will be used to test the request origin. If it's a match, the request origin will be reflected. For example the pattern /example\.com$/ will reflect any request that is coming from an origin ending with "example.com".
+   * Array - set origin to an array of valid origins. Each origin can be a String or a RegExp. For example ["http://example1.com", /\.example2\.com$/] will accept any request from "http://example1.com" or from a subdomain of "example2.com".
+   * Function - set origin to a function implementing some custom logic. The function takes the request origin as the first parameter and a callback (called as callback(err, origin), where origin is a non-function value of the origin option) as the second.
+   *
+   */
+  origin?: OriginalCorsOption['origin']
+  /**
+   * Configures the Access-Control-Allow-Methods CORS header.
+   *
+   * Expects a comma-delimited string (ex: 'GET,PUT,POST') or an array (ex: ['GET', 'PUT', 'POST']).
+   */
+  methods?: string | string[]
+  /**
+   * Configures the Access-Control-Allow-Headers CORS header.
+   *
+   * Expects a comma-delimited string (ex: 'Content-Type,Authorization') or an array (ex: ['Content-Type', 'Authorization']).
+   * If not specified, defaults to reflecting the headers specified in the request's Access-Control-Request-Headers header.
+   */
+  allowedHeaders?: string | string[]
+  /**
+   * Configures the Access-Control-Expose-Headers CORS header.
+   *
+   * Expects a comma-delimited string (ex: 'Content-Range,X-Content-Range') or an array (ex: ['Content-Range', 'X-Content-Range']).
+   * If not specified, no custom headers are exposed.
+   */
+  exposedHeaders?: string | string[]
+  /**
+   * Configures the Access-Control-Allow-Credentials CORS header.
+   *
+   * Set to true to pass the header, otherwise it is omitted.
+   */
+  credentials?: boolean
+  /**
+   * Configures the Access-Control-Max-Age CORS header.
+   *
+   * Set to an integer to pass the header, otherwise it is omitted.
+   */
+  maxAge?: number
+  /**
+   * Pass the CORS preflight response to the next handler.
+   */
+  preflightContinue?: boolean
+  /**
+   * Provides a status code to use for successful OPTIONS requests, since some legacy browsers (IE11, various SmartTVs) choke on 204.
+   */
+  optionsSuccessStatus?: number
 }
 
 export type GraphqlSettings = {
@@ -33,15 +88,31 @@ export type SettingsInput = {
    * production, without some kind of security/access control, you will almost
    * certainly want this disabled.
    *
-   * To learn more about GraphQL Playgorund see
+   * To learn more about GraphQL Playground see
    * https://github.com/prisma-labs/graphql-playground
    */
   playground?: boolean | PlaygroundSettings
   /**
+   * Enable CORS for your server
+   *
+   * When true is passed, the default config is the following:
+   *
+   * ```
+   * {
+   *   "origin": "*",
+   *   "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+   *   "preflightContinue": false,
+   *   "optionsSuccessStatus": 204
+   * }
+   * ```
+   *
+   * @default false
+   */
+  cors?: boolean | CorsSettings
+  /**
    * The path on which the GraphQL API should be served.
    *
-   * @default
-   * /graphql
+   * @default /graphql
    */
   path?: string
   /**
@@ -55,10 +126,14 @@ export type SettingsInput = {
   graphql?: GraphqlSettings
 }
 
-export type SettingsData = Omit<Utils.DeepRequired<SettingsInput>, 'host' | 'playground' | 'graphql'> & {
+export type SettingsData = Omit<
+  Utils.DeepRequired<SettingsInput>,
+  'host' | 'playground' | 'graphql' | 'cors'
+> & {
   host: string | undefined
   playground: false | Required<PlaygroundSettings>
   graphql: Required<GraphqlSettings>
+  cors: boolean | CorsSettings
 }
 
 export const defaultPlaygroundPath = '/graphql'
@@ -104,6 +179,7 @@ export const defaultSettings: () => Readonly<SettingsData> = () => {
     },
     playground: process.env.NODE_ENV === 'production' ? false : defaultPlaygroundSettings(),
     path: '/graphql',
+    cors: false,
     graphql: defaultGraphqlSettings(),
   }
 }
@@ -159,6 +235,7 @@ export function changeSettings(state: SettingsData, newSettings: SettingsInput):
   state.port = updatedSettings.port
   state.startMessage = updatedSettings.startMessage
   state.graphql = graphqlSettings(updatedSettings.graphql)
+  state.cors = updatedSettings.cors
 }
 
 export function createServerSettingsManager() {
