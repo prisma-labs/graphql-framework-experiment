@@ -1,20 +1,19 @@
+import { ApolloServer } from 'apollo-server-express'
 import createExpress, { Express } from 'express'
 import { GraphQLError, GraphQLSchema } from 'graphql'
 import * as HTTP from 'http'
 import { HttpError } from 'http-errors'
 import * as Net from 'net'
 import * as Plugin from '../../lib/plugin'
-import { httpListen, MaybePromise, noop, httpClose } from '../../lib/utils'
+import { httpClose, httpListen, MaybePromise, noop } from '../../lib/utils'
 import { AppState } from '../app'
 import * as DevMode from '../dev-mode'
 import { ContextContributor } from '../schema/schema'
 import { assembledGuard } from '../utils'
 import { errorFormatter } from './error-formatter'
 import { createRequestHandlerGraphQL } from './handler-graphql'
-//import { createRequestHandlerPlayground } from './handler-playground'
 import { log } from './logger'
 import { createServerSettingsManager } from './settings'
-import { ApolloServer } from 'apollo-server-express'
 
 const resolverLogger = log.child('graphql')
 
@@ -39,25 +38,29 @@ export interface Server {
   }
   express: Express
   handlers: {
-    //  playground: NexusRequestHandler
     graphql: NexusRequestHandler
   }
+}
+
+interface State {
+  running: boolean
+  httpServer: HTTP.Server
+  createContext: null | (() => ContextCreator<Record<string, any>, Record<string, any>>)
+  apolloServer: null | ApolloServer
 }
 
 export const defaultState = {
   running: false,
   httpServer: HTTP.createServer(),
   createContext: null,
+  apolloServer: null,
 }
 
 export function create(appState: AppState) {
   const settings = createServerSettingsManager()
   const express = createExpress()
-  // TODO: Lazily create apollo server
-  // Intentional error below
 
-  let apolloServer: null | ApolloServer = null
-  const state = { ...defaultState }
+  const state: State = { ...defaultState }
 
   const api: Server = {
     raw: {
@@ -99,7 +102,7 @@ export function create(appState: AppState) {
           loadedRuntimePlugins
         )
 
-        apolloServer = new ApolloServer({
+        state.apolloServer = new ApolloServer({
           schema,
           playground: settings.data.playground
             ? {
@@ -110,7 +113,7 @@ export function create(appState: AppState) {
           formatError: errorFormatter,
         })
 
-        apolloServer.applyMiddleware({ app: express, path: settings.data.path })
+        state.apolloServer.applyMiddleware({ app: express, path: settings.data.path })
 
         return { createContext }
       },
@@ -138,7 +141,7 @@ export function create(appState: AppState) {
           return Promise.resolve()
         }
         await httpClose(state.httpServer)
-        await apolloServer?.stop()
+        await state.apolloServer?.stop()
         state.running = false
       },
     },
