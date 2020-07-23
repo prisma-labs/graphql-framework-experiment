@@ -71,7 +71,7 @@ export class ApolloServerless extends ApolloServerBase {
 
   // This integration supports subscriptions.
   protected supportsSubscriptions(): boolean {
-    return true
+    return false
   }
 
   private isHealthCheckRequest(req: IncomingMessage, disableHealthCheck?: boolean) {
@@ -225,7 +225,7 @@ export function graphqlHandler(options: NexusGraphQLOptionsFunction): NexusReque
       if (e.isGraphQLError) {
         sendJSON(res, res.statusCode, res.statusMessage, e.headers ?? {}, JSON.parse(e.message))
       } else {
-        sendJSON(res, e.statusCode, e.name, e.headers ?? {}, { message: e.message })
+        sendJSON(res, res.statusCode, res.statusMessage, e.headers ?? {}, { message: e.message })
       }
     }
   }
