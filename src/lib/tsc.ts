@@ -53,7 +53,6 @@ export function createTSProject(layout: Layout, options?: ProgramOptions): Eithe
 
   const SOURCE_ROOT_MUST_CONTAIN_ALL_SOURCE_FILES_ERROR_CODE = 6059
   const errors = project.getPreEmitDiagnostics() //ts.getPreEmitDiagnostics(builder2.getProgram())
-  console.log(errors)
   const maybeSourceRootMustContainAllSourceFilesError = errors.find(
     (error) => error.getCode() === SOURCE_ROOT_MUST_CONTAIN_ALL_SOURCE_FILES_ERROR_CODE
   )

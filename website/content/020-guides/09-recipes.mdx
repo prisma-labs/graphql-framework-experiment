@@ -320,7 +320,6 @@ Overall, here are the limitations with Next.js integration that you will not fin
 1. In development, you must run `app.reset()` in your Nexus api module, before anything else.
 1. Make sure that you only have one Nexus api module, or else you may experience difficulties in development.
 1. Make sure that your Nexus modules (ones using the `nexus` package) are only part of the import graph of your Nexus api module.
-1. If you would like to use GraphQL Playground, do not rely on the one packaged with Nexus. Instead you can use an external one like [this standalone electron one](https://www.electronjs.org/apps/graphql-playground).
 1. You will not be able to use the Nexus testing component
 
 Integration with Next.js should improve [once it supports plugins](https://github.com/zeit/next.js/issues/9133). For example you will probably not need to think about `app.assemble()` and `app.reset()` anymore and be able to use ES module syntax in your Nexus api module.

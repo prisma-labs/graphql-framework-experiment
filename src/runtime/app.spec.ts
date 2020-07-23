@@ -23,7 +23,7 @@ describe('reset', () => {
       server: { path: '/bar' },
       schema: { connections: { foo: {} } },
     })
-    app.schema.objectType({ name: 'Foo', definition() {} })
+    app.schema.objectType({ name: 'Foo', definition(t) { t.string('ok') } })
     app.on.start(() => {})
     app.assemble()
     app.reset()
@@ -48,7 +48,7 @@ describe('assemble', () => {
 
   beforeEach(() => {
     // avoid schema check error
-    app.schema.objectType({ name: 'Foo', definition() {} })
+    app.schema.objectType({ name: 'Foo', definition(t) { t.string('ok') } })
   })
 
   it('multiple calls is a noop', () => {
@@ -132,9 +132,7 @@ describe('server', () => {
     it('under reflection are noops', () => {
       setReflectionStage('plugin')
       const g = app.server.handlers.graphql as any
-      const p = app.server.handlers.playground as any
       expect(g()).toBeUndefined()
-      expect(p()).toBeUndefined()
       unsetReflectionStage()
     })
 

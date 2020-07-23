@@ -16,7 +16,7 @@ Use the settings to centrally configure various aspects of the various component
     port?: number
     host?: string
     path?: string
-    playground?: boolean | { path?: string }
+    playground?: boolean | PlaygroundSettings
   }
   schema?: {
     nullable?: {
@@ -51,7 +51,7 @@ Change your app's current settings. This is an additive API meaning it can be ca
 #### `server.playground`
 
 ```
-boolean
+boolean | PlaygroundSettings
 ```
 
 Should the app expose a [GraphQL Playground](https://github.com/prisma-labs/graphql-playground) to clients?
@@ -59,6 +59,38 @@ Should the app expose a [GraphQL Playground](https://github.com/prisma-labs/grap
 _Default_
 
 `true` in dev, `false` otherwise.
+
+#### `server.playground.settings`
+
+```
+{
+  'request.credentials': string;
+  'tracing.hideTracingResponse': boolean;
+  'queryPlan.hideQueryPlanResponse'?: boolean;
+  'editor.theme': Theme;
+  'editor.cursorShape': CursorShape;
+  'editor.reuseHeaders': boolean;
+  'editor.fontSize': number;
+  'editor.fontFamily': string;
+}
+```
+
+Configure the Playground settings
+
+_Default_
+
+```
+{
+  'request.credentials': 'omit',
+  'tracing.hideTracingResponse': true,
+  'queryPlan.hideQueryPlanResponse': true,
+  'editor.theme': 'dark',
+  'editor.cursorShape': 'line',
+  'editor.reuseHeaders': true,
+  'editor.fontSize': 14,
+  'editor.fontFamily': `'Source Code Pro', 'Consolas', 'Inconsolata', 'Droid Sans Mono', 'Monaco', monospace`,
+}
+```
 
 #### `server.port`
 

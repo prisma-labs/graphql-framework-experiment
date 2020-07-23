@@ -18,8 +18,12 @@ export function errorFormatter(graphQLError: GraphQLError) {
       console.log(
         '\n' + indent(printSourceLocation(graphQLError.source, graphQLError.locations[0]), 2) + '\n'
       )
-      if (graphQLError.stack) {
-        console.log(chalk.dim(cleanStack(graphQLError.stack, { withoutMessage: true })) + '\n')
+      if (graphQLError.extensions?.exception?.stacktrace) {
+        console.log(
+          chalk.dim(
+            cleanStack(graphQLError.extensions.exception.stacktrace.join('\n'), { withoutMessage: true })
+          ) + '\n'
+        )
       }
     }
   } else {
@@ -27,7 +31,6 @@ export function errorFormatter(graphQLError: GraphQLError) {
     resolverLogger.error('An exception occurred in one of your resolver', {
       error: {
         ...graphQLError,
-        stack: cleanStack(graphQLError.stack ?? ''),
       },
     })
   }
