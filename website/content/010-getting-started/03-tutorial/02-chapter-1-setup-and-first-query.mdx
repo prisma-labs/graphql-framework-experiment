@@ -74,7 +74,7 @@ All good, you indeed haven't added any types to your GraphQL schema yet so Nexus
 Aside from the warning, you should also see a message indicating that your server is running, and where.
 
 ```bash-symbol
-● nexus:server listening  --  url: 'http://localhost:4000/'
+● nexus:server listening  --  url: 'http://localhost:4000/graphql'
 ```
 
 Open it up, what do you see? It should be an instance of [GraphQL Playground](https://github.com/prisma-labs/graphql-playground).
@@ -84,6 +84,8 @@ Open it up, what do you see? It should be an instance of [GraphQL Playground](ht
 This is a graphical user interface for interacting with GraphQL APIs. If you prefer you can run a [standalone](https://www.electronjs.org/apps/graphql-playground) version as an app on your machine, or another GraphQL GUI entirely. Nexus ships with one out of the box for your convenience.
 
 Take a look at the right-hand side SCHEMA tab. There you'll see a default schema that Nexus has provided for you. This, along with the warning you say before, will go away once you begin your own schema.
+
+Note that Nexus will serve GraphQL requests on this same path. Only client `GET` requests with the `accept: text/html` header will get back the Playground response.
 
 ## Wrapping up
 
