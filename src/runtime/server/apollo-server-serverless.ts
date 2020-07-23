@@ -13,6 +13,7 @@ import { IncomingMessage, ServerResponse } from 'http'
 import createError from 'http-errors'
 import { parseBody, parseQuery } from './parse-body'
 import { sendError, sendJSON, sendResponse } from './utils'
+import { NexusRequestHandler } from './server'
 
 export interface ServerRegistration {
   path?: string
@@ -143,12 +144,8 @@ export class ApolloServerless extends ApolloServerBase {
     const handler = graphqlHandler(() => {
       return this.createGraphQLServerOptions(req, res)
     })
-    const responseData = await handler(req, res)
 
-    if (responseData) {
-      res.statusMessage = 'Success'
-      sendJSON(res, 200, 'Success', {}, JSON.parse(responseData))
-    }
+    await handler(req, res)
   }
 
   // If file uploads are detected, prepare them for easier handling with
@@ -179,7 +176,7 @@ export interface NexusGraphQLOptionsFunction {
 // Build and return an async function that passes incoming GraphQL requests
 // over to Apollo Server for processing, then fires the results/response back
 // using Micro's `send` functionality.
-export function graphqlHandler(options: NexusGraphQLOptionsFunction) {
+export function graphqlHandler(options: NexusGraphQLOptionsFunction): NexusRequestHandler {
   if (!options) {
     throw new Error('Apollo Server requires options.')
   }
@@ -188,13 +185,16 @@ export function graphqlHandler(options: NexusGraphQLOptionsFunction) {
     throw new Error(`Apollo Server expects exactly one argument, got ${arguments.length}`)
   }
 
-  const handler = async (req: IncomingMessage, res: ServerResponse) => {
+  return async (req: IncomingMessage, res: ServerResponse) => {
     try {
+      if (req.method !== 'GET' && req.method !== 'POST') {
+        return sendError(res, createError(400, 'Only GET and POST requests allowed'))
+      }
+
       const query = req.method === 'POST' ? await parseBody(req) : parseQuery(req)
 
       if (isLeft(query)) {
-        sendError(res, query.left)
-        return null
+        return sendError(res, query.left)
       }
 
       const { graphqlResponse, responseInit } = await runHttpQuery([req, res], {
@@ -206,7 +206,7 @@ export function graphqlHandler(options: NexusGraphQLOptionsFunction) {
 
       setHeaders(res, responseInit.headers ?? {})
 
-      return graphqlResponse
+      sendJSON(res, 200, 'Success', {}, JSON.parse(graphqlResponse))
     } catch (error) {
       if ('HttpQueryError' !== error.name) {
         throw error
@@ -222,10 +222,6 @@ export function graphqlHandler(options: NexusGraphQLOptionsFunction) {
       } else {
         sendJSON(res, e.statusCode, e.name, e.headers ?? {}, { message: e.message })
       }
-
-      return null
     }
   }
-
-  return handler
 }
