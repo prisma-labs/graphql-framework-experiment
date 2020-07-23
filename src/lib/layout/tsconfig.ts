@@ -255,6 +255,7 @@ export async function readOrScaffoldTsconfig(input: {
   }
 
   if (tsconfigParsed.options.esModuleInterop !== true) {
+    tsconfigParsed.options.esModuleInterop = true
     const setting = renderSetting('compilerOptions.esModuleInterop')
     log.warn(
       `Please set ${setting} to true. This will ensure that some libraries that Nexus uses will properly be transpiled to Javascript.`

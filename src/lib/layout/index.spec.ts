@@ -48,6 +48,7 @@ function tsconfig(input?: TsConfigJson): TsConfigJson {
       rootDir: '.',
       plugins: [{ name: NEXUS_TS_LSP_IMPORT_ID }],
       typeRoots: ['node_modules/@types', 'types'],
+      esModuleInterop: true,
     },
     include: ['types.d.ts', '.'],
   }
@@ -204,6 +205,7 @@ describe('tsconfig', () => {
     expect(ctx.fs.read('tsconfig.json', 'json')).toMatchInlineSnapshot(`
       Object {
         "compilerOptions": Object {
+          "esModuleInterop": true,
           "lib": Array [
             "esnext",
           ],
@@ -231,7 +233,7 @@ describe('tsconfig', () => {
   })
 
   describe('composite projects', () => {
-    it('inheritable settigs are recognized but "include", "rootDir", "plugins", "typeRoots" must be local', async () => {
+    it('inheritable settings are recognized but "include", "rootDir", "plugins", "typeRoots" must be local', async () => {
       nestTmpDir()
       ctx.fs.write('src/app.ts', '')
       ctx.fs.write('../tsconfig.packages.json', tsconfigSource())
@@ -359,7 +361,7 @@ describe('tsconfig', () => {
           ['types', 'node_modules/@types'].map((relPath) => ctx.fs.path(relPath))
         )
       })
-      it('logs warning if "typeRoots" present but msising "types", and adds it in-memory', async () => {
+      it('logs warning if "typeRoots" present but missing "types", and adds it in-memory', async () => {
         const tscfg = tsconfig()
         tscfg.compilerOptions!.typeRoots = ['node_modules/@types']
         ctx.setup({
