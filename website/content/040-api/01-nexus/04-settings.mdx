@@ -17,6 +17,7 @@ Use the settings to centrally configure various aspects of the various component
     host?: string
     path?: string
     playground?: boolean | PlaygroundSettings
+    cors?: boolean | CorsSettings
   }
   schema?: {
     nullable?: {
@@ -50,7 +51,7 @@ Change your app's current settings. This is an additive API meaning it can be ca
 
 #### `server.playground`
 
-```
+```ts
 boolean | PlaygroundSettings
 ```
 
@@ -62,7 +63,7 @@ _Default_
 
 #### `server.playground.settings`
 
-```
+```ts
 {
   'request.credentials': string;
   'tracing.hideTracingResponse': boolean;
@@ -79,7 +80,7 @@ Configure the Playground settings
 
 _Default_
 
-```
+```ts
 {
   'request.credentials': 'omit',
   'tracing.hideTracingResponse': true,
@@ -94,7 +95,7 @@ _Default_
 
 #### `server.port`
 
-```
+```ts
 number
 ```
 
@@ -109,7 +110,7 @@ _Default_
 
 #### `server.host`
 
-```
+```ts
 string
 ```
 
@@ -122,7 +123,7 @@ _Default_
 
 #### `server.path`
 
-```
+```ts
 string
 ```
 
@@ -132,9 +133,96 @@ _Default_
 
 `/graphql`
 
+#### `server.cors`
+
+```ts
+boolean | {
+  /**
+   * Enable or disable CORS.
+   *
+   * @default true
+   */
+  enabled?: boolean
+  /**
+   * Configures the Access-Control-Allow-Origin CORS header. Possible values:
+   *
+   * Boolean - set origin to true to reflect the request origin, as defined by req.header('Origin'), or set it to false to disable CORS.
+   *
+   * String - set origin to a specific origin. For example if you set it to "http://example.com" only requests from "http://example.com" will be allowed.
+   *
+   * RegExp - set origin to a regular expression pattern which will be used to test the request origin. If it's a match, the request origin will be reflected. For example the pattern /example\.com$/ will reflect any request that is coming from an origin ending with "example.com".
+   *
+   * Array - set origin to an array of valid origins. Each origin can be a String or a RegExp. For example ["http://example1.com", /\.example2\.com$/] will accept any request from "http://example1.com" or from a subdomain of "example2.com".
+   *
+   * Function - set origin to a function implementing some custom logic. The function takes the request origin as the first parameter and a callback (called as callback(err, origin), where origin is a non-function value of the origin option) as the second.
+   *
+   */
+  origin?: OriginalCorsOption['origin'] // TODO: Improve function interface with promise-based callback
+  /**
+   * Configures the Access-Control-Allow-Methods CORS header.
+   *
+   * @example ['GET', 'PUT', 'POST']
+   */
+  methods?: string | HTTPMethods[]
+  /**
+   * Configures the Access-Control-Allow-Headers CORS header.
+   *
+   * If not specified, defaults to reflecting the headers specified in the request's Access-Control-Request-Headers header.
+   *
+   * @example ['Content-Type', 'Authorization']
+   */
+  allowedHeaders?: string | string[]
+  /**
+   * Configures the Access-Control-Expose-Headers CORS header.
+   *
+   * If not specified, no custom headers are exposed.
+   *
+   * @example ['Content-Range', 'X-Content-Range']
+   */
+  exposedHeaders?: string | string[]
+  /**
+   * Configures the Access-Control-Allow-Credentials CORS header.
+   *
+   * Set to true to pass the header, otherwise it is omitted.
+   */
+  credentials?: boolean
+  /**
+   * Configures the Access-Control-Max-Age CORS header.
+   *
+   * Set to an integer to pass the header, otherwise it is omitted.
+   */
+  maxAge?: number
+  /**
+   * Pass the CORS preflight response to the next handler.
+   */
+  preflightContinue?: boolean
+  /**
+   * Provides a status code to use for successful OPTIONS requests, since some legacy browsers (IE11, various SmartTVs) choke on 204.
+   */
+  optionsSuccessStatus?: number
+}
+```
+
+Enable CORS for your server.
+
+When true is passed, the default config is the following:
+
+```ts
+{
+  "origin": "*",
+  "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+  "preflightContinue": false,
+  "optionsSuccessStatus": 204
+}
+```
+
+_Default_
+
+false
+
 #### `schema.nullable.inputs`
 
-```
+```ts
 boolean
 ```
 
@@ -146,7 +234,7 @@ _Default_
 
 #### `schema.nullable.outputs`
 
-```
+```ts
 boolean
 ```
 
@@ -158,7 +246,7 @@ _Default_
 
 #### `schema.generateGraphQLSDLFile`
 
-```
+```ts
 false | string
 ```
 
@@ -172,7 +260,7 @@ _Default_
 
 #### `schema.rootTypingsGlobPattern`
 
-```
+```ts
 string
 ```
 
