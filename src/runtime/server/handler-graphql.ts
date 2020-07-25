@@ -2,11 +2,11 @@ import { GraphQLError, GraphQLFormattedError, GraphQLSchema } from 'graphql'
 import { ApolloServerless } from './apollo-server'
 import { log } from './logger'
 import { ContextCreator, NexusRequestHandler } from './server'
-import { PlaygroundSettings } from './settings'
+import { PlaygroundInput } from './settings'
 
 type Settings = {
   introspection: boolean
-  playground: false | PlaygroundSettings
+  playground: false | PlaygroundInput
   path: string
   errorFormatterFn(graphqlError: GraphQLError): GraphQLFormattedError
 }
@@ -30,5 +30,5 @@ export const createRequestHandlerGraphQL: CreateHandler = (schema, createContext
     playground: settings.playground,
   })
 
-  return server.createHandler({ path: settings.path  })
+  return server.createHandler({ path: settings.path })
 }

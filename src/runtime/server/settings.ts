@@ -1,15 +1,17 @@
+import { PlaygroundRenderPageOptions } from 'apollo-server-express'
+import { defaults, isUndefined } from 'lodash'
 import * as Process from '../../lib/process'
 import * as Utils from '../../lib/utils'
-import { PlaygroundRenderPageOptions } from 'apollo-server-express'
 import { log as serverLogger } from './logger'
 
 const log = serverLogger.child('settings')
 
-export type PlaygroundSettings = {
+export type PlaygroundInput = {
+  enabled?: boolean
   settings?: Omit<Partial<Exclude<PlaygroundRenderPageOptions['settings'], undefined>>, 'general.betaUpdates'>
 }
 
-export type GraphqlSettings = {
+export type GraphqlInput = {
   introspection?: boolean
 }
 
@@ -36,7 +38,7 @@ export type SettingsInput = {
    * To learn more about GraphQL Playgorund see
    * https://github.com/prisma-labs/graphql-playground
    */
-  playground?: boolean | PlaygroundSettings
+  playground?: boolean | PlaygroundInput
   /**
    * The path on which the GraphQL API should be served.
    *
@@ -52,18 +54,19 @@ export type SettingsInput = {
   /**
    * todo
    */
-  graphql?: GraphqlSettings
+  graphql?: GraphqlInput
 }
 
 export type SettingsData = Omit<Utils.DeepRequired<SettingsInput>, 'host' | 'playground' | 'graphql'> & {
   host: string | undefined
-  playground: false | Required<PlaygroundSettings>
-  graphql: Required<GraphqlSettings>
+  playground: Required<PlaygroundInput>
+  graphql: Required<GraphqlInput>
 }
 
 export const defaultPlaygroundPath = '/graphql'
 
-export const defaultPlaygroundSettings: () => Readonly<Required<PlaygroundSettings>> = () => ({
+export const defaultPlaygroundSettings: () => Readonly<Required<PlaygroundInput>> = () => ({
+  enabled: process.env.NODE_ENV === 'production' ? false : true,
   settings: {
     'general.betaUpdates': false,
     'editor.theme': 'dark',
@@ -77,7 +80,7 @@ export const defaultPlaygroundSettings: () => Readonly<Required<PlaygroundSettin
   },
 })
 
-export const defaultGraphqlSettings: () => Readonly<Required<GraphqlSettings>> = () => ({
+export const defaultGraphqlSettings: () => Readonly<Required<GraphqlInput>> = () => ({
   introspection: process.env.NODE_ENV === 'production' ? false : true,
 })
 
@@ -102,34 +105,31 @@ export const defaultSettings: () => Readonly<SettingsData> = () => {
         url: `http://${Utils.prettifyHost(host)}:${port}${path}`,
       })
     },
-    playground: process.env.NODE_ENV === 'production' ? false : defaultPlaygroundSettings(),
+    playground: defaultPlaygroundSettings(),
     path: '/graphql',
     graphql: defaultGraphqlSettings(),
   }
 }
 
-export function playgroundSettings(
-  playgroundSettings: SettingsInput['playground']
+export function processPlaygroundInput(
+  current: SettingsData['playground'],
+  input: NonNullable<SettingsInput['playground']>
 ): SettingsData['playground'] {
-  if (!playgroundSettings) {
-    return false
-  }
-
-  const defaultSettings = defaultPlaygroundSettings()
-
-  if (typeof playgroundSettings === 'boolean') {
+  if (typeof input === 'boolean') {
     return {
-      settings: defaultSettings.settings,
+      enabled: input,
+      settings: defaultPlaygroundSettings().settings,
     }
   }
 
-  return {
-    settings: { ...defaultSettings.settings, ...playgroundSettings.settings },
-  }
+  return defaults({}, input, current)
 }
 
-export function graphqlSettings(settings: SettingsInput['graphql']): SettingsData['graphql'] {
-  return { ...defaultGraphqlSettings(), ...settings }
+export function processGraphqlInput(
+  current: SettingsData['graphql'],
+  input: NonNullable<SettingsInput['graphql']>
+): SettingsData['graphql'] {
+  return defaults(input, current)
 }
 
 function validateGraphQLPath(path: string): string {
@@ -151,16 +151,27 @@ function validateGraphQLPath(path: string): string {
 /**
  * Mutate the settings data
  */
-export function changeSettings(state: SettingsData, newSettings: SettingsInput): void {
-  const updatedSettings = { ...state, ...newSettings }
-
-  state.playground = playgroundSettings(updatedSettings.playground)
-  state.path = validateGraphQLPath(updatedSettings.path)
-  state.port = updatedSettings.port
-  state.startMessage = updatedSettings.startMessage
-  state.graphql = graphqlSettings(updatedSettings.graphql)
+export function changeSettings(current: SettingsData, input: SettingsInput): void {
+  if (!isUndefined(input.playground)) {
+    current.playground = processPlaygroundInput(current.playground, input.playground)
+  }
+  if (!isUndefined(input.graphql)) {
+    current.graphql = processGraphqlInput(current.graphql, input.graphql)
+  }
+  if (!isUndefined(input.path)) {
+    current.path = validateGraphQLPath(input.path)
+  }
+  if (!isUndefined(input.port)) {
+    current.port = input.port
+  }
+  if (!isUndefined(input.startMessage)) {
+    current.startMessage = input.startMessage
+  }
 }
 
+/**
+ * Create a settings manager
+ */
 export function createServerSettingsManager() {
   const data = defaultSettings()
 
