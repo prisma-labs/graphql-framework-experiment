@@ -173,7 +173,7 @@ export type SettingsData = Omit<
   host: string | undefined
   playground: Required<PlaygroundInput>
   graphql: Required<GraphqlInput>
-  cors: boolean | CorsSettings
+  cors: CorsSettings
 }
 
 export const defaultPlaygroundPath = '/graphql'
@@ -220,7 +220,7 @@ export const defaultSettings: () => Readonly<SettingsData> = () => {
     },
     playground: defaultPlaygroundSettings(),
     path: '/graphql',
-    cors: false,
+    cors: { enabled: false },
     graphql: defaultGraphqlSettings(),
   }
 }
@@ -262,16 +262,15 @@ function validateGraphQLPath(path: string): string {
   return outputPath
 }
 
-export function corsSettings(newSettings: SettingsInput['cors']): SettingsData['cors'] {
-  if (typeof newSettings === 'boolean') {
-    return newSettings
+export function processCorsInput(
+  current: SettingsData['cors'],
+  input: NonNullable<SettingsInput['cors']>
+): SettingsData['cors'] {
+  if (typeof input === 'boolean') {
+    return { enabled: input }
   }
 
-  if (!newSettings || newSettings.enabled === false) {
-    return false
-  }
-
-  return newSettings
+  return defaults({}, input, current)
 }
 
 /**
@@ -293,7 +292,9 @@ export function changeSettings(current: SettingsData, input: SettingsInput): voi
   if (!isUndefined(input.startMessage)) {
     current.startMessage = input.startMessage
   }
-  current.cors = corsSettings(input.cors)
+  if (!isUndefined(input.cors)) {
+    current.cors = processCorsInput(current.cors, input.cors)
+  }
 }
 
 /**
