@@ -7,7 +7,27 @@ import { log as serverLogger } from './logger'
 const log = serverLogger.child('settings')
 
 export type PlaygroundInput = {
+  /**
+   * Should the [GraphQL Playground](https://github.com/prisma-labs/graphql-playground) be hosted by the server?
+   *
+   * @dynamicDefault
+   *
+   * - If not production then `true`
+   * - Otherwise `false`
+   *
+   * @remarks
+   *
+   * GraphQL Playground is useful during development as a visual client to interact with your API. In
+   * production, without some kind of security/access control, you will almost
+   * certainly want it disabled.
+   */
   enabled?: boolean
+
+  // todo consider de-nesting the settings field
+
+  /**
+   * Configure the settings of the GraphQL Playground app itself.
+   */
   settings?: Omit<Partial<Exclude<PlaygroundRenderPageOptions['settings'], undefined>>, 'general.betaUpdates'>
 }
 
@@ -25,18 +45,22 @@ export type SettingsInput = {
    */
   host?: string | undefined
   /**
-   * Should GraphQL Playground be hosted by the server?
+   * Configure the [GraphQL Playground](https://github.com/prisma-labs/graphql-playground) hosted by the server.
    *
-   * @default `false` in production, `{ path: '/' }` otherwise
+   * - Pass `true` as shorthand for  `{ enabled: true }`
+   * - Pass `false` as shorthand for `{ enabled: false }`
+   * - Pass an object to configure
+   *
+   * @dynamicDefault
+   *
+   * - If not production then `true`
+   * - Otherwise `false`
    *
    * @remarks
    *
-   * Useful during development as a visual client to interact with your API. In
+   * GraphQL Playground is useful during development as a visual client to interact with your API. In
    * production, without some kind of security/access control, you will almost
-   * certainly want this disabled.
-   *
-   * To learn more about GraphQL Playgorund see
-   * https://github.com/prisma-labs/graphql-playground
+   * certainly want it disabled.
    */
   playground?: boolean | PlaygroundInput
   /**
