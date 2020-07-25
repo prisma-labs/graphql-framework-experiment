@@ -71,6 +71,10 @@ export function create(appState: AppState) {
       get graphql() {
         return (
           assembledGuard(appState, 'app.server.handlers.graphql', () => {
+            if (Boolean(settings.data.cors)) {
+              log.warn('CORS does not work for serverless handlers. Settings will be ignored.')
+            }
+
             return createRequestHandlerGraphQL(
               appState.assembled!.schema,
               appState.assembled!.createContext,
@@ -116,7 +120,11 @@ export function create(appState: AppState) {
             : false,
         })
 
-        state.apolloServer.applyMiddleware({ app: express, path: settings.data.path })
+        state.apolloServer.applyMiddleware({
+          app: express,
+          path: settings.data.path,
+          cors: settings.data.cors,
+        })
 
         return { createContext }
       },
