@@ -55,6 +55,10 @@ Change your app's current settings. This is an additive API meaning it can be ca
 boolean | PlaygroundSettings
 ```
 
+- Passing `boolean` is shorthand for `{ enabled: true | false }`
+
+#### `server.playground.enabled`
+
 Should the app expose a [GraphQL Playground](https://github.com/prisma-labs/graphql-playground) to clients?
 
 _Default_
@@ -65,18 +69,18 @@ _Default_
 
 ```ts
 {
-  'request.credentials': string;
-  'tracing.hideTracingResponse': boolean;
+  'request.credentials'?: string;
+  'tracing.hideTracingResponse'?: boolean;
   'queryPlan.hideQueryPlanResponse'?: boolean;
-  'editor.theme': Theme;
-  'editor.cursorShape': CursorShape;
-  'editor.reuseHeaders': boolean;
-  'editor.fontSize': number;
-  'editor.fontFamily': string;
+  'editor.theme'?: Theme;
+  'editor.cursorShape'?: CursorShape;
+  'editor.reuseHeaders'?: boolean;
+  'editor.fontSize'?: number;
+  'editor.fontFamily'?: string;
 }
 ```
 
-Configure the Playground settings
+Configure the Playground UI settings
 
 _Default_
 
