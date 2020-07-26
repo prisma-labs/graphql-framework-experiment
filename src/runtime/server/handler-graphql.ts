@@ -2,11 +2,11 @@ import { GraphQLError, GraphQLFormattedError, GraphQLSchema } from 'graphql'
 import { ApolloServerless } from './apollo-server'
 import { log } from './logger'
 import { ContextCreator, NexusRequestHandler } from './server'
-import { PlaygroundInput } from './settings'
+import { PlaygroundLonghandInput } from './settings'
 
 type Settings = {
   introspection: boolean
-  playground: false | PlaygroundInput
+  playground: false | PlaygroundLonghandInput // todo why not use data? why input?
   path: string
   errorFormatterFn(graphqlError: GraphQLError): GraphQLFormattedError
 }
