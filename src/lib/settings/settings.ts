@@ -1,3 +1,4 @@
+import * as Lo from 'lodash'
 import { Primitive } from 'type-fest'
 import { PlainObject } from '../utils'
 
@@ -51,5 +52,30 @@ export type Manager<Data, Input> = {
 }
 
 export function create<Data, Input>(spec: Spec<Data, Input>): Manager<Data, Input> {
-  return 'todo' as any
+  const state = {
+    data: {} as Data,
+    metadata: {} as Metadata<Data>,
+  }
+
+  runInitializers(state.data, spec)
+
+  return {
+    data: state.data,
+    metadata: state.metadata,
+    change() {},
+    reset() {},
+  }
+}
+
+function runInitializers(data: any, spec: any) {
+  Lo.forOwn(spec, (specifier: any, key: string) => {
+    if (specifier.fields) {
+      data[key] = data[key] ?? {}
+      runInitializers(data[key], specifier.fields)
+    } else {
+      const value: any = typeof specifier.initial === 'function' ? specifier.initial() : specifier.initial
+      console.log('initialize value', { key, value })
+      data[key] = value
+    }
+  })
 }
