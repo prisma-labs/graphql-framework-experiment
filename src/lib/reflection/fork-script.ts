@@ -1,3 +1,4 @@
+import { isLeft } from 'fp-ts/lib/Either'
 import type * as App from '../../runtime/app'
 import { createDevAppRunner } from '../../runtime/start'
 import * as Layout from '../layout'
@@ -21,28 +22,32 @@ async function run() {
   try {
     await appRunner.start()
   } catch (err) {
-    sendErrorToParent(err)
+    sendErrorToParent(err, 'runtime-error')
   }
 
   if (isReflectionStage('typegen')) {
     try {
       const plugins = Plugin.importAndLoadRuntimePlugins(
         app.private.state.plugins,
-        app.private.state.schemaComponent.scalars
+        app.private.state.components.schema.scalars
       )
-      await writeArtifacts({
+      const artifactsRes = await writeArtifacts({
         graphqlSchema: app.private.state.assembled!.schema,
         layout,
         schemaSettings: app.settings.current.schema,
         plugins,
       })
-      sendDataToParent({
-        type: 'success-typegen',
-      })
+      if (isLeft(artifactsRes)) {
+        sendErrorToParent(artifactsRes.left, 'ts-error')
+      } else {
+        sendDataToParent({
+          type: 'success-typegen',
+        })
+      }
 
       return
     } catch (err) {
-      sendErrorToParent(err)
+      sendErrorToParent(err, 'runtime-error')
     }
   }
 
@@ -54,8 +59,8 @@ async function run() {
     process.send(message)
   }
 
-  function sendErrorToParent(err: Error) {
-    sendDataToParent({ type: 'error', data: { serializedError: serializeError(err) } })
+  function sendErrorToParent(err: Error, type: 'ts-error' | 'runtime-error') {
+    sendDataToParent({ type, data: { serializedError: serializeError(err) } })
   }
 }
 

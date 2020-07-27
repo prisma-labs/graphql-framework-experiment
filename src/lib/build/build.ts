@@ -3,17 +3,17 @@ import { stripIndent } from 'common-tags'
 import * as FS from 'fs-jetpack'
 import * as Path from 'path'
 import * as Layout from '../../lib/layout'
-import { createTSProgram, deleteTSIncrementalFile, emitTSProgram } from '../../lib/tsc'
+import { createTSProject, deleteTSIncrementalFile, emitTSProgram } from '../../lib/tsc'
 import {
   createStartModuleContent,
   prepareStartModule,
   START_MODULE_NAME,
 } from '../../runtime/start/start-module'
-import { rightOrFatal } from '../utils'
 import { rootLogger } from '../nexus-logger'
 import * as Plugin from '../plugin'
 import { fatal } from '../process'
 import * as Reflection from '../reflection'
+import { rightOrFatal } from '../utils'
 import { bundle } from './bundle'
 import {
   computeBuildOutputFromTarget,
@@ -86,7 +86,7 @@ export async function buildNexusApp(settings: BuildSettings) {
 
   log.info('building typescript program')
 
-  const tsBuilder = rightOrThrow(createTSProgram(layout, { withCache: true }))
+  const tsProject = rightOrThrow(createTSProject(layout, { withCache: true }))
 
   log.info('compiling a production build')
 
@@ -94,7 +94,7 @@ export async function buildNexusApp(settings: BuildSettings) {
   // incremental builder type of program so that the cache from the previous
   // run of TypeScript should make re-building up this one cheap.
 
-  emitTSProgram(tsBuilder, layout, { removePreviousBuild: false })
+  emitTSProgram(tsProject, layout, { removePreviousBuild: false })
 
   const gotManifests = Plugin.getPluginManifests(plugins)
 
@@ -106,7 +106,7 @@ export async function buildNexusApp(settings: BuildSettings) {
     await writeStartModule({
       layout: layout,
       startModule: prepareStartModule(
-        tsBuilder,
+        tsProject,
         createStartModuleContent({
           internalStage: 'build',
           layout: layout,

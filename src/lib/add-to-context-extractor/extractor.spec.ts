@@ -3,31 +3,81 @@ import * as tsm from 'ts-morph'
 import { normalizePathsInData } from '../../lib/utils'
 import { extractContextTypes } from './extractor'
 
-describe('ignores cases that do not apply', () => {
-  it('case 1', () => {
+describe('syntax cases', () => {
+  it('will extract from import name of nexus default export', () => {
     expect(
-      extract(`
+      extractOrThrow(
+        `
+          import n from 'nexus'
+          n.schema.addToContext(req => ({ a: 1 }))
+        `,
+        { noImport: true }
+      ).types.length
+    ).toEqual(1)
+  })
+  it('will extract from named import "schema" of nexus', () => {
+    expect(
+      extractOrThrow(
+        `
+          import { schema } from 'nexus'
+          schema.addToContext(req => ({ a: 1 }))
+        `,
+        { noImport: true }
+      ).types.length
+    ).toEqual(1)
+  })
+  it('will extract from named aliased import "schema" of nexus', () => {
+    expect(
+      extractOrThrow(
+        `
+          import { schema as s } from 'nexus'
+          s.addToContext(req => ({ a: 1 }))
+        `,
+        { noImport: true }
+      ).types.length
+    ).toEqual(1)
+  })
+  it('will extract from mix of all cases in single module', () => {
+    expect(
+      extractOrThrow(
+        `
+          import app from 'nexus'
+          import { schema } from 'nexus'
+          import { schema as s } from 'nexus'
+          app.schema.addToContext(req => ({ a: 1 }))
+          schema.addToContext(req => ({ a: 1 }))
+          s.addToContext(req => ({ a: 1 }))
+        `,
+        { noImport: true }
+      ).types.length
+    ).toEqual(3)
+  })
+  describe('does not extract when not relevant AST pattern', () => {
+    it('case 1', () => {
+      expect(
+        extract(`
         foobar.addToContext(req => { return { a: 1 } })
       `)
-    ).toMatchInlineSnapshot(`
-      Object {
-        "typeImports": Array [],
-        "types": Array [],
-      }
-    `)
-  })
+      ).toMatchInlineSnapshot(`
+              Object {
+                "typeImports": Array [],
+                "types": Array [],
+              }
+          `)
+    })
 
-  it('case 2', () => {
-    expect(
-      extract(`
+    it('case 2', () => {
+      expect(
+        extract(`
         addToContext(req => { return { a: 1 } })
       `)
-    ).toMatchInlineSnapshot(`
-      Object {
-        "typeImports": Array [],
-        "types": Array [],
-      }
-    `)
+      ).toMatchInlineSnapshot(`
+              Object {
+                "typeImports": Array [],
+                "types": Array [],
+              }
+          `)
+    })
   })
 })
 
@@ -702,6 +752,113 @@ describe('top-level union types', () => {
   })
 })
 
+describe('generics', () => {
+  it('types that are referenced in the generic of a type alias get extracted as type imports', () => {
+    expect(
+      extract(`
+          interface Foo1 {}
+          interface Foo2 {}
+          interface Foo3 {}
+          interface Foo4 {}
+          type Bar<T> = {}
+          schema.addToContext(() => {
+            return { } as { a: Bar<Foo1>; b: number | Bar<Foo2>; c: Foo3 & Bar<Foo4> }
+          })
+        `)
+    ).toMatchInlineSnapshot(`
+      Object {
+        "typeImports": Array [
+          Object {
+            "isExported": false,
+            "isNode": false,
+            "modulePath": "/src/a",
+            "name": "Bar",
+          },
+          Object {
+            "isExported": false,
+            "isNode": false,
+            "modulePath": "/src/a",
+            "name": "Foo1",
+          },
+          Object {
+            "isExported": false,
+            "isNode": false,
+            "modulePath": "/src/a",
+            "name": "Foo2",
+          },
+          Object {
+            "isExported": false,
+            "isNode": false,
+            "modulePath": "/src/a",
+            "name": "Foo3",
+          },
+        ],
+        "types": Array [
+          Object {
+            "kind": "literal",
+            "value": "{ a: Bar<Foo1>; b: number | Bar<Foo2>; c: Foo3; }",
+          },
+        ],
+      }
+    `)
+  })
+  it('types that are referenced in the generic of an interface get extracted as type imports', () => {
+    expect(
+      extract(`
+          interface Foo1 {}
+          interface Foo2 {}
+          interface Foo3 {}
+          interface Foo4 {}
+          interface Bar<T> {}
+          schema.addToContext(() => {
+            return { } as { a: Bar<Foo1>; b: number | Bar<Foo2>; c: Foo3 & Bar<Foo4> }
+          })
+        `)
+    ).toMatchInlineSnapshot(`
+      Object {
+        "typeImports": Array [
+          Object {
+            "isExported": false,
+            "isNode": false,
+            "modulePath": "/src/a",
+            "name": "Bar",
+          },
+          Object {
+            "isExported": false,
+            "isNode": false,
+            "modulePath": "/src/a",
+            "name": "Foo1",
+          },
+          Object {
+            "isExported": false,
+            "isNode": false,
+            "modulePath": "/src/a",
+            "name": "Foo2",
+          },
+          Object {
+            "isExported": false,
+            "isNode": false,
+            "modulePath": "/src/a",
+            "name": "Foo3",
+          },
+          Object {
+            "isExported": false,
+            "isNode": false,
+            "modulePath": "/src/a",
+            "name": "Foo4",
+          },
+        ],
+        "types": Array [
+          Object {
+            "kind": "literal",
+            "value": "{ a: Bar<Foo1>; b: number | Bar<Foo2>; c: Foo3 & Bar<Foo4>; }",
+          },
+        ],
+      }
+    `)
+  })
+})
+
 // This test is only relevant so long as we're using the TS type to string
 // function
 // todo cannot find a case that leads to TS truncating...
@@ -726,7 +883,8 @@ describe('top-level union types', () => {
 // Helpers
 //
 
-function extract(...sources: string[]) {
+type Opts = { noImport: boolean }
+function extract(source: string, opts: Opts = { noImport: false }) {
   const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g']
   const project = new tsm.Project({
     useInMemoryFileSystem: true,
@@ -734,16 +892,25 @@ function extract(...sources: string[]) {
       strict: true,
     },
   })
-  for (const source of sources) {
-    const moduleName = letters.shift()!
-    project.createSourceFile(`./src/${moduleName}.ts`, source)
+
+  if (!opts.noImport) {
+    source = `import { schema } from 'nexus'\n\n${source}`
   }
 
-  const result = extractContextTypes(project.getProgram().compilerObject)
+  const moduleName = letters.shift()!
+  project.createSourceFile(`./src/${moduleName}.ts`, source)
+
+  const result = extractContextTypes(project)
 
   if (isLeft(result)) {
     return result.left
   }
 
   return normalizePathsInData(result.right)
+}
+
+function extractOrThrow(source: string, opts: Opts = { noImport: false }) {
+  const result = extract(source, opts)
+  if (result instanceof Error) throw result
+  else return result
 }

@@ -9,9 +9,9 @@ import { AppState } from '../app'
 import * as DevMode from '../dev-mode'
 import { ContextContributor } from '../schema/schema'
 import { assembledGuard } from '../utils'
+import { ApolloServerExpress } from './apollo-server'
 import { errorFormatter } from './error-formatter'
 import { createRequestHandlerGraphQL } from './handler-graphql'
-import { createRequestHandlerPlayground } from './handler-playground'
 import { log } from './logger'
 import { createServerSettingsManager } from './settings'
 
@@ -38,21 +38,29 @@ export interface Server {
   }
   express: Express
   handlers: {
-    playground: NexusRequestHandler
     graphql: NexusRequestHandler
   }
+}
+
+interface State {
+  running: boolean
+  httpServer: HTTP.Server
+  createContext: null | (() => ContextCreator<Record<string, any>, Record<string, any>>)
+  apolloServer: null | ApolloServerExpress
 }
 
 export const defaultState = {
   running: false,
   httpServer: HTTP.createServer(),
   createContext: null,
+  apolloServer: null,
 }
 
 export function create(appState: AppState) {
   const settings = createServerSettingsManager()
   const express = createExpress()
-  const state = { ...defaultState }
+
+  const state: State = { ...defaultState }
 
   const api: Server = {
     raw: {
@@ -60,24 +68,20 @@ export function create(appState: AppState) {
     },
     express,
     handlers: {
-      get playground() {
-        return (
-          assembledGuard(appState, 'app.server.handlers.playground', () => {
-            // todo should be accessing settings from assembled app state settings
-            return wrapHandlerWithErrorHandling(
-              createRequestHandlerPlayground({ graphqlEndpoint: settings.data.path })
-            )
-          }) ?? noop
-        )
-      },
       get graphql() {
         return (
           assembledGuard(appState, 'app.server.handlers.graphql', () => {
+            if (Boolean(settings.data.cors)) {
+              log.warn('CORS does not work for serverless handlers. Settings will be ignored.')
+            }
+
             return createRequestHandlerGraphQL(
               appState.assembled!.schema,
               appState.assembled!.createContext,
               {
-                ...settings.data.graphql,
+                path: settings.data.path,
+                introspection: settings.data.graphql.introspection,
+                playground: settings.data.playground,
                 errorFormatterFn: errorFormatter,
               }
             )
@@ -97,27 +101,30 @@ export function create(appState: AppState) {
       assemble(loadedRuntimePlugins: Plugin.RuntimeContributions[], schema: GraphQLSchema) {
         state.httpServer.on('request', express)
 
-        if (settings.data.playground) {
-          express.get(
-            settings.data.playground.path,
-            wrapHandlerWithErrorHandling(
-              createRequestHandlerPlayground({ graphqlEndpoint: settings.data.path })
-            )
-          )
-        }
-
         const createContext = createContextCreator(
-          appState.schemaComponent.contextContributors,
+          appState.components.schema.contextContributors,
           loadedRuntimePlugins
         )
 
-        const graphqlHandler = createRequestHandlerGraphQL(schema, createContext, {
-          ...settings.data.graphql,
-          errorFormatterFn: errorFormatter,
+        state.apolloServer = new ApolloServerExpress({
+          schema,
+          context: createContext,
+          introspection: settings.data.graphql.introspection,
+          formatError: errorFormatter,
+          logger: resolverLogger,
+          playground: settings.data.playground.enabled
+            ? {
+                endpoint: settings.data.path,
+                settings: settings.data.playground.settings,
+              }
+            : false,
         })
 
-        express.post(settings.data.path, graphqlHandler)
-        express.get(settings.data.path, graphqlHandler)
+        state.apolloServer.applyMiddleware({
+          app: express,
+          path: settings.data.path,
+          cors: settings.data.cors,
+        })
 
         return { createContext }
       },
@@ -136,7 +143,6 @@ export function create(appState: AppState) {
           host: address.address,
           ip: address.address,
           path: settings.data.path,
-          playgroundPath: settings.data.playground ? settings.data.playground.path : undefined,
         })
         DevMode.sendServerReadySignalToDevModeMaster()
       },
@@ -146,6 +152,7 @@ export function create(appState: AppState) {
           return Promise.resolve()
         }
         await httpClose(state.httpServer)
+        await state.apolloServer?.stop()
         state.running = false
       },
     },

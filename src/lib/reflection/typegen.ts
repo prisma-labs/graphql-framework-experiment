@@ -39,7 +39,5 @@ export async function writeArtifacts(params: TypegenParams) {
     contextExtractorTypegenPromise,
   ])
 
-  if (isLeft(contextExtractorTypegen)) {
-    log.error(contextExtractorTypegen.left.message, contextExtractorTypegen.left.context)
-  }
+  return contextExtractorTypegen
 }

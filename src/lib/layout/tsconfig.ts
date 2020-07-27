@@ -254,6 +254,14 @@ export async function readOrScaffoldTsconfig(input: {
     )
   }
 
+  if (tsconfigParsed.options.esModuleInterop !== true) {
+    tsconfigParsed.options.esModuleInterop = true
+    const setting = renderSetting('compilerOptions.esModuleInterop')
+    log.warn(
+      `Please set ${setting} to true. This will ensure that some libraries that Nexus uses will properly be transpiled to Javascript.`
+    )
+  }
+
   /**
    * Setup out root (aka. outDir)
    */
@@ -316,6 +324,7 @@ export function tsconfigTemplate(input: { sourceRootRelative: string; outRootRel
       noEmit: true,
       plugins: [{ name: 'nexus/typescript-language-service' }],
       typeRoots: ['node_modules/@types', 'types'],
+      esModuleInterop: true
     },
     include: ['types.d.ts', sourceRelative],
   }

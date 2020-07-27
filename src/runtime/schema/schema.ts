@@ -1,8 +1,9 @@
 import * as NexusLogger from '@nexus/logger'
 import * as NexusSchema from '@nexus/schema'
 import chalk from 'chalk'
-import { GraphQLFieldResolver, GraphQLResolveInfo } from 'graphql'
+import * as GraphQL from 'graphql'
 import * as HTTP from 'http'
+import { logPrettyError } from '../../lib/errors'
 import { createNexusSchemaStateful, NexusSchemaStatefulBuilders } from '../../lib/nexus-schema-stateful'
 import { RuntimeContributions } from '../../lib/plugin'
 import * as Process from '../../lib/process'
@@ -21,7 +22,7 @@ export type LazyState = {
   scalars: Scalars.Scalars
 }
 
-function createLazyState(): LazyState {
+export function createLazyState(): LazyState {
   return {
     contextContributors: [],
     plugins: [],
@@ -46,8 +47,8 @@ type MiddlewareFn = (
   source: any,
   args: any,
   context: NexusSchema.core.GetGen<'context'>,
-  info: GraphQLResolveInfo,
-  next: GraphQLFieldResolver<any, any>
+  info: GraphQL.GraphQLResolveInfo,
+  next: GraphQL.GraphQLFieldResolver<any, any>
 ) => any
 
 /**
@@ -84,19 +85,19 @@ export interface SchemaInternal {
   public: Schema
 }
 
-export function create(appState: AppState): SchemaInternal {
-  appState.schemaComponent = createLazyState()
+export function create(state: AppState): SchemaInternal {
+  state.components.schema = createLazyState()
   const statefulNexusSchema = createNexusSchemaStateful()
   const settings = createSchemaSettingsManager()
 
   const api: Schema = {
     ...statefulNexusSchema.builders,
     use(plugin) {
-      assertAppNotAssembled(appState, 'app.schema.use', 'The Nexus Schema plugin you used will be ignored.')
-      appState.schemaComponent.plugins.push(plugin)
+      assertAppNotAssembled(state, 'app.schema.use', 'The Nexus Schema plugin you used will be ignored.')
+      state.components.schema.plugins.push(plugin)
     },
     addToContext(contextContributor) {
-      appState.schemaComponent.contextContributors.push(contextContributor)
+      state.components.schema.contextContributors.push(contextContributor)
     },
     middleware(fn) {
       api.use(
@@ -118,22 +119,31 @@ export function create(appState: AppState): SchemaInternal {
       reset() {
         statefulNexusSchema.state.types = []
         statefulNexusSchema.state.scalars = {}
-        appState.schemaComponent.contextContributors = []
-        appState.schemaComponent.plugins = []
-        appState.schemaComponent.scalars = {}
+        state.components.schema.contextContributors = []
+        state.components.schema.plugins = []
+        state.components.schema.scalars = {}
       },
       beforeAssembly() {
-        appState.schemaComponent.scalars = statefulNexusSchema.state.scalars
+        state.components.schema.scalars = statefulNexusSchema.state.scalars
       },
       assemble(plugins) {
         const nexusSchemaConfig = mapSettingsAndPluginsToNexusSchemaConfig(plugins, settings.data)
         nexusSchemaConfig.types.push(...statefulNexusSchema.state.types)
-        nexusSchemaConfig.plugins!.push(...appState.schemaComponent.plugins)
-        const { schema, missingTypes } = NexusSchema.core.makeSchemaInternal(nexusSchemaConfig)
-        return { schema, missingTypes }
+        nexusSchemaConfig.plugins!.push(...state.components.schema.plugins)
+        try {
+          const { schema, missingTypes } = NexusSchema.core.makeSchemaInternal(nexusSchemaConfig)
+          if (process.env.NEXUS_STAGE === 'dev') {
+            // Validate GraphQL Schema
+            // TODO: This should be done in @nexus/schema
+            GraphQL.validate(schema, GraphQL.parse(GraphQL.getIntrospectionQuery()))
+          }
+          return { schema, missingTypes }
+        } catch (err) {
+          logPrettyError(log, err, 'fatal')
+        }
       },
       checks() {
-        assertNoMissingTypesDev(appState.assembled!.schema, appState.assembled!.missingTypes)
+        assertNoMissingTypesDev(state.assembled!.schema, state.assembled!.missingTypes)
 
         // TODO: We should separate types added by the framework and the ones added by users
         if (

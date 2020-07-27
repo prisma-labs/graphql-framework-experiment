@@ -1,7 +1,6 @@
 import { stripIndent } from 'common-tags'
 import { ts } from 'ts-morph'
 import { arg, Command, isError } from '../../lib/cli'
-import { rightOrFatal } from '../../lib/utils'
 import * as Layout from '../../lib/layout'
 import { rootLogger } from '../../lib/nexus-logger'
 import { ownPackage } from '../../lib/own-package'
@@ -9,7 +8,7 @@ import * as Plugin from '../../lib/plugin'
 import { fatal } from '../../lib/process'
 import * as Reflection from '../../lib/reflection'
 import { transpileModule } from '../../lib/tsc'
-import { simpleDebounce } from '../../lib/utils'
+import { rightOrFatal, simpleDebounce } from '../../lib/utils'
 import { createWatcher } from '../../lib/watcher'
 import { createStartModuleContent } from '../../runtime/start'
 
@@ -24,6 +23,10 @@ const DEV_ARGS = {
   '--help': Boolean,
   '-h': '--help',
 }
+
+const debouncedReflection = simpleDebounce((layout: Layout.Layout) => {
+  return Reflection.reflect(layout, { artifacts: true })
+})
 
 export class Dev implements Command {
   async parse(argv: string[]) {
@@ -54,19 +57,32 @@ export class Dev implements Command {
       await p.hooks.dev.onStart?.()
     }
 
-    log.info('start', { version: ownPackage.version })
+    const runDebouncedReflection = async (layout: Layout.Layout) => {
+      const reflectionResult = await debouncedReflection(layout)
 
-    const runDebouncedReflection = simpleDebounce(async (layout: Layout.Layout) => {
-      const reflectionResult = await Reflection.reflect(layout, { artifacts: true })
+      if (reflectionResult.type === 'executing') {
+        return
+      }
+
+      // if --reflection, log successes and all kind of errors
       if (args['--reflection']) {
-        if (reflectionResult.success) {
+        if (reflectionResult.data.success) {
           log.info('reflection done')
           log.info('waiting for file changes to run reflection...')
         } else {
-          log.error('reflection failed', { error: reflectionResult.error })
+          log.error('reflection failed', { error: reflectionResult.data.error })
+        }
+      } else {
+        // if --reflection is not passed, log only errors of type "ts-error"
+        // These are the whitelisted diagnostic codes from the createTSProgram function
+        // We don't want to log runtime errors as the main thread will already log them
+        if (!reflectionResult.data.success && reflectionResult.data.type === 'ts-error') {
+          log.error('reflection failed', { error: reflectionResult.data.error })
         }
       }
-    })
+    }
+
+    log.info('start', { version: ownPackage.version })
 
     const devPlugin: Plugin.WorktimeHooks = {
       build: {},

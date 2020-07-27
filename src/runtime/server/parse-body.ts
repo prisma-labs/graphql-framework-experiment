@@ -5,9 +5,16 @@ import contentType, { ParsedMediaType } from 'content-type'
 import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
 import { IncomingMessage } from 'http'
 import httpError, { HttpError } from 'http-errors'
-import querystring from 'querystring'
+import querystring, { ParsedUrlQuery } from 'querystring'
 import getBody from 'raw-body'
+import * as url from 'url'
 import zlib, { Gunzip } from 'zlib'
+
+export function parseQuery(request: IncomingMessage): Either<HttpError, ParsedUrlQuery> {
+  const urlData = (request.url && url.parse(request.url, true).query) || {}
+
+  return right(urlData)
+}
 
 /**
  * Provided a "Request" provided by express or connect (typically a node style
