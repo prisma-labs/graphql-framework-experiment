@@ -43,7 +43,13 @@ export interface Request extends HTTP.IncomingMessage {
 export interface Response extends HTTP.ServerResponse {}
 
 export type ContextParams = {
+  /**
+   * Incoming express request
+   */
   req: Request
+  /**
+   * Server response
+   */
   res: Response
 }
 export type ContextContributor = (params: ContextParams) => MaybePromise<Record<string, unknown>>
