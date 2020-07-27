@@ -94,7 +94,7 @@ Nexus has an API for adding to context.
 +++ app.ts
 + import { schema } from 'nexus'
 
-+ schema.addToContext(req => {
++ schema.addToContext(({ req, res }) => {
 +   return { ... }
 + })
 
