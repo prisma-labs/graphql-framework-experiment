@@ -44,7 +44,7 @@ export interface Response extends HTTP.ServerResponse {}
 
 export type ContextParams = {
   /**
-   * Incoming express request
+   * Incoming HTTP request
    */
   req: Request
   /**
