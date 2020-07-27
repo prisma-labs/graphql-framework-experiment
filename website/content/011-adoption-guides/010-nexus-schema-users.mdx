@@ -10,7 +10,11 @@ staticLink: false
 
 This guide is for you if you use `@nexus/schema` on a project and are curious about if you should upgrade to the framework and/or how.
 
-Nexus is built on top of `@nexus/schema` adding many opinions and features. If you haven't you should check out the [tutorial](/getting-started/tutorial) and read the [introduction](/). But here's a quick rundown of the differences:
+Nexus is built on top of `@nexus/schema` adding many opinions and features. If you haven't you should check out the [tutorial](/getting-started/tutorial) and read the [introduction](/). 
+
+### Differences between Nexus and Nexus Schema
+
+Here's a quick rundown of the differences:
 
 | feature                                                              | `nexus` | `@nexus/schema` |
 | -------------------------------------------------------------------- | ------- | --------------- |
@@ -41,6 +45,8 @@ Nexus is built on top of `@nexus/schema` adding many opinions and features. If y
 | Bundled Dependencies ([why](https://nxs.li/why/bundle-dependencies)) | ✔       | ✖               |
 
 ## Migrating
+
+These are the steps to migrate from `@nexus/schema` to `nexus`:
 
 ### Dependencies
 
@@ -238,7 +244,7 @@ import { log } from 'nexus'
 
 ### Prisma
 
-If you were a `nexus-prisma` user, you will now become a [`nexus-plugin-prisma`](https://github.com/graphql-nexus/plugin-prisma) user. Install the plugin, and enable it in your project.
+If you were a `nexus-prisma` user, you will now become a [`nexus-plugin-prisma`](https://github.com/graphql-nexus/plugin-prisma) user - it's the same thing with a different name. Install the plugin, and enable it in your project.
 
 ```json
 ---+++package.json
