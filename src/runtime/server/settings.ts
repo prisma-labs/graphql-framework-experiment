@@ -1,22 +1,47 @@
 import { PlaygroundRenderPageOptions } from 'apollo-server-express'
 import { CorsOptions as OriginalCorsOption } from 'cors'
+import { defaults, isUndefined } from 'lodash'
+import { LiteralUnion } from 'type-fest'
 import * as Process from '../../lib/process'
 import * as Utils from '../../lib/utils'
 import { log as serverLogger } from './logger'
-import { LiteralUnion } from 'type-fest'
 
 const log = serverLogger.child('settings')
 
-export type PlaygroundSettings = {
+export type PlaygroundInput = {
+  /**
+   * Should the [GraphQL Playground](https://github.com/prisma-labs/graphql-playground) be hosted by the server?
+   *
+   * @dynamicDefault
+   *
+   * - If not production then `true`
+   * - Otherwise `false`
+   *
+   * @remarks
+   *
+   * GraphQL Playground is useful during development as a visual client to interact with your API. In
+   * production, without some kind of security/access control, you will almost
+   * certainly want it disabled.
+   */
+  enabled?: boolean
+
+  // todo consider de-nesting the settings field
+
+  /**
+   * Configure the settings of the GraphQL Playground app itself.
+   */
   settings?: Omit<Partial<Exclude<PlaygroundRenderPageOptions['settings'], undefined>>, 'general.betaUpdates'>
 }
 
+export type GraphqlInput = {
+  introspection?: boolean
+}
 export type HTTPMethods = LiteralUnion<'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD', string>
 
 export type CorsSettings = {
   /**
    * Enable or disable CORS.
-   * 
+   *
    * @default true
    */
   enabled?: boolean
@@ -24,20 +49,20 @@ export type CorsSettings = {
    * Configures the Access-Control-Allow-Origin CORS header. Possible values:
    *
    * Boolean - set origin to true to reflect the request origin, as defined by req.header('Origin'), or set it to false to disable CORS.
-   * 
+   *
    * String - set origin to a specific origin. For example if you set it to "http://example.com" only requests from "http://example.com" will be allowed.
-   * 
+   *
    * RegExp - set origin to a regular expression pattern which will be used to test the request origin. If it's a match, the request origin will be reflected. For example the pattern /example\.com$/ will reflect any request that is coming from an origin ending with "example.com".
-   * 
+   *
    * Array - set origin to an array of valid origins. Each origin can be a String or a RegExp. For example ["http://example1.com", /\.example2\.com$/] will accept any request from "http://example1.com" or from a subdomain of "example2.com".
-   * 
+   *
    * Function - set origin to a function implementing some custom logic. The function takes the request origin as the first parameter and a callback (called as callback(err, origin), where origin is a non-function value of the origin option) as the second.
    *
    */
   origin?: OriginalCorsOption['origin'] // TODO: Improve function interface with promise-based callback
   /**
    * Configures the Access-Control-Allow-Methods CORS header.
-   * 
+   *
    * @example ['GET', 'PUT', 'POST']
    */
   methods?: string | HTTPMethods[]
@@ -45,7 +70,7 @@ export type CorsSettings = {
    * Configures the Access-Control-Allow-Headers CORS header.
    *
    * If not specified, defaults to reflecting the headers specified in the request's Access-Control-Request-Headers header.
-   * 
+   *
    * @example ['Content-Type', 'Authorization']
    */
   allowedHeaders?: string | string[]
@@ -53,7 +78,7 @@ export type CorsSettings = {
    * Configures the Access-Control-Expose-Headers CORS header.
    *
    * If not specified, no custom headers are exposed.
-   * 
+   *
    * @example ['Content-Range', 'X-Content-Range']
    */
   exposedHeaders?: string | string[]
@@ -79,10 +104,6 @@ export type CorsSettings = {
   optionsSuccessStatus?: number
 }
 
-export type GraphqlSettings = {
-  introspection?: boolean
-}
-
 export type SettingsInput = {
   /**
    * todo
@@ -93,20 +114,24 @@ export type SettingsInput = {
    */
   host?: string | undefined
   /**
-   * Should GraphQL Playground be hosted by the server?
+   * Configure the [GraphQL Playground](https://github.com/prisma-labs/graphql-playground) hosted by the server.
    *
-   * @default `false` in production, `{ path: '/' }` otherwise
+   * - Pass `true` as shorthand for  `{ enabled: true }`
+   * - Pass `false` as shorthand for `{ enabled: false }`
+   * - Pass an object to configure
+   *
+   * @dynamicDefault
+   *
+   * - If not production then `true`
+   * - Otherwise `false`
    *
    * @remarks
    *
-   * Useful during development as a visual client to interact with your API. In
+   * GraphQL Playground is useful during development as a visual client to interact with your API. In
    * production, without some kind of security/access control, you will almost
-   * certainly want this disabled.
-   *
-   * To learn more about GraphQL Playground see
-   * https://github.com/prisma-labs/graphql-playground
+   * certainly want it disabled.
    */
-  playground?: boolean | PlaygroundSettings
+  playground?: boolean | PlaygroundInput
   /**
    * Enable CORS for your server
    *
@@ -138,7 +163,7 @@ export type SettingsInput = {
   /**
    * todo
    */
-  graphql?: GraphqlSettings
+  graphql?: GraphqlInput
 }
 
 export type SettingsData = Omit<
@@ -146,14 +171,15 @@ export type SettingsData = Omit<
   'host' | 'playground' | 'graphql' | 'cors'
 > & {
   host: string | undefined
-  playground: false | Required<PlaygroundSettings>
-  graphql: Required<GraphqlSettings>
-  cors: boolean | CorsSettings
+  playground: Required<PlaygroundInput>
+  graphql: Required<GraphqlInput>
+  cors: CorsSettings
 }
 
 export const defaultPlaygroundPath = '/graphql'
 
-export const defaultPlaygroundSettings: () => Readonly<Required<PlaygroundSettings>> = () => ({
+export const defaultPlaygroundSettings: () => Readonly<Required<PlaygroundInput>> = () => ({
+  enabled: process.env.NODE_ENV === 'production' ? false : true,
   settings: {
     'general.betaUpdates': false,
     'editor.theme': 'dark',
@@ -167,7 +193,7 @@ export const defaultPlaygroundSettings: () => Readonly<Required<PlaygroundSettin
   },
 })
 
-export const defaultGraphqlSettings: () => Readonly<Required<GraphqlSettings>> = () => ({
+export const defaultGraphqlSettings: () => Readonly<Required<GraphqlInput>> = () => ({
   introspection: process.env.NODE_ENV === 'production' ? false : true,
 })
 
@@ -192,35 +218,32 @@ export const defaultSettings: () => Readonly<SettingsData> = () => {
         url: `http://${Utils.prettifyHost(host)}:${port}${path}`,
       })
     },
-    playground: process.env.NODE_ENV === 'production' ? false : defaultPlaygroundSettings(),
+    playground: defaultPlaygroundSettings(),
     path: '/graphql',
-    cors: false,
+    cors: { enabled: false },
     graphql: defaultGraphqlSettings(),
   }
 }
 
-export function playgroundSettings(
-  playgroundSettings: SettingsInput['playground']
+export function processPlaygroundInput(
+  current: SettingsData['playground'],
+  input: NonNullable<SettingsInput['playground']>
 ): SettingsData['playground'] {
-  if (!playgroundSettings) {
-    return false
-  }
-
-  const defaultSettings = defaultPlaygroundSettings()
-
-  if (typeof playgroundSettings === 'boolean') {
+  if (typeof input === 'boolean') {
     return {
-      settings: defaultSettings.settings,
+      enabled: input,
+      settings: defaultPlaygroundSettings().settings,
     }
   }
 
-  return {
-    settings: { ...defaultSettings.settings, ...playgroundSettings.settings },
-  }
+  return defaults({}, input, current)
 }
 
-export function graphqlSettings(settings: SettingsInput['graphql']): SettingsData['graphql'] {
-  return { ...defaultGraphqlSettings(), ...settings }
+export function processGraphqlInput(
+  current: SettingsData['graphql'],
+  input: NonNullable<SettingsInput['graphql']>
+): SettingsData['graphql'] {
+  return defaults(input, current)
 }
 
 function validateGraphQLPath(path: string): string {
@@ -239,32 +262,44 @@ function validateGraphQLPath(path: string): string {
   return outputPath
 }
 
-export function corsSettings(newSettings: SettingsInput['cors']): SettingsData['cors'] {
-  if (typeof newSettings === 'boolean') {
-    return newSettings
+export function processCorsInput(
+  current: SettingsData['cors'],
+  input: NonNullable<SettingsInput['cors']>
+): SettingsData['cors'] {
+  if (typeof input === 'boolean') {
+    return { enabled: input }
   }
 
-  if (!newSettings || newSettings.enabled === false) {
-    return false
-  }
-
-  return newSettings
+  return defaults({}, input, current)
 }
 
 /**
  * Mutate the settings data
  */
-export function changeSettings(state: SettingsData, newSettings: SettingsInput): void {
-  const updatedSettings = { ...state, ...newSettings }
-
-  state.playground = playgroundSettings(updatedSettings.playground)
-  state.path = validateGraphQLPath(updatedSettings.path)
-  state.port = updatedSettings.port
-  state.startMessage = updatedSettings.startMessage
-  state.graphql = graphqlSettings(updatedSettings.graphql)
-  state.cors = corsSettings(updatedSettings.cors)
+export function changeSettings(current: SettingsData, input: SettingsInput): void {
+  if (!isUndefined(input.playground)) {
+    current.playground = processPlaygroundInput(current.playground, input.playground)
+  }
+  if (!isUndefined(input.graphql)) {
+    current.graphql = processGraphqlInput(current.graphql, input.graphql)
+  }
+  if (!isUndefined(input.path)) {
+    current.path = validateGraphQLPath(input.path)
+  }
+  if (!isUndefined(input.port)) {
+    current.port = input.port
+  }
+  if (!isUndefined(input.startMessage)) {
+    current.startMessage = input.startMessage
+  }
+  if (!isUndefined(input.cors)) {
+    current.cors = processCorsInput(current.cors, input.cors)
+  }
 }
 
+/**
+ * Create a settings manager
+ */
 export function createServerSettingsManager() {
   const data = defaultSettings()
 

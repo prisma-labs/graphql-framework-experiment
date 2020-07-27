@@ -3,11 +3,11 @@ import { ContextContributor } from '../schema'
 import { ApolloServerless } from './apollo-server'
 import { log } from './logger'
 import { NexusRequestHandler } from './server'
-import { PlaygroundSettings } from './settings'
+import { PlaygroundInput } from './settings'
 
 type Settings = {
   introspection: boolean
-  playground: false | PlaygroundSettings
+  playground: false | PlaygroundInput
   path: string
   errorFormatterFn(graphqlError: GraphQLError): GraphQLFormattedError
 }

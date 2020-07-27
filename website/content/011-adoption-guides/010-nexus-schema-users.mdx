@@ -10,28 +10,43 @@ staticLink: false
 
 This guide is for you if you use `@nexus/schema` on a project and are curious about if you should upgrade to the framework and/or how.
 
-Nexus is built on top of `@nexus/schema` adding many opinions and features. If you haven't you should check out the [tutorial](/getting-started/tutorial) and read the [introduction](/). But here's a quick rundown of the differences:
+Nexus is built on top of `@nexus/schema` adding many opinions and features. If you haven't you should check out the [tutorial](/getting-started/tutorial) and read the [introduction](/). 
+
+### Differences between Nexus and Nexus Schema
+
+Here's a quick rundown of the differences:
 
 | feature                                                              | `nexus` | `@nexus/schema` |
 | -------------------------------------------------------------------- | ------- | --------------- |
 | JavaScript Support                                                   | ✖       | ✔               |
+| TypeScript Support                                                   | ✔       | ✔               |
 | `@nexus/schema` `makeSchema` Control                                 | ✖       | ✔               |
-| GraphQL Schema Builder API                                           | ✔       | ✔               |
-| Nexus Schema plugins                                                 | ✔       | ✔               |
+| GraphQL Schema Builder Pure API                                      | ✖       | ✔               |
+| GraphQL Schema Builder Stateful Singleton API                        | ✔       | ✖               |
+| Generate GraphQL SDL                                                 | ✔       | ✔               |
+| Typesafe GraphQL Schema Resolvers                                    | ✔       | ✔               |
+| Nexus Schema Plugins                                                 | ✔       | ✔               |
 | Zero Config                                                          | ✔       | ✖               |
 | CLI                                                                  | ✔       | ✖               |
+| Project Scaffolding                                                  | ✔       | ✖               |
 | Development Mode                                                     | ✔       | ✖               |
 | Integrated Build Step with Bundling                                  | ✔       | ✖               |
-| Builtin Server                                                       | ✔       | ✖               |
-| Builtin Logger                                                       | ✔       | ✖               |
+| HTTP Server                                                          | ✔       | ✖               |
+| HTTP Server CORS Support                                             | ✔       | ✖               |
+| Subscriptions Server                                                 | ✔       | ✖               |
+| Logger                                                               | ✔       | ✖               |
 | Bundled Scalars                                                      | ✔       | ✖               |
 | Type Discovery for Backing Types                                     | ✔       | ✖               |
 | Type Discovery for Context API                                       | ✔       | ✖               |
 | Module Discovery for Nexus modules                                   | ✔       | ✖               |
+| Enhanced Autocomplete via TS LSP for Nexus                           | ✔       | ✖               |
+| System Testing API                                                   | ✔       | ✖               |
 | Framework Plugins                                                    | ✔       | ✖               |
 | Bundled Dependencies ([why](https://nxs.li/why/bundle-dependencies)) | ✔       | ✖               |
 
 ## Migrating
+
+These are the steps to migrate from `@nexus/schema` to `nexus`:
 
 ### Dependencies
 
@@ -229,7 +244,7 @@ import { log } from 'nexus'
 
 ### Prisma
 
-If you were a `nexus-prisma` user, you will now become a [`nexus-plugin-prisma`](https://github.com/graphql-nexus/plugin-prisma) user. Install the plugin, and enable it in your project.
+If you were a `nexus-prisma` user, you will now become a [`nexus-plugin-prisma`](https://github.com/graphql-nexus/plugin-prisma) user - it's the same thing with a different name. Install the plugin, and enable it in your project.
 
 ```json
 ---+++package.json

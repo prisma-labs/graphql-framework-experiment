@@ -12,6 +12,10 @@ So far you've been validating your work by manual interacting with the Playgroun
 
 ## It's at the system level
 
+<!-- TODO need feature to share content in multiple places -->
+
+> Content taken from the [testing guide](/guides/testing#testing-in-principal)
+
 There are multiple ways you can test a GraphQL API. One way is to extract resolvers into isolated functions and then unit test them. Of course these are rarely pure functions so those unit tests either become partial integration tests or mocks are introduced to try and retain the unit level of testing. Unit testing resolvers can work well, but here are some reasons why and where it might not;
 
 - The Nexus Prisma plugin (discussed later) can remove the need to even write resolvers in which case testing [those] resolvers doesn't make sense.
@@ -112,7 +116,7 @@ const ctx = createTestContext()
 
 it('ensures that a draft can be created and published', async () => {
   // Create a new draft
-  const draftResult = await ctx.app.query(`                 # 1
+  const draftResult = await ctx.client.send(`               # 1
     mutation {
       createDraft(title: "Nexus", body: "...") {            # 2
         id
@@ -136,7 +140,7 @@ it('ensures that a draft can be created and published', async () => {
   `)
 
   // Publish the previously created draft
-  const publishResult = await ctx.app.query(`
+  const publishResult = await ctx.client.send(`
     mutation publishDraft($draftId: Int!) {
       publish(draftId: $draftId) {
         id
@@ -163,7 +167,7 @@ it('ensures that a draft can be created and published', async () => {
 })
 ```
 
-1. The test context exposes a GraphQL client at `ctx.app.query` that will help us run operations against our API. Here We're using it to send a publish mutation.
+1. The test context exposes a GraphQL client at `ctx.client.send` that will help us run operations against our API. Here We're using it to send a publish mutation.
 2. This is the mutation from the end of last chapter.
 3. The result will be snapshoted inline allowing us to see the input and output collocated!
 

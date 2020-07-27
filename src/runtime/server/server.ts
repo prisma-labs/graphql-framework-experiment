@@ -112,9 +112,10 @@ export function create(appState: AppState) {
           introspection: settings.data.graphql.introspection,
           formatError: errorFormatter,
           logger: resolverLogger,
-          playground: settings.data.playground
+          playground: settings.data.playground.enabled
             ? {
                 endpoint: settings.data.path,
+                settings: settings.data.playground.settings,
               }
             : false,
         })
