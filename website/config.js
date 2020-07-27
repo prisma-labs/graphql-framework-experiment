@@ -1,7 +1,9 @@
 const config = {
   gatsby: {
     pathPrefix: '',
-    siteUrl: 'https://www.nexusjs.org', // replace with nexus site
+    siteUrl: 'https://www.nexusjs.org',
+    titlePrefix: '',
+    titleSuffix: '',
   },
   redirects: [],
   header: {
