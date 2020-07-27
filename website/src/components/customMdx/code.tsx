@@ -72,12 +72,14 @@ const Code = ({ children, className, ...props }: PreCodeProps) => {
                     '+': 'var(--code-added-bg-color)',
                     '-': 'var(--code-deleted-bg-color)',
                     '|': 'var(--code-highlight-bg-color)',
+                    '✎': 'var(--code-edit-bg-color)',
                   }
 
                   const symColorMap: any = {
                     '+': 'var(--code-added-color)',
                     '-': 'var(--code-deleted-color)',
                     '|': 'var(--code-highlight-color)',
+                    '✎': 'var(--code-highlight-color)',
                   }
 
                   if (
@@ -85,13 +87,15 @@ const Code = ({ children, className, ...props }: PreCodeProps) => {
                       line[0].content.length &&
                       (line[0].content[0] === '+' ||
                         line[0].content[0] === '-' ||
-                        line[0].content[0] === '|')) ||
+                        line[0].content[0] === '|' ||
+                        line[0].content[0] === '✎')) ||
                     (line[0] &&
                       line[0].content === '' &&
                       line[1] &&
                       (line[1].content === '+' ||
                         line[1].content === '-' ||
-                        line[1].content === '|'))
+                        line[1].content === '|' ||
+                        line[1].content === '✎'))
                   ) {
                     diffSymbol =
                       line[0] && line[0].content.length ? line[0].content[0] : line[1].content
@@ -119,10 +123,11 @@ const Code = ({ children, className, ...props }: PreCodeProps) => {
                         {line.map((token: any, key: any) => {
                           if (isDiff) {
                             if (
-                              ((key === 0 || key === 1) &&
-                                (token.content.charAt(0) === '+' ||
-                                  token.content.charAt(0) === '-')) ||
-                              token.content.charAt(0) === '|'
+                              (key === 0 || key === 1) &&
+                              (token.content.charAt(0) === '+' ||
+                                token.content.charAt(0) === '-' ||
+                                token.content.charAt(0) === '|' || 
+                                token.content.charAt(0) === '✎')
                             ) {
                               return (
                                 <span
