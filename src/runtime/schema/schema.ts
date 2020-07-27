@@ -40,13 +40,13 @@ export function createLazyState(): LazyState {
 export interface Request extends HTTP.IncomingMessage {
   log: NexusLogger.Logger
 }
-
 export interface Response extends HTTP.ServerResponse {}
 
-export type ContextContributor = (params: {
+export type ContextParams = {
   req: Request
   res: Response
-}) => MaybePromise<Record<string, unknown>>
+}
+export type ContextContributor = (params: ContextParams) => MaybePromise<Record<string, unknown>>
 
 type MiddlewareFn = (
   source: any,
