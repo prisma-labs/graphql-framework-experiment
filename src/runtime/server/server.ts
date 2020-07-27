@@ -4,10 +4,10 @@ import * as HTTP from 'http'
 import { HttpError } from 'http-errors'
 import * as Net from 'net'
 import * as Plugin from '../../lib/plugin'
-import { httpClose, httpListen, MaybePromise, noop } from '../../lib/utils'
+import { httpClose, httpListen, noop } from '../../lib/utils'
 import { AppState } from '../app'
 import * as DevMode from '../dev-mode'
-import { ContextContributor } from '../schema/schema'
+import { ContextContributor } from '../schema'
 import { assembledGuard } from '../utils'
 import { ApolloServerExpress } from './apollo-server'
 import { errorFormatter } from './error-formatter'
@@ -45,7 +45,7 @@ export interface Server {
 interface State {
   running: boolean
   httpServer: HTTP.Server
-  createContext: null | (() => ContextCreator<Record<string, any>, Record<string, any>>)
+  createContext: null | (() => ContextContributor)
   apolloServer: null | ApolloServerExpress
 }
 
@@ -182,29 +182,20 @@ const wrapHandlerWithErrorHandling = (handler: NexusRequestHandler): NexusReques
   }
 }
 
-type AnonymousRequest = Record<string, any>
-
-type AnonymousContext = Record<string, any>
-
-export type ContextCreator<
-  Req extends AnonymousRequest = AnonymousRequest,
-  Context extends AnonymousContext = AnonymousContext
-> = (req: Req) => MaybePromise<Context>
-
 /**
  * Combine all the context contributions defined in the app and in plugins.
  */
 function createContextCreator(
   contextContributors: ContextContributor[],
   plugins: Plugin.RuntimeContributions[]
-): ContextCreator {
-  const createContext: ContextCreator = async (req) => {
+): ContextContributor {
+  const createContext: ContextContributor = async (params) => {
     let context: Record<string, any> = {}
 
     // Integrate context from plugins
     for (const plugin of plugins) {
       if (!plugin.context) continue
-      const contextContribution = await plugin.context.create(req)
+      const contextContribution = await plugin.context.create(params.req)
 
       Object.assign(context, contextContribution)
     }
@@ -212,7 +203,7 @@ function createContextCreator(
     // Integrate context from app context api
     // TODO good runtime feedback to user if something goes wrong
     for (const contextContributor of contextContributors) {
-      const contextContribution = await contextContributor(req as any)
+      const contextContribution = await contextContributor(params)
 
       Object.assign(context, contextContribution)
     }

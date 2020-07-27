@@ -41,7 +41,12 @@ export interface Request extends HTTP.IncomingMessage {
   log: NexusLogger.Logger
 }
 
-export type ContextContributor = (req: Request) => MaybePromise<Record<string, unknown>>
+export interface Response extends HTTP.ServerResponse {}
+
+export type ContextContributor = (params: {
+  req: Request
+  res: Response
+}) => MaybePromise<Record<string, unknown>>
 
 type MiddlewareFn = (
   source: any,

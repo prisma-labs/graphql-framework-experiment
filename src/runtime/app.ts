@@ -9,7 +9,6 @@ import { Index } from '../lib/utils'
 import * as Lifecycle from './lifecycle'
 import * as Schema from './schema'
 import * as Server from './server'
-import { ContextCreator } from './server/server'
 import * as Settings from './settings'
 import { assertAppNotAssembled } from './utils'
 
@@ -88,7 +87,7 @@ export type AppState = {
     schema: NexusSchema.core.NexusGraphQLSchema
     missingTypes: Index<NexusSchema.core.MissingType>
     loadedPlugins: RuntimeContributions<any>[]
-    createContext: ContextCreator
+    createContext: Schema.ContextContributor
   }
   running: boolean
   components: {
