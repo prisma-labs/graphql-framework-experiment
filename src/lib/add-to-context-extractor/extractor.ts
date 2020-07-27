@@ -225,7 +225,11 @@ function captureTypeImport(registry: Index<TypeImportInfo>, t: tsm.Type | tsm.Ty
    */
 
   types.forEach((t) => {
-    t.getTypeArguments().forEach((typeArg) => {
+    log.trace('checking type for type arguments', { text: t.getText() })
+    //todo only call alias type arguments method if type is an alias?
+    const typeArguments = [...t.getAliasTypeArguments(), ...t.getTypeArguments()]
+    typeArguments.forEach((typeArg) => {
+      log.trace('extracting import info for generic', { text: typeArg.getText() })
       const info = extractTypeImportInfoFromType(typeArg)
       if (info) {
         registry[info.name] = info

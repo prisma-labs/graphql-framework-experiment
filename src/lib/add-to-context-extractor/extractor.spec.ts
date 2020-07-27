@@ -753,7 +753,56 @@ describe('top-level union types', () => {
 })
 
 describe('generics', () => {
-  it('imports referenced types in generic position', () => {
+  it('types that are referenced in the generic of a type alias get extracted as type imports', () => {
+    expect(
+      extract(`
+          interface Foo1 {}
+          interface Foo2 {}
+          interface Foo3 {}
+          interface Foo4 {}
+          type Bar<T> = {}
+          schema.addToContext(() => {
+            return { } as { a: Bar<Foo1>; b: number | Bar<Foo2>; c: Foo3 & Bar<Foo4> }
+          })
+        `)
+    ).toMatchInlineSnapshot(`
+      Object {
+        "typeImports": Array [
+          Object {
+            "isExported": false,
+            "isNode": false,
+            "modulePath": "/src/a",
+            "name": "Bar",
+          },
+          Object {
+            "isExported": false,
+            "isNode": false,
+            "modulePath": "/src/a",
+            "name": "Foo1",
+          },
+          Object {
+            "isExported": false,
+            "isNode": false,
+            "modulePath": "/src/a",
+            "name": "Foo2",
+          },
+          Object {
+            "isExported": false,
+            "isNode": false,
+            "modulePath": "/src/a",
+            "name": "Foo3",
+          },
+        ],
+        "types": Array [
+          Object {
+            "kind": "literal",
+            "value": "{ a: Bar<Foo1>; b: number | Bar<Foo2>; c: Foo3; }",
+          },
+        ],
+      }
+    `)
+  })
+  it('types that are referenced in the generic of an interface get extracted as type imports', () => {
     expect(
       extract(`
           interface Foo1 {}
