@@ -10,7 +10,7 @@ import {
   ModulesWithImportSearchResult,
   unwrapMaybePromise,
 } from '../tsc'
-import { exception, Exception } from '../utils'
+import { exception, Exception, Index } from '../utils'
 import { forbiddenUnionTypeError } from './errors'
 
 const log = rootLogger.child('addToContextExtractor')
@@ -180,57 +180,63 @@ export function extractContextTypes(program: tsm.Project): Either<Exception, Ext
 
     contextTypeContributions.types.push(contribTypeLiteral(contextAdderRetTypeString))
 
-    // search for named references, they will require importing later on
+    /**
+     * Search for type references. They must be imported later.
+     */
+
     const contextAdderRetProps = contextAdderRetType.getProperties()
     for (const prop of contextAdderRetProps) {
       log.trace('processing prop', { name: prop.getName() })
-      const tsmn = prop.getDeclarations()[0]
+      const tsmn = prop.getDeclarations()[0] // todo log warning if > 1
       const t = tsmn.getType()
-      if (t)
-        if (t.getAliasSymbol()) {
-          log.trace('found alias', {
-            type: t.getText(undefined, ts.TypeFormatFlags.NoTruncation),
-          })
-          const info = extractTypeImportInfoFromType(t)
-          if (info) {
-            typeImportsIndex[info.name] = info
-          }
-        } else if (t.isIntersection()) {
-          log.trace('found intersection', {
-            types: t.getIntersectionTypes().map((t) => t.getText(undefined, ts.TypeFormatFlags.NoTruncation)),
-          })
-          const infos = t
-            .getIntersectionTypes()
-            .map((t) => extractTypeImportInfoFromType(t)!)
-            .filter((info) => info !== null)
-          if (infos.length) {
-            infos.forEach((info) => {
-              typeImportsIndex[info.name] = info
-            })
-          }
-        } else if (t.isUnion()) {
-          log.trace('found union', {
-            types: t.getUnionTypes().map((t) => t.getText(undefined, ts.TypeFormatFlags.NoTruncation)),
-          })
-          const infos = t
-            .getUnionTypes()
-            .map((t) => extractTypeImportInfoFromType(t)!)
-            .filter((info) => info !== null)
-          if (infos.length) {
-            infos.forEach((info) => {
-              typeImportsIndex[info.name] = info
-            })
-          }
-        } else {
-          const info = extractTypeImportInfoFromType(t)
-          if (info) {
-            typeImportsIndex[info.name] = info
-          }
-        }
+
+      if (t.getAliasSymbol()) {
+        log.trace('found alias', {
+          type: t.getText(undefined, ts.TypeFormatFlags.NoTruncation),
+        })
+        captureTypeImport(typeImportsIndex, t)
+      } else if (t.isIntersection()) {
+        log.trace('found intersection', {
+          types: t.getIntersectionTypes().map((t) => t.getText(undefined, ts.TypeFormatFlags.NoTruncation)),
+        })
+        captureTypeImport(typeImportsIndex, t.getIntersectionTypes())
+      } else if (t.isUnion()) {
+        log.trace('found union', {
+          types: t.getUnionTypes().map((t) => t.getText(undefined, ts.TypeFormatFlags.NoTruncation)),
+        })
+        captureTypeImport(typeImportsIndex, t.getUnionTypes())
+      } else {
+        captureTypeImport(typeImportsIndex, t)
+      }
     }
   }
 }
 
+function captureTypeImport(registry: Index<TypeImportInfo>, t: tsm.Type | tsm.Type[]) {
+  const types = Array.isArray(t) ? t : [t]
+  const infos = types.map((t) => extractTypeImportInfoFromType(t)!).filter((info) => info !== null)
+
+  infos.forEach((info) => {
+    registry[info.name] = info
+  })
+
+  /**
+   * Capture any type arguments of the type
+   */
+
+  types.forEach((t) => {
+    t.getTypeArguments().forEach((typeArg) => {
+      const info = extractTypeImportInfoFromType(typeArg)
+      if (info) {
+        registry[info.name] = info
+      }
+    })
+  })
+}
+
+/**
+ * Get information about how to import the given type.
+ */
 function extractTypeImportInfoFromType(t: tsm.Type): null | TypeImportInfo {
   let sym = t.getAliasSymbol()
   let name = sym?.getName()
