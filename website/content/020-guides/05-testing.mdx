@@ -3,19 +3,26 @@ title: Testing
 toc: true
 ---
 
-## Testing
+## Testing In Principal
 
-Testing is a first-class concern of Nexus. So far we ship a few primitives to help you run integration tests, but you can expect integrated higher level testing features in the future.
+There are multiple ways you can test a GraphQL API. One way is to extract resolvers into isolated functions and then unit test them. Of course these are rarely pure functions so those unit tests either become partial integration tests or mocks are introduced to try and retain the unit level of testing. Unit testing resolvers can work well, but here are some reasons why and where it might not;
+
+- The Nexus Prisma plugin (discussed later) can remove the need to even write resolvers in which case testing [those] resolvers doesn't make sense.
+- Thanks to the enhanced static type safety brought by Nexus, testing for correct handling of different input types and expected output types can be greatly reduced. For example you shouldn't need to test that your resolver checks for nulls before accessing nullable fields of an input object. And you don't need to test that your resolver is returning the right type.
+- Unit testing resolvers cannot provide a client perspective view of correctness since they focus on internals. If you want to test but have limited time/capacity to do so, you might choose to minimize/forgo the unit level in favor of system/integration tests that are closer to or at the level of a client perspective.
+
+Testing non-trivial resolvers in isolation is likely to be a good investment in most cases but its up to you as a developer. What Nexus provides help with is not at this level, but higher up in the [testing pyramid](https://codingjourneyman.com/tag/uncle-bob/page/2/), at the system level. System testing means tests that will run operations against your API just like a real client would.
 
 > **Note**: This guide is written using [`jest`](https://jestjs.io/) because it is what we use internally and thus can speak to best. But you should be able to use your test framework of choice.
 
-## Meet the module
+## Testing in Nexus
 
 Nexus comes with a special testing module that you can import from `nexus/testing`. Its primary utility is the `createTestContext` function. It is designed for running _integration_ tests. When run it will in turn boot your app (in the same process) and expose an interface for your tests to interact with it.
 
 <!-- TODO would be nice to have the TS type shown here. Use doc extraction system to do this. -->
 
-> For the curious...  
+> ##### For the curious...
+>
 > Since `jest` runs test suites in parallel it means multiple instances of your `app` will be run in parallel too. The testing module takes care of abstracting the mechanics of making this work from you. For example it assigns random ports to each app to run its server and makes sure each test suite's app client is configured to be talking with its respective app instance. You should _never_ have to think about these kinds of details though, and if it turns out you do please open a GitHub issue so we can try to seal the leak you've found in Nexus' abstraction!
 
 ### A little helper
