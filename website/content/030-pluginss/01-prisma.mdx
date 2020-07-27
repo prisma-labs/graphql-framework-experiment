@@ -70,36 +70,36 @@ There are two ways you can start with the Prisma plugin. Either from scratch, or
 
     Using PostgreSQL:
 
-        ```prisma
-        //schema.prisma
+    ```prisma
+    //schema.prisma
 
-        datasource db {
-          provider = "postgres"
-          url = "postgresql://USER:PASSWORD@localhost:5432/DATABASE"
-        }
-        ```
+    datasource db {
+      provider = "postgres"
+      url = "postgresql://USER:PASSWORD@localhost:5432/DATABASE"
+    }
+    ```
 
-      Using MySQL:
+    Using MySQL:
 
-      ```prisma
-      //schema.prisma
+    ```prisma
+    //schema.prisma
 
-      datasource db {
-        provider = "mysql"
-        url = "mysql://USER:PASSWORD@localhost:3306/DATABASE"
-      }
-      ```
+    datasource db {
+      provider = "mysql"
+      url = "mysql://USER:PASSWORD@localhost:3306/DATABASE"
+    }
+    ```
 
-      Using SQLite:
+    Using SQLite:
 
-      ```prisma
-      //schema.prisma
+    ```prisma
+    //schema.prisma
 
-      datasource db {
-        provider = "sqlite"
-        url = "file:./dev.db"
-      }
-      ```
+    datasource db {
+      provider = "sqlite"
+      url = "file:./dev.db"
+    }
+    ```
 
 3. Create a migration file:
 
