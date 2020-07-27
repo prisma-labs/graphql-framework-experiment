@@ -25,6 +25,29 @@ Nexus comes with a special testing module that you can import from `nexus/testin
 >
 > Since `jest` runs test suites in parallel it means multiple instances of your `app` will be run in parallel too. The testing module takes care of abstracting the mechanics of making this work from you. For example it assigns random ports to each app to run its server and makes sure each test suite's app client is configured to be talking with its respective app instance. You should _never_ have to think about these kinds of details though, and if it turns out you do please open a GitHub issue so we can try to seal the leak you've found in Nexus' abstraction!
 
+### Installing & configuring jest
+
+Install `jest` and `ts-jest`
+
+```
+npm install --save-dev jest ts-jest
+```
+
+Then configure `jest` to use `ts-jest`. Note: it's important that you set `warnOnly` option to true or Jest will prevent your tests from running in case of type errors.
+
+```js
+// jest.config.js
+module.exports = {
+  preset: 'ts-jest',
+  globals: {
+    'ts-jest': {
+      diagnostics: { warnOnly: true }
+    }
+  }
+}
+```
+
+
 ### A little helper
 
 Before jumping into test suites we will wrap the `createTestContext` with a pattern that more tightly integrates it into `jest`. Nexus will probably ship something like as follows or better in the future, but for now you can copy this into your projects:
@@ -174,6 +197,11 @@ Integration between Nexus' test and database systems is young and still missing 
 
    module.exports = {
      preset: 'ts-jest',
+     globals: {
+       'ts-jest': {
+         diagnostics: { warnOnly: true }
+       }
+     }
      rootDir: 'tests',
    + testEnvironment: join(__dirname, 'nexus-test-environment.js'),
    }

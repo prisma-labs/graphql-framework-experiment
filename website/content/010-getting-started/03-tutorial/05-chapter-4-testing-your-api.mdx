@@ -42,6 +42,11 @@ Then, configure jest and npm scripts in your `package.json`
 },
 "jest": {
   "preset": "ts-jest",
+  "globals": {
+    "ts-jest": {
+      "diagnostics": { "warnOnly": true }
+    }
+  }
   "testEnvironment": "node"
 }
 ```
