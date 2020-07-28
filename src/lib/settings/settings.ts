@@ -1,5 +1,5 @@
 import * as Lo from 'lodash'
-import { Primitive } from 'type-fest'
+import { PartialDeep, Primitive } from 'type-fest'
 import { inspect } from 'util'
 import { PlainObject } from '../utils'
 
@@ -61,7 +61,7 @@ export type Manager<Data, Input> = {
   data: Data
 }
 
-export function create<Data, Input = Data>(spec: Spec<Data, Input>): Manager<Data, Input> {
+export function create<Data, Input = PartialDeep<Data>>(spec: Spec<Data, Input>): Manager<Data, Input> {
   const state = {
     data: {} as Data,
     metadata: {} as Metadata<Data>,
