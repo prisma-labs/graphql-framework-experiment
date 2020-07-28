@@ -142,14 +142,14 @@ it('extracts from returned object of referenced primitive value', () => {
   `)
 })
 
-it('can access all default context types', () => {
-  const allTypesExported = DEFAULT_CONTEXT_TYPES.typeImports.every(i => {
+it('all types extracted from the default context data are importable', () => {
+  const allTypesExported = DEFAULT_CONTEXT_TYPES.typeImports.every((i) => {
     const project = new tsm.Project({
       addFilesFromTsConfig: false,
-      skipFileDependencyResolution: true
+      skipFileDependencyResolution: true,
     })
 
-    const sourceFile = project.addSourceFileAtPath(i.modulePath + '.d.ts')
+    const sourceFile = project.addSourceFileAtPath(i.modulePath + '.ts')
 
     return sourceFile.getExportedDeclarations().has(i.name)
   })

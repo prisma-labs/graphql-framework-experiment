@@ -6,7 +6,7 @@ import { hardWriteFile } from '../fs'
 import * as Layout from '../layout'
 import { rootLogger } from '../nexus-logger'
 import { createTSProject } from '../tsc'
-import { Exception } from '../utils'
+import { Exception, prettyImportPath } from '../utils'
 import { ContribType, extractContextTypes, ExtractedContextTypes } from './extractor'
 
 const log = rootLogger.child('addToContextExtractor')
@@ -22,7 +22,7 @@ export const DEFAULT_CONTEXT_TYPES: ExtractedContextTypes = {
   typeImports: [
     {
       name: 'ContextAdderLens',
-      modulePath: require.resolve('../../../dist/runtime/schema/schema').split('.')[0],
+      modulePath: prettyImportPath(require.resolve('../../runtime/schema/schema')),
       isExported: true,
       isNode: false,
     },
