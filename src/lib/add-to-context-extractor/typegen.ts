@@ -18,6 +18,18 @@ export const NEXUS_DEFAULT_RUNTIME_CONTEXT_TYPEGEN_PATH = fs.path(
   'index.d.ts'
 )
 
+export const DEFAULT_CONTEXT_TYPES: ExtractedContextTypes = {
+  typeImports: [
+    {
+      name: 'ContextAdderLens',
+      modulePath: require.resolve('../../../dist/runtime/schema/schema').split('.')[0],
+      isExported: true,
+      isNode: false,
+    },
+  ],
+  types: [{ kind: 'ref', name: 'ContextAdderLens' }],
+}
+
 /**
  * Run the pure extractor and then write results to a typegen module.
  */
@@ -28,7 +40,7 @@ export async function generateContextExtractionArtifacts(
   const errProject = createTSProject(layout, { withCache: true })
   if (isLeft(errProject)) return errProject
   const tsProject = errProject.right
-  const contextTypes = extractContextTypes(tsProject)
+  const contextTypes = extractContextTypes(tsProject, DEFAULT_CONTEXT_TYPES)
 
   if (isLeft(contextTypes)) {
     return contextTypes

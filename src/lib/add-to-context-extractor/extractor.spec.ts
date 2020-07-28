@@ -2,6 +2,7 @@ import { isLeft } from 'fp-ts/lib/Either'
 import * as tsm from 'ts-morph'
 import { normalizePathsInData } from '../../lib/utils'
 import { extractContextTypes } from './extractor'
+import { DEFAULT_CONTEXT_TYPES } from './typegen'
 
 describe('syntax cases', () => {
   it('will extract from import name of nexus default export', () => {
@@ -139,6 +140,21 @@ it('extracts from returned object of referenced primitive value', () => {
       ],
     }
   `)
+})
+
+it('can access all default context types', () => {
+  const allTypesExported = DEFAULT_CONTEXT_TYPES.typeImports.every(i => {
+    const project = new tsm.Project({
+      addFilesFromTsConfig: false,
+      skipFileDependencyResolution: true
+    })
+
+    const sourceFile = project.addSourceFileAtPath(i.modulePath + '.d.ts')
+
+    return sourceFile.getExportedDeclarations().has(i.name)
+  })
+
+  expect(allTypesExported).toEqual(true)
 })
 
 it('extracts from returned object of referenced object value', () => {

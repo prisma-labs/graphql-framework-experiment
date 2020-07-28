@@ -42,13 +42,13 @@ function contribTypeLiteral(value: string): ContribTypeLiteral {
 /**
  * Extract types from all `addToContext` calls.
  */
-export function extractContextTypes(program: tsm.Project): Either<Exception, ExtractedContextTypes> {
+export function extractContextTypes(
+  program: tsm.Project,
+  defaultTypes: ExtractedContextTypes = { typeImports: [], types: [] }
+): Either<Exception, ExtractedContextTypes> {
   const typeImportsIndex: Record<string, TypeImportInfo> = {}
 
-  const contextTypeContributions: ExtractedContextTypes = {
-    typeImports: [],
-    types: [],
-  }
+  const contextTypeContributions: ExtractedContextTypes = defaultTypes
 
   const appSourceFiles = findModulesThatImportModule(program, 'nexus')
 

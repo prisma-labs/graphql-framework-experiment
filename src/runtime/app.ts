@@ -222,6 +222,11 @@ export function create(): App {
   app.schema.importType(builtinScalars.DateTime, 'date')
   app.schema.importType(builtinScalars.Json, 'json')
 
+  /**
+   * Add `req` and `res` to the context by default
+   */
+  app.schema.addToContext(params => params)
+
   return {
     ...app,
     private: {
