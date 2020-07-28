@@ -1,6 +1,11 @@
 import * as Lo from 'lodash'
 import { Primitive } from 'type-fest'
+import { inspect } from 'util'
 import { PlainObject } from '../utils'
+
+type ExcludeNonPrimAndVoid<T> = Exclude<T, undefined | Exclude<T, Primitive>>
+
+type MaybeArray<T> = T | T[]
 
 type HasUndefined<T> = (T extends undefined ? true : never) extends never ? false : true
 
@@ -13,7 +18,9 @@ export type Spec<Data, Input> = {
 }
 
 export interface SettingsNamespaceSpec<Data, Input> {
-  shorthand?(value: Exclude<Input, undefined | Exclude<Input, Primitive>>): Exclude<Input, Primitive>
+  // todo allow classes, regexp etc.
+  // todo allow anything except void & plain objects
+  shorthand?(value: Function | MaybeArray<ExcludeNonPrimAndVoid<Input>>): Exclude<Input, Primitive>
   fields: Spec<Data, Input>
 }
 
@@ -46,7 +53,7 @@ export type Metadata<Data> = {
 
 export type Manager<Data, Input> = {
   reset(): void
-  change(input: Input): void
+  change(input: Input): Manager<Data, Input>
   metadata: Metadata<Data>
   data: Data
 }
@@ -59,12 +66,61 @@ export function create<Data, Input>(spec: Spec<Data, Input>): Manager<Data, Inpu
 
   runInitializers(state.data, spec)
 
-  return {
+  const api: Manager<Data, Input> = {
     data: state.data,
     metadata: state.metadata,
-    change() {},
+    change(input) {
+      const inputNormalized = resolveShorthands(spec, input)
+      Lo.merge(state.data, inputNormalized)
+      return api
+    },
     reset() {},
   }
+
+  return api
+}
+
+type AnyRecord = Record<string, any>
+
+function resolveShorthands<Input>(spec: any, input: Input): Input {
+  const inputNormalized: AnyRecord = {}
+  doResolveShorthands(spec, input, inputNormalized)
+  return inputNormalized as any
+}
+
+function doResolveShorthands(spec: any, input: AnyRecord, inputNormalized: any) {
+  Lo.forOwn(input, (value, name) => {
+    const specifier = spec[name]
+    const isValueObject = Lo.isPlainObject(value)
+
+    if (!specifier) {
+      throw new Error(`Could not find a setting specifier for setting "${name}"`)
+    }
+
+    if (!specifier.fields) {
+      if (isValueObject) {
+        throw new Error(
+          `Setting "${name}" is not a namespace and so does not accept objects, but one given: ${inspect(
+            value
+          )}`
+        )
+      }
+      inputNormalized[name] = value
+    } else if (isValueObject) {
+      const nestedInputNormalized = {}
+      inputNormalized[name] = nestedInputNormalized
+      doResolveShorthands(specifier.fields, value, nestedInputNormalized)
+    } else if (specifier.shorthand) {
+      console.log('running shorthand', { name })
+      inputNormalized[name] = specifier.shorthand(value)
+    } else {
+      throw new Error(
+        `Setting "${name}" is a namespace with no shorthand so expects an object but received a non-object: ${inspect(
+          value
+        )}`
+      )
+    }
+  })
 }
 
 function runInitializers(data: any, spec: any) {
