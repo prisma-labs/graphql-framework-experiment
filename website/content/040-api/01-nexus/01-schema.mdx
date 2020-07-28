@@ -922,12 +922,16 @@ Sugar for creating arguments of type `Int` `String` `Float` `ID` `Boolean`.
 
 Add context to your graphql resolver functions. The objects returned by your context contributor callbacks will be shallow-merged into `ctx`. The `ctx` type will also accurately reflect the types you return from callbacks passed to `addToContext`.
 
+The incoming request and server response are passed to the callback in the following shape: `{ req: IncomingMessage, res: ServerResponse }`. See below how to use them.
+
 ### Example
+
+Defining arbitrary values to your GraphQL context
 
 ```ts
 import { schema } from 'nexus'
 
-schema.addToContext(_req => {
+schema.addToContext(({ req, res }) => {
   return {
     greeting: 'Howdy!',
   }
@@ -938,6 +942,30 @@ schema.queryType({
     t.string('hello', {
       resolve(_root, _args, ctx) {
         return ctx.greeting
+      },
+    })
+  },
+})
+```
+
+Forwarding the incoming request to your GraphQL Context
+
+```ts
+import { schema } from 'nexus'
+
+schema.addToContext(({ req, res }) => {
+  return {
+    req
+  }
+})
+
+schema.queryType({
+  definition(t) {
+    t.string('hello', {
+      resolve(_root, _args, ctx) {
+        if (ctx.req.headers['authorization']) {
+          /* ... */
+        }
       },
     })
   },
