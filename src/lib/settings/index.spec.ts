@@ -1,15 +1,35 @@
+import { DeepPartial } from '../utils'
 import * as Settings from './'
 
-type d = { a: string }
+describe('initializers', () => {
+  it('initializers may be static', () => {
+    type d = { a: string }
+    const settings = Settings.create<d, any>({ a: { initial: 'foobar' } })
+    expect(settings.data.a).toEqual('foobar')
+  })
 
-it('initializers may be static', () => {
-  const settings = Settings.create<d, any>({ a: { initial: 'foobar' } })
-  expect(settings.data.a).toEqual('foobar')
-})
+  it('initializers may be dynamic, they are resolved at create time', () => {
+    type d = { a: string }
+    const settings = Settings.create<d, any>({ a: { initial: () => 'foobar' } })
+    expect(settings.data.a).toEqual('foobar')
+  })
+  it('if the setting datum is optional then the setting initializer can be omited', () => {
+    type d = { a?: string }
+    const settings = Settings.create<d, any>({ a: {} })
+    expect(settings.data.a).toEqual(undefined)
+  })
 
-it('initializers may be dynamic, they are resolved at create time', () => {
-  const settings = Settings.create<d, any>({ a: { initial: () => 'foobar' } })
-  expect(settings.data.a).toEqual('foobar')
+  it('if the setting datum is optional then the dynamic setting initializer can return undefined', () => {
+    type d = { a?: string }
+    const settings = Settings.create<d, any>({
+      a: {
+        initial() {
+          return undefined
+        },
+      },
+    })
+    expect(settings.data.a).toEqual(undefined)
+  })
 })
 
 it('a setting may be a namespace holding more settings', () => {
@@ -49,6 +69,20 @@ it('a namespace with a shorthand still accepts non-shorthand input', () => {
   expect(settings.change({ a: { b: 'direct' } }).data.a).toEqual({ b: 'direct' })
 })
 
+it('a namespace shorthand can receive input that is not directly in the final data', () => {
+  type d = { a: { b: string } }
+  type i = { a: (() => number) | { b: string } }
+  const settings = Settings.create<d, i>({
+    a: {
+      shorthand(f) {
+        return { b: f().toString() }
+      },
+      fields: { b: { initial: '' } },
+    },
+  })
+  expect(settings.change({ a: () => 1 }).data).toEqual({ a: { b: '1' } })
+})
+
 describe('runtime errors', () => {
   it('giving shorthand to a namespace that does not support it will error gracefully', () => {
     type d = { a: { b: string } }
@@ -73,7 +107,7 @@ describe('runtime errors', () => {
     )
   })
 
-  it('giving settings to change that do not exist will error gracefully', () => {
+  it('changing settings that do not exist will error gracefully', () => {
     type d = { a: string }
     const settings = Settings.create<d, any>({
       a: { initial: '' },
@@ -84,19 +118,41 @@ describe('runtime errors', () => {
   })
 })
 
-it('if the data is optional then the setting initializer can be omited', () => {
-  type d = { a?: string }
-  const settings = Settings.create<d, any>({ a: {} })
-  expect(settings.data.a).toEqual(undefined)
+it('a setting can be changed', () => {
+  const settings = Settings.create<{ a: string }>({ a: { initial: 'a' } })
+  expect(settings.change({ a: 'a2' }).data).toEqual({ a: 'a2' })
 })
 
-it.todo('if the setting data is optional then the setting initializer can return undefined')
-it.todo('a namespaced setting can be changed')
-it.todo('a namespace can support shorthand input that is not represented in the final data')
+it('a namespaced setting can be changed', () => {
+  const settings = Settings.create<{ a: { b: string } }>({ a: { fields: { b: { initial: 'b' } } } })
+  expect(settings.change({ a: { b: 'b2' } }).data).toEqual({ a: { b: 'b2' } })
+})
+
+it('changing namespaced settings merges deeply preserving existing settings not targetted by the change', () => {
+  type d = { a: { a: string; b: number }; b: number }
+  type i = DeepPartial<d>
+  const settings = Settings.create<d, i>({
+    a: {
+      fields: {
+        b: { initial: 1 },
+        a: { initial: 'a' },
+      },
+    },
+    b: { initial: 1 },
+  })
+  expect(settings.change({ a: { a: 'a2' } }).data).toEqual({ a: { a: 'a2', b: 1 }, b: 1 })
+})
+
 it.todo('a setting can be fixed up')
 it.todo('a setting can be validated')
+it.todo('changing an array setting appends to the existing array')
 
 describe('reset', () => {
   it.todo('resets settings to initial state')
   it.todo('dynamic initializers are re-run')
+})
+
+describe('metadata', () => {
+  it.todo('tracks if a setting value comes from its initializer')
+  it.todo('traces if a setting value comes from change input')
 })

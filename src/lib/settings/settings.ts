@@ -3,9 +3,14 @@ import { Primitive } from 'type-fest'
 import { inspect } from 'util'
 import { PlainObject } from '../utils'
 
-type ExcludeNonPrimAndVoid<T> = Exclude<T, undefined | Exclude<T, Primitive>>
+type AnyRecord = Record<string, any>
 
-type MaybeArray<T> = T | T[]
+// todo allow classes, regexp etc.
+// todo allow anything except void & plain objects
+// todo allow functions
+type ExcludePlainObjectAndVoid<T> = Exclude<T, undefined | Exclude<T, Primitive | Primitive[] | Function>>
+
+// type MaybeArray<T> = T | T[]
 
 type HasUndefined<T> = (T extends undefined ? true : never) extends never ? false : true
 
@@ -18,9 +23,7 @@ export type Spec<Data, Input> = {
 }
 
 export interface SettingsNamespaceSpec<Data, Input> {
-  // todo allow classes, regexp etc.
-  // todo allow anything except void & plain objects
-  shorthand?(value: Function | MaybeArray<ExcludeNonPrimAndVoid<Input>>): Exclude<Input, Primitive>
+  shorthand?(value: ExcludePlainObjectAndVoid<Input>): Exclude<Input, Primitive>
   fields: Spec<Data, Input>
 }
 
@@ -58,7 +61,7 @@ export type Manager<Data, Input> = {
   data: Data
 }
 
-export function create<Data, Input>(spec: Spec<Data, Input>): Manager<Data, Input> {
+export function create<Data, Input = Data>(spec: Spec<Data, Input>): Manager<Data, Input> {
   const state = {
     data: {} as Data,
     metadata: {} as Metadata<Data>,
@@ -79,8 +82,6 @@ export function create<Data, Input>(spec: Spec<Data, Input>): Manager<Data, Inpu
 
   return api
 }
-
-type AnyRecord = Record<string, any>
 
 function resolveShorthands<Input>(spec: any, input: Input): Input {
   const inputNormalized: AnyRecord = {}
