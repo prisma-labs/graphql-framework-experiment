@@ -87,7 +87,7 @@ export type AppState = {
     schema: NexusSchema.core.NexusGraphQLSchema
     missingTypes: Index<NexusSchema.core.MissingType>
     loadedPlugins: RuntimeContributions<any>[]
-    createContext: Schema.ContextContributor
+    createContext: Schema.ContextAdder
   }
   running: boolean
   components: {

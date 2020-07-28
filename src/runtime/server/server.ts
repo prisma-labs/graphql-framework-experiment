@@ -7,7 +7,7 @@ import * as Plugin from '../../lib/plugin'
 import { httpClose, httpListen, noop } from '../../lib/utils'
 import { AppState } from '../app'
 import * as DevMode from '../dev-mode'
-import { ContextContributor } from '../schema'
+import { ContextAdder } from '../schema'
 import { assembledGuard } from '../utils'
 import { ApolloServerExpress } from './apollo-server'
 import { errorFormatter } from './error-formatter'
@@ -45,7 +45,7 @@ export interface Server {
 interface State {
   running: boolean
   httpServer: HTTP.Server
-  createContext: null | (() => ContextContributor)
+  createContext: null | (() => ContextAdder)
   apolloServer: null | ApolloServerExpress
 }
 
@@ -187,16 +187,16 @@ const wrapHandlerWithErrorHandling = (handler: NexusRequestHandler): NexusReques
  * Combine all the context contributions defined in the app and in plugins.
  */
 function createContextCreator(
-  contextContributors: ContextContributor[],
+  contextContributors: ContextAdder[],
   plugins: Plugin.RuntimeContributions[]
-): ContextContributor {
-  const createContext: ContextContributor = async (params) => {
+): ContextAdder {
+  const createContext: ContextAdder = async (params) => {
     let context: Record<string, any> = {}
 
     // Integrate context from plugins
     for (const plugin of plugins) {
       if (!plugin.context) continue
-      const contextContribution = await plugin.context.create(params.req)
+      const contextContribution = plugin.context.create(params.req)
 
       Object.assign(context, contextContribution)
     }

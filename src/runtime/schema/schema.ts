@@ -17,7 +17,7 @@ import { createSchemaSettingsManager, SchemaSettingsManager } from './settings'
 import { mapSettingsAndPluginsToNexusSchemaConfig } from './settings-mapper'
 
 export type LazyState = {
-  contextContributors: ContextContributor[]
+  contextContributors: ContextAdder[]
   plugins: NexusSchema.core.NexusPlugin[]
   scalars: Scalars.Scalars
 }
@@ -42,7 +42,7 @@ export interface Request extends HTTP.IncomingMessage {
 }
 export interface Response extends HTTP.ServerResponse {}
 
-export type ContextParams = {
+export type ContextAdderLens = {
   /**
    * Incoming HTTP request
    */
@@ -52,7 +52,7 @@ export type ContextParams = {
    */
   res: Response
 }
-export type ContextContributor = (params: ContextParams) => MaybePromise<Record<string, unknown>>
+export type ContextAdder = (params: ContextAdderLens) => MaybePromise<Record<string, unknown>>
 
 type MiddlewareFn = (
   source: any,
@@ -77,7 +77,7 @@ export interface Schema extends NexusSchemaStatefulBuilders {
   /**
    * todo link to website docs
    */
-  addToContext(contextContributor: ContextContributor): void
+  addToContext(contextAdder: ContextAdder): void
 }
 
 /**
@@ -107,8 +107,8 @@ export function create(state: AppState): SchemaInternal {
       assertAppNotAssembled(state, 'app.schema.use', 'The Nexus Schema plugin you used will be ignored.')
       state.components.schema.plugins.push(plugin)
     },
-    addToContext(contextContributor) {
-      state.components.schema.contextContributors.push(contextContributor)
+    addToContext(contextAdder) {
+      state.components.schema.contextContributors.push(contextAdder)
     },
     middleware(fn) {
       api.use(
