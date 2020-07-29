@@ -1,7 +1,10 @@
+import * as Logger from '@nexus/logger'
 import * as Lo from 'lodash'
 import { PartialDeep, Primitive } from 'type-fest'
 import { inspect } from 'util'
 import { PlainObject } from '../utils'
+
+const log = Logger.log.child('settings')
 
 type AnyRecord = Record<string, any>
 
@@ -32,18 +35,39 @@ export interface SettingsNamespaceSpec<Data, Input> {
 // In most cases it probably means initial won't be supplied. However
 // there are may be some odd cases where iniital is present but can
 // return undefined.
-
-export type SettingsFieldSpec<T> = HasUndefined<T> extends true
+export type SettingsFieldSpec<T> = {
+  validate?: (value: T) => null | { message: string }
+  /**
+   * Specify a fixup for this setting.
+   *
+   * A "fixup" corrects minor problems in a
+   * given setting. It also provides a human readable message about what was
+   * done and why.
+   *
+   * Return null if no fixup was needed. Return a fixup object
+   * otherwise. The new value should be returned along with a list of one or
+   * more messages, one for each thing that was fixed.
+   */
+  fixup?: (value: T) => null | { value: T; messages: string[] }
+} & (HasUndefined<T> extends true
   ? {
       initial?: T | (() => T) // [1]
-      validate?: (value: T) => null | { message: string }
-      fixup?: (value: T) => { value: T; fixups: string[] }
     }
   : {
       initial: T | (() => T)
-      validate?: (value: T) => null | { message: string }
-      fixup?: (value: T) => { value: T; fixups: string[] }
-    }
+    })
+
+// export type SettingsFieldSpec<T> = HasUndefined<T> extends true
+//   ? {
+//       initial?: T | (() => T) // [1]
+//       validate?: (value: T) => null | { message: string }
+//       fixup?: (value: T) => null | { value: T; fixups: string[] }
+//     }
+//   : {
+//       initial: T | (() => T)
+//       validate?: (value: T) => null | { message: string }
+//       fixup?: (value: T) => null | { value: T; fixups: string[] }
+//     }
 
 export type Metadata<Data> = {
   [Key in keyof Data]: Data[Key] extends Primitive
@@ -61,13 +85,16 @@ export type Manager<Data, Input> = {
   data: Data
 }
 
+export type Options = {
+  onFixup?: (info: { name: string; before: unknown; after: unknown; messages: string[] }) => void
+}
+
 export function create<Data, Input = PartialDeep<Data>>({
   spec,
-  onFix,
+  ...options
 }: {
   spec: Spec<Data, Input>
-  onFix?: (info: { name: string; before: unknown; after: unknown }) => void
-}): Manager<Data, Input> {
+} & Options): Manager<Data, Input> {
   const state = {
     data: {} as Data,
     metadata: {} as Metadata<Data>,
@@ -79,8 +106,9 @@ export function create<Data, Input = PartialDeep<Data>>({
     data: state.data,
     metadata: state.metadata,
     change(input) {
-      const inputNormalized = resolveShorthands(spec, input)
-      Lo.merge(state.data, inputNormalized)
+      const resolvedInput = resolve(options, spec, input)
+      // const longhandInputAndFixed = resolveFixups(spec, longhandInput, {})
+      Lo.merge(state.data, resolvedInput)
       return api
     },
     reset() {},
@@ -89,13 +117,20 @@ export function create<Data, Input = PartialDeep<Data>>({
   return api
 }
 
-function resolveShorthands<Input>(spec: any, input: Input): Input {
+// function resolveFixups(spec:any, longhandInput:AnyRecord, longhandInputAndFixed: AnyRecord) {
+//   Lo.forOwn(longhandInput, (value, name) => {
+//     if (Lo.isPlainObject())
+//   })
+
+// }
+
+function resolve<Input>(options: Options, spec: any, input: Input): Input {
   const inputNormalized: AnyRecord = {}
-  doResolveShorthands(spec, input, inputNormalized)
+  doResolveShorthands(options, spec, input, inputNormalized)
   return inputNormalized as any
 }
 
-function doResolveShorthands(spec: any, input: AnyRecord, inputNormalized: any) {
+function doResolveShorthands(options: Options, spec: any, input: AnyRecord, inputNormalized: any) {
   Lo.forOwn(input, (value, name) => {
     const specifier = spec[name]
     const isValueObject = Lo.isPlainObject(value)
@@ -104,28 +139,63 @@ function doResolveShorthands(spec: any, input: AnyRecord, inputNormalized: any) 
       throw new Error(`Could not find a setting specifier for setting "${name}"`)
     }
 
-    if (!specifier.fields) {
-      if (isValueObject) {
-        throw new Error(
-          `Setting "${name}" is not a namespace and so does not accept objects, but one given: ${inspect(
-            value
-          )}`
-        )
-      }
-      inputNormalized[name] = value
-    } else if (isValueObject) {
-      const nestedInputNormalized = {}
-      inputNormalized[name] = nestedInputNormalized
-      doResolveShorthands(specifier.fields, value, nestedInputNormalized)
-    } else if (specifier.shorthand) {
-      console.log('running shorthand', { name })
-      inputNormalized[name] = specifier.shorthand(value)
-    } else {
+    if (isValueObject && !specifier.fields) {
+      throw new Error(
+        `Setting "${name}" is not a namespace and so does not accept objects, but one given: ${inspect(
+          value
+        )}`
+      )
+    }
+
+    if (!isValueObject && specifier.fields && !specifier.shorthand) {
       throw new Error(
         `Setting "${name}" is a namespace with no shorthand so expects an object but received a non-object: ${inspect(
           value
         )}`
       )
+    }
+
+    if (isValueObject) {
+      const ns = {}
+      inputNormalized[name] = ns
+      doResolveShorthands(options, specifier.fields, value, ns)
+    } else if (specifier.shorthand) {
+      if (specifier.shorthand) {
+        const ns = {}
+        inputNormalized[name] = ns
+        log.debug('expanding shorthand', { name })
+        doResolveShorthands(options, specifier.fields, specifier.shorthand(value), ns)
+      }
+    } else {
+      let resolvedValue = value
+
+      if (specifier.fixup) {
+        let maybeFixedup
+        try {
+          maybeFixedup = specifier.fixup(resolvedValue)
+        } catch (e) {
+          // todo use verror or like
+          throw new Error(
+            `Fixup for "${name}" failed while running on value ${inspect(resolvedValue)}:\n${e}`
+          )
+        }
+        if (maybeFixedup) {
+          resolvedValue = maybeFixedup.value
+          try {
+            options.onFixup?.({
+              before: value,
+              after: maybeFixedup.value,
+              name,
+              messages: maybeFixedup.messages,
+            })
+          } catch (e) {
+            // todo use verror or like
+            throw new Error(`onFixup callback for "${name}" failed:\n${e}`)
+          }
+        }
+      }
+
+      inputNormalized[name] = resolvedValue
     }
   })
 }
@@ -137,7 +207,7 @@ function runInitializers(data: any, spec: any) {
       runInitializers(data[key], specifier.fields)
     } else {
       const value: any = typeof specifier.initial === 'function' ? specifier.initial() : specifier.initial
-      console.log('initialize value', { key, value })
+      log.trace('initialize value', { key, value })
       data[key] = value
     }
   })

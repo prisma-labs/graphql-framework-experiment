@@ -151,14 +151,133 @@ it('changing namespaced settings merges deeply preserving existing settings not 
   expect(settings.change({ a: { a: 'a2' } }).data).toEqual({ a: { a: 'a2', b: 1 }, b: 1 })
 })
 
-// it('a setting can be fixed up', () => {
-//   type d = {path:string}
-//   const settings = Settings.create<d>({spec: {
-//     path: {initial:'/foo'},
-//   })
-//   expect(settings.change({ path: 'foo' }).data).toEqual({ path: '/foo' })
+describe('fixups', () => {
+  it('a setting can be fixed up', () => {
+    const onFixup = jest.fn()
+    type d = { path: string }
+    const settings = Settings.create<d>({
+      onFixup,
+      spec: {
+        path: {
+          initial: '/foo',
+          fixup(value) {
+            if (value[0] === '/') return null
+            return { messages: ['must have leading slash'], value: `/${value}` }
+          },
+        },
+      },
+    })
+    expect(settings.change({ path: 'foo' }).data).toEqual({ path: '/foo' })
+    expect(onFixup.mock.calls).toMatchInlineSnapshot(`
+          Array [
+            Array [
+              Object {
+                "after": "/foo",
+                "before": "foo",
+                "messages": Array [
+                  "must have leading slash",
+                ],
+                "name": "path",
+              },
+            ],
+          ]
+      `)
+  })
+  it('a namespace with shorthand runs through fixups too', () => {
+    const onFixup = jest.fn()
+    type d = { path: string | { to: string } }
+    const settings = Settings.create<d>({
+      onFixup,
+      spec: {
+        path: {
+          shorthand(value) {
+            return { to: value }
+          },
+          fields: {
+            to: {
+              initial: '/foo',
+              fixup(value) {
+                if (value[0] === '/') return null
+                return { messages: ['must have leading slash'], value: `/${value}` }
+              },
+            },
+          },
+        },
+      },
+    })
+    expect(settings.change({ path: 'foo' }).data).toEqual({ path: { to: '/foo' } })
+    expect(onFixup.mock.calls).toMatchInlineSnapshot(`
+      Array [
+        Array [
+          Object {
+            "after": "/foo",
+            "before": "foo",
+            "messages": Array [
+              "must have leading slash",
+            ],
+            "name": "to",
+          },
+        ],
+      ]
+    `)
+  })
+  it('if fixup fails it errors gracefully', () => {
+    type d = { path: string }
+    const settings = Settings.create<d>({
+      spec: {
+        path: {
+          initial: '/',
+          fixup() {
+            throw new Error('Unexpected error!')
+          },
+        },
+      },
+    })
+    expect(() => settings.change({ path: '' })).toThrowErrorMatchingInlineSnapshot(`
+      "Fixup for \\"path\\" failed while running on value '':
+      Error: Unexpected error!"
+    `)
+  })
+  it('if onFixup callback fails it errors gracefully', () => {
+    const onFixup = jest.fn().mockImplementation(() => {
+      throw new Error('Unexpected error!')
+    })
+    type d = { path: string }
+    const settings = Settings.create<d>({
+      onFixup,
+      spec: {
+        path: {
+          initial: '/',
+          fixup() {
+            return { value: 'foobar', messages: [] }
+          },
+        },
+      },
+    })
+    expect(() => settings.change({ path: '' })).toThrowErrorMatchingInlineSnapshot(`
+      "onFixup callback for \\"path\\" failed:
+      Error: Unexpected error!"
+    `)
+  })
+  it('if fixup returns null then onFixup is not called', () => {
+    const onFixup = jest.fn()
+    type d = { path: string }
+    const settings = Settings.create<d>({
+      onFixup,
+      spec: {
+        path: {
+          initial: '/',
+          fixup() {
+            return null
+          },
+        },
+      },
+    })
+    settings.change({ path: '' })
+    expect(onFixup.mock.calls).toEqual([])
+  })
+})
 
-// })
 it.todo('a setting can be validated')
 it.todo('changing an array setting appends to the existing array')
 
