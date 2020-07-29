@@ -7,7 +7,8 @@ describe('static typing', () => {
   )
 })
 
-describe('initializers', () => {
+describe('data initializers', () => {
+  it.todo('if initial has unexpected error it fails gracefully')
   it('initializers may be static', () => {
     type d = { a: string }
     const settings = Settings.create<d>({ spec: { a: { initial: 'foobar' } } })
@@ -46,66 +47,28 @@ it('a setting may be a namespace holding more settings', () => {
   expect(settings.data.a.b).toEqual('')
 })
 
-it.todo('a namespace may be optional')
-
-it('a namespace may have a shorthand', () => {
-  type d = { a: { b: string } }
-  type i = { a: string | { b: string } }
-  const settings = Settings.create<d, i>({
-    spec: {
-      a: {
-        shorthand(value) {
-          return { b: value + ' via shorthand!' }
-        },
-        fields: { b: { initial: '' } },
-      },
-    },
-  })
-  expect(settings.data.a.b).toEqual('')
-  expect(settings.change({ a: 'some change' }).data.a).toEqual({ b: 'some change via shorthand!' })
-})
-
-it('a namespace with a shorthand still accepts non-shorthand input', () => {
-  type d = { a: { b: string } }
-  type i = { a: string | { b: string } }
-  const settings = Settings.create<d, i>({
-    spec: {
-      a: {
-        shorthand(value) {
-          return { b: value + ' via shorthand!' }
-        },
-        fields: { b: { initial: '' } },
-      },
-    },
-  })
-  expect(settings.change({ a: { b: 'direct' } }).data.a).toEqual({ b: 'direct' })
-})
-
-it('a namespace shorthand can receive input that is not directly in the final data', () => {
-  type d = { a: { b: string } }
-  type i = { a: (() => number) | { b: string } }
-  const settings = Settings.create<d, i>({
-    spec: {
-      a: {
-        shorthand(f) {
-          return { b: f().toString() }
-        },
-        fields: { b: { initial: '' } },
-      },
-    },
-  })
-  expect(settings.change({ a: () => 1 }).data).toEqual({ a: { b: '1' } })
-})
-
-describe('runtime errors', () => {
-  it('giving shorthand to a namespace that does not support it will error gracefully', () => {
+describe('namespaced settings', () => {
+  it('a namespaced setting can be changed', () => {
     type d = { a: { b: string } }
-    const settings = Settings.create<d, any>({ spec: { a: { fields: { b: { initial: '' } } } } })
-    expect(() => settings.change({ a: 'runtime error' })).toThrowErrorMatchingInlineSnapshot(
-      `"Setting \\"a\\" is a namespace with no shorthand so expects an object but received a non-object: 'runtime error'"`
-    )
+    const settings = Settings.create<d>({ spec: { a: { fields: { b: { initial: 'b' } } } } })
+    expect(settings.change({ a: { b: 'b2' } }).data).toEqual({ a: { b: 'b2' } })
   })
-
+  it.todo('a namespace may be optional')
+  it('changing namespaced settings merges deeply preserving existing settings not targetted by the change', () => {
+    type d = { a: { a: string; b: number }; b: number }
+    const settings = Settings.create<d>({
+      spec: {
+        a: {
+          fields: {
+            b: { initial: 1 },
+            a: { initial: 'a' },
+          },
+        },
+        b: { initial: 1 },
+      },
+    })
+    expect(settings.change({ a: { a: 'a2' } }).data).toEqual({ a: { a: 'a2', b: 1 }, b: 1 })
+  })
   it('giving object to a non-namespace will error gracefully', () => {
     type d = { a: string }
     const settings = Settings.create<d, any>({ spec: { a: { initial: '' } } })
@@ -113,7 +76,67 @@ describe('runtime errors', () => {
       `"Setting \\"a\\" is not a namespace and so does not accept objects, but one given: { b: '' }"`
     )
   })
+})
 
+describe('namespace shorthands', () => {
+  it.todo('unexpected shorthand errors fail gracefully')
+  it('a namespace may have a shorthand', () => {
+    type d = { a: { b: string } }
+    type i = { a: string | { b: string } }
+    const settings = Settings.create<d, i>({
+      spec: {
+        a: {
+          shorthand(value) {
+            return { b: value + ' via shorthand!' }
+          },
+          fields: { b: { initial: '' } },
+        },
+      },
+    })
+    expect(settings.data.a.b).toEqual('')
+    expect(settings.change({ a: 'some change' }).data.a).toEqual({ b: 'some change via shorthand!' })
+  })
+
+  it('a namespace with a shorthand still accepts non-shorthand input', () => {
+    type d = { a: { b: string } }
+    type i = { a: string | { b: string } }
+    const settings = Settings.create<d, i>({
+      spec: {
+        a: {
+          shorthand(value) {
+            return { b: value + ' via shorthand!' }
+          },
+          fields: { b: { initial: '' } },
+        },
+      },
+    })
+    expect(settings.change({ a: { b: 'direct' } }).data.a).toEqual({ b: 'direct' })
+  })
+  it('a namespace shorthand can receive input that is not directly in the final data', () => {
+    type d = { a: { b: string } }
+    type i = { a: (() => number) | { b: string } }
+    const settings = Settings.create<d, i>({
+      spec: {
+        a: {
+          shorthand(f) {
+            return { b: f().toString() }
+          },
+          fields: { b: { initial: '' } },
+        },
+      },
+    })
+    expect(settings.change({ a: () => 1 }).data).toEqual({ a: { b: '1' } })
+  })
+  it('giving shorthand to a namespace that does not support it will error gracefully', () => {
+    type d = { a: { b: string } }
+    const settings = Settings.create<d, any>({ spec: { a: { fields: { b: { initial: '' } } } } })
+    expect(() => settings.change({ a: 'runtime error' })).toThrowErrorMatchingInlineSnapshot(
+      `"Setting \\"a\\" is a namespace with no shorthand so expects an object but received a non-object: 'runtime error'"`
+    )
+  })
+})
+
+describe('runtime errors', () => {
   it('changing settings that do not exist will error gracefully', () => {
     type d = { a: string }
     const settings = Settings.create<d, any>({ spec: { a: { initial: '' } } })
@@ -127,28 +150,6 @@ it('a setting can be changed', () => {
   type d = { a: string }
   const settings = Settings.create<d>({ spec: { a: { initial: 'a' } } })
   expect(settings.change({ a: 'a2' }).data).toEqual({ a: 'a2' })
-})
-
-it('a namespaced setting can be changed', () => {
-  type d = { a: { b: string } }
-  const settings = Settings.create<d>({ spec: { a: { fields: { b: { initial: 'b' } } } } })
-  expect(settings.change({ a: { b: 'b2' } }).data).toEqual({ a: { b: 'b2' } })
-})
-
-it('changing namespaced settings merges deeply preserving existing settings not targetted by the change', () => {
-  type d = { a: { a: string; b: number }; b: number }
-  const settings = Settings.create<d>({
-    spec: {
-      a: {
-        fields: {
-          b: { initial: 1 },
-          a: { initial: 'a' },
-        },
-      },
-      b: { initial: 1 },
-    },
-  })
-  expect(settings.change({ a: { a: 'a2' } }).data).toEqual({ a: { a: 'a2', b: 1 }, b: 1 })
 })
 
 describe('fixups', () => {
@@ -278,8 +279,10 @@ describe('fixups', () => {
   })
 })
 
-it.todo('a setting can be validated')
-it.todo('changing an array setting appends to the existing array')
+describe('validators', () => {
+  it.todo('a setting can be validated')
+  it.todo('changing an array setting appends to the existing array')
+})
 
 describe('reset', () => {
   it.todo('resets settings to initial state')
@@ -287,6 +290,26 @@ describe('reset', () => {
 })
 
 describe('metadata', () => {
-  it.todo('tracks if a setting value comes from its initializer')
-  it.todo('traces if a setting value comes from change input')
+  it('tracks if a setting value comes from its initializer', () => {
+    type d = { a: string }
+    const settings = Settings.create<d>({
+      spec: {
+        a: {
+          initial: 'foo',
+        },
+      },
+    })
+    expect(settings.metadata.a).toEqual({ from: 'initial', value: 'foo' })
+  })
+  it('traces if a setting value comes from change input', () => {
+    type d = { a: string }
+    const settings = Settings.create<d>({
+      spec: {
+        a: {
+          initial: 'foo',
+        },
+      },
+    })
+    expect(settings.change({ a: 'bar' }).metadata.a).toEqual({ from: 'set', value: 'bar' })
+  })
 })

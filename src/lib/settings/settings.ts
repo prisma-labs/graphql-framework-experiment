@@ -73,7 +73,7 @@ export type Metadata<Data> = {
   [Key in keyof Data]: Data[Key] extends Primitive
     ? {
         value: Data[Key]
-        source: 'api' | 'initial'
+        from: 'set' | 'initial'
       }
     : Metadata<Data[Key]>
 }
@@ -84,6 +84,14 @@ export type Manager<Data, Input> = {
   metadata: Metadata<Data>
   data: Data
 }
+
+// todo should onFixup be replaced with a batch version of onfixups that gets
+// called with all fixups that happened for all of the input?
+// todo ditto validation?
+// todo allow env vars to populate settings
+// todo track env var as value source
+// todo $initial magic var to reset settting to its original state, re-running
+// dynamic initializers if necessary
 
 export type Options = {
   onFixup?: (info: { name: string; before: unknown; after: unknown; messages: string[] }) => void
@@ -100,15 +108,13 @@ export function create<Data, Input = PartialDeep<Data>>({
     metadata: {} as Metadata<Data>,
   }
 
-  runInitializers(state.data, spec)
+  runInitializers(spec, state.data, state.metadata)
 
   const api: Manager<Data, Input> = {
     data: state.data,
     metadata: state.metadata,
     change(input) {
-      const resolvedInput = resolve(options, spec, input, {})
-      // const longhandInputAndFixed = resolveFixups(spec, longhandInput, {})
-      Lo.merge(state.data, resolvedInput)
+      resolve(options, spec, input, state.data, state.metadata)
       return api
     },
     reset() {},
@@ -119,10 +125,10 @@ export function create<Data, Input = PartialDeep<Data>>({
 
 /**
  * Process the given input through the settings spec, resolving its shorthands,
- * fixups, validation and so on. The input is not mutated, but the input copy
- * is. The input copy is returned.
+ * fixups, validation and so on until finally assigning it into the setting data.
+ * The input is not mutated. The data is.
  */
-function resolve(options: Options, spec: any, input: AnyRecord, inputCopy: any) {
+function resolve(options: Options, spec: any, input: AnyRecord, data: AnyRecord, metadata: AnyRecord) {
   Lo.forOwn(input, (value, name) => {
     const specifier = spec[name]
     const isValueObject = Lo.isPlainObject(value)
@@ -148,15 +154,18 @@ function resolve(options: Options, spec: any, input: AnyRecord, inputCopy: any) 
     }
 
     if (isValueObject) {
-      inputCopy[name] = resolve(options, specifier.fields, value, {})
+      resolve(options, specifier.fields, value, data[name], metadata[name])
     } else if (specifier.shorthand) {
       if (specifier.shorthand) {
         log.debug('expanding shorthand', { name })
-        inputCopy[name] = resolve(options, specifier.fields, specifier.shorthand(value), {})
+        resolve(options, specifier.fields, specifier.shorthand(value), data[name], metadata[name])
       }
     } else {
       let resolvedValue = value
 
+      /**
+       * Run fixups
+       */
       if (specifier.fixup) {
         let maybeFixedup
         try {
@@ -169,6 +178,9 @@ function resolve(options: Options, spec: any, input: AnyRecord, inputCopy: any) 
         }
         if (maybeFixedup) {
           resolvedValue = maybeFixedup.value
+          /**
+           * on fixup event callback
+           */
           try {
             options.onFixup?.({
               before: value,
@@ -183,26 +195,29 @@ function resolve(options: Options, spec: any, input: AnyRecord, inputCopy: any) 
         }
       }
 
-      inputCopy[name] = resolvedValue
+      data[name] = resolvedValue
+      metadata[name] = { value: resolvedValue, from: 'set' }
     }
   })
 
-  return inputCopy
+  return data
 }
 
 /**
  * Initialize the settings data with each datum's respective initializer
  * specified in the settings spec.
  */
-function runInitializers(data: any, spec: any) {
-  Lo.forOwn(spec, (specifier: any, key: string) => {
+function runInitializers(spec: any, data: AnyRecord, metadata: AnyRecord) {
+  Lo.forOwn(spec, (specifier: any, name: string) => {
     if (specifier.fields) {
-      data[key] = data[key] ?? {}
-      runInitializers(data[key], specifier.fields)
+      data[name] = data[name] ?? {}
+      metadata[name] = metadata[name] ?? {}
+      runInitializers(specifier.fields, data[name], metadata[name])
     } else {
       const value: any = typeof specifier.initial === 'function' ? specifier.initial() : specifier.initial
-      log.trace('initialize value', { key, value })
-      data[key] = value
+      log.trace('initialize value', { name, value })
+      data[name] = value
+      metadata[name] = { value, from: 'initial' }
     }
   })
 }
