@@ -1,3 +1,4 @@
+import dedent from 'dedent'
 import * as Settings from './'
 
 describe('static typing', () => {
@@ -41,13 +42,16 @@ describe('data initializers', () => {
   })
 })
 
-it('a setting may be a namespace holding more settings', () => {
-  type d = { a: { b: string } }
-  const settings = Settings.create<d>({ spec: { a: { fields: { b: { initial: '' } } } } })
-  expect(settings.data.a.b).toEqual('')
+describe('basics', () => {
+  it.todo('changing an array setting appends to the existing array')
 })
 
 describe('namespaced settings', () => {
+  it('a setting may be a namespace holding more settings', () => {
+    type d = { a: { b: string } }
+    const settings = Settings.create<d>({ spec: { a: { fields: { b: { initial: '' } } } } })
+    expect(settings.data.a.b).toEqual('')
+  })
   it('a namespaced setting can be changed', () => {
     type d = { a: { b: string } }
     const settings = Settings.create<d>({ spec: { a: { fields: { b: { initial: 'b' } } } } })
@@ -170,19 +174,20 @@ describe('fixups', () => {
     })
     expect(settings.change({ path: 'foo' }).data).toEqual({ path: '/foo' })
     expect(onFixup.mock.calls).toMatchInlineSnapshot(`
-          Array [
-            Array [
-              Object {
-                "after": "/foo",
-                "before": "foo",
-                "messages": Array [
-                  "must have leading slash",
-                ],
-                "name": "path",
-              },
+      Array [
+        Array [
+          Object {
+            "after": "/foo",
+            "before": "foo",
+            "messages": Array [
+              "must have leading slash",
             ],
-          ]
-      `)
+            "name": "path",
+          },
+          [Function],
+        ],
+      ]
+    `)
   })
   it('a namespace with shorthand runs through fixups too', () => {
     const onFixup = jest.fn()
@@ -218,6 +223,7 @@ describe('fixups', () => {
             ],
             "name": "to",
           },
+          [Function],
         ],
       ]
     `)
@@ -234,9 +240,9 @@ describe('fixups', () => {
         },
       },
     })
-    expect(() => settings.change({ path: '' })).toThrowErrorMatchingInlineSnapshot(`
-      "Fixup for \\"path\\" failed while running on value '':
-      Error: Unexpected error!"
+    expect(() => settings.change({ path: '' })).toThrowError(dedent`
+      Fixup for "path" failed while running on value '':
+      Error: Unexpected error!
     `)
   })
   it('if onFixup callback fails it errors gracefully', () => {
@@ -255,9 +261,9 @@ describe('fixups', () => {
         },
       },
     })
-    expect(() => settings.change({ path: '' })).toThrowErrorMatchingInlineSnapshot(`
-      "onFixup callback for \\"path\\" failed:
-      Error: Unexpected error!"
+    expect(() => settings.change({ path: '' })).toThrowError(dedent`
+      onFixup callback for "path" failed:
+      Error: Unexpected error!
     `)
   })
   it('if fixup returns null then onFixup is not called', () => {
@@ -277,11 +283,81 @@ describe('fixups', () => {
     settings.change({ path: '' })
     expect(onFixup.mock.calls).toEqual([])
   })
+  it.todo('initial does not pass through fixup')
+  it.todo('defualt onFixup handler is to log a warning')
+  it.todo('can call the original handler to retain the original base behaviour')
 })
 
 describe('validators', () => {
-  it.todo('a setting can be validated')
-  it.todo('changing an array setting appends to the existing array')
+  it('if a setting passes validation nothing happens', () => {
+    const validate = jest.fn().mockImplementation(() => null)
+    type d = { a: string }
+    const settings = Settings.create<d>({
+      spec: {
+        a: {
+          initial: 'foo',
+          validate,
+        },
+      },
+    })
+    settings.change({ a: 'bar' })
+    expect(validate.mock.calls).toEqual([['bar']])
+  })
+  it('if a setting fails validation then an error is thrown', () => {
+    const validate = jest.fn().mockImplementation((value) => {
+      if (value === 'bar') {
+        return { messages: ['Too long', 'Too simple'] }
+      }
+    })
+    const settings = Settings.create<{ a: string }>({
+      spec: {
+        a: {
+          initial: 'foo',
+          validate,
+        },
+      },
+    })
+    expect(() => settings.change({ a: 'bar' })).toThrowError(dedent`
+      Your setting "a" failed validation with value 'bar':
+
+      - Too long
+      - Too simple
+    `)
+  })
+  it('initial does not pass through validate', () => {
+    const validate = jest.fn().mockImplementation((value) => {
+      if (value === 'bad') {
+        return { messages: ['Too long', 'Too simple'] }
+      }
+    })
+    expect(
+      Settings.create<{ a: string }>({
+        spec: {
+          a: {
+            initial: 'bad',
+            validate,
+          },
+        },
+      })
+    )
+  })
+  it('unexpected validator failures error gracefully', () => {
+    const validate = jest.fn().mockImplementation((value) => {
+      throw new Error('Unexpected error while trying to validate')
+    })
+    const settings = Settings.create<{ a: string }>({
+      spec: {
+        a: {
+          initial: 'foo',
+          validate,
+        },
+      },
+    })
+    expect(() => settings.change({ a: 'bar' })).toThrowError(dedent`
+      Validation for "a" unexpectedly failed while running on value 'bar':
+      Error: Unexpected error while trying to validate
+    `)
+  })
 })
 
 describe('reset', () => {

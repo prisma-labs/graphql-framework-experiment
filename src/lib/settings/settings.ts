@@ -36,7 +36,7 @@ export interface SettingsNamespaceSpec<Data, Input> {
 // there are may be some odd cases where iniital is present but can
 // return undefined.
 export type SettingsFieldSpec<T> = {
-  validate?: (value: T) => null | { message: string }
+  validate?: (value: T) => null | { messages: string[] }
   /**
    * Specify a fixup for this setting.
    *
@@ -85,6 +85,8 @@ export type Manager<Data, Input> = {
   data: Data
 }
 
+// todo errors currently report names of setting fields, but not the namespaces
+// to it (if any)
 // todo should onFixup be replaced with a batch version of onfixups that gets
 // called with all fixups that happened for all of the input?
 // todo ditto validation?
@@ -93,8 +95,40 @@ export type Manager<Data, Input> = {
 // todo $initial magic var to reset settting to its original state, re-running
 // dynamic initializers if necessary
 
+export type FixupInfo = { name: string; before: unknown; after: unknown; messages: string[] }
+
 export type Options = {
-  onFixup?: (info: { name: string; before: unknown; after: unknown; messages: string[] }) => void
+  /**
+   * Handle fixup events.
+   *
+   * If your settings spec has no fixups then you can ignore this option.
+   *
+   * By default, fixups are logged at warning level. If you provide your own
+   * function then this default behaviour will be disabled. You can retain it by
+   * calling the default function passed as a second argument to your function.
+   */
+  onFixup?: (info: FixupInfo, originalHandler: (info: FixupInfo) => void) => void
+  // todo guess we cannot use this because we need thrown error to change
+  // control flow.
+  // export type ViolationInfo = { name: string; messages: string[] }
+  // /**
+  //  * Get called back when a validator fails.
+  //  *
+  //  * If your settings spec has no valididators then you can ignore this option.
+  //  *
+  //  * By default, violations are logged at error level. If you provide
+  //  * your own function then this default behaviour will be disabled. You can
+  //  * retain it by calling the default function passed as a second argument to
+  //  * your function.
+  //  */
+  // onViolation?: (info: ViolationInfo, originalHandler: (info: ViolationInfo) => void) => void
+}
+
+function onFixup(info: FixupInfo): void {
+  log.warn(
+    'One of your setting values was invalid. We were able to automaticlaly fix it up now but please update your code.',
+    info
+  )
 }
 
 export function create<Data, Input = PartialDeep<Data>>({
@@ -182,16 +216,43 @@ function resolve(options: Options, spec: any, input: AnyRecord, data: AnyRecord,
            * on fixup event callback
            */
           try {
-            options.onFixup?.({
-              before: value,
-              after: maybeFixedup.value,
-              name,
-              messages: maybeFixedup.messages,
-            })
+            options.onFixup?.(
+              {
+                before: value,
+                after: maybeFixedup.value,
+                name,
+                messages: maybeFixedup.messages,
+              },
+              onFixup
+            )
           } catch (e) {
             // todo use verror or like
             throw new Error(`onFixup callback for "${name}" failed:\n${e}`)
           }
+        }
+      }
+
+      /**
+       * Run validators
+       */
+      if (specifier.validate) {
+        let maybeViolation
+        try {
+          maybeViolation = specifier.validate(resolvedValue)
+        } catch (e) {
+          // todo use verror or like
+          throw new Error(
+            `Validation for "${name}" unexpectedly failed while running on value ${inspect(
+              resolvedValue
+            )}:\n${e}`
+          )
+        }
+        if (maybeViolation) {
+          throw new Error(
+            `Your setting "${name}" failed validation with value ${inspect(
+              resolvedValue
+            )}:\n\n- ${maybeViolation.messages.join('\n- ')}`
+          )
         }
       }
 
