@@ -106,7 +106,7 @@ export function create<Data, Input = PartialDeep<Data>>({
     data: state.data,
     metadata: state.metadata,
     change(input) {
-      const resolvedInput = resolve(options, spec, input)
+      const resolvedInput = resolve(options, spec, input, {})
       // const longhandInputAndFixed = resolveFixups(spec, longhandInput, {})
       Lo.merge(state.data, resolvedInput)
       return api
@@ -117,20 +117,12 @@ export function create<Data, Input = PartialDeep<Data>>({
   return api
 }
 
-// function resolveFixups(spec:any, longhandInput:AnyRecord, longhandInputAndFixed: AnyRecord) {
-//   Lo.forOwn(longhandInput, (value, name) => {
-//     if (Lo.isPlainObject())
-//   })
-
-// }
-
-function resolve<Input>(options: Options, spec: any, input: Input): Input {
-  const inputNormalized: AnyRecord = {}
-  doResolveShorthands(options, spec, input, inputNormalized)
-  return inputNormalized as any
-}
-
-function doResolveShorthands(options: Options, spec: any, input: AnyRecord, inputNormalized: any) {
+/**
+ * Process the given input through the settings spec, resolving its shorthands,
+ * fixups, validation and so on. The input is not mutated, but the input copy
+ * is. The input copy is returned.
+ */
+function resolve(options: Options, spec: any, input: AnyRecord, inputCopy: any) {
   Lo.forOwn(input, (value, name) => {
     const specifier = spec[name]
     const isValueObject = Lo.isPlainObject(value)
@@ -156,15 +148,11 @@ function doResolveShorthands(options: Options, spec: any, input: AnyRecord, inpu
     }
 
     if (isValueObject) {
-      const ns = {}
-      inputNormalized[name] = ns
-      doResolveShorthands(options, specifier.fields, value, ns)
+      inputCopy[name] = resolve(options, specifier.fields, value, {})
     } else if (specifier.shorthand) {
       if (specifier.shorthand) {
-        const ns = {}
-        inputNormalized[name] = ns
         log.debug('expanding shorthand', { name })
-        doResolveShorthands(options, specifier.fields, specifier.shorthand(value), ns)
+        inputCopy[name] = resolve(options, specifier.fields, specifier.shorthand(value), {})
       }
     } else {
       let resolvedValue = value
@@ -195,11 +183,17 @@ function doResolveShorthands(options: Options, spec: any, input: AnyRecord, inpu
         }
       }
 
-      inputNormalized[name] = resolvedValue
+      inputCopy[name] = resolvedValue
     }
   })
+
+  return inputCopy
 }
 
+/**
+ * Initialize the settings data with each datum's respective initializer
+ * specified in the settings spec.
+ */
 function runInitializers(data: any, spec: any) {
   Lo.forOwn(spec, (specifier: any, key: string) => {
     if (specifier.fields) {
