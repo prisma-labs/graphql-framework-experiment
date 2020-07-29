@@ -4,6 +4,7 @@ import { defaults, isUndefined } from 'lodash'
 import { LiteralUnion } from 'type-fest'
 import * as Process from '../../lib/process'
 import * as Utils from '../../lib/utils'
+import { ApolloConfigEngine } from './apollo-server/types'
 import { log as serverLogger } from './logger'
 
 const log = serverLogger.child('settings')
@@ -106,11 +107,15 @@ export type CorsSettings = {
 
 export type SettingsInput = {
   /**
-   * todo
+   * Port the server should be listening on.
+   *
+   * todo default
    */
   port?: number
   /**
    * Host the server should be listening on.
+   *
+   * todo default
    */
   host?: string | undefined
   /**
@@ -164,16 +169,22 @@ export type SettingsInput = {
    * todo
    */
   graphql?: GraphqlInput
+  apollo?: {
+    engine?: ApolloConfigEngine
+  }
 }
 
 export type SettingsData = Omit<
   Utils.DeepRequired<SettingsInput>,
-  'host' | 'playground' | 'graphql' | 'cors'
+  'host' | 'playground' | 'graphql' | 'cors' | 'apollo'
 > & {
   host: string | undefined
   playground: Required<PlaygroundInput>
   graphql: Required<GraphqlInput>
   cors: CorsSettings
+  apollo: {
+    engine: { enabled: boolean } & ApolloConfigEngine
+  }
 }
 
 export const defaultPlaygroundPath = '/graphql'
@@ -222,6 +233,11 @@ export const defaultSettings: () => Readonly<SettingsData> = () => {
     path: '/graphql',
     cors: { enabled: false },
     graphql: defaultGraphqlSettings(),
+    apollo: {
+      engine: {
+        enabled: false,
+      },
+    },
   }
 }
 

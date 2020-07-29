@@ -108,6 +108,7 @@ export function create(appState: AppState) {
 
         state.apolloServer = new ApolloServerExpress({
           schema,
+          // engine: settings.data.apollo.engine,
           context: createContext,
           introspection: settings.data.graphql.introspection,
           formatError: errorFormatter,
