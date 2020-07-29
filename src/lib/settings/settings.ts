@@ -61,7 +61,13 @@ export type Manager<Data, Input> = {
   data: Data
 }
 
-export function create<Data, Input = PartialDeep<Data>>(spec: Spec<Data, Input>): Manager<Data, Input> {
+export function create<Data, Input = PartialDeep<Data>>({
+  spec,
+  onFix,
+}: {
+  spec: Spec<Data, Input>
+  onFix?: (info: { name: string; before: unknown; after: unknown }) => void
+}): Manager<Data, Input> {
   const state = {
     data: {} as Data,
     metadata: {} as Metadata<Data>,
