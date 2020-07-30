@@ -180,113 +180,115 @@ export type SettingsData = Omit<
 
 export const createServerSettingsManager = () =>
   Settings.create<SettingsData, SettingsInput>({
-    playground: {
-      shorthand(enabled) {
-        return { enabled }
-      },
-      fields: {
-        enabled: {
-          initial() {
-            return process.env.NODE_ENV === 'production' ? false : true
-          },
+    spec: {
+      playground: {
+        shorthand(enabled) {
+          return { enabled }
         },
-        settings: {
-          fields: {
-            'editor.cursorShape': {
-              initial: 'block',
-            },
-            'editor.fontFamily': {
-              initial: `'Source Code Pro', 'Consolas', 'Inconsolata', 'Droid Sans Mono', 'Monaco', monospace`,
-            },
-            'editor.fontSize': {
-              initial: 14,
-            },
-            'editor.reuseHeaders': {
-              initial: true,
-            },
-            'editor.theme': {
-              initial: 'dark',
-            },
-            'queryPlan.hideQueryPlanResponse': {
-              initial: true,
-            },
-            'request.credentials': {
-              initial: 'omit',
-            },
-            'tracing.hideTracingResponse': {
-              initial: true,
+        fields: {
+          enabled: {
+            initial() {
+              return process.env.NODE_ENV === 'production' ? false : true
             },
           },
-        },
-      },
-    },
-    cors: {
-      shorthand(enabled) {
-        return { enabled, exposedHeaders: [] }
-      },
-      fields: {
-        allowedHeaders: {},
-        credentials: {},
-        enabled: {},
-        exposedHeaders: {},
-        maxAge: {},
-        methods: {},
-        optionsSuccessStatus: {},
-        origin: {},
-        preflightContinue: {},
-      },
-    },
-    graphql: {
-      fields: {
-        introspection: {
-          initial() {
-            return process.env.NODE_ENV === 'production' ? false : true
+          settings: {
+            fields: {
+              'editor.cursorShape': {
+                initial: 'block',
+              },
+              'editor.fontFamily': {
+                initial: `'Source Code Pro', 'Consolas', 'Inconsolata', 'Droid Sans Mono', 'Monaco', monospace`,
+              },
+              'editor.fontSize': {
+                initial: 14,
+              },
+              'editor.reuseHeaders': {
+                initial: true,
+              },
+              'editor.theme': {
+                initial: 'dark',
+              },
+              'queryPlan.hideQueryPlanResponse': {
+                initial: true,
+              },
+              'request.credentials': {
+                initial: 'omit',
+              },
+              'tracing.hideTracingResponse': {
+                initial: true,
+              },
+            },
           },
         },
       },
-    },
-    host: {
-      initial() {
-        return process.env.NEXUS_HOST ?? process.env.HOST ?? undefined
+      cors: {
+        shorthand(enabled) {
+          return { enabled, exposedHeaders: [] }
+        },
+        fields: {
+          allowedHeaders: {},
+          credentials: {},
+          enabled: {},
+          exposedHeaders: {},
+          maxAge: {},
+          methods: {},
+          optionsSuccessStatus: {},
+          origin: {},
+          preflightContinue: {},
+        },
       },
-    },
-    path: {
-      initial: '/graphql',
-      validate(value) {
-        if (value.length === 0) {
-          return { message: 'Custom GraphQL `path` cannot be empty and must start with a /' }
-        }
+      graphql: {
+        fields: {
+          introspection: {
+            initial() {
+              return process.env.NODE_ENV === 'production' ? false : true
+            },
+          },
+        },
+      },
+      host: {
+        initial() {
+          return process.env.NEXUS_HOST ?? process.env.HOST ?? undefined
+        },
+      },
+      path: {
+        initial: '/graphql',
+        validate(value) {
+          if (value.length === 0) {
+            return { messages: ['Custom GraphQL `path` cannot be empty and must start with a /'] }
+          }
 
-        return null
-      },
-      fixup(value) {
-        const fixups: string[] = []
+          return null
+        },
+        fixup(value) {
+          const messages: string[] = []
 
-        if (!value.startsWith('/')) {
-          fixups.push('Custom GraphQL `path` must start with a "/". Please add it.')
-          value = '/' + value
-        }
+          if (!value.startsWith('/')) {
+            messages.push('Custom GraphQL `path` must start with a "/". Please add it.')
+            value = '/' + value
+          }
 
-        return { value, fixups }
+          return { value, messages }
+        },
       },
-    },
-    port: {
-      initial() {
-        return typeof process.env.NEXUS_PORT === 'string'
-          ? parseInt(process.env.NEXUS_PORT, 10)
-          : typeof process.env.PORT === 'string'
-          ? // e.g. Heroku convention https://stackoverflow.com/questions/28706180/setting-the-port-for-node-js-server-on-heroku
-            parseInt(process.env.PORT, 10)
-          : process.env.NODE_ENV === 'production'
-          ? 80
-          : 4000
+      port: {
+        initial() {
+          return typeof process.env.NEXUS_PORT === 'string'
+            ? parseInt(process.env.NEXUS_PORT, 10)
+            : typeof process.env.PORT === 'string'
+            ? // e.g. Heroku convention https://stackoverflow.com/questions/28706180/setting-the-port-for-node-js-server-on-heroku
+              parseInt(process.env.PORT, 10)
+            : process.env.NODE_ENV === 'production'
+            ? 80
+            : 4000
+        },
       },
-    },
-    startMessage: {
-      initial: ({ port, host, path }): void => {
-        serverLogger.info('listening', {
-          url: `http://${Utils.prettifyHost(host)}:${port}${path}`,
-        })
+      startMessage: {
+        initial: ({ port, host, path }): void => {
+          serverLogger.info('listening', {
+            url: `http://${Utils.prettifyHost(host)}:${port}${path}`,
+          })
+        },
       },
     },
   })

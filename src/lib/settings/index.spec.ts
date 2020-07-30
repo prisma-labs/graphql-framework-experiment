@@ -25,6 +25,9 @@ describe('data initializers', () => {
   })
   it('if the setting datum is optional then the setting initializer can be omited', () => {
     type d = { a?: string }
+    // @ts-ignore
+    // todo find way to make vscode use a tsconfig with strict mode for
+    // co-located test modules
     const settings = S.create<d>({ spec: { a: {} } })
     expect(settings.data.a).toEqual(undefined)
   })
@@ -68,6 +71,9 @@ describe('basics', () => {
   it('a setting datum can be optional', () => {
     type d = { a?: string }
     expect(
+      // @ts-ignore
+      // todo find way to make vscode use a tsconfig with strict mode for
+      // co-located test modules
       S.create<d>({ spec: { a: {} } }).data
     ).toEqual({})
   })
