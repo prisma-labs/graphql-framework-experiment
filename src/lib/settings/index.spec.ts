@@ -362,8 +362,31 @@ describe('validators', () => {
 })
 
 describe('.reset()', () => {
-  it.todo('resets settings to initial state')
-  it.todo('dynamic initializers are re-run')
+  it('returns api for chaining', () => {
+    const settings = Settings.create<{ a: string }>({ spec: { a: { initial: '' } } })
+    expect(settings.reset()).toBe(settings)
+  })
+  it('resets settings data & metadata to initial state', () => {
+    const settings = Settings.create<{ a: string }>({ spec: { a: { initial: '' } } })
+    settings.change({ a: 'foo' })
+    expect(settings.reset().data).toEqual({ a: '' })
+    expect(settings.reset().metadata).toEqual({ a: { from: 'initial', value: '', initial: '' } })
+  })
+  it('settings metadata & data references change', () => {
+    const settings = Settings.create<{ a: string }>({ spec: { a: { initial: '' } } })
+    const originalMetadata = settings.metadata
+    const originalData = settings.data
+    settings.reset()
+    expect(settings.data).not.toBe(originalData)
+    expect(settings.metadata).not.toBe(originalMetadata)
+  })
+  it('dynamic initializers are re-run', () => {
+    process.env.foo = 'foo'
+    const settings = Settings.create<{ a: string }>({ spec: { a: { initial: () => process.env.foo! } } })
+    process.env.foo = 'bar'
+    expect(settings.reset().metadata).toEqual({ a: { from: 'initial', value: 'bar', initial: 'bar' } })
+    delete process.env.foo
+  })
 })
 
 describe('.original()', () => {

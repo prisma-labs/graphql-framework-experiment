@@ -82,7 +82,7 @@ export type Metadata<Data> = {
 }
 
 export type Manager<Data, Input> = {
-  reset(): void
+  reset(): Manager<Data, Input>
   change(input: Input): Manager<Data, Input>
   original(): Data
   metadata: Metadata<Data>
@@ -147,7 +147,7 @@ export function create<Data, Input = PartialDeep<Data>>({
     metadata: {} as Metadata<Data>,
   }
 
-  runInitializers(spec, state.data, state.metadata)
+  initialize(spec, state.data, state.metadata)
 
   const api: Manager<Data, Input> = {
     data: state.data,
@@ -156,7 +156,12 @@ export function create<Data, Input = PartialDeep<Data>>({
       resolve(options, spec, input, state.data, state.metadata)
       return api
     },
-    reset() {},
+    reset() {
+      api.data = state.data = {} as any
+      api.metadata = state.metadata = {} as any
+      initialize(spec, state.data, state.metadata)
+      return api
+    },
     original() {
       const original = state.original ?? metadataToData(state.metadata, {})
       return original
@@ -164,6 +169,17 @@ export function create<Data, Input = PartialDeep<Data>>({
   }
 
   return api
+}
+
+function resetMetadata(metadata: any) {
+  Lo.forOwn(metadata, (info, name) => {
+    if (info.fields) {
+      resetMetadata(info.fields)
+    } else {
+      info.value = info.initial
+      info.from = 'initial'
+    }
+  })
 }
 
 function metadataToData<Data>(metadata: any, copy: AnyRecord): Data {
@@ -290,12 +306,12 @@ function resolve(options: Options, spec: any, input: AnyRecord, data: AnyRecord,
  * Initialize the settings data with each datum's respective initializer
  * specified in the settings spec.
  */
-function runInitializers(spec: any, data: AnyRecord, metadata: AnyRecord) {
+function initialize(spec: any, data: AnyRecord, metadata: AnyRecord) {
   Lo.forOwn(spec, (specifier: any, name: string) => {
     if (specifier.fields) {
       data[name] = data[name] ?? {}
       metadata[name] = metadata[name] ?? { fields: {} }
-      runInitializers(specifier.fields, data[name], metadata[name].fields)
+      initialize(specifier.fields, data[name], metadata[name].fields)
     } else {
       const value: any = typeof specifier.initial === 'function' ? specifier.initial() : specifier.initial
       log.trace('initialize value', { name, value })
