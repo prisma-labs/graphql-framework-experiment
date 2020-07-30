@@ -1,4 +1,5 @@
 import dedent from 'dedent'
+import * as Lo from 'lodash'
 import * as Settings from './'
 
 describe('static typing', () => {
@@ -360,32 +361,62 @@ describe('validators', () => {
   })
 })
 
-describe('reset', () => {
+describe('.reset()', () => {
   it.todo('resets settings to initial state')
   it.todo('dynamic initializers are re-run')
 })
 
+describe('.original()', () => {
+  it('gets the settings as they were initially', () => {
+    const settings = Settings.create<{ a: { a: string }; b: { a: number } }>({
+      spec: {
+        a: { fields: { a: { initial: () => 'foo' } } },
+        b: { fields: { a: { initial: () => 1 } } },
+      },
+    })
+    const original = Lo.cloneDeep(settings.data)
+    settings.change({ a: { a: 'bar' }, b: { a: 2 } })
+    expect(settings.original()).toEqual(original)
+  })
+})
+
 describe('metadata', () => {
   it('tracks if a setting value comes from its initializer', () => {
-    type d = { a: string }
-    const settings = Settings.create<d>({
+    const settings = Settings.create<{ a: string }>({
       spec: {
         a: {
           initial: 'foo',
         },
       },
     })
-    expect(settings.metadata.a).toEqual({ from: 'initial', value: 'foo' })
+    expect(settings.metadata).toEqual({ a: { from: 'initial', value: 'foo', initial: 'foo' } })
   })
   it('traces if a setting value comes from change input', () => {
-    type d = { a: string }
-    const settings = Settings.create<d>({
+    const settings = Settings.create<{ a: string }>({
       spec: {
         a: {
           initial: 'foo',
         },
       },
     })
-    expect(settings.change({ a: 'bar' }).metadata.a).toEqual({ from: 'set', value: 'bar' })
+    expect(settings.change({ a: 'bar' }).metadata).toEqual({
+      a: { from: 'set', value: 'bar', initial: 'foo' },
+    })
+  })
+  it('models namespaces', () => {
+    const settings = Settings.create<{ a: { a: string } }>({
+      spec: {
+        a: {
+          fields: {
+            a: {
+              initial: 'foo',
+            },
+          },
+        },
+      },
+    })
+    expect(settings.metadata).toEqual({
+      a: { fields: { a: { from: 'initial', value: 'foo', initial: 'foo' } } },
+    })
   })
 })

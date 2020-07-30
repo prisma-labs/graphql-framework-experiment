@@ -6,7 +6,7 @@ import { PlainObject } from '../utils'
 
 const log = Logger.log.child('settings')
 
-type AnyRecord = Record<string, any>
+type AnyRecord = { [k: string]: any }
 
 // todo allow classes, regexp etc.
 // todo allow anything except void & plain objects
@@ -73,14 +73,18 @@ export type Metadata<Data> = {
   [Key in keyof Data]: Data[Key] extends Primitive
     ? {
         value: Data[Key]
+        initial: Data[Key]
         from: 'set' | 'initial'
       }
-    : Metadata<Data[Key]>
+    : {
+        fields: Metadata<Data[Key]>
+      }
 }
 
 export type Manager<Data, Input> = {
   reset(): void
   change(input: Input): Manager<Data, Input>
+  original(): Data
   metadata: Metadata<Data>
   data: Data
 }
@@ -139,6 +143,7 @@ export function create<Data, Input = PartialDeep<Data>>({
 } & Options): Manager<Data, Input> {
   const state = {
     data: {} as Data,
+    original: (undefined as any) as Data, // lazy
     metadata: {} as Metadata<Data>,
   }
 
@@ -152,9 +157,25 @@ export function create<Data, Input = PartialDeep<Data>>({
       return api
     },
     reset() {},
+    original() {
+      const original = state.original ?? metadataToData(state.metadata, {})
+      return original
+    },
   }
 
   return api
+}
+
+function metadataToData<Data>(metadata: any, copy: AnyRecord): Data {
+  Lo.forOwn(metadata, (info, name) => {
+    if (info.fields) {
+      copy[name] = metadataToData(info.fields, {})
+    } else {
+      copy[name] = info.initial
+    }
+  })
+
+  return copy as any
 }
 
 /**
@@ -188,11 +209,11 @@ function resolve(options: Options, spec: any, input: AnyRecord, data: AnyRecord,
     }
 
     if (isValueObject) {
-      resolve(options, specifier.fields, value, data[name], metadata[name])
+      resolve(options, specifier.fields, value, data[name], metadata[name].fields)
     } else if (specifier.shorthand) {
       if (specifier.shorthand) {
         log.debug('expanding shorthand', { name })
-        resolve(options, specifier.fields, specifier.shorthand(value), data[name], metadata[name])
+        resolve(options, specifier.fields, specifier.shorthand(value), data[name], metadata[name].fields)
       }
     } else {
       let resolvedValue = value
@@ -257,7 +278,8 @@ function resolve(options: Options, spec: any, input: AnyRecord, data: AnyRecord,
       }
 
       data[name] = resolvedValue
-      metadata[name] = { value: resolvedValue, from: 'set' }
+      metadata[name].value = resolvedValue
+      metadata[name].from = 'set'
     }
   })
 
@@ -272,13 +294,13 @@ function runInitializers(spec: any, data: AnyRecord, metadata: AnyRecord) {
   Lo.forOwn(spec, (specifier: any, name: string) => {
     if (specifier.fields) {
       data[name] = data[name] ?? {}
-      metadata[name] = metadata[name] ?? {}
-      runInitializers(specifier.fields, data[name], metadata[name])
+      metadata[name] = metadata[name] ?? { fields: {} }
+      runInitializers(specifier.fields, data[name], metadata[name].fields)
     } else {
       const value: any = typeof specifier.initial === 'function' ? specifier.initial() : specifier.initial
       log.trace('initialize value', { name, value })
       data[name] = value
-      metadata[name] = { value, from: 'initial' }
+      metadata[name] = { value, from: 'initial', initial: value }
     }
   })
 }
