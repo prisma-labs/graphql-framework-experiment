@@ -1,3 +1,4 @@
+import ono from '@jsdevtools/ono'
 import * as Logger from '@nexus/logger'
 import * as Lo from 'lodash'
 import { PartialDeep, Primitive } from 'type-fest'
@@ -319,8 +320,10 @@ function initialize(spec: any, data: AnyRecord, metadata: AnyRecord) {
         try {
           value = specifier.initial()
         } catch (e) {
-          throw new Error(
-            `There was an unexpected error while running the dynamic initializer for setting "${name}". The error was:\n${e}`
+          throw ono(
+            e,
+            { name },
+            `There was an unexpected error while running the dynamic initializer for setting "${name}"`
           )
         }
       } else {
