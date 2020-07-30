@@ -171,17 +171,6 @@ export function create<Data, Input = PartialDeep<Data>>({
   return api
 }
 
-function resetMetadata(metadata: any) {
-  Lo.forOwn(metadata, (info, name) => {
-    if (info.fields) {
-      resetMetadata(info.fields)
-    } else {
-      info.value = info.initial
-      info.from = 'initial'
-    }
-  })
-}
-
 function metadataToData<Data>(metadata: any, copy: AnyRecord): Data {
   Lo.forOwn(metadata, (info, name) => {
     if (info.fields) {
@@ -229,7 +218,17 @@ function resolve(options: Options, spec: any, input: AnyRecord, data: AnyRecord,
     } else if (specifier.shorthand) {
       if (specifier.shorthand) {
         log.debug('expanding shorthand', { name })
-        resolve(options, specifier.fields, specifier.shorthand(value), data[name], metadata[name].fields)
+        let longhandValue
+        try {
+          longhandValue = specifier.shorthand(value)
+        } catch (e) {
+          throw new Error(
+            `There was an error while running the namespace shorthand for setting "${name}". The given value was ${inspect(
+              value
+            )}. The error was:\n${e}`
+          )
+        }
+        resolve(options, specifier.fields, longhandValue, data[name], metadata[name].fields)
       }
     } else {
       let resolvedValue = value

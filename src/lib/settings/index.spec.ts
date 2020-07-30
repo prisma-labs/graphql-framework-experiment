@@ -84,7 +84,6 @@ describe('namespaced settings', () => {
 })
 
 describe('namespace shorthands', () => {
-  it.todo('unexpected shorthand errors fail gracefully')
   it('a namespace may have a shorthand', () => {
     type d = { a: { b: string } }
     type i = { a: string | { b: string } }
@@ -101,7 +100,24 @@ describe('namespace shorthands', () => {
     expect(settings.data.a.b).toEqual('')
     expect(settings.change({ a: 'some change' }).data.a).toEqual({ b: 'some change via shorthand!' })
   })
-
+  it('unexpected shorthand errors fail gracefully', () => {
+    type d = { a: { b: string } }
+    type i = { a: string | { b: string } }
+    const settings = Settings.create<d, i>({
+      spec: {
+        a: {
+          shorthand(value) {
+            throw new Error('Unexpected shorthand error')
+          },
+          fields: { b: { initial: '' } },
+        },
+      },
+    })
+    expect(() => settings.change({ a: 'some change' }).data.a).toThrow(dedent`
+      There was an error while running the namespace shorthand for setting "a". The given value was 'some change'. The error was:
+      Error: Unexpected shorthand error
+    `)
+  })
   it('a namespace with a shorthand still accepts non-shorthand input', () => {
     type d = { a: { b: string } }
     type i = { a: string | { b: string } }
