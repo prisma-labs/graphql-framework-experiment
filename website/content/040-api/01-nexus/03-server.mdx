@@ -3,23 +3,25 @@ title: server
 codeStyle: true
 ---
 
-## `import { server }`
+## `import { server } from 'nexus'`
 
-Use the server to run the HTTP server that clients will connect to.
+[Guide](/guides/server) ⌁ [issues](https://nxs.li/issues/components/server) ([features](https://nxs.li/issues/components/server/features) | [bugs](https://nxs.li/issues/components/server/bugs))
+
+The Server component is designed for managing the HTTP network layer that enables clients to actually send over GraphQL operations for your app to execute. If you are new to this component then you may be interested in our [server guide](/guides/server).
 
 ## `express`
 
 Gives you access to the underlying `express` instance.
 
-Use this to add middlewares or expose additional REST endpoints if needed.
+Use this to add middlewares or expose additional endpoints if needed.
 
 #### Example of using middlewares
 
 ```ts
-import cors from 'cors'
+import something from 'some-express-middleware'
 import { server } from 'nexus'
 
-server.express.use(cors())
+server.express.use(something())
 ```
 
 ## `raw.http`

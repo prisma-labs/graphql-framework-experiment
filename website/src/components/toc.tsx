@@ -20,7 +20,7 @@ const TOC = ({ headings }: any) => {
     headings.map((heading: any, index: number) => {
       return (
         <li key={index}>
-          <a href={heading.url}>{stringify(heading.title)}</a>
+          <a href={heading.url} dangerouslySetInnerHTML={{ __html: stringify(heading.title) }}/>
         </li>
       )
     })

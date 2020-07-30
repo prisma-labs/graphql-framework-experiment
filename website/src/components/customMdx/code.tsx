@@ -27,7 +27,7 @@ function cleanTokens(tokens: any[]) {
   return tokens
 }
 
-const propList = ['copy', 'line-number', 'bash-symbol']
+const propList = ['copy', 'bash-symbol']
 
 const Code = ({ children, className, ...props }: PreCodeProps) => {
   let language = className && className.replace(/language-/, '')
@@ -40,7 +40,7 @@ const Code = ({ children, className, ...props }: PreCodeProps) => {
   const code = stringify(children)
 
   const hasCopy = props['copy'] || language === 'copy'
-  const hasLineNo = props['line-number'] || language === 'line-number'
+  const hasNoLine = props['no-lines'] || language === 'no-lines'
   const hasTerminalSymbol = props['bash-symbol'] || language === 'bash-symbol'
   const tokenCopyClass = `${hasCopy ? 'has-copy-button' : ''} ${breakWords ? 'break-words' : ''}`
 
@@ -72,12 +72,14 @@ const Code = ({ children, className, ...props }: PreCodeProps) => {
                     '+': 'var(--code-added-bg-color)',
                     '-': 'var(--code-deleted-bg-color)',
                     '|': 'var(--code-highlight-bg-color)',
+                    '✎': 'var(--code-edit-bg-color)',
                   }
 
                   const symColorMap: any = {
                     '+': 'var(--code-added-color)',
                     '-': 'var(--code-deleted-color)',
                     '|': 'var(--code-highlight-color)',
+                    '✎': 'var(--code-highlight-color)',
                   }
 
                   if (
@@ -85,13 +87,15 @@ const Code = ({ children, className, ...props }: PreCodeProps) => {
                       line[0].content.length &&
                       (line[0].content[0] === '+' ||
                         line[0].content[0] === '-' ||
-                        line[0].content[0] === '|')) ||
+                        line[0].content[0] === '|' ||
+                        line[0].content[0] === '✎')) ||
                     (line[0] &&
                       line[0].content === '' &&
                       line[1] &&
                       (line[1].content === '+' ||
                         line[1].content === '-' ||
-                        line[1].content === '|'))
+                        line[1].content === '|' ||
+                        line[1].content === '✎'))
                   ) {
                     diffSymbol =
                       line[0] && line[0].content.length ? line[0].content[0] : line[1].content
@@ -102,13 +106,6 @@ const Code = ({ children, className, ...props }: PreCodeProps) => {
                     isDiff = true
                   }
 
-                  // if (
-                  //   (line[0] && line[0].content.length && line[0].content[0] === '!') ||
-                  //   (line[0] && line[0].content === '' && line[1] && line[1].content === '!')
-                  // ) {
-                  //   isHidden = true
-                  // }
-
                   const lineProps = getLineProps({ line, key: i })
 
                   lineProps.style = { ...lineClass }
@@ -116,7 +113,7 @@ const Code = ({ children, className, ...props }: PreCodeProps) => {
                   return (
                     <Line key={line + i} {...lineProps}>
                       {hasTerminalSymbol && !isDiff && <LineNo>$</LineNo>}
-                      {hasLineNo && !isDiff && <LineNo>{i + 1}</LineNo>}
+                      {!hasTerminalSymbol && !isDiff && !hasNoLine && <LineNo>{i + 1}</LineNo>}
                       {isDiff && (
                         <LineNo style={{ color: lineClass.symbColor }}>
                           {diffSymbol !== '|' ? diffSymbol : i + 1}
@@ -126,10 +123,11 @@ const Code = ({ children, className, ...props }: PreCodeProps) => {
                         {line.map((token: any, key: any) => {
                           if (isDiff) {
                             if (
-                              ((key === 0 || key === 1) &&
-                                (token.content.charAt(0) === '+' ||
-                                  token.content.charAt(0) === '-')) ||
-                              token.content.charAt(0) === '|'
+                              (key === 0 || key === 1) &&
+                              (token.content.charAt(0) === '+' ||
+                                token.content.charAt(0) === '-' ||
+                                token.content.charAt(0) === '|' || 
+                                token.content.charAt(0) === '✎')
                             ) {
                               return (
                                 <span

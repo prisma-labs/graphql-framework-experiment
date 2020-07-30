@@ -89,6 +89,11 @@ Then, configure Jest to use that custom environment in your `package.json`
 ```json
 "jest": {
   "preset": "ts-jest",
+  "globals": {
+    "ts-jest": {
+      "diagnostics": { "warnOnly": true }
+    }
+  },
 - "testEnvironment": "node",
 + "testEnvironment": "./tests/nexus-test-environment.js"
 }
@@ -111,7 +116,7 @@ export function createTestContext(): TestContext {
   })
 
   afterAll(async () => {
-    ;+(await ctx.app.db.client.disconnect())
++   await ctx.app.db.client.disconnect()
     await ctx.app.stop()
   })
 

@@ -2,6 +2,7 @@ import { isLeft } from 'fp-ts/lib/Either'
 import * as tsm from 'ts-morph'
 import { normalizePathsInData } from '../../lib/utils'
 import { extractContextTypes } from './extractor'
+import { DEFAULT_CONTEXT_TYPES } from './typegen'
 
 describe('syntax cases', () => {
   it('will extract from import name of nexus default export', () => {
@@ -139,6 +140,21 @@ it('extracts from returned object of referenced primitive value', () => {
       ],
     }
   `)
+})
+
+it('all types extracted from the default context data are importable', () => {
+  const allTypesExported = DEFAULT_CONTEXT_TYPES.typeImports.every((i) => {
+    const project = new tsm.Project({
+      addFilesFromTsConfig: false,
+      skipFileDependencyResolution: true,
+    })
+
+    const sourceFile = project.addSourceFileAtPath(i.modulePath + '.ts')
+
+    return sourceFile.getExportedDeclarations().has(i.name)
+  })
+
+  expect(allTypesExported).toEqual(true)
 })
 
 it('extracts from returned object of referenced object value', () => {
@@ -749,6 +765,113 @@ describe('top-level union types', () => {
     ).toMatchInlineSnapshot(
       `[Error: Error in schema.addToContext: Top-level union types that are not composed entirely of interfaces, object literals, or type aliases that refers to object literals are not supported.]`
     )
+  })
+})
+
+describe('generics', () => {
+  it('types that are referenced in the generic of a type alias get extracted as type imports', () => {
+    expect(
+      extract(`
+          interface Foo1 {}
+          interface Foo2 {}
+          interface Foo3 {}
+          interface Foo4 {}
+          type Bar<T> = {}
+          schema.addToContext(() => {
+            return { } as { a: Bar<Foo1>; b: number | Bar<Foo2>; c: Foo3 & Bar<Foo4> }
+          })
+        `)
+    ).toMatchInlineSnapshot(`
+      Object {
+        "typeImports": Array [
+          Object {
+            "isExported": false,
+            "isNode": false,
+            "modulePath": "/src/a",
+            "name": "Bar",
+          },
+          Object {
+            "isExported": false,
+            "isNode": false,
+            "modulePath": "/src/a",
+            "name": "Foo1",
+          },
+          Object {
+            "isExported": false,
+            "isNode": false,
+            "modulePath": "/src/a",
+            "name": "Foo2",
+          },
+          Object {
+            "isExported": false,
+            "isNode": false,
+            "modulePath": "/src/a",
+            "name": "Foo3",
+          },
+        ],
+        "types": Array [
+          Object {
+            "kind": "literal",
+            "value": "{ a: Bar<Foo1>; b: number | Bar<Foo2>; c: Foo3; }",
+          },
+        ],
+      }
+    `)
+  })
+  it('types that are referenced in the generic of an interface get extracted as type imports', () => {
+    expect(
+      extract(`
+          interface Foo1 {}
+          interface Foo2 {}
+          interface Foo3 {}
+          interface Foo4 {}
+          interface Bar<T> {}
+          schema.addToContext(() => {
+            return { } as { a: Bar<Foo1>; b: number | Bar<Foo2>; c: Foo3 & Bar<Foo4> }
+          })
+        `)
+    ).toMatchInlineSnapshot(`
+      Object {
+        "typeImports": Array [
+          Object {
+            "isExported": false,
+            "isNode": false,
+            "modulePath": "/src/a",
+            "name": "Bar",
+          },
+          Object {
+            "isExported": false,
+            "isNode": false,
+            "modulePath": "/src/a",
+            "name": "Foo1",
+          },
+          Object {
+            "isExported": false,
+            "isNode": false,
+            "modulePath": "/src/a",
+            "name": "Foo2",
+          },
+          Object {
+            "isExported": false,
+            "isNode": false,
+            "modulePath": "/src/a",
+            "name": "Foo3",
+          },
+          Object {
+            "isExported": false,
+            "isNode": false,
+            "modulePath": "/src/a",
+            "name": "Foo4",
+          },
+        ],
+        "types": Array [
+          Object {
+            "kind": "literal",
+            "value": "{ a: Bar<Foo1>; b: number | Bar<Foo2>; c: Foo3 & Bar<Foo4>; }",
+          },
+        ],
+      }
+    `)
   })
 })
 

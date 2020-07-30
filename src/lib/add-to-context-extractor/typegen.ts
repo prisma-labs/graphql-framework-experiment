@@ -6,7 +6,7 @@ import { hardWriteFile } from '../fs'
 import * as Layout from '../layout'
 import { rootLogger } from '../nexus-logger'
 import { createTSProject } from '../tsc'
-import { Exception } from '../utils'
+import { Exception, prettyImportPath } from '../utils'
 import { ContribType, extractContextTypes, ExtractedContextTypes } from './extractor'
 
 const log = rootLogger.child('addToContextExtractor')
@@ -18,6 +18,18 @@ export const NEXUS_DEFAULT_RUNTIME_CONTEXT_TYPEGEN_PATH = fs.path(
   'index.d.ts'
 )
 
+export const DEFAULT_CONTEXT_TYPES: ExtractedContextTypes = {
+  typeImports: [
+    {
+      name: 'ContextAdderLens',
+      modulePath: prettyImportPath(require.resolve('../../runtime/schema/schema')),
+      isExported: true,
+      isNode: false,
+    },
+  ],
+  types: [{ kind: 'ref', name: 'ContextAdderLens' }],
+}
+
 /**
  * Run the pure extractor and then write results to a typegen module.
  */
@@ -28,7 +40,7 @@ export async function generateContextExtractionArtifacts(
   const errProject = createTSProject(layout, { withCache: true })
   if (isLeft(errProject)) return errProject
   const tsProject = errProject.right
-  const contextTypes = extractContextTypes(tsProject)
+  const contextTypes = extractContextTypes(tsProject, DEFAULT_CONTEXT_TYPES)
 
   if (isLeft(contextTypes)) {
     return contextTypes
