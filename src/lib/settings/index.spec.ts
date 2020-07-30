@@ -3,6 +3,7 @@ import dedent from 'dedent'
 import * as Lo from 'lodash'
 import * as S from './'
 
+// todo use https://github.com/SamVerschueren/tsd
 describe('static typing', () => {
   it.todo('if no input type given it defaults to deep partial version of the data type')
   it.todo(
@@ -64,6 +65,12 @@ describe('basics', () => {
     const settings = S.create<{ a: string[] }>({ spec: { a: { initial: ['foo'] } } })
     expect(settings.change({ a: ['bar'] }).data).toEqual({ a: ['bar'] })
   })
+  it('a setting datum can be optional', () => {
+    type d = { a?: string }
+    expect(
+      S.create<d>({ spec: { a: {} } }).data
+    ).toEqual({})
+  })
 })
 
 describe('namespaced settings', () => {
@@ -77,7 +84,6 @@ describe('namespaced settings', () => {
     const settings = S.create<d>({ spec: { a: { fields: { b: { initial: 'b' } } } } })
     expect(settings.change({ a: { b: 'b2' } }).data).toEqual({ a: { b: 'b2' } })
   })
-  it.todo('a namespace may be optional')
   it('changing namespaced settings merges deeply preserving existing settings not targetted by the change', () => {
     type d = { a: { a: string; b: number }; b: number }
     const settings = S.create<d>({
