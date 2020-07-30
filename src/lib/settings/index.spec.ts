@@ -1,7 +1,13 @@
 import { log } from '@nexus/logger'
 import dedent from 'dedent'
+import 'jest-extended'
 import * as Lo from 'lodash'
 import * as S from './'
+
+/**
+ * Create a constant function
+ */
+const c = <T>(x: T) => () => x
 
 // todo use https://github.com/SamVerschueren/tsd
 describe('static typing', () => {
@@ -13,36 +19,24 @@ describe('static typing', () => {
 
 describe('data initializers', () => {
   it('initializers may be static', () => {
-    type d = { a: string }
-    const settings = S.create<d>({ spec: { a: { initial: 'foobar' } } })
+    const settings = S.create<{ a: string }>({ spec: { a: { initial: c('foobar') } } })
     expect(settings.data.a).toEqual('foobar')
   })
 
   it('initializers may be dynamic, they are resolved at create time', () => {
-    type d = { a: string }
-    const settings = S.create<d>({ spec: { a: { initial: () => 'foobar' } } })
+    const settings = S.create<{ a: string }>({ spec: { a: { initial: () => 'foobar' } } })
     expect(settings.data.a).toEqual('foobar')
   })
   it('if the setting datum is optional then the setting initializer can be omited', () => {
-    type d = { a?: string }
     // @ts-ignore
     // todo find way to make vscode use a tsconfig with strict mode for
     // co-located test modules
-    const settings = S.create<d>({ spec: { a: {} } })
+    const settings = S.create<{ a?: string }>({ spec: { a: {} } })
     expect(settings.data.a).toEqual(undefined)
   })
 
   it('if the setting datum is optional then the dynamic setting initializer can return undefined', () => {
-    type d = { a?: string }
-    const settings = S.create<d>({
-      spec: {
-        a: {
-          initial() {
-            return undefined
-          },
-        },
-      },
-    })
+    const settings = S.create<{ a?: string }>({ spec: { a: { initial: c(undefined) } } })
     expect(settings.data.a).toEqual(undefined)
   })
   it('if a dynamic initializer has unexpected error it fails gracefully', () => {
@@ -56,38 +50,48 @@ describe('data initializers', () => {
           },
         },
       })
-    ).toThrow(dedent`
-      There was an unexpected error while running the dynamic initializer for setting "a". The error was:
-      Error: Unexpected error while trying to initialize setting
+    ).toThrowErrorMatchingInlineSnapshot(`
+      "There was an unexpected error while running the dynamic initializer for setting \\"a\\" 
+      Unexpected error while trying to initialize setting"
     `)
   })
 })
 
 describe('basics', () => {
   it('changing an array setting replaces the existing array', () => {
-    const settings = S.create<{ a: string[] }>({ spec: { a: { initial: ['foo'] } } })
+    const settings = S.create<{ a: string[] }>({ spec: { a: { initial: c(['foo']) } } })
     expect(settings.change({ a: ['bar'] }).data).toEqual({ a: ['bar'] })
   })
   it('a setting datum can be optional', () => {
-    type d = { a?: string }
     expect(
       // @ts-ignore
       // todo find way to make vscode use a tsconfig with strict mode for
       // co-located test modules
-      S.create<d>({ spec: { a: {} } }).data
+      S.create<{ a?: string }>({ spec: { a: {} } }).data
     ).toEqual({})
+  })
+  it('a setting datumn can be a function', () => {
+    expect(
+      S.create<{ a: (x: { a: number }) => number }>({
+        spec: {
+          a: {
+            initial: c(({ a }: { a: number }) => a),
+          },
+        },
+      }).data.a({ a: 1 })
+    ).toEqual(1)
   })
 })
 
 describe('namespaced settings', () => {
   it('a setting may be a namespace holding more settings', () => {
     type d = { a: { b: string } }
-    const settings = S.create<d>({ spec: { a: { fields: { b: { initial: '' } } } } })
+    const settings = S.create<d>({ spec: { a: { fields: { b: { initial: c('') } } } } })
     expect(settings.data.a.b).toEqual('')
   })
   it('a namespaced setting can be changed', () => {
     type d = { a: { b: string } }
-    const settings = S.create<d>({ spec: { a: { fields: { b: { initial: 'b' } } } } })
+    const settings = S.create<d>({ spec: { a: { fields: { b: { initial: c('b') } } } } })
     expect(settings.change({ a: { b: 'b2' } }).data).toEqual({ a: { b: 'b2' } })
   })
   it('changing namespaced settings merges deeply preserving existing settings not targetted by the change', () => {
@@ -96,18 +100,18 @@ describe('namespaced settings', () => {
       spec: {
         a: {
           fields: {
-            b: { initial: 1 },
-            a: { initial: 'a' },
+            b: { initial: c(1) },
+            a: { initial: c('a') },
           },
         },
-        b: { initial: 1 },
+        b: { initial: c(1) },
       },
     })
     expect(settings.change({ a: { a: 'a2' } }).data).toEqual({ a: { a: 'a2', b: 1 }, b: 1 })
   })
   it('giving object to a non-namespace will error gracefully', () => {
     type d = { a: string }
-    const settings = S.create<d, any>({ spec: { a: { initial: '' } } })
+    const settings = S.create<d, any>({ spec: { a: { initial: c('') } } })
     expect(() => settings.change({ a: { b: '' } })).toThrowErrorMatchingInlineSnapshot(
       `"Setting \\"a\\" is not a namespace and so does not accept objects, but one given: { b: '' }"`
     )
@@ -124,7 +128,7 @@ describe('namespace shorthands', () => {
           shorthand(value) {
             return { b: value + ' via shorthand!' }
           },
-          fields: { b: { initial: '' } },
+          fields: { b: { initial: c('') } },
         },
       },
     })
@@ -140,7 +144,7 @@ describe('namespace shorthands', () => {
           shorthand(value) {
             throw new Error('Unexpected shorthand error')
           },
-          fields: { b: { initial: '' } },
+          fields: { b: { initial: c('') } },
         },
       },
     })
@@ -158,7 +162,7 @@ describe('namespace shorthands', () => {
           shorthand(value) {
             return { b: value + ' via shorthand!' }
           },
-          fields: { b: { initial: '' } },
+          fields: { b: { initial: c('') } },
         },
       },
     })
@@ -173,7 +177,7 @@ describe('namespace shorthands', () => {
           shorthand(f) {
             return { b: f().toString() }
           },
-          fields: { b: { initial: '' } },
+          fields: { b: { initial: c('') } },
         },
       },
     })
@@ -181,7 +185,7 @@ describe('namespace shorthands', () => {
   })
   it('giving shorthand to a namespace that does not support it will error gracefully', () => {
     type d = { a: { b: string } }
-    const settings = S.create<d, any>({ spec: { a: { fields: { b: { initial: '' } } } } })
+    const settings = S.create<d, any>({ spec: { a: { fields: { b: { initial: c('') } } } } })
     expect(() => settings.change({ a: 'runtime error' })).toThrowErrorMatchingInlineSnapshot(
       `"Setting \\"a\\" is a namespace with no shorthand so expects an object but received a non-object: 'runtime error'"`
     )
@@ -191,7 +195,7 @@ describe('namespace shorthands', () => {
 describe('runtime errors', () => {
   it('changing settings that do not exist will error gracefully', () => {
     type d = { a: string }
-    const settings = S.create<d, any>({ spec: { a: { initial: '' } } })
+    const settings = S.create<d, any>({ spec: { a: { initial: c('') } } })
     expect(() => settings.change({ z: '' })).toThrowErrorMatchingInlineSnapshot(
       `"Could not find a setting specifier for setting \\"z\\""`
     )
@@ -200,7 +204,7 @@ describe('runtime errors', () => {
 
 it('a setting can be changed', () => {
   type d = { a: string }
-  const settings = S.create<d>({ spec: { a: { initial: 'a' } } })
+  const settings = S.create<d>({ spec: { a: { initial: c('a') } } })
   expect(settings.change({ a: 'a2' }).data).toEqual({ a: 'a2' })
 })
 
@@ -229,7 +233,7 @@ describe('fixups', () => {
       onFixup,
       spec: {
         path: {
-          initial: '/foo',
+          initial: c('/foo'),
           fixup(value) {
             if (value[0] === '/') return null
             return { messages: ['must have leading slash'], value: `/${value}` }
@@ -266,7 +270,7 @@ describe('fixups', () => {
           },
           fields: {
             to: {
-              initial: '/foo',
+              initial: c('/foo'),
               fixup(value) {
                 if (value[0] === '/') return null
                 return { messages: ['must have leading slash'], value: `/${value}` }
@@ -298,7 +302,7 @@ describe('fixups', () => {
     const settings = S.create<d>({
       spec: {
         path: {
-          initial: '/',
+          initial: c('/'),
           fixup() {
             throw new Error('Unexpected error!')
           },
@@ -319,7 +323,7 @@ describe('fixups', () => {
       onFixup,
       spec: {
         path: {
-          initial: '/',
+          initial: c('/'),
           fixup() {
             return { value: 'foobar', messages: [] }
           },
@@ -338,7 +342,7 @@ describe('fixups', () => {
       onFixup,
       spec: {
         path: {
-          initial: '/',
+          initial: c('/'),
           fixup() {
             return null
           },
@@ -353,7 +357,7 @@ describe('fixups', () => {
       S.create<{ a: string }>({
         spec: {
           a: {
-            initial: '',
+            initial: c(''),
             fixup() {
               return { value: 'fixed', messages: [] }
             },
@@ -368,7 +372,7 @@ describe('fixups', () => {
     const settings = S.create<{ a: string }>({
       spec: {
         a: {
-          initial: '',
+          initial: c(''),
           fixup() {
             return { value: 'fixed', messages: ['...'] }
           },
@@ -391,7 +395,7 @@ describe('fixups', () => {
       onFixup() {},
       spec: {
         a: {
-          initial: '',
+          initial: c(''),
           fixup() {
             return { value: 'fixed', messages: ['...'] }
           },
@@ -409,7 +413,7 @@ describe('fixups', () => {
       },
       spec: {
         a: {
-          initial: '',
+          initial: c(''),
           fixup() {
             return { value: 'fixed', messages: ['...'] }
           },
@@ -435,7 +439,7 @@ describe('validators', () => {
     const settings = S.create<d>({
       spec: {
         a: {
-          initial: 'foo',
+          initial: c('foo'),
           validate,
         },
       },
@@ -452,7 +456,7 @@ describe('validators', () => {
     const settings = S.create<{ a: string }>({
       spec: {
         a: {
-          initial: 'foo',
+          initial: c('foo'),
           validate,
         },
       },
@@ -474,7 +478,7 @@ describe('validators', () => {
       S.create<{ a: string }>({
         spec: {
           a: {
-            initial: 'bad',
+            initial: c('bad'),
             validate,
           },
         },
@@ -488,7 +492,7 @@ describe('validators', () => {
     const settings = S.create<{ a: string }>({
       spec: {
         a: {
-          initial: 'foo',
+          initial: c('foo'),
           validate,
         },
       },
@@ -502,17 +506,17 @@ describe('validators', () => {
 
 describe('.reset()', () => {
   it('returns api for chaining', () => {
-    const settings = S.create<{ a: string }>({ spec: { a: { initial: '' } } })
+    const settings = S.create<{ a: string }>({ spec: { a: { initial: c('') } } })
     expect(settings.reset()).toBe(settings)
   })
   it('resets settings data & metadata to initial state', () => {
-    const settings = S.create<{ a: string }>({ spec: { a: { initial: '' } } })
+    const settings = S.create<{ a: string }>({ spec: { a: { initial: c('') } } })
     settings.change({ a: 'foo' })
     expect(settings.reset().data).toEqual({ a: '' })
     expect(settings.reset().metadata).toEqual({ a: { from: 'initial', value: '', initial: '' } })
   })
   it('settings metadata & data references change', () => {
-    const settings = S.create<{ a: string }>({ spec: { a: { initial: '' } } })
+    const settings = S.create<{ a: string }>({ spec: { a: { initial: c('') } } })
     const originalMetadata = settings.metadata
     const originalData = settings.data
     settings.reset()
@@ -547,7 +551,7 @@ describe('metadata', () => {
     const settings = S.create<{ a: string }>({
       spec: {
         a: {
-          initial: 'foo',
+          initial: c('foo'),
         },
       },
     })
@@ -557,7 +561,7 @@ describe('metadata', () => {
     const settings = S.create<{ a: string }>({
       spec: {
         a: {
-          initial: 'foo',
+          initial: c('foo'),
         },
       },
     })
@@ -571,7 +575,7 @@ describe('metadata', () => {
         a: {
           fields: {
             a: {
-              initial: 'foo',
+              initial: c('foo'),
             },
           },
         },

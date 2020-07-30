@@ -52,10 +52,10 @@ export type SettingsFieldSpec<T> = {
   fixup?: (value: T) => null | { value: T; messages: string[] }
 } & (HasUndefined<T> extends true
   ? {
-      initial?: T | (() => T) // [1]
+      initial?(): T // [1]
     }
   : {
-      initial: T | (() => T)
+      initial(): T
     })
 
 // export type SettingsFieldSpec<T> = HasUndefined<T> extends true
@@ -316,7 +316,7 @@ function initialize(spec: any, data: AnyRecord, metadata: AnyRecord) {
       initialize(specifier.fields, data[name], metadata[name].fields)
     } else {
       let value
-      if (typeof specifier.initial === 'function') {
+      if (specifier.initial) {
         try {
           value = specifier.initial()
         } catch (e) {
@@ -327,7 +327,7 @@ function initialize(spec: any, data: AnyRecord, metadata: AnyRecord) {
           )
         }
       } else {
-        value = specifier.initial
+        value = undefined
       }
       log.trace('initialize value', { name, value })
       data[name] = value

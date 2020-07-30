@@ -194,28 +194,44 @@ export const createServerSettingsManager = () =>
           settings: {
             fields: {
               'editor.cursorShape': {
-                initial: 'block',
+                initial() {
+                  return 'block'
+                },
               },
               'editor.fontFamily': {
-                initial: `'Source Code Pro', 'Consolas', 'Inconsolata', 'Droid Sans Mono', 'Monaco', monospace`,
+                initial() {
+                  return `'Source Code Pro', 'Consolas', 'Inconsolata', 'Droid Sans Mono', 'Monaco', monospace`
+                },
               },
               'editor.fontSize': {
-                initial: 14,
+                initial() {
+                  return 14
+                },
               },
               'editor.reuseHeaders': {
-                initial: true,
+                initial() {
+                  return true
+                },
               },
               'editor.theme': {
-                initial: 'dark',
+                initial() {
+                  return 'dark'
+                },
               },
               'queryPlan.hideQueryPlanResponse': {
-                initial: true,
+                initial() {
+                  return true
+                },
               },
               'request.credentials': {
-                initial: 'omit',
+                initial() {
+                  return 'omit'
+                },
               },
               'tracing.hideTracingResponse': {
-                initial: true,
+                initial() {
+                  return true
+                },
               },
             },
           },
@@ -252,7 +268,9 @@ export const createServerSettingsManager = () =>
         },
       },
       path: {
-        initial: '/graphql',
+        initial() {
+          return '/graphql'
+        },
         validate(value) {
           if (value.length === 0) {
             return { messages: ['Custom GraphQL `path` cannot be empty and must start with a /'] }
@@ -284,10 +302,12 @@ export const createServerSettingsManager = () =>
         },
       },
       startMessage: {
-        initial: ({ port, host, path }): void => {
-          serverLogger.info('listening', {
-            url: `http://${Utils.prettifyHost(host)}:${port}${path}`,
-          })
+        initial() {
+          return ({ port, host, path }): void => {
+            serverLogger.info('listening', {
+              url: `http://${Utils.prettifyHost(host)}:${port}${path}`,
+            })
+          }
         },
       },
     },
