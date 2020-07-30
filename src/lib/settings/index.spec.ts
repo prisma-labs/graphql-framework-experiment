@@ -1,6 +1,7 @@
+import { log } from '@nexus/logger'
 import dedent from 'dedent'
 import * as Lo from 'lodash'
-import * as Settings from './'
+import * as S from './'
 
 describe('static typing', () => {
   it.todo('if no input type given it defaults to deep partial version of the data type')
@@ -10,27 +11,26 @@ describe('static typing', () => {
 })
 
 describe('data initializers', () => {
-  it.todo('if initial has unexpected error it fails gracefully')
   it('initializers may be static', () => {
     type d = { a: string }
-    const settings = Settings.create<d>({ spec: { a: { initial: 'foobar' } } })
+    const settings = S.create<d>({ spec: { a: { initial: 'foobar' } } })
     expect(settings.data.a).toEqual('foobar')
   })
 
   it('initializers may be dynamic, they are resolved at create time', () => {
     type d = { a: string }
-    const settings = Settings.create<d>({ spec: { a: { initial: () => 'foobar' } } })
+    const settings = S.create<d>({ spec: { a: { initial: () => 'foobar' } } })
     expect(settings.data.a).toEqual('foobar')
   })
   it('if the setting datum is optional then the setting initializer can be omited', () => {
     type d = { a?: string }
-    const settings = Settings.create<d>({ spec: { a: {} } })
+    const settings = S.create<d>({ spec: { a: {} } })
     expect(settings.data.a).toEqual(undefined)
   })
 
   it('if the setting datum is optional then the dynamic setting initializer can return undefined', () => {
     type d = { a?: string }
-    const settings = Settings.create<d>({
+    const settings = S.create<d>({
       spec: {
         a: {
           initial() {
@@ -41,27 +41,46 @@ describe('data initializers', () => {
     })
     expect(settings.data.a).toEqual(undefined)
   })
+  it('if a dynamic initializer has unexpected error it fails gracefully', () => {
+    expect(() =>
+      S.create<{ a: string }>({
+        spec: {
+          a: {
+            initial() {
+              throw new Error('Unexpected error while trying to initialize setting')
+            },
+          },
+        },
+      })
+    ).toThrow(dedent`
+      There was an unexpected error while running the dynamic initializer for setting "a". The error was:
+      Error: Unexpected error while trying to initialize setting
+    `)
+  })
 })
 
 describe('basics', () => {
-  it.todo('changing an array setting appends to the existing array')
+  it('changing an array setting replaces the existing array', () => {
+    const settings = S.create<{ a: string[] }>({ spec: { a: { initial: ['foo'] } } })
+    expect(settings.change({ a: ['bar'] }).data).toEqual({ a: ['bar'] })
+  })
 })
 
 describe('namespaced settings', () => {
   it('a setting may be a namespace holding more settings', () => {
     type d = { a: { b: string } }
-    const settings = Settings.create<d>({ spec: { a: { fields: { b: { initial: '' } } } } })
+    const settings = S.create<d>({ spec: { a: { fields: { b: { initial: '' } } } } })
     expect(settings.data.a.b).toEqual('')
   })
   it('a namespaced setting can be changed', () => {
     type d = { a: { b: string } }
-    const settings = Settings.create<d>({ spec: { a: { fields: { b: { initial: 'b' } } } } })
+    const settings = S.create<d>({ spec: { a: { fields: { b: { initial: 'b' } } } } })
     expect(settings.change({ a: { b: 'b2' } }).data).toEqual({ a: { b: 'b2' } })
   })
   it.todo('a namespace may be optional')
   it('changing namespaced settings merges deeply preserving existing settings not targetted by the change', () => {
     type d = { a: { a: string; b: number }; b: number }
-    const settings = Settings.create<d>({
+    const settings = S.create<d>({
       spec: {
         a: {
           fields: {
@@ -76,7 +95,7 @@ describe('namespaced settings', () => {
   })
   it('giving object to a non-namespace will error gracefully', () => {
     type d = { a: string }
-    const settings = Settings.create<d, any>({ spec: { a: { initial: '' } } })
+    const settings = S.create<d, any>({ spec: { a: { initial: '' } } })
     expect(() => settings.change({ a: { b: '' } })).toThrowErrorMatchingInlineSnapshot(
       `"Setting \\"a\\" is not a namespace and so does not accept objects, but one given: { b: '' }"`
     )
@@ -87,7 +106,7 @@ describe('namespace shorthands', () => {
   it('a namespace may have a shorthand', () => {
     type d = { a: { b: string } }
     type i = { a: string | { b: string } }
-    const settings = Settings.create<d, i>({
+    const settings = S.create<d, i>({
       spec: {
         a: {
           shorthand(value) {
@@ -103,7 +122,7 @@ describe('namespace shorthands', () => {
   it('unexpected shorthand errors fail gracefully', () => {
     type d = { a: { b: string } }
     type i = { a: string | { b: string } }
-    const settings = Settings.create<d, i>({
+    const settings = S.create<d, i>({
       spec: {
         a: {
           shorthand(value) {
@@ -114,14 +133,14 @@ describe('namespace shorthands', () => {
       },
     })
     expect(() => settings.change({ a: 'some change' }).data.a).toThrow(dedent`
-      There was an error while running the namespace shorthand for setting "a". The given value was 'some change'. The error was:
+      There was an unexpected error while running the namespace shorthand for setting "a". The given value was 'some change'. The error was:
       Error: Unexpected shorthand error
     `)
   })
   it('a namespace with a shorthand still accepts non-shorthand input', () => {
     type d = { a: { b: string } }
     type i = { a: string | { b: string } }
-    const settings = Settings.create<d, i>({
+    const settings = S.create<d, i>({
       spec: {
         a: {
           shorthand(value) {
@@ -136,7 +155,7 @@ describe('namespace shorthands', () => {
   it('a namespace shorthand can receive input that is not directly in the final data', () => {
     type d = { a: { b: string } }
     type i = { a: (() => number) | { b: string } }
-    const settings = Settings.create<d, i>({
+    const settings = S.create<d, i>({
       spec: {
         a: {
           shorthand(f) {
@@ -150,7 +169,7 @@ describe('namespace shorthands', () => {
   })
   it('giving shorthand to a namespace that does not support it will error gracefully', () => {
     type d = { a: { b: string } }
-    const settings = Settings.create<d, any>({ spec: { a: { fields: { b: { initial: '' } } } } })
+    const settings = S.create<d, any>({ spec: { a: { fields: { b: { initial: '' } } } } })
     expect(() => settings.change({ a: 'runtime error' })).toThrowErrorMatchingInlineSnapshot(
       `"Setting \\"a\\" is a namespace with no shorthand so expects an object but received a non-object: 'runtime error'"`
     )
@@ -160,7 +179,7 @@ describe('namespace shorthands', () => {
 describe('runtime errors', () => {
   it('changing settings that do not exist will error gracefully', () => {
     type d = { a: string }
-    const settings = Settings.create<d, any>({ spec: { a: { initial: '' } } })
+    const settings = S.create<d, any>({ spec: { a: { initial: '' } } })
     expect(() => settings.change({ z: '' })).toThrowErrorMatchingInlineSnapshot(
       `"Could not find a setting specifier for setting \\"z\\""`
     )
@@ -169,15 +188,32 @@ describe('runtime errors', () => {
 
 it('a setting can be changed', () => {
   type d = { a: string }
-  const settings = Settings.create<d>({ spec: { a: { initial: 'a' } } })
+  const settings = S.create<d>({ spec: { a: { initial: 'a' } } })
   expect(settings.change({ a: 'a2' }).data).toEqual({ a: 'a2' })
 })
 
 describe('fixups', () => {
+  let logs: jest.Mock
+  let logSettingsOriginal: any
+
+  beforeEach(() => {
+    logs = jest.fn()
+    logSettingsOriginal = {
+      output: log.settings.output,
+      filter: log.settings.filter.originalInput,
+      pretty: log.settings.pretty,
+    }
+    log.settings({ output: { write: logs }, pretty: false })
+  })
+
+  afterEach(() => {
+    log.settings(logSettingsOriginal)
+  })
+
   it('a setting can be fixed up', () => {
     const onFixup = jest.fn()
     type d = { path: string }
-    const settings = Settings.create<d>({
+    const settings = S.create<d>({
       onFixup,
       spec: {
         path: {
@@ -209,7 +245,7 @@ describe('fixups', () => {
   it('a namespace with shorthand runs through fixups too', () => {
     const onFixup = jest.fn()
     type d = { path: string | { to: string } }
-    const settings = Settings.create<d>({
+    const settings = S.create<d>({
       onFixup,
       spec: {
         path: {
@@ -247,7 +283,7 @@ describe('fixups', () => {
   })
   it('if fixup fails it errors gracefully', () => {
     type d = { path: string }
-    const settings = Settings.create<d>({
+    const settings = S.create<d>({
       spec: {
         path: {
           initial: '/',
@@ -267,7 +303,7 @@ describe('fixups', () => {
       throw new Error('Unexpected error!')
     })
     type d = { path: string }
-    const settings = Settings.create<d>({
+    const settings = S.create<d>({
       onFixup,
       spec: {
         path: {
@@ -286,7 +322,7 @@ describe('fixups', () => {
   it('if fixup returns null then onFixup is not called', () => {
     const onFixup = jest.fn()
     type d = { path: string }
-    const settings = Settings.create<d>({
+    const settings = S.create<d>({
       onFixup,
       spec: {
         path: {
@@ -300,16 +336,91 @@ describe('fixups', () => {
     settings.change({ path: '' })
     expect(onFixup.mock.calls).toEqual([])
   })
-  it.todo('initial does not pass through fixup')
-  it.todo('defualt onFixup handler is to log a warning')
-  it.todo('can call the original handler to retain the original base behaviour')
+  it('initial does not pass through fixup', () => {
+    expect(
+      S.create<{ a: string }>({
+        spec: {
+          a: {
+            initial: '',
+            fixup() {
+              return { value: 'fixed', messages: [] }
+            },
+          },
+        },
+      }).data
+    ).toEqual({ a: '' })
+  })
+
+  it('defualt onFixup handler is to log a warning', () => {
+    log.settings({ filter: '*@warn' })
+    const settings = S.create<{ a: string }>({
+      spec: {
+        a: {
+          initial: '',
+          fixup() {
+            return { value: 'fixed', messages: ['...'] }
+          },
+        },
+      },
+    })
+    settings.change({ a: 'foo' })
+    expect(logs.mock.calls).toMatchInlineSnapshot(`
+      Array [
+        Array [
+          "{\\"event\\":\\"One of your setting values was invalid. We were able to automaticlaly fix it up now but please update your code.\\",\\"level\\":4,\\"path\\":[\\"settings\\"],\\"context\\":{\\"before\\":\\"foo\\",\\"after\\":\\"fixed\\",\\"name\\":\\"a\\",\\"messages\\":[\\"...\\"]}}
+      ",
+        ],
+      ]
+    `)
+  })
+  it('custom handler causes default to not run', () => {
+    log.settings({ filter: '*@warn' })
+    const settings = S.create<{ a: string }>({
+      onFixup() {},
+      spec: {
+        a: {
+          initial: '',
+          fixup() {
+            return { value: 'fixed', messages: ['...'] }
+          },
+        },
+      },
+    })
+    settings.change({ a: 'foo' })
+    expect(logs.mock.calls).toEqual([])
+  })
+  it('can call the original handler to retain the original base behaviour', () => {
+    log.settings({ filter: '*@warn' })
+    const settings = S.create<{ a: string }>({
+      onFixup(info, original) {
+        original(info)
+      },
+      spec: {
+        a: {
+          initial: '',
+          fixup() {
+            return { value: 'fixed', messages: ['...'] }
+          },
+        },
+      },
+    })
+    settings.change({ a: 'foo' })
+    expect(logs.mock.calls).toMatchInlineSnapshot(`
+      Array [
+        Array [
+          "{\\"event\\":\\"One of your setting values was invalid. We were able to automaticlaly fix it up now but please update your code.\\",\\"level\\":4,\\"path\\":[\\"settings\\"],\\"context\\":{\\"before\\":\\"foo\\",\\"after\\":\\"fixed\\",\\"name\\":\\"a\\",\\"messages\\":[\\"...\\"]}}
+      ",
+        ],
+      ]
+    `)
+  })
 })
 
 describe('validators', () => {
   it('if a setting passes validation nothing happens', () => {
     const validate = jest.fn().mockImplementation(() => null)
     type d = { a: string }
-    const settings = Settings.create<d>({
+    const settings = S.create<d>({
       spec: {
         a: {
           initial: 'foo',
@@ -326,7 +437,7 @@ describe('validators', () => {
         return { messages: ['Too long', 'Too simple'] }
       }
     })
-    const settings = Settings.create<{ a: string }>({
+    const settings = S.create<{ a: string }>({
       spec: {
         a: {
           initial: 'foo',
@@ -348,7 +459,7 @@ describe('validators', () => {
       }
     })
     expect(
-      Settings.create<{ a: string }>({
+      S.create<{ a: string }>({
         spec: {
           a: {
             initial: 'bad',
@@ -362,7 +473,7 @@ describe('validators', () => {
     const validate = jest.fn().mockImplementation((value) => {
       throw new Error('Unexpected error while trying to validate')
     })
-    const settings = Settings.create<{ a: string }>({
+    const settings = S.create<{ a: string }>({
       spec: {
         a: {
           initial: 'foo',
@@ -379,17 +490,17 @@ describe('validators', () => {
 
 describe('.reset()', () => {
   it('returns api for chaining', () => {
-    const settings = Settings.create<{ a: string }>({ spec: { a: { initial: '' } } })
+    const settings = S.create<{ a: string }>({ spec: { a: { initial: '' } } })
     expect(settings.reset()).toBe(settings)
   })
   it('resets settings data & metadata to initial state', () => {
-    const settings = Settings.create<{ a: string }>({ spec: { a: { initial: '' } } })
+    const settings = S.create<{ a: string }>({ spec: { a: { initial: '' } } })
     settings.change({ a: 'foo' })
     expect(settings.reset().data).toEqual({ a: '' })
     expect(settings.reset().metadata).toEqual({ a: { from: 'initial', value: '', initial: '' } })
   })
   it('settings metadata & data references change', () => {
-    const settings = Settings.create<{ a: string }>({ spec: { a: { initial: '' } } })
+    const settings = S.create<{ a: string }>({ spec: { a: { initial: '' } } })
     const originalMetadata = settings.metadata
     const originalData = settings.data
     settings.reset()
@@ -398,7 +509,7 @@ describe('.reset()', () => {
   })
   it('dynamic initializers are re-run', () => {
     process.env.foo = 'foo'
-    const settings = Settings.create<{ a: string }>({ spec: { a: { initial: () => process.env.foo! } } })
+    const settings = S.create<{ a: string }>({ spec: { a: { initial: () => process.env.foo! } } })
     process.env.foo = 'bar'
     expect(settings.reset().metadata).toEqual({ a: { from: 'initial', value: 'bar', initial: 'bar' } })
     delete process.env.foo
@@ -407,7 +518,7 @@ describe('.reset()', () => {
 
 describe('.original()', () => {
   it('gets the settings as they were initially', () => {
-    const settings = Settings.create<{ a: { a: string }; b: { a: number } }>({
+    const settings = S.create<{ a: { a: string }; b: { a: number } }>({
       spec: {
         a: { fields: { a: { initial: () => 'foo' } } },
         b: { fields: { a: { initial: () => 1 } } },
@@ -421,7 +532,7 @@ describe('.original()', () => {
 
 describe('metadata', () => {
   it('tracks if a setting value comes from its initializer', () => {
-    const settings = Settings.create<{ a: string }>({
+    const settings = S.create<{ a: string }>({
       spec: {
         a: {
           initial: 'foo',
@@ -431,7 +542,7 @@ describe('metadata', () => {
     expect(settings.metadata).toEqual({ a: { from: 'initial', value: 'foo', initial: 'foo' } })
   })
   it('traces if a setting value comes from change input', () => {
-    const settings = Settings.create<{ a: string }>({
+    const settings = S.create<{ a: string }>({
       spec: {
         a: {
           initial: 'foo',
@@ -443,7 +554,7 @@ describe('metadata', () => {
     })
   })
   it('models namespaces', () => {
-    const settings = Settings.create<{ a: { a: string } }>({
+    const settings = S.create<{ a: { a: string } }>({
       spec: {
         a: {
           fields: {

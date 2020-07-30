@@ -223,7 +223,7 @@ function resolve(options: Options, spec: any, input: AnyRecord, data: AnyRecord,
           longhandValue = specifier.shorthand(value)
         } catch (e) {
           throw new Error(
-            `There was an error while running the namespace shorthand for setting "${name}". The given value was ${inspect(
+            `There was an unexpected error while running the namespace shorthand for setting "${name}". The given value was ${inspect(
               value
             )}. The error was:\n${e}`
           )
@@ -249,21 +249,23 @@ function resolve(options: Options, spec: any, input: AnyRecord, data: AnyRecord,
         if (maybeFixedup) {
           resolvedValue = maybeFixedup.value
           /**
-           * on fixup event callback
+           * fixup handler
            */
-          try {
-            options.onFixup?.(
-              {
-                before: value,
-                after: maybeFixedup.value,
-                name,
-                messages: maybeFixedup.messages,
-              },
-              onFixup
-            )
-          } catch (e) {
-            // todo use verror or like
-            throw new Error(`onFixup callback for "${name}" failed:\n${e}`)
+          const fixupInfo = {
+            before: value,
+            after: maybeFixedup.value,
+            name,
+            messages: maybeFixedup.messages,
+          }
+          if (options.onFixup) {
+            try {
+              options.onFixup(fixupInfo, onFixup)
+            } catch (e) {
+              // todo use verror or like
+              throw new Error(`onFixup callback for "${name}" failed:\n${e}`)
+            }
+          } else {
+            onFixup(fixupInfo)
           }
         }
       }
@@ -312,7 +314,18 @@ function initialize(spec: any, data: AnyRecord, metadata: AnyRecord) {
       metadata[name] = metadata[name] ?? { fields: {} }
       initialize(specifier.fields, data[name], metadata[name].fields)
     } else {
-      const value: any = typeof specifier.initial === 'function' ? specifier.initial() : specifier.initial
+      let value
+      if (typeof specifier.initial === 'function') {
+        try {
+          value = specifier.initial()
+        } catch (e) {
+          throw new Error(
+            `There was an unexpected error while running the dynamic initializer for setting "${name}". The error was:\n${e}`
+          )
+        }
+      } else {
+        value = specifier.initial
+      }
       log.trace('initialize value', { name, value })
       data[name] = value
       metadata[name] = { value, from: 'initial', initial: value }
