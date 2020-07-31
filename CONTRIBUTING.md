@@ -169,6 +169,7 @@ yarn test e2e/kitchen
 - Lives at `/website`
 - Documentation lives at `/website/content`
 - Everything else is website tech that should not be touched except by the Web Team at Prisma
+- The Prisma style guide holds for here too https://www.prisma.io/docs/more/style-guide
 - Any content changes in a PR will get deployed to a preview URL
 - Any content changes that land on trunk will be automatically deployed to production.
 
