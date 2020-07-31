@@ -148,9 +148,9 @@ describe('namespace shorthands', () => {
         },
       },
     })
-    expect(() => settings.change({ a: 'some change' }).data.a).toThrow(dedent`
-      There was an unexpected error while running the namespace shorthand for setting "a". The given value was 'some change'. The error was:
-      Error: Unexpected shorthand error
+    expect(() => settings.change({ a: 'some change' }).data.a).toThrowErrorMatchingInlineSnapshot(`
+      "There was an unexpected error while running the namespace shorthand for setting \\"a\\". The given value was 'some change' 
+      Unexpected shorthand error"
     `)
   })
   it('a namespace with a shorthand still accepts non-shorthand input', () => {
@@ -309,9 +309,9 @@ describe('fixups', () => {
         },
       },
     })
-    expect(() => settings.change({ path: '' })).toThrowError(dedent`
-      Fixup for "path" failed while running on value '':
-      Error: Unexpected error!
+    expect(() => settings.change({ path: '' })).toThrowErrorMatchingInlineSnapshot(`
+      "Fixup for \\"path\\" failed while running on value '' 
+      Unexpected error!"
     `)
   })
   it('if onFixup callback fails it errors gracefully', () => {
@@ -330,9 +330,9 @@ describe('fixups', () => {
         },
       },
     })
-    expect(() => settings.change({ path: '' })).toThrowError(dedent`
-      onFixup callback for "path" failed:
-      Error: Unexpected error!
+    expect(() => settings.change({ path: '' })).toThrowErrorMatchingInlineSnapshot(`
+      "onFixup callback for \\"path\\" failed 
+      Unexpected error!"
     `)
   })
   it('if fixup returns null then onFixup is not called', () => {
@@ -497,9 +497,9 @@ describe('validators', () => {
         },
       },
     })
-    expect(() => settings.change({ a: 'bar' })).toThrowError(dedent`
-      Validation for "a" unexpectedly failed while running on value 'bar':
-      Error: Unexpected error while trying to validate
+    expect(() => settings.change({ a: 'bar' })).toThrowErrorMatchingInlineSnapshot(`
+      "Validation for \\"a\\" unexpectedly failed while running on value 'bar' 
+      Unexpected error while trying to validate"
     `)
   })
 })

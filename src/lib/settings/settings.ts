@@ -223,10 +223,12 @@ function resolve(options: Options, spec: any, input: AnyRecord, data: AnyRecord,
         try {
           longhandValue = specifier.shorthand(value)
         } catch (e) {
-          throw new Error(
+          throw ono(
+            e,
+            { name, value },
             `There was an unexpected error while running the namespace shorthand for setting "${name}". The given value was ${inspect(
               value
-            )}. The error was:\n${e}`
+            )}`
           )
         }
         resolve(options, specifier.fields, longhandValue, data[name], metadata[name].fields)
@@ -242,9 +244,10 @@ function resolve(options: Options, spec: any, input: AnyRecord, data: AnyRecord,
         try {
           maybeFixedup = specifier.fixup(resolvedValue)
         } catch (e) {
-          // todo use verror or like
-          throw new Error(
-            `Fixup for "${name}" failed while running on value ${inspect(resolvedValue)}:\n${e}`
+          throw ono(
+            e,
+            { name, value: resolvedValue },
+            `Fixup for "${name}" failed while running on value ${inspect(resolvedValue)}`
           )
         }
         if (maybeFixedup) {
@@ -262,8 +265,7 @@ function resolve(options: Options, spec: any, input: AnyRecord, data: AnyRecord,
             try {
               options.onFixup(fixupInfo, onFixup)
             } catch (e) {
-              // todo use verror or like
-              throw new Error(`onFixup callback for "${name}" failed:\n${e}`)
+              throw ono(e, { name }, `onFixup callback for "${name}" failed`)
             }
           } else {
             onFixup(fixupInfo)
@@ -280,10 +282,10 @@ function resolve(options: Options, spec: any, input: AnyRecord, data: AnyRecord,
           maybeViolation = specifier.validate(resolvedValue)
         } catch (e) {
           // todo use verror or like
-          throw new Error(
-            `Validation for "${name}" unexpectedly failed while running on value ${inspect(
-              resolvedValue
-            )}:\n${e}`
+          throw ono(
+            e,
+            { name, value: resolvedValue },
+            `Validation for "${name}" unexpectedly failed while running on value ${inspect(resolvedValue)}`
           )
         }
         if (maybeViolation) {
