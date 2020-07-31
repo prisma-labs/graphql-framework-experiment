@@ -2,9 +2,9 @@
 title: Runtime
 ---
 
-## Access to the Prisma Client
+## Context 
 
-At runtime, `nexus-plugin-prisma` will add a `db` property containing an instance of the [`Prisma Client`](https://github.com/prisma/prisma-client-js) to your GraphQL resolvers context.
+A reference to your [`Prisma Client`](https://github.com/prisma/prisma-client-js) instance will be added to the context under the `db` property.
 
 #### Example
 
@@ -24,59 +24,7 @@ schema.objectType({
 })
 ```
 
-## System Behaviours
 
-### Null-Free Lists
-
-Projection for Prisma list types always project as a fully non-nullable GraphQL type. This is because Prisma list fields (and list member type) can themselves never be null, and because Prisma does not support `@default` on list types.
-
-For consistency we also apply the same pattern for `t.crud.<BatchRead>`.
-
-#### Example
-
-<TabbedContent tabs={["Prisma", "Nexus", "GraphQL"]}>
-<tab>
-
-```prisma
-model User {
-  posts Post[]
-}
-```
-
-</tab>
-<tab>
-
-```ts
-schema.queryType({
-  definition(t) {
-    t.crud.users()
-  },
-})
-schema.objectType({
-  name: 'User',
-  definition(t) {
-    t.crud.posts()
-  },
-})
-```
-
-</tab>
-<tab>
-
-```graphql
-# Generated
-
-type Query {
-  users: [User!]!
-}
-
-type User {
-  posts: [Post!]!
-}
-```
-
-</tab>
-</TabbedContent>
 
 ## `t.model`
 
@@ -2389,6 +2337,59 @@ export type MutationMethodName = keyof core.GetGen<'argTypes'>['Mutation']
 export type Context = core.GetGen<'context'>
 ```
 
+## General System Behaviours
+
+### Null-Free Lists
+
+Projection for Prisma list types always project as a fully non-nullable GraphQL type. This is because Prisma list fields (and list member type) can themselves never be null, and because Prisma does not support `@default` on list types.
+
+For consistency we also apply the same pattern for `t.crud.<BatchRead>`.
+
+#### Example
+
+<TabbedContent tabs={["Prisma", "Nexus", "GraphQL"]}>
+<tab>
+
+```prisma
+model User {
+  posts Post[]
+}
+```
+
+</tab>
+<tab>
+
+```ts
+schema.queryType({
+  definition(t) {
+    t.crud.users()
+  },
+})
+schema.objectType({
+  name: 'User',
+  definition(t) {
+    t.crud.posts()
+  },
+})
+```
+
+</tab>
+<tab>
+
+```graphql
+# Generated
+
+type Query {
+  users: [User!]!
+}
+
+type User {
+  posts: [Post!]!
+}
+```
+
+</tab>
+</TabbedContent>
 
 ## Batch Filtering
 
