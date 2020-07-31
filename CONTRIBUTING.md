@@ -162,32 +162,23 @@ yarn test e2e/kitchen
   yarn release:pr
   ```
 
-#### Website
+#### Website & Documentation
 
-- We use [docsifyjs/docsify](https://github.com/docsifyjs/docsify).
-- There is no build step
-- Deploy using `yarn -s deploy:docs`
-- Navigation is manually managed in `_sidebar.md`
-- Cover page is managed in `_coverpage.md`
-- Configuration and significant styling customizations are kept in `index.html`
+- https://nexusjs.org
+- We use [Gatsby](https://gatsbyjs.org)
+- Lives at `/website`
+- Documentation lives at `/website/content`
+- Everything else is website tech that should not be touched except by the Web Team at Prisma
+- Any content changes in a PR will get deployed to a preview URL
+- Any content changes that land on trunk will be automatically deployed to production.
 
-##### Getting started
+##### Developing Locally
 
-1. Fix bin
-
-   There is currently [a bug](https://github.com/docsifyjs/docsify-cli/issues/88) with `docsify-cli` requiring the following manual fix after installation.
-
-   ```
-   vim node_modules/.bin/docsify
-   :se ff=unix
-   :wq
-   ```
-
-2. Boot docs dev to preview your changes locally
-
-   ```
-   yarn docs:dev
-   ```
+```
+cd website
+yarn
+yarn dev
+```
 
 <br/>
 
