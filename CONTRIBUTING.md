@@ -164,14 +164,33 @@ yarn test e2e/kitchen
 
 #### Website & Documentation
 
-- https://nexusjs.org
-- We use [Gatsby](https://gatsbyjs.org)
-- Lives at `/website`
-- Documentation lives at `/website/content`
-- Everything else is website tech that should not be touched except by the Web Team at Prisma
-- The Prisma style guide holds for here too https://www.prisma.io/docs/more/style-guide
+##### Where Things Are
+
+- The main website is at https://nexusjs.org
+- The website is powered by [Gatsby](https://gatsbyjs.org)
+- The website is deployed to Netlify
+- The website source lives under `/website`
+- The Documentation source lives under `/website/content`
+- You should not touch website source other than content. It is managed by the Prisma web team.
+
+##### Deployment
+
 - Any content changes in a PR will get deployed to a preview URL
-- Any content changes that land on trunk will be automatically deployed to production.
+- Any content changes that land on trunk will be automatically deployed to production
+
+##### Content Change Guidelines
+
+- We use the Prisma style guide https://www.prisma.io/docs/more/style-guide
+- All MDX components documented there are usable here
+- The website is not versioned. The website content should always reflect the current nexus stable release. It should never reflect the Nexus canary release. Until we have a way on the website to select which version of the docs to read you must use the follow documentation content update protocol:
+
+  - A PR should not touch the website docs in anyway that would make it untrue for current Nexus stable users.
+  - A PR that makes it so documentation needs or should be updated should be done a separate documentation PR.
+  - There is exactly ONE documentation PR per sprint.
+  - If your PR is the first of the sprint that requires documentation changes and thus there is no documentation PR yet open for that sprint then you should open that PR yourself.
+  - The PR branch should be `chore/website-documentation`
+  - The PR title should be `chore(website): documentation updates`.
+  - The documentation PR will be merged immediately after a stable has been cut.
 
 ##### Developing Locally
 
