@@ -1,7 +1,8 @@
 import { GraphQLError, GraphQLFormattedError, GraphQLSchema } from 'graphql'
+import { ContextAdder } from '../schema'
 import { ApolloServerless } from './apollo-server'
 import { log } from './logger'
-import { ContextCreator, NexusRequestHandler } from './server'
+import { NexusRequestHandler } from './server'
 import { PlaygroundInput } from './settings'
 
 type Settings = {
@@ -13,7 +14,7 @@ type Settings = {
 
 type CreateHandler = (
   schema: GraphQLSchema,
-  createContext: ContextCreator,
+  createContext: ContextAdder,
   settings: Settings
 ) => NexusRequestHandler
 

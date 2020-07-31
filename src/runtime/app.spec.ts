@@ -3,11 +3,16 @@ import * as GraphQL from 'graphql'
 import * as HTTP from 'http'
 import 'jest-extended'
 import * as Lo from 'lodash'
+import { inspect } from 'util'
 import { setReflectionStage, unsetReflectionStage } from '../lib/reflection'
 import * as App from './app'
 import * as Lifecycle from './lifecycle'
 
 let app: App.PrivateApp
+
+function dump(x: any) {
+  return inspect(x, { depth: null })
+}
 
 beforeEach(() => {
   app = App.create() as App.PrivateApp
@@ -23,13 +28,19 @@ describe('reset', () => {
       server: { path: '/bar' },
       schema: { connections: { foo: {} } },
     })
-    app.schema.objectType({ name: 'Foo', definition(t) { t.string('ok') } })
+    app.schema.objectType({
+      name: 'Foo',
+      definition(t) {
+        t.string('ok')
+      },
+    })
     app.on.start(() => {})
     app.assemble()
     app.reset()
     expect(app.settings.current.server.path).toEqual(app.settings.original.server.path)
     expect(app.settings.current.schema).toEqual(app.settings.original.schema)
-    expect(app.private.state).toEqual(originalAppState)
+    // must dump because functions are not equal-able
+    expect(dump(app.private.state)).toEqual(dump(originalAppState))
     expect(app.private.state.components.lifecycle).toEqual(Lifecycle.createLazyState())
   })
 
@@ -48,7 +59,12 @@ describe('assemble', () => {
 
   beforeEach(() => {
     // avoid schema check error
-    app.schema.objectType({ name: 'Foo', definition(t) { t.string('ok') } })
+    app.schema.objectType({
+      name: 'Foo',
+      definition(t) {
+        t.string('ok')
+      },
+    })
   })
 
   it('multiple calls is a noop', () => {

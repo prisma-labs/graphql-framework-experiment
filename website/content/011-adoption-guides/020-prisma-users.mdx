@@ -22,7 +22,7 @@ import { schema } from 'nexus'
 
 const db = new PrismaClient()
 
-schema.addToContext(req => ({ db })) // exopse Prisma Client to all resolvers
+schema.addToContext(({ req, res }) => ({ db })) // expose Prisma Client to all resolvers
 
 schema.queryType({
   definition(t) {

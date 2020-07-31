@@ -9,7 +9,6 @@ import { Index } from '../lib/utils'
 import * as Lifecycle from './lifecycle'
 import * as Schema from './schema'
 import * as Server from './server'
-import { ContextCreator } from './server/server'
 import * as Settings from './settings'
 import { assertAppNotAssembled } from './utils'
 
@@ -88,7 +87,7 @@ export type AppState = {
     schema: NexusSchema.core.NexusGraphQLSchema
     missingTypes: Index<NexusSchema.core.MissingType>
     loadedPlugins: RuntimeContributions<any>[]
-    createContext: ContextCreator
+    createContext: Schema.ContextAdder
   }
   running: boolean
   components: {
@@ -140,8 +139,7 @@ export function create(): App {
     server: serverComponent.public,
     on: lifecycleComponent.public,
     reset() {
-      // todo once we have log filtering, make this debug level
-      rootLogger.trace('resetting state')
+      rootLogger.debug('resetting state')
       schemaComponent.private.reset()
       serverComponent.private.reset()
       settingsComponent.private.reset()
@@ -149,6 +147,7 @@ export function create(): App {
       state.assembled = null
       state.plugins = []
       state.running = false
+      dogfood()
     },
     async start() {
       if (Reflection.isReflection()) return
@@ -208,20 +207,36 @@ export function create(): App {
   }
 
   /**
-   * Setup default log filter
+   * Dogfood the public API to change things.
    */
-  app.settings.change({
-    logger: {
-      filter: 'app:*, nexus:*@info+, *@warn+',
-      pretty: { timeDiff: false },
-    },
-  })
+  function dogfood() {
+    /**
+     * Setup default log filter
+     */
+    app.settings.change({
+      logger: {
+        filter: 'app:*, nexus:*@info+, *@warn+',
+        pretty: { timeDiff: false },
+      },
+    })
 
-  /**
-   * Setup default scalar types
-   */
-  app.schema.importType(builtinScalars.DateTime, 'date')
-  app.schema.importType(builtinScalars.Json, 'json')
+    /**
+     * Setup default scalar types
+     */
+    app.schema.importType(builtinScalars.DateTime, 'date')
+    app.schema.importType(builtinScalars.Json, 'json')
+
+    /**
+     * Add `req` and `res` to the context by default
+     */
+    app.schema.addToContext((params) => params)
+  }
+
+  // HACK dogfood function called eagerly here once and
+  // then within reset method. We should have a better
+  // reset system.
+
+  dogfood()
 
   return {
     ...app,

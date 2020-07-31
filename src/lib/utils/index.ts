@@ -492,13 +492,20 @@ export function noop() {}
  * foo/bar -> foo/bar
  * ```
  * ```
+ * foo/bar.js -> foo/bar
+ * ```
+ * ```
  * foo/bar/index.js -> foo/bar
  * ```
  */
 export function prettyImportPath(id: string): string {
-  const { dir, name } = Path.parse(id)
+  const { dir, name, ext } = Path.parse(id)
 
   if (name === 'index') return dir
+
+  if (ext) {
+    return id.replace(ext, '')
+  }
 
   return id
 }
