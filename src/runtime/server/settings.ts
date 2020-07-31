@@ -2,6 +2,7 @@ import { PlaygroundRenderPageOptions } from 'apollo-server-express'
 import { CorsOptions as OriginalCorsOption } from 'cors'
 import { LiteralUnion, Primitive } from 'type-fest'
 import * as Settings from '../../lib/settings'
+import { HasIndexedType } from '../../lib/settings'
 import * as Utils from '../../lib/utils'
 import { log as serverLogger } from './logger'
 
@@ -37,6 +38,10 @@ export type PlaygroundLonghandInput = {
    */
   settings?: Omit<Partial<Exclude<PlaygroundRenderPageOptions['settings'], undefined>>, 'general.betaUpdates'>
 }
+
+// type a = Omit<Partial<Exclude<PlaygroundRenderPageOptions['settings'], undefined>>, 'general.betaUpdates'>
+type a = Partial<Exclude<PlaygroundRenderPageOptions['settings'], undefined>>
+type b = HasIndexedType<a>
 
 export type SettingsInput = {
   /**

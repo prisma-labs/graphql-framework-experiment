@@ -1,6 +1,7 @@
 import * as NexusSchema from '@nexus/schema'
 import * as Lo from 'lodash'
-import { Param1 } from '../../lib/utils'
+import * as Settings from '../../lib/settings'
+import { NonPrimitive, Param1 } from '../../lib/utils'
 
 // todo export type from @nexus/schema
 type ConnectionPluginConfig = NonNullable<Param1<typeof NexusSchema.connectionPlugin>>
@@ -60,7 +61,7 @@ export type SettingsInput = {
   /**
    * Disable or configure the authorization plugin
    */
-  authorization?: false | NexusSchema.core.FieldAuthorizePluginConfig
+  authorization?: false | (NexusSchema.core.FieldAuthorizePluginConfig & { enabled: boolean })
   /**
    * Should a [GraphQL SDL file](https://www.prisma.io/blog/graphql-sdl-schema-definition-language-6755bcb9ce51) be generated when the app is built and to where?
    *
@@ -126,7 +127,7 @@ export type SettingsData = {
   }
   generateGraphQLSDLFile: NonNullable<SettingsInput['generateGraphQLSDLFile']>
   rootTypingsGlobPattern: NonNullable<SettingsInput['rootTypingsGlobPattern']>
-  authorization: NonNullable<SettingsInput['authorization']>
+  authorization: NonPrimitive<NonNullable<SettingsInput['authorization']>>
 }
 
 /**
@@ -214,3 +215,71 @@ export function createSchemaSettingsManager() {
 }
 
 export type SchemaSettingsManager = ReturnType<typeof createSchemaSettingsManager>
+
+export const createSchema2SettingsManager = () =>
+  Settings.create<SettingsData, SettingsInput>({
+    spec: {
+      nullable: {
+        fields: {
+          inputs: {
+            initial() {
+              return true
+            },
+          },
+          outputs: {
+            initial() {
+              return true
+            },
+          },
+        },
+      },
+      generateGraphQLSDLFile: {
+        initial() {
+          return 'api.graphql'
+        },
+      },
+      rootTypingsGlobPattern: {
+        initial() {
+          return './**/*.ts'
+        },
+      },
+      authorization: {
+        // todo update code to read authorizaton.enabled settings data
+        shorthand(enabled) {
+          return { enabled }
+        },
+        fields: {
+          enabled: {
+            initial: true,
+          },
+          formatError: {
+            initial: defaultAuthorizationErrorFormatter,
+          },
+        },
+      },
+      connections: {
+        indexed: {
+          initial() {
+            return {
+              default: {},
+            }
+          },
+          // use-case for this is connection plugin settings managed by nexus
+          // maybe instead of keeping it in settings we can rethink this and
+          // keep the nexus managed bit as something inlined before passing off
+          // to nexus schema?
+          afterNewEntry(data) {
+            // if values are objects
+            // allow augmenting the data
+            // this helps when data wishing to be held is a superset of input
+            // wishin to expose.
+            return Lo.merge(data, connectionPluginConfigManagedByNexus)
+          },
+          fields: {
+            // if values are objects
+            // allow specifying the object fields
+          },
+        },
+      },
+    },
+  })

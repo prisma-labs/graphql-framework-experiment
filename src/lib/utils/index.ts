@@ -26,6 +26,10 @@ export type PlainObject = {
   [x: string]: Primitive | object
 }
 
+export type OnlyPlainObject<T> = T extends PlainObject ? T : never
+
+export type NonPrimitive<T> = Exclude<T, Primitive>
+
 /**
  * DeepPartial - modified version from `utility-types`
  * @desc Partial that works for deeply nested structure

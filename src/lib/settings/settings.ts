@@ -3,27 +3,66 @@ import * as Logger from '@nexus/logger'
 import * as Lo from 'lodash'
 import { PartialDeep, Primitive } from 'type-fest'
 import { inspect } from 'util'
-import { PlainObject } from '../utils'
+import { OnlyPlainObject } from '../utils'
 
 const log = Logger.log.child('settings')
 
-type AnyRecord = { [k: string]: any }
+// export type OnlyIndexedType<T> = { [k: string]: any } extends T
+//   ? T
+//   : { [k: number]: any } extends T
+//   ? T
+//   : never
+
+export type OnlyIndexedType<T> = string extends keyof T ? T : never
+
+export type HasIndexedType<T> = OnlyIndexedType<T> extends never ? false : true
+
+export type HasUndefined<T> = (T extends undefined ? true : never) extends never ? false : true
+
+export type OnlyPojoOrClass<T> = T extends any[]
+  ? never
+  : T extends Function
+  ? never
+  : T extends Primitive
+  ? never
+  : T
+
+class Foo {
+  a: string = ' '
+}
+const foo = new Foo()
+type f = typeof foo
+// type f1 = f extends Object ? true : false
+// type f2 = f extends { [k: string]: unknown } ? true : false
+// type f22 = f extends { a: string } ? true : false
+// type f3 = { [k: string]: unknown } extends f ? true : false
+// type f4 = keyof f
+
+type z = keyof { a?: 1 }
+type a = HasIndexedType<{ a: 1 }>
+type a2 = HasIndexedType<{ a?: 1 }>
+type a3 = HasIndexedType<{}>
+const a = {} as { [k: string]: any }
+type b1 = typeof a
+type a3s = HasIndexedType<b1>
+type b = HasIndexedType<f>
+type c = HasIndexedType<{ [k: string]: number }>
+
+export type HasPlainObject<T> = OnlyPlainObject<T> extends never ? false : true
+
+export type AnyRecord = { [k: string]: any }
 
 // todo allow classes, regexp etc.
 // todo allow anything except void & plain objects
 // todo allow functions
 type ExcludePlainObjectAndVoid<T> = Exclude<T, undefined | Exclude<T, Primitive | Primitive[] | Function>>
 
-// type MaybeArray<T> = T | T[]
-
-type HasUndefined<T> = (T extends undefined ? true : never) extends never ? false : true
-
-type HasPlainObject<T> = (T extends PlainObject ? true : never) extends never ? false : true
-
 export type Spec<Data, Input> = {
-  [Key in keyof Data]-?: HasPlainObject<Data[Key]> extends true
+  [Key in keyof Data]-?: HasIndexedType<Data[Key]> extends true
+    ? IndexedFieldSpec<Data[Key], Key extends keyof Input ? Input[Key] : unknown>
+    : HasPlainObject<Data[Key]> extends true
     ? SettingsNamespaceSpec<Data[Key], Key extends keyof Input ? Input[Key] : unknown>
-    : SettingsFieldSpec<Data[Key]>
+    : FieldSpec<NonNullable<Input[Key]>>
 }
 
 export interface SettingsNamespaceSpec<Data, Input> {
@@ -36,7 +75,7 @@ export interface SettingsNamespaceSpec<Data, Input> {
 // In most cases it probably means initial won't be supplied. However
 // there are may be some odd cases where iniital is present but can
 // return undefined.
-export type SettingsFieldSpec<T> = {
+export type FieldSpec<T> = {
   validate?: (value: T) => null | { messages: string[] }
   /**
    * Specify a fixup for this setting.
@@ -57,6 +96,33 @@ export type SettingsFieldSpec<T> = {
   : {
       initial(): T
     })
+
+export type IndexedFieldSpec<Data, Input> = {
+  indexed: {
+    initial(): OnlyPOJOValues<NonNullable<Input>>
+    afterNewEntry(data: Diff<OnlyPOJOValues<NonNullable<Input>>, Data>): Data
+    fields: Spec<Data[keyof Data], OnlyPOJOValues<NonNullable<Input>>>
+  }
+}
+
+type OnlyPOJOValues<T> = {
+  [K in keyof T]: OnlyPojoOrClass<T[K]>
+}
+
+/**
+ * Diffs two objects.
+ *
+ * Given objects with types T and V, returns an object that has all the keys in T that do not also exist in V.
+ *
+ * @example `type Safe = Diff<AllProperties, UnsafeProperties>`
+ */
+export type Diff<T, V> = {
+  [P in Exclude<keyof T, keyof V>]: T[P]
+}
+
+type aa = Record<string | number, number | RegExp>
+type aaa = keyof aa
+type af = aa[aaa]
 
 // export type SettingsFieldSpec<T> = HasUndefined<T> extends true
 //   ? {
@@ -94,11 +160,12 @@ export type Manager<Data, Input> = {
 // to it (if any)
 // todo should onFixup be replaced with a batch version of onfixups that gets
 // called with all fixups that happened for all of the input?
-// todo ditto validation?
 // todo allow env vars to populate settings
 // todo track env var as value source
 // todo $initial magic var to reset settting to its original state, re-running
 // dynamic initializers if necessary
+// todo run initial through fixup in dev to be safer
+// todo run initial through validation in dev to be safer
 
 export type FixupInfo = { name: string; before: unknown; after: unknown; messages: string[] }
 
