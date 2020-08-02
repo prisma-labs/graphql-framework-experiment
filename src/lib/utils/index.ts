@@ -9,6 +9,20 @@ import { JsonObject, PackageJson, Primitive } from 'type-fest'
 
 export * from './either'
 
+export type Key = string | number | symbol
+
+export type AnyRecord = { [k: string]: any }
+
+export declare type ExcludeUndefined<A> = A extends undefined ? never : A
+
+export type HasVoid<T> = (T extends void ? true : never) extends never ? false : true
+
+export type IsIndexedType<T> = string extends keyof T ? true : false
+
+export type OnlyIndexedType<T> = string extends keyof T ? T : never
+
+export type HasIndexedType<T> = OnlyIndexedType<Exclude<T, Primitive | void>> extends never ? false : true
+
 export type MaybePromise<T = void> = T | Promise<T>
 
 export type CallbackRegistrer<F> = (f: F) => void
@@ -26,9 +40,11 @@ export type PlainObject = {
   [x: string]: Primitive | object
 }
 
-export type OnlyPlainObject<T> = T extends PlainObject ? T : never
+export type UnknownFallback<T, U> = unknown extends T ? U : T
 
-export type NonPrimitive<T> = Exclude<T, Primitive>
+export type Includes<T, U> = (T extends U ? T : never) extends never ? false : true
+
+export type ExcludePrimitive<T> = Exclude<T, Primitive>
 
 /**
  * DeepPartial - modified version from `utility-types`
@@ -96,12 +112,11 @@ export declare type DeepRequired<T> = T extends (...args: any[]) => any
   ? DeepRequiredObject<T>
   : T
 
-export interface DeepRequiredArray<T> extends Array<DeepRequired<NonUndefined<T>>> {}
+export interface DeepRequiredArray<T> extends Array<DeepRequired<ExcludeUndefined<T>>> {}
 
 export declare type DeepRequiredObject<T> = {
-  [P in keyof T]-?: DeepRequired<NonUndefined<T[P]>>
+  [K in keyof T]-?: DeepRequired<ExcludeUndefined<T[K]>>
 }
-export declare type NonUndefined<A> = A extends undefined ? never : A
 
 /**
  * Guarantee the length of a given string, padding before or after with the

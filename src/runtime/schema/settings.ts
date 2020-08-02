@@ -1,7 +1,7 @@
 import * as NexusSchema from '@nexus/schema'
 import * as Lo from 'lodash'
 import * as Settings from '../../lib/settings'
-import { NonPrimitive, Param1 } from '../../lib/utils'
+import { ExcludePrimitive, Param1 } from '../../lib/utils'
 
 // todo export type from @nexus/schema
 type ConnectionPluginConfig = NonNullable<Param1<typeof NexusSchema.connectionPlugin>>
@@ -127,7 +127,7 @@ export type SettingsData = {
   }
   generateGraphQLSDLFile: NonNullable<SettingsInput['generateGraphQLSDLFile']>
   rootTypingsGlobPattern: NonNullable<SettingsInput['rootTypingsGlobPattern']>
-  authorization: NonPrimitive<NonNullable<SettingsInput['authorization']>>
+  authorization: ExcludePrimitive<NonNullable<SettingsInput['authorization']>>
 }
 
 /**

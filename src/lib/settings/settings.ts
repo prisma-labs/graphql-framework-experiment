@@ -1,141 +1,167 @@
 import ono from '@jsdevtools/ono'
 import * as Logger from '@nexus/logger'
+import { AnyRecord } from 'dns'
 import * as Lo from 'lodash'
-import { PartialDeep, Primitive } from 'type-fest'
+import { Primitive } from 'type-fest'
 import { inspect } from 'util'
-import { OnlyPlainObject } from '../utils'
+import { DeepRequired, ExcludeUndefined, HasIndexedType, HasVoid, Includes, UnknownFallback } from '../utils'
 
 const log = Logger.log.child('settings')
 
-// export type OnlyIndexedType<T> = { [k: string]: any } extends T
-//   ? T
-//   : { [k: number]: any } extends T
-//   ? T
-//   : never
+type Lookup<O, K> = K extends keyof O ? O[K] : never
 
-export type OnlyIndexedType<T> = string extends keyof T ? T : never
+type NotPojo = Primitive | any[] | Function
 
-export type HasIndexedType<T> = OnlyIndexedType<T> extends never ? false : true
+type IsPojo<T> = T extends NotPojo ? false : true
 
-export type HasUndefined<T> = (T extends undefined ? true : never) extends never ? false : true
+type ExcludePojo<T> = Exclude<T, Exclude<T, NotPojo>>
 
-export type OnlyPojoOrClass<T> = T extends any[]
-  ? never
-  : T extends Function
-  ? never
-  : T extends Primitive
-  ? never
-  : T
+type HasPojo<T> = IncludePojo<T> extends never ? false : true
 
-class Foo {
-  a: string = ' '
-}
-const foo = new Foo()
-type f = typeof foo
-// type f1 = f extends Object ? true : false
-// type f2 = f extends { [k: string]: unknown } ? true : false
-// type f22 = f extends { a: string } ? true : false
-// type f3 = { [k: string]: unknown } extends f ? true : false
-// type f4 = keyof f
+type IncludePojo<T> = Exclude<T, NotPojo>
 
-type z = keyof { a?: 1 }
-type a = HasIndexedType<{ a: 1 }>
-type a2 = HasIndexedType<{ a?: 1 }>
-type a3 = HasIndexedType<{}>
-const a = {} as { [k: string]: any }
-type b1 = typeof a
-type a3s = HasIndexedType<b1>
-type b = HasIndexedType<f>
-type c = HasIndexedType<{ [k: string]: number }>
-
-export type HasPlainObject<T> = OnlyPlainObject<T> extends never ? false : true
-
-export type AnyRecord = { [k: string]: any }
-
-// todo allow classes, regexp etc.
-// todo allow anything except void & plain objects
-// todo allow functions
-type ExcludePlainObjectAndVoid<T> = Exclude<T, undefined | Exclude<T, Primitive | Primitive[] | Function>>
-
-export type Spec<Data, Input> = {
-  [Key in keyof Data]-?: HasIndexedType<Data[Key]> extends true
-    ? IndexedFieldSpec<Data[Key], Key extends keyof Input ? Input[Key] : unknown>
-    : HasPlainObject<Data[Key]> extends true
-    ? SettingsNamespaceSpec<Data[Key], Key extends keyof Input ? Input[Key] : unknown>
-    : FieldSpec<NonNullable<Input[Key]>>
+type OnlyOptionalKeys<t> = {
+  [k in keyof t]: Includes<t[k], undefined> extends true ? t[k] : never
 }
 
-export interface SettingsNamespaceSpec<Data, Input> {
-  shorthand?(value: ExcludePlainObjectAndVoid<Input>): Exclude<Input, Primitive>
-  fields: Spec<Data, Input>
+export type OnlyRequiredKeys<t> = {
+  [k in keyof t]: Includes<t[k], undefined> extends true ? never : t[k]
 }
+
+export type DataDefault<input> = {
+  [k in keyof input]-?: HasPojo<input[k]> extends true
+    ? DataDefault<IncludePojo<input[k]>>
+    : ExcludeUndefined<input[k]>
+}
+
+/**
+ * todo
+ */
+export type Spec<Input, Data> =
+  | { raw(input: Input): UnknownFallback<Data, DataDefault<Input>> }
+  | {
+      [Key in keyof Input]-?: HasIndexedType<Input[Key]> extends true
+        ? DictSpec<Input[Key], Key, UnknownFallback<Data, DataDefault<Input>>>
+        : HasPojo<Input[Key]> extends true
+        ? NamespaceSpec<Input[Key], Key, UnknownFallback<Data, DataDefault<Input>>>
+        : FieldSpec<Input[Key], Key, UnknownFallback<Data, DataDefault<Input>>>
+    }
+
+//prettier-ignore
+export type NamespaceSpec<Namespace, K, Data> =
+  {
+    //todo ...?
+    // @ts-ignore
+    fields: Spec<IncludePojo<Namespace>, Data[K]>
+  } &
+  /**
+   * If namespace is union with non-pojo type then shorthand required 
+   */
+  (
+    Includes<ExcludeUndefined<Namespace>, NotPojo> extends true
+    ? {
+        shorthand(value: ExcludePojo<ExcludeUndefined<Namespace>>): IncludePojo<Namespace>
+      }
+    : {}
+  ) &
+  /**
+   * If namespace is optional AND 1+ sub input fields are required THEN initial is required 
+   *  ... but if undefinable in data too THEN initial is forbidden (since we'll initialize namespace (data) to undefined)
+   *  ... but if all namespace fields (input) are optional THEN initial is forbidden (b/c we can automate
+   *      namespace (data) with namespace (input) field initializers)
+   */
+  (
+    Includes<Namespace, undefined> extends true
+      ? {} extends OnlyOptionalKeys<Namespace>
+        ? {}
+        //todo ...?
+        // @ts-ignore
+        : Includes<Data[K], undefined> extends true
+          ? {}
+          : { initial(): Exclude<Namespace, undefined> }
+      : {}
+  )
 
 // [1]
 // If the field can be undefined it means that initial is not required.
 // In most cases it probably means initial won't be supplied. However
 // there are may be some odd cases where iniital is present but can
 // return undefined.
-export type FieldSpec<T> = {
-  validate?: (value: T) => null | { messages: string[] }
-  /**
-   * Specify a fixup for this setting.
-   *
-   * A "fixup" corrects minor problems in a
-   * given setting. It also provides a human readable message about what was
-   * done and why.
-   *
-   * Return null if no fixup was needed. Return a fixup object
-   * otherwise. The new value should be returned along with a list of one or
-   * more messages, one for each thing that was fixed.
-   */
-  fixup?: (value: T) => null | { value: T; messages: string[] }
-} & (HasUndefined<T> extends true
-  ? {
-      initial?(): T // [1]
-    }
-  : {
-      initial(): T
-    })
-
-export type IndexedFieldSpec<Data, Input> = {
-  indexed: {
-    initial(): OnlyPOJOValues<NonNullable<Input>>
-    afterNewEntry(data: Diff<OnlyPOJOValues<NonNullable<Input>>, Data>): Data
-    fields: Spec<Data[keyof Data], OnlyPOJOValues<NonNullable<Input>>>
-  }
-}
-
-type OnlyPOJOValues<T> = {
-  [K in keyof T]: OnlyPojoOrClass<T[K]>
-}
+// prettier-ignore
+export type FieldSpec<Field, Key, Data> =
+  | { raw(input: Field): Lookup<ExcludeUndefined<Data>, Key> }
+  | {
+      // a: Data
+      // b: keyof Data
+      // c: K
+      // d: K extends keyof Data ? 1 : 2
+      validate?(value: Field): null | { messages: string[] }
+      /**
+       * Specify a fixup for this setting.
+       *
+       * A "fixup" corrects minor problems in a
+       * given setting. It also provides a human readable message about what was
+       * done and why.
+       *
+       * Return null if no fixup was needed. Return a fixup object
+       * otherwise. The new value should be returned along with a list of one or
+       * more messages, one for each thing that was fixed.
+       */
+      fixup?(value: Field): null | { value: Field; messages: string[] }
+    } &
+    /**
+     * if input is optional initial is required
+     */
+    (
+      HasVoid<Field> extends true ? { initial(): ExcludeUndefined<Field> } : {}
+    ) &
+    (
+      // do not consider `... | undefined` b/c existence is handled specially
+      Key extends keyof ExcludeUndefined<Data>
+        ?
+          ExcludeUndefined<Field> extends ExcludeUndefined<Data>[Key]
+          ? {}
+          : // if input key type does not match data then mapType is required
+            { mapType(input: ExcludeUndefined<Field>): ExcludeUndefined<Data>[Key] }
+        : // if input key has no match in data then mapData is required
+          { mapData(input: ExcludeUndefined<Field>): ExcludeUndefined<Data> }
+    )
 
 /**
- * Diffs two objects.
- *
- * Given objects with types T and V, returns an object that has all the keys in T that do not also exist in V.
- *
- * @example `type Safe = Diff<AllProperties, UnsafeProperties>`
+ * todo: currently assumes Record<string, object>
  */
-export type Diff<T, V> = {
-  [P in Exclude<keyof T, keyof V>]: T[P]
-}
+//prettier-ignore
+export type DictSpec<Dict, K, Data> =
+  //todo ...?
+  //@ts-ignore
+  | { raw(input: Dict): Data[K] }
+  | {
+      //todo ...?
+      //@ts-ignore
+      entryFields: Spec<Dict[string], Data[K][string]>
+    } &
+    /**
+     * todo shadow data
+     * if data includes fields that are not present in input then require injectData
+     * example is connection plugin settings that have underlying fields added
+     */
+    {
 
-type aa = Record<string | number, number | RegExp>
-type aaa = keyof aa
-type af = aa[aaa]
+    } &
+    /**
+     * if input is optional then initial is required
+     */
+    (
+      HasVoid<Dict> extends true
+        ? {
+            initial(): DeepRequired<ExcludeUndefined<Dict>>
+          }
+        : {}
+    )
 
-// export type SettingsFieldSpec<T> = HasUndefined<T> extends true
-//   ? {
-//       initial?: T | (() => T) // [1]
-//       validate?: (value: T) => null | { message: string }
-//       fixup?: (value: T) => null | { value: T; fixups: string[] }
-//     }
-//   : {
-//       initial: T | (() => T)
-//       validate?: (value: T) => null | { message: string }
-//       fixup?: (value: T) => null | { value: T; fixups: string[] }
-//     }
-
+/**
+ * todo
+ */
 export type Metadata<Data> = {
   [Key in keyof Data]: Data[Key] extends Primitive
     ? {
@@ -148,6 +174,9 @@ export type Metadata<Data> = {
       }
 }
 
+/**
+ * todo
+ */
 export type Manager<Data, Input> = {
   reset(): Manager<Data, Input>
   change(input: Input): Manager<Data, Input>
@@ -167,7 +196,12 @@ export type Manager<Data, Input> = {
 // todo run initial through fixup in dev to be safer
 // todo run initial through validation in dev to be safer
 
-export type FixupInfo = { name: string; before: unknown; after: unknown; messages: string[] }
+export type FixupInfo = {
+  name: string
+  before: unknown
+  after: unknown
+  messages: string[]
+}
 
 export type Options = {
   /**
@@ -203,12 +237,12 @@ function onFixup(info: FixupInfo): void {
   )
 }
 
-export function create<Data, Input = PartialDeep<Data>>({
+export function create<Input, Data = unknown>({
   spec,
   ...options
 }: {
-  spec: Spec<Data, Input>
-} & Options): Manager<Data, Input> {
+  spec: Spec<Input, Data>
+} & Options): Manager<Input, Data> {
   const state = {
     data: {} as Data,
     original: (undefined as any) as Data, // lazy
@@ -217,7 +251,7 @@ export function create<Data, Input = PartialDeep<Data>>({
 
   initialize(spec, state.data, state.metadata)
 
-  const api: Manager<Data, Input> = {
+  const api: Manager<Input, Data> = {
     data: state.data,
     metadata: state.metadata,
     change(input) {

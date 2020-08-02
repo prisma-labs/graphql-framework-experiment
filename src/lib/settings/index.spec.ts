@@ -9,14 +9,6 @@ import * as S from './'
  */
 const c = <T>(x: T) => () => x
 
-// todo use https://github.com/SamVerschueren/tsd
-describe('static typing', () => {
-  it.todo('if no input type given it defaults to deep partial version of the data type')
-  it.todo(
-    'if a namespace in the input type is a union with non-object types then it forces the specifier to have a shorthand'
-  )
-})
-
 describe('data initializers', () => {
   it('initializers may be static', () => {
     const settings = S.create<{ a: string }>({ spec: { a: { initial: c('foobar') } } })

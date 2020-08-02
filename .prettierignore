@@ -2,3 +2,4 @@ dist
 .now
 /website/*
 !/website/content
+*.spec-d.ts
