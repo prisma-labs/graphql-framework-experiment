@@ -9,7 +9,7 @@ import { JsonObject, PackageJson, Primitive } from 'type-fest'
 
 export * from './either'
 
-export type Key = string | number | symbol
+export type Lookup<O, K> = K extends keyof O ? O[K] : never
 
 export type AnyRecord = { [k: string]: any }
 
@@ -21,7 +21,9 @@ export type IsIndexedType<T> = string extends keyof T ? true : false
 
 export type OnlyIndexedType<T> = string extends keyof T ? T : never
 
-export type HasIndexedType<T> = OnlyIndexedType<Exclude<T, Primitive | void>> extends never ? false : true
+export type IncludesIndexedType<T> = OnlyIndexedType<Exclude<T, Primitive | void>> extends never
+  ? false
+  : true
 
 export type MaybePromise<T = void> = T | Promise<T>
 
@@ -38,6 +40,20 @@ export type Param3<F> = F extends (p1: any, p2: any, p3: infer P3, ...args: any[
  */
 export type PlainObject = {
   [x: string]: Primitive | object
+}
+
+export type NotPlainObject = Primitive | any[] | Function
+
+export type IncludesPlainObject<T> = Only<T, PlainObject> extends never ? false : true
+
+export type Only<T, U> = Exclude<T, Exclude<T, U>>
+
+export type KeepOptionalKeys<t> = {
+  [k in keyof t]: Includes<t[k], undefined> extends true ? t[k] : never
+}
+
+export type KeepRequiredKeys<t> = {
+  [k in keyof t]: Includes<t[k], undefined> extends true ? never : t[k]
 }
 
 export type UnknownFallback<T, U> = unknown extends T ? U : T

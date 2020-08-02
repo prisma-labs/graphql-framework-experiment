@@ -4,33 +4,26 @@ import { AnyRecord } from 'dns'
 import * as Lo from 'lodash'
 import { Primitive } from 'type-fest'
 import { inspect } from 'util'
-import { DeepRequired, ExcludeUndefined, HasIndexedType, HasVoid, Includes, UnknownFallback } from '../utils'
+import {
+  DeepRequired,
+  ExcludeUndefined,
+  HasVoid,
+  Includes,
+  IncludesIndexedType,
+  IncludesPlainObject,
+  KeepOptionalKeys,
+  Lookup,
+  NotPlainObject,
+  Only,
+  PlainObject,
+  UnknownFallback,
+} from '../utils'
 
 const log = Logger.log.child('settings')
 
-type Lookup<O, K> = K extends keyof O ? O[K] : never
-
-type NotPojo = Primitive | any[] | Function
-
-type IsPojo<T> = T extends NotPojo ? false : true
-
-type ExcludePojo<T> = Exclude<T, Exclude<T, NotPojo>>
-
-type HasPojo<T> = IncludePojo<T> extends never ? false : true
-
-type IncludePojo<T> = Exclude<T, NotPojo>
-
-type OnlyOptionalKeys<t> = {
-  [k in keyof t]: Includes<t[k], undefined> extends true ? t[k] : never
-}
-
-export type OnlyRequiredKeys<t> = {
-  [k in keyof t]: Includes<t[k], undefined> extends true ? never : t[k]
-}
-
 export type DataDefault<input> = {
-  [k in keyof input]-?: HasPojo<input[k]> extends true
-    ? DataDefault<IncludePojo<input[k]>>
+  [k in keyof input]-?: IncludesPlainObject<input[k]> extends true
+    ? DataDefault<Only<input[k], PlainObject>>
     : ExcludeUndefined<input[k]>
 }
 
@@ -40,27 +33,27 @@ export type DataDefault<input> = {
 export type Spec<Input, Data> =
   | { raw(input: Input): UnknownFallback<Data, DataDefault<Input>> }
   | {
-      [Key in keyof Input]-?: HasIndexedType<Input[Key]> extends true
+      [Key in keyof Input]-?: IncludesIndexedType<Input[Key]> extends true
         ? DictSpec<Input[Key], Key, UnknownFallback<Data, DataDefault<Input>>>
-        : HasPojo<Input[Key]> extends true
+        : Includes<Input[Key], PlainObject> extends true
         ? NamespaceSpec<Input[Key], Key, UnknownFallback<Data, DataDefault<Input>>>
         : FieldSpec<Input[Key], Key, UnknownFallback<Data, DataDefault<Input>>>
     }
 
 //prettier-ignore
-export type NamespaceSpec<Namespace, K, Data> =
+export type NamespaceSpec<Namespace, Key, Data> =
   {
     //todo ...?
     // @ts-ignore
-    fields: Spec<IncludePojo<Namespace>, Data[K]>
+    fields: Spec<Only<Namespace, PlainObject>, Data[Key]>
   } &
   /**
    * If namespace is union with non-pojo type then shorthand required 
    */
   (
-    Includes<ExcludeUndefined<Namespace>, NotPojo> extends true
+    Includes<ExcludeUndefined<Namespace>, NotPlainObject> extends true
     ? {
-        shorthand(value: ExcludePojo<ExcludeUndefined<Namespace>>): IncludePojo<Namespace>
+        shorthand(value: Exclude<Namespace, undefined | PlainObject>): Only<Namespace, PlainObject>
       }
     : {}
   ) &
@@ -72,11 +65,11 @@ export type NamespaceSpec<Namespace, K, Data> =
    */
   (
     Includes<Namespace, undefined> extends true
-      ? {} extends OnlyOptionalKeys<Namespace>
+      ? {} extends KeepOptionalKeys<Namespace>
         ? {}
         //todo ...?
         // @ts-ignore
-        : Includes<Data[K], undefined> extends true
+        : Includes<Data[Key], undefined> extends true
           ? {}
           : { initial(): Exclude<Namespace, undefined> }
       : {}
