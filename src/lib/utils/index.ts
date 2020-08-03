@@ -11,19 +11,19 @@ export * from './either'
 
 export type Lookup<O, K> = K extends keyof O ? O[K] : never
 
-export type AnyRecord = { [k: string]: any }
+export type AnyObject = { [k: string]: any }
 
 export declare type ExcludeUndefined<A> = A extends undefined ? never : A
 
-export type HasVoid<T> = (T extends void ? true : never) extends never ? false : true
+export type IncludesVoid<T> = (T extends void ? true : never) extends never ? false : true
 
-export type IsIndexedType<T> = string extends keyof T ? true : false
+export type IncludesUndefined<T> = (T extends undefined ? true : never) extends never ? false : true
+
+export type IsRecord<T> = string extends keyof T ? true : false
 
 export type OnlyIndexedType<T> = string extends keyof T ? T : never
 
-export type IncludesIndexedType<T> = OnlyIndexedType<Exclude<T, Primitive | void>> extends never
-  ? false
-  : true
+export type IncludesRecord<T> = OnlyIndexedType<Exclude<T, Primitive | void>> extends never ? false : true
 
 export type MaybePromise<T = void> = T | Promise<T>
 
@@ -31,16 +31,34 @@ export type CallbackRegistrer<F> = (f: F) => void
 
 export type SideEffector = () => MaybePromise
 
+export type OnlyPlainObjectOrInterface<T> = T extends Function
+  ? never
+  : T extends any[]
+  ? never
+  : T extends Primitive
+  ? never
+  : T
+
+export type IncludesPlainObjectOrInterface<T> = OnlyPlainObjectOrInterface<T> extends never ? false : true
+
+export type ExcludePlainObjectOrInterface<T> = Exclude<T, OnlyPlainObjectOrInterface<T>>
+
 export type Param1<F> = F extends (p1: infer P1, ...args: any[]) => any ? P1 : never
 export type Param2<F> = F extends (p1: any, p2: infer P2, ...args: any[]) => any ? P2 : never
 export type Param3<F> = F extends (p1: any, p2: any, p3: infer P3, ...args: any[]) => any ? P3 : never
 
 /**
  * Represents a POJO. Prevents from allowing arrays and functions
+ *
+ * @remarks
+ *
+ * TypeScript interfaces will not be considered sub-types. For that, use AnyObject
  */
 export type PlainObject = {
   [x: string]: Primitive | object
 }
+
+export type isPlainObject<T> = T extends PlainObject ? true : false
 
 export type NotPlainObject = Primitive | any[] | Function
 

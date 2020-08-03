@@ -1,178 +1,35 @@
 import ono from '@jsdevtools/ono'
 import * as Logger from '@nexus/logger'
-import { AnyRecord } from 'dns'
 import * as Lo from 'lodash'
-import { Primitive } from 'type-fest'
 import { inspect } from 'util'
-import {
-  DeepRequired,
-  ExcludeUndefined,
-  HasVoid,
-  Includes,
-  IncludesIndexedType,
-  IncludesPlainObject,
-  KeepOptionalKeys,
-  Lookup,
-  NotPlainObject,
-  Only,
-  PlainObject,
-  UnknownFallback,
-} from '../utils'
+import { IsRecord, PlainObject } from '../utils'
+import { DataDefault, Spec } from './spec'
 
 const log = Logger.log.child('settings')
 
-export type DataDefault<input> = {
-  [k in keyof input]-?: IncludesPlainObject<input[k]> extends true
-    ? DataDefault<Only<input[k], PlainObject>>
-    : ExcludeUndefined<input[k]>
-}
-
 /**
  * todo
  */
-export type Spec<Input, Data> =
-  | { raw(input: Input): UnknownFallback<Data, DataDefault<Input>> }
-  | {
-      [Key in keyof Input]-?: IncludesIndexedType<Input[Key]> extends true
-        ? DictSpec<Input[Key], Key, UnknownFallback<Data, DataDefault<Input>>>
-        : Includes<Input[Key], PlainObject> extends true
-        ? NamespaceSpec<Input[Key], Key, UnknownFallback<Data, DataDefault<Input>>>
-        : FieldSpec<Input[Key], Key, UnknownFallback<Data, DataDefault<Input>>>
-    }
-
-//prettier-ignore
-export type NamespaceSpec<Namespace, Key, Data> =
-  {
-    //todo ...?
-    // @ts-ignore
-    fields: Spec<Only<Namespace, PlainObject>, Data[Key]>
-  } &
-  /**
-   * If namespace is union with non-pojo type then shorthand required 
-   */
-  (
-    Includes<ExcludeUndefined<Namespace>, NotPlainObject> extends true
+export type Metadata<Data extends PlainObject> = {
+  [Key in keyof Data]: IsRecord<Data[Key]> extends true // @ts-ignore-error
+    ? Record<string, Metadata<Data[string]>>
+    : Data[Key] extends PlainObject
     ? {
-        shorthand(value: Exclude<Namespace, undefined | PlainObject>): Only<Namespace, PlainObject>
+        fields: Metadata<Data[Key]>
       }
-    : {}
-  ) &
-  /**
-   * If namespace is optional AND 1+ sub input fields are required THEN initial is required 
-   *  ... but if undefinable in data too THEN initial is forbidden (since we'll initialize namespace (data) to undefined)
-   *  ... but if all namespace fields (input) are optional THEN initial is forbidden (b/c we can automate
-   *      namespace (data) with namespace (input) field initializers)
-   */
-  (
-    Includes<Namespace, undefined> extends true
-      ? {} extends KeepOptionalKeys<Namespace>
-        ? {}
-        //todo ...?
-        // @ts-ignore
-        : Includes<Data[Key], undefined> extends true
-          ? {}
-          : { initial(): Exclude<Namespace, undefined> }
-      : {}
-  )
-
-// [1]
-// If the field can be undefined it means that initial is not required.
-// In most cases it probably means initial won't be supplied. However
-// there are may be some odd cases where iniital is present but can
-// return undefined.
-// prettier-ignore
-export type FieldSpec<Field, Key, Data> =
-  | { raw(input: Field): Lookup<ExcludeUndefined<Data>, Key> }
-  | {
-      // a: Data
-      // b: keyof Data
-      // c: K
-      // d: K extends keyof Data ? 1 : 2
-      validate?(value: Field): null | { messages: string[] }
-      /**
-       * Specify a fixup for this setting.
-       *
-       * A "fixup" corrects minor problems in a
-       * given setting. It also provides a human readable message about what was
-       * done and why.
-       *
-       * Return null if no fixup was needed. Return a fixup object
-       * otherwise. The new value should be returned along with a list of one or
-       * more messages, one for each thing that was fixed.
-       */
-      fixup?(value: Field): null | { value: Field; messages: string[] }
-    } &
-    /**
-     * if input is optional initial is required
-     */
-    (
-      HasVoid<Field> extends true ? { initial(): ExcludeUndefined<Field> } : {}
-    ) &
-    (
-      // do not consider `... | undefined` b/c existence is handled specially
-      Key extends keyof ExcludeUndefined<Data>
-        ?
-          ExcludeUndefined<Field> extends ExcludeUndefined<Data>[Key]
-          ? {}
-          : // if input key type does not match data then mapType is required
-            { mapType(input: ExcludeUndefined<Field>): ExcludeUndefined<Data>[Key] }
-        : // if input key has no match in data then mapData is required
-          { mapData(input: ExcludeUndefined<Field>): ExcludeUndefined<Data> }
-    )
-
-/**
- * todo: currently assumes Record<string, object>
- */
-//prettier-ignore
-export type DictSpec<Dict, K, Data> =
-  //todo ...?
-  //@ts-ignore
-  | { raw(input: Dict): Data[K] }
-  | {
-      //todo ...?
-      //@ts-ignore
-      entryFields: Spec<Dict[string], Data[K][string]>
-    } &
-    /**
-     * todo shadow data
-     * if data includes fields that are not present in input then require injectData
-     * example is connection plugin settings that have underlying fields added
-     */
-    {
-
-    } &
-    /**
-     * if input is optional then initial is required
-     */
-    (
-      HasVoid<Dict> extends true
-        ? {
-            initial(): DeepRequired<ExcludeUndefined<Dict>>
-          }
-        : {}
-    )
-
-/**
- * todo
- */
-export type Metadata<Data> = {
-  [Key in keyof Data]: Data[Key] extends Primitive
-    ? {
+    : {
         value: Data[Key]
         initial: Data[Key]
         from: 'set' | 'initial'
       }
-    : {
-        fields: Metadata<Data[Key]>
-      }
 }
 
 /**
  * todo
  */
-export type Manager<Data, Input> = {
-  reset(): Manager<Data, Input>
-  change(input: Input): Manager<Data, Input>
+export type Manager<Input extends PlainObject, Data extends PlainObject> = {
+  reset(): Manager<Input, Data>
+  change(input: Input): Manager<Input, Data>
   original(): Data
   metadata: Metadata<Data>
   data: Data
@@ -230,7 +87,7 @@ function onFixup(info: FixupInfo): void {
   )
 }
 
-export function create<Input, Data = unknown>({
+export function create<Input extends PlainObject, Data extends PlainObject = DataDefault<Input>>({
   spec,
   ...options
 }: {
@@ -239,7 +96,7 @@ export function create<Input, Data = unknown>({
   const state = {
     data: {} as Data,
     original: (undefined as any) as Data, // lazy
-    metadata: {} as Metadata<Data>,
+    metadata: {} as any, // Metadata<Data>,
   }
 
   initialize(spec, state.data, state.metadata)
@@ -266,7 +123,7 @@ export function create<Input, Data = unknown>({
   return api
 }
 
-function metadataToData<Data>(metadata: any, copy: AnyRecord): Data {
+function metadataToData<Data>(metadata: any, copy: PlainObject): Data {
   Lo.forOwn(metadata, (info, name) => {
     if (info.fields) {
       copy[name] = metadataToData(info.fields, {})
@@ -283,7 +140,7 @@ function metadataToData<Data>(metadata: any, copy: AnyRecord): Data {
  * fixups, validation and so on until finally assigning it into the setting data.
  * The input is not mutated. The data is.
  */
-function resolve(options: Options, spec: any, input: AnyRecord, data: AnyRecord, metadata: AnyRecord) {
+function resolve(options: Options, spec: any, input: any, data: any, metadata: any) {
   Lo.forOwn(input, (value, name) => {
     const specifier = spec[name]
     const isValueObject = Lo.isPlainObject(value)
@@ -309,6 +166,7 @@ function resolve(options: Options, spec: any, input: AnyRecord, data: AnyRecord,
     }
 
     if (isValueObject) {
+      // @ts-ignore
       resolve(options, specifier.fields, value, data[name], metadata[name].fields)
     } else if (specifier.shorthand) {
       if (specifier.shorthand) {
@@ -325,6 +183,7 @@ function resolve(options: Options, spec: any, input: AnyRecord, data: AnyRecord,
             )}`
           )
         }
+        // @ts-ignore
         resolve(options, specifier.fields, longhandValue, data[name], metadata[name].fields)
       }
     } else {
@@ -404,7 +263,7 @@ function resolve(options: Options, spec: any, input: AnyRecord, data: AnyRecord,
  * Initialize the settings data with each datum's respective initializer
  * specified in the settings spec.
  */
-function initialize(spec: any, data: AnyRecord, metadata: AnyRecord) {
+function initialize(spec: any, data: any, metadata: any) {
   Lo.forOwn(spec, (specifier: any, name: string) => {
     if (specifier.fields) {
       data[name] = data[name] ?? {}

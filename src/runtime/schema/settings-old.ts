@@ -1,6 +1,6 @@
 import * as NexusSchema from '@nexus/schema'
-import * as Settings from '../../lib/settings'
-import { Param1 } from '../../lib/utils'
+import * as Lo from 'lodash'
+import { ExcludePrimitive, Param1 } from '../../lib/utils'
 
 // todo export type from @nexus/schema
 type ConnectionPluginConfig = NonNullable<Param1<typeof NexusSchema.connectionPlugin>> & { enabled?: boolean }
@@ -118,82 +118,103 @@ export type SettingsInput = {
 /**
  * Internal representation of settings data.
  */
-export type SettingsData = Omit<Settings.DataDefault<SettingsInput>, 'connections'> & {
+export type SettingsData = {
+  nullable: NonNullable<Required<SettingsInput['nullable']>>
   connections: {
+    // todo make app read .enabled property
+    // default: false | ConnectionPluginConfig
+    // [connectionTypeName: string]: false | ConnectionPluginConfig
     default: ConnectionPluginConfig
     [connectionTypeName: string]: ConnectionPluginConfig
   }
+  generateGraphQLSDLFile: NonNullable<SettingsInput['generateGraphQLSDLFile']>
+  rootTypingsGlobPattern: NonNullable<SettingsInput['rootTypingsGlobPattern']>
+  authorization: ExcludePrimitive<NonNullable<SettingsInput['authorization']>>
+}
+
+/**
+ * Mutate the settings data with new settings input.
+ */
+export function changeSettings(state: SettingsData, newSettings: SettingsInput): void {
+  if (newSettings.nullable !== undefined) {
+    Lo.merge(state.nullable, newSettings.nullable)
+  }
+
+  if (newSettings.generateGraphQLSDLFile !== undefined) {
+    state.generateGraphQLSDLFile = newSettings.generateGraphQLSDLFile
+  }
+
+  if (newSettings.rootTypingsGlobPattern !== undefined) {
+    state.rootTypingsGlobPattern = newSettings.rootTypingsGlobPattern
+  }
+
+  if (newSettings.authorization !== undefined) {
+    // state.authorization = newSettings.authorization
+  }
+
+  if (newSettings.connections !== undefined) {
+    Object.keys(newSettings.connections)
+      // must already have the defaults
+      .filter((key) => state.connections[key] === undefined)
+      .forEach((key) => {
+        state.connections[key] = Lo.merge(state.connections[key], connectionPluginConfigManagedByNexus)
+      })
+    Lo.merge(state.connections, newSettings.connections)
+  }
+}
+
+function defaultAuthorizationErrorFormatter(config: NexusSchema.core.FieldAuthorizePluginErrorConfig) {
+  return config.error
+}
+
+/**
+ * Get the default settings.
+ */
+function defaultSettings(): SettingsData {
+  const data: SettingsData = {
+    nullable: {
+      inputs: true,
+      outputs: true,
+    },
+    generateGraphQLSDLFile: 'api.graphql',
+    rootTypingsGlobPattern: './**/*.ts',
+    connections: {
+      // there is another level of defaults that will be applied by Nexus Schema Relay Connections plugin
+      default: {
+        ...connectionPluginConfigManagedByNexus,
+      },
+    },
+    //@ts-ignore
+    authorization: {
+      formatError: defaultAuthorizationErrorFormatter,
+    },
+  }
+
+  return data
 }
 
 /**
  * Create a schema settings manager.
- *
- * todo make app read .enabled property for connections & authorization
- *
  */
-export const createSchemaSettingsManager = () =>
-  Settings.create<SettingsInput, SettingsData>({
-    spec: {
-      nullable: {
-        fields: {
-          inputs: {
-            initial() {
-              return true
-            },
-          },
-          outputs: {
-            initial() {
-              return true
-            },
-          },
-        },
-      },
-      generateGraphQLSDLFile: {
-        initial() {
-          return 'api.graphql'
-        },
-      },
-      rootTypingsGlobPattern: {
-        initial() {
-          return './**/*.ts'
-        },
-      },
-      authorization: {
-        // todo update code to read authorizaton.enabled settings data
-        shorthand(enabled) {
-          return { enabled }
-        },
-        fields: {
-          enabled: {
-            initial: () => true,
-          },
-          formatError: {
-            initial: () => defaultAuthorizationErrorFormatter,
-          },
-        },
-      },
-      connections: {
-        initial() {
-          return {
-            default: {},
-          }
-        },
-        entryFields: {},
-        entryShorthand(disabled) {
-          return { enabled: disabled }
-        },
-        mapEntryData(input) {
-          return {
-            ...input,
-            ...connectionPluginConfigManagedByNexus,
-          }
-        },
-      },
-    },
-  })
+export function createSchemaSettingsManager() {
+  const data = defaultSettings()
 
-function defaultAuthorizationErrorFormatter(config: NexusSchema.core.FieldAuthorizePluginErrorConfig) {
-  return config.error
+  function change(newSettings: SettingsInput) {
+    return changeSettings(data, newSettings)
+  }
+
+  function reset() {
+    for (const k of Object.keys(data)) {
+      delete (data as any)[k]
+    }
+    Object.assign(data, defaultSettings())
+  }
+
+  return {
+    change,
+    reset,
+    data,
+  }
 }
 
 export type SchemaSettingsManager = ReturnType<typeof createSchemaSettingsManager>
