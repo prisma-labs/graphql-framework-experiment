@@ -15,9 +15,7 @@ async function main() {
     process.exit(0)
   }, 10 * 1000)
 
-  // npm uses __dirname as CWD in a postinstall hook. We use INIT_CWD instead if available (set by npm)
-  // https://github.com/npm/npm/issues/16990#issuecomment-349731142
-  const cwd = process.env.INIT_CWD || process.cwd()
+  const cwd = process.cwd()
   const execLayout = await detectExecLayout({ depName: 'nexus', cwd })
 
   // If the script was run from a global cli such as npx, don't run typegen

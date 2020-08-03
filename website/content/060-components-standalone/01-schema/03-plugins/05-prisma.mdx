@@ -6,17 +6,21 @@ title: Prisma
 
 Refer to the [framework docs](/pluginss/prisma#runtime-integration-1) for API reference and concepts. What follows here are aspects that are particular to the schema plugin only.
 
-## Installation
+### Installation
 
 ```bash-symbol
 npm add nexus-plugin-prisma
 ```
 
-## Usage
+### Usage
 
 1. Import `nexusSchemaPrisma` from `nexus-plugin-prisma`
 1. Create and configure it if needed (usually not)
 1. Pass into `Nexus.makeSchema` `plugins` array
+
+> **Note**: If you're looking for CRUD capabilities, you must enable the `experimentalCRUD` option.
+
+You can find runnable examples in the [repo examples folder](https://github.com/graphql-nexus/nexus-schema-plugin-prisma/tree/master/examples/schema).
 
 **Example**
 
@@ -30,10 +34,6 @@ const schema = makeSchema({
   plugins: [nexusSchemaPrisma()],
 })
 ```
-
-You can find runnable examples in the [repo examples folder](https://github.com/graphql-nexus/nexus-schema-plugin-prisma/tree/master/examples).
-
-> **Note**: If you're looking for CRUD capabilities, you must enable the `experimentalCRUD` option.
 
 ## Configuration
 
@@ -84,38 +84,42 @@ type Options = {
 
 These are tips to help you with a successful project workflow
 
-1. Keep app schema somewhere apart from server so that you can do `ts-node --transpile-only path/to/schema/module` to generate typegen. This will come in handy in certain deployment contexts.
+### Introduce a bundle step for serverless
 
-1. Consider using something like the following set of npm scripts. The
-   `postinstall` step is helpful for guarding against pruning since the
-   generated `@types` packages will be seen as extraneous. We have an idea to
-   solve this with [package
-   facades](https://github.com/prisma-labs/nexus/issues/253). For yarn users
-   though this would still be helpful since yarn rebuilds all packages whenever
-   the dependency tree changes in any way
-   ([issue](https://github.com/yarnpkg/yarn/issues/4703)). The
-   `NODE_ENV=development` is needed to ensure typegen is run even in a context where `NODE_ENV` is set to `production` (like a heroku deploy pipeline, see next point). Also, consider using [cross-env](https://github.com/kentcdodds/cross-env) for better compatibility with different environments, e.g. on Windows.
+The Prisma plugin bundles its Prisma dependencies. These are fairly large dependencies which will lead to over 100mb in your node_modules. The reason these dependencies are present is to support the [framework version](https://nxs.li/plugins/prisma) of the Prisma plugin.
 
-   ```json
-   {
-     "scripts": {
-       "generate:prisma": "prisma generate",
-       "generate:nexus": "cross-env NODE_ENV=development ts-node --transpile-only path/to/schema/module",
-       "generate": "npm -s run generate:prisma && npm -s run generate:nexus",
-       "postinstall": "npm -s run generate"
-     }
-   }
-   ```
+This large amount of disk usage can pose a problem for serverless environments like AWS Lambda where there are lower deployment size limits than say on Heroku. If you encounter this issue consider introducing a bundling step into your build. The primary dependency you will want to shake out is `@prisma/cli`. Some tools you can try include: [`ncc`](https://github.com/vercel/ncc), [`esbuild`](https://github.com/evanw/esbuild#command-line-usage), [`spack`](https://swc-project.github.io/docs/usage-spack-cli). If you are using [Serverless Framework](https://www.serverless.com/) then checkout [the `package.excludes` config](https://www.serverless.com/framework/docs/providers/aws/guide/packaging/). Example of a developer using it to solve this issue [here](https://github.com/graphql-nexus/nexus-plugin-prisma/issues/768#issuecomment-666406466).
 
-1. In your deployment pipeline you may wish to run a build step. Heroku buildpacks for example call `npm run build` if that script is defined in your `package.json`. If this is your case and you are a TypeScript user consider a build setup as follows. Prior to `tsc` we run artifact generation so that TypeScript will have types for the all the resolver signatures etc. of your app.
+### Keep your schema runnable in isolation
 
-   ```json
-   {
-     "scripts": {
-       "build": "npm -s run generate && tsc"
-     }
-   }
-   ```
+Keep app schema somewhere apart from server so that you can do `ts-node --transpile-only path/to/schema/module` to generate typegen. This will come in handy in certain deployment contexts.
+
+### Helpful NPM scripts
+
+Consider using something like the following set of npm scripts. The `postinstall` step is helpful for guarding against pruning since the generated `@types` packages will be seen as extraneous. We have an idea to solve this with [package facades](https://github.com/prisma-labs/nexus/issues/253). For yarn users though this would still be helpful since yarn rebuilds all packages whenever the dependency tree changes in any way ([issue](https://github.com/yarnpkg/yarn/issues/4703)). The `NODE_ENV=development` is needed to ensure typegen is run even in a context where `NODE_ENV` is set to `production` (like a heroku deploy pipeline, see next point). Also, consider using [cross-env](https://github.com/kentcdodds/cross-env) for better compatibility with different environments, e.g. on Windows.
+
+```json
+{
+  "scripts": {
+    "generate:prisma": "prisma generate",
+    "generate:nexus": "cross-env NODE_ENV=development ts-node --transpile-only path/to/schema/module",
+    "generate": "npm -s run generate:prisma && npm -s run generate:nexus",
+    "postinstall": "npm -s run generate"
+  }
+}
+```
+
+### Integrate generate into build step
+
+In your deployment pipeline you may wish to run a build step. Heroku buildpacks for example call `npm run build` if that script is defined in your `package.json`. If this is your case and you are a TypeScript user consider a build setup as follows. Prior to `tsc` we run artifact generation so that TypeScript will have types for the all the resolver signatures etc. of your app.
+
+```json
+{
+  "scripts": {
+    "build": "npm -s run generate && tsc"
+  }
+}
+```
 
 ## Legacy Note
 
