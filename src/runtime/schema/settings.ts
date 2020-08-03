@@ -3,14 +3,15 @@ import * as Settings from '../../lib/settings'
 import { Param1 } from '../../lib/utils'
 
 // todo export type from @nexus/schema
-type ConnectionPluginConfig = NonNullable<Param1<typeof NexusSchema.connectionPlugin>> & { enabled?: boolean }
+type ConnectionPluginConfig = NonNullable<Param1<typeof NexusSchema.connectionPlugin>>
 
 type ConnectionPluginConfigPropsManagedByNexus = 'nexusFieldName' | 'nexusSchemaImportId'
 
-const connectionPluginConfigManagedByNexus: Pick<
-  ConnectionPluginConfig,
-  ConnectionPluginConfigPropsManagedByNexus
-> = {
+type ConnectionPluginConfigManagedByNexus = Required<
+  Pick<ConnectionPluginConfig, ConnectionPluginConfigPropsManagedByNexus>
+>
+
+const connectionPluginConfigManagedByNexus: ConnectionPluginConfigManagedByNexus = {
   nexusSchemaImportId: 'nexus/components/schema',
   /**
    * The name of the relay connection field builder. This is not configurable by users.
@@ -21,7 +22,11 @@ const connectionPluginConfigManagedByNexus: Pick<
 /**
  * Relay connection field builder settings for users.
  */
-export type ConnectionSettings = Omit<ConnectionPluginConfig, ConnectionPluginConfigPropsManagedByNexus>
+export type ConnectionSettings = Omit<ConnectionPluginConfig, ConnectionPluginConfigPropsManagedByNexus> & {
+  enabled?: boolean
+}
+
+export type ConnectionSettingsData = ConnectionSettings & ConnectionPluginConfigManagedByNexus
 
 /**
  * The schema settings users can control.
@@ -120,8 +125,8 @@ export type SettingsInput = {
  */
 export type SettingsData = Omit<Settings.DataDefault<SettingsInput>, 'connections'> & {
   connections: {
-    default: ConnectionPluginConfig
-    [connectionTypeName: string]: ConnectionPluginConfig
+    default: ConnectionSettingsData
+    [connectionTypeName: string]: ConnectionSettingsData
   }
 }
 
