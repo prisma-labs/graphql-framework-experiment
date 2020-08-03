@@ -80,9 +80,16 @@ ${red}│${reset}  ${yellow}nexus${reset} bundles ${yellow}graphql${reset} and $
 ${red}│${reset}  So please uninstall the ones you have installed or you
 ${red}│${reset}  may encounter problems.
 ${red}│${reset}  
-${red}│${reset}  Run the following command to fix this issue:
+${red}│${reset}  Run the following commands to fix this issue
+${red}│${reset}
+${red}│${reset}    1. Remove the deps:
 ${red}│${reset} 
-${red}│${reset}  ${green}${getPackageManagerBinName()} remove ${foundDeps.join(' ')}${reset}
+${red}│${reset}       ${green}${getPackageManagerBinName()} remove ${foundPrismaDeps.join(' ')}${reset}
+${red}│${reset}
+${red}│${reset}    2. (Precaution) Reset the node_modules:
+${red}│${reset}
+${red}│${reset}       ${green}rm -rf node_modules${reset}
+${red}│${reset}       ${green}${getPackageManagerBinName()} install${reset}
 ${red}│${reset} 
 ${red}│${reset}  If you absolutely need to control the versions of these
 ${red}│${reset}  dependencies then use Yarn and its ${yellow}resolutions${reset} feature:
