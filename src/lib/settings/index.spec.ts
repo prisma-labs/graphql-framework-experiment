@@ -1,6 +1,26 @@
 import 'jest-extended'
 import * as S from './'
 
+describe('input field specifiers', () => {
+  describe('encounter static errors', () => {
+    it('if missing for a fields in the input type', () => {
+      S.create<{ a: number }>({ spec: { a: {} } })
+      // @ts-expect-error
+      S.create<{ a: number }>({ spec: {} })
+    })
+  })
+  describe('with optional data type', () => {
+    it('can be omitted', () => {
+      const s = S.create<{ a: number }, { a?: number }>({ spec: {} })
+      expect(s.data.a).toBeUndefined()
+    })
+    it('can still be provided too', () => {
+      const s = S.create<{ a: number }, { a?: number }>({ spec: { a: {} } })
+      expect(s.data.a).toBeUndefined()
+    })
+  })
+})
+
 describe('input field initializers', () => {
   describe('throw an error', () => {
     it('when not assigned a function', () => {
@@ -84,7 +104,36 @@ describe('input field initializers', () => {
   })
 })
 
-describe('input field type mappers', () => {})
+describe('input field type mappers', () => {
+  it.todo('are not required by optional input and required data')
+  it.todo('are not required by required input and optional data')
+  it.todo('must return a type assignable to the field data')
+  describe('parameter', () => {
+    it.todo('is not optional even if input field is optional')
+    it.todo('is not optional even if input field is required')
+    it.todo('is optional if field data is optional')
+  })
+  describe('throws errors', () => {
+    it.todo('if assigned something else than a function')
+    it.todo('gracefully if unexpectedly fail')
+  })
+  it('maps the input value to its data value', () => {
+    const s = S.create<{ a?: number }, { a: boolean }>({
+      spec: { a: { initial: () => 1, mapType: (n) => n === 1 } },
+    })
+    expect(s.data.a).toEqual(true)
+  })
+  describe('encounter static errors', () => {
+    it('when field input and field data do not match but mapType missing', () => {
+      // @ts-expect-error
+      S.create<{ a: number }, { a: boolean }>({ spec: { a: {} } })
+    })
+    it('when field input and field data match but mapType present (aka. it is forbidden)', () => {
+      // @ts-expect-error
+      const s = S.create<{ a: number }>({ spec: { a: { mapType: () => 1 } } })
+    })
+  })
+})
 
 // describe('namespaced settings', () => {
 //   it('a setting may be a namespace holding more settings', () => {

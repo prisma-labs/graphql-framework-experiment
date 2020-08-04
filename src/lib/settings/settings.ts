@@ -290,7 +290,14 @@ function initialize(spec: any, data: any, metadata: any) {
           )}`
         )
       }
+
       log.trace('initialize value', { name, value })
+
+      if (specifier.mapType) {
+        value = specifier.mapType(value)
+      }
+
+      log.trace('map value type ', { name, value })
       data[name] = value
       metadata[name] = { value, from: 'initial', initial: value }
     }
