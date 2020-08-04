@@ -23,9 +23,27 @@ it('should not bundle any of the cli', async () => {
     plugins: [],
   })
 
-  const cliFiles = Array.from(files.keys()).filter((f) => f.includes('dist/cli'))
+  const cliFiles = Array.from(files.keys()).filter((f) => f.includes('dist/cli/'))
 
   expect(cliFiles).toMatchInlineSnapshot(`Array []`)
+})
+
+it('should walk files and deps', async () => {
+  const { files } = await traceFiles({
+    base: __dirname,
+    entrypoint: require.resolve('./bundler-fixture'),
+    plugins: [],
+  })
+
+  expect(Array.from(files.keys())).toMatchInlineSnapshot(`
+    Array [
+      "bundler-fixture/dist/index.js",
+      "bundler-fixture/dist/module-b.js",
+      "bundler-fixture/package.json",
+      "bundler-fixture/node_modules/lib-a/package.json",
+      "bundler-fixture/node_modules/lib-a/dist/index.js",
+    ]
+  `)
 })
 
 function walkParents(parents: string[], reasons: NodeFileTraceReasons, path: Array<string | string[]>): void {
