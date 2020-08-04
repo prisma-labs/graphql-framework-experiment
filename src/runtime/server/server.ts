@@ -196,7 +196,7 @@ function createContextCreator(
     // Integrate context from plugins
     for (const plugin of plugins) {
       if (!plugin.context) continue
-      const contextContribution = plugin.context.create(params.req)
+      const contextContribution = await plugin.context.create(params.req)
 
       Object.assign(context, contextContribution)
     }

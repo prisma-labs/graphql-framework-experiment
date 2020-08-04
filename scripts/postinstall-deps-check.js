@@ -84,7 +84,7 @@ ${red}│${reset}  Run the following commands to fix this issue
 ${red}│${reset}
 ${red}│${reset}    1. Remove the deps:
 ${red}│${reset} 
-${red}│${reset}       ${green}${getPackageManagerBinName()} remove ${foundPrismaDeps.join(' ')}${reset}
+${red}│${reset}       ${green}${getPackageManagerBinName()} remove ${foundDeps.join(' ')}${reset}
 ${red}│${reset}
 ${red}│${reset}    2. (Precaution) Reset the node_modules:
 ${red}│${reset}

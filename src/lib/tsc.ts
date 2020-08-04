@@ -345,6 +345,7 @@ export function findModulesThatImportModule(project: TSM.Project, id: string) {
   const data: ModulesWithImportSearchResult[] = []
 
   for (const sourceFile of project.getSourceFiles()) {
+    // TODO: if project folder contains "node_modules" in it, nexus modules won't be found
     if (sourceFile.getFilePath().includes('node_modules')) continue
     let entry: ModulesWithImportSearchResult
     for (const importDec of sourceFile.getImportDeclarations()) {
