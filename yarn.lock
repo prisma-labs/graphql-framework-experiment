@@ -562,10 +562,10 @@
     lodash "^4.17.15"
     strip-ansi "^6.0.0"
 
-"@nexus/schema@^0.15.0-next.1":
-  version "0.15.0-next.1"
-  resolved "https://registry.yarnpkg.com/@nexus/schema/-/schema-0.15.0-next.1.tgz#39def5322a6cc821914a9f2dee40e1333257e9f8"
-  integrity sha512-PBml7hY5DgqTEEEk9jwczUvBcyMtX9HKR8qfbU1tc+kZ+8uRodnSOatMqN6Haz6QuZhkZBLw4gh2gnpOUYWjPw==
+"@nexus/schema@^0.15.0":
+  version "0.15.0"
+  resolved "https://registry.yarnpkg.com/@nexus/schema/-/schema-0.15.0.tgz#4f444417a1163a09d732e5b3b203f22780f4ae63"
+  integrity sha512-Q3JYHlxvQ24z5vGfDbEOT7Q+zIFYvnuPv14jNdQ/KCRk6YQODPD/nSQilfFJW+9CBIhZhWZACjbeALRKFLCwjg==
   dependencies:
     iterall "^1.2.2"
     tslib "^1.9.3"
