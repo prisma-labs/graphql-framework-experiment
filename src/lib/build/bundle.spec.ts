@@ -1,6 +1,7 @@
 import { NodeFileTraceReasons } from '@zeit/node-file-trace'
 import * as Path from 'path'
 import { traceFiles } from './bundle'
+import slash from 'slash'
 
 const base = Path.dirname(require.resolve('../../../package.json'))
 const entrypoint = Path.join(base, 'dist', 'index.js')
@@ -35,7 +36,9 @@ it('should walk files and deps', async () => {
     plugins: [],
   })
 
-  expect(Array.from(files.keys())).toMatchInlineSnapshot(`
+  const walkedPaths = Array.from(files.keys()).map((path) => slash(path))
+
+  expect(walkedPaths).toMatchInlineSnapshot(`
     Array [
       "bundler-fixture/dist/index.js",
       "bundler-fixture/dist/module-b.js",
