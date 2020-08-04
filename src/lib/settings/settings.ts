@@ -3,7 +3,7 @@ import * as Logger from '@nexus/logger'
 import * as Lo from 'lodash'
 import { inspect } from 'util'
 import { IsRecord, PlainObject } from '../utils'
-import { DataDefault, Spec } from './spec'
+import { DataDefault, Spec } from './static'
 
 const log = Logger.log.child('settings')
 
@@ -271,7 +271,9 @@ function initialize(spec: any, data: any, metadata: any) {
       initialize(specifier.fields, data[name], metadata[name].fields)
     } else {
       let value
-      if (specifier.initial) {
+      if (specifier.initial === undefined) {
+        value = undefined
+      } else if (typeof specifier.initial === 'function') {
         try {
           value = specifier.initial()
         } catch (e) {
@@ -282,7 +284,11 @@ function initialize(spec: any, data: any, metadata: any) {
           )
         }
       } else {
-        value = undefined
+        throw new Error(
+          `Initializer for setting "${name}" was configured with a static value. It must be a function. Got: ${inspect(
+            specifier.initial
+          )}`
+        )
       }
       log.trace('initialize value', { name, value })
       data[name] = value

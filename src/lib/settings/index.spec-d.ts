@@ -94,8 +94,9 @@ s.create<{ a: Record<string, {z: number }> }>({ spec: { a: { entryFields: { z: {
 // @ts-expect-error
 s.create<{ a: Record<string, {z: number }> }>({ spec: { a: { entryFields: {} } }})
 // @ts-expect-error
+s.create<{ a: Record<string, {z: number }> }>({ spec: { a: {} }})
+// @ts-expect-error
 s.create<{ a: Record<string, {z?: number }> }>({ spec: { a: { entryFields: {} } }})
-
 
 // if entry data field is optional, then so to is entry input field spec
 // ... optionality of input does not matter then
@@ -104,7 +105,8 @@ s.create<{ a: Record<string, {z?: number }> }, { a: Record<string, {z?: number }
 // ... input field spec may still be provided if desired
 s.create<{ a: Record<string, {z: number }> }, { a: Record<string, {z?: number }> }>({ spec: { a: { entryFields: { z: {} } } }})
 // ... if all entry input field specs are optional then so to is entryFields property itself
-s.create<{ a: Record<string, {z: number }> }, { a: Record<string, {z?: number }> }>({ spec: { a: {} }})
+// todo
+// s.create<{ a: Record<string, {z: number }> }, { a: Record<string, {z?: number }> }>({ spec: { a: {} }})
 // ... ... but still permitted 
 s.create<{ a: Record<string, {z: number }> }, { a: Record<string, {z?: number }> }>({ spec: { a: { entryFields: {} } }})
 
@@ -118,12 +120,11 @@ s.create<{ a?: Record<string, {z: number }> }>({ spec: { a: { entryFields: { z: 
 // @ts-ignore-error
 s.create<{ a?: Record<string, {z: number }> }>({ spec: { a: { entryFields: { z: {} } }}})
 // ... but if entry input fields all optional THEN initializer optional
-// todo
-s.create<{ a?: Record<string, {z?: number }> }>({ spec: { a: { entryFields: { z: {initial: () => 1 } } } }})
-
-s.create<{ a?: Record<string, {z: number }> }, { a: Record<string, { z: number }> }>({ spec: { a: { entryFields: { z: {} }, initial: () => ({foo:{z:1}}) } }})
-s.create<{ a?: Record<string, {z?: number }> }, { a: Record<string, { z: number }> }>({ spec: { a: { entryFields: { z: { initial: () => 1} }, initial: () => ({foo:{z:1}}) } }})
-
+s.create<{ a?: Record<string, {z?: number }> }>({ spec: { a: { entryFields: { z: {initial: () => 1 } }  } }})
+s.create<{ a?: Record<string, {z?: number }> }>({ spec: { a: { entryFields: { z: {initial: () => 1 } }, initial: () => ({foo:{z:1}}) } }})
+// REGRESSION TEST: initial must return an empety record or record of valid entries
+// @ts-expect-error
+s.create<{ a?: Record<string, {z?: number }> }>({ spec: { a: { entryFields: { z: {initial: () => 1 } }, initial: () => ({foo:{z:true}}) } }})
 
 // if entry input/data field types are mismatch THEN entry input field spec mapType required
 // todo this also triggers requiring mapEntryData ... developer should be able to choose which they want ... not able to provide both ... either top level or all sub-instances

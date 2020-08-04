@@ -22,29 +22,23 @@ export type DataDefault<input> = {
 }
 
 type KeysWhereDataRequired<Input, Data> = {
+  // @ts-expect-error
   [K in keyof Input]: undefined extends Data[K] ? never : K
 }[keyof Input]
 
 type KeysWhereDataOptional<Input, Data> = {
+  // @ts-expect-error
   [K in keyof Input]: undefined extends Data[K] ? K : never
 }[keyof Input]
 
-// type FilterInKeys<T, U> = { [K in keyof T]: T[K] extends U ? K : never }[keyof T]
-// type FilterOutKeys<T, U> = { [K in keyof T]: T[K] extends U ? never : K }[keyof T]
+type FilterInKeys<T, U> = { [K in keyof T]: T[K] extends U ? K : never }[keyof T]
+type FilterOutKeys<T, U> = { [K in keyof T]: T[K] extends U ? never : K }[keyof T]
 
 /**
  * todo
  */
 // prettier-ignore
 export type Spec<Input, Data> =
-  // | { raw(input: Input): UnknownFallback<Data, DataDefault<Input>> }
-  // {
-  //   [Key in keyof Input]-?: IncludesRecord<Input[Key]> extends true
-  //     ? RecordSpec<Input[Key], Key, Data>
-  //     : IncludesPlainObjectOrInterface<Input[Key]> extends true
-  //     ? NamespaceSpec<Input[Key], Key, Data>
-  //     : FieldSpec<Input[Key], Key, Data>
-  // }
   (
     KeysWhereDataOptional<Input, Data> extends never
       ? {}
@@ -157,49 +151,71 @@ export type FieldSpec<Field, Key, Data> =
 /**
  * todo: currently assumes Record<string, object>
  */
-//prettier-ignore
+// prettier-ignore
+// @ts-expect-error
 export type RecordSpec<Dict, K, Data, VarEntryInput = ExcludeUndefined<Dict>[string]> =
   // | { raw(input: Dict): Data[K] }
   (
-    KeysWhereDataRequired<Spec<VarEntryInput, Data[K][string]>> extends never
-      ? {
-          entryFields: Spec<VarEntryInput, Data[K][string]>
-        }
-      : {
-          entryFields?: Spec<VarEntryInput, Data[K][string]>
-        }
+    {
+        /**
+         * Specify the settings input for each entry in the record.
+         */
+          // @ts-expect-error
+        entryFields: Spec<VarEntryInput, Data[K][string]>
+    }
   ) &
-  /**
-   * If namespace is union with non-pojo type then shorthand required 
-   */
-  (
-    ExcludePlainObjectOrInterface<VarEntryInput> extends never
-    ? {}
-    : {
-        // Reason for ExcludeUndefined is that a type with optional properties + index
-        // sig will force the index sig to have undefined. This pattern seems common enough
-        // to support here, and harmless, since, pure records shouldn't have semantic meaning of
-        // undefined value on keys.
-        entryShorthand(input: ExcludeUndefined<ExcludePlainObjectOrInterface<VarEntryInput>>): OnlyPlainObjectOrInterface<VarEntryInput>
-      }
-  ) &
-  /**
-   * if input is optional then initial is required
-   */
-  (
-    undefined extends Dict
-      ? {
-          initial(): ExcludeUndefined<Dict>
-        }
-      : {}
-  ) & 
-  /**
-   * if data has fields that are not present in input THEN mapData is required 
-   */
-  (
-    ExcludeShorthand<Required<VarEntryInput>> extends Required<Data[K][string]>
+  // (
+  //   KeysWhereDataRequired<Spec<VarEntryInput, Data[K][string]>, Data[K][string]> extends never
+  //   ? {
+  //       /**
+  //        * Specify the record entry settings.
+  //        */
+  //       entryFields: Spec<VarEntryInput, Data[K][string]>
+  //     }
+  //   : {
+  //     a: [Data, K]
+  //       /**
+  //        * Specify the settings that each entry will have.
+  //        * 
+  //        * @remarks Optional because all of the settings data is optional.
+  //        */
+  //       entryFields?: Spec<VarEntryInput, Data[K][string]>
+  //     }
+  //   ) &
+    /**
+     * If namespace is union with non-pojo type then shorthand required
+     */
+    (ExcludePlainObjectOrInterface<VarEntryInput> extends never
       ? {}
       : {
-        mapEntryData(input: ExcludeShorthand<VarEntryInput>): Data[K][string]
-      }
-  )
+          // Reason for ExcludeUndefined is that a type with optional properties + index
+          // sig will force the index sig to have undefined. This pattern seems common enough
+          // to support here, and harmless, since, pure records shouldn't have semantic meaning of
+          // undefined value on keys.
+          entryShorthand(
+            input: ExcludeUndefined<ExcludePlainObjectOrInterface<VarEntryInput>>
+          ): OnlyPlainObjectOrInterface<VarEntryInput>
+        }) &
+    /**
+     * if input is optional then initial is required
+     * unless all
+     */
+    (undefined extends Dict
+      ? FilterOutKeys<VarEntryInput, undefined> extends never
+        ? {
+            initial?(): ExcludeUndefined<Dict>
+          }
+        : {
+            initial(): ExcludeUndefined<Dict>
+          }
+      : {}) &
+    /**
+     * if data has fields that are not present in input THEN mapData is required
+     */
+    // @ts-expect-error
+    (ExcludeShorthand<Required<VarEntryInput>> extends Required<Data[K][string]>
+      ? {}
+      : {
+          // @ts-expect-error
+          mapEntryData(input: ExcludeShorthand<VarEntryInput>): Data[K][string]
+        })
