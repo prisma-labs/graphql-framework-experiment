@@ -1,7 +1,7 @@
 import { NodeFileTraceReasons } from '@zeit/node-file-trace'
 import * as Path from 'path'
-import { traceFiles } from './bundle'
 import slash from 'slash'
+import { traceFiles } from './bundle'
 
 const base = Path.dirname(require.resolve('../../../package.json'))
 const entrypoint = Path.join(base, 'dist', 'index.js')
@@ -45,6 +45,8 @@ it('should walk files and deps', async () => {
       "bundler-fixture/package.json",
       "bundler-fixture/node_modules/lib-a/package.json",
       "bundler-fixture/node_modules/lib-a/dist/index.js",
+      "bundler-fixture/node_modules/lib-a/node_modules/lib-b/package.json",
+      "bundler-fixture/node_modules/lib-a/node_modules/lib-b/dist/index.js",
     ]
   `)
 })
