@@ -1,5 +1,6 @@
 import { NodeFileTraceReasons } from '@zeit/node-file-trace'
 import * as Path from 'path'
+import slash from 'slash'
 import { traceFiles } from './bundle'
 
 const base = Path.dirname(require.resolve('../../../package.json'))
@@ -23,9 +24,31 @@ it('should not bundle any of the cli', async () => {
     plugins: [],
   })
 
-  const cliFiles = Array.from(files.keys()).filter((f) => f.includes('dist/cli'))
+  const cliFiles = Array.from(files.keys()).filter((f) => f.includes('dist/cli/'))
 
   expect(cliFiles).toMatchInlineSnapshot(`Array []`)
+})
+
+it('should walk files and deps', async () => {
+  const { files } = await traceFiles({
+    base: __dirname,
+    entrypoint: require.resolve('./bundler-fixture'),
+    plugins: [],
+  })
+
+  const walkedPaths = Array.from(files.keys()).map((path) => slash(path))
+
+  expect(walkedPaths).toMatchInlineSnapshot(`
+    Array [
+      "bundler-fixture/dist/index.js",
+      "bundler-fixture/dist/module-b.js",
+      "bundler-fixture/package.json",
+      "bundler-fixture/node_modules/lib-a/package.json",
+      "bundler-fixture/node_modules/lib-a/dist/index.js",
+      "bundler-fixture/node_modules/lib-a/node_modules/lib-b/package.json",
+      "bundler-fixture/node_modules/lib-a/node_modules/lib-b/dist/index.js",
+    ]
+  `)
 })
 
 function walkParents(parents: string[], reasons: NodeFileTraceReasons, path: Array<string | string[]>): void {

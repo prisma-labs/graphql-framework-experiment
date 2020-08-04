@@ -1,4 +1,4 @@
-import fileTrace from '@zeit/node-file-trace'
+import { nodeFileTrace } from '@zeit/node-file-trace'
 import * as fs from 'fs'
 import * as fsJetpack from 'fs-jetpack'
 import * as Path from 'path'
@@ -65,7 +65,7 @@ export async function traceFiles(opts: Pick<BundleOptions, 'base' | 'plugins' | 
   const sourceCache = new Map<string, Entry>()
   const worktimeTesttimePluginPaths = getWorktimeAndTesttimePluginPaths(opts.base, opts.plugins)
 
-  const { fileList, reasons } = await fileTrace([opts.entrypoint], {
+  const { fileList, reasons } = await nodeFileTrace([opts.entrypoint], {
     ts: true,
     mixedModules: true,
     base: opts.base,
@@ -76,9 +76,9 @@ export async function traceFiles(opts: Pick<BundleOptions, 'base' | 'plugins' | 
     ignore: ['node_modules/prettier/index.js', 'node_modules/@prisma/client/scripts/**/*'],
     readFile(fsPath: string): Buffer | string | null {
       const relPath = Path.relative(opts.base, fsPath)
-
       const cached = sourceCache.get(relPath)
-      if (cached) return cached.toString()
+
+      if (cached) return cached.source
       // null represents a not found
       if (cached === null) return null
       try {
@@ -93,7 +93,7 @@ export async function traceFiles(opts: Pick<BundleOptions, 'base' | 'plugins' | 
         const source: string | Buffer = fs.readFileSync(fsPath)
         const { mode } = fs.lstatSync(fsPath)
         sourceCache.set(relPath, { source, mode })
-        return source.toString()
+        return source
       } catch (e) {
         if (e.code === 'ENOENT' || e.code === 'EISDIR') {
           sourceCache.set(relPath, null)
