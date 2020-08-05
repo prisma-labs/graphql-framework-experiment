@@ -10,6 +10,7 @@ import {
   IncludesPlainObjectOrInterface,
   IncludesRecord,
   KeepOptionalKeys,
+  KeepRequiredKeys,
   OnlyPlainObjectOrInterface,
 } from '../utils'
 
@@ -86,14 +87,14 @@ export type NamespaceSpec<Namespace, Key, Data> =
    *      namespace (data) with namespace (input) field initializers)
    */
   (
-    Includes<Namespace, undefined> extends true
+    undefined extends Namespace
       ? {} extends KeepOptionalKeys<Namespace>
         ? {}
         //todo ...?
         // @ts-ignore
         : Includes<Data[Key], undefined> extends true
           ? {}
-          : { initial(): Exclude<Namespace, undefined> }
+          : { initial(): KeepRequiredKeys<Exclude<Namespace, undefined>> }
       : {}
   )
 

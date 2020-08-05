@@ -198,40 +198,70 @@ describe('input field type mappers', () => {
   })
 })
 
-// describe('namespaced settings', () => {
-//   it('a setting may be a namespace holding more settings', () => {
-//     type d = { a: { b: string } }
-//     const settings = S.create<d>({ spec: { a: { fields: { b: { initial: c('') } } } } })
-//     expect(settings.data.a.b).toEqual('')
-//   })
-//   it('a namespaced setting can be changed', () => {
-//     type d = { a: { b: string } }
-//     const settings = S.create<d>({ spec: { a: { fields: { b: { initial: c('b') } } } } })
-//     expect(settings.change({ a: { b: 'b2' } }).data).toEqual({ a: { b: 'b2' } })
-//   })
-//   it('changing namespaced settings merges deeply preserving existing settings not targetted by the change', () => {
-//     type d = { a: { a: string; b: number }; b: number }
-//     const settings = S.create<d>({
-//       spec: {
-//         a: {
-//           fields: {
-//             b: { initial: c(1) },
-//             a: { initial: c('a') },
-//           },
-//         },
-//         b: { initial: c(1) },
-//       },
-//     })
-//     expect(settings.change({ a: { a: 'a2' } }).data).toEqual({ a: { a: 'a2', b: 1 }, b: 1 })
-//   })
-//   it('giving object to a non-namespace will error gracefully', () => {
-//     type d = { a: string }
-//     const settings = S.create<d, any>({ spec: { a: { initial: c('') } } })
-//     expect(() => settings.change({ a: { b: '' } })).toThrowErrorMatchingInlineSnapshot(
-//       `"Setting \\"a\\" is not a namespace and so does not accept objects, but one given: { b: '' }"`
-//     )
-//   })
-// })
+describe('namespaces', () => {
+  describe('static errors', () => {
+    it('a field requires an initializer if the input is optional', () => {
+      S.create<{ a?: { b?: 1 } }>({ spec: { a: { fields: { b: { initial: c(1) } } } } })
+      // @ts-expect-error
+      S.create<{ a?: { b?: 1 } }>({ spec: { a: { fields: { b: {} } } } })
+    })
+    it('a field cannot have an initializer if the input is required', () => {
+      S.create<{ a: { b: 1 } }>({ spec: { a: { fields: { b: {} } } } })
+      // @ts-expect-error
+      S.create<{ a: { b: 1 } }>({ spec: { a: { fields: { b: { initial: c(1) } } } } })
+    })
+    it('if the namespace is optional but its fields are required then namespace must have initializer', () => {
+      S.create<{ a?: { b: 1 } }>({ spec: { a: { initial: c({ b: 1 }), fields: { b: {} } } } })
+      // @ts-expect-error missing a.initial
+      S.create<{ a?: { b: 1 } }>({ spec: { a: { fields: { b: {} } } } })
+    })
+    it('namespace initializer only needs to return required fields', () => {
+      S.create<{ a?: { b: 1; c?: 2 } }>({
+        spec: { a: { initial: c({ b: 1 }), fields: { b: {}, c: { initial: c(2) } } } },
+      })
+      // @ts-expect-error missing initializer
+      S.create<{ a?: { b: 1; c?: 2 } }>({ spec: { a: { initial: c({ b: 1 }), fields: { b: {}, c: {} } } } })
+      // prettier-ignore
+      // @ts-expect-error missing required fields in namespace initializer
+      S.create<{ a?: { b: 1; c?: 2 } }>({ spec: { a: { initial: c({}), fields: { b: {}, c: { initial: c(2) } } } } })
+    })
+  })
+  it('namespace initializer initializes its data', () => {
+    const s = S.create<{ a?: { b: 1 } }>({ spec: { a: { initial: c({ b: 1 }), fields: { b: {} } } } })
+    expect(s.data).toEqual({ a: { b: 1 } })
+  })
+  it('namespace initializer statically (todo) cannot provide optional fields and if it does are overriden by the field initializer', () => {
+    // todo this should raise a compiler warning but it does not because of https://github.com/microsoft/TypeScript/issues/241#issuecomment-669138047
+    // @ ts-expect-error c prop forbidden from namespace initializer
+    // prettier-ignore
+    const s = S.create<{ a?: { b: 1, c?: number } }>({ spec: { a: { log:{b:1,c:2}, log2: {b:1,c:2}, initial(){ return { b:1, c: 3 } }, fields: { b: {}, c:{initial: c(2) } } } } })
+    expect(s.data).toEqual({ a: { b: 1, c: 2 } })
+  })
+  it('a field initializer initializes its data', () => {
+    const settings = S.create<{ a?: { b?: 1 } }>({ spec: { a: { fields: { b: { initial: c(1) } } } } })
+    expect(settings.data.a.b).toEqual(1)
+  })
+  it('data can be changed', () => {
+    const settings = S.create<{ a?: { b?: number } }>({ spec: { a: { fields: { b: { initial: c(1) } } } } })
+    expect(settings.change({ a: { b: 2 } }).data).toEqual({ a: { b: 2 } })
+  })
+  it('data merges deeply preserving existing data not targetted by input', () => {
+    const settings = S.create<{ a?: { a?: number; b?: number }; b?: number }>({
+      spec: {
+        a: { fields: { a: { initial: c(1) }, b: { initial: c(2) } } },
+        b: { initial: c(3) },
+      },
+    })
+    expect(settings.change({ a: { a: 4 } }).data).toEqual({ a: { a: 4, b: 2 }, b: 3 })
+  })
+  it('passing a plain object to a non-namespace field will error gracefully', () => {
+    const s = S.create<{ a?: 1 }>({ spec: { a: { initial: c(1) } } })
+    // @ts-expect-error
+    expect(() => s.change({ a: { b: 2 } })).toThrowErrorMatchingInlineSnapshot(
+      `"Setting \\"a\\" is not a namespace and so does not accept objects, but one given: { b: 2 }"`
+    )
+  })
+})
 
 // describe('namespace shorthands', () => {
 //   it('a namespace may have a shorthand', () => {

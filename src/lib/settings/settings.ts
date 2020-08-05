@@ -277,13 +277,17 @@ function resolve(options: Options, spec: any, input: any, data: any, metadata: a
 function initialize(spec: any, data: any, metadata: any) {
   Lo.forOwn(spec, (specifier: any, name: string) => {
     if (specifier.fields) {
-      data[name] = data[name] ?? {}
-      metadata[name] = metadata[name] ?? { fields: {} }
+      const initializedNamespace = specifier.initial?.() ?? {}
+      data[name] = data[name] ?? initializedNamespace
+      metadata[name] = metadata[name] ?? {
+        fields: Lo.mapValues(initializedNamespace, (v, k) => ({ value: v, from: 'initial', initial: v })),
+      }
       initialize(specifier.fields, data[name], metadata[name].fields)
     } else {
       let value
       if (specifier.initial === undefined) {
-        value = undefined
+        // the namespace might have initialized some data
+        value = data[name] ?? undefined
       } else if (typeof specifier.initial === 'function') {
         try {
           value = specifier.initial()

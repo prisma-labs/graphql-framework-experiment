@@ -1,4 +1,5 @@
 import * as tsd from 'tsd'
+import { KeepRequiredKeys } from '../utils'
 import * as s from './'
 
 /**
@@ -185,5 +186,14 @@ tsd.expectType<{a: { a: number }}>({} as s.DataDefault<{ a: 1 | A }>)
 
 // optionality
 const dataDefualt1b: s.DataDefault<{ a?: 1 }>             = { a: 1 }
-//@ts-expect-error
+// @ts-expect-error
 const dataDefualt1c: s.DataDefault<{ a?: 1 }>             = { a: undefined }
+
+/**
+ * helpers
+ */
+
+// KeepRequiredKeys
+tsd.expectType<{a: 1}>({} as KeepRequiredKeys<{ a: 1; b?: 2 }>)
+// @ts-expect-error
+tsd.expectError<{a: 1}>({b:2} as KeepRequiredKeys<{ a: 1; b?: 2 }>)

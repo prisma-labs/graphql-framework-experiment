@@ -67,11 +67,13 @@ export type IncludesPlainObject<T> = Only<T, PlainObject> extends never ? false 
 export type Only<T, U> = Exclude<T, Exclude<T, U>>
 
 export type KeepOptionalKeys<t> = {
-  [k in keyof t]: Includes<t[k], undefined> extends true ? t[k] : never
+  [k in keyof t]: undefined extends t[k] ? t[k] : never
 }
 
+export type GetRequiredKeys<T> = { [K in keyof T]: undefined extends T[K] ? never : K }[keyof T]
+
 export type KeepRequiredKeys<t> = {
-  [k in keyof t]: Includes<t[k], undefined> extends true ? never : t[k]
+  [k in ExcludeUndefined<GetRequiredKeys<t>>]-?: undefined extends t[k] ? never : t[k]
 }
 
 export type UnknownFallback<T, U> = unknown extends T ? U : T
