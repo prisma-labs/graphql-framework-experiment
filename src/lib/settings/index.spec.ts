@@ -1,4 +1,5 @@
 import 'jest-extended'
+import * as tsd from 'tsd'
 import * as S from './'
 
 describe('input field specifiers', () => {
@@ -43,7 +44,7 @@ describe('input field initializers', () => {
           },
         })
       ).toThrowError(
-        'There was an unexpected error while running the dynamic initializer for setting "a" \nUnexpected error while trying to initialize setting'
+        'There was an unexpected error while running the initializer for setting "a" \nUnexpected error while trying to initialize setting'
       )
     })
   })
@@ -95,42 +96,104 @@ describe('input field initializers', () => {
       const s = S.create<{ a?: null }>({ spec: { a: { initial: c(null) } } })
       expect(s.data.a).toEqual(null)
     })
-    //prettier-ignore
-    it('boolean, number, string', () => {
+    // prettier-ignore
+    it('boolean, number, string, literal', () => {
       expect(S.create<{ a?: boolean }>({ spec: { a: { initial: c(true) } } }).data.a).toEqual(true)
       expect(S.create<{ a?: number }>({ spec: { a: { initial: c(1) } } }).data.a).toEqual(1)
+      expect(S.create<{ a?: 2 }>({ spec: { a: { initial: c(2) } } }).data.a).toEqual(2)
       expect(S.create<{ a?: string }>({ spec: { a: { initial: c('a') } } }).data.a).toEqual('a')
     })
   })
 })
 
+describe('validation', () => {
+  it('if mapType is assigned non-function', () => {
+    expect(() => {
+      // @ts-expect-error
+      S.create<{ a: number }, { a: boolean }>({ spec: { a: { mapType: 1 } } })
+    }).toThrowError('Type mapper for setting "a" was invalid. Type mappers must be functions. Got: 1')
+  })
+  it('if mapType is assigned non-function (record)', () => {
+    expect(() => {
+      // prettier-ignore
+      // @ts-expect-error
+      S.create<{ a: Record<string, {b:1}> }, { a: Record<string, {b:2}> }>({ spec: { a: { entryFields: { b: { mapType: 1 } } } } })
+    }).toThrowError('Type mapper for setting "b" was invalid. Type mappers must be functions. Got: 1')
+  })
+})
+
 describe('input field type mappers', () => {
-  it.todo('are not required by optional input and required data')
-  it.todo('are not required by required input and optional data')
-  it.todo('must return a type assignable to the field data')
-  describe('parameter', () => {
-    it.todo('is not optional even if input field is optional')
-    it.todo('is not optional even if input field is required')
-    it.todo('is optional if field data is optional')
-  })
-  describe('throws errors', () => {
-    it.todo('if assigned something else than a function')
-    it.todo('gracefully if unexpectedly fail')
-  })
-  it('maps the input value to its data value', () => {
-    const s = S.create<{ a?: number }, { a: boolean }>({
-      spec: { a: { initial: () => 1, mapType: (n) => n === 1 } },
+  it('do not relate to the optionality of the input or the data', () => {
+    // show that  mapType is still an required
+    S.create<{ a?: number }, { a: boolean }>({
+      spec: { a: { mapType: (a) => Boolean(a), initial: () => 1 } },
     })
-    expect(s.data.a).toEqual(true)
+    S.create<{ a: number }, { a?: boolean }>({ spec: { a: { mapType: (a) => a === 1 } } })
+    // show that missing mapType is still an error
+    // @ts-expect-error
+    S.create<{ a?: number }, { a: boolean }>({ spec: { a: { initial: () => 1 } } })
+    // @ts-expect-error
+    S.create<{ a: number }, { a?: boolean }>({ spec: { a: {} } })
+  })
+  describe('receive one parameter containing the input that is', () => {
+    it('not optional', () => {
+      //prettier-ignore
+      S.create<{ a: number }, { a: boolean }>({ spec: { a: { mapType: (a) => { tsd.expectType<number>(a); return true } } } })
+    })
+    it('not optional even if input field is optional', () => {
+      //prettier-ignore
+      S.create<{ a?: number }, { a: boolean }>({ spec: { a: { mapType: (a) => { tsd.expectType<number>(a); return true }, initial: () => 1 } } })
+    })
+  })
+  describe('return type', () => {
+    it('includes undefined if data is optionl', () => {
+      S.create<{ a: number }, { a?: boolean }>({ spec: { a: { mapType: () => undefined } } })
+    })
+  })
+  describe('at construction time', () => {
+    it('maps the initial value to its data value', () => {
+      const s = S.create<{ a?: number }, { a: boolean }>({
+        spec: { a: { initial: () => 1, mapType: (n) => n === 1 } },
+      })
+      expect(s.data.a).toEqual(true)
+    })
+    it('gracefully throws if unexpectedly fail', () => {
+      expect(() => {
+        //prettier-ignore
+        S.create<{ a: number }, { a?: boolean }>({ spec: { a: { mapType() { throw new Error('Oops') } } } })
+      }).toThrowError('There was an unexpected error while running the type mapper for setting "a" \nOops')
+    })
+  })
+  describe('at change time', () => {
+    it('maps the changed value to its data value', () => {
+      // prettier-ignore
+      const s = S.create<{ a?: number }, { a: boolean }>({ spec: { a: { initial: () => 1, mapType: (n) => n === 1 } } })
+      s.change({ a: 2 })
+      expect(s.data.a).toEqual(false)
+    })
+    it('gracefully throws if unexpectedly fail', () => {
+      //prettier-ignore
+      const mapType = jest.fn().mockImplementationOnce(() => true).mockImplementation(() => { throw new Error('Oops') })
+      expect(() => {
+        //prettier-ignore
+        const s = S.create<{ a: number }, { a?: boolean }>({ spec: { a: { mapType } } })
+        s.change({ a: 2 })
+      }).toThrowError('There was an unexpected error while running the type mapper for setting "a" \nOops')
+    })
   })
   describe('encounter static errors', () => {
-    it('when field input and field data do not match but mapType missing', () => {
+    it('are required when input type is not assignable to data type', () => {
+      S.create<{ a: number }, { a: boolean }>({ spec: { a: { mapType: (a) => Boolean(a) } } })
       // @ts-expect-error
       S.create<{ a: number }, { a: boolean }>({ spec: { a: {} } })
     })
-    it('when field input and field data match but mapType present (aka. it is forbidden)', () => {
+    it('are forbidden when the input type is assignable to data type', () => {
       // @ts-expect-error
-      const s = S.create<{ a: number }>({ spec: { a: { mapType: () => 1 } } })
+      S.create<{ a: number }, { a: number }>({ spec: { a: { mapType: (a) => Boolean(a) } } })
+    })
+    it('must return a type assignable to the field data', () => {
+      // @ts-expect-error
+      S.create<{ a: number }, { a: boolean }>({ spec: { a: { mapType: () => 1 } } })
     })
   })
 })

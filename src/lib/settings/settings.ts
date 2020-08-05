@@ -93,6 +93,10 @@ export function create<Input extends PlainObject, Data extends PlainObject = Dat
 }: {
   spec: Spec<Input, Data>
 } & Options): Manager<Input, Data> {
+  if (isDevelopment()) {
+    validateSpec(spec)
+  }
+
   const state = {
     data: {} as Data,
     original: (undefined as any) as Data, // lazy
@@ -250,6 +254,13 @@ function resolve(options: Options, spec: any, input: any, data: any, metadata: a
         }
       }
 
+      /**
+       * Run type mappers
+       */
+      if (specifier.mapType) {
+        resolvedValue = runTypeMapper(specifier.mapType, resolvedValue, name)
+      }
+
       data[name] = resolvedValue
       metadata[name].value = resolvedValue
       metadata[name].from = 'set'
@@ -280,7 +291,7 @@ function initialize(spec: any, data: any, metadata: any) {
           throw ono(
             e,
             { name },
-            `There was an unexpected error while running the dynamic initializer for setting "${name}"`
+            `There was an unexpected error while running the initializer for setting "${name}"`
           )
         }
       } else {
@@ -294,7 +305,7 @@ function initialize(spec: any, data: any, metadata: any) {
       log.trace('initialize value', { name, value })
 
       if (specifier.mapType) {
-        value = specifier.mapType(value)
+        value = runTypeMapper(specifier.mapType, value, name)
       }
 
       log.trace('map value type ', { name, value })
@@ -302,4 +313,57 @@ function initialize(spec: any, data: any, metadata: any) {
       metadata[name] = { value, from: 'initial', initial: value }
     }
   })
+}
+
+function runTypeMapper(typeMapper: any, value: any, fieldName: string): any {
+  try {
+    return typeMapper(value)
+  } catch (e) {
+    throw ono(
+      e,
+      { fieldName },
+      `There was an unexpected error while running the type mapper for setting "${fieldName}"`
+    )
+  }
+}
+
+/**
+ * Validate the spec for basic invariants.
+ */
+function validateSpec(spec: any) {
+  Lo.forOwn(spec, (specifier: any, name: string) => {
+    if (specifier.fields) {
+      validateSpec(specifier.fields)
+      return
+    }
+
+    if (specifier.entryFields) {
+      validateSpec(specifier.entryFields)
+      return
+    }
+
+    if (specifier.mapType !== undefined && typeof specifier.mapType !== 'function') {
+      throw new Error(
+        `Type mapper for setting "${name}" was invalid. Type mappers must be functions. Got: ${inspect(
+          specifier.mapType
+        )}`
+      )
+    }
+  })
+}
+
+/**
+ * Check if curerntly in production mode defined as
+ * NODE_ENV environment variable equaling "production".
+ */
+function isProduction(): boolean {
+  return process.env.NODE_ENV === 'production'
+}
+
+/**
+ * Check if curerntly in development mode defined as
+ * NODE_ENV environment variable not equaling "production".
+ */
+function isDevelopment(): boolean {
+  return process.env.NODE_ENV !== 'production'
 }
