@@ -40,6 +40,7 @@ export interface CreateTestContextOptions {
    * You should typically use this if you're using `nexus dev --entrypoint` or `nexus build --entrypoint`.
    */
   entrypointPath?: string
+  projectRoot?: string
 }
 
 /**
@@ -68,7 +69,7 @@ export async function createTestContext(opts?: CreateTestContextOptions): Promis
   process.env.NEXUS_STAGE = 'dev'
 
   // todo figure out some caching system here, e.g. imagine jest --watch mode
-  const layout = rightOrFatal(await Layout.create({ entrypointPath: opts?.entrypointPath }))
+  const layout = rightOrFatal(await Layout.create({ entrypointPath: opts?.entrypointPath, projectRoot: opts?.projectRoot }))
   const pluginManifests = await PluginWorktime.getUsedPlugins(layout)
   const randomPort = await getPort({ port: getPort.makeRange(4000, 6000) })
   const privateApp = app as PrivateApp
