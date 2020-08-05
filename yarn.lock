@@ -3214,10 +3214,10 @@ graphql-extensions@^0.12.4:
     apollo-server-env "^2.4.5"
     apollo-server-types "^0.5.1"
 
-graphql-request@^2.1.0-next.1:
-  version "2.1.0-next.1"
-  resolved "https://registry.yarnpkg.com/graphql-request/-/graphql-request-2.1.0-next.1.tgz#d0771d814ebcb39ea67208da12e301f3f5d6a80d"
-  integrity sha512-9Qr+z4FCzxwFrnG9BE366v9KcgRXLv2bmFkj3RHfSQNDgPHCUM2mA83bwjhgxg4jig/F8X/pcceOZPwRkMleKQ==
+graphql-request@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/graphql-request/-/graphql-request-3.0.0.tgz#942d81bbd621cc2223d35fbf2b42edf8be822b83"
+  integrity sha512-zW8AuLnKMYOnpVKdANU9FzLDoj4u4AoU6KZ79e+BcJaNiuw/vgCJ0p7ppDMSDrW77a12Moa7J7Mg4w0f9Kd/Kg==
   dependencies:
     cross-fetch "^3.0.4"
 
