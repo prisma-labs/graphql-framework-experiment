@@ -71,7 +71,7 @@ export function create(appState: AppState) {
       get graphql() {
         return (
           assembledGuard(appState, 'app.server.handlers.graphql', () => {
-            if (Boolean(settings.data.cors)) {
+            if (settings.data.cors.enabled) {
               log.warn('CORS does not work for serverless handlers. Settings will be ignored.')
             }
 
@@ -81,7 +81,12 @@ export function create(appState: AppState) {
               {
                 path: settings.data.path,
                 introspection: settings.data.graphql.introspection,
-                playground: settings.data.playground,
+                playground: settings.data.playground.enabled
+                  ? {
+                      endpoint: settings.data.path,
+                      settings: settings.data.playground.settings,
+                    }
+                  : false,
                 errorFormatterFn: errorFormatter,
               }
             )
