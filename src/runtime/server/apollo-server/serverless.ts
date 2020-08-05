@@ -80,6 +80,7 @@ export class ApolloServerless extends ApolloServerBase {
 
   private isPlaygroundRequest(req: IncomingMessage) {
     const playgroundEnabled = Boolean(this.playgroundOptions) && req.method === 'GET'
+    const playgroundEnabled = this.playgroundOptions.enabled && req.method === 'GET'
     const acceptTypes = accepts(req).types() as string[]
     const prefersHTML =
       acceptTypes.find((x: string) => x === 'text/html') === 'text/html'

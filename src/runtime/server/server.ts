@@ -81,7 +81,7 @@ export function create(appState: AppState) {
               {
                 path: settings.data.path,
                 introspection: settings.data.graphql.introspection,
-                playground: settings.data.playground.enabled ? settings.data.playground.settings : false,
+                playground: settings.data.playground,
                 errorFormatterFn: errorFormatter,
               }
             )
