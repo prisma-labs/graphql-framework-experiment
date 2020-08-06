@@ -632,12 +632,12 @@ describe('field fixups', () => {
 //   })
 // })
 
-// describe('value merging', () => {
-//   it('changing an array setting replaces the existing array', () => {
-//     const settings = S.create<{ a: string[] }>({ spec: { a: { initial: c(['foo']) } } })
-//     expect(settings.change({ a: ['bar'] }).data).toEqual({ a: ['bar'] })
-//   })
-// })
+describe('.change()', () => {
+  it('arrays do not merge', () => {
+    const s = S.create<{ a?: string[] }>({ spec: { a: { initial: c(['foo']) } } })
+    expect(s.change({ a: ['bar'] }).data).toEqual({ a: ['bar'] })
+  })
+})
 
 /**
  * Helpers
