@@ -261,81 +261,64 @@ describe('namespaces', () => {
       `"Setting \\"a\\" is not a namespace and so does not accept objects, but one given: { b: 2 }"`
     )
   })
+  describe('with shorthands', () => {
+    it('allow a value to be assigned directly to the namespace field', () => {
+      type i = { a?: number | { b?: number } }
+      type d = { a: { b: number } }
+      const settings = S.create<i, d>({
+        // prettier-ignore
+        spec: { a: { shorthand: (value) => ({ b: value + 100 }), fields: { b: { initial: c(1) } } } }
+      })
+      expect(settings.data).toEqual({ a: { b: 1 } })
+      expect(settings.change({ a: 2 }).data).toEqual({ a: { b: 102 } })
+    })
+    describe('runtime errors', () => {
+      it('unexpected shorthand errors fail gracefully', () => {
+        type d = { a: { b: number } }
+        type i = { a: number | { b: number } }
+        // prettier-ignore
+        const settings = S.create<i, d>({ spec: { a: { shorthand(value) { throw new Error(`Unexpected shorthand error with value ${value}`) }, fields: { b: { initial: c('') } } } } })
+        expect(() => settings.change({ a: 100 }).data.a).toThrowError(
+          'There was an unexpected error while running the namespace shorthand for setting "a". The given value was 100 \nUnexpected shorthand error with value 100'
+        )
+      })
+    })
+    it('still accepts longhand input', () => {
+      type d = { a: { b: number } }
+      type i = { a: number | { b: number } }
+      const settings = S.create<i, d>({
+        // prettier-ignore
+        spec: { a: { shorthand: (n) => ({ b: n + 100 }) , fields: { b: { initial: c(1) } } } }
+      })
+      expect(settings.change({ a: { b: 3 } }).data.a).toEqual({ b: 3 })
+    })
+    it('can be a type that differs from the longhand', () => {
+      type i = { a: (() => number) | { b: string } }
+      type d = { a: { b: string } }
+      const settings = S.create<i, d>({
+        // prettier-ignore
+        spec: { a: { shorthand: (f) => ({ b: f().toString() }), fields: { b: {} } } }
+      })
+      expect(settings.change({ a: () => 1 }).data).toEqual({ a: { b: '1' } })
+    })
+    it('if input/data types differ and shorthand used the type mapper receives the expanded input', () => {
+      // prettier-ignore
+      const settings = S.create<{ a: string | { b: string } }, { a: { b: number } }>({
+        spec: { a: {
+          shorthand: (s) => ({b:s}),
+          fields: { b: { mapType(v) { tsd.expectType<string>(v); return Number(v) } } } } }
+      })
+      expect(settings.change({ a: '1' }).data).toEqual({ a: { b: 1 } })
+    })
+    it('changing with a shorthand on a namespace that does not support them will error gracefully', () => {
+      const settings = S.create<{ a: { b: string } }>({ spec: { a: { fields: { b: {} } } } })
+      // @ts-expect-error
+      expect(() => settings.change({ a: 'runtime error' })).toThrowError(
+        'Setting "a" is a namespace with no shorthand so expects an object but received a non-object: \'runtime error\''
+      )
+    })
+  })
 })
-
-// describe('namespace shorthands', () => {
-//   it('a namespace may have a shorthand', () => {
-//     type d = { a: { b: string } }
-//     type i = { a: string | { b: string } }
-//     const settings = S.create<d, i>({
-//       spec: {
-//         a: {
-//           shorthand(value) {
-//             return { b: value + ' via shorthand!' }
-//           },
-//           fields: { b: { initial: c('') } },
-//         },
-//       },
-//     })
-//     expect(settings.data.a.b).toEqual('')
-//     expect(settings.change({ a: 'some change' }).data.a).toEqual({ b: 'some change via shorthand!' })
-//   })
-//   it('unexpected shorthand errors fail gracefully', () => {
-//     type d = { a: { b: string } }
-//     type i = { a: string | { b: string } }
-//     const settings = S.create<d, i>({
-//       spec: {
-//         a: {
-//           shorthand(value) {
-//             throw new Error('Unexpected shorthand error')
-//           },
-//           fields: { b: { initial: c('') } },
-//         },
-//       },
-//     })
-//     expect(() => settings.change({ a: 'some change' }).data.a).toThrowErrorMatchingInlineSnapshot(`
-//       "There was an unexpected error while running the namespace shorthand for setting \\"a\\". The given value was 'some change'
-//       Unexpected shorthand error"
-//     `)
-//   })
-//   it('a namespace with a shorthand still accepts non-shorthand input', () => {
-//     type d = { a: { b: string } }
-//     type i = { a: string | { b: string } }
-//     const settings = S.create<d, i>({
-//       spec: {
-//         a: {
-//           shorthand(value) {
-//             return { b: value + ' via shorthand!' }
-//           },
-//           fields: { b: { initial: c('') } },
-//         },
-//       },
-//     })
-//     expect(settings.change({ a: { b: 'direct' } }).data.a).toEqual({ b: 'direct' })
-//   })
-//   it('a namespace shorthand can receive input that is not directly in the final data', () => {
-//     type d = { a: { b: string } }
-//     type i = { a: (() => number) | { b: string } }
-//     const settings = S.create<d, i>({
-//       spec: {
-//         a: {
-//           shorthand(f) {
-//             return { b: f().toString() }
-//           },
-//           fields: { b: { initial: c('') } },
-//         },
-//       },
-//     })
-//     expect(settings.change({ a: () => 1 }).data).toEqual({ a: { b: '1' } })
-//   })
-//   it('giving shorthand to a namespace that does not support it will error gracefully', () => {
-//     type d = { a: { b: string } }
-//     const settings = S.create<d, any>({ spec: { a: { fields: { b: { initial: c('') } } } } })
-//     expect(() => settings.change({ a: 'runtime error' })).toThrowErrorMatchingInlineSnapshot(
-//       `"Setting \\"a\\" is a namespace with no shorthand so expects an object but received a non-object: 'runtime error'"`
-//     )
-//   })
-// })
 
 // describe('runtime errors', () => {
 //   it('changing settings that do not exist will error gracefully', () => {
