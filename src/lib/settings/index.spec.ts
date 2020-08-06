@@ -1,8 +1,13 @@
+import { log } from '@nexus/logger'
 import 'jest-extended'
 import * as tsd from 'tsd'
 import * as S from './'
 
 describe('input field specifiers', () => {
+  it('make it possible to manage a setting', () => {
+    const settings = S.create<{ a: string }>({ spec: { a: {} } })
+    expect(settings.change({ a: 'a2' }).data).toEqual({ a: 'a2' })
+  })
   describe('encounter static errors', () => {
     it('if missing for a fields in the input type', () => {
       S.create<{ a: number }>({ spec: { a: {} } })
@@ -106,7 +111,7 @@ describe('input field initializers', () => {
   })
 })
 
-describe('validation', () => {
+describe('spec validation', () => {
   it('if mapType is assigned non-function', () => {
     expect(() => {
       // @ts-expect-error
@@ -277,8 +282,8 @@ describe('namespaces', () => {
         type d = { a: { b: number } }
         type i = { a: number | { b: number } }
         // prettier-ignore
-        const settings = S.create<i, d>({ spec: { a: { shorthand(value) { throw new Error(`Unexpected shorthand error with value ${value}`) }, fields: { b: { initial: c('') } } } } })
-        expect(() => settings.change({ a: 100 }).data.a).toThrowError(
+        const s = S.create<i, d>({ spec: { a: { shorthand(value) { throw new Error(`Unexpected shorthand error with value ${value}`) }, fields: { b: { initial: c('') } } } } })
+        expect(() => s.change({ a: 100 }).data.a).toThrowError(
           'There was an unexpected error while running the namespace shorthand for setting "a". The given value was 100 \nUnexpected shorthand error with value 100'
         )
       })
@@ -286,279 +291,191 @@ describe('namespaces', () => {
     it('still accepts longhand input', () => {
       type d = { a: { b: number } }
       type i = { a: number | { b: number } }
-      const settings = S.create<i, d>({
+      const s = S.create<i, d>({
         // prettier-ignore
         spec: { a: { shorthand: (n) => ({ b: n + 100 }) , fields: { b: { initial: c(1) } } } }
       })
-      expect(settings.change({ a: { b: 3 } }).data.a).toEqual({ b: 3 })
+      expect(s.change({ a: { b: 3 } }).data.a).toEqual({ b: 3 })
     })
     it('can be a type that differs from the longhand', () => {
       type i = { a: (() => number) | { b: string } }
       type d = { a: { b: string } }
-      const settings = S.create<i, d>({
+      const s = S.create<i, d>({
         // prettier-ignore
         spec: { a: { shorthand: (f) => ({ b: f().toString() }), fields: { b: {} } } }
       })
-      expect(settings.change({ a: () => 1 }).data).toEqual({ a: { b: '1' } })
+      expect(s.change({ a: () => 1 }).data).toEqual({ a: { b: '1' } })
     })
     it('if input/data types differ and shorthand used the type mapper receives the expanded input', () => {
       // prettier-ignore
-      const settings = S.create<{ a: string | { b: string } }, { a: { b: number } }>({
+      const s = S.create<{ a: string | { b: string } }, { a: { b: number } }>({
         spec: { a: {
           shorthand: (s) => ({b:s}),
           fields: { b: { mapType(v) { tsd.expectType<string>(v); return Number(v) } } } } }
       })
-      expect(settings.change({ a: '1' }).data).toEqual({ a: { b: 1 } })
+      expect(s.change({ a: '1' }).data).toEqual({ a: { b: 1 } })
     })
     it('changing with a shorthand on a namespace that does not support them will error gracefully', () => {
-      const settings = S.create<{ a: { b: string } }>({ spec: { a: { fields: { b: {} } } } })
+      const s = S.create<{ a: { b: string } }>({ spec: { a: { fields: { b: {} } } } })
       // @ts-expect-error
-      expect(() => settings.change({ a: 'runtime error' })).toThrowError(
+      expect(() => s.change({ a: 'runtime error' })).toThrowError(
         'Setting "a" is a namespace with no shorthand so expects an object but received a non-object: \'runtime error\''
       )
     })
   })
 })
 
-// describe('runtime errors', () => {
-//   it('changing settings that do not exist will error gracefully', () => {
-//     type d = { a: string }
-//     const settings = S.create<d, any>({ spec: { a: { initial: c('') } } })
-//     expect(() => settings.change({ z: '' })).toThrowErrorMatchingInlineSnapshot(
-//       `"Could not find a setting specifier for setting \\"z\\""`
-//     )
-//   })
-// })
+describe('runtime errors', () => {
+  it('changing settings that do not exist will have static error and will error gracefully', () => {
+    const s = S.create<{ a: string }>({ spec: { a: {} } })
+    // prettier-ignore
+    // @ts-expect-error
+    expect(() => s.change({ z: '' })).toThrowError('You are trying to change a setting called "z" but no such setting exists')
+  })
+})
 
-// it('a setting can be changed', () => {
-//   type d = { a: string }
-//   const settings = S.create<d>({ spec: { a: { initial: c('a') } } })
-//   expect(settings.change({ a: 'a2' }).data).toEqual({ a: 'a2' })
-// })
+describe('field fixups', () => {
+  let logs: jest.Mock
+  let logSettingsOriginal: any
 
-// describe('fixups', () => {
-//   let logs: jest.Mock
-//   let logSettingsOriginal: any
+  beforeEach(() => {
+    logs = jest.fn()
+    logSettingsOriginal = {
+      output: log.settings.output,
+      filter: log.settings.filter.originalInput,
+      pretty: log.settings.pretty,
+    }
+    log.settings({ output: { write: logs }, pretty: false })
+  })
 
-//   beforeEach(() => {
-//     logs = jest.fn()
-//     logSettingsOriginal = {
-//       output: log.settings.output,
-//       filter: log.settings.filter.originalInput,
-//       pretty: log.settings.pretty,
-//     }
-//     log.settings({ output: { write: logs }, pretty: false })
-//   })
+  afterEach(() => {
+    log.settings(logSettingsOriginal)
+  })
 
-//   afterEach(() => {
-//     log.settings(logSettingsOriginal)
-//   })
+  describe('when onFixup handler', () => {
+    it('is set then called when fixup fixes something', () => {
+      const onFixup = jest.fn()
+      const s = S.create<{ path: string }>({
+        onFixup,
+        spec: {
+          path: {
+            fixup(value) {
+              if (value[0] === '/') return null
+              return { messages: ['must have leading slash'], value: `/${value}` }
+            },
+          },
+        },
+      })
+      expect(s.change({ path: 'foo' }).data).toEqual({ path: '/foo' })
+      expect(onFixup.mock.calls).toMatchInlineSnapshot(`
+      Array [
+        Array [
+          Object {
+            "after": "/foo",
+            "before": "foo",
+            "messages": Array [
+              "must have leading slash",
+            ],
+            "name": "path",
+          },
+          [Function],
+        ],
+      ]
+    `)
+    })
+    it('fails then it errors gracefully', () => {
+      // prettier-ignore
+      const onFixup = jest.fn().mockImplementation(() => { throw new Error('Unexpected error!') })
+      // prettier-ignore
+      const s = S.create<{ path: string }>({ onFixup, spec: { path: { fixup() { return { value: 'foobar', messages: [] } } } } })
+      expect(() => s.change({ path: '' })).toThrowError(
+        'onFixup callback for "path" failed \nUnexpected error!'
+      )
+    })
+    it('is not called for a fixup that returns null', () => {
+      const onFixup = jest.fn()
+      const s = S.create<{ path: string }>({ onFixup, spec: { path: { fixup: () => null } } })
+      s.change({ path: '' })
+      expect(onFixup.mock.calls).toEqual([])
+    })
+    it('not set then defualt is to log a warning', () => {
+      log.settings({ filter: '*@warn' })
+      // prettier-ignore
+      const s = S.create<{ a: string }>({ spec: { a: { fixup() { return { value: 'fixed', messages: ['...'] } } } } })
+      s.change({ a: 'foo' })
+      expect(logs.mock.calls).toMatchInlineSnapshot(`
+        Array [
+          Array [
+            "{\\"event\\":\\"One of your setting values was invalid. We were able to automaticlaly fix it up now but please update your code.\\",\\"level\\":4,\\"path\\":[\\"settings\\"],\\"context\\":{\\"before\\":\\"foo\\",\\"after\\":\\"fixed\\",\\"name\\":\\"a\\",\\"messages\\":[\\"...\\"]}}
+        ",
+          ],
+        ]
+      `)
+    })
+    it('is set then default handler is not run', () => {
+      log.settings({ filter: '*@warn' })
+      // prettier-ignore
+      const s = S.create<{ a: string }>({ onFixup() {}, spec: { a: { fixup() { return { value: 'fixed', messages: ['...'] } } } } })
+      s.change({ a: 'foo' })
+      expect(logs.mock.calls).toEqual([])
+    })
+    it('is set it can call the original handler to retain the original base behaviour', () => {
+      log.settings({ filter: '*@warn' })
+      // prettier-ignore
+      const s = S.create<{ a: string }>({ onFixup(info, original) { original(info) }, spec: { a: { fixup() { return { value: 'fixed', messages: ['...'] } } } } })
+      s.change({ a: 'foo' })
+      expect(logs.mock.calls).toMatchInlineSnapshot(`
+        Array [
+          Array [
+            "{\\"event\\":\\"One of your setting values was invalid. We were able to automaticlaly fix it up now but please update your code.\\",\\"level\\":4,\\"path\\":[\\"settings\\"],\\"context\\":{\\"before\\":\\"foo\\",\\"after\\":\\"fixed\\",\\"name\\":\\"a\\",\\"messages\\":[\\"...\\"]}}
+        ",
+          ],
+        ]
+      `)
+    })
+  })
+  it('a namespace with shorthand runs through fixups too', () => {
+    const onFixup = jest.fn()
+    // prettier-ignore
+    const settings = S.create<{ a: number | { a: number } }>({
+      onFixup,
+      spec: { a: { shorthand: (a) => ({ a }), fields: { a: { fixup: (value) => ({ messages: [`must be 1, was ${value}`], value: 1 }) } } } },
+    })
+    expect(settings.change({ a: 2 }).data).toEqual({ a: { a: 1 } })
+    expect(onFixup.mock.calls).toMatchInlineSnapshot(`
+        Array [
+          Array [
+            Object {
+              "after": 1,
+              "before": 2,
+              "messages": Array [
+                "must be 1, was 2",
+              ],
+              "name": "a",
+            },
+            [Function],
+          ],
+        ]
+      `)
+  })
+  it('if fixup fails it errors gracefully', () => {
+    // prettier-ignore
+    const s = S.create<{ path: string }>({ spec: { path: { fixup() { throw new Error('Unexpected error!') } } } })
+    expect(() => s.change({ path: '' })).toThrowError(
+      'Fixup for "path" failed while running on value \'\' \nUnexpected error!'
+    )
+  })
 
-//   it('a setting can be fixed up', () => {
-//     const onFixup = jest.fn()
-//     type d = { path: string }
-//     const settings = S.create<d>({
-//       onFixup,
-//       spec: {
-//         path: {
-//           initial: c('/foo'),
-//           fixup(value) {
-//             if (value[0] === '/') return null
-//             return { messages: ['must have leading slash'], value: `/${value}` }
-//           },
-//         },
-//       },
-//     })
-//     expect(settings.change({ path: 'foo' }).data).toEqual({ path: '/foo' })
-//     expect(onFixup.mock.calls).toMatchInlineSnapshot(`
-//       Array [
-//         Array [
-//           Object {
-//             "after": "/foo",
-//             "before": "foo",
-//             "messages": Array [
-//               "must have leading slash",
-//             ],
-//             "name": "path",
-//           },
-//           [Function],
-//         ],
-//       ]
-//     `)
-//   })
-//   it('a namespace with shorthand runs through fixups too', () => {
-//     const onFixup = jest.fn()
-//     type d = { path: string | { to: string } }
-//     const settings = S.create<d>({
-//       onFixup,
-//       spec: {
-//         path: {
-//           shorthand(value) {
-//             return { to: value }
-//           },
-//           fields: {
-//             to: {
-//               initial: c('/foo'),
-//               fixup(value) {
-//                 if (value[0] === '/') return null
-//                 return { messages: ['must have leading slash'], value: `/${value}` }
-//               },
-//             },
-//           },
-//         },
-//       },
-//     })
-//     expect(settings.change({ path: 'foo' }).data).toEqual({ path: { to: '/foo' } })
-//     expect(onFixup.mock.calls).toMatchInlineSnapshot(`
-//       Array [
-//         Array [
-//           Object {
-//             "after": "/foo",
-//             "before": "foo",
-//             "messages": Array [
-//               "must have leading slash",
-//             ],
-//             "name": "to",
-//           },
-//           [Function],
-//         ],
-//       ]
-//     `)
-//   })
-//   it('if fixup fails it errors gracefully', () => {
-//     type d = { path: string }
-//     const settings = S.create<d>({
-//       spec: {
-//         path: {
-//           initial: c('/'),
-//           fixup() {
-//             throw new Error('Unexpected error!')
-//           },
-//         },
-//       },
-//     })
-//     expect(() => settings.change({ path: '' })).toThrowErrorMatchingInlineSnapshot(`
-//       "Fixup for \\"path\\" failed while running on value ''
-//       Unexpected error!"
-//     `)
-//   })
-//   it('if onFixup callback fails it errors gracefully', () => {
-//     const onFixup = jest.fn().mockImplementation(() => {
-//       throw new Error('Unexpected error!')
-//     })
-//     type d = { path: string }
-//     const settings = S.create<d>({
-//       onFixup,
-//       spec: {
-//         path: {
-//           initial: c('/'),
-//           fixup() {
-//             return { value: 'foobar', messages: [] }
-//           },
-//         },
-//       },
-//     })
-//     expect(() => settings.change({ path: '' })).toThrowErrorMatchingInlineSnapshot(`
-//       "onFixup callback for \\"path\\" failed
-//       Unexpected error!"
-//     `)
-//   })
-//   it('if fixup returns null then onFixup is not called', () => {
-//     const onFixup = jest.fn()
-//     type d = { path: string }
-//     const settings = S.create<d>({
-//       onFixup,
-//       spec: {
-//         path: {
-//           initial: c('/'),
-//           fixup() {
-//             return null
-//           },
-//         },
-//       },
-//     })
-//     settings.change({ path: '' })
-//     expect(onFixup.mock.calls).toEqual([])
-//   })
-//   it('initial does not pass through fixup', () => {
-//     expect(
-//       S.create<{ a: string }>({
-//         spec: {
-//           a: {
-//             initial: c(''),
-//             fixup() {
-//               return { value: 'fixed', messages: [] }
-//             },
-//           },
-//         },
-//       }).data
-//     ).toEqual({ a: '' })
-//   })
-
-//   it('defualt onFixup handler is to log a warning', () => {
-//     log.settings({ filter: '*@warn' })
-//     const settings = S.create<{ a: string }>({
-//       spec: {
-//         a: {
-//           initial: c(''),
-//           fixup() {
-//             return { value: 'fixed', messages: ['...'] }
-//           },
-//         },
-//       },
-//     })
-//     settings.change({ a: 'foo' })
-//     expect(logs.mock.calls).toMatchInlineSnapshot(`
-//       Array [
-//         Array [
-//           "{\\"event\\":\\"One of your setting values was invalid. We were able to automaticlaly fix it up now but please update your code.\\",\\"level\\":4,\\"path\\":[\\"settings\\"],\\"context\\":{\\"before\\":\\"foo\\",\\"after\\":\\"fixed\\",\\"name\\":\\"a\\",\\"messages\\":[\\"...\\"]}}
-//       ",
-//         ],
-//       ]
-//     `)
-//   })
-//   it('custom handler causes default to not run', () => {
-//     log.settings({ filter: '*@warn' })
-//     const settings = S.create<{ a: string }>({
-//       onFixup() {},
-//       spec: {
-//         a: {
-//           initial: c(''),
-//           fixup() {
-//             return { value: 'fixed', messages: ['...'] }
-//           },
-//         },
-//       },
-//     })
-//     settings.change({ a: 'foo' })
-//     expect(logs.mock.calls).toEqual([])
-//   })
-//   it('can call the original handler to retain the original base behaviour', () => {
-//     log.settings({ filter: '*@warn' })
-//     const settings = S.create<{ a: string }>({
-//       onFixup(info, original) {
-//         original(info)
-//       },
-//       spec: {
-//         a: {
-//           initial: c(''),
-//           fixup() {
-//             return { value: 'fixed', messages: ['...'] }
-//           },
-//         },
-//       },
-//     })
-//     settings.change({ a: 'foo' })
-//     expect(logs.mock.calls).toMatchInlineSnapshot(`
-//       Array [
-//         Array [
-//           "{\\"event\\":\\"One of your setting values was invalid. We were able to automaticlaly fix it up now but please update your code.\\",\\"level\\":4,\\"path\\":[\\"settings\\"],\\"context\\":{\\"before\\":\\"foo\\",\\"after\\":\\"fixed\\",\\"name\\":\\"a\\",\\"messages\\":[\\"...\\"]}}
-//       ",
-//         ],
-//       ]
-//     `)
-//   })
-// })
+  describe('static errors', () => {
+    it.todo('fixup return .value prop must match the input type')
+  })
+  it('initial does not pass through fixup', () => {
+    // prettier-ignore
+    expect(
+      S.create<{ a?: number }>({ spec: { a: { initial: () => 1, fixup() { return { value: 2, messages: [] } } } } }).data
+    ).toEqual({ a: 1 })
+  })
+})
 
 // describe('validators', () => {
 //   it('if a setting passes validation nothing happens', () => {

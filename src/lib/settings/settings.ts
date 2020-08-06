@@ -150,7 +150,7 @@ function resolve(options: Options, spec: any, input: any, data: any, metadata: a
     const isValueObject = Lo.isPlainObject(value)
 
     if (!specifier) {
-      throw new Error(`Could not find a setting specifier for setting "${name}"`)
+      throw new Error(`You are trying to change a setting called "${name}" but no such setting exists`)
     }
 
     if (isValueObject && !specifier.fields) {
