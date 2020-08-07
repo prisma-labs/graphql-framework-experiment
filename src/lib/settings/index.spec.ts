@@ -1,5 +1,7 @@
 import { log } from '@nexus/logger'
+import dedent from 'dedent'
 import 'jest-extended'
+import * as Lo from 'lodash'
 import * as tsd from 'tsd'
 import * as S from './'
 
@@ -203,7 +205,7 @@ describe('input field type mappers', () => {
   })
 })
 
-describe('namespaces', () => {
+describe('input namespaces', () => {
   describe('static errors', () => {
     it('a field requires an initializer if the input is optional', () => {
       S.create<{ a?: { b?: 1 } }>({ spec: { a: { fields: { b: { initial: c(1) } } } } })
@@ -334,7 +336,7 @@ describe('runtime errors', () => {
   })
 })
 
-describe('field fixups', () => {
+describe('input field fixups', () => {
   let logs: jest.Mock
   let logSettingsOriginal: any
 
@@ -465,9 +467,12 @@ describe('field fixups', () => {
       'Fixup for "path" failed while running on value \'\' \nUnexpected error!'
     )
   })
-
   describe('static errors', () => {
-    it.todo('fixup return .value prop must match the input type')
+    it('fixup return .value prop must match the input type', () => {
+      // @ts-expect-error
+      // prettier-ignore
+      S.create<{ a: 1 }>({ spec: { a: { fixup() { return { value: 2, messages: [] } } } } }).data
+    })
   })
   it('initial does not pass through fixup', () => {
     // prettier-ignore
@@ -477,160 +482,104 @@ describe('field fixups', () => {
   })
 })
 
-// describe('validators', () => {
-//   it('if a setting passes validation nothing happens', () => {
-//     const validate = jest.fn().mockImplementation(() => null)
-//     type d = { a: string }
-//     const settings = S.create<d>({
-//       spec: {
-//         a: {
-//           initial: c('foo'),
-//           validate,
-//         },
-//       },
-//     })
-//     settings.change({ a: 'bar' })
-//     expect(validate.mock.calls).toEqual([['bar']])
-//   })
-//   it('if a setting fails validation then an error is thrown', () => {
-//     const validate = jest.fn().mockImplementation((value) => {
-//       if (value === 'bar') {
-//         return { messages: ['Too long', 'Too simple'] }
-//       }
-//     })
-//     const settings = S.create<{ a: string }>({
-//       spec: {
-//         a: {
-//           initial: c('foo'),
-//           validate,
-//         },
-//       },
-//     })
-//     expect(() => settings.change({ a: 'bar' })).toThrowError(dedent`
-//       Your setting "a" failed validation with value 'bar':
+describe('input field validators', () => {
+  it('if a setting passes validation nothing happens', () => {
+    const validate = jest.fn().mockImplementation(() => null)
+    const settings = S.create<{ a: string }>({ spec: { a: { validate } } })
+    settings.change({ a: 'bar' })
+    expect(validate.mock.calls).toEqual([['bar']])
+  })
+  it('if a setting fails validation then an error is thrown', () => {
+    const validate = jest.fn().mockImplementation((value) => {
+      if (value === 'bar') return { messages: ['Too long', 'Too simple'] }
+    })
+    const s = S.create<{ a: string }>({ spec: { a: { validate } } })
+    expect(() => s.change({ a: 'bar' })).toThrowError(dedent`
+      Your setting "a" failed validation with value 'bar':
 
-//       - Too long
-//       - Too simple
-//     `)
-//   })
-//   it('initial does not pass through validate', () => {
-//     const validate = jest.fn().mockImplementation((value) => {
-//       if (value === 'bad') {
-//         return { messages: ['Too long', 'Too simple'] }
-//       }
-//     })
-//     expect(
-//       S.create<{ a: string }>({
-//         spec: {
-//           a: {
-//             initial: c('bad'),
-//             validate,
-//           },
-//         },
-//       })
-//     )
-//   })
-//   it('unexpected validator failures error gracefully', () => {
-//     const validate = jest.fn().mockImplementation((value) => {
-//       throw new Error('Unexpected error while trying to validate')
-//     })
-//     const settings = S.create<{ a: string }>({
-//       spec: {
-//         a: {
-//           initial: c('foo'),
-//           validate,
-//         },
-//       },
-//     })
-//     expect(() => settings.change({ a: 'bar' })).toThrowErrorMatchingInlineSnapshot(`
-//       "Validation for \\"a\\" unexpectedly failed while running on value 'bar'
-//       Unexpected error while trying to validate"
-//     `)
-//   })
-// })
+      - Too long
+      - Too simple
+    `)
+  })
+  it('initial does not pass through validate', () => {
+    const validate = jest.fn().mockImplementation((value) => {
+      if (value === 'bad') return { messages: ['foobar'] }
+    })
+    expect(
+      S.create<{ a?: number }>({ spec: { a: { initial: c(1), validate } } }).data
+    ).toEqual({ a: 1 })
+  })
+  it('unexpected validator failures error gracefully', () => {
+    const validate = jest.fn().mockImplementation((value) => {
+      throw new Error('Unexpected error while trying to validate')
+    })
+    const settings = S.create<{ a: string }>({ spec: { a: { validate } } })
+    expect(() => settings.change({ a: 'bar' })).toThrowError(
+      'Validation for "a" unexpectedly failed while running on value \'bar\' \nUnexpected error while trying to validate'
+    )
+  })
+})
 
-// describe('.reset()', () => {
-//   it('returns api for chaining', () => {
-//     const settings = S.create<{ a: string }>({ spec: { a: { initial: c('') } } })
-//     expect(settings.reset()).toBe(settings)
-//   })
-//   it('resets settings data & metadata to initial state', () => {
-//     const settings = S.create<{ a: string }>({ spec: { a: { initial: c('') } } })
-//     settings.change({ a: 'foo' })
-//     expect(settings.reset().data).toEqual({ a: '' })
-//     expect(settings.reset().metadata).toEqual({ a: { from: 'initial', value: '', initial: '' } })
-//   })
-//   it('settings metadata & data references change', () => {
-//     const settings = S.create<{ a: string }>({ spec: { a: { initial: c('') } } })
-//     const originalMetadata = settings.metadata
-//     const originalData = settings.data
-//     settings.reset()
-//     expect(settings.data).not.toBe(originalData)
-//     expect(settings.metadata).not.toBe(originalMetadata)
-//   })
-//   it('dynamic initializers are re-run', () => {
-//     process.env.foo = 'foo'
-//     const settings = S.create<{ a: string }>({ spec: { a: { initial: () => process.env.foo! } } })
-//     process.env.foo = 'bar'
-//     expect(settings.reset().metadata).toEqual({ a: { from: 'initial', value: 'bar', initial: 'bar' } })
-//     delete process.env.foo
-//   })
-// })
+describe('.reset()', () => {
+  it('returns api for chaining', () => {
+    const settings = S.create<{ a?: string }>({ spec: { a: { initial: c('') } } })
+    expect(settings.reset()).toBe(settings)
+  })
+  it('resets settings data & metadata to initial state', () => {
+    const settings = S.create<{ a?: string }>({ spec: { a: { initial: c('') } } })
+    settings.change({ a: 'foo' })
+    expect(settings.reset().data).toEqual({ a: '' })
+    expect(settings.reset().metadata).toEqual({ a: { from: 'initial', value: '', initial: '' } })
+  })
+  it('settings metadata & data references change', () => {
+    const settings = S.create<{ a?: string }>({ spec: { a: { initial: c('') } } })
+    const originalMetadata = settings.metadata
+    const originalData = settings.data
+    settings.reset()
+    expect(settings.data).not.toBe(originalData)
+    expect(settings.metadata).not.toBe(originalMetadata)
+  })
+  it('dynamic initializers are re-run', () => {
+    process.env.foo = 'foo'
+    const settings = S.create<{ a?: string }>({ spec: { a: { initial: () => process.env.foo! } } })
+    process.env.foo = 'bar'
+    expect(settings.reset().metadata).toEqual({ a: { from: 'initial', value: 'bar', initial: 'bar' } })
+    delete process.env.foo
+  })
+})
 
-// describe('.original()', () => {
-//   it('gets the settings as they were initially', () => {
-//     const settings = S.create<{ a: { a: string }; b: { a: number } }>({
-//       spec: {
-//         a: { fields: { a: { initial: () => 'foo' } } },
-//         b: { fields: { a: { initial: () => 1 } } },
-//       },
-//     })
-//     const original = Lo.cloneDeep(settings.data)
-//     settings.change({ a: { a: 'bar' }, b: { a: 2 } })
-//     expect(settings.original()).toEqual(original)
-//   })
-// })
+describe('.original()', () => {
+  it('gets the settings as they were initially', () => {
+    const settings = S.create<{ a?: { a?: string }; b?: { a?: number } }>({
+      spec: {
+        a: { fields: { a: { initial: () => 'foo' } } },
+        b: { fields: { a: { initial: () => 1 } } },
+      },
+    })
+    const original = Lo.cloneDeep(settings.data)
+    settings.change({ a: { a: 'bar' }, b: { a: 2 } })
+    expect(settings.original()).toEqual(original)
+  })
+})
 
-// describe('metadata', () => {
-//   it('tracks if a setting value comes from its initializer', () => {
-//     const settings = S.create<{ a: string }>({
-//       spec: {
-//         a: {
-//           initial: c('foo'),
-//         },
-//       },
-//     })
-//     expect(settings.metadata).toEqual({ a: { from: 'initial', value: 'foo', initial: 'foo' } })
-//   })
-//   it('traces if a setting value comes from change input', () => {
-//     const settings = S.create<{ a: string }>({
-//       spec: {
-//         a: {
-//           initial: c('foo'),
-//         },
-//       },
-//     })
-//     expect(settings.change({ a: 'bar' }).metadata).toEqual({
-//       a: { from: 'set', value: 'bar', initial: 'foo' },
-//     })
-//   })
-//   it('models namespaces', () => {
-//     const settings = S.create<{ a: { a: string } }>({
-//       spec: {
-//         a: {
-//           fields: {
-//             a: {
-//               initial: c('foo'),
-//             },
-//           },
-//         },
-//       },
-//     })
-//     expect(settings.metadata).toEqual({
-//       a: { fields: { a: { from: 'initial', value: 'foo', initial: 'foo' } } },
-//     })
-//   })
-// })
+describe('.metadata', () => {
+  it('tracks if a setting value comes from its initializer', () => {
+    const s = S.create<{ a?: string }>({ spec: { a: { initial: c('foo') } } })
+    expect(s.metadata).toEqual({ a: { from: 'initial', value: 'foo', initial: 'foo' } })
+  })
+  it('traces if a setting value comes from change input', () => {
+    const s = S.create<{ a?: string }>({ spec: { a: { initial: c('foo') } } })
+    expect(s.change({ a: 'bar' }).metadata).toEqual({
+      a: { from: 'set', value: 'bar', initial: 'foo' },
+    })
+  })
+  it('models namespaces', () => {
+    const s = S.create<{ a?: { a?: string } }>({ spec: { a: { fields: { a: { initial: c('foo') } } } } })
+    expect(s.metadata).toEqual({
+      a: { fields: { a: { from: 'initial', value: 'foo', initial: 'foo' } } },
+    })
+  })
+})
 
 describe('.change()', () => {
   it('arrays do not merge', () => {
