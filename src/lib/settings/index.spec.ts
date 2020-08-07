@@ -7,8 +7,8 @@ import * as S from './'
 
 describe('input field specifiers', () => {
   it('make it possible to manage a setting', () => {
-    const settings = S.create<{ a: string }>({ spec: { a: {} } })
-    expect(settings.change({ a: 'a2' }).data).toEqual({ a: 'a2' })
+    const s = S.create<{ a: string }>({ spec: { a: {} } })
+    expect(s.change({ a: 'a2' }).data).toEqual({ a: 'a2' })
   })
   describe('encounter static errors', () => {
     it('if missing for a fields in the input type', () => {
@@ -324,6 +324,13 @@ describe('input namespaces', () => {
         'Setting "a" is a namespace with no shorthand so expects an object but received a non-object: \'runtime error\''
       )
     })
+  })
+})
+
+describe('input records', () => {
+  it('can have their settings changed', () => {
+    const s = S.create<{ a: Record<string, { a: number }> }>({ spec: { a: { entryFields: { a: {} } } } })
+    expect(s.change({ a: { foobar: { a: 2 } } }).data).toEqual({ a: { foobar: { a: 2 } } })
   })
 })
 
