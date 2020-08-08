@@ -201,15 +201,22 @@ export type RecordSpec<Dict, K, Data, VarEntryInput = ExcludeUndefined<Dict>[str
      * if input is optional then initial is required
      * unless all
      */
-    (undefined extends Dict
+    (
+      undefined extends Dict
       ? FilterOutKeys<VarEntryInput, undefined> extends never
         ? {
             initial?(): ExcludeUndefined<Dict>
           }
         : {
-            initial(): ExcludeUndefined<Dict>
+            initial?(): ExcludeUndefined<Dict>
           }
-      : {}) &
+      : {
+          /**
+           * You require users to supply a record setting however you can still define initial here. Can be useful to pre-load some entries.
+           */
+          initial?(): ExcludeUndefined<Dict>
+        }
+    ) &
     /**
      * if data has fields that are not present in input THEN mapData is required
      */

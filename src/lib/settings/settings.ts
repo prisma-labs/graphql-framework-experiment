@@ -7,6 +7,8 @@ import { DataDefault, Spec } from './static'
 
 const log = Logger.log.child('settings')
 
+type MetadataValueFromType = 'set' | 'initial'
+
 /**
  * todo
  */
@@ -20,7 +22,7 @@ export type Metadata<Data extends PlainObject> = {
     : {
         value: Data[Key]
         initial: Data[Key]
-        from: 'set' | 'initial'
+        from: MetadataValueFromType
       }
 }
 
@@ -109,7 +111,7 @@ export function create<Input extends PlainObject, Data extends PlainObject = Dat
     data: state.data,
     metadata: state.metadata,
     change(input) {
-      resolve(options, spec, input, state.data, state.metadata)
+      resolve(options, 'set', spec, input, state.data, state.metadata)
       return api
     },
     reset() {
@@ -144,7 +146,14 @@ function metadataToData<Data>(metadata: any, copy: PlainObject): Data {
  * fixups, validation and so on until finally assigning it into the setting data.
  * The input is not mutated. The data is.
  */
-function resolve(options: Options, fields: any, input: any, data: any, metadata: any) {
+function resolve(
+  options: Options,
+  metadataFrom: MetadataValueFromType,
+  fields: any,
+  input: any,
+  data: any,
+  metadata: any
+) {
   Lo.forOwn(input, (inputFieldValue, inputFieldName) => {
     const specifier = fields[inputFieldName]
     const isValueObject = Lo.isPlainObject(inputFieldValue)
@@ -175,6 +184,7 @@ function resolve(options: Options, fields: any, input: any, data: any, metadata:
       if (specifier.fields) {
         resolve(
           options,
+          metadataFrom,
           specifier.fields,
           inputFieldValue,
           data[inputFieldName],
@@ -197,6 +207,7 @@ function resolve(options: Options, fields: any, input: any, data: any, metadata:
 
           resolve(
             options,
+            metadataFrom,
             specifier.entryFields,
             inputEntryValue,
             data[inputFieldName][key],
@@ -221,9 +232,9 @@ function resolve(options: Options, fields: any, input: any, data: any, metadata:
             )}`
           )
         }
-        // @ts-ignore
         resolve(
           options,
+          metadataFrom,
           specifier.fields,
           longhandValue,
           data[inputFieldName],
@@ -306,7 +317,7 @@ function resolve(options: Options, fields: any, input: any, data: any, metadata:
       log.trace('committing data', { inputFieldName, value: resolvedValue })
       data[inputFieldName] = resolvedValue
       metadata[inputFieldName].value = resolvedValue
-      metadata[inputFieldName].from = 'set'
+      metadata[inputFieldName].from = metadataFrom
     }
   })
 
@@ -329,33 +340,32 @@ function initialize(fields: any, data: any, metadata: any) {
       initialize(specifier.fields, data[inputFieldName], metadata[inputFieldName].fields)
     } else if (specifier.entryFields) {
       log.trace('initialize input record', { inputFieldName })
-      data[inputFieldName] = {}
-      metadata[inputFieldName] = metadata[inputFieldName] ?? { record: {} }
+      // there may be preloaded record entries via the record initializer
+      // such entries will be input and thus need to be resolved
+      // such entries may also not account for all possible fields of the entry
+      // thus we need to run the initializer and seed each entry with that
+      // then treat the actual initialzer input as a "change" on that, resolving it
+      const initialRecord = specifier.initial ? runInitializer(specifier, inputFieldName, data) : {}
+      const initialRecordInitialized = Lo.chain(initialRecord)
+        .entries()
+        .reduce(
+          (acc: any, [k, v]) => {
+            const data = {}
+            const metadata = {}
+            initialize(specifier.entryFields, data, metadata)
+            resolve({}, 'initial', specifier.entryFields, v, data, metadata)
+            acc.data[k] = data
+            acc.metadata[k] = metadata
+            return acc
+          },
+          { data: {}, metadata: {} }
+        )
+        .value()
+      data[inputFieldName] = initialRecordInitialized.data
+      metadata[inputFieldName] = metadata[inputFieldName] ?? { record: initialRecordInitialized.metadata }
     } else {
       log.trace('initialize input field', { inputFieldName })
-      let value
-      if (specifier.initial === undefined) {
-        log.trace('no initializer to run', { inputFieldName })
-        // the namespace might have initialized some data
-        value = data[inputFieldName] ?? undefined
-      } else if (typeof specifier.initial === 'function') {
-        log.trace('running initializer', { inputFieldName })
-        try {
-          value = specifier.initial()
-        } catch (e) {
-          throw ono(
-            e,
-            { inputFieldName },
-            `There was an unexpected error while running the initializer for setting "${inputFieldName}"`
-          )
-        }
-      } else {
-        throw new Error(
-          `Initializer for setting "${inputFieldName}" was configured with a static value. It must be a function. Got: ${inspect(
-            specifier.initial
-          )}`
-        )
-      }
+      let value = runInitializer(specifier, inputFieldName, data)
 
       if (specifier.mapType) {
         value = runTypeMapper(specifier.mapType, value, inputFieldName)
@@ -365,6 +375,33 @@ function initialize(fields: any, data: any, metadata: any) {
       metadata[inputFieldName] = initMetadataField(value)
     }
   })
+}
+
+function runInitializer(specifier: any, inputFieldName: string, data: any): any {
+  if (specifier.initial === undefined) {
+    log.trace('no initializer to run', { inputFieldName })
+    // the namespace might have initialized some data
+    return data[inputFieldName] ?? undefined
+  }
+
+  if (typeof specifier.initial === 'function') {
+    log.trace('running initializer', { inputFieldName })
+    try {
+      return specifier.initial()
+    } catch (e) {
+      throw ono(
+        e,
+        { inputFieldName },
+        `There was an unexpected error while running the initializer for setting "${inputFieldName}"`
+      )
+    }
+  }
+
+  throw new Error(
+    `Initializer for setting "${inputFieldName}" was configured with a static value. It must be a function. Got: ${inspect(
+      specifier.initial
+    )}`
+  )
 }
 
 /**

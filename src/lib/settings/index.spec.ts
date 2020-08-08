@@ -328,9 +328,43 @@ describe('input namespaces', () => {
 })
 
 describe('input records', () => {
+  type R<T> = Record<string, T>
   it('can have their settings changed', () => {
-    const s = S.create<{ a: Record<string, { a: number }> }>({ spec: { a: { entryFields: { a: {} } } } })
-    expect(s.change({ a: { foobar: { a: 2 } } }).data).toEqual({ a: { foobar: { a: 2 } } })
+    const s = S.create<{ a: R<{ b: number }> }>({ spec: { a: { entryFields: { b: {} } } } })
+    expect(s.change({ a: { foobar: { b: 2 } } }).data).toEqual({ a: { foobar: { b: 2 } } })
+  })
+  describe('initial', () => {
+    // todo test metadata
+    it('is accepted and called (required record case)', () => {
+      const s = S.create<{ a: R<{ b: number }> }>({
+        spec: { a: { initial: () => ({ foobar: { b: 2 } }), entryFields: { b: {} } } },
+      })
+      expect(s.data).toEqual({ a: { foobar: { b: 2 } } })
+    })
+    it('is accepted and called (optional record case)', () => {
+      // prettier-ignore
+      const s = S.create<{ a?: R<{ b: number }> }>({ spec: { a: { initial: () => ({ foobar: {b:2}}), entryFields: { b: {} } } } })
+      expect(s.data).toEqual({ a: { foobar: { b: 2 } } })
+    })
+    it('if record optional initial may still be omitted, defaulting to empty object', () => {
+      // todo bit odd that data could be typed as optional but it would never be...
+      // prettier-ignore
+      const s = S.create<{ a?: R<{ b: number }> }>({ spec: { a: { entryFields: { b: {} } } } })
+      expect(s.data).toEqual({ a: {} })
+    })
+    it('sub-initializer on optional field not given is run', () => {
+      const s = S.create<{ a: R<{ b?: number }> }>({
+        spec: { a: { initial: () => ({ foobar: {} }), entryFields: { b: { initial: () => 1 } } } },
+      })
+      expect(s.data).toEqual({ a: { foobar: { b: 1 } } })
+    })
+    it('sub-initializer on optional field not given is run and merged with given fields', () => {
+      // prettier-ignore
+      const s = S.create<{ a: R<{ b?: number; c: 1 }> }>({
+        spec: { a: { initial: () => ({ foobar: { c: 1 } }), entryFields: { c: {}, b: { initial: () => 1 } } } },
+      })
+      expect(s.data).toEqual({ a: { foobar: { c: 1, b: 1 } } })
+    })
   })
 })
 
