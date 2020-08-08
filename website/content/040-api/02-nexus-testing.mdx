@@ -54,6 +54,13 @@ export interface CreateTestContextOptions {
    * You should typically use this if you're using `nexus dev --entrypoint` or `nexus build --entrypoint`.
    */
   entrypointPath?: string
+  /**
+   * Nexus usually determines the project root by the first `package.json` found while traversing up the file system.
+   * In some cases, e.g. usage in a monorepo, this might not always be correct.
+   * For those cases, you can specify the `projectRoot` manually.
+   * 
+   * Example: `await createTestContext({ projectRoot: path.join(__dirname, '../..') })`
+   */
   projectRoot?: string
 }
 ```

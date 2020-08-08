@@ -24,7 +24,7 @@ export interface TestContextCore {
 }
 
 declare global {
-  interface NexusTestContextApp extends TestContextAppCore {}
+  interface NexusTestContextApp extends TestContextAppCore { }
 
   interface NexusTestContextRoot {
     app: NexusTestContextApp
@@ -40,6 +40,13 @@ export interface CreateTestContextOptions {
    * You should typically use this if you're using `nexus dev --entrypoint` or `nexus build --entrypoint`.
    */
   entrypointPath?: string
+  /**
+   * Nexus usually determines the project root by the first `package.json` found while traversing up the file system.
+   * In some cases, e.g. usage in a monorepo, this might not always be correct.
+   * For those cases, you can specify the `projectRoot` manually.
+   *
+   * Example: `await createTestContext({ projectRoot: path.join(__dirname, '../..') })`
+   */
   projectRoot?: string
 }
 
@@ -77,7 +84,7 @@ export async function createTestContext(opts?: CreateTestContextOptions): Promis
   const forcedServerSettings = {
     port: randomPort,
     playground: false, // Disable playground during tests
-    startMessage() {}, // Make server silent
+    startMessage() { }, // Make server silent
   }
 
   // todo remove these settings hacks once we have https://github.com/graphql-nexus/nexus/issues/758
