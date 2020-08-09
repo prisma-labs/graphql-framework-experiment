@@ -437,7 +437,14 @@ describe('input records', () => {
     it.todo('required if the entry input type does not match data type')
   })
   describe('mapEntryData', () => {
-    it.todo('required if the entry input field name does not match any data field name')
+    it('required and called if the entry input field name does not match any data field name', () => {
+      // prettier-ignore
+      const s = S.create<{ a?: R<{ a?: number }> }, { a: R<{ a: number, b: number }> }>({
+        spec: { a: { mapEntryData: (data) => ({ a: data.a, b: data.a }), entryFields: { a: { initial: () => 1 } } } }
+      })
+      s.change({ a: { foobar: { a: 1 } } })
+      expect(s.data).toEqual({ a: { foobar: { a: 1, b: 1 } } })
+    })
     it.todo('passes key name to callback as second parameter')
   })
   describe('entryShorthand', () => {

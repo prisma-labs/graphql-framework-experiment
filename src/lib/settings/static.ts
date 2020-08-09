@@ -33,7 +33,14 @@ type KeysWhereDataOptional<Input, Data> = {
 }[keyof Input]
 
 type FilterInKeys<T, U> = { [K in keyof T]: T[K] extends U ? K : never }[keyof T]
+
 type FilterOutKeys<T, U> = { [K in keyof T]: T[K] extends U ? never : K }[keyof T]
+
+type FilterInOverlappingKeys<T, U> = { [K in keyof T]: K extends keyof U ? K : never }[keyof T]
+
+type OnlyPropsInOther<T, U> = {
+  [K in FilterInOverlappingKeys<T, U>]: T[K]
+}
 
 /**
  * todo
@@ -225,6 +232,6 @@ export type RecordSpec<Dict, K, Data, VarEntryInput = ExcludeUndefined<Dict>[str
       ? {}
       : {
           // @ts-expect-error
-          mapEntryData(input: ExcludeShorthand<VarEntryInput>, key: string): Data[K][string]
+          mapEntryData(data: OnlyPropsInOther<Data[K][string], VarEntryInput>, key: string): Data[K][string]
         }
     )
