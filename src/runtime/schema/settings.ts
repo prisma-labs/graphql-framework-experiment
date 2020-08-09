@@ -130,7 +130,7 @@ export type SettingsData = Omit<Settings.DataDefault<SettingsInput>, 'connection
  */
 export const createSchemaSettingsManager = () =>
   Settings.create<SettingsInput, SettingsData>({
-    spec: {
+    fields: {
       nullable: {
         fields: {
           inputs: {

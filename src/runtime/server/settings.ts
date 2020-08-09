@@ -182,7 +182,7 @@ type a = SettingsData['host']
 
 export const createServerSettingsManager = () =>
   Settings.create<SettingsInput, SettingsData>({
-    spec: {
+    fields: {
       playground: {
         shorthand(enabled) {
           return { enabled }

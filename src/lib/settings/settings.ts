@@ -97,13 +97,13 @@ function onFixup(info: FixupInfo): void {
 }
 
 export function create<Input extends PlainObject, Data extends PlainObject = DataDefault<Input>>({
-  spec,
+  fields,
   ...options
 }: {
-  spec: Spec<Input, Data>
+  fields: Spec<Input, Data>
 } & Options): Manager<Input, Data> {
   if (isDevelopment()) {
-    validateSpec(spec)
+    validateSpec(fields)
   }
 
   const state = {
@@ -112,19 +112,19 @@ export function create<Input extends PlainObject, Data extends PlainObject = Dat
     metadata: {} as any, // Metadata<Data>,
   }
 
-  initialize(spec, state.data, state.metadata)
+  initialize(fields, state.data, state.metadata)
 
   const api: Manager<Input, Data> = {
     data: state.data,
     metadata: state.metadata,
     change(input) {
-      resolve(options, 'set', spec, input, state.data, state.metadata)
+      resolve(options, 'set', fields, input, state.data, state.metadata)
       return api
     },
     reset() {
       api.data = state.data = {} as any
       api.metadata = state.metadata = {} as any
-      initialize(spec, state.data, state.metadata)
+      initialize(fields, state.data, state.metadata)
       return api
     },
     original() {
