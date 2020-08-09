@@ -197,11 +197,11 @@ function resolve(
           if (!data[inputFieldName][key]) {
             log.trace('initializing new record entry', { key })
             data[inputFieldName][key] = {}
-            metadata[inputFieldName].record[key] = {}
+            metadata[inputFieldName].value[key] = {}
             initialize(
               fields[inputFieldName].entryFields,
               data[inputFieldName][key],
-              metadata[inputFieldName].record[key]
+              metadata[inputFieldName].value[key]
             )
           }
 
@@ -211,7 +211,7 @@ function resolve(
             specifier.entryFields,
             inputEntryValue,
             data[inputFieldName][key],
-            metadata[inputFieldName].record[key]
+            metadata[inputFieldName].value[key]
           )
         })
       } else {
@@ -318,6 +318,9 @@ function resolve(
       data[inputFieldName] = resolvedValue
       metadata[inputFieldName].value = resolvedValue
       metadata[inputFieldName].from = metadataFrom
+      if (metadataFrom === 'initial') {
+        metadata[inputFieldName].initial = resolvedValue
+      }
     }
   })
 
@@ -362,7 +365,8 @@ function initialize(fields: any, data: any, metadata: any) {
         )
         .value()
       data[inputFieldName] = initialRecordInitialized.data
-      metadata[inputFieldName] = metadata[inputFieldName] ?? { record: initialRecordInitialized.metadata }
+      metadata[inputFieldName] =
+        metadata[inputFieldName] ?? initMetadataRecord(initialRecordInitialized.metadata)
     } else {
       log.trace('initialize input field', { inputFieldName })
       let value = runInitializer(specifier, inputFieldName, data)
@@ -409,6 +413,10 @@ function runInitializer(specifier: any, inputFieldName: string, data: any): any 
  */
 function initMetadataField(value: any) {
   return { value, from: 'initial', initial: value }
+}
+
+function initMetadataRecord(value: any) {
+  return { type: 'record', from: 'initial', value, initial: Lo.cloneDeep(value) }
 }
 
 /**

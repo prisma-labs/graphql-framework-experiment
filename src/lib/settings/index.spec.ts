@@ -334,37 +334,113 @@ describe('input records', () => {
     expect(s.change({ a: { foobar: { b: 2 } } }).data).toEqual({ a: { foobar: { b: 2 } } })
   })
   describe('initial', () => {
-    // todo test metadata
-    it('is accepted and called (required record case)', () => {
-      const s = S.create<{ a: R<{ b: number }> }>({
-        spec: { a: { initial: () => ({ foobar: { b: 2 } }), entryFields: { b: {} } } },
-      })
+    it('is accepted and is called (required record case)', () => {
+      // prettier-ignore
+      const s = S.create<{ a: R<{ b: number }> }>({ spec: { a: { initial: () => ({ foobar: { b: 2 } }), entryFields: { b: {} } } } })
       expect(s.data).toEqual({ a: { foobar: { b: 2 } } })
+      // prettier-ignore
+      expect(s.metadata).toEqual({ a: {
+        type: 'record',
+        from: 'initial',
+        value: { foobar: { b: { value: 2, from: 'initial', initial: 2 } } },
+        initial: { foobar: { b: { value: 2, from: 'initial', initial: 2 } } }
+      }})
     })
-    it('is accepted and called (optional record case)', () => {
+    it('is accepted and is called (optional record case)', () => {
       // prettier-ignore
       const s = S.create<{ a?: R<{ b: number }> }>({ spec: { a: { initial: () => ({ foobar: {b:2}}), entryFields: { b: {} } } } })
       expect(s.data).toEqual({ a: { foobar: { b: 2 } } })
+      // prettier-ignore
+      expect(s.metadata).toEqual({ a: {
+        type: 'record',
+        from: 'initial',
+        value: { foobar: { b: { value: 2, from: 'initial', initial: 2 } } },
+        initial: { foobar: { b: { value: 2, from: 'initial', initial: 2 } } }
+      }})
     })
-    it('if record optional initial may still be omitted, defaulting to empty object', () => {
+    it('is omittable, defaulting to empty object (optional reocrd case)', () => {
       // todo bit odd that data could be typed as optional but it would never be...
       // prettier-ignore
       const s = S.create<{ a?: R<{ b: number }> }>({ spec: { a: { entryFields: { b: {} } } } })
       expect(s.data).toEqual({ a: {} })
-    })
-    it('sub-initializer on optional field not given is run', () => {
-      const s = S.create<{ a: R<{ b?: number }> }>({
-        spec: { a: { initial: () => ({ foobar: {} }), entryFields: { b: { initial: () => 1 } } } },
+      expect(s.metadata).toEqual({
+        a: {
+          type: 'record',
+          from: 'initial',
+          value: {},
+          initial: {},
+        },
       })
-      expect(s.data).toEqual({ a: { foobar: { b: 1 } } })
     })
-    it('sub-initializer on optional field not given is run and merged with given fields', () => {
-      // prettier-ignore
-      const s = S.create<{ a: R<{ b?: number; c: 1 }> }>({
-        spec: { a: { initial: () => ({ foobar: { c: 1 } }), entryFields: { c: {}, b: { initial: () => 1 } } } },
+    describe('metadata', () => {
+      it('captured immutable initial state', () => {
+        const s = S.create<{ a?: R<{ b: number }> }>({ spec: { a: { entryFields: { b: {} } } } })
+        s.change({ a: { foobar: { b: 1 } } })
+        expect(s.metadata).toEqual({
+          a: {
+            type: 'record',
+            from: 'initial',
+            value: { foobar: { b: { value: 1, from: 'set', initial: undefined } } },
+            initial: {},
+          },
+        })
       })
-      expect(s.data).toEqual({ a: { foobar: { c: 1, b: 1 } } })
+      it('captures immutable initial state even with sub-initializers', () => {
+        // prettier-ignore
+        const s = S.create<{ a: R<{ b?: number; c?: number }> }>({
+          spec: { a: { initial: () => ({ foobar: { c: 1 } }), entryFields: { c: { initial: () => 100 }, b: { initial: () => 2 } } } }
+        })
+        // prettier-ignore
+        expect(s.metadata).toEqual({
+          a: {
+            type: 'record',
+            from: 'initial',
+            value: { foobar: { c: { value: 1, from: 'initial', initial: 1 }, b: { value: 2, from: 'initial', initial: 2 } } },
+            initial: { foobar: { c: { value: 1, from: 'initial', initial: 1 }, b: { value: 2, from: 'initial', initial: 2 } } },
+          },
+        })
+        s.change({ a: { foobar: { c: 3 } } })
+        // prettier-ignore
+        expect(s.metadata).toEqual({
+          a: {
+            type: 'record',
+            from: 'initial',
+            value: { foobar: { c: { value: 3, from: 'set', initial: 1 }, b: { value: 2, from: 'initial', initial: 2 } } },
+            initial: { foobar: { c: { value: 1, from: 'initial', initial: 1 }, b: { value: 2, from: 'initial', initial: 2 } } },
+          },
+        })
+      })
     })
+    describe('sub-initializers', () => {
+      it('run when respective fields not given by record initializer', () => {
+        const s = S.create<{ a: R<{ b?: number }> }>({
+          spec: { a: { initial: () => ({ foobar: {} }), entryFields: { b: { initial: () => 1 } } } },
+        })
+        expect(s.data).toEqual({ a: { foobar: { b: 1 } } })
+      })
+      it('skipped when respective fields are given by record initializer', () => {
+        const s = S.create<{ a: R<{ b?: number }> }>({
+          spec: { a: { initial: () => ({ foobar: { b: 2 } }), entryFields: { b: { initial: () => 1 } } } },
+        })
+        expect(s.data).toEqual({ a: { foobar: { b: 2 } } })
+      })
+      it('data merged with data given in record initializer', () => {
+        // prettier-ignore
+        const s = S.create<{ a: R<{ b?: number; c: 1 }> }>({
+          spec: { a: { initial: () => ({ foobar: { c: 1 } }), entryFields: { c: {}, b: { initial: () => 1 } } } }
+        })
+        expect(s.data).toEqual({ a: { foobar: { c: 1, b: 1 } } })
+      })
+    })
+  })
+  describe('mapEntryType', () => {
+    it.todo('required if the entry input type does not match data type')
+  })
+  describe('mapEntryData', () => {
+    it.todo('required if the entry input field name does not match any data field name')
+  })
+  describe('entryShorthand', () => {
+    it.todo('can be provided to allow shorthands on entries (like namespaces)')
   })
 })
 

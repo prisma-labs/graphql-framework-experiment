@@ -203,16 +203,15 @@ export type RecordSpec<Dict, K, Data, VarEntryInput = ExcludeUndefined<Dict>[str
      */
     (
       undefined extends Dict
-      ? FilterOutKeys<VarEntryInput, undefined> extends never
-        ? {
-            initial?(): ExcludeUndefined<Dict>
-          }
-        : {
-            initial?(): ExcludeUndefined<Dict>
-          }
+      ? {
+          /**
+           * Initialize the record with some entries. By default the record will be an empty object.
+           */
+          initial?(): ExcludeUndefined<Dict>
+        }
       : {
           /**
-           * You require users to supply a record setting however you can still define initial here. Can be useful to pre-load some entries.
+           * Initialize the record with some entries. Although you require users to input a record, your initializer will still be run too, if provided.
            */
           initial?(): ExcludeUndefined<Dict>
         }
@@ -220,10 +219,12 @@ export type RecordSpec<Dict, K, Data, VarEntryInput = ExcludeUndefined<Dict>[str
     /**
      * if data has fields that are not present in input THEN mapData is required
      */
-    // @ts-expect-error
-    (ExcludeShorthand<Required<VarEntryInput>> extends Required<Data[K][string]>
+    (
+      // @ts-expect-error
+      ExcludeShorthand<Required<VarEntryInput>> extends Required<Data[K][string]>
       ? {}
       : {
           // @ts-expect-error
           mapEntryData(input: ExcludeShorthand<VarEntryInput>): Data[K][string]
-        })
+        }
+    )
