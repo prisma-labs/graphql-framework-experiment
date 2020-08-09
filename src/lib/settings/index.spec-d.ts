@@ -150,6 +150,9 @@ S.create<{ a?: R<{ a?: number }> }, { a: R<{ a: number, b: number }> }>({ spec: 
 // @ts-expect-error data.b is not available on the data parameter
 S.create<{ a?: R<{ a?: number }> }, { a: R<{ a: number, b: number }> }>({ spec: { a: { mapEntryData: (data) => ({ a: data.a, b: data.b }), entryFields: { a: { initial: () => 1 } } } } })
 
+// metadata
+tsd.expectType<number>(S.create<{ a?: R<{z: number }> }>({ spec: { a: { entryFields: { z: {} } }}}).metadata.a.value.foobar.z.value)
+tsd.expectType<number>(S.create<{ a?: R<{z: number }> }>({ spec: { a: { entryFields: { z: {} } }}}).metadata.a.initial.foobar.z.value)
 
 // if non-pojo unioned with input entry pojo THEN input entry field spec shorthand required
 S.create<{ a: R<number | {a: number }> }>({ spec: { a: { entryFields: { a: {} }, entryShorthand: (a) => ({a}) } }})

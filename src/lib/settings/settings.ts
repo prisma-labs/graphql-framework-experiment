@@ -13,8 +13,15 @@ type MetadataValueFromType = 'set' | 'initial'
  * todo
  */
 export type Metadata<Data extends PlainObject> = {
-  [Key in keyof Data]: IsRecord<Data[Key]> extends true // @ts-ignore-error
-    ? Record<string, Metadata<Data[string]>>
+  [Key in keyof Data]: IsRecord<Data[Key]> extends true
+    ? {
+        type: 'record'
+        from: MetadataValueFromType
+        // @ts-ignore-error
+        value: Record<string, Metadata<Data[Key][string]>>
+        // @ts-ignore-error
+        initial: Record<string, Metadata<Data[Key][string]>>
+      }
     : Data[Key] extends PlainObject
     ? {
         fields: Metadata<Data[Key]>
