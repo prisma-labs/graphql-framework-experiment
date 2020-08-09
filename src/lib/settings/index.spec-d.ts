@@ -127,15 +127,17 @@ s.create<{ a?: Record<string, {z?: number }> }>({ spec: { a: { entryFields: { z:
 // @ts-expect-error
 s.create<{ a?: Record<string, {z?: number }> }>({ spec: { a: { entryFields: { z: {initial: () => 1 } }, initial: () => ({foo:{z:true}}) } }})
 
-// if entry input/data field types are mismatch THEN entry input field spec mapType required
-// todo this also triggers requiring mapEntryData ... developer should be able to choose which they want ... not able to provide both ... either top level or all sub-instances
-// ... actually looking below, for shadow data fields, local mappers are a really bad fit, not just a style difference
-s.create<{ a: Record<string, {z: number }> },  { a: Record<string, { z: boolean }> }>({ spec: { a: { entryFields: { z: { mapType: Boolean } }, } }})
+// // todo
+// // if entry input/data field types are mismatch THEN entry input field spec mapType required
+// // todo this also triggers requiring mapEntryData ... developer should be able to choose which they want ... not able to provide both ... either top level or all sub-instances
+// // ... actually looking below, for shadow data fields, local mappers are a really bad fit, not just a style difference
+// s.create<{ a: Record<string, {z: number }> },  { a: Record<string, { z: boolean }> }>({ spec: { a: { entryFields: { z: { mapType: Boolean } }, } }})
 // @ts-ignore-error
 s.create<{ a: Record<string, {z: number }> },  { a: Record<string, { z: boolean }> }>({ spec: { a: { entryFields: { z: {} } } }})
 
-// if entry input/data field are mismatch THEN entry input field spec mapData required
-s.create<{ a: Record<string, {z: number }> },  { a: Record<string, { y: number }> }>({ spec: { a: { entryFields: { z: { mapData: (z) => ({y:z})} } } }})
+// // todo
+// // if entry input/data field are mismatch THEN entry input field spec mapData required
+// s.create<{ a: Record<string, {z: number }> },  { a: Record<string, { y: number }> }>({ spec: { a: { entryFields: { z: { mapData: (z) => ({y:z})} } } }})
 
 // if data has fields that are not present in input THEN mapEntryData is required 
 s.create<{ a: Record<string, {a: number }> },  { a: Record<string, { a: number, b: number }> }>({ spec: { a: { entryFields: { a: {} }, mapEntryData: (input) => ({ ...input, b:1 }) } }})
@@ -168,6 +170,11 @@ s.create<{ a?: { a: number } }>({ spec: { a: { shorthand: (a) => ({ a }), fields
 s.create<{ a?: { a: number } }, { a?: { a: number } }>({ spec: { a: { fields:{ a: {} } } } })
 // ... but if 0 sub input fields are required THEN initial is forbidden (b/c we can automate the initial)
 s.create<{ a?: { a?: number } }>({ spec: { a: { fields:{ a: { initial: () => 1 } } } } })
+
+// RegExp does not get counted as namesapce
+s.create<{ a?: { b?: string | RegExp } }>({ spec: { a: { fields: { b: { initial: () => /a/ } } } } })
+// Date does not get counted as namesapce
+s.create<{ a?: { b?: string | Date } }>({ spec: { a: { fields: { b: { initial: () => new Date() } } } } })
 
 // works with interfaces
 interface A { a?: number }

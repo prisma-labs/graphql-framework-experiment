@@ -11,14 +11,6 @@ type ConnectionPluginConfigManagedByNexus = Required<
   Pick<ConnectionPluginConfig, ConnectionPluginConfigPropsManagedByNexus>
 >
 
-const connectionPluginConfigManagedByNexus: ConnectionPluginConfigManagedByNexus = {
-  nexusSchemaImportId: 'nexus/components/schema',
-  /**
-   * The name of the relay connection field builder. This is not configurable by users.
-   */
-  nexusFieldName: 'connection',
-}
-
 /**
  * Relay connection field builder settings for users.
  */
@@ -187,10 +179,11 @@ export const createSchemaSettingsManager = () =>
         entryShorthand(disabled) {
           return { enabled: disabled }
         },
-        mapEntryData(input) {
+        mapEntryData(input, key) {
           return {
+            nexusSchemaImportId: 'nexus/components/schema',
+            nexusFieldName: key === 'default' ? 'connection' : key,
             ...input,
-            ...connectionPluginConfigManagedByNexus,
           }
         },
       },

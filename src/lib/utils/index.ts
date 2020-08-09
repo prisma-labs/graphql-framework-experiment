@@ -33,6 +33,10 @@ export type SideEffector = () => MaybePromise
 
 export type OnlyPlainObjectOrInterface<T> = T extends Function
   ? never
+  : T extends RegExp
+  ? never
+  : T extends Date
+  ? never
   : T extends any[]
   ? never
   : T extends Primitive

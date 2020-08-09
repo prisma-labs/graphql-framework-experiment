@@ -438,6 +438,7 @@ describe('input records', () => {
   })
   describe('mapEntryData', () => {
     it.todo('required if the entry input field name does not match any data field name')
+    it.todo('passes key name to callback as second parameter')
   })
   describe('entryShorthand', () => {
     it.todo('can be provided to allow shorthands on entries (like namespaces)')

@@ -9,7 +9,7 @@ type Resolved<T> = Exclude<Required<NonNullable<T>>, Primitive>
 
 type ResolvedOptional<T> = Exclude<NonNullable<T>, Primitive>
 
-export type ServerSettingsManager = Settings.Manager<SettingsData, SettingsInput>
+export type ServerSettingsManager = Settings.Manager<SettingsInput, SettingsData>
 
 export type HTTPMethods = LiteralUnion<'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD', string>
 

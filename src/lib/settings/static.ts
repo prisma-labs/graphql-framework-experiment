@@ -225,6 +225,6 @@ export type RecordSpec<Dict, K, Data, VarEntryInput = ExcludeUndefined<Dict>[str
       ? {}
       : {
           // @ts-expect-error
-          mapEntryData(input: ExcludeShorthand<VarEntryInput>): Data[K][string]
+          mapEntryData(input: ExcludeShorthand<VarEntryInput>, key: string): Data[K][string]
         }
     )
