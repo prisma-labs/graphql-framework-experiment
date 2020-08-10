@@ -148,6 +148,81 @@ function metadataToData<Data>(metadata: any, copy: PlainObject): Data {
   return copy as any
 }
 
+function resolveNamespace(
+  options: Options,
+  metadataFrom: MetadataValueFromType,
+  specifier: any,
+  inputFieldValue: any,
+  inputFieldName: any,
+  data: any,
+  metadata: any
+) {
+  const isValueObject = Lo.isPlainObject(inputFieldValue)
+
+  if (!isValueObject && specifier.fields && !specifier.shorthand) {
+    throw new Error(
+      `Setting "${inputFieldName}" is a namespace with no shorthand so expects an object but received a non-object: ${inspect(
+        inputFieldValue
+      )}`
+    )
+  }
+
+  let longhandValue = inputFieldValue
+  if (!isValueObject && specifier.shorthand) {
+    log.debug('expanding shorthand', { inputFieldName })
+    try {
+      longhandValue = specifier.shorthand(inputFieldValue)
+    } catch (e) {
+      throw ono(
+        e,
+        { inputFieldName, inputFieldValue },
+        `There was an unexpected error while running the namespace shorthand for setting "${inputFieldName}". The given value was ${inspect(
+          inputFieldValue
+        )}`
+      )
+    }
+  }
+
+  resolve(
+    options,
+    metadataFrom,
+    specifier.fields,
+    longhandValue,
+    data[inputFieldName],
+    metadata[inputFieldName].fields
+  )
+}
+
+function resolveRecord(
+  options: Options,
+  metadataFrom: MetadataValueFromType,
+  specifier: any,
+  inputFieldValue: any,
+  inputFieldName: any,
+  data: any,
+  metadata: any
+) {
+  Lo.forOwn(inputFieldValue, (inputEntryValue, key) => {
+    log.trace('changing record entry', { key, inputEntryValue })
+
+    if (!data[inputFieldName][key]) {
+      log.trace('initializing new record entry', { key })
+      const initial = initialize(specifier.entryFields)
+      data[inputFieldName][key] = initial.data
+      metadata[inputFieldName].value[key] = initial.metadata
+    }
+
+    resolve(
+      options,
+      metadataFrom,
+      specifier.entryFields,
+      inputEntryValue,
+      data[inputFieldName][key],
+      metadata[inputFieldName].value[key]
+    )
+  })
+}
+
 /**
  * Process the given input through the settings spec, resolving its shorthands,
  * fixups, validation and so on until finally assigning it into the setting data.
@@ -179,151 +254,102 @@ function resolve(
       )
     }
 
-    if (!isValueObject && specifier.fields && !specifier.shorthand) {
-      throw new Error(
-        `Setting "${inputFieldName}" is a namespace with no shorthand so expects an object but received a non-object: ${inspect(
-          inputFieldValue
-        )}`
-      )
+    if (isValueObject && !specifier.entryFields && !specifier.fields) {
+      throw new Error(`Unknown kind of specifier: ${inspect(specifier)}`)
     }
 
-    if (isValueObject) {
-      if (specifier.fields) {
-        resolve(
-          options,
-          metadataFrom,
-          specifier.fields,
-          inputFieldValue,
-          data[inputFieldName],
-          metadata[inputFieldName].fields
-        )
-      } else if (specifier.entryFields) {
-        Lo.forOwn(inputFieldValue, (inputEntryValue, key) => {
-          log.trace('changing record entry', { key, inputEntryValue })
+    if (specifier.fields) {
+      resolveNamespace(options, metadataFrom, specifier, inputFieldValue, inputFieldName, data, metadata)
+      return
+    }
 
-          if (!data[inputFieldName][key]) {
-            log.trace('initializing new record entry', { key })
-            const initial = initialize(fields[inputFieldName].entryFields)
-            data[inputFieldName][key] = initial.data
-            metadata[inputFieldName].value[key] = initial.metadata
-          }
+    if (isValueObject && specifier.entryFields) {
+      resolveRecord(options, metadataFrom, specifier, inputFieldValue, inputFieldName, data, metadata)
+      return
+    }
 
-          resolve(
-            options,
-            metadataFrom,
-            specifier.entryFields,
-            inputEntryValue,
-            data[inputFieldName][key],
-            metadata[inputFieldName].value[key]
-          )
-        })
-      } else {
-        throw new Error(`Unknown kind of specifier: ${inspect(specifier)}`)
-      }
-    } else if (specifier.shorthand) {
-      if (specifier.shorthand) {
-        log.debug('expanding shorthand', { inputFieldName })
-        let longhandValue
-        try {
-          longhandValue = specifier.shorthand(inputFieldValue)
-        } catch (e) {
-          throw ono(
-            e,
-            { inputFieldName, inputFieldValue },
-            `There was an unexpected error while running the namespace shorthand for setting "${inputFieldName}". The given value was ${inspect(
-              inputFieldValue
-            )}`
-          )
-        }
-        resolve(
-          options,
-          metadataFrom,
-          specifier.fields,
-          longhandValue,
-          data[inputFieldName],
-          metadata[inputFieldName].fields
+    /**
+     * Resolve Leaf
+     */
+
+    let resolvedValue = inputFieldValue
+
+    /**
+     * Run fixups
+     */
+    if (specifier.fixup) {
+      let maybeFixedup
+      try {
+        maybeFixedup = specifier.fixup(resolvedValue)
+      } catch (e) {
+        throw ono(
+          e,
+          { inputFieldName, value: resolvedValue },
+          `Fixup for "${inputFieldName}" failed while running on value ${inspect(resolvedValue)}`
         )
       }
-    } else {
-      let resolvedValue = inputFieldValue
-
-      /**
-       * Run fixups
-       */
-      if (specifier.fixup) {
-        let maybeFixedup
-        try {
-          maybeFixedup = specifier.fixup(resolvedValue)
-        } catch (e) {
-          throw ono(
-            e,
-            { inputFieldName, value: resolvedValue },
-            `Fixup for "${inputFieldName}" failed while running on value ${inspect(resolvedValue)}`
-          )
+      if (maybeFixedup) {
+        resolvedValue = maybeFixedup.value
+        /**
+         * fixup handler
+         */
+        const fixupInfo = {
+          before: inputFieldValue,
+          after: maybeFixedup.value,
+          name: inputFieldName,
+          messages: maybeFixedup.messages,
         }
-        if (maybeFixedup) {
-          resolvedValue = maybeFixedup.value
-          /**
-           * fixup handler
-           */
-          const fixupInfo = {
-            before: inputFieldValue,
-            after: maybeFixedup.value,
-            name: inputFieldName,
-            messages: maybeFixedup.messages,
+        if (options.onFixup) {
+          try {
+            options.onFixup(fixupInfo, onFixup)
+          } catch (e) {
+            throw ono(e, { inputFieldName }, `onFixup callback for "${inputFieldName}" failed`)
           }
-          if (options.onFixup) {
-            try {
-              options.onFixup(fixupInfo, onFixup)
-            } catch (e) {
-              throw ono(e, { inputFieldName }, `onFixup callback for "${inputFieldName}" failed`)
-            }
-          } else {
-            onFixup(fixupInfo)
-          }
+        } else {
+          onFixup(fixupInfo)
         }
       }
+    }
 
-      /**
-       * Run validators
-       */
-      if (specifier.validate) {
-        let maybeViolation
-        try {
-          maybeViolation = specifier.validate(resolvedValue)
-        } catch (e) {
-          // todo use verror or like
-          throw ono(
-            e,
-            { inputFieldName, value: resolvedValue },
-            `Validation for "${inputFieldName}" unexpectedly failed while running on value ${inspect(
-              resolvedValue
-            )}`
-          )
-        }
-        if (maybeViolation) {
-          throw new Error(
-            `Your setting "${inputFieldName}" failed validation with value ${inspect(
-              resolvedValue
-            )}:\n\n- ${maybeViolation.messages.join('\n- ')}`
-          )
-        }
+    /**
+     * Run validators
+     */
+    if (specifier.validate) {
+      let maybeViolation
+      try {
+        maybeViolation = specifier.validate(resolvedValue)
+      } catch (e) {
+        // todo use verror or like
+        throw ono(
+          e,
+          { inputFieldName, value: resolvedValue },
+          `Validation for "${inputFieldName}" unexpectedly failed while running on value ${inspect(
+            resolvedValue
+          )}`
+        )
       }
+      if (maybeViolation) {
+        throw new Error(
+          `Your setting "${inputFieldName}" failed validation with value ${inspect(
+            resolvedValue
+          )}:\n\n- ${maybeViolation.messages.join('\n- ')}`
+        )
+      }
+    }
 
-      /**
-       * Run type mappers
-       */
-      if (specifier.mapType) {
-        resolvedValue = runTypeMapper(specifier.mapType, resolvedValue, inputFieldName)
-      }
+    /**
+     * Run type mappers
+     */
+    if (specifier.mapType) {
+      resolvedValue = runTypeMapper(specifier.mapType, resolvedValue, inputFieldName)
+    }
 
-      log.trace('committing data', { inputFieldName, value: resolvedValue })
-      data[inputFieldName] = resolvedValue
-      metadata[inputFieldName].value = resolvedValue
-      metadata[inputFieldName].from = metadataFrom
-      if (metadataFrom === 'initial') {
-        metadata[inputFieldName].initial = resolvedValue
-      }
+    log.trace('committing data', { inputFieldName, value: resolvedValue })
+    data[inputFieldName] = resolvedValue
+    metadata[inputFieldName].value = resolvedValue
+    metadata[inputFieldName].from = metadataFrom
+    if (metadataFrom === 'initial') {
+      metadata[inputFieldName].initial = resolvedValue
     }
   })
 
