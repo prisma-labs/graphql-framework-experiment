@@ -148,6 +148,10 @@ function metadataToData<Data>(metadata: any, copy: PlainObject): Data {
   return copy as any
 }
 
+type ResolveInfo = {
+  path: string
+}
+
 function resolveNamespace(
   options: Options,
   metadataFrom: MetadataValueFromType,
@@ -217,6 +221,81 @@ function resolveRecord(
   })
 }
 
+function resolveLeaf(options: Options, specifier: any, value: any, info: any) {
+  let resolvedValue = value
+
+  /**
+   * Run fixups
+   */
+  if (specifier.fixup) {
+    let maybeFixedup
+    try {
+      maybeFixedup = specifier.fixup(resolvedValue)
+    } catch (e) {
+      throw ono(
+        e,
+        { info, value: resolvedValue },
+        `Fixup for "${info.path}" failed while running on value ${inspect(resolvedValue)}`
+      )
+    }
+    if (maybeFixedup) {
+      resolvedValue = maybeFixedup.value
+      /**
+       * fixup handler
+       */
+      const fixupInfo = {
+        before: value,
+        after: maybeFixedup.value,
+        name: info.path,
+        messages: maybeFixedup.messages,
+      }
+      if (options.onFixup) {
+        try {
+          options.onFixup(fixupInfo, onFixup)
+        } catch (e) {
+          throw ono(e, { info }, `onFixup callback for "${info.path}" failed`)
+        }
+      } else {
+        onFixup(fixupInfo)
+      }
+    }
+  }
+
+  /**
+   * Run validators
+   */
+  if (specifier.validate) {
+    let maybeViolation
+    try {
+      maybeViolation = specifier.validate(resolvedValue)
+    } catch (e) {
+      // todo use verror or like
+      throw ono(
+        e,
+        { info, value: resolvedValue },
+        `Validation for "${info.path}" unexpectedly failed while running on value ${inspect(resolvedValue)}`
+      )
+    }
+    if (maybeViolation) {
+      throw new Error(
+        `Your setting "${info.path}" failed validation with value ${inspect(
+          resolvedValue
+        )}:\n\n- ${maybeViolation.messages.join('\n- ')}`
+      )
+    }
+  }
+
+  /**
+   * Run type mappers
+   */
+  if (specifier.mapType) {
+    console.log(info)
+    resolvedValue = runTypeMapper(specifier.mapType, resolvedValue, info)
+  }
+
+  return resolvedValue
+}
+
 /**
  * Process the given input through the settings spec, resolving its shorthands,
  * fixups, validation and so on until finally assigning it into the setting data.
@@ -280,78 +359,7 @@ function resolve(
     /**
      * Resolve Leaf
      */
-
-    let resolvedValue = inputFieldValue
-
-    /**
-     * Run fixups
-     */
-    if (specifier.fixup) {
-      let maybeFixedup
-      try {
-        maybeFixedup = specifier.fixup(resolvedValue)
-      } catch (e) {
-        throw ono(
-          e,
-          { inputFieldName, value: resolvedValue },
-          `Fixup for "${inputFieldName}" failed while running on value ${inspect(resolvedValue)}`
-        )
-      }
-      if (maybeFixedup) {
-        resolvedValue = maybeFixedup.value
-        /**
-         * fixup handler
-         */
-        const fixupInfo = {
-          before: inputFieldValue,
-          after: maybeFixedup.value,
-          name: inputFieldName,
-          messages: maybeFixedup.messages,
-        }
-        if (options.onFixup) {
-          try {
-            options.onFixup(fixupInfo, onFixup)
-          } catch (e) {
-            throw ono(e, { inputFieldName }, `onFixup callback for "${inputFieldName}" failed`)
-          }
-        } else {
-          onFixup(fixupInfo)
-        }
-      }
-    }
-
-    /**
-     * Run validators
-     */
-    if (specifier.validate) {
-      let maybeViolation
-      try {
-        maybeViolation = specifier.validate(resolvedValue)
-      } catch (e) {
-        // todo use verror or like
-        throw ono(
-          e,
-          { inputFieldName, value: resolvedValue },
-          `Validation for "${inputFieldName}" unexpectedly failed while running on value ${inspect(
-            resolvedValue
-          )}`
-        )
-      }
-      if (maybeViolation) {
-        throw new Error(
-          `Your setting "${inputFieldName}" failed validation with value ${inspect(
-            resolvedValue
-          )}:\n\n- ${maybeViolation.messages.join('\n- ')}`
-        )
-      }
-    }
-
-    /**
-     * Run type mappers
-     */
-    if (specifier.mapType) {
-      resolvedValue = runTypeMapper(specifier.mapType, resolvedValue, inputFieldName)
-    }
+    const resolvedValue = resolveLeaf(options, specifier, inputFieldValue, { path: inputFieldName })
 
     log.trace('committing data', { inputFieldName, value: resolvedValue })
     data[inputFieldName] = resolvedValue
@@ -420,7 +428,7 @@ function doInitialize(fields: any, data: any, metadata: any) {
         let value = runInitializer(specifier, inputFieldName, data)
 
         if (specifier.mapType) {
-          value = runTypeMapper(specifier.mapType, value, inputFieldName)
+          value = runTypeMapper(specifier.mapType, value, { path: inputFieldName })
         }
 
         data[inputFieldName] = value
@@ -473,15 +481,15 @@ function initMetadataRecord(value: any) {
 /**
  *
  */
-function runTypeMapper(typeMapper: any, inputFieldValue: any, inputFieldName: string): any {
-  log.trace('running type mapper', { inputFieldName, inputFieldValue })
+function runTypeMapper(typeMapper: any, inputFieldValue: any, info: ResolveInfo): any {
+  log.trace('running type mapper', { info, inputFieldValue })
   try {
     return typeMapper(inputFieldValue)
   } catch (e) {
     throw ono(
       e,
-      { inputFieldName },
-      `There was an unexpected error while running the type mapper for setting "${inputFieldName}"`
+      { info },
+      `There was an unexpected error while running the type mapper for setting "${info.path}"`
     )
   }
 }
