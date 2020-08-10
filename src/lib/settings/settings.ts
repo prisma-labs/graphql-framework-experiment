@@ -221,7 +221,7 @@ function resolveRecord(
   })
 }
 
-function resolveLeaf(options: Options, specifier: any, value: any, info: any) {
+function resolveLeaf(options: Options, specifier: any, value: any, info: ResolveInfo): any {
   let resolvedValue = value
 
   /**
@@ -289,7 +289,6 @@ function resolveLeaf(options: Options, specifier: any, value: any, info: any) {
    * Run type mappers
    */
   if (specifier.mapType) {
-    console.log(info)
     resolvedValue = runTypeMapper(specifier.mapType, resolvedValue, info)
   }
 
@@ -360,17 +359,23 @@ function resolve(
      * Resolve Leaf
      */
     const resolvedValue = resolveLeaf(options, specifier, inputFieldValue, { path: inputFieldName })
-
-    log.trace('committing data', { inputFieldName, value: resolvedValue })
-    data[inputFieldName] = resolvedValue
-    metadata[inputFieldName].value = resolvedValue
-    metadata[inputFieldName].from = metadataFrom
-    if (metadataFrom === 'initial') {
-      metadata[inputFieldName].initial = resolvedValue
-    }
+    commit(metadataFrom, inputFieldName, resolvedValue, data, metadata)
   })
 
   return data
+}
+
+/**
+ *
+ */
+function commit(metadataFrom: MetadataValueFromType, key: string, value: any, data: any, metadata: any) {
+  log.trace('committing data', { key, value })
+  data[key] = value
+  metadata[key].value = value
+  metadata[key].from = metadataFrom
+  if (metadataFrom === 'initial') {
+    metadata[key].initial = value
+  }
 }
 
 /**
