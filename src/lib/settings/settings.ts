@@ -334,57 +334,67 @@ function resolve(
  * Initialize the settings data with each datum's respective initializer
  * specified in the settings spec.
  */
-function initialize(fields: any) {
+function initialize(fields: any): { metadata: any; data: any } {
   return doInitialize(fields, {}, {})
 }
 
 function doInitialize(fields: any, data: any, metadata: any) {
-  Lo.forOwn(fields, (specifier: any, inputFieldName: string) => {
-    if (specifier.fields) {
-      log.trace('initialize input namespace', { inputFieldName })
-      const initializedNamespace = specifier.initial?.() ?? {}
-      data[inputFieldName] = data[inputFieldName] ?? initializedNamespace
-      metadata[inputFieldName] = metadata[inputFieldName] ?? {
-        fields: Lo.mapValues(initializedNamespace, (v, k) => ({ value: v, from: 'initial', initial: v })),
-      }
-      doInitialize(specifier.fields, data[inputFieldName], metadata[inputFieldName].fields)
-    } else if (specifier.entryFields) {
-      log.trace('initialize input record', { inputFieldName })
-      // there may be preloaded record entries via the record initializer
-      // such entries will be input and thus need to be resolved
-      // such entries may also not account for all possible fields of the entry
-      // thus we need to run the initializer and seed each entry with that
-      // then treat the actual initialzer input as a "change" on that, resolving it
-      const initialRecord = specifier.initial ? runInitializer(specifier, inputFieldName, data) : {}
-      const initialRecordInitialized = Lo.chain(initialRecord)
-        .entries()
-        .reduce(
-          (acc: any, [k, v]) => {
-            const initial = initialize(specifier.entryFields)
-            resolve({}, 'initial', specifier.entryFields, v, initial.data, initial.metadata)
-            acc.data[k] = initial.data
-            acc.metadata[k] = initial.metadata
-            return acc
-          },
-          { data: {}, metadata: {} }
-        )
-        .value()
-      data[inputFieldName] = initialRecordInitialized.data
-      metadata[inputFieldName] =
-        metadata[inputFieldName] ?? initMetadataRecord(initialRecordInitialized.metadata)
-    } else {
-      log.trace('initialize input field', { inputFieldName })
-      let value = runInitializer(specifier, inputFieldName, data)
+  return Lo.chain(fields)
+    .entries()
+    .reduce(
+      ({ data, metadata }: any, [inputFieldName, specifier]: any) => {
+        if (specifier.fields) {
+          log.trace('initialize input namespace', { inputFieldName })
+          const initializedNamespace = specifier.initial?.() ?? {}
+          data[inputFieldName] = data[inputFieldName] ?? initializedNamespace
+          metadata[inputFieldName] = metadata[inputFieldName] ?? {
+            fields: Lo.mapValues(initializedNamespace, (v, k) => ({ value: v, from: 'initial', initial: v })),
+          }
+          doInitialize(specifier.fields, data[inputFieldName], metadata[inputFieldName].fields)
+          return { data, metadata }
+        }
 
-      if (specifier.mapType) {
-        value = runTypeMapper(specifier.mapType, value, inputFieldName)
-      }
+        if (specifier.entryFields) {
+          log.trace('initialize input record', { inputFieldName })
+          // there may be preloaded record entries via the record initializer
+          // such entries will be input and thus need to be resolved
+          // such entries may also not account for all possible fields of the entry
+          // thus we need to run the initializer and seed each entry with that
+          // then treat the actual initialzer input as a "change" on that, resolving it
+          const initialRecord = specifier.initial ? runInitializer(specifier, inputFieldName, data) : {}
+          const initialRecordInitialized = Lo.chain(initialRecord)
+            .entries()
+            .reduce(
+              (acc: any, [k, v]) => {
+                const initial = initialize(specifier.entryFields)
+                resolve({}, 'initial', specifier.entryFields, v, initial.data, initial.metadata)
+                acc.data[k] = initial.data
+                acc.metadata[k] = initial.metadata
+                return acc
+              },
+              { data: {}, metadata: {} }
+            )
+            .value()
+          data[inputFieldName] = initialRecordInitialized.data
+          metadata[inputFieldName] =
+            metadata[inputFieldName] ?? initMetadataRecord(initialRecordInitialized.metadata)
+          return { data, metadata }
+        }
 
-      data[inputFieldName] = value
-      metadata[inputFieldName] = initMetadataField(value)
-    }
-  })
-  return { data, metadata }
+        log.trace('initialize input field', { inputFieldName })
+        let value = runInitializer(specifier, inputFieldName, data)
+
+        if (specifier.mapType) {
+          value = runTypeMapper(specifier.mapType, value, inputFieldName)
+        }
+
+        data[inputFieldName] = value
+        metadata[inputFieldName] = initMetadataField(value)
+        return { data, metadata }
+      },
+      { data, metadata } as any
+    )
+    .value()
 }
 
 function runInitializer(specifier: any, inputFieldName: string, data: any): any {
