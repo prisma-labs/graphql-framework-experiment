@@ -27,6 +27,7 @@ export type Metadata<Data extends PlainObject> = {
         fields: Metadata<Data[Key]>
       }
     : {
+        type: 'leaf'
         value: Data[Key]
         initial: Data[Key]
         from: MetadataValueFromType
@@ -106,13 +107,12 @@ export function create<Input extends PlainObject, Data extends PlainObject = Dat
     validateSpec(fields)
   }
 
+  const initial = initialize(fields)
   const state = {
-    data: {} as Data,
+    data: initial.data as Data,
     original: (undefined as any) as Data, // lazy
-    metadata: {} as any, // Metadata<Data>,
+    metadata: initial.metadata as any, // Metadata<Data>,
   }
-
-  initialize(fields, state.data, state.metadata)
 
   const api: Manager<Input, Data> = {
     data: state.data,
@@ -122,9 +122,9 @@ export function create<Input extends PlainObject, Data extends PlainObject = Dat
       return api
     },
     reset() {
-      api.data = state.data = {} as any
-      api.metadata = state.metadata = {} as any
-      initialize(fields, state.data, state.metadata)
+      const initial = initialize(fields)
+      api.data = state.data = initial.data as any
+      api.metadata = state.metadata = initial.metadata as any
       return api
     },
     original() {
@@ -203,13 +203,9 @@ function resolve(
 
           if (!data[inputFieldName][key]) {
             log.trace('initializing new record entry', { key })
-            data[inputFieldName][key] = {}
-            metadata[inputFieldName].value[key] = {}
-            initialize(
-              fields[inputFieldName].entryFields,
-              data[inputFieldName][key],
-              metadata[inputFieldName].value[key]
-            )
+            const initial = initialize(fields[inputFieldName].entryFields)
+            data[inputFieldName][key] = initial.data
+            metadata[inputFieldName].value[key] = initial.metadata
           }
 
           resolve(
@@ -338,7 +334,11 @@ function resolve(
  * Initialize the settings data with each datum's respective initializer
  * specified in the settings spec.
  */
-function initialize(fields: any, data: any, metadata: any) {
+function initialize(fields: any) {
+  return doInitialize(fields, {}, {})
+}
+
+function doInitialize(fields: any, data: any, metadata: any) {
   Lo.forOwn(fields, (specifier: any, inputFieldName: string) => {
     if (specifier.fields) {
       log.trace('initialize input namespace', { inputFieldName })
@@ -347,7 +347,7 @@ function initialize(fields: any, data: any, metadata: any) {
       metadata[inputFieldName] = metadata[inputFieldName] ?? {
         fields: Lo.mapValues(initializedNamespace, (v, k) => ({ value: v, from: 'initial', initial: v })),
       }
-      initialize(specifier.fields, data[inputFieldName], metadata[inputFieldName].fields)
+      doInitialize(specifier.fields, data[inputFieldName], metadata[inputFieldName].fields)
     } else if (specifier.entryFields) {
       log.trace('initialize input record', { inputFieldName })
       // there may be preloaded record entries via the record initializer
@@ -360,12 +360,10 @@ function initialize(fields: any, data: any, metadata: any) {
         .entries()
         .reduce(
           (acc: any, [k, v]) => {
-            const data = {}
-            const metadata = {}
-            initialize(specifier.entryFields, data, metadata)
-            resolve({}, 'initial', specifier.entryFields, v, data, metadata)
-            acc.data[k] = data
-            acc.metadata[k] = metadata
+            const initial = initialize(specifier.entryFields)
+            resolve({}, 'initial', specifier.entryFields, v, initial.data, initial.metadata)
+            acc.data[k] = initial.data
+            acc.metadata[k] = initial.metadata
             return acc
           },
           { data: {}, metadata: {} }
@@ -386,6 +384,7 @@ function initialize(fields: any, data: any, metadata: any) {
       metadata[inputFieldName] = initMetadataField(value)
     }
   })
+  return { data, metadata }
 }
 
 function runInitializer(specifier: any, inputFieldName: string, data: any): any {
@@ -419,7 +418,7 @@ function runInitializer(specifier: any, inputFieldName: string, data: any): any 
  *
  */
 function initMetadataField(value: any) {
-  return { value, from: 'initial', initial: value }
+  return { type: 'leaf', from: 'initial', value, initial: value }
 }
 
 function initMetadataRecord(value: any) {

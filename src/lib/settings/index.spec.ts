@@ -342,8 +342,8 @@ describe('input records', () => {
       expect(s.metadata).toEqual({ a: {
         type: 'record',
         from: 'initial',
-        value: { foobar: { b: { value: 2, from: 'initial', initial: 2 } } },
-        initial: { foobar: { b: { value: 2, from: 'initial', initial: 2 } } }
+        value: { foobar: { b: { type: 'leaf', value: 2, from: 'initial', initial: 2 } } },
+        initial: { foobar: { b: { type: 'leaf', value: 2, from: 'initial', initial: 2 } } }
       }})
     })
     it('is accepted and is called (optional record case)', () => {
@@ -354,8 +354,8 @@ describe('input records', () => {
       expect(s.metadata).toEqual({ a: {
         type: 'record',
         from: 'initial',
-        value: { foobar: { b: { value: 2, from: 'initial', initial: 2 } } },
-        initial: { foobar: { b: { value: 2, from: 'initial', initial: 2 } } }
+        value: { foobar: { b: { type: 'leaf', value: 2, from: 'initial', initial: 2 } } },
+        initial: { foobar: { b: { type: 'leaf', value: 2, from: 'initial', initial: 2 } } }
       }})
     })
     it('is omittable, defaulting to empty object (optional reocrd case)', () => {
@@ -380,7 +380,7 @@ describe('input records', () => {
           a: {
             type: 'record',
             from: 'initial',
-            value: { foobar: { b: { value: 1, from: 'set', initial: undefined } } },
+            value: { foobar: { b: { type: 'leaf', value: 1, from: 'set', initial: undefined } } },
             initial: {},
           },
         })
@@ -390,25 +390,9 @@ describe('input records', () => {
         const s = S.create<{ a: R<{ b?: number; c?: number }> }>({
           fields: { a: { initial: () => ({ foobar: { c: 1 } }), entryFields: { c: { initial: () => 100 }, b: { initial: () => 2 } } } }
         })
-        // prettier-ignore
-        expect(s.metadata).toEqual({
-          a: {
-            type: 'record',
-            from: 'initial',
-            value: { foobar: { c: { value: 1, from: 'initial', initial: 1 }, b: { value: 2, from: 'initial', initial: 2 } } },
-            initial: { foobar: { c: { value: 1, from: 'initial', initial: 1 }, b: { value: 2, from: 'initial', initial: 2 } } },
-          },
-        })
+        expect(s.metadata).toMatchSnapshot()
         s.change({ a: { foobar: { c: 3 } } })
-        // prettier-ignore
-        expect(s.metadata).toEqual({
-          a: {
-            type: 'record',
-            from: 'initial',
-            value: { foobar: { c: { value: 3, from: 'set', initial: 1 }, b: { value: 2, from: 'initial', initial: 2 } } },
-            initial: { foobar: { c: { value: 1, from: 'initial', initial: 1 }, b: { value: 2, from: 'initial', initial: 2 } } },
-          },
-        })
+        expect(s.metadata).toMatchSnapshot()
       })
     })
     describe('sub-initializers', () => {
@@ -495,20 +479,20 @@ describe('input field fixups', () => {
       })
       expect(s.change({ path: 'foo' }).data).toEqual({ path: '/foo' })
       expect(onFixup.mock.calls).toMatchInlineSnapshot(`
-      Array [
-        Array [
-          Object {
-            "after": "/foo",
-            "before": "foo",
-            "messages": Array [
-              "must have leading slash",
-            ],
-            "name": "path",
-          },
-          [Function],
-        ],
-      ]
-    `)
+              Array [
+                Array [
+                  Object {
+                    "after": "/foo",
+                    "before": "foo",
+                    "messages": Array [
+                      "must have leading slash",
+                    ],
+                    "name": "path",
+                  },
+                  [Function],
+                ],
+              ]
+          `)
     })
     it('fails then it errors gracefully', () => {
       // prettier-ignore
@@ -654,7 +638,9 @@ describe('.reset()', () => {
     const settings = S.create<{ a?: string }>({ fields: { a: { initial: c('') } } })
     settings.change({ a: 'foo' })
     expect(settings.reset().data).toEqual({ a: '' })
-    expect(settings.reset().metadata).toEqual({ a: { from: 'initial', value: '', initial: '' } })
+    expect(settings.reset().metadata).toEqual({
+      a: { type: 'leaf', from: 'initial', value: '', initial: '' },
+    })
   })
   it('settings metadata & data references change', () => {
     const settings = S.create<{ a?: string }>({ fields: { a: { initial: c('') } } })
@@ -668,7 +654,9 @@ describe('.reset()', () => {
     process.env.foo = 'foo'
     const settings = S.create<{ a?: string }>({ fields: { a: { initial: () => process.env.foo! } } })
     process.env.foo = 'bar'
-    expect(settings.reset().metadata).toEqual({ a: { from: 'initial', value: 'bar', initial: 'bar' } })
+    expect(settings.reset().metadata).toEqual({
+      a: { type: 'leaf', from: 'initial', value: 'bar', initial: 'bar' },
+    })
     delete process.env.foo
   })
 })
@@ -690,18 +678,18 @@ describe('.original()', () => {
 describe('.metadata', () => {
   it('tracks if a setting value comes from its initializer', () => {
     const s = S.create<{ a?: string }>({ fields: { a: { initial: c('foo') } } })
-    expect(s.metadata).toEqual({ a: { from: 'initial', value: 'foo', initial: 'foo' } })
+    expect(s.metadata).toEqual({ a: { type: 'leaf', from: 'initial', value: 'foo', initial: 'foo' } })
   })
   it('traces if a setting value comes from change input', () => {
     const s = S.create<{ a?: string }>({ fields: { a: { initial: c('foo') } } })
     expect(s.change({ a: 'bar' }).metadata).toEqual({
-      a: { from: 'set', value: 'bar', initial: 'foo' },
+      a: { type: 'leaf', from: 'set', value: 'bar', initial: 'foo' },
     })
   })
   it('models namespaces', () => {
     const s = S.create<{ a?: { a?: string } }>({ fields: { a: { fields: { a: { initial: c('foo') } } } } })
     expect(s.metadata).toEqual({
-      a: { fields: { a: { from: 'initial', value: 'foo', initial: 'foo' } } },
+      a: { fields: { a: { type: 'leaf', from: 'initial', value: 'foo', initial: 'foo' } } },
     })
   })
 })

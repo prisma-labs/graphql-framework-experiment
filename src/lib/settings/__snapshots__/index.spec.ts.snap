@@ -1,0 +1,83 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`input records initial metadata captures immutable initial state even with sub-initializers 1`] = `
+Object {
+  "a": Object {
+    "from": "initial",
+    "initial": Object {
+      "foobar": Object {
+        "b": Object {
+          "from": "initial",
+          "initial": 2,
+          "type": "leaf",
+          "value": 2,
+        },
+        "c": Object {
+          "from": "initial",
+          "initial": 1,
+          "type": "leaf",
+          "value": 1,
+        },
+      },
+    },
+    "type": "record",
+    "value": Object {
+      "foobar": Object {
+        "b": Object {
+          "from": "initial",
+          "initial": 2,
+          "type": "leaf",
+          "value": 2,
+        },
+        "c": Object {
+          "from": "initial",
+          "initial": 1,
+          "type": "leaf",
+          "value": 1,
+        },
+      },
+    },
+  },
+}
+`;
+
+exports[`input records initial metadata captures immutable initial state even with sub-initializers 2`] = `
+Object {
+  "a": Object {
+    "from": "initial",
+    "initial": Object {
+      "foobar": Object {
+        "b": Object {
+          "from": "initial",
+          "initial": 2,
+          "type": "leaf",
+          "value": 2,
+        },
+        "c": Object {
+          "from": "initial",
+          "initial": 1,
+          "type": "leaf",
+          "value": 1,
+        },
+      },
+    },
+    "type": "record",
+    "value": Object {
+      "foobar": Object {
+        "b": Object {
+          "from": "initial",
+          "initial": 2,
+          "type": "leaf",
+          "value": 2,
+        },
+        "c": Object {
+          "from": "set",
+          "initial": 1,
+          "type": "leaf",
+          "value": 3,
+        },
+      },
+    },
+  },
+}
+`;
