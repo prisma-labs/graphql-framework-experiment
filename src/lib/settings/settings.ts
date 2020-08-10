@@ -153,7 +153,7 @@ function resolveNamespace(
   metadataFrom: MetadataValueFromType,
   specifier: any,
   inputFieldValue: any,
-  inputFieldName: any,
+  info: any,
   data: any,
   metadata: any
 ) {
@@ -161,7 +161,9 @@ function resolveNamespace(
 
   if (!isValueObject && specifier.fields && !specifier.shorthand) {
     throw new Error(
-      `Setting "${inputFieldName}" is a namespace with no shorthand so expects an object but received a non-object: ${inspect(
+      `Setting "${
+        info.path
+      }" is a namespace with no shorthand so expects an object but received a non-object: ${inspect(
         inputFieldValue
       )}`
     )
@@ -169,28 +171,21 @@ function resolveNamespace(
 
   let longhandValue = inputFieldValue
   if (!isValueObject && specifier.shorthand) {
-    log.debug('expanding shorthand', { inputFieldName })
+    log.debug('expanding shorthand', { info })
     try {
       longhandValue = specifier.shorthand(inputFieldValue)
     } catch (e) {
       throw ono(
         e,
-        { inputFieldName, inputFieldValue },
-        `There was an unexpected error while running the namespace shorthand for setting "${inputFieldName}". The given value was ${inspect(
-          inputFieldValue
-        )}`
+        { info, inputFieldValue },
+        `There was an unexpected error while running the namespace shorthand for setting "${
+          info.path
+        }". The given value was ${inspect(inputFieldValue)}`
       )
     }
   }
 
-  resolve(
-    options,
-    metadataFrom,
-    specifier.fields,
-    longhandValue,
-    data[inputFieldName],
-    metadata[inputFieldName].fields
-  )
+  resolve(options, metadataFrom, specifier.fields, longhandValue, data, metadata.fields)
 }
 
 function resolveRecord(
@@ -198,28 +193,27 @@ function resolveRecord(
   metadataFrom: MetadataValueFromType,
   specifier: any,
   inputFieldValue: any,
-  inputFieldName: any,
   data: any,
   metadata: any
 ) {
+  const isValueObject = Lo.isPlainObject(inputFieldValue)
+
+  if (!isValueObject) {
+    // todo test
+    throw new Error('received a non-object for record-type settings')
+  }
+
   Lo.forOwn(inputFieldValue, (inputEntryValue, key) => {
     log.trace('changing record entry', { key, inputEntryValue })
 
-    if (!data[inputFieldName][key]) {
+    if (!data[key]) {
       log.trace('initializing new record entry', { key })
       const initial = initialize(specifier.entryFields)
-      data[inputFieldName][key] = initial.data
-      metadata[inputFieldName].value[key] = initial.metadata
+      data[key] = initial.data
+      metadata.value[key] = initial.metadata
     }
 
-    resolve(
-      options,
-      metadataFrom,
-      specifier.entryFields,
-      inputEntryValue,
-      data[inputFieldName][key],
-      metadata[inputFieldName].value[key]
-    )
+    resolve(options, metadataFrom, specifier.entryFields, inputEntryValue, data[key], metadata.value[key])
   })
 }
 
@@ -259,12 +253,27 @@ function resolve(
     }
 
     if (specifier.fields) {
-      resolveNamespace(options, metadataFrom, specifier, inputFieldValue, inputFieldName, data, metadata)
+      resolveNamespace(
+        options,
+        metadataFrom,
+        specifier,
+        inputFieldValue,
+        { path: inputFieldName },
+        data[inputFieldName],
+        metadata[inputFieldName]
+      )
       return
     }
 
-    if (isValueObject && specifier.entryFields) {
-      resolveRecord(options, metadataFrom, specifier, inputFieldValue, inputFieldName, data, metadata)
+    if (specifier.entryFields) {
+      resolveRecord(
+        options,
+        metadataFrom,
+        specifier,
+        inputFieldValue,
+        data[inputFieldName],
+        metadata[inputFieldName]
+      )
       return
     }
 
