@@ -124,7 +124,7 @@ describe('spec validation', () => {
     expect(() => {
       // prettier-ignore
       // @ts-expect-error
-      S.create<{ a: Record<string, {b:1}> }, { a: Record<string, {b:2}> }>({ fields: { a: { entryFields: { b: { mapType: 1 } } } } })
+      S.create<{ a: Record<string, {b:1}> }, { a: Record<string, {b:2}> }>({ fields: { a: { entry: { b: { mapType: 1 } } } } })
     }).toThrowError('Type mapper for setting "b" was invalid. Type mappers must be functions. Got: 1')
   })
 })
@@ -205,7 +205,7 @@ describe('input field type mappers', () => {
   })
 })
 
-describe('input namespaces', () => {
+describe('namespaces', () => {
   describe('static errors', () => {
     it('a field requires an initializer if the input is optional', () => {
       S.create<{ a?: { b?: 1 } }>({ fields: { a: { fields: { b: { initial: c(1) } } } } })
@@ -233,17 +233,36 @@ describe('input namespaces', () => {
       S.create<{ a?: { b: 1; c?: 2 } }>({ fields: { a: { initial: c({}), fields: { b: {}, c: { initial: c(2) } } } } })
     })
   })
-  it('namespace initializer initializes its data', () => {
-    const s = S.create<{ a?: { b: 1 } }>({ fields: { a: { initial: c({ b: 1 }), fields: { b: {} } } } })
-    expect(s.data).toEqual({ a: { b: 1 } })
+  describe('initializer', () => {
+    it('statically required when namespace optional', () => {
+      // @ts-expect-error
+      S.create<{ a?: { b: 1 } }>({ fields: { a: { fields: { b: {} } } } })
+      S.create<{ a?: { b: 1 } }>({ fields: { a: { initial: c({ b: 1 }), fields: { b: {} } } } })
+    })
+    it('statically forbidden when namespace optional, but no required fields within', () => {
+      // @ ts-expect-error
+      // todo not failing right now because of excess property checks
+      S.create<{ a?: { b?: 1 } }>({ fields: { a: { fields: { initial: c({}), b: { initial: c(1) } } } } })
+    })
+    it('statically optional when namespace optional and has 1+ required fields within, but is also optional in the data', () => {
+      S.create<{ a?: { b?: 1 } }, { a?: { b: 1 } }>({ fields: { a: { fields: { b: { initial: c(1) } } } } })
+      // prettier-ignore
+      // todo initial is not actually allowed here, only looks like it b/c of excess property checks
+      S.create<{ a?: { b?: 1 } }, { a?: { b: 1 }}>({ fields: { a: { initial: c({}), fields: { b: { initial: c(1) } } } } })
+    })
+    it('accepted when namespace optional in input but required in data; it initializes trees under required fields', () => {
+      const s = S.create<{ a?: { b: 1 } }>({ fields: { a: { initial: c({ b: 1 }), fields: { b: {} } } } })
+      expect(s.data).toEqual({ a: { b: 1 } })
+    })
+    it('statically (todo) cannot provide optional fields and if it does are overriden by the field initializer', () => {
+      // todo this should raise a compiler warning but it does not because of https://github.com/microsoft/TypeScript/issues/241#issuecomment-669138047
+      // @ ts-expect-error c prop forbidden from namespace initializer
+      // prettier-ignore
+      const s = S.create<{ a?: { b: 1, c?: number } }>({ fields: { a: { log:{b:1,c:2}, log2: {b:1,c:2}, initial(){ return { b:1, c: 3 } }, fields: { b: {}, c:{initial: c(2) } } } } })
+      expect(s.data).toEqual({ a: { b: 1, c: 2 } })
+    })
   })
-  it('namespace initializer statically (todo) cannot provide optional fields and if it does are overriden by the field initializer', () => {
-    // todo this should raise a compiler warning but it does not because of https://github.com/microsoft/TypeScript/issues/241#issuecomment-669138047
-    // @ ts-expect-error c prop forbidden from namespace initializer
-    // prettier-ignore
-    const s = S.create<{ a?: { b: 1, c?: number } }>({ fields: { a: { log:{b:1,c:2}, log2: {b:1,c:2}, initial(){ return { b:1, c: 3 } }, fields: { b: {}, c:{initial: c(2) } } } } })
-    expect(s.data).toEqual({ a: { b: 1, c: 2 } })
-  })
+
   it('a field initializer initializes its data', () => {
     const settings = S.create<{ a?: { b?: 1 } }>({ fields: { a: { fields: { b: { initial: c(1) } } } } })
     expect(settings.data.a.b).toEqual(1)
@@ -265,7 +284,7 @@ describe('input namespaces', () => {
     const s = S.create<{ a?: 1 }>({ fields: { a: { initial: c(1) } } })
     // @ts-expect-error
     expect(() => s.change({ a: { b: 2 } })).toThrowErrorMatchingInlineSnapshot(
-      `"Setting \\"a\\" is not a namespace and so does not accept objects, but one given: { b: 2 }"`
+      `"Setting \\"a\\" is not a namespace or record and so does not accept objects, but one given: { b: 2 }"`
     )
   })
   describe('with shorthands', () => {
@@ -300,9 +319,7 @@ describe('input namespaces', () => {
       expect(s.change({ a: { b: 3 } }).data.a).toEqual({ b: 3 })
     })
     it('can be a type that differs from the longhand', () => {
-      type i = { a: (() => number) | { b: string } }
-      type d = { a: { b: string } }
-      const s = S.create<i, d>({
+      const s = S.create<{ a: (() => number) | { b: string } }, { a: { b: string } }>({
         // prettier-ignore
         fields: { a: { shorthand: (f) => ({ b: f().toString() }), fields: { b: {} } } }
       })
@@ -327,68 +344,74 @@ describe('input namespaces', () => {
   })
 })
 
-describe('input records', () => {
+describe('records', () => {
   type R<T> = Record<string, T>
   it('can have their settings changed', () => {
-    const s = S.create<{ a: R<{ b: number }> }>({ fields: { a: { entryFields: { b: {} } } } })
+    const s = S.create<{ a: R<{ b: number }> }>({ fields: { a: { entry: { fields: { b: {} } } } } })
     expect(s.change({ a: { foobar: { b: 2 } } }).data).toEqual({ a: { foobar: { b: 2 } } })
   })
   describe('initial', () => {
     it('is accepted and is called (required record case)', () => {
       // prettier-ignore
-      const s = S.create<{ a: R<{ b: number }> }>({ fields: { a: { initial: () => ({ foobar: { b: 2 } }), entryFields: { b: {} } } } })
+      const s = S.create<{ a: R<{ b: number }> }>({ fields: { a: { initial: () => ({ foobar: { b: 2 } }), entry: { fields: { b: {} } } } } })
       expect(s.data).toEqual({ a: { foobar: { b: 2 } } })
       // prettier-ignore
-      expect(s.metadata).toEqual({ a: {
+      expect(s.metadata).toEqual({ type: 'namespace', fields: { a: {
         type: 'record',
         from: 'initial',
         value: { foobar: { b: { type: 'leaf', value: 2, from: 'initial', initial: 2 } } },
         initial: { foobar: { b: { type: 'leaf', value: 2, from: 'initial', initial: 2 } } }
-      }})
+      }}})
     })
     it('is accepted and is called (optional record case)', () => {
       // prettier-ignore
-      const s = S.create<{ a?: R<{ b: number }> }>({ fields: { a: { initial: () => ({ foobar: {b:2}}), entryFields: { b: {} } } } })
+      const s = S.create<{ a?: R<{ b: number }> }>({ fields: { a: { initial: () => ({ foobar: {b:2}}), entry: { fields: { b: {} } } } } })
       expect(s.data).toEqual({ a: { foobar: { b: 2 } } })
       // prettier-ignore
-      expect(s.metadata).toEqual({ a: {
+      expect(s.metadata).toEqual({ type: 'namespace', fields: { a: {
         type: 'record',
         from: 'initial',
         value: { foobar: { b: { type: 'leaf', value: 2, from: 'initial', initial: 2 } } },
         initial: { foobar: { b: { type: 'leaf', value: 2, from: 'initial', initial: 2 } } }
-      }})
+      }}})
     })
     it('is omittable, defaulting to empty object (optional reocrd case)', () => {
       // todo bit odd that data could be typed as optional but it would never be...
       // prettier-ignore
-      const s = S.create<{ a?: R<{ b: number }> }>({ fields: { a: { entryFields: { b: {} } } } })
+      const s = S.create<{ a?: R<{ b: number }> }>({ fields: { a: { entry: { fields: { b: {} } } } } })
       expect(s.data).toEqual({ a: {} })
       expect(s.metadata).toEqual({
-        a: {
-          type: 'record',
-          from: 'initial',
-          value: {},
-          initial: {},
+        type: 'namespace',
+        fields: {
+          a: {
+            type: 'record',
+            from: 'initial',
+            value: {},
+            initial: {},
+          },
         },
       })
     })
     describe('metadata', () => {
       it('captured immutable initial state', () => {
-        const s = S.create<{ a?: R<{ b: number }> }>({ fields: { a: { entryFields: { b: {} } } } })
+        const s = S.create<{ a?: R<{ b: number }> }>({ fields: { a: { entry: { fields: { b: {} } } } } })
         s.change({ a: { foobar: { b: 1 } } })
         expect(s.metadata).toEqual({
-          a: {
-            type: 'record',
-            from: 'initial',
-            value: { foobar: { b: { type: 'leaf', value: 1, from: 'set', initial: undefined } } },
-            initial: {},
+          type: 'namespace',
+          fields: {
+            a: {
+              type: 'record',
+              from: 'initial', // todo set
+              value: { foobar: { b: { type: 'leaf', value: 1, from: 'set', initial: undefined } } },
+              initial: {},
+            },
           },
         })
       })
       it('captures immutable initial state even with sub-initializers', () => {
         // prettier-ignore
         const s = S.create<{ a: R<{ b?: number; c?: number }> }>({
-          fields: { a: { initial: () => ({ foobar: { c: 1 } }), entryFields: { c: { initial: () => 100 }, b: { initial: () => 2 } } } }
+          fields: { a: { initial: () => ({ foobar: { c: 1 } }), entry: { fields: { c: { initial: () => 100 }, b: { initial: () => 2 } } } } }
         })
         expect(s.metadata).toMatchSnapshot()
         s.change({ a: { foobar: { c: 3 } } })
@@ -398,20 +421,21 @@ describe('input records', () => {
     describe('sub-initializers', () => {
       it('run when respective fields not given by record initializer', () => {
         const s = S.create<{ a: R<{ b?: number }> }>({
-          fields: { a: { initial: () => ({ foobar: {} }), entryFields: { b: { initial: () => 1 } } } },
+          fields: { a: { initial: () => ({ foobar: {} }), entry: { fields: { b: { initial: () => 1 } } } } },
         })
         expect(s.data).toEqual({ a: { foobar: { b: 1 } } })
       })
       it('skipped when respective fields are given by record initializer', () => {
+        // prettier-ignore
         const s = S.create<{ a: R<{ b?: number }> }>({
-          fields: { a: { initial: () => ({ foobar: { b: 2 } }), entryFields: { b: { initial: () => 1 } } } },
+          fields: { a: { initial: () => ({ foobar: { b: 2 } }), entry: { fields: { b: { initial: () => 1 } } } } },
         })
         expect(s.data).toEqual({ a: { foobar: { b: 2 } } })
       })
       it('data merged with data given in record initializer', () => {
         // prettier-ignore
         const s = S.create<{ a: R<{ b?: number; c: 1 }> }>({
-          fields: { a: { initial: () => ({ foobar: { c: 1 } }), entryFields: { c: {}, b: { initial: () => 1 } } } }
+          fields: { a: { initial: () => ({ foobar: { c: 1 } }), entry: { fields: { c: {}, b: { initial: () => 1 } } } } }
         })
         expect(s.data).toEqual({ a: { foobar: { c: 1, b: 1 } } })
       })
@@ -421,10 +445,10 @@ describe('input records', () => {
     it.todo('required if the entry input type does not match data type')
   })
   describe('mapEntryData', () => {
-    it('required and called if the entry input field name does not match any data field name', () => {
+    it('required if the entry input field name does not match any data field name; called if given', () => {
       // prettier-ignore
       const s = S.create<{ a?: R<{ a?: number }> }, { a: R<{ a: number, b: number }> }>({
-        fields: { a: { mapEntryData: (data) => ({ a: data.a, b: data.a }), entryFields: { a: { initial: () => 1 } } } }
+        fields: { a: { mapEntryData: (data) => ({ a: data.a, b: data.a }), entry: { fields: { a: { initial: () => 1 } } } } }
       })
       s.change({ a: { foobar: { a: 1 } } })
       expect(s.data).toEqual({ a: { foobar: { a: 1, b: 1 } } })
@@ -638,8 +662,9 @@ describe('.reset()', () => {
     const settings = S.create<{ a?: string }>({ fields: { a: { initial: c('') } } })
     settings.change({ a: 'foo' })
     expect(settings.reset().data).toEqual({ a: '' })
+    // prettier-ignore
     expect(settings.reset().metadata).toEqual({
-      a: { type: 'leaf', from: 'initial', value: '', initial: '' },
+      type: 'namespace', fields: { a: { type: 'leaf', from: 'initial', value: '', initial: '' } },
     })
   })
   it('settings metadata & data references change', () => {
@@ -654,8 +679,9 @@ describe('.reset()', () => {
     process.env.foo = 'foo'
     const settings = S.create<{ a?: string }>({ fields: { a: { initial: () => process.env.foo! } } })
     process.env.foo = 'bar'
+    // prettier-ignore
     expect(settings.reset().metadata).toEqual({
-      a: { type: 'leaf', from: 'initial', value: 'bar', initial: 'bar' },
+      type: 'namespace', fields: { a: { type: 'leaf', from: 'initial', value: 'bar', initial: 'bar' } },
     })
     delete process.env.foo
   })
@@ -678,18 +704,29 @@ describe('.original()', () => {
 describe('.metadata', () => {
   it('tracks if a setting value comes from its initializer', () => {
     const s = S.create<{ a?: string }>({ fields: { a: { initial: c('foo') } } })
-    expect(s.metadata).toEqual({ a: { type: 'leaf', from: 'initial', value: 'foo', initial: 'foo' } })
+    // prettier-ignore
+    expect(s.metadata).toEqual({ type: 'namespace', fields: { a: { type: 'leaf', from: 'initial', value: 'foo', initial: 'foo' } } })
   })
   it('traces if a setting value comes from change input', () => {
     const s = S.create<{ a?: string }>({ fields: { a: { initial: c('foo') } } })
+    // prettier-ignore
     expect(s.change({ a: 'bar' }).metadata).toEqual({
-      a: { type: 'leaf', from: 'set', value: 'bar', initial: 'foo' },
+      type: 'namespace', fields: { a: { type: 'leaf', from: 'set', value: 'bar', initial: 'foo' } },
     })
   })
   it('models namespaces', () => {
     const s = S.create<{ a?: { a?: string } }>({ fields: { a: { fields: { a: { initial: c('foo') } } } } })
+    // prettier-ignore
     expect(s.metadata).toEqual({
-      a: { fields: { a: { type: 'leaf', from: 'initial', value: 'foo', initial: 'foo' } } },
+      type: 'namespace', fields: { a: { type: 'namespace', fields: { a: { type: 'leaf', from: 'initial', value: 'foo', initial: 'foo' } } } },
+    })
+  })
+  it('models nested namespaces', () => {
+    // prettier-ignore
+    const s = S.create<{ a?: { b?: { c?: number } } }>({ fields: { a: { fields: { b: { fields: { c: { initial: c(1) } } } } } } })
+    // prettier-ignore
+    expect(s.metadata).toEqual({
+      type: 'namespace', fields: { a: { type: 'namespace', fields: { b: { type: 'namespace', fields: { c: { type: 'leaf', from: 'initial', value: 1, initial: 1 } } } } } },
     })
   })
 })

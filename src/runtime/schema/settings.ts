@@ -175,7 +175,9 @@ export const createSchemaSettingsManager = () =>
             default: {},
           }
         },
-        entryFields: {},
+        entry: {
+          fields: {}, // all data is optional, see type
+        },
         entryShorthand(disabled) {
           return { enabled: disabled }
         },

@@ -42,6 +42,13 @@ type OnlyPropsInOther<T, U> = {
   [K in FilterInOverlappingKeys<T, U>]: T[K]
 }
 
+// @ts-ignore-error
+type Node<Input, Data, Key> = IncludesRecord<Input[Key]> extends true // @ts-ignore-error
+  ? RecordSpec<Input[Key], Key, Data> // @ts-ignore-error
+  : IncludesPlainObjectOrInterface<Input[Key]> extends true // @ts-ignore-error
+  ? NamespaceSpec<Input[Key], Key, Data> // @ts-ignore-error
+  : LeafSpec<Input[Key], Key, Data>
+
 /**
  * todo
  */
@@ -50,24 +57,12 @@ export type Spec<Input, Data> =
   (
     KeysWhereDataOptional<Input, Data> extends never
       ? {}
-      : {
-        [Key in KeysWhereDataOptional<Input, Data>]+?: IncludesRecord<Input[Key]> extends true
-          ? RecordSpec<Input[Key], Key, Data>
-          : IncludesPlainObjectOrInterface<Input[Key]> extends true
-          ? NamespaceSpec<Input[Key], Key, Data>
-          : FieldSpec<Input[Key], Key, Data>
-      }
+      : { [Key in KeysWhereDataOptional<Input, Data>]+?: Node<Input,Data,Key> }
   ) &
   (
     KeysWhereDataRequired<Input, Data> extends never
       ? {}
-      : {
-          [Key in KeysWhereDataRequired<Input, Data>]-?: IncludesRecord<Input[Key]> extends true
-            ? RecordSpec<Input[Key], Key, Data>
-            : IncludesPlainObjectOrInterface<Input[Key]> extends true
-            ? NamespaceSpec<Input[Key], Key, Data>
-            : FieldSpec<Input[Key], Key, Data>
-        }
+      : { [Key in KeysWhereDataRequired<Input, Data>]-?: Node<Input,Data,Key> }
   )
 
 //prettier-ignore
@@ -111,7 +106,7 @@ export type NamespaceSpec<Namespace, Key, Data> =
 // there are may be some odd cases where iniital is present but can
 // return undefined.
 // prettier-ignore
-export type FieldSpec<Field, Key, Data> =
+export type LeafSpec<Field, Key, Data> =
   // | { raw(input: Field): Lookup<ExcludeUndefined<Data>, Key> }
   {
     validate?(value: ExcludeUndefined<Field>): null | { messages: string[] }
@@ -161,7 +156,7 @@ export type FieldSpec<Field, Key, Data> =
  */
 // prettier-ignore
 // @ts-expect-error
-export type RecordSpec<Dict, K, Data, VarEntryInput = ExcludeUndefined<Dict>[string]> =
+export type RecordSpec<Dict, K, Data, DictEntry = ExcludeUndefined<Dict>[string]> =
   // | { raw(input: Dict): Data[K] }
   (
     {
@@ -169,7 +164,9 @@ export type RecordSpec<Dict, K, Data, VarEntryInput = ExcludeUndefined<Dict>[str
          * Specify the settings input for each entry in the record.
          */
           // @ts-expect-error
-        entryFields: Spec<VarEntryInput, Data[K][string]>
+        // entryFields: Spec<DictEntry, Data[K][string]>
+        entry: Node<DictEntry, Data[K], string>
+        // entryFields: LeafSpec<DictEntry, string, Data[K]> | NamespaceSpec<DictEntry,>
     }
   ) &
   // (
@@ -193,7 +190,7 @@ export type RecordSpec<Dict, K, Data, VarEntryInput = ExcludeUndefined<Dict>[str
     /**
      * If namespace is union with non-pojo type then shorthand required
      */
-    (ExcludePlainObjectOrInterface<VarEntryInput> extends never
+    (ExcludePlainObjectOrInterface<DictEntry> extends never
       ? {}
       : {
           // Reason for ExcludeUndefined is that a type with optional properties + index
@@ -201,8 +198,8 @@ export type RecordSpec<Dict, K, Data, VarEntryInput = ExcludeUndefined<Dict>[str
           // to support here, and harmless, since, pure records shouldn't have semantic meaning of
           // undefined value on keys.
           entryShorthand(
-            input: ExcludeUndefined<ExcludePlainObjectOrInterface<VarEntryInput>>
-          ): OnlyPlainObjectOrInterface<VarEntryInput>
+            input: ExcludeUndefined<ExcludePlainObjectOrInterface<DictEntry>>
+          ): OnlyPlainObjectOrInterface<DictEntry>
         }) &
     /**
      * if input is optional then initial is required
@@ -228,10 +225,10 @@ export type RecordSpec<Dict, K, Data, VarEntryInput = ExcludeUndefined<Dict>[str
      */
     (
       // @ts-expect-error
-      ExcludeShorthand<Required<VarEntryInput>> extends Required<Data[K][string]>
+      ExcludeShorthand<Required<DictEntry>> extends Required<Data[K][string]>
       ? {}
       : {
           // @ts-expect-error
-          mapEntryData(data: OnlyPropsInOther<Data[K][string], VarEntryInput>, key: string): Data[K][string]
+          mapEntryData(data: OnlyPropsInOther<Data[K][string], DictEntry>, key: string): Data[K][string]
         }
     )

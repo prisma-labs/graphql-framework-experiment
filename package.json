@@ -125,7 +125,7 @@
     "postpublish": "yarn clean",
     "postinstall": "node scripts/postinstall",
     "prepublishOnly": "yarn build",
-    "test": "cross-env FORCE_COLOR=3 LOG_PRETTY=true DEBUG=true jest --verbose --testTimeout 1200000 --forceExit",
+    "test": "cross-env FORCE_COLOR=3 LOG_PRETTY=true DEBUG=true jest --testTimeout 1200000 --forceExit",
     "test:unit": "yarn test src",
     "dev:test": "yarn test --watch src",
     "dev": "yarn clean && node scripts/build-module-facades && tsc -b tsconfig.cjs.json -w"

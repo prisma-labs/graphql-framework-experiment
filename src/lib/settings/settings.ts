@@ -13,26 +13,38 @@ type MetadataValueFromType = 'set' | 'initial'
  * todo
  */
 export type Metadata<Data extends PlainObject> = {
-  [Key in keyof Data]: IsRecord<Data[Key]> extends true
-    ? {
-        type: 'record'
-        from: MetadataValueFromType
-        // @ts-ignore-error
-        value: Record<string, Metadata<Data[Key][string]>>
-        // @ts-ignore-error
-        initial: Record<string, Metadata<Data[Key][string]>>
-      }
+  [Key in keyof Data]: IsRecord<Data[Key]> extends true // @ts-ignore-error
+    ? MetadataRecord<Metadata<Data[Key][string]>>
     : Data[Key] extends PlainObject
-    ? {
-        fields: Metadata<Data[Key]>
-      }
-    : {
-        type: 'leaf'
-        value: Data[Key]
-        initial: Data[Key]
-        from: MetadataValueFromType
-      }
+    ? MetadataNamespace<Data[Key]>
+    : MetadataLeaf<Data[Key]>
 }
+
+type MetadataLeaf<V = any> = {
+  type: 'leaf'
+  value: V
+  initial: V
+  from: MetadataValueFromType
+}
+
+type MetadataRecord<V = any> = {
+  type: 'record'
+  from: MetadataValueFromType
+  value: Record<string, V>
+  initial: Record<string, V>
+}
+
+type MetadataNamespace<V = any> = {
+  type: 'namespace'
+  fields: Record<string, MetadataLeaf<V> | MetadataRecord<V> | MetadataNamespace<V>>
+}
+
+type MetadataEntry = Record<string, MetadataLeaf | MetadataNamespace | MetadataRecord>
+
+type AnyMetadata = MetadataEntry | MetadataNamespace | MetadataRecord
+type AnyMetadata2<V = any> = MetadataLeaf<V> | MetadataRecord<V> | MetadataNamespace<V>
+
+// type MetadataKind =
 
 /**
  * todo
@@ -90,6 +102,9 @@ export type Options = {
   // onViolation?: (info: ViolationInfo, originalHandler: (info: ViolationInfo) => void) => void
 }
 
+/**
+ * Default onFixup handler.
+ */
 function onFixup(info: FixupInfo): void {
   log.warn(
     'One of your setting values was invalid. We were able to automaticlaly fix it up now but please update your code.',
@@ -97,17 +112,21 @@ function onFixup(info: FixupInfo): void {
   )
 }
 
+/**
+ *
+ */
 export function create<Input extends PlainObject, Data extends PlainObject = DataDefault<Input>>({
   fields,
   ...options
 }: {
   fields: Spec<Input, Data>
 } & Options): Manager<Input, Data> {
+  log.debug('construct')
   if (isDevelopment()) {
     validateSpec(fields)
   }
 
-  const initial = initialize(fields)
+  const initial = initialize({ fields }, { path: '__root__' })
   const state = {
     data: initial.data as Data,
     original: (undefined as any) as Data, // lazy
@@ -118,16 +137,20 @@ export function create<Input extends PlainObject, Data extends PlainObject = Dat
     data: state.data,
     metadata: state.metadata,
     change(input) {
-      resolve(options, 'set', fields, input, state.data, state.metadata)
+      log.debug('change', { input })
+      const newData = resolve(options, 'set', fields, input, state.data, state.metadata.fields)
+      commit(fields, 'set', newData, state.data, state.metadata.fields)
       return api
     },
     reset() {
-      const initial = initialize(fields)
+      log.debug('reset')
+      const initial = initialize({ fields }, { path: '__root__' })
       api.data = state.data = initial.data as any
       api.metadata = state.metadata = initial.metadata as any
       return api
     },
     original() {
+      log.debug('get original')
       const original = state.original ?? metadataToData(state.metadata, {})
       return original
     },
@@ -137,21 +160,45 @@ export function create<Input extends PlainObject, Data extends PlainObject = Dat
 }
 
 function metadataToData<Data>(metadata: any, copy: PlainObject): Data {
-  Lo.forOwn(metadata, (info, name) => {
-    if (info.fields) {
-      copy[name] = metadataToData(info.fields, {})
+  Lo.forOwn(metadata.fields, (fieldMetadata, name) => {
+    if (fieldMetadata.fields) {
+      copy[name] = metadataToData(fieldMetadata, {})
     } else {
-      copy[name] = info.initial
+      copy[name] = fieldMetadata.initial
     }
   })
 
   return copy as any
 }
 
-type ResolveInfo = {
+function namespaceDataToMetadata(specifier: any, data: any) {
+  return Lo.chain(data)
+    .entries()
+    .reduce((md, [k, v]) => {
+      md.fields[k] = dataToMetadata(specifier.fields[k], v)
+      return md
+    }, createMetadataNamespace())
+    .value()
+}
+
+function dataToMetadata(specifier: any, data: any): AnyMetadata2 {
+  if (isNamespaceSpecifier(specifier)) return namespaceDataToMetadata(specifier, data)
+  // todo record
+  // if (isRecordSpecifier(specifier)) return ...
+  return createMetadataLeaf(data)
+}
+
+type TraversalInfo = {
   path: string
 }
 
+/**
+ * resolvers
+ */
+
+/**
+ *
+ */
 function resolveNamespace(
   options: Options,
   metadataFrom: MetadataValueFromType,
@@ -189,39 +236,59 @@ function resolveNamespace(
     }
   }
 
-  resolve(options, metadataFrom, specifier.fields, longhandValue, data, metadata.fields)
+  return resolve(options, metadataFrom, specifier.fields, longhandValue, data, metadata.fields)
 }
 
 function resolveRecord(
   options: Options,
   metadataFrom: MetadataValueFromType,
-  specifier: any,
-  inputFieldValue: any,
+  specifier: RecordSpecifier,
+  input: any,
   data: any,
   metadata: any
 ) {
-  const isValueObject = Lo.isPlainObject(inputFieldValue)
+  log.trace('resolve record', { input, data, metadata })
+  const isValueObject = Lo.isPlainObject(input)
 
   if (!isValueObject) {
     // todo test
     throw new Error('received a non-object for record-type settings')
   }
 
-  Lo.forOwn(inputFieldValue, (inputEntryValue, key) => {
-    log.trace('changing record entry', { key, inputEntryValue })
+  let newData = Lo.entries(input).reduce((rec, [entryName, entryValue]) => {
+    log.trace('resolve record entry', { entryName, entryValue })
 
-    if (!data[key]) {
-      log.trace('initializing new record entry', { key })
-      const initial = initialize(specifier.entryFields)
-      data[key] = initial.data
-      metadata.value[key] = initial.metadata
+    if (!data[entryName]) {
+      log.trace('this is a new record entry, initialize it', { entryName })
+      const initial = initialize(specifier.entry, { path: entryName })
+      data[entryName] = initial.data
+      metadata.value[entryName] = (initial.metadata as any).fields // todo don't assume record-namespace
     }
 
-    resolve(options, metadataFrom, specifier.entryFields, inputEntryValue, data[key], metadata.value[key])
-  })
+    rec[entryName] = resolve(
+      options,
+      metadataFrom,
+      specifier.entry.fields, // todo don't assume record-namesapce
+      entryValue,
+      data[entryName],
+      metadata.value[entryName]
+    )
+
+    return rec
+  }, {} as any)
+
+  if (specifier.mapEntryData) {
+    log.trace('running entry data mapper')
+    // todo runner wrapper, error handling etc.
+    newData = Lo.mapValues(newData, (newEntryData) => {
+      return specifier.mapEntryData!(newEntryData)
+    })
+  }
+
+  return newData
 }
 
-function resolveLeaf(options: Options, specifier: any, value: any, info: ResolveInfo): any {
+function resolveLeaf(options: Options, specifier: any, value: any, info: TraversalInfo): any {
   let resolvedValue = value
 
   /**
@@ -288,9 +355,7 @@ function resolveLeaf(options: Options, specifier: any, value: any, info: Resolve
   /**
    * Run type mappers
    */
-  if (specifier.mapType) {
-    resolvedValue = runTypeMapper(specifier.mapType, resolvedValue, info)
-  }
+  resolvedValue = runTypeMapper(specifier, resolvedValue, info)
 
   return resolvedValue
 }
@@ -308,7 +373,8 @@ function resolve(
   data: any,
   metadata: any
 ) {
-  Lo.forOwn(input, (inputFieldValue, inputFieldName) => {
+  log.trace('resolve', { fields, input, data, metadata })
+  const newData: any = Lo.entries(input).reduce((newData, [inputFieldName, inputFieldValue]) => {
     const specifier = fields[inputFieldName]
     const isValueObject = Lo.isPlainObject(inputFieldValue)
 
@@ -318,20 +384,16 @@ function resolve(
       )
     }
 
-    if (isValueObject && !specifier.fields && !specifier.entryFields) {
+    if (isValueObject && !isNamespaceSpecifier(specifier) && !isRecordSpecifier(specifier)) {
       throw new Error(
-        `Setting "${inputFieldName}" is not a namespace and so does not accept objects, but one given: ${inspect(
+        `Setting "${inputFieldName}" is not a namespace or record and so does not accept objects, but one given: ${inspect(
           inputFieldValue
         )}`
       )
     }
 
-    if (isValueObject && !specifier.entryFields && !specifier.fields) {
-      throw new Error(`Unknown kind of specifier: ${inspect(specifier)}`)
-    }
-
-    if (specifier.fields) {
-      resolveNamespace(
+    if (isNamespaceSpecifier(specifier)) {
+      newData[inputFieldName] = resolveNamespace(
         options,
         metadataFrom,
         specifier,
@@ -340,11 +402,11 @@ function resolve(
         data[inputFieldName],
         metadata[inputFieldName]
       )
-      return
+      return newData
     }
 
-    if (specifier.entryFields) {
-      resolveRecord(
+    if (isRecordSpecifier(specifier)) {
+      newData[inputFieldName] = resolveRecord(
         options,
         metadataFrom,
         specifier,
@@ -352,144 +414,305 @@ function resolve(
         data[inputFieldName],
         metadata[inputFieldName]
       )
-      return
+      return newData
     }
 
-    /**
-     * Resolve Leaf
-     */
-    const resolvedValue = resolveLeaf(options, specifier, inputFieldValue, { path: inputFieldName })
-    commit(metadataFrom, inputFieldName, resolvedValue, data, metadata)
-  })
+    if (isLeafSpecifier(specifier)) {
+      newData[inputFieldName] = resolveLeaf(options, specifier, inputFieldValue, { path: inputFieldName })
+      return newData
+    }
 
+    throw new Error(`Unknown kind of specifier: ${inspect(specifier)}`)
+  }, {} as any)
+
+  return newData
+}
+
+/**
+ * commit
+ */
+
+/**
+ *
+ */
+function commit(spec: any, metadataFrom: MetadataValueFromType, input: any, data: any, metadata: any) {
+  Lo.forOwn(input, (fieldInput, fieldName) => {
+    log.trace('committing top level field change', { spec, fieldName, fieldInput, data, metadata })
+    doCommit(spec[fieldName], metadataFrom, fieldName, fieldInput, data, metadata)
+    log.trace('did commit', { fieldName, fieldInput, data, metadata })
+  })
   return data
 }
 
 /**
  *
  */
-function commit(metadataFrom: MetadataValueFromType, key: string, value: any, data: any, metadata: any) {
-  log.trace('committing data', { key, value })
-  data[key] = value
-  metadata[key].value = value
-  metadata[key].from = metadataFrom
+function doCommit(
+  specifier: any,
+  metadataFrom: MetadataValueFromType,
+  key: string,
+  input: any,
+  parentData: any,
+  parentMetadata: AnyMetadata
+) {
+  // log.trace('commit iteration', { specifier, key, value, parentData, parentMetadata })
+  if (isNamespaceSpecifier(specifier)) {
+    const mdata = (parentMetadata as any) as Record<string, MetadataNamespace>
+    const dataNamespace = parentData[key]
+    const mdataNamespace = mdata[key]
+    log.trace('committing namespace', { specifier, key, input, parentData, mdata })
+    Lo.forOwn(input, (v, k) => {
+      doCommit(specifier.fields[k], metadataFrom, k, v, dataNamespace, mdataNamespace.fields as any)
+    })
+    return
+  }
+
+  if (isRecordSpecifier(specifier)) {
+    const mdata = (parentMetadata as any) as Record<string, MetadataRecord>
+    const dataRecord = parentData[key]
+    const mdataRecord = mdata[key] as MetadataRecord
+    log.trace('committing record', { specifier, key, input, parentData, mdata })
+    Lo.forOwn(input, (recordEntry, recordKey) => {
+      // todo assumes record-namespace
+      // nothing indicating that these are namespaces, implied, would recurse into leaf otherwise
+      Lo.forOwn(recordEntry, (entryValue, entryKey) => {
+        dataRecord[recordKey] = dataRecord[recordKey] ?? {}
+        doCommit(
+          specifier.entry.fields, // todo don't assume record-namespace
+          metadataFrom,
+          entryKey,
+          entryValue,
+          dataRecord[recordKey],
+          mdataRecord.value[recordKey]
+        )
+      })
+    })
+    return
+  }
+
+  const mdata = parentMetadata as Record<string, MetadataLeaf>
+
+  log.trace('committing leaf', { key, input, parentData, mdata })
+  parentData[key] = input
+  // todo why can the metadata be undefined?
+  if (mdata[key] === undefined) {
+    mdata[key] = createMetadataLeaf(input, metadataFrom)
+  }
+  mdata[key].value = input
+  mdata[key].from = metadataFrom
   if (metadataFrom === 'initial') {
-    metadata[key].initial = value
+    mdata[key].initial = input
   }
 }
 
 /**
- * Initialize the settings data with each datum's respective initializer
- * specified in the settings spec.
+ * specifiers
  */
-function initialize(fields: any): { metadata: any; data: any } {
-  return doInitialize(fields, {}, {})
+
+/**
+ *
+ */
+function isLeafSpecifier(specifier: any): specifier is LeafSpecifier {
+  return !isNamespaceSpecifier(specifier) && !isRecordSpecifier(specifier)
 }
 
-function doInitialize(fields: any, data: any, metadata: any) {
-  return Lo.chain(fields)
-    .entries()
-    .reduce(
-      ({ data, metadata }: any, [inputFieldName, specifier]: any) => {
-        if (specifier.fields) {
-          log.trace('initialize input namespace', { inputFieldName })
-          const initializedNamespace = specifier.initial?.() ?? {}
-          data[inputFieldName] = data[inputFieldName] ?? initializedNamespace
-          metadata[inputFieldName] = metadata[inputFieldName] ?? {
-            fields: Lo.mapValues(initializedNamespace, (v, k) => ({ value: v, from: 'initial', initial: v })),
-          }
-          doInitialize(specifier.fields, data[inputFieldName], metadata[inputFieldName].fields)
-          return { data, metadata }
-        }
+type LeafSpecifier = {}
 
-        if (specifier.entryFields) {
-          log.trace('initialize input record', { inputFieldName })
-          // there may be preloaded record entries via the record initializer
-          // such entries will be input and thus need to be resolved
-          // such entries may also not account for all possible fields of the entry
-          // thus we need to run the initializer and seed each entry with that
-          // then treat the actual initialzer input as a "change" on that, resolving it
-          const initialRecord = specifier.initial ? runInitializer(specifier, inputFieldName, data) : {}
-          const initialRecordInitialized = Lo.chain(initialRecord)
-            .entries()
-            .reduce(
-              (acc: any, [k, v]) => {
-                const initial = initialize(specifier.entryFields)
-                resolve({}, 'initial', specifier.entryFields, v, initial.data, initial.metadata)
-                acc.data[k] = initial.data
-                acc.metadata[k] = initial.metadata
-                return acc
-              },
-              { data: {}, metadata: {} }
-            )
-            .value()
-          data[inputFieldName] = initialRecordInitialized.data
-          metadata[inputFieldName] =
-            metadata[inputFieldName] ?? initMetadataRecord(initialRecordInitialized.metadata)
-          return { data, metadata }
-        }
-
-        log.trace('initialize input field', { inputFieldName })
-        let value = runInitializer(specifier, inputFieldName, data)
-
-        if (specifier.mapType) {
-          value = runTypeMapper(specifier.mapType, value, { path: inputFieldName })
-        }
-
-        data[inputFieldName] = value
-        metadata[inputFieldName] = initMetadataField(value)
-        return { data, metadata }
-      },
-      { data, metadata } as any
-    )
-    .value()
+/**
+ *
+ */
+function isRecordSpecifier(specifier: any): specifier is RecordSpecifier {
+  return Boolean(specifier.entry)
 }
-
-function runInitializer(specifier: any, inputFieldName: string, data: any): any {
-  if (specifier.initial === undefined) {
-    log.trace('no initializer to run', { inputFieldName })
-    // the namespace might have initialized some data
-    return data[inputFieldName] ?? undefined
-  }
-
-  if (typeof specifier.initial === 'function') {
-    log.trace('running initializer', { inputFieldName })
-    try {
-      return specifier.initial()
-    } catch (e) {
-      throw ono(
-        e,
-        { inputFieldName },
-        `There was an unexpected error while running the initializer for setting "${inputFieldName}"`
-      )
-    }
-  }
-
-  throw new Error(
-    `Initializer for setting "${inputFieldName}" was configured with a static value. It must be a function. Got: ${inspect(
-      specifier.initial
-    )}`
-  )
+type RecordSpecifier = {
+  entry: any
+  mapEntryData?(newEntryData: any): any
 }
 
 /**
  *
  */
-function initMetadataField(value: any) {
-  return { type: 'leaf', from: 'initial', value, initial: value }
+function isNamespaceSpecifier(specifier: any): specifier is NamespaceSpecifier {
+  return Boolean(specifier.fields)
 }
 
-function initMetadataRecord(value: any) {
+type NamespaceSpecifier = {
+  fields: any
+}
+
+/**
+ * initializers
+ */
+
+type InitializeResult = { data: PlainObject; metadata: AnyMetadata2 }
+
+/**
+ *
+ */
+function initialize(specifier: any, info: TraversalInfo): InitializeResult {
+  if (isNamespaceSpecifier(specifier)) return initializeNamespace(specifier, info)
+  if (isRecordSpecifier(specifier)) return initializeRecord(specifier, info)
+  if (isLeafSpecifier(specifier)) return initializeLeaf(specifier, info)
+  throw new Error('unknown kind of specifier')
+}
+
+/**
+ *
+ */
+function initializeLeaf(specifier: any, info: TraversalInfo) {
+  log.trace('initialize leaf', { info })
+  let value = runInitializer(specifier, info)
+  value = runTypeMapper(specifier, value, info)
+  return { data: value, metadata: createMetadataLeaf(value) }
+}
+
+/**
+ *
+ */
+function initializeNamespace(specifier: any, info: TraversalInfo) {
+  log.trace('will initialize namespace', { info, specifier })
+  let initializedNamespaceData
+  if (specifier.initial) {
+    log.trace('will run namespace initializer')
+    initializedNamespaceData = specifier.initial()
+    log.trace('did run namespace initializer', { initializedNamespaceData })
+  } else {
+    initializedNamespaceData = {}
+  }
+  const initializedNamespaceMetadata = namespaceDataToMetadata(specifier, initializedNamespaceData)
+  const initializedNamespace = {
+    data: initializedNamespaceData,
+    metadata: initializedNamespaceMetadata,
+  }
+  const initializedFieldsResult = Lo.chain(specifier.fields)
+    .entries()
+    .reduce(
+      (acc, [key, specifier]) => {
+        const initFieldRes = initialize(specifier, { path: key })
+        acc.data[key] = initFieldRes.data
+        acc.metadata.fields[key] = initFieldRes.metadata
+        return acc
+      },
+      { metadata: createMetadataNamespace(), data: {} } as any
+    )
+    .value()
+  return {
+    data: mergeShallow(initializedNamespace.data, initializedFieldsResult.data),
+    metadata: Lo.merge(initializedNamespace.metadata, initializedFieldsResult.metadata),
+  }
+}
+
+/**
+ *
+ */
+function initializeRecord(specifier: RecordSpecifier, info: TraversalInfo) {
+  log.trace('initialize record', { info, specifier })
+  // there may be preloaded record entries via the record initializer
+  // such entries will be input and thus need to be resolved
+  // such entries may also not account for all possible fields of the entry
+  // thus we need to run the initializer and seed each entry with that
+  // then treat the actual initialzer input as a "change" on that, resolving it
+
+  // get the starter entries (if any)
+  const starterEntriesData = runInitializer(specifier, info) ?? {}
+
+  // if no starter entries then no work for us to do, exit early
+  if (Lo.isEmpty(starterEntriesData)) {
+    const result = { data: {}, metadata: createMetadataRecord({}) }
+    log.trace('did initialize record', { specifier, ...result })
+    return result
+  }
+
+  // get what an initialized entry looks like
+  let canonicalEntryResult = Lo.chain(specifier.entry.fields)
+    .entries()
+    .reduce(
+      (acc, [entK, entV]) => {
+        const init = initialize(entV, { path: [info.path, '*', entK].join('.') })
+        acc.data[entK] = init.data
+        acc.metadataRecordValue[entK] = init.metadata
+        return acc
+      },
+      { data: {}, metadataRecordValue: {} } as any
+    )
+    .value()
+
+  // now stitch the initial record data with the cannonical initialized entry
+  let result = Lo.chain(starterEntriesData)
+    .keys()
+    .reduce(
+      (acc, recK) => {
+        Lo.forOwn(canonicalEntryResult.data, (entV, entK) => {
+          // if the given initial record data has a value use it, otherwise fall back to the cannonical initialized entry
+          acc.data[recK] = acc.data[recK] ?? {}
+          acc.data[recK][entK] = starterEntriesData[recK][entK] ?? entV
+          acc.metadataRecordValue[recK] = acc.metadataRecordValue[recK] ?? {}
+          // todo we don't know what kind of metadata that the entry field is, and so we cannot update cannonical with given
+          // todo we will need to determin the metadata kind based on the specifier
+          acc.metadataRecordValue[recK][entK] = canonicalEntryResult.metadataRecordValue[entK] // 'a' // initialGivenRecordData[recK][entK] ?? entV
+          if (starterEntriesData[recK][entK]) {
+            if (canonicalEntryResult.metadataRecordValue[entK].type === 'leaf') {
+              acc.metadataRecordValue[recK][entK].value = starterEntriesData[recK][entK]
+              acc.metadataRecordValue[recK][entK].initial = starterEntriesData[recK][entK]
+            }
+            // todo if given data present and not leaf (record, namespace) then we need to convert the data into metadata
+            // todo only then can we assign into metadata
+          }
+        })
+        return acc
+      },
+      { data: {}, metadataRecordValue: {} } as any
+    )
+    .value()
+
+  // stitch together the initialized entry to built up a metadata representation
+  result = {
+    data: result.data,
+    metadata: createMetadataRecord(result.metadataRecordValue),
+  }
+
+  log.trace('did initialize record', { result })
+  return result
+}
+
+/**
+ * metadata
+ */
+
+/**
+ *
+ */
+function createMetadataLeaf(value: any, from: MetadataValueFromType = 'initial'): MetadataLeaf {
+  return { type: 'leaf', from, value, initial: value }
+}
+
+/**
+ *
+ */
+function createMetadataRecord(value: any): MetadataRecord {
   return { type: 'record', from: 'initial', value, initial: Lo.cloneDeep(value) }
 }
 
 /**
  *
  */
-function runTypeMapper(typeMapper: any, inputFieldValue: any, info: ResolveInfo): any {
+function createMetadataNamespace(): MetadataNamespace {
+  return { type: 'namespace', fields: {} }
+}
+
+/**
+ * runners
+ */
+
+/**
+ *
+ */
+function runTypeMapper(specifier: any, inputFieldValue: any, info: TraversalInfo): any {
+  if (!specifier.mapType) return inputFieldValue
+
   log.trace('running type mapper', { info, inputFieldValue })
   try {
-    return typeMapper(inputFieldValue)
+    return specifier.mapType(inputFieldValue)
   } catch (e) {
     throw ono(
       e,
@@ -497,6 +720,35 @@ function runTypeMapper(typeMapper: any, inputFieldValue: any, info: ResolveInfo)
       `There was an unexpected error while running the type mapper for setting "${info.path}"`
     )
   }
+}
+
+/**
+ *
+ */
+function runInitializer(specifier: any, info: TraversalInfo): any {
+  if (specifier.initial === undefined) {
+    log.trace('no initializer to run', { info })
+    return
+  }
+
+  if (typeof specifier.initial === 'function') {
+    log.trace('running initializer', { info })
+    try {
+      return specifier.initial()
+    } catch (e) {
+      throw ono(
+        e,
+        { info },
+        `There was an unexpected error while running the initializer for setting "${info.path}"`
+      )
+    }
+  }
+
+  throw new Error(
+    `Initializer for setting "${
+      info.path
+    }" was configured with a static value. It must be a function. Got: ${inspect(specifier.initial)}`
+  )
 }
 
 /**
@@ -509,8 +761,8 @@ function validateSpec(spec: any) {
       return
     }
 
-    if (specifier.entryFields) {
-      validateSpec(specifier.entryFields)
+    if (isRecordSpecifier(specifier)) {
+      validateSpec(specifier.entry)
       return
     }
 
@@ -523,6 +775,10 @@ function validateSpec(spec: any) {
     }
   })
 }
+
+/**
+ * utils
+ */
 
 /**
  * Check if curerntly in production mode defined as
@@ -538,4 +794,13 @@ function isProduction(): boolean {
  */
 function isDevelopment(): boolean {
   return process.env.NODE_ENV !== 'production'
+}
+
+function mergeShallow(o1: any, o2: any) {
+  for (const [k, v] of Object.entries(o2)) {
+    if (v !== undefined) {
+      o1[k] = v
+    }
+  }
+  return o1
 }
