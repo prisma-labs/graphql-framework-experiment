@@ -17,11 +17,14 @@ type MetadataValueFromType = 'set' | 'initial'
  * todo
  */
 export type MetadataState<Data extends PlainObject> = {
-  [Key in keyof Data]: IsRecord<Data[Key]> extends true // @ts-ignore-error
-    ? MetadataRecord<MetadataState<Data[Key][string]>>
-    : Data[Key] extends PlainObject
-    ? MetadataNamespace<Data[Key]>
-    : MetadataLeaf<Data[Key]>
+  type: 'namespace'
+  fields: {
+    [Key in keyof Data]: IsRecord<Data[Key]> extends true // @ts-ignore-error
+      ? MetadataRecord<MetadataState<Data[Key][string]>>
+      : Data[Key] extends PlainObject
+      ? MetadataNamespace<Data[Key]>
+      : MetadataLeaf<Data[Key]>
+  }
 }
 
 type MetadataLeaf<V = any> = {
@@ -159,7 +162,7 @@ export function create<Input extends PlainObject, Data extends PlainObject = Dat
     change(input) {
       log.debug('change', { input })
       const newData = resolve(options, 'set', fields, input, state.data, state.metadata.fields)
-      commit(fields, 'set', newData, state.data, state.metadata.fields)
+      commit({ fields }, 'set', newData, state.data, state.metadata)
       return api
     },
     reset() {
@@ -460,10 +463,16 @@ function resolve(
 /**
  *
  */
-function commit(spec: any, metadataFrom: MetadataValueFromType, input: any, data: any, metadata: any) {
+function commit(
+  spec: NamespaceSpecifier,
+  metadataFrom: MetadataValueFromType,
+  input: any,
+  data: any,
+  metadata: MetadataNamespace
+) {
   Lo.forOwn(input, (fieldInput, fieldName) => {
     log.trace('committing top level field change', { spec, fieldName, fieldInput, data, metadata })
-    doCommit(spec[fieldName], metadataFrom, fieldName, fieldInput, data, metadata)
+    doCommit(spec.fields[fieldName], metadataFrom, fieldName, fieldInput, data, metadata.fields)
     log.trace('did commit', { fieldName, fieldInput, data, metadata })
   })
   return data
@@ -473,7 +482,7 @@ function commit(spec: any, metadataFrom: MetadataValueFromType, input: any, data
  *
  */
 function doCommit(
-  specifier: any,
+  specifier: Specifier,
   metadataFrom: MetadataValueFromType,
   key: string,
   input: any,
@@ -534,9 +543,9 @@ function doCommitRecord(
         data[recordKey],
         metadata.value[recordKey]
       )
-      // todo test
+
       if (metadataFrom === 'initial') {
-        metadata.initial = Lo.cloneDeep(metadata.value)
+        metadata.initial = metadata.value
       }
     })
   })

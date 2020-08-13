@@ -151,8 +151,8 @@ S.create<{ a?: R<{ a?: number }> }, { a: R<{ a: number, b: number }> }>({ fields
 S.create<{ a?: R<{ a?: number }> }, { a: R<{ a: number, b: number }> }>({ fields: { a: { mapEntryData: (data) => ({ a: data.a, b: data.b }), entry: { a: { initial: () => 1 } } } } })
 
 // metadata
-tsd.expectType<number>(S.create<{ a?: R<{z: number }> }>({ fields: { a: { entry: { fields: { z: {} } } }}}).metadata.a.value.foobar.z.value)
-tsd.expectType<number>(S.create<{ a?: R<{z: number }> }>({ fields: { a: { entry: { fields: { z: {} } } }}}).metadata.a.initial.foobar.z.value)
+tsd.expectType<number>(S.create<{ a?: R<{z: number }> }>({ fields: { a: { entry: { fields: { z: {} } } }}}).metadata.fields.a.value.foobar.fields.z.value)
+tsd.expectType<number>(S.create<{ a?: R<{z: number }> }>({ fields: { a: { entry: { fields: { z: {} } } }}}).metadata.fields.a.initial.foobar.fields.z.value)
 
 // if non-pojo unioned with input entry pojo THEN input entry field spec shorthand required
 S.create<{ a: R<number | {a: number }> }>({ fields: { a: { entry: { fields: { a: {} }, shorthand: (a) => ({a}) } } }})

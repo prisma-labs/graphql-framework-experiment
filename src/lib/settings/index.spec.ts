@@ -469,6 +469,58 @@ describe('records', () => {
       })
       expect(s.data).toEqual({ a: { foobar: { a: 1, b: 1 } } })
     })
+    it('metadata considers source of contribution as being "initial" (instead of e.g. "set") and immutable as usual', () => {
+      // prettier-ignore
+      const s = S.create<{ a?: R<{ a?: number }> }, { a: R<{ a: number, b: number }> }>({
+        fields: { a: { mapEntryData: (data) => ({ a: data.a, b: data.a }), initial: () => ({ foobar: { a: 1 } }), entry: { fields: { a: { initial: () => 1 } } } } }
+      })
+      const metadataAInitial = s.metadata.fields.a.initial
+      expect(s.metadata).toMatchInlineSnapshot(`
+        Object {
+          "fields": Object {
+            "a": Object {
+              "from": "initial",
+              "initial": Object {
+                "foobar": Object {
+                  "a": Object {
+                    "from": "initial",
+                    "initial": 1,
+                    "type": "leaf",
+                    "value": 1,
+                  },
+                  "b": Object {
+                    "from": "initial",
+                    "initial": 1,
+                    "type": "leaf",
+                    "value": 1,
+                  },
+                },
+              },
+              "type": "record",
+              "value": Object {
+                "foobar": Object {
+                  "a": Object {
+                    "from": "initial",
+                    "initial": 1,
+                    "type": "leaf",
+                    "value": 1,
+                  },
+                  "b": Object {
+                    "from": "initial",
+                    "initial": 1,
+                    "type": "leaf",
+                    "value": 1,
+                  },
+                },
+              },
+            },
+          },
+          "type": "namespace",
+        }
+      `)
+      s.change({ a: { foobar: { a: 2 } } })
+      expect(s.metadata.fields.a.initial).toEqual(metadataAInitial)
+    })
   })
   describe('entryShorthand', () => {
     it.todo('can be provided to allow shorthands on entries (like namespaces)')
