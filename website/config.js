@@ -55,7 +55,7 @@ const config = {
     },
   },
   feedback: {
-    function_name: 'https://nexusjs.org/.netlify/functions/index', // Replace with correct one
+    function_name: 'https://nexusjs.org/.netlify/functions/index',
   },
   sidebar: {
     tablet_menu_split: [], // Slugs for top level folders which should appear in right pane on tablet
