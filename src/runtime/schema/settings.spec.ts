@@ -11,10 +11,12 @@ it('has defaults', () => {
   expect(sm.data).toMatchInlineSnapshot(`
     Object {
       "authorization": Object {
+        "enabled": true,
         "formatError": [Function],
       },
       "connections": Object {
         "default": Object {
+          "enabled": true,
           "nexusFieldName": "connection",
           "nexusSchemaImportId": "nexus/components/schema",
         },
@@ -40,10 +42,12 @@ describe('connctions', () => {
     expect(sm.data.connections).toMatchInlineSnapshot(`
       Object {
         "a": Object {
-          "nexusFieldName": "connection",
+          "enabled": true,
+          "nexusFieldName": "a",
           "nexusSchemaImportId": "nexus/components/schema",
         },
         "default": Object {
+          "enabled": true,
           "nexusFieldName": "connection",
           "nexusSchemaImportId": "nexus/components/schema",
         },
@@ -56,7 +60,8 @@ describe('connctions', () => {
     expect(sm.data.connections.a).toMatchInlineSnapshot(`
       Object {
         "disableForwardPagination": true,
-        "nexusFieldName": "connection",
+        "enabled": true,
+        "nexusFieldName": "a",
         "nexusSchemaImportId": "nexus/components/schema",
       }
     `)
@@ -66,6 +71,7 @@ describe('connctions', () => {
     expect(sm.data.connections.default).toMatchInlineSnapshot(`
       Object {
         "disableForwardPagination": true,
+        "enabled": true,
         "nexusFieldName": "connection",
         "nexusSchemaImportId": "nexus/components/schema",
       }

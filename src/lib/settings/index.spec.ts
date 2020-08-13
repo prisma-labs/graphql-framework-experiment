@@ -453,7 +453,22 @@ describe('records', () => {
       s.change({ a: { foobar: { a: 1 } } })
       expect(s.data).toEqual({ a: { foobar: { a: 1, b: 1 } } })
     })
-    it.todo('passes key name to callback as second parameter')
+    it('passes key name to callback as second parameter', () => {
+      let keyName_
+      // prettier-ignore
+      const s = S.create<{ a?: R<{ a?: number }> }, { a: R<{ a: number, b: number }> }>({
+        fields: { a: { mapEntryData: (data, keyName) => (keyName_ = keyName, { a: data.a, b: data.a }), entry: { fields: { a: { initial: () => 1 } } } } }
+      })
+      s.change({ a: { foobar: { a: 1 } } })
+      expect(keyName_).toEqual('foobar')
+    })
+    it('runs at initialization time', () => {
+      // prettier-ignore
+      const s = S.create<{ a?: R<{ a?: number }> }, { a: R<{ a: number, b: number }> }>({
+        fields: { a: { mapEntryData: (data) => ({ a: data.a, b: data.a }), initial: () => ({ foobar: { a: 1 } }), entry: { fields: { a: { initial: () => 1 } } } } }
+      })
+      expect(s.data).toEqual({ a: { foobar: { a: 1, b: 1 } } })
+    })
   })
   describe('entryShorthand', () => {
     it.todo('can be provided to allow shorthands on entries (like namespaces)')
@@ -461,7 +476,8 @@ describe('records', () => {
 })
 
 describe('runtime errors', () => {
-  it('changing settings that do not exist will have static error and will error gracefully', () => {
+  // todo bring this back under strict mode
+  it.skip('changing settings that do not exist will have static error and will error gracefully', () => {
     const s = S.create<{ a: string }>({ fields: { a: {} } })
     // prettier-ignore
     // @ts-expect-error
@@ -469,7 +485,7 @@ describe('runtime errors', () => {
   })
 })
 
-describe('input field fixups', () => {
+describe('leaf fixups', () => {
   let logs: jest.Mock
   let logSettingsOriginal: any
 
@@ -615,7 +631,7 @@ describe('input field fixups', () => {
   })
 })
 
-describe('input field validators', () => {
+describe('leaf validators', () => {
   it('if a setting passes validation nothing happens', () => {
     const validate = jest.fn().mockImplementation(() => null)
     const settings = S.create<{ a: string }>({ fields: { a: { validate } } })

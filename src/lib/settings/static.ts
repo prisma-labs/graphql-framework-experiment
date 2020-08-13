@@ -71,6 +71,10 @@ export type NamespaceSpec<Namespace, Key, Data> =
     //todo ...?
     // @ts-ignore
     fields: Spec<OnlyPlainObjectOrInterface<Namespace>, Data[Key]>
+    // // @ts-ignore
+    // fields2: Data[Key]
+    // fields3: Key
+    // fields4: Namespace
   } &
   /**
    * If namespace is union with non-pojo type then shorthand required 
@@ -160,13 +164,11 @@ export type RecordSpec<Dict, K, Data, DictEntry = ExcludeUndefined<Dict>[string]
   // | { raw(input: Dict): Data[K] }
   (
     {
-        /**
-         * Specify the settings input for each entry in the record.
-         */
-          // @ts-expect-error
-        // entryFields: Spec<DictEntry, Data[K][string]>
-        entry: Node<DictEntry, Data[K], string>
-        // entryFields: LeafSpec<DictEntry, string, Data[K]> | NamespaceSpec<DictEntry,>
+      /**
+       * Specify the settings input for each entry in the record.
+       */
+      // @ts-expect-error
+      entry: Node<OnlyPlainObjectOrInterface<ExcludeUndefined<Dict>>, Data[K], string>
     }
   ) &
   // (
@@ -229,6 +231,6 @@ export type RecordSpec<Dict, K, Data, DictEntry = ExcludeUndefined<Dict>[string]
       ? {}
       : {
           // @ts-expect-error
-          mapEntryData(data: OnlyPropsInOther<Data[K][string], DictEntry>, key: string): Data[K][string]
+          mapEntryData(data: OnlyPropsInOther<Data[K][string], ExcludeShorthand<DictEntry>>, key: string): Data[K][string]
         }
     )

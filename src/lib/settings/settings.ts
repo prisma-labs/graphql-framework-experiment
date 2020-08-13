@@ -247,7 +247,7 @@ function resolveRecord(
   data: any,
   metadata: any
 ) {
-  log.trace('resolve record', { input, data, metadata })
+  log.trace('resolve record', { specifier, input, data, metadata })
   const isValueObject = Lo.isPlainObject(input)
 
   if (!isValueObject) {
@@ -280,8 +280,8 @@ function resolveRecord(
   if (specifier.mapEntryData) {
     log.trace('running entry data mapper')
     // todo runner wrapper, error handling etc.
-    newData = Lo.mapValues(newData, (newEntryData) => {
-      return specifier.mapEntryData!(newEntryData)
+    newData = Lo.mapValues(newData, (newEntryData, entryKey) => {
+      return specifier.mapEntryData!(newEntryData, entryKey)
     })
   }
 
@@ -375,14 +375,19 @@ function resolve(
 ) {
   log.trace('resolve', { fields, input, data, metadata })
   const newData: any = Lo.entries(input).reduce((newData, [inputFieldName, inputFieldValue]) => {
-    const specifier = fields[inputFieldName]
+    // if no specifier found treat it as a leaf passthrough. This can be useful when wanting to
+    // proxy a large number of settings from another system and don't want to have to write out
+    // every single property in the tree.
+    // Features will be lost by doing this, however
+    const specifier = fields[inputFieldName] ?? {}
     const isValueObject = Lo.isPlainObject(inputFieldValue)
 
-    if (!specifier) {
-      throw new Error(
-        `You are trying to change a setting called "${inputFieldName}" but no such setting exists`
-      )
-    }
+    // todo bring this back under strict mode
+    // if (!specifier) {
+    //   throw new Error(
+    //     `You are trying to change a setting called "${inputFieldName}" but no such setting exists`
+    //   )
+    // }
 
     if (isValueObject && !isNamespaceSpecifier(specifier) && !isRecordSpecifier(specifier)) {
       throw new Error(
@@ -457,10 +462,10 @@ function doCommit(
 ) {
   // log.trace('commit iteration', { specifier, key, value, parentData, parentMetadata })
   if (isNamespaceSpecifier(specifier)) {
+    log.trace('committing namespace', { specifier, key, input, parentData, parentMetadata })
     const mdata = (parentMetadata as any) as Record<string, MetadataNamespace>
     const dataNamespace = parentData[key]
     const mdataNamespace = mdata[key]
-    log.trace('committing namespace', { specifier, key, input, parentData, mdata })
     Lo.forOwn(input, (v, k) => {
       doCommit(specifier.fields[k], metadataFrom, k, v, dataNamespace, mdataNamespace.fields as any)
     })
@@ -469,24 +474,7 @@ function doCommit(
 
   if (isRecordSpecifier(specifier)) {
     const mdata = (parentMetadata as any) as Record<string, MetadataRecord>
-    const dataRecord = parentData[key]
-    const mdataRecord = mdata[key] as MetadataRecord
-    log.trace('committing record', { specifier, key, input, parentData, mdata })
-    Lo.forOwn(input, (recordEntry, recordKey) => {
-      // todo assumes record-namespace
-      // nothing indicating that these are namespaces, implied, would recurse into leaf otherwise
-      Lo.forOwn(recordEntry, (entryValue, entryKey) => {
-        dataRecord[recordKey] = dataRecord[recordKey] ?? {}
-        doCommit(
-          specifier.entry.fields, // todo don't assume record-namespace
-          metadataFrom,
-          entryKey,
-          entryValue,
-          dataRecord[recordKey],
-          mdataRecord.value[recordKey]
-        )
-      })
-    })
+    doCommitRecord(specifier, metadataFrom, input, parentData[key], mdata[key])
     return
   }
 
@@ -503,6 +491,36 @@ function doCommit(
   if (metadataFrom === 'initial') {
     mdata[key].initial = input
   }
+}
+
+function doCommitRecord(
+  specifier: RecordSpecifier,
+  metadataFrom: MetadataValueFromType,
+  input: any,
+  data: any,
+  metadata: MetadataRecord
+) {
+  log.trace('committing record', { specifier, input, data, metadata })
+  Lo.forOwn(input, (recordEntry, recordKey) => {
+    // todo assumes record-namespace
+    // nothing indicating that these are namespaces, implied, would recurse into leaf otherwise
+    Lo.forOwn(recordEntry, (entryValue, entryKey) => {
+      data[recordKey] = data[recordKey] ?? {}
+      doCommit(
+        specifier.entry.fields, // todo don't assume record-namespace
+        metadataFrom,
+        entryKey,
+        entryValue,
+        data[recordKey],
+        metadata.value[recordKey]
+      )
+      // todo test
+      if (metadataFrom === 'initial') {
+        metadata.initial = Lo.cloneDeep(metadata.value)
+      }
+    })
+  })
+  log.trace('done committing record', { specifier, input, data, metadata })
 }
 
 /**
@@ -524,9 +542,10 @@ type LeafSpecifier = {}
 function isRecordSpecifier(specifier: any): specifier is RecordSpecifier {
   return Boolean(specifier.entry)
 }
+
 type RecordSpecifier = {
   entry: any
-  mapEntryData?(newEntryData: any): any
+  mapEntryData?(newEntryData: any, entryKey: string): any
 }
 
 /**
@@ -642,11 +661,11 @@ function initializeRecord(specifier: RecordSpecifier, info: TraversalInfo) {
     .keys()
     .reduce(
       (acc, recK) => {
+        // if the given initial record data has a value use it, otherwise fall back to the cannonical initialized entry
+        acc.data[recK] = acc.data[recK] ?? {}
+        acc.metadataRecordValue[recK] = acc.metadataRecordValue[recK] ?? {}
         Lo.forOwn(canonicalEntryResult.data, (entV, entK) => {
-          // if the given initial record data has a value use it, otherwise fall back to the cannonical initialized entry
-          acc.data[recK] = acc.data[recK] ?? {}
           acc.data[recK][entK] = starterEntriesData[recK][entK] ?? entV
-          acc.metadataRecordValue[recK] = acc.metadataRecordValue[recK] ?? {}
           // todo we don't know what kind of metadata that the entry field is, and so we cannot update cannonical with given
           // todo we will need to determin the metadata kind based on the specifier
           acc.metadataRecordValue[recK][entK] = canonicalEntryResult.metadataRecordValue[entK] // 'a' // initialGivenRecordData[recK][entK] ?? entV
@@ -669,6 +688,15 @@ function initializeRecord(specifier: RecordSpecifier, info: TraversalInfo) {
   result = {
     data: result.data,
     metadata: createMetadataRecord(result.metadataRecordValue),
+  }
+
+  if (specifier.mapEntryData) {
+    log.trace('running entry data mapper')
+    // todo runner wrapper, error handling etc.
+    Lo.forOwn(result.data, (newEntryData, entryKey) => {
+      const newEntryDataMapped = specifier.mapEntryData!(newEntryData, entryKey)
+      doCommitRecord(specifier, 'initial', { [entryKey]: newEntryDataMapped }, result.data, result.metadata)
+    })
   }
 
   log.trace('did initialize record', { result })

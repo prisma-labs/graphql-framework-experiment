@@ -18,7 +18,10 @@ export type ConnectionSettings = Omit<ConnectionPluginConfig, ConnectionPluginCo
   enabled?: boolean
 }
 
-export type ConnectionSettingsData = ConnectionSettings & ConnectionPluginConfigManagedByNexus
+export type ConnectionSettingsData = ConnectionSettings &
+  ConnectionPluginConfigManagedByNexus & {
+    enabled: boolean
+  }
 
 /**
  * The schema settings users can control.
@@ -176,11 +179,25 @@ export const createSchemaSettingsManager = () =>
           }
         },
         entry: {
-          fields: {}, // all data is optional, see type
+          shorthand(disabled) {
+            return { enabled: disabled }
+          },
+          // todo static type system allows these fields to be omitted but that
+          // causes runtime error (failed to find field specifier). Furthermore
+          // without fields listed there will be no way to support safe env var
+          // auto-resolution in the future.
+          fields: {
+            enabled: {
+              initial() {
+                return true
+              },
+            },
+          }, // all data is optional, see type
         },
         entryShorthand(disabled) {
           return { enabled: disabled }
         },
+        // todo static type should not have shorthands here
         mapEntryData(input, key) {
           return {
             nexusSchemaImportId: 'nexus/components/schema',

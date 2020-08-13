@@ -288,7 +288,7 @@ export const createServerSettingsManager = () =>
             value = '/' + value
           }
 
-          return { value, messages }
+          return messages.length ? { value, messages } : null
         },
       },
       port: {
