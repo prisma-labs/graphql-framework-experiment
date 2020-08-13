@@ -189,20 +189,20 @@ export type RecordSpec<Dict, K, Data, DictEntry = ExcludeUndefined<Dict>[string]
   //       entryFields?: Spec<VarEntryInput, Data[K][string]>
   //     }
   //   ) &
-    /**
-     * If namespace is union with non-pojo type then shorthand required
-     */
-    (ExcludePlainObjectOrInterface<DictEntry> extends never
-      ? {}
-      : {
-          // Reason for ExcludeUndefined is that a type with optional properties + index
-          // sig will force the index sig to have undefined. This pattern seems common enough
-          // to support here, and harmless, since, pure records shouldn't have semantic meaning of
-          // undefined value on keys.
-          entryShorthand(
-            input: ExcludeUndefined<ExcludePlainObjectOrInterface<DictEntry>>
-          ): OnlyPlainObjectOrInterface<DictEntry>
-        }) &
+    // /**
+    //  * If namespace is union with non-pojo type then shorthand required
+    //  */
+    // (ExcludePlainObjectOrInterface<DictEntry> extends never
+    //   ? {}
+    //   : {
+    //       // Reason for ExcludeUndefined is that a type with optional properties + index
+    //       // sig will force the index sig to have undefined. This pattern seems common enough
+    //       // to support here, and harmless, since, pure records shouldn't have semantic meaning of
+    //       // undefined value on keys.
+    //       entryShorthand(
+    //         input: ExcludeUndefined<ExcludePlainObjectOrInterface<DictEntry>>
+    //       ): OnlyPlainObjectOrInterface<DictEntry>
+    //     }) &
     /**
      * if input is optional then initial is required
      * unless all

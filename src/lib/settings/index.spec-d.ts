@@ -155,7 +155,7 @@ tsd.expectType<number>(S.create<{ a?: R<{z: number }> }>({ fields: { a: { entry:
 tsd.expectType<number>(S.create<{ a?: R<{z: number }> }>({ fields: { a: { entry: { fields: { z: {} } } }}}).metadata.a.initial.foobar.z.value)
 
 // if non-pojo unioned with input entry pojo THEN input entry field spec shorthand required
-S.create<{ a: R<number | {a: number }> }>({ fields: { a: { entry: { fields: { a: {} } }, entryShorthand: (a) => ({a}) } }})
+S.create<{ a: R<number | {a: number }> }>({ fields: { a: { entry: { fields: { a: {} }, shorthand: (a) => ({a}) } } }})
 // @ts-expect-error
 S.create<{ a: R<number | {a: number }> }>({ fields: { a: { entry: { a: {} } } }})
 

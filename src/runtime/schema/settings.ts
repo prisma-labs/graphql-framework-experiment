@@ -194,9 +194,6 @@ export const createSchemaSettingsManager = () =>
             },
           }, // all data is optional, see type
         },
-        entryShorthand(disabled) {
-          return { enabled: disabled }
-        },
         // todo static type should not have shorthands here
         mapEntryData(input, key) {
           return {

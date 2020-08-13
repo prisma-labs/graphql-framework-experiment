@@ -7,14 +7,18 @@ import { DataDefault, Spec } from './static'
 
 const log = Logger.log.child('settings')
 
+/**
+ * Metadata
+ */
+
 type MetadataValueFromType = 'set' | 'initial'
 
 /**
  * todo
  */
-export type Metadata<Data extends PlainObject> = {
+export type MetadataState<Data extends PlainObject> = {
   [Key in keyof Data]: IsRecord<Data[Key]> extends true // @ts-ignore-error
-    ? MetadataRecord<Metadata<Data[Key][string]>>
+    ? MetadataRecord<MetadataState<Data[Key][string]>>
     : Data[Key] extends PlainObject
     ? MetadataNamespace<Data[Key]>
     : MetadataLeaf<Data[Key]>
@@ -39,12 +43,28 @@ type MetadataNamespace<V = any> = {
   fields: Record<string, MetadataLeaf<V> | MetadataRecord<V> | MetadataNamespace<V>>
 }
 
-type MetadataEntry = Record<string, MetadataLeaf | MetadataNamespace | MetadataRecord>
+type Metadata<V = any> = MetadataLeaf<V> | MetadataRecord<V> | MetadataNamespace<V>
 
-type AnyMetadata = MetadataEntry | MetadataNamespace | MetadataRecord
-type AnyMetadata2<V = any> = MetadataLeaf<V> | MetadataRecord<V> | MetadataNamespace<V>
+/**
+ *
+ */
+function createMetadataLeaf(value: any, from: MetadataValueFromType = 'initial'): MetadataLeaf {
+  return { type: 'leaf', from, value, initial: value }
+}
 
-// type MetadataKind =
+/**
+ *
+ */
+function createMetadataRecord(value: Record<string, Metadata>): MetadataRecord {
+  return { type: 'record', from: 'initial', value, initial: Lo.cloneDeep(value) }
+}
+
+/**
+ *
+ */
+function createMetadataNamespace(): MetadataNamespace {
+  return { type: 'namespace', fields: {} }
+}
 
 /**
  * todo
@@ -53,7 +73,7 @@ export type Manager<Input extends PlainObject, Data extends PlainObject> = {
   reset(): Manager<Input, Data>
   change(input: Input): Manager<Input, Data>
   original(): Data
-  metadata: Metadata<Data>
+  metadata: MetadataState<Data>
   data: Data
 }
 
@@ -181,7 +201,7 @@ function namespaceDataToMetadata(specifier: any, data: any) {
     .value()
 }
 
-function dataToMetadata(specifier: any, data: any): AnyMetadata2 {
+function dataToMetadata(specifier: any, data: any): Metadata {
   if (isNamespaceSpecifier(specifier)) return namespaceDataToMetadata(specifier, data)
   // todo record
   // if (isRecordSpecifier(specifier)) return ...
@@ -458,7 +478,7 @@ function doCommit(
   key: string,
   input: any,
   parentData: any,
-  parentMetadata: AnyMetadata
+  parentMetadata: Record<any, Metadata>
 ) {
   // log.trace('commit iteration', { specifier, key, value, parentData, parentMetadata })
   if (isNamespaceSpecifier(specifier)) {
@@ -527,6 +547,8 @@ function doCommitRecord(
  * specifiers
  */
 
+type Specifier = LeafSpecifier | RecordSpecifier | NamespaceSpecifier
+
 /**
  *
  */
@@ -557,18 +579,19 @@ function isNamespaceSpecifier(specifier: any): specifier is NamespaceSpecifier {
 
 type NamespaceSpecifier = {
   fields: any
+  initial?(): any
 }
 
 /**
  * initializers
  */
 
-type InitializeResult = { data: PlainObject; metadata: AnyMetadata2 }
+type InitializeResult = { data: PlainObject; metadata: Metadata }
 
 /**
  *
  */
-function initialize(specifier: any, info: TraversalInfo): InitializeResult {
+function initialize(specifier: Specifier, info: TraversalInfo): InitializeResult {
   if (isNamespaceSpecifier(specifier)) return initializeNamespace(specifier, info)
   if (isRecordSpecifier(specifier)) return initializeRecord(specifier, info)
   if (isLeafSpecifier(specifier)) return initializeLeaf(specifier, info)
@@ -578,7 +601,7 @@ function initialize(specifier: any, info: TraversalInfo): InitializeResult {
 /**
  *
  */
-function initializeLeaf(specifier: any, info: TraversalInfo) {
+function initializeLeaf(specifier: LeafSpecifier, info: TraversalInfo) {
   log.trace('initialize leaf', { info })
   let value = runInitializer(specifier, info)
   value = runTypeMapper(specifier, value, info)
@@ -588,7 +611,7 @@ function initializeLeaf(specifier: any, info: TraversalInfo) {
 /**
  *
  */
-function initializeNamespace(specifier: any, info: TraversalInfo) {
+function initializeNamespace(specifier: NamespaceSpecifier, info: TraversalInfo) {
   log.trace('will initialize namespace', { info, specifier })
   let initializedNamespaceData
   if (specifier.initial) {
@@ -701,31 +724,6 @@ function initializeRecord(specifier: RecordSpecifier, info: TraversalInfo) {
 
   log.trace('did initialize record', { result })
   return result
-}
-
-/**
- * metadata
- */
-
-/**
- *
- */
-function createMetadataLeaf(value: any, from: MetadataValueFromType = 'initial'): MetadataLeaf {
-  return { type: 'leaf', from, value, initial: value }
-}
-
-/**
- *
- */
-function createMetadataRecord(value: any): MetadataRecord {
-  return { type: 'record', from: 'initial', value, initial: Lo.cloneDeep(value) }
-}
-
-/**
- *
- */
-function createMetadataNamespace(): MetadataNamespace {
-  return { type: 'namespace', fields: {} }
 }
 
 /**
