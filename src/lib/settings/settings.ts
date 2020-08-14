@@ -1,77 +1,16 @@
 import ono from '@jsdevtools/ono'
 import * as Logger from '@nexus/logger'
 import * as Lo from 'lodash'
+import { Primitive } from 'type-fest'
 import { inspect } from 'util'
 import { IsRecord, PlainObject } from '../utils'
-import { DataDefault, Spec } from './static'
+import { DataDefault, Fixup, MapType, Shorthand, Spec, Validate } from './static'
 
 const log = Logger.log.child('settings')
 
 /**
- * Metadata
+ * API
  */
-
-type MetadataValueFromType = 'set' | 'initial'
-
-/**
- * todo
- */
-export type MetadataState<Data extends PlainObject> = {
-  type: 'namespace'
-  fields: {
-    [Key in keyof Data]: IsRecord<Data[Key]> extends true // @ts-ignore-error
-      ? MetadataRecord<MetadataState<Data[Key][string]>>
-      : Data[Key] extends PlainObject
-      ? MetadataNamespace<Data[Key]>
-      : MetadataLeaf<Data[Key]>
-  }
-}
-
-type MetadataLeaf<V = any> = {
-  type: 'leaf'
-  value: V
-  initial: V
-  from: MetadataValueFromType
-}
-
-type MetadataRecord<V = any> = {
-  type: 'record'
-  from: MetadataValueFromType
-  value: Record<string, V>
-  initial: Record<string, V>
-}
-
-type MetadataNamespace<V = any> = {
-  type: 'namespace'
-  fields: Record<string, MetadataLeaf<V> | MetadataRecord<V> | MetadataNamespace<V>>
-}
-
-type Metadata<V = any> = MetadataLeaf<V> | MetadataRecord<V> | MetadataNamespace<V>
-
-/**
- *
- */
-function createMetadataLeaf(
-  value: any,
-  from: MetadataValueFromType = 'initial',
-  flags?: { isShadow: true }
-): MetadataLeaf {
-  return { type: 'leaf', from, value, initial: value, ...flags }
-}
-
-/**
- *
- */
-function createMetadataRecord(value: Record<string, Metadata>): MetadataRecord {
-  return { type: 'record', from: 'initial', value, initial: Lo.cloneDeep(value) }
-}
-
-/**
- *
- */
-function createMetadataNamespace(fields: MetadataNamespace['fields'] = {}): MetadataNamespace {
-  return { type: 'namespace', fields }
-}
 
 /**
  * todo
@@ -113,20 +52,6 @@ export type Options = {
    * calling the default function passed as a second argument to your function.
    */
   onFixup?: (info: FixupInfo, originalHandler: (info: FixupInfo) => void) => void
-  // todo guess we cannot use this because we need thrown error to change
-  // control flow.
-  // export type ViolationInfo = { name: string; messages: string[] }
-  // /**
-  //  * Get called back when a validator fails.
-  //  *
-  //  * If your settings spec has no valididators then you can ignore this option.
-  //  *
-  //  * By default, violations are logged at error level. If you provide
-  //  * your own function then this default behaviour will be disabled. You can
-  //  * retain it by calling the default function passed as a second argument to
-  //  * your function.
-  //  */
-  // onViolation?: (info: ViolationInfo, originalHandler: (info: ViolationInfo) => void) => void
 }
 
 /**
@@ -150,7 +75,7 @@ export function create<Input extends PlainObject, Data extends PlainObject = Dat
 } & Options): Manager<Input, Data> {
   log.debug('construct')
   if (isDevelopment()) {
-    validateSpec(fields)
+    validateSpecifier({ fields }, { path: '__root__' })
   }
 
   const initial = initialize({ fields }, { path: '__root__' })
@@ -178,7 +103,7 @@ export function create<Input extends PlainObject, Data extends PlainObject = Dat
     },
     original() {
       log.debug('get original')
-      const original = state.original ?? metadataToData(state.metadata, {})
+      const original = state.original ?? dataFromMetadara(state.metadata, {})
       return original
     },
   }
@@ -186,37 +111,87 @@ export function create<Input extends PlainObject, Data extends PlainObject = Dat
   return api
 }
 
-function metadataToData<Data>(metadata: any, copy: PlainObject): Data {
-  Lo.forOwn(metadata.fields, (fieldMetadata, name) => {
-    if (fieldMetadata.fields) {
-      copy[name] = metadataToData(fieldMetadata, {})
-    } else {
-      copy[name] = fieldMetadata.initial
-    }
-  })
+/**
+ * Metadata
+ */
 
-  return copy as any
+type MetadataValueFromType = 'set' | 'initial'
+
+/**
+ * todo
+ */
+export type MetadataState<Data extends PlainObject> = {
+  type: 'namespace'
+  fields: {
+    [Key in keyof Data]: IsRecord<Data[Key]> extends true // @ts-ignore-error
+      ? MetadataRecord<MetadataState<Data[Key][string]>>
+      : Data[Key] extends PlainObject
+      ? MetadataNamespace<Data[Key]>
+      : MetadataLeaf<Data[Key]>
+  }
 }
 
-function namespaceDataToMetadata(specifier: any, data: any) {
-  return Lo.chain(data)
-    .entries()
-    .reduce((md, [k, v]) => {
-      md.fields[k] = dataToMetadata(specifier.fields[k], v)
-      return md
-    }, createMetadataNamespace())
-    .value()
+type MetadataLeaf<V = any> = {
+  type: 'leaf'
+  value: V
+  initial: V
+  from: MetadataValueFromType
 }
 
-function dataToMetadata(specifier: any, data: any): Metadata {
-  if (isNamespaceSpecifier(specifier)) return namespaceDataToMetadata(specifier, data)
+type MetadataRecord<V = Metadata> = {
+  type: 'record'
+  from: MetadataValueFromType
+  value: Record<string, V>
+  initial: Record<string, V>
+}
+
+type MetadataNamespace<V = Metadata> = {
+  type: 'namespace'
+  fields: Record<string, V>
+}
+
+type Metadata<V = any> = MetadataLeaf<V> | MetadataRecord<V> | MetadataNamespace<V>
+
+/**
+ *
+ */
+function createMetadataLeaf(
+  value: any,
+  from: MetadataValueFromType = 'initial',
+  flags?: { isShadow: true }
+): MetadataLeaf {
+  return { type: 'leaf', from, value, initial: value, ...flags }
+}
+
+/**
+ *
+ */
+function createMetadataRecord(value: Record<string, Metadata>): MetadataRecord {
+  return { type: 'record', from: 'initial', value, initial: Lo.cloneDeep(value) }
+}
+
+/**
+ *
+ */
+function createMetadataNamespace(fields: MetadataNamespace['fields'] = {}): MetadataNamespace {
+  return { type: 'namespace', fields }
+}
+
+function metadataFromData(specifier: Specifier, data: any): Metadata {
+  if (isNamespaceSpecifier(specifier)) return metadataNamespaceFromData(specifier, data)
   // todo record
   // if (isRecordSpecifier(specifier)) return ...
   return createMetadataLeaf(data)
 }
 
-type TraversalInfo = {
-  path: string
+function metadataNamespaceFromData(specifier: SpecifierNamespace, data: PlainObject) {
+  return Lo.chain(data)
+    .entries()
+    .reduce((md, [k, v]) => {
+      md.fields[k] = metadataFromData(specifier.fields[k], v)
+      return md
+    }, createMetadataNamespace())
+    .value()
 }
 
 /**
@@ -229,36 +204,34 @@ type TraversalInfo = {
 function resolveNamespace(
   options: Options,
   metadataFrom: MetadataValueFromType,
-  specifier: NamespaceSpecifier,
-  inputFieldValue: any,
-  info: any,
-  data: any,
-  metadata: any
+  specifier: SpecifierNamespace,
+  input: PlainObject | Primitive,
+  info: TraversalInfo,
+  data: PlainObject,
+  metadata: MetadataNamespace
 ) {
-  const isValueObject = Lo.isPlainObject(inputFieldValue)
+  const isValueObject = Lo.isPlainObject(input)
 
   if (!isValueObject && specifier.fields && !specifier.shorthand) {
     throw new Error(
       `Setting "${
         info.path
-      }" is a namespace with no shorthand so expects an object but received a non-object: ${inspect(
-        inputFieldValue
-      )}`
+      }" is a namespace with no shorthand so expects an object but received a non-object: ${inspect(input)}`
     )
   }
 
-  let longhandValue = inputFieldValue
+  let longhandValue: PlainObject = input as any
   if (!isValueObject && specifier.shorthand) {
     log.debug('expanding shorthand', { info })
     try {
-      longhandValue = specifier.shorthand(inputFieldValue)
+      longhandValue = specifier.shorthand(input as Primitive)
     } catch (e) {
       throw ono(
         e,
-        { info, inputFieldValue },
+        { info, input },
         `There was an unexpected error while running the namespace shorthand for setting "${
           info.path
-        }". The given value was ${inspect(inputFieldValue)}`
+        }". The given value was ${inspect(input)}`
       )
     }
   }
@@ -269,10 +242,10 @@ function resolveNamespace(
 function resolveRecord(
   options: Options,
   metadataFrom: MetadataValueFromType,
-  specifier: RecordSpecifier,
+  specifier: SpecifierRecord,
   input: any,
   data: any,
-  metadata: any
+  metadata: MetadataRecord
 ) {
   log.trace('resolve record', { specifier, input, data, metadata })
   const isValueObject = Lo.isPlainObject(input)
@@ -316,8 +289,8 @@ function resolveRecord(
   return newData
 }
 
-function resolveLeaf(options: Options, specifier: any, value: any, info: TraversalInfo): any {
-  let resolvedValue = value
+function resolveLeaf(options: Options, specifier: SpecifierLeaf, input: any, info: TraversalInfo): any {
+  let resolvedValue = input
 
   /**
    * Run fixups
@@ -339,7 +312,7 @@ function resolveLeaf(options: Options, specifier: any, value: any, info: Travers
        * fixup handler
        */
       const fixupInfo = {
-        before: value,
+        before: input,
         after: maybeFixedup.value,
         name: info.path,
         messages: maybeFixedup.messages,
@@ -396,8 +369,8 @@ function resolveLeaf(options: Options, specifier: any, value: any, info: Travers
 function resolve(
   options: Options,
   metadataFrom: MetadataValueFromType,
-  parentSpecifier: NamespaceSpecifier,
-  input: any,
+  parentSpecifier: SpecifierNamespace,
+  input: PlainObject,
   data: any,
   metadata: MetadataNamespace
 ) {
@@ -430,10 +403,10 @@ function resolve(
         options,
         metadataFrom,
         specifier,
-        inputFieldValue,
+        inputFieldValue as PlainObject,
         { path: inputFieldName },
         data[inputFieldName],
-        metadata.fields[inputFieldName]
+        metadata.fields[inputFieldName] as MetadataNamespace
       )
       return newData
     }
@@ -445,7 +418,7 @@ function resolve(
         specifier,
         inputFieldValue,
         data[inputFieldName],
-        metadata.fields[inputFieldName]
+        metadata.fields[inputFieldName] as MetadataRecord
       )
       return newData
     }
@@ -469,7 +442,7 @@ function resolve(
  *
  */
 function commit(
-  specifier: NamespaceSpecifier,
+  specifier: SpecifierNamespace,
   metadataFrom: MetadataValueFromType,
   input: any,
   data: any,
@@ -533,8 +506,11 @@ function doCommit(
   }
 }
 
+/**
+ *
+ */
 function doCommitRecord(
-  specifier: RecordSpecifier,
+  specifier: SpecifierRecord,
   metadataFrom: MetadataValueFromType,
   input: any,
   data: any,
@@ -547,7 +523,13 @@ function doCommitRecord(
     data[entryKey] = data[entryKey] ?? {}
 
     if (specifier.mapEntryData) {
-      runEntryDataMapper(specifier, metadataFrom, entryInput, entryKey, metadata.value[entryKey])
+      runEntryDataMapper(
+        specifier,
+        metadataFrom,
+        entryInput,
+        entryKey,
+        metadata.value[entryKey] as MetadataNamespace
+      )
     }
 
     doCommit(
@@ -565,54 +547,33 @@ function doCommitRecord(
   })
   log.trace('done committing record', { specifier, input, data, metadata })
 }
-
-function runEntryDataMapper(
-  specifier: RecordSpecifier,
-  metadataFrom: MetadataValueFromType,
-  entryInput: any,
-  entryKey: string,
-  entryMetdata: MetadataNamespace
-) {
-  // todo runner wrapper, error handling etc.
-  log.trace('running entry data mapper')
-  const entryInputWithAddedData = specifier.mapEntryData!(entryInput, entryKey)
-  // augment the specifer, input, & metadata
-  // the shadow data doesn't show up in any of these places like normal input
-  // to keep the recurisve system going, synthetically construct the needed things
-  Lo.forOwn(entryInputWithAddedData, (v, k) => {
-    if (entryInput[k] === undefined) {
-      entryInput[k] = v
-      entryMetdata.fields[k] = createMetadataLeaf(undefined, metadataFrom, {
-        isShadow: true,
-      })
-      ;(specifier.entry as NamespaceSpecifier).fields[k] = { isShadow: true }
-    }
-  })
-}
-
 /**
  * specifiers
  */
 
-type Specifier = LeafSpecifier | RecordSpecifier | NamespaceSpecifier
+type Specifier = SpecifierLeaf | SpecifierRecord | SpecifierNamespace
 
 /**
  *
  */
-function isLeafSpecifier(specifier: any): specifier is LeafSpecifier {
+function isLeafSpecifier(specifier: any): specifier is SpecifierLeaf {
   return !isNamespaceSpecifier(specifier) && !isRecordSpecifier(specifier)
 }
 
-type LeafSpecifier = {}
+type SpecifierLeaf = {
+  mapType?: MapType
+  fixup?: Fixup
+  validate?: Validate
+}
 
 /**
  *
  */
-function isRecordSpecifier(specifier: any): specifier is RecordSpecifier {
+function isRecordSpecifier(specifier: any): specifier is SpecifierRecord {
   return Boolean(specifier?.entry)
 }
 
-type RecordSpecifier = {
+type SpecifierRecord = {
   entry: Specifier
   mapEntryData?(newEntryData: any, entryKey: string): any
 }
@@ -620,14 +581,14 @@ type RecordSpecifier = {
 /**
  *
  */
-function isNamespaceSpecifier(specifier: any): specifier is NamespaceSpecifier {
+function isNamespaceSpecifier(specifier: any): specifier is SpecifierNamespace {
   return Boolean(specifier?.fields)
 }
 
-type NamespaceSpecifier = {
+type SpecifierNamespace = {
   fields: any
   initial?(): any
-  shorthand?(shorthandInput: any): any
+  shorthand?: Shorthand
 }
 
 /**
@@ -649,7 +610,7 @@ function initialize(specifier: Specifier, info: TraversalInfo): InitializeResult
 /**
  *
  */
-function initializeLeaf(specifier: LeafSpecifier, info: TraversalInfo) {
+function initializeLeaf(specifier: SpecifierLeaf, info: TraversalInfo) {
   log.trace('initialize leaf', { info })
   let value = runInitializer(specifier, info)
   value = runTypeMapper(specifier, value, info)
@@ -659,7 +620,7 @@ function initializeLeaf(specifier: LeafSpecifier, info: TraversalInfo) {
 /**
  *
  */
-function initializeNamespace(specifier: NamespaceSpecifier, info: TraversalInfo) {
+function initializeNamespace(specifier: SpecifierNamespace, info: TraversalInfo) {
   log.trace('will initialize namespace', { info, specifier })
   let initializedNamespaceData
   if (specifier.initial) {
@@ -669,7 +630,7 @@ function initializeNamespace(specifier: NamespaceSpecifier, info: TraversalInfo)
   } else {
     initializedNamespaceData = {}
   }
-  const initializedNamespaceMetadata = namespaceDataToMetadata(specifier, initializedNamespaceData)
+  const initializedNamespaceMetadata = metadataNamespaceFromData(specifier, initializedNamespaceData)
   const initializedNamespace = {
     data: initializedNamespaceData,
     metadata: initializedNamespaceMetadata,
@@ -697,7 +658,7 @@ function initializeNamespace(specifier: NamespaceSpecifier, info: TraversalInfo)
 /**
  *
  */
-function initializeRecord(specifier: RecordSpecifier, info: TraversalInfo) {
+function initializeRecord(specifier: SpecifierRecord, info: TraversalInfo) {
   log.trace('initialize record', { info, specifier })
   // there may be preloaded record entries via the record initializer
   // such entries will be input and thus need to be resolved
@@ -731,7 +692,6 @@ function initializeRecord(specifier: RecordSpecifier, info: TraversalInfo) {
       { data: {}, metadataRecordValue: {} } as any
     )
     .value()
-  console.log(canonicalEntryResult)
 
   // now stitch the initial record data with the cannonical initialized entry
   let result = Lo.chain(starterEntriesData)
@@ -767,18 +727,10 @@ function initializeRecord(specifier: RecordSpecifier, info: TraversalInfo) {
   }
 
   if (specifier.mapEntryData) {
-    // Lo.forOwn(entryInputWithAddedData, (v, k) => {
-    //   if (entryInput[k] === undefined) {
-    //     entryInput[k] = v
-    //     metadata.value[entryKey].fields[k] = createMetadataLeaf(undefined, metadataFrom, { isShadow: true })
-    //     ;(specifier.entry as NamespaceSpecifier).fields[k] = { isShadow: true }
-    //   }
-    // })
     log.trace('running entry data mapper')
     // todo runner wrapper, error handling etc.
     Lo.forOwn(result.data, (newEntryData, entryKey) => {
       runEntryDataMapper(specifier, 'initial', newEntryData, entryKey, result.metadata.value[entryKey])
-      // const newEntryDataMapped = specifier.mapEntryData!(newEntryData, entryKey)
       doCommitRecord(specifier, 'initial', { [entryKey]: newEntryData }, result.data, result.metadata)
     })
   }
@@ -790,6 +742,33 @@ function initializeRecord(specifier: RecordSpecifier, info: TraversalInfo) {
 /**
  * runners
  */
+
+/**
+ *
+ */
+function runEntryDataMapper(
+  specifier: SpecifierRecord,
+  metadataFrom: MetadataValueFromType,
+  entryInput: any,
+  entryKey: string,
+  entryMetdata: MetadataNamespace
+) {
+  // todo runner wrapper, error handling etc.
+  log.trace('running entry data mapper')
+  const entryInputWithAddedData = specifier.mapEntryData!(entryInput, entryKey)
+  // augment the specifer, input, & metadata
+  // the shadow data doesn't show up in any of these places like normal input
+  // to keep the recurisve system going, synthetically construct the needed things
+  Lo.forOwn(entryInputWithAddedData, (v, k) => {
+    if (entryInput[k] === undefined) {
+      entryInput[k] = v
+      entryMetdata.fields[k] = createMetadataLeaf(undefined, metadataFrom, {
+        isShadow: true,
+      })
+      ;(specifier.entry as SpecifierNamespace).fields[k] = { isShadow: true }
+    }
+  })
+}
 
 /**
  *
@@ -840,32 +819,38 @@ function runInitializer(specifier: any, info: TraversalInfo): any {
 
 /**
  * Validate the spec for basic invariants.
+ * todo mapData mapEntryData fixup etc.
  */
-function validateSpec(spec: any) {
-  Lo.forOwn(spec, (specifier: any, name: string) => {
-    if (specifier.fields) {
-      validateSpec(specifier.fields)
-      return
-    }
+function validateSpecifier(specifier: Specifier, info: TraversalInfo) {
+  if (isNamespaceSpecifier(specifier)) {
+    Lo.forOwn(specifier.fields, (fieldSpecifier: Specifier, fieldName: string) => {
+      validateSpecifier(fieldSpecifier, { path: fieldName })
+    })
+    return
+  }
 
-    if (isRecordSpecifier(specifier)) {
-      validateSpec(specifier.entry)
-      return
-    }
+  if (isRecordSpecifier(specifier)) {
+    validateSpecifier(specifier.entry as SpecifierNamespace, info)
+    return
+  }
 
-    if (specifier.mapType !== undefined && typeof specifier.mapType !== 'function') {
-      throw new Error(
-        `Type mapper for setting "${name}" was invalid. Type mappers must be functions. Got: ${inspect(
-          specifier.mapType
-        )}`
-      )
-    }
-  })
+  if (specifier.mapType !== undefined && typeof specifier.mapType !== 'function') {
+    throw new Error(
+      `Type mapper for setting "${info.path}" was invalid. Type mappers must be functions. Got: ${inspect(
+        specifier.mapType
+      )}`
+    )
+  }
 }
 
 /**
  * utils
  */
+
+//todo
+// function renderPath(info:TraversalInfo): string {
+//   return info.path.slice(1).join('.')
+// }
 
 /**
  * Check if curerntly in production mode defined as
@@ -890,4 +875,23 @@ function mergeShallow(o1: any, o2: any) {
     }
   }
   return o1
+}
+
+/**
+ *
+ */
+function dataFromMetadara<Data>(metadata: MetadataNamespace, copy: PlainObject): Data {
+  Lo.forOwn(metadata.fields, (fieldMetadata, name) => {
+    if ('fields' in fieldMetadata) {
+      copy[name] = dataFromMetadara(fieldMetadata, {})
+    } else {
+      copy[name] = fieldMetadata.initial
+    }
+  })
+
+  return copy as any
+}
+
+type TraversalInfo = {
+  path: string
 }

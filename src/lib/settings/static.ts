@@ -3,15 +3,18 @@
  * It contains the rich conditional type system powering the settings library.
  */
 
+import { Primitive } from 'type-fest'
 import {
   ExcludePlainObjectOrInterface,
   ExcludeUndefined,
   Includes,
   IncludesPlainObjectOrInterface,
   IncludesRecord,
+  IsSameKeys,
   KeepOptionalKeys,
   KeepRequiredKeys,
   OnlyPlainObjectOrInterface,
+  PlainObject,
 } from '../utils'
 
 export type ExcludeShorthand<T> = OnlyPlainObjectOrInterface<T>
@@ -68,13 +71,8 @@ export type Spec<Input, Data> =
 //prettier-ignore
 export type NamespaceSpec<Namespace, Key, Data> =
   {
-    //todo ...?
     // @ts-ignore
     fields: Spec<OnlyPlainObjectOrInterface<Namespace>, Data[Key]>
-    // // @ts-ignore
-    // fields2: Data[Key]
-    // fields3: Key
-    // fields4: Namespace
   } &
   /**
    * If namespace is union with non-pojo type then shorthand required 
@@ -83,7 +81,7 @@ export type NamespaceSpec<Namespace, Key, Data> =
     ExcludeUndefined<ExcludePlainObjectOrInterface<Namespace>> extends never
     ? {}
     : {
-        shorthand(input: ExcludeUndefined<ExcludePlainObjectOrInterface<Namespace>>): OnlyPlainObjectOrInterface<Namespace>
+        shorthand: Shorthand<ExcludeUndefined<ExcludePlainObjectOrInterface<Namespace>>, OnlyPlainObjectOrInterface<Namespace>>
       }
   ) &
   /**
@@ -96,7 +94,6 @@ export type NamespaceSpec<Namespace, Key, Data> =
     undefined extends Namespace
       ? {} extends KeepOptionalKeys<Namespace>
         ? {}
-        //todo ...?
         // @ts-ignore
         : Includes<Data[Key], undefined> extends true
           ? {}
@@ -111,9 +108,8 @@ export type NamespaceSpec<Namespace, Key, Data> =
 // return undefined.
 // prettier-ignore
 export type LeafSpec<Field, Key, Data> =
-  // | { raw(input: Field): Lookup<ExcludeUndefined<Data>, Key> }
   {
-    validate?(value: ExcludeUndefined<Field>): null | { messages: string[] }
+    validate?: Validate<ExcludeUndefined<Field>>
     /**
      * Specify a fixup for this setting.
      *
@@ -125,7 +121,7 @@ export type LeafSpec<Field, Key, Data> =
      * otherwise. The new value should be returned along with a list of one or
      * more messages, one for each thing that was fixed.
      */
-    fixup?(value: ExcludeUndefined<Field>): null | { value: Field; messages: string[] }
+    fixup?: Fixup<ExcludeUndefined<Field>>
   } &
   /**
    * if input is optional initial is required
@@ -150,9 +146,9 @@ export type LeafSpec<Field, Key, Data> =
         ExcludeUndefined<Field> extends ExcludeUndefined<Data>[Key]
         ? {}
         : // if input key type does not match data then mapType is required
-          { mapType(input: ExcludeUndefined<Field>): ExcludeUndefined<Data>[Key] }
+          { mapType: MapType<ExcludeUndefined<Field>, ExcludeUndefined<Data>[Key]> }
       : // if input key has no match in data then mapData is required
-        { mapData(input: ExcludeUndefined<Field>): ExcludeUndefined<Data> }
+        { mapData: MapType<ExcludeUndefined<Field>, ExcludeUndefined<Data>> }
   )
 
 /**
@@ -227,10 +223,22 @@ export type RecordSpec<Dict, K, Data, DictEntry = ExcludeUndefined<Dict>[string]
      */
     (
       // @ts-expect-error
-      ExcludeShorthand<Required<DictEntry>> extends Required<Data[K][string]>
+      IsSameKeys<Required<Data[K][string]>, ExcludeShorthand<Required<DictEntry>>> extends true
       ? {}
       : {
           // @ts-expect-error
           mapEntryData(data: OnlyPropsInOther<Data[K][string], ExcludeShorthand<DictEntry>>, key: string): Data[K][string]
         }
     )
+
+/**
+ * Isolated Types
+ */
+
+export type Validate<Input = Primitive> = (value: Input) => null | { messages: string[] }
+
+export type Fixup<Input = Primitive> = (input: Input) => null | { value: Input; messages: string[] }
+
+export type MapType<Input = Primitive, Return = Primitive> = (input: Input) => Return
+
+export type Shorthand<Input = Primitive, Return = PlainObject> = (input: Input) => Return

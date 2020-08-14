@@ -123,8 +123,7 @@ describe('spec validation', () => {
   it('if mapType is assigned non-function (record)', () => {
     expect(() => {
       // prettier-ignore
-      // @ts-expect-error
-      S.create<{ a: Record<string, {b:1}> }, { a: Record<string, {b:2}> }>({ fields: { a: { entry: { b: { mapType: 1 } } } } })
+      S.create<{ a: Record<string, {b:1}> }, { a: Record<string, {b:2}> }>({ fields: { a: { entry: { fields: { b: { mapType: 1 as any } } } } } })
     }).toThrowError('Type mapper for setting "b" was invalid. Type mappers must be functions. Got: 1')
   })
 })
@@ -513,7 +512,7 @@ describe('records', () => {
     it('required if the entry input field name does not match any data field name; called if given', () => {
       // prettier-ignore
       const s = S.create<{ a?: R<{ a?: number }> }, { a: R<{ a: number, b: number }> }>({
-        fields: { a: { mapEntryData: (data) => ({ a: data.a, b: data.a }), entry: { fields: { a: { initial: () => 1 } } } } }
+        fields: { a: {  mapEntryData: (data) => ({ a: data.a, b: data.a }), entry: { fields: { a: { initial: () => 1 } } } } }
       })
       s.change({ a: { foobar: { a: 1 } } })
       expect(s.data).toEqual({ a: { foobar: { a: 1, b: 1 } } })
