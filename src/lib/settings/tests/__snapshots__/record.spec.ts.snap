@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`records initial metadata captures immutable initial state even with sub-initializers 1`] = `
+exports[`initial() metadata captures immutable initial state even with sub-initializers 1`] = `
 Object {
   "fields": Object {
     "a": Object {
@@ -50,7 +50,7 @@ Object {
 }
 `;
 
-exports[`records initial metadata captures immutable initial state even with sub-initializers 2`] = `
+exports[`initial() metadata captures immutable initial state even with sub-initializers 2`] = `
 Object {
   "fields": Object {
     "a": Object {

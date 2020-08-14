@@ -79,6 +79,16 @@ describe('.metadata', () => {
   })
 })
 
+describe('.change()', () => {
+  // todo bring this back under strict mode
+  it.skip('changing settings that do not exist will have static error and will error gracefully', () => {
+    const s = S.create<{ a: string }>({ fields: { a: {} } })
+    // prettier-ignore
+    // @ts-expect-error
+    expect(() => s.change({ z: '' })).toThrowError('You are trying to change a setting called "z" but no such setting exists')
+  })
+})
+
 /**
  * Helpers
  */

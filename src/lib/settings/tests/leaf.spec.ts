@@ -3,8 +3,53 @@ import dedent from 'dedent'
 import * as tsd from 'tsd'
 import * as S from '..'
 
+describe('types', () => {
+  it('arrays are considered leaves and so do not merge', () => {
+    const s = S.create<{ a?: string[] }>({ fields: { a: { initial: c(['foo']) } } })
+    expect(s.change({ a: ['bar'] }).data).toEqual({ a: ['bar'] })
+  })
+})
+
+describe('specifiers', () => {
+  it('make it possible to change a leaf setting', () => {
+    const s = S.create<{ a: string }>({ fields: { a: {} } })
+    expect(s.change({ a: 'a2' }).data).toEqual({ a: 'a2' })
+  })
+  describe('encounter static errors', () => {
+    it('if missing for a fields in the input type', () => {
+      S.create<{ a: number }>({ fields: { a: {} } })
+      // @ts-expect-error
+      S.create<{ a: number }>({ fields: {} })
+    })
+  })
+  describe('with optional data', () => {
+    it('can be omitted', () => {
+      const s = S.create<{ a: number }, { a?: number }>({ fields: {} })
+      expect(s.data.a).toBeUndefined()
+    })
+    it('can be omitted: and can still be changed', () => {
+      const s = S.create<{ a: number }, { a?: number }>({ fields: {} })
+      s.change({ a: 1 })
+      expect(s.data).toEqual({ a: 1 })
+    })
+    it('can still be provided too', () => {
+      const s = S.create<{ a: number }, { a?: number }>({ fields: { a: {} } })
+      expect(s.data.a).toBeUndefined()
+    })
+    // todo move to namespace/record test suites
+    it('can be omitted when input+data is optional', () => {
+      const s2 = S.create<{ a?: { b?: number } }, { a?: { b?: number } }>({ fields: {} })
+      s2.change({ a: { b: 2 } })
+      expect(s2.data).toEqual({ a: { b: 2 } })
+      const s3 = S.create<{ a?: R<{ b?: number }> }, { a?: R<{ b?: number }> }>({ fields: {} })
+      s3.change({ a: { foobar: { b: 2 } } })
+      expect(s3.data).toEqual({ a: { foobar: { b: 2 } } })
+    })
+  })
+})
+
 describe('initial()', () => {
-  describe('throw an error', () => {
+  describe('throws an error', () => {
     it('when not assigned a function', () => {
       expect(() =>
         // @ts-expect-error
@@ -163,7 +208,7 @@ describe('mapType()', () => {
   })
 })
 
-describe('leaf fixups', () => {
+describe('fixup()', () => {
   let logs: jest.Mock
   let logSettingsOriginal: any
 
@@ -309,7 +354,7 @@ describe('leaf fixups', () => {
   })
 })
 
-describe('validators', () => {
+describe('validate()', () => {
   it('if a setting passes validation nothing happens', () => {
     const validate = jest.fn().mockImplementation(() => null)
     const settings = S.create<{ a: string }>({ fields: { a: { validate } } })
@@ -355,3 +400,8 @@ describe('validators', () => {
  * Create a constant function
  */
 const c = <T>(x: T) => () => x
+
+/**
+ * Create a string-keyed record
+ */
+type R<T> = Record<string, T>

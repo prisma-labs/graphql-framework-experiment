@@ -2,4 +2,5 @@ dist
 .now
 /website/*
 !/website/content
-*.spec-d.ts
+types.spec.ts
+types.spec-d.ts
