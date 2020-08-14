@@ -3,7 +3,7 @@ import dedent from 'dedent'
 import 'jest-extended'
 import * as Lo from 'lodash'
 import * as tsd from 'tsd'
-import * as S from './'
+import * as S from '..'
 
 describe('input field specifiers', () => {
   it('make it possible to manage a setting', () => {

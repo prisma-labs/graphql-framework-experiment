@@ -1,6 +1,6 @@
 import * as tsd from 'tsd'
-import { KeepRequiredKeys } from '../utils'
-import * as S from './'
+import * as S from '..'
+import { KeepRequiredKeys } from '../../utils'
 
 type R<T> = Record<string, T>
 
