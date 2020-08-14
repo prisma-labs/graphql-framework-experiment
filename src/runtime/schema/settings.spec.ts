@@ -55,7 +55,7 @@ describe('connctions', () => {
     `)
   })
   it('existing custom types can be changed, preserving its core settings', () => {
-    sm.change({ connections: { a: {} } }) // test above says this has the core settings
+    // sm.change({ connections: { a: {} } }) // test above says this has the core settings
     sm.change({ connections: { a: { disableForwardPagination: true } } })
     expect(sm.data.connections.a).toMatchInlineSnapshot(`
       Object {

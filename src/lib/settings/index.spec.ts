@@ -27,9 +27,21 @@ describe('input field specifiers', () => {
       expect(s.data.a).toBeUndefined()
     })
   })
+  it('can be omitted when input+data is optional', () => {
+    // prettier-ignore
+    const s = S.create<{ a?: number }, { a?: number }>({ fields: {} })
+    s.change({ a: 1 })
+    expect(s.data).toEqual({ a: 1 })
+    const s2 = S.create<{ a?: { b?: number } }, { a?: { b?: number } }>({ fields: {} })
+    s2.change({ a: { b: 2 } })
+    expect(s2.data).toEqual({ a: { b: 2 } })
+    const s3 = S.create<{ a?: R<{ b?: number }> }, { a?: R<{ b?: number }> }>({ fields: {} })
+    s3.change({ a: { foobar: { b: 2 } } })
+    expect(s3.data).toEqual({ a: { foobar: { b: 2 } } })
+  })
 })
 
-describe('input field initializers', () => {
+describe('leaf initializers', () => {
   describe('throw an error', () => {
     it('when not assigned a function', () => {
       expect(() =>
@@ -128,7 +140,7 @@ describe('spec validation', () => {
   })
 })
 
-describe('input field type mappers', () => {
+describe('leaf type mappers', () => {
   it('do not relate to the optionality of the input or the data', () => {
     // show that  mapType is still an required
     S.create<{ a?: number }, { a: boolean }>({
@@ -279,7 +291,8 @@ describe('namespaces', () => {
     })
     expect(settings.change({ a: { a: 4 } }).data).toEqual({ a: { a: 4, b: 2 }, b: 3 })
   })
-  it('passing a plain object to a non-namespace field will error gracefully', () => {
+  // todo bring back in strict mode, see commented out code in resolve func
+  it.skip('passing a plain object to a non-namespace field will error gracefully', () => {
     const s = S.create<{ a?: 1 }>({ fields: { a: { initial: c(1) } } })
     // @ts-expect-error
     expect(() => s.change({ a: { b: 2 } })).toThrowErrorMatchingInlineSnapshot(
@@ -344,7 +357,6 @@ describe('namespaces', () => {
 })
 
 describe('records', () => {
-  type R<T> = Record<string, T>
   it('can have their settings changed', () => {
     const s = S.create<{ a: R<{ b: number }> }>({ fields: { a: { entry: { fields: { b: {} } } } } })
     expect(s.change({ a: { foobar: { b: 2 } } }).data).toEqual({ a: { foobar: { b: 2 } } })
@@ -886,3 +898,8 @@ describe('.change()', () => {
  * Create a constant function
  */
 const c = <T>(x: T) => () => x
+
+/**
+ * Create a string-keyed record
+ */
+type R<T> = Record<string, T>

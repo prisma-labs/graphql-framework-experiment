@@ -35,11 +35,9 @@ type KeysWhereDataOptional<Input, Data> = {
   [K in keyof Input]: undefined extends Data[K] ? K : never
 }[keyof Input]
 
-type FilterInKeys<T, U> = { [K in keyof T]: T[K] extends U ? K : never }[keyof T]
-
-type FilterOutKeys<T, U> = { [K in keyof T]: T[K] extends U ? never : K }[keyof T]
-
-type FilterInOverlappingKeys<T, U> = { [K in keyof T]: K extends keyof U ? K : never }[keyof T]
+type FilterInOverlappingKeys<T, U> = {
+  [K in keyof T]: K extends keyof U ? K : never
+}[keyof T]
 
 type OnlyPropsInOther<T, U> = {
   [K in FilterInOverlappingKeys<T, U>]: T[K]

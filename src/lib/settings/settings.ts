@@ -78,7 +78,11 @@ export function create<Input extends PlainObject, Data extends PlainObject = Dat
     validateSpecifier({ fields }, { path: '__root__' })
   }
 
-  const initial = initialize({ fields }, { path: '__root__' })
+  // todo we currently have to clone the given spec deeply because mapEntryData mutations the spec with shadow specifiers
+  // and shodow specifiers currently break the second+ initialize run (e.g. during reset)
+  // todo we didn't catch this yet with own unit test, but other nexus unit tets caught the issue
+
+  const initial = initialize({ fields: Lo.cloneDeep(fields) }, { path: '__root__' })
   const state = {
     data: initial.data as Data,
     original: (undefined as any) as Data, // lazy
@@ -91,12 +95,12 @@ export function create<Input extends PlainObject, Data extends PlainObject = Dat
     change(input) {
       log.debug('change', { input })
       const newData = resolve(options, 'set', { fields }, input, state.data, state.metadata)
-      commit({ fields }, 'set', newData, state.data, state.metadata)
+      commit({ fields: Lo.cloneDeep(fields) }, 'set', newData, state.data, state.metadata)
       return api
     },
     reset() {
       log.debug('reset')
-      const initial = initialize({ fields }, { path: '__root__' })
+      const initial = initialize({ fields: Lo.cloneDeep(fields) }, { path: '__root__' })
       api.data = state.data = initial.data as any
       api.metadata = state.metadata = initial.metadata as any
       return api
@@ -158,7 +162,7 @@ type Metadata<V = any> = MetadataLeaf<V> | MetadataRecord<V> | MetadataNamespace
 function createMetadataLeaf(
   value: any,
   from: MetadataValueFromType = 'initial',
-  flags?: { isShadow: true }
+  flags?: { isShadow: true } | { isPassthrough: true }
 ): MetadataLeaf {
   return { type: 'leaf', from, value, initial: value, ...flags }
 }
@@ -390,13 +394,15 @@ function resolve(
     //   )
     // }
 
-    if (isValueObject && !isNamespaceSpecifier(specifier) && !isRecordSpecifier(specifier)) {
-      throw new Error(
-        `Setting "${inputFieldName}" is not a namespace or record and so does not accept objects, but one given: ${inspect(
-          inputFieldValue
-        )}`
-      )
-    }
+    // todo bring this back under strict mode
+    //      it is disabled b/c optional input+data allows omitting field specifiers altogether
+    // if (isValueObject && !isNamespaceSpecifier(specifier) && !isRecordSpecifier(specifier)) {
+    //   throw new Error(
+    //     `Setting "${inputFieldName}" is not a namespace or record and so does not accept objects, but one given: ${inspect(
+    //       inputFieldValue
+    //     )}`
+    //   )
+    // }
 
     if (isNamespaceSpecifier(specifier)) {
       newData[inputFieldName] = resolveNamespace(
@@ -450,6 +456,8 @@ function commit(
 ) {
   log.trace('committing change', { specifier, metadataFrom, input, data, metadata })
   Lo.forOwn(input, (fieldInput, fieldName) => {
+    metadata.fields[fieldName] =
+      metadata.fields[fieldName] ?? createMetadataLeaf(undefined, metadataFrom, { isPassthrough: true })
     doCommit(
       specifier.fields[fieldName],
       metadataFrom,
@@ -479,6 +487,8 @@ function doCommit(
     const metadataNamespace = metadata as MetadataNamespace
     const dataNamespace = parentData[key]
     Lo.forOwn(input, (v, k) => {
+      metadataNamespace.fields[k] =
+        metadataNamespace.fields[k] ?? createMetadataLeaf(undefined, metadataFrom, { isPassthrough: true })
       doCommit(specifier.fields[k], metadataFrom, k, v, dataNamespace, metadataNamespace.fields[k])
     })
     log.trace('done committing namespace', { specifier, key, input, parentData, metadata })
