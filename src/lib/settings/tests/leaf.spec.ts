@@ -3,18 +3,28 @@ import dedent from 'dedent'
 import * as tsd from 'tsd'
 import * as S from '..'
 
-describe('types', () => {
-  it('arrays are considered leaves and so do not merge', () => {
-    const s = S.create<{ a?: string[] }>({ fields: { a: { initial: c(['foo']) } } })
-    expect(s.change({ a: ['bar'] }).data).toEqual({ a: ['bar'] })
+describe('change', () => {
+  it('.data reflects the change', () => {
+    const s = S.create<{ a: number }>({ fields: { a: {} } })
+    expect(s.change({ a: 1 }).data).toEqual({ a: 1 })
+  })
+  it('.metadata reflects the change', () => {
+    const s = S.create<{ a: number }>({ fields: { a: {} } })
+    expect(s.change({ a: 1 }).metadata.fields.a).toMatchObject({ from: 'set', value: 1 })
+  })
+  it('array data is not merged in .data', () => {
+    const s = S.create<{ a: number[] }>({ fields: { a: {} } })
+    expect(s.change({ a: [2] }).data).toEqual({ a: [2] })
+    expect(s.change({ a: [3] }).data).toEqual({ a: [3] })
+  })
+  it('array data is not merged in .metadata', () => {
+    const s = S.create<{ a: number[] }>({ fields: { a: {} } })
+    expect(s.change({ a: [3] }).data).toEqual({ a: [3] })
+    expect(s.change({ a: [2] }).metadata.fields.a).toMatchObject({ from: 'set', value: [2] })
   })
 })
 
 describe('specifiers', () => {
-  it('make it possible to change a leaf setting', () => {
-    const s = S.create<{ a: string }>({ fields: { a: {} } })
-    expect(s.change({ a: 'a2' }).data).toEqual({ a: 'a2' })
-  })
   describe('encounter static errors', () => {
     it('if missing for a fields in the input type', () => {
       S.create<{ a: number }>({ fields: { a: {} } })
