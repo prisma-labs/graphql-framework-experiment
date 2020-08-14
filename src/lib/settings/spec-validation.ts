@@ -1,8 +1,10 @@
 import * as Lo from 'lodash'
 import { inspect } from 'util'
 import {
+  appendPath,
   isNamespaceSpecifier,
   isRecordSpecifier,
+  renderPath,
   Specifier,
   SpecifierNamespace,
   TraversalInfo,
@@ -15,7 +17,7 @@ import {
 export function validateSpecifier(specifier: Specifier, info: TraversalInfo) {
   if (isNamespaceSpecifier(specifier)) {
     Lo.forOwn(specifier.fields, (fieldSpecifier: Specifier, fieldName: string) => {
-      validateSpecifier(fieldSpecifier, { path: fieldName })
+      validateSpecifier(fieldSpecifier, appendPath(info, fieldName))
     })
     return
   }
@@ -27,9 +29,9 @@ export function validateSpecifier(specifier: Specifier, info: TraversalInfo) {
 
   if (specifier.mapType !== undefined && typeof specifier.mapType !== 'function') {
     throw new Error(
-      `Type mapper for setting "${info.path}" was invalid. Type mappers must be functions. Got: ${inspect(
-        specifier.mapType
-      )}`
+      `Type mapper for setting "${renderPath(
+        info
+      )}" was invalid. Type mappers must be functions. Got: ${inspect(specifier.mapType)}`
     )
   }
 }

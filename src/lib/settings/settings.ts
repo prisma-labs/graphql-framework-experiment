@@ -112,9 +112,9 @@ function resolveNamespace(
 
   if (!isValueObject && specifier.fields && !specifier.shorthand) {
     throw new Error(
-      `Setting "${
-        info.path
-      }" is a namespace with no shorthand so expects an object but received a non-object: ${inspect(input)}`
+      `Setting "${renderPath(
+        info
+      )}" is a namespace with no shorthand so expects an object but received a non-object: ${inspect(input)}`
     )
   }
 
@@ -127,14 +127,14 @@ function resolveNamespace(
       throw ono(
         e,
         { info, input },
-        `There was an unexpected error while running the namespace shorthand for setting "${
-          info.path
-        }". The given value was ${inspect(input)}`
+        `There was an unexpected error while running the namespace shorthand for setting "${renderPath(
+          info
+        )}". The given value was ${inspect(input)}`
       )
     }
   }
 
-  return resolve(options, metadataFrom, specifier, longhandValue, data, metadata)
+  return resolve(options, metadataFrom, specifier, longhandValue, data, metadata, info)
 }
 
 function resolveRecord(
@@ -143,7 +143,8 @@ function resolveRecord(
   specifier: SpecifierRecord,
   input: any,
   data: any,
-  metadata: MetadataRecord
+  metadata: MetadataRecord,
+  info: TraversalInfo
 ) {
   log.trace('resolve record', { specifier, input, data, metadata })
   const isValueObject = Lo.isPlainObject(input)
@@ -158,7 +159,7 @@ function resolveRecord(
 
     if (!data[entryName]) {
       log.trace('this is a new record entry, initialize it', { entryName })
-      const initial = initialize(specifier.entry, { path: entryName })
+      const initial = initialize(specifier.entry, appendPath(info, entryName))
       data[entryName] = initial.data
       metadata.value[entryName] = initial.metadata as any // todo don't assume record-namespace
     }
@@ -170,7 +171,8 @@ function resolveRecord(
       specifier.entry, // todo don't assume record-namesapce
       entryValue,
       data[entryName],
-      metadata.value[entryName]
+      metadata.value[entryName],
+      appendPath(info, entryName)
     )
 
     return rec
@@ -218,7 +220,7 @@ function resolveLeaf(options: Options, specifier: SpecifierLeaf, input: any, inf
       throw ono(
         e,
         { info, value: resolvedValue },
-        `Fixup for "${info.path}" failed while running on value ${inspect(resolvedValue)}`
+        `Fixup for "${renderPath(info)}" failed while running on value ${inspect(resolvedValue)}`
       )
     }
     if (maybeFixedup) {
@@ -229,14 +231,14 @@ function resolveLeaf(options: Options, specifier: SpecifierLeaf, input: any, inf
       const fixupInfo = {
         before: input,
         after: maybeFixedup.value,
-        name: info.path,
+        name: renderPath(info), // todo rename to "path"
         messages: maybeFixedup.messages,
       }
       if (options.onFixup) {
         try {
           options.onFixup(fixupInfo, onFixup)
         } catch (e) {
-          throw ono(e, { info }, `onFixup callback for "${info.path}" failed`)
+          throw ono(e, { info }, `onFixup callback for "${renderPath(info)}" failed`)
         }
       } else {
         onFixup(fixupInfo)
@@ -256,12 +258,14 @@ function resolveLeaf(options: Options, specifier: SpecifierLeaf, input: any, inf
       throw ono(
         e,
         { info, value: resolvedValue },
-        `Validation for "${info.path}" unexpectedly failed while running on value ${inspect(resolvedValue)}`
+        `Validation for "${renderPath(info)}" unexpectedly failed while running on value ${inspect(
+          resolvedValue
+        )}`
       )
     }
     if (maybeViolation) {
       throw new Error(
-        `Your setting "${info.path}" failed validation with value ${inspect(
+        `Your setting "${renderPath(info)}" failed validation with value ${inspect(
           resolvedValue
         )}:\n\n- ${maybeViolation.messages.join('\n- ')}`
       )
@@ -287,7 +291,8 @@ export function resolve(
   parentSpecifier: SpecifierNamespace,
   input: PlainObject,
   data: any,
-  metadata: MetadataNamespace
+  metadata: MetadataNamespace,
+  info: TraversalInfo
 ) {
   log.trace('resolve', { parentSpecifier, input, data, metadata })
   const newData: any = Lo.entries(input).reduce((newData, [inputFieldName, inputFieldValue]) => {
@@ -321,7 +326,7 @@ export function resolve(
         metadataFrom,
         specifier,
         inputFieldValue as PlainObject,
-        { path: inputFieldName },
+        appendPath(info, inputFieldName),
         data[inputFieldName],
         metadata.fields[inputFieldName] as MetadataNamespace
       )
@@ -335,13 +340,19 @@ export function resolve(
         specifier,
         inputFieldValue,
         data[inputFieldName],
-        metadata.fields[inputFieldName] as MetadataRecord
+        metadata.fields[inputFieldName] as MetadataRecord,
+        appendPath(info, inputFieldName)
       )
       return newData
     }
 
     if (isLeafSpecifier(specifier)) {
-      newData[inputFieldName] = resolveLeaf(options, specifier, inputFieldValue, { path: inputFieldName })
+      newData[inputFieldName] = resolveLeaf(
+        options,
+        specifier,
+        inputFieldValue,
+        appendPath(info, inputFieldName)
+      )
       return newData
     }
 
@@ -560,7 +571,7 @@ function initializeNamespace(specifier: SpecifierNamespace, info: TraversalInfo)
     .entries()
     .reduce(
       (acc, [key, specifier]) => {
-        const initFieldRes = initialize(specifier, { path: key })
+        const initFieldRes = initialize(specifier, appendPath(info, key))
         acc.data[key] = initFieldRes.data
         acc.metadata.fields[key] = initFieldRes.metadata
         return acc
@@ -605,7 +616,7 @@ function initializeRecord(specifier: SpecifierRecord, info: TraversalInfo) {
     .entries()
     .reduce(
       (acc, [entK, entV]) => {
-        const init = initialize(entV, { path: [info.path, '*', entK].join('.') })
+        const init = initialize(entV, appendPath(info, ['*', entK]))
         acc.data[entK] = init.data
         acc.metadataRecordValue[entK] = init.metadata
         return acc
@@ -704,7 +715,7 @@ function runTypeMapper(specifier: any, inputFieldValue: any, info: TraversalInfo
     throw ono(
       e,
       { info },
-      `There was an unexpected error while running the type mapper for setting "${info.path}"`
+      `There was an unexpected error while running the type mapper for setting "${renderPath(info)}"`
     )
   }
 }
@@ -726,15 +737,15 @@ function runInitializer(specifier: any, info: TraversalInfo): any {
       throw ono(
         e,
         { info },
-        `There was an unexpected error while running the initializer for setting "${info.path}"`
+        `There was an unexpected error while running the initializer for setting "${renderPath(info)}"`
       )
     }
   }
 
   throw new Error(
-    `Initializer for setting "${
-      info.path
-    }" was configured with a static value. It must be a function. Got: ${inspect(specifier.initial)}`
+    `Initializer for setting "${renderPath(
+      info
+    )}" was configured with a static value. It must be a function. Got: ${inspect(specifier.initial)}`
   )
 }
 
@@ -742,10 +753,22 @@ function runInitializer(specifier: any, info: TraversalInfo): any {
  * utils
  */
 
-//todo
-// function renderPath(info:TraversalInfo): string {
-//   return info.path.slice(1).join('.')
-// }
+export function renderPath(info: TraversalInfo): string {
+  return info.path.slice(1).join('.')
+}
+
+export function appendPath(info: TraversalInfo, newPart: string | string[]): TraversalInfo {
+  newPart = Array.isArray(newPart) ? newPart : [newPart]
+
+  return {
+    ...info,
+    path: [...info.path, ...newPart],
+  }
+}
+
+export function createInfo(): TraversalInfo {
+  return { path: ['__root__'] }
+}
 
 function mergeShallow(o1: any, o2: any) {
   for (const [k, v] of Object.entries(o2)) {
@@ -772,5 +795,5 @@ export function dataFromMetadata<Data>(metadata: MetadataNamespace, copy: PlainO
 }
 
 export type TraversalInfo = {
-  path: string
+  path: string[]
 }

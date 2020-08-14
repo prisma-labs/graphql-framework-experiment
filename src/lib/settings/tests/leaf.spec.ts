@@ -317,20 +317,20 @@ describe('fixup()', () => {
     })
     expect(settings.change({ a: 2 }).data).toEqual({ a: { a: 1 } })
     expect(onFixup.mock.calls).toMatchInlineSnapshot(`
+      Array [
         Array [
-          Array [
-            Object {
-              "after": 1,
-              "before": 2,
-              "messages": Array [
-                "must be 1, was 2",
-              ],
-              "name": "a",
-            },
-            [Function],
-          ],
-        ]
-      `)
+          Object {
+            "after": 1,
+            "before": 2,
+            "messages": Array [
+              "must be 1, was 2",
+            ],
+            "name": "a.a",
+          },
+          [Function],
+        ],
+      ]
+    `)
   })
   it('if fixup fails it errors gracefully', () => {
     // prettier-ignore
