@@ -355,25 +355,85 @@ describe('records', () => {
       // prettier-ignore
       const s = S.create<{ a: R<{ b: number }> }>({ fields: { a: { initial: () => ({ foobar: { b: 2 } }), entry: { fields: { b: {} } } } } })
       expect(s.data).toEqual({ a: { foobar: { b: 2 } } })
-      // prettier-ignore
-      expect(s.metadata).toEqual({ type: 'namespace', fields: { a: {
-        type: 'record',
-        from: 'initial',
-        value: { foobar: { b: { type: 'leaf', value: 2, from: 'initial', initial: 2 } } },
-        initial: { foobar: { b: { type: 'leaf', value: 2, from: 'initial', initial: 2 } } }
-      }}})
+      expect(s.metadata).toMatchInlineSnapshot(`
+        Object {
+          "fields": Object {
+            "a": Object {
+              "from": "initial",
+              "initial": Object {
+                "foobar": Object {
+                  "fields": Object {
+                    "b": Object {
+                      "from": "initial",
+                      "initial": 2,
+                      "type": "leaf",
+                      "value": 2,
+                    },
+                  },
+                  "type": "namespace",
+                },
+              },
+              "type": "record",
+              "value": Object {
+                "foobar": Object {
+                  "fields": Object {
+                    "b": Object {
+                      "from": "initial",
+                      "initial": 2,
+                      "type": "leaf",
+                      "value": 2,
+                    },
+                  },
+                  "type": "namespace",
+                },
+              },
+            },
+          },
+          "type": "namespace",
+        }
+      `)
     })
     it('is accepted and is called (optional record case)', () => {
       // prettier-ignore
       const s = S.create<{ a?: R<{ b: number }> }>({ fields: { a: { initial: () => ({ foobar: {b:2}}), entry: { fields: { b: {} } } } } })
       expect(s.data).toEqual({ a: { foobar: { b: 2 } } })
-      // prettier-ignore
-      expect(s.metadata).toEqual({ type: 'namespace', fields: { a: {
-        type: 'record',
-        from: 'initial',
-        value: { foobar: { b: { type: 'leaf', value: 2, from: 'initial', initial: 2 } } },
-        initial: { foobar: { b: { type: 'leaf', value: 2, from: 'initial', initial: 2 } } }
-      }}})
+      expect(s.metadata).toMatchInlineSnapshot(`
+        Object {
+          "fields": Object {
+            "a": Object {
+              "from": "initial",
+              "initial": Object {
+                "foobar": Object {
+                  "fields": Object {
+                    "b": Object {
+                      "from": "initial",
+                      "initial": 2,
+                      "type": "leaf",
+                      "value": 2,
+                    },
+                  },
+                  "type": "namespace",
+                },
+              },
+              "type": "record",
+              "value": Object {
+                "foobar": Object {
+                  "fields": Object {
+                    "b": Object {
+                      "from": "initial",
+                      "initial": 2,
+                      "type": "leaf",
+                      "value": 2,
+                    },
+                  },
+                  "type": "namespace",
+                },
+              },
+            },
+          },
+          "type": "namespace",
+        }
+      `)
     })
     it('is omittable, defaulting to empty object (optional reocrd case)', () => {
       // todo bit odd that data could be typed as optional but it would never be...
@@ -402,7 +462,12 @@ describe('records', () => {
             a: {
               type: 'record',
               from: 'initial', // todo set
-              value: { foobar: { b: { type: 'leaf', value: 1, from: 'set', initial: undefined } } },
+              value: {
+                foobar: {
+                  type: 'namespace',
+                  fields: { b: { type: 'leaf', value: 1, from: 'set', initial: undefined } },
+                },
+              },
               initial: {},
             },
           },
@@ -482,35 +547,43 @@ describe('records', () => {
               "from": "initial",
               "initial": Object {
                 "foobar": Object {
-                  "a": Object {
-                    "from": "initial",
-                    "initial": 1,
-                    "type": "leaf",
-                    "value": 1,
+                  "fields": Object {
+                    "a": Object {
+                      "from": "initial",
+                      "initial": 1,
+                      "type": "leaf",
+                      "value": 1,
+                    },
+                    "b": Object {
+                      "from": "initial",
+                      "initial": 1,
+                      "isShadow": true,
+                      "type": "leaf",
+                      "value": 1,
+                    },
                   },
-                  "b": Object {
-                    "from": "initial",
-                    "initial": 1,
-                    "type": "leaf",
-                    "value": 1,
-                  },
+                  "type": "namespace",
                 },
               },
               "type": "record",
               "value": Object {
                 "foobar": Object {
-                  "a": Object {
-                    "from": "initial",
-                    "initial": 1,
-                    "type": "leaf",
-                    "value": 1,
+                  "fields": Object {
+                    "a": Object {
+                      "from": "initial",
+                      "initial": 1,
+                      "type": "leaf",
+                      "value": 1,
+                    },
+                    "b": Object {
+                      "from": "initial",
+                      "initial": 1,
+                      "isShadow": true,
+                      "type": "leaf",
+                      "value": 1,
+                    },
                   },
-                  "b": Object {
-                    "from": "initial",
-                    "initial": 1,
-                    "type": "leaf",
-                    "value": 1,
-                  },
+                  "type": "namespace",
                 },
               },
             },
