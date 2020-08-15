@@ -3,7 +3,7 @@ import * as Logger from '@nexus/logger'
 import * as Lo from 'lodash'
 import { Primitive } from 'type-fest'
 import { inspect } from 'util'
-import { IsRecord, PlainObject } from '../utils'
+import { IsRecord, Lookup, PlainObject } from '../utils'
 import type { Options } from './manager'
 import { Fixup, MapType, Shorthand, Validate } from './static'
 
@@ -18,11 +18,11 @@ type MetadataValueFromType = 'set' | 'initial'
 /**
  * todo
  */
-export type MetadataState<Data extends PlainObject> = {
+export type MetadataState<Data> = {
   type: 'namespace'
   fields: {
-    [Key in keyof Data]: IsRecord<Data[Key]> extends true // @ts-ignore-error
-      ? MetadataRecord<MetadataState<Data[Key][string]>>
+    [Key in keyof Data]: IsRecord<Data[Key]> extends true
+      ? MetadataRecord<MetadataState<Lookup<Data[Key], string>>>
       : Data[Key] extends PlainObject
       ? MetadataNamespace<Data[Key]>
       : MetadataLeaf<Data[Key]>
@@ -141,9 +141,9 @@ function resolveRecord(
   options: Options,
   metadataFrom: MetadataValueFromType,
   specifier: SpecifierRecord,
-  input: any,
+  input: Record<string, PlainObject>, // todo don't assume record-namespace
   data: any,
-  metadata: MetadataRecord,
+  metadata: MetadataRecord<MetadataNamespace>, // todo don't assume record-namespace
   info: TraversalInfo
 ) {
   log.trace('resolve record', { specifier, input, data, metadata })
@@ -161,14 +161,13 @@ function resolveRecord(
       log.trace('this is a new record entry, initialize it', { entryName })
       const initial = initialize(specifier.entry, appendPath(info, entryName))
       data[entryName] = initial.data
-      metadata.value[entryName] = initial.metadata as any // todo don't assume record-namespace
+      metadata.value[entryName] = initial.metadata as MetadataNamespace // todo don't assume record-namespace
     }
 
     rec[entryName] = resolve(
       options,
       metadataFrom,
-      // @ts-ignore-error
-      specifier.entry, // todo don't assume record-namesapce
+      specifier.entry as MetadataNamespace, // todo don't assume record-namesapce
       entryValue,
       data[entryName],
       metadata.value[entryName],
@@ -177,14 +176,6 @@ function resolveRecord(
 
     return rec
   }, {} as any)
-
-  // if (specifier.mapEntryData) {
-  //   log.trace('running entry data mapper')
-  //   // todo runner wrapper, error handling etc.
-  //   newData = Lo.mapValues(newData, (newEntryData, entryKey) => {
-  //     return specifier.mapEntryData!(newEntryData, entryKey)
-  //   })
-  // }
 
   return newData
 }
@@ -289,7 +280,7 @@ export function resolve(
   options: Options,
   metadataFrom: MetadataValueFromType,
   parentSpecifier: SpecifierNamespace,
-  input: PlainObject,
+  input: PlainObject, // todo need version of plainobject that allows record fields
   data: any,
   metadata: MetadataNamespace,
   info: TraversalInfo
@@ -301,7 +292,7 @@ export function resolve(
     // every single property in the tree.
     // Features will be lost by doing this, however
     const specifier = parentSpecifier.fields[inputFieldName] ?? {}
-    const isValueObject = Lo.isPlainObject(inputFieldValue)
+    // const isValueObject = Lo.isPlainObject(inputFieldValue)
 
     // todo bring this back under strict mode
     // if (!specifier) {
@@ -338,9 +329,9 @@ export function resolve(
         options,
         metadataFrom,
         specifier,
-        inputFieldValue,
+        inputFieldValue as Record<string, PlainObject>, // todo don't assume namespace-record
         data[inputFieldName],
-        metadata.fields[inputFieldName] as MetadataRecord,
+        metadata.fields[inputFieldName] as MetadataRecord<MetadataNamespace>, // todo don't assume namespace-record
         appendPath(info, inputFieldName)
       )
       return newData
@@ -505,8 +496,8 @@ export function isRecordSpecifier(specifier: any): specifier is SpecifierRecord 
   return Boolean(specifier?.entry)
 }
 
-export type SpecifierRecord = {
-  entry: Specifier
+export type SpecifierRecord<Entry = any> = {
+  entry: unknown extends Entry ? Specifier : Entry
   mapEntryData?(newEntryData: any, entryKey: string): any
 }
 
@@ -588,9 +579,9 @@ function initializeNamespace(specifier: SpecifierNamespace, info: TraversalInfo)
 }
 
 /**
- *
+ * todo don't assume namespace-records
  */
-function initializeRecord(specifier: SpecifierRecord, info: TraversalInfo) {
+function initializeRecord(specifier: SpecifierRecord<SpecifierNamespace>, info: TraversalInfo) {
   log.trace('initialize record', { info, specifier })
   // there may be preloaded record entries via the record initializer
   // such entries will be input and thus need to be resolved
@@ -611,7 +602,6 @@ function initializeRecord(specifier: SpecifierRecord, info: TraversalInfo) {
 
   // get what an initialized entry looks like
   // todo don't assume record-namespace
-  // @ts-ignore-error
   let canonicalEntryResult = Lo.chain(specifier.entry.fields)
     .entries()
     .reduce(

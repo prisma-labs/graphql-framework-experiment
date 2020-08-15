@@ -127,7 +127,7 @@ S.create<{ a: R<{z?: number }> }>({ fields: { a: { entry: { z: {} } } }})
 
 // if input field optional THEN initializer required
 S.create<{ a?: R<{z: number }> }>({ fields: { a: { entry: { fields: { z: {} } }, initial: () => ({foo:{z:1}}) } }})
-// @ts-ignore-error
+// @ts-expect-error
 S.create<{ a?: R<{z: number }> }>({ fields: { a: { entry: { z: {} } }}})
 // ... but if entry input fields all optional THEN initializer optional
 S.create<{ a?: R<{z?: number }> }>({ fields: { a: { entry: { fields: { z: {initial: () => 1 } } } } }})
@@ -141,7 +141,7 @@ S.create<{ a?: R<{z?: number }> }>({ fields: { a: { entry: { z: {initial: () => 
 // // todo this also triggers requiring mapEntryData ... developer should be able to choose which they want ... not able to provide both ... either top level or all sub-instances
 // // ... actually looking below, for shadow data fields, local mappers are a really bad fit, not just a style difference
 // s.create<{ a: R<{z: number }> },  { a: R<{ z: boolean }> }>({ spec: { a: { entryFields: { z: { mapType: Boolean } }, } }})
-// @ts-ignore-error
+// @ts-expect-error
 S.create<{ a: R<{z: number }> },  { a: R<{ z: boolean }> }>({ fields: { a: { entry: { z: {} } } }})
 
 // // todo
@@ -181,7 +181,7 @@ S.create<{ a: number | { a: number } }>({ fields: { a: { fields:{ a: {} } } } })
 
 // if an input field type is optional AND 1+ sub input fields are required THEN initial is required 
 S.create<{ a?: { a: number } }>({ fields: { a: { initial: () => ({a:1}),  fields:{ a: {} } } } })
-// @ts-ignore-error
+// @ts-expect-error
 S.create<{ a?: { a: number } }>({ fields: { a: { shorthand: (a) => ({ a }), fields:{ a: {} } } } })
 // ... but if data says field can be undefined too THEN initial is forbidden
 S.create<{ a?: { a: number } }, { a?: { a: number } }>({ fields: { a: { fields:{ a: {} } } } })
