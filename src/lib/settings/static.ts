@@ -3,7 +3,7 @@
  * It contains the rich conditional type system powering the settings library.
  */
 
-import { Primitive } from 'type-fest'
+import { PartialDeep, Primitive } from 'type-fest'
 import {
   ExcludePlainObjectOrInterface,
   ExcludeUndefined,
@@ -13,6 +13,7 @@ import {
   IsSameKeys,
   KeepOptionalKeys,
   KeepRequiredKeys,
+  Lookup,
   OnlyPlainObjectOrInterface,
   PlainObject,
 } from '../utils'
@@ -25,14 +26,12 @@ export type DataDefault<input> = {
     : ExcludeUndefined<input[k]>
 }
 
-type KeysWhereDataRequired<Input, Data> = {
-  // @ts-expect-error
-  [K in keyof Input]: undefined extends Data[K] ? never : K
+export type KeysWhereDataRequiredOrNotInData<Input, Data> = {
+  [K in keyof Input]: K extends keyof Data ? (undefined extends Data[K] ? never : K) : K
 }[keyof Input]
 
-type KeysWhereDataOptional<Input, Data> = {
-  // @ts-expect-error
-  [K in keyof Input]: undefined extends Data[K] ? K : never
+type KeysWhereDataOptionalOrNotInData<Input, Data> = {
+  [K in keyof Input]: K extends keyof Data ? (undefined extends Data[K] ? K : never) : K
 }[keyof Input]
 
 type FilterInOverlappingKeys<T, U> = {
@@ -43,12 +42,13 @@ type OnlyPropsInOther<T, U> = {
   [K in FilterInOverlappingKeys<T, U>]: T[K]
 }
 
-// @ts-ignore-error
-type Node<Input, Data, Key> = IncludesRecord<Input[Key]> extends true // @ts-ignore-error
-  ? RecordSpec<Input[Key], Key, Data> // @ts-ignore-error
-  : IncludesPlainObjectOrInterface<Input[Key]> extends true // @ts-ignore-error
-  ? NamespaceSpec<Input[Key], Key, Data> // @ts-ignore-error
-  : LeafSpec<Input[Key], Key, Data>
+type NO_DATA_MATCH = 'NO_DATA_MATCH'
+
+type Node<Input, Data, Key> = IncludesRecord<Lookup<Input, Key>> extends true
+  ? RecordSpec<Lookup<Input, Key>, Key, Data>
+  : IncludesPlainObjectOrInterface<Lookup<Input, Key>> extends true
+  ? NamespaceSpec<Lookup<Input, Key>, Key, Data>
+  : LeafSpec<Lookup<Input, Key>, Key, Data>
 
 /**
  * todo
@@ -56,46 +56,54 @@ type Node<Input, Data, Key> = IncludesRecord<Input[Key]> extends true // @ts-ign
 // prettier-ignore
 export type Spec<Input, Data> =
   (
-    KeysWhereDataOptional<Input, Data> extends never
+    KeysWhereDataOptionalOrNotInData<Input, Data> extends never
       ? {}
-      : { [Key in KeysWhereDataOptional<Input, Data>]+?: Node<Input,Data,Key> }
+      : { [Key in KeysWhereDataOptionalOrNotInData<Input, Data>]+?: Node<Input,Data,Key> }
   ) &
   (
-    KeysWhereDataRequired<Input, Data> extends never
+    KeysWhereDataRequiredOrNotInData<Input, Data> extends never
       ? {}
-      : { [Key in KeysWhereDataRequired<Input, Data>]-?: Node<Input,Data,Key> }
+      : { [Key in KeysWhereDataRequiredOrNotInData<Input, Data>]-?: Node<Input,Data,Key> }
   )
 
 //prettier-ignore
-export type NamespaceSpec<Namespace, Key, Data> =
+export type NamespaceSpec<Input, Key, Data> =
   {
-    // @ts-ignore
-    fields: Spec<OnlyPlainObjectOrInterface<Namespace>, Data[Key]>
+    fields: Spec<OnlyPlainObjectOrInterface<Input>, Lookup<Data, Key, NO_DATA_MATCH>>
   } &
+  // todo jsdoc 1) when namespace has no matching data key then developer is responsible
+  // todo to map the data tree over _somehow_. Impossible to know how, so return type is
+  // todo any possible data. This logic is arbitrary and not guaranteed to work. You should
+  // todo unit test it!
+  (
+    Lookup<Data, Key> extends never
+      ? { mapData(input:ExcludeShorthand<Input>): PartialDeep<Data> }
+      : {}
+  ) &
   /**
    * If namespace is union with non-pojo type then shorthand required 
    */
   (
-    ExcludeUndefined<ExcludePlainObjectOrInterface<Namespace>> extends never
+    ExcludeUndefined<ExcludePlainObjectOrInterface<Input>> extends never
     ? {}
     : {
-        shorthand: Shorthand<ExcludeUndefined<ExcludePlainObjectOrInterface<Namespace>>, OnlyPlainObjectOrInterface<Namespace>>
+        shorthand: Shorthand<ExcludeUndefined<ExcludePlainObjectOrInterface<Input>>, OnlyPlainObjectOrInterface<Input>>
       }
   ) &
   /**
-   * If namespace is optional AND 1+ sub input fields are required THEN initial is required 
-   *  ... but if undefinable in data too THEN initial is forbidden (since we'll initialize namespace (data) to undefined)
+   * If namespace is optional AND 1+ sub inputs are required THEN initializer required 
+   *  ... if no data match THEN still required
+   *  ... but if data optional THEN initial is forbidden (since we'll initialize namespace (data) to undefined)
    *  ... but if all namespace fields (input) are optional THEN initial is forbidden (b/c we can automate
    *      namespace (data) with namespace (input) field initializers)
    */
   (
-    undefined extends Namespace
-      ? {} extends KeepOptionalKeys<Namespace>
+    undefined extends Input
+      ? {} extends KeepOptionalKeys<Input>
         ? {}
-        // @ts-ignore
-        : Includes<Data[Key], undefined> extends true
+        : Includes<Lookup<Data,Key>, undefined> extends true
           ? {}
-          : { initial(): KeepRequiredKeys<Exclude<Namespace, undefined>> }
+          : { initial(): KeepRequiredKeys<Exclude<Input, undefined>> }
       : {}
   )
 
@@ -105,9 +113,9 @@ export type NamespaceSpec<Namespace, Key, Data> =
 // there are may be some odd cases where iniital is present but can
 // return undefined.
 // prettier-ignore
-export type LeafSpec<Field, Key, Data> =
+export type LeafSpec<Input, Key, Data> =
   {
-    validate?: Validate<ExcludeUndefined<Field>>
+    validate?: Validate<ExcludeUndefined<Input>>
     /**
      * Specify a fixup for this setting.
      *
@@ -119,18 +127,18 @@ export type LeafSpec<Field, Key, Data> =
      * otherwise. The new value should be returned along with a list of one or
      * more messages, one for each thing that was fixed.
      */
-    fixup?: Fixup<ExcludeUndefined<Field>>
+    fixup?: Fixup<ExcludeUndefined<Input>>
   } &
   /**
-   * if input is optional initial is required
-   * ... unless the data is optional too
+   * if input is optional then initial is required
+   * if input is optional and no matching data key then initial is required
+   * if input is optional and matching data key optional then initial is optional
    */
   (
-    undefined extends Field
-      // @ts-ignore
-      ? undefined extends Data[Key]
-        ? { initial?(): Field }
-        : { initial(): ExcludeUndefined<Field> }
+    undefined extends Input
+      ? undefined extends Lookup<Data, Key>
+        ? { initial?(): Input }
+        : { initial(): ExcludeUndefined<Input> }
       : {}
   ) &
   /**
@@ -139,30 +147,32 @@ export type LeafSpec<Field, Key, Data> =
    */
   (
     // do not consider `... | undefined` b/c existence is handled specially
-    Key extends keyof ExcludeUndefined<Data>
-      ?
-        ExcludeUndefined<Field> extends ExcludeUndefined<Data>[Key]
-        ? {}
-        : // if input key type does not match data then mapType is required
-          { mapType: MapType<ExcludeUndefined<Field>, ExcludeUndefined<Data>[Key]> }
-      : // if input key has no match in data then mapData is required
-        { mapData: MapType<ExcludeUndefined<Field>, ExcludeUndefined<Data>> }
+    NO_DATA_MATCH extends Data
+      ? {} 
+      :  Key extends keyof ExcludeUndefined<Data>
+        ?
+          ExcludeUndefined<Input> extends ExcludeUndefined<Data>[Key]
+          ? {}
+          : // if input key type does not match data then mapType is required
+            { mapType: MapType<ExcludeUndefined<Input>, ExcludeUndefined<Data>[Key]> }
+        : // if input key has no match in data then mapData is required
+          { mapData: MapType<ExcludeUndefined<Input>, ExcludeUndefined<Data>> }
   )
 
 /**
  * todo: currently assumes Record<string, object>
  */
 // prettier-ignore
-// @ts-expect-error
-export type RecordSpec<Dict, K, Data, DictEntry = ExcludeUndefined<Dict>[string]> =
+// todo how does no data match affect this?
+export type RecordSpec<Dict, K, Data, DictEntry = Lookup<ExcludeUndefined<Dict>, string>> =
   // | { raw(input: Dict): Data[K] }
   (
     {
       /**
        * Specify the settings input for each entry in the record.
        */
-      // @ts-expect-error
-      entry: Node<OnlyPlainObjectOrInterface<ExcludeUndefined<Dict>>, Data[K], string>
+      // todo how does no data match affect this?
+      entry: Node<OnlyPlainObjectOrInterface<ExcludeUndefined<Dict>>, Lookup<Data,K>, string>
     }
   ) &
   // (
@@ -220,12 +230,12 @@ export type RecordSpec<Dict, K, Data, DictEntry = ExcludeUndefined<Dict>[string]
      * if data has fields that are not present in input THEN mapData is required
      */
     (
-      // @ts-expect-error
-      IsSameKeys<Required<Data[K][string]>, ExcludeShorthand<Required<DictEntry>>> extends true
+      // todo how does no data match affect this?
+      IsSameKeys<Required<Lookup<Lookup<Data,K>,string>>, ExcludeShorthand<Required<DictEntry>>> extends true
       ? {}
       : {
-          // @ts-expect-error
-          mapEntryData(data: OnlyPropsInOther<Data[K][string], ExcludeShorthand<DictEntry>>, key: string): Data[K][string]
+          // todo how does no data match affect this?
+          mapEntryData(data: OnlyPropsInOther<Lookup<Lookup<Data,K>,string>, ExcludeShorthand<DictEntry>>, key: string): Lookup<Lookup<Data,K>,string>
         }
     )
 

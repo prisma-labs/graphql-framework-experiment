@@ -98,6 +98,7 @@
     "prettier": "2.0.5",
     "ts-jest": "26.0.0",
     "tsd": "^0.13.1",
+    "typescript-test-utils": "^1.2.1",
     "which": "^2.0.2"
   },
   "engines": {

@@ -9,9 +9,9 @@ import { JsonObject, PackageJson, Primitive } from 'type-fest'
 
 export * from './either'
 
-export type IsSameKeys<A, B> = keyof A extends keyof B ? (keyof B extends keyof A ? true : false) : false
+export type Lookup<Object, Key, Fallback = never> = Key extends keyof Object ? Object[Key] : Fallback
 
-export type Lookup<O, K> = K extends keyof O ? O[K] : never
+export type IsSameKeys<A, B> = keyof A extends keyof B ? (keyof B extends keyof A ? true : false) : false
 
 export type AnyObject = { [k: string]: any }
 

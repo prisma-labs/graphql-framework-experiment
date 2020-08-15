@@ -1,11 +1,13 @@
 import * as tsd from 'tsd'
+import * as tst from 'typescript-test-utils'
 import * as S from '..'
 import { KeepRequiredKeys } from '../../utils'
+import { KeysWhereDataRequiredOrNotInData } from '../static'
 
 type R<T> = Record<string, T>
 
 /**
- * field
+ * leaf
  */
 
 // if data optional THEN field spec not required
@@ -15,27 +17,32 @@ S.create<{ a?: number}, { a?: number }>({ fields: { a: {} }})
 
 
 /**
- * field initializer
+ * leaf initializer
  */
 
-// if input field optional THEN initializer required and must return the same type as the input field (sans void)
+// if input optional THEN initializer required AND must return the same type as the input field (sans void)
 S.create<{ a?: boolean }, { a: number }>({ fields: { a: { initial: () => true,  mapType: (a) => 1 } } })
 // @ts-expect-error
 S.create<{ a?: boolean }>({ fields: { a: { mapType: (a) => 1 } } })
 // @ts-expect-error
 S.create<{ a?: boolean }, { a: number }>({ fields: { a: { initial: () => 1, mapType: (a) => 1 } } })
 
-// if input field required THEN initializer forbidden
+// if input required THEN initializer forbidden
 S.create<{ a: number }>({ fields: { a: {} } })
 // @ts-expect-error
 S.create<{ a: number }>({ fields: { a: { initial: () => 'adfdsf' } } })
 
-// if data is optional then initializer may return undefined
+// if data is optional then initializer optional AND may return undefined
 S.create<{ a?: number }, { a?:number }>({ fields: { a: {} } })
 // ...but it is still allowed if desired
 S.create<{ a?: number }, { a?:number }>({ fields: { a: { initial: () => 1 } } })
 // ...and if given may also return undefined
 S.create<{ a?: number }, { a?:number }>({ fields: { a: { initial: () => undefined } } })
+
+// if input optional AND no matching data THEN initializer required
+S.create<{ a?:number }, { b:number }>({ fields: { a: { initial: () => 1, mapData: () => ({b:1}) } } })
+// @ts-expect-error
+S.create<{ a?:number }, { b:number }>({ fields: { a: { mapData: () => ({b:1}) } } })
 
 
 /**
@@ -191,6 +198,13 @@ interface A { a?: number }
 S.create<{ a?: A }>({ fields: { a: { fields:{ a: { initial: () => 1 } } } } })
 S.create<{ a?: 1 | A }>({ fields: { a: { shorthand: () => ({a:1}), fields:{ a: { initial: () => 1 } } } } })
 
+// when no data match THEN namespace data mapper required
+S.create<{ a?: { a: number } },{ b: { b?:number }}>({ fields: { a: { mapData: (input) => ({}), initial: () => ({a:1}), fields:{ a: {} } } } })
+// @ts-expect-error
+S.create<{ a?: { a: number } },{ b: { b?:number }}>({ fields: { a: { initial: () => ({a:1}), fields:{ a: {} } } } })
+// @ts-expect-error
+S.create<{ a?: { a: number } },{ b: { b?:number }}>({ fields: { a: { mapData: (input) => ({}), fields:{ a: {} } } } })
+
 /**
  * DataDefault
  */
@@ -199,18 +213,26 @@ const dataDefualt1: S.DataDefault<{}> = {}
 const dataDefualt2: S.DataDefault<{ a: 1 }>               = { a: 1 }
 const dataDefualt3: S.DataDefault<{ a: { a: 1 } }>        = { a: { a: 1 } }
 const dataDefualt4: S.DataDefault<{ a: 1 | { a: 1 } }>    = { a: { a: 1 } }
-tsd.expectType<{a: { a: number }}>({} as S.DataDefault<{ a: 1 | A }>)
+tst.assertTrue<tst.Equals<{a: { a: number }}, S.DataDefault<{ a: 1 | A }>>>()
 
 // optionality
 const dataDefualt1b: S.DataDefault<{ a?: 1 }>             = { a: 1 }
 // @ts-expect-error
 const dataDefualt1c: S.DataDefault<{ a?: 1 }>             = { a: undefined }
 
+type a = string extends keyof never ? 1:2
+
 /**
  * helpers
  */
 
 // KeepRequiredKeys
-tsd.expectType<{a: 1}>({} as KeepRequiredKeys<{ a: 1; b?: 2 }>)
-// @ts-expect-error
-tsd.expectError<{a: 1}>({b:2} as KeepRequiredKeys<{ a: 1; b?: 2 }>)
+tst.assertTrue<tst.Equals<{},     KeepRequiredKeys<{ a?: 1; b?: 2 }>>>()
+tst.assertTrue<tst.Equals<{a: 1}, KeepRequiredKeys<{ a: 1; b?: 2 }>>>()
+
+tst.assertTrue<tst.Equals<never,    KeysWhereDataRequiredOrNotInData<{a:1}, {a?:1}>>>()
+tst.assertTrue<tst.Equals<'a',      KeysWhereDataRequiredOrNotInData<{a:1}, {b:1}>>>()
+tst.assertTrue<tst.Equals<'a',      KeysWhereDataRequiredOrNotInData<{a:1}, {a:1}>>>()
+tst.assertTrue<tst.Equals<'a'|'b',  KeysWhereDataRequiredOrNotInData<{a:1,b:1}, {a:1,b:1}>>>()
+tst.assertTrue<tst.Equals<'a',      KeysWhereDataRequiredOrNotInData<{a:1}, {a:1,b:1}>>>()
+tst.assertTrue<tst.Equals<'a'|'b',  KeysWhereDataRequiredOrNotInData<{a:1,b:1}, {a:1}>>>()
