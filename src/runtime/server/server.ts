@@ -11,7 +11,7 @@ import { ContextAdder } from '../schema'
 import { assembledGuard } from '../utils'
 import { ApolloServerExpress } from './apollo-server'
 import { errorFormatter } from './error-formatter'
-import { createRequestHandlerGraphQL } from './handler-graphql'
+import { createRequestHandlerGraphQL, ExecutionHandler, createExecutionHandler } from './handler-graphql'
 import { log } from './logger'
 import { createServerSettingsManager } from './settings'
 
@@ -39,6 +39,7 @@ export interface Server {
   express: Express
   handlers: {
     graphql: NexusRequestHandler
+    execute: ExecutionHandler
   }
 }
 
@@ -87,6 +88,14 @@ export function create(appState: AppState) {
             )
           }) ?? noop
         )
+      },
+      get execute() {
+        return createExecutionHandler(appState.assembled!.schema, appState.assembled!.createContext, {
+          path: settings.data.path,
+          introspection: settings.data.graphql.introspection,
+          playground: settings.data.playground.enabled ? settings.data.playground : false,
+          errorFormatterFn: errorFormatter,
+        })
       },
     },
   }
