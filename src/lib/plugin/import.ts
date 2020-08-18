@@ -1,121 +1,58 @@
 import { stripIndent } from 'common-tags'
-import * as fs from 'fs-jetpack'
-import * as Path from 'path'
-import { PackageJson } from 'type-fest'
-import { RuntimePlugin, TesttimePlugin, WorktimePlugin } from '.'
-import { findProjectDir } from '../layout/layout'
-import { rootLogger } from '../nexus-logger'
 import { fatal } from '../process'
-import { requireModule } from '../utils'
-
-const log = rootLogger.child('plugin-manager')
-
-export interface Plugin {
-  name: string
-  worktime?: WorktimePlugin
-  runtime?: RuntimePlugin
-  testtime?: TesttimePlugin
-}
+import { Dimension, DimensionToPlugin, Manifest } from './types'
 
 /**
- *
+ * Import the dimension of a plugin.
  */
-export async function getInstalledRuntimePluginNames(): Promise<string[]> {
-  const packageJson = await readUsersPackageJson()
-  const pluginDepNames = extractPluginNames(packageJson)
-  const runtimePluginDepNames = pluginDepNames.filter(depName => {
-    return (
-      null !==
-      requireModule({ depName: depName + '/dist/runtime', optional: true })
-    )
-  })
-  const runtimePluginNames = runtimePluginDepNames.map(x => parsePluginName(x)!)
-  return runtimePluginNames
-}
-
-/**
- * Load all nexus plugins installed into the project
- */
-export async function importAllPlugins(): Promise<Plugin[]> {
-  const packageJson = await readUsersPackageJson()
-  const plugins = doImportAllPlugins(packageJson)
-  return plugins
-}
-
-/**
- * Logic shared between sync/async variants.
- */
-function doImportAllPlugins(packageJson: null | PackageJson): Plugin[] {
-  const pluginDepNames = extractPluginNames(packageJson)
-
-  if (!packageJson) {
-    log.trace(
-      'We could not find any package.json file. No plugin will be loaded.'
-    )
-  } else {
-    log.trace('Extracting plugins from package.json', {
-      content: packageJson,
-      pluginDepNames: pluginDepNames,
+export function importPluginDimension<D extends Dimension>(
+  dimension: D,
+  manifest: Manifest
+): DimensionToPlugin<D> {
+  // Should be guaranteed by importPluginDimensions
+  if (!manifest[dimension]) {
+    fatal(`We could not find the ${dimension} dimension of the Nexus plugin "${manifest.name}"`, {
+      plugin: manifest,
     })
   }
 
-  const plugins = pluginDepNames.map(depName => {
-    const pluginName = parsePluginName(depName)! // guaranteed by extract above
-    let plugin: Plugin = {
-      name: pluginName,
-    }
-    try {
-      //prettier-ignore
-      plugin.testtime = (requireModule({ depName: depName + '/dist/testtime', optional: true }) as any)?.plugin
-      //prettier-ignore
-      plugin.worktime = (requireModule({ depName: depName + '/dist/worktime', optional: true }) as any)?.plugin
-      //prettier-ignore
-      plugin.runtime = (requireModule({ depName: depName + '/dist/runtime', optional: true }) as any)?.plugin
-    } catch (error) {
-      fatal(
-        stripIndent`
-          An error occured while importing the Nexus plugin "${pluginName}":
+  const dimensionEntrypoint = manifest[dimension]!
 
-          ${error}
-        `
+  try {
+    const dimensionModule = require(dimensionEntrypoint.module)
+
+    if (!dimensionModule[dimensionEntrypoint.export]) {
+      fatal(
+        `Nexus plugin "${manifest.name}" has no export \`${dimensionEntrypoint.export}\` in ${dimensionEntrypoint.module}`,
+        { plugin: manifest }
       )
     }
 
-    return plugin
-  })
+    const plugin = dimensionModule[dimensionEntrypoint.export]
 
-  return plugins
-}
+    if (typeof plugin !== 'function') {
+      fatal(`Nexus plugin "${manifest.name}" does not export a valid ${dimension} plugin`, {
+        plugin: manifest,
+      })
+    }
 
-/**
- * Parse a nexus plugin package name to just the plugin name.
- */
-export function parsePluginName(packageName: string): null | string {
-  const matchResult = packageName.match(/^nexus-plugin-(.+)/)
+    const innerPlugin = plugin(manifest.settings)
 
-  if (matchResult === null) return null
+    if (typeof innerPlugin !== 'function') {
+      fatal(`Nexus plugin "${manifest.name}" does not export a valid ${dimension} plugin`, {
+        plugin: manifest,
+      })
+    }
 
-  const pluginName = matchResult[1]
+    return innerPlugin
+  } catch (error) {
+    fatal(
+      stripIndent`
+        An error occured while loading the Nexus plugin "${manifest.name}":
 
-  return pluginName
-}
-
-/**
- *
- */
-async function readUsersPackageJson(): Promise<null | PackageJson> {
-  const packageJsonPath = Path.join(findProjectDir(), 'package.json')
-  return (await fs.readAsync(packageJsonPath, 'json')) ?? null
-}
-
-/**
- *
- */
-function extractPluginNames(packageJson: null | PackageJson): string[] {
-  const deps = packageJson?.dependencies ?? {}
-  const depNames = Object.keys(deps)
-  const pluginDepNames = depNames.filter(depName =>
-    depName.match(/^nexus-plugin-.+/)
-  )
-  return pluginDepNames
+        ${error}
+      `,
+      { plugin: manifest }
+    )
+  }
 }

@@ -1,147 +1,93 @@
-// Borrowed from `graphql-request`
+import { Headers as FetchHeaders } from 'cross-fetch'
+import * as GQLR from 'graphql-request'
+import { Param3 } from '../utils'
 
-import fetch, { Headers, Response } from 'node-fetch'
-import {
-  ClientError,
-  GraphQLError,
-  Headers as HttpHeaders,
-  Options,
-  Variables,
-} from './types'
+type Variables = Omit<Param3<typeof GQLR.request>, 'undefined'>
 
-export { ClientError } from './types'
+type FetchHeaders = typeof FetchHeaders['prototype']
 
 export class GraphQLClient {
-  private url: string
-  private options: Options
+  private fetchHeaders: FetchHeaders
+  public headers: Headers
 
-  constructor(url: string, options?: Options) {
-    this.url = url
-    this.options = options || {}
+  constructor(private url: string) {
+    this.fetchHeaders = new FetchHeaders()
+    this.headers = new Headers(this.fetchHeaders)
   }
 
-  async rawRequest<T extends any>(
-    query: string,
-    variables?: Variables
-  ): Promise<{
-    data?: T
-    extensions?: any
-    headers: Headers
-    status: number
-    errors?: GraphQLError[]
-  }> {
-    const { headers, ...others } = this.options
-
-    const body = JSON.stringify({
-      query,
-      variables: variables ? variables : undefined,
-    })
-
-    const response = await fetch(this.url, {
-      method: 'POST',
-      headers: Object.assign({ 'Content-Type': 'application/json' }, headers),
-      body,
-      ...others,
-    })
-
-    const result = await getResult(response)
-
-    if (response.ok && !result.errors && result.data) {
-      const { headers, status } = response
-      return { ...result, headers, status }
-    } else {
-      const errorResult =
-        typeof result === 'string' ? { error: result } : result
-      throw new ClientError(
-        { ...errorResult, status: response.status, headers: response.headers },
-        { query, variables }
-      )
-    }
-  }
-
-  async request<T extends any>(
-    query: string,
-    variables?: Variables
-  ): Promise<T> {
-    const { headers, ...others } = this.options
-
-    const body = JSON.stringify({
-      query,
-      variables: variables ? variables : undefined,
-    })
-
-    const response = await fetch(this.url, {
-      method: 'POST',
-      headers: Object.assign({ 'Content-Type': 'application/json' }, headers),
-      body,
-      ...others,
-    })
-
-    const result = await getResult(response)
-
-    if (response.ok && !result.errors && result.data) {
-      return result.data
-    } else {
-      const errorResult =
-        typeof result === 'string' ? { error: result } : result
-      throw new ClientError(
-        { ...errorResult, status: response.status },
-        { query, variables }
-      )
-    }
-  }
-
-  setHeaders(headers: HttpHeaders): GraphQLClient {
-    this.options.headers = headers
-
-    return this
-  }
-
-  setHeader(key: string, value: string): GraphQLClient {
-    const { headers } = this.options
-
-    if (headers) {
-      headers[key] = value
-    } else {
-      this.options.headers = { [key]: value }
-    }
-    return this
+  send(queryString: string, variables?: Variables) {
+    let headers = fetchHeadersToObject(this.fetchHeaders)
+    const url = this.url
+    const client = new GQLR.GraphQLClient(url, { headers })
+    return client.request(queryString, variables)
   }
 }
 
-export async function rawRequest<T extends any>(
-  url: string,
-  query: string,
-  variables?: Variables
-): Promise<{
-  data?: T
-  extensions?: any
-  headers: Headers
-  status: number
-  errors?: GraphQLError[]
-}> {
-  const client = new GraphQLClient(url)
+/**
+ * Create a GraphQL Client instance
+ */
+export class Headers {
+  constructor(private fetchHeaders: FetchHeaders) {}
 
-  return client.rawRequest<T>(query, variables)
-}
+  set(headers: Record<string, string>): void
+  set(name: string, value: string): void
+  set(header: [string, string]): void
+  set(...args: unknown[]) {
+    let input: Record<string, string>
+    if (Array.isArray(args[0])) {
+      input = { [args[0][0]]: args[0][1] }
+    } else if (typeof args[0] === 'string' && typeof args[1] === 'string') {
+      input = { [args[0]]: args[1] }
+    } else if (typeof args[0] === 'object' && args[0] !== null) {
+      input = args[0] as any
+    } else throw new TypeError(`invalid input: ${args}`)
 
-export async function request<T extends any>(
-  url: string,
-  query: string,
-  variables?: Variables
-): Promise<T> {
-  const client = new GraphQLClient(url)
+    Object.entries(input).forEach(([k, v]) => {
+      this.fetchHeaders.set(k, v)
+    })
 
-  return client.request<T>(query, variables)
-}
-
-export default request
-
-async function getResult(response: Response): Promise<any> {
-  const contentType = response.headers.get('Content-Type')
-  if (contentType && contentType.startsWith('application/json')) {
-    return response.json()
-  } else {
-    return response.text()
+    return undefined
   }
+  add(headers: Record<string, string>): void
+  add(name: string, value: string): void
+  add(header: [string, string]): void
+  add(...args: any[]) {
+    let input: Record<string, string>
+    if (Array.isArray(args[0])) {
+      input = { [args[0][0]]: args[0][1] }
+    } else if (typeof args[0] === 'string' && typeof args[1] === 'string') {
+      input = { [args[0]]: args[1] }
+    } else if (typeof args[0] === 'object') {
+      input = args[0]
+    } else throw new TypeError(`invalid input: ${args}`)
+
+    Object.entries(input).forEach(([name, value]) => {
+      this.fetchHeaders.append(name, value)
+    })
+
+    return undefined
+  }
+  del(name: string) {
+    return this.fetchHeaders.delete(name)
+  }
+  get(name: string) {
+    return this.fetchHeaders.get(name)
+  }
+  has(name: string) {
+    return this.fetchHeaders.has(name)
+  }
+  entries() {
+    return this.fetchHeaders.entries()
+  }
+}
+
+/**
+ * Convert fetch headers to plain object.
+ */
+function fetchHeadersToObject(headers: globalThis.Headers): Record<string, string> {
+  let obj: Record<string, string> = {}
+  for (const [name, value] of headers.entries()) {
+    obj[name] = value
+  }
+  return obj
 }

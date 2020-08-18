@@ -70,7 +70,3 @@ export type ConcreteCommand = {
   type: 'concrete_command'
   value: Command
 }
-
-export type Index<T> = {
-  [key: string]: T
-}

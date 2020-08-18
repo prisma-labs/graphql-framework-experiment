@@ -1,24 +1,21 @@
 import chalk from 'chalk'
 import { stripIndent } from 'common-tags'
 import * as fs from 'fs-jetpack'
-import * as path from 'path'
-import { PackageJson } from 'type-fest'
-import { DEFAULT_BUILD_FOLDER_NAME, Layout } from '../../lib/layout'
-import { START_MODULE_NAME } from '../../runtime/start'
+import * as Path from 'path'
+import { DEFAULT_BUILD_DIR_PATH_RELATIVE_TO_PROJECT_ROOT, Layout } from '../../lib/layout'
+import { findFileRecurisvelyUpwardSync } from '../fs'
 import { rootLogger } from '../nexus-logger'
 import { fatal } from '../process'
-import { findConfigFile } from '../tsc'
+import { prettyImportPath } from '../utils'
 
-const log = rootLogger.child(__filename)
+const log = rootLogger.child('build')
 
 /**
  * If you add a new deploy target, please start by adding a new item to the `SUPPORTED_DEPLOY_TARGETS`
  */
-const SUPPORTED_DEPLOY_TARGETS = ['now', 'heroku'] as const
+const SUPPORTED_DEPLOY_TARGETS = ['vercel', 'heroku'] as const
 
-export const formattedSupportedDeployTargets = SUPPORTED_DEPLOY_TARGETS.map(
-  t => `"${t}"`
-).join(', ')
+export const formattedSupportedDeployTargets = SUPPORTED_DEPLOY_TARGETS.map((t) => `"${t}"`).join(', ')
 
 type SupportedTargets = typeof SUPPORTED_DEPLOY_TARGETS[number]
 
@@ -26,9 +23,7 @@ type SupportedTargets = typeof SUPPORTED_DEPLOY_TARGETS[number]
  * Take user input of a deploy target, validate it, and parse it into a
  * normalized form.
  */
-export function normalizeTarget(
-  inputDeployTarget: string | undefined
-): SupportedTargets | null {
+export function normalizeTarget(inputDeployTarget: string | undefined): SupportedTargets | null {
   if (!inputDeployTarget) {
     return null
   }
@@ -45,8 +40,8 @@ export function normalizeTarget(
 }
 
 const TARGET_TO_BUILD_OUTPUT: Record<SupportedTargets, string> = {
-  now: 'dist',
-  heroku: DEFAULT_BUILD_FOLDER_NAME,
+  vercel: 'dist',
+  heroku: DEFAULT_BUILD_DIR_PATH_RELATIVE_TO_PROJECT_ROOT,
 }
 
 export function computeBuildOutputFromTarget(target: SupportedTargets | null) {
@@ -58,23 +53,17 @@ export function computeBuildOutputFromTarget(target: SupportedTargets | null) {
 }
 
 type ValidatorResult = { valid: boolean }
-const TARGET_VALIDATORS: Record<
-  SupportedTargets,
-  (layout: Layout) => ValidatorResult
-> = {
-  now: validateNow,
+const TARGET_VALIDATORS: Record<SupportedTargets, (layout: Layout) => ValidatorResult> = {
+  vercel: validateVercel,
   heroku: validateHeroku,
 }
 
-export function validateTarget(
-  target: SupportedTargets,
-  layout: Layout
-): ValidatorResult {
+export function validateTarget(target: SupportedTargets, layout: Layout): ValidatorResult {
   const validator = TARGET_VALIDATORS[target]
   return validator(layout)
 }
 
-interface NowJson {
+interface VercelJson {
   version: 1 | 2
   name: string
   builds?: Array<{ src: string; use: string }>
@@ -82,78 +71,68 @@ interface NowJson {
 }
 
 /**
- * Validate the user's now configuration file.
+ * Validate the user's vercel configuration file.
  */
-function validateNow(layout: Layout): ValidatorResult {
-  const maybeNowJsonPath = findConfigFile('now.json', { required: false })
-  const startModulePath = `${layout.buildOutputRelative}/${START_MODULE_NAME}.js`
+function validateVercel(layout: Layout): ValidatorResult {
+  const maybeVercelJson = findFileRecurisvelyUpwardSync('vercel.json', { cwd: layout.projectRoot })
   let isValid = true
 
-  // Make sure there's a now.json file
-  if (!maybeNowJsonPath) {
-    log.trace('creating now.json because none exists yet')
-    const packageJson = fs.read('package.json', 'json')
-    const projectName = packageJson?.name ?? 'now_rename_me'
+  // Make sure there's a vercel.json file
+  if (!maybeVercelJson) {
+    log.trace('creating vercel.json because none exists yet')
+    // todo unused, what was it for?
+    const projectName = layout.packageJson?.content.name ?? 'now_rename_me'
 
-    const nowJsonContent = stripIndent`
+    const vercelJsonContent = stripIndent`
       {
         "version": 2,
-        "name": "${projectName}",
         "builds": [
           {
-            "src": "${startModulePath}",
-            "use": "@now/node-server"
+            "src": "${layout.build.startModule}",
+            "use": "@now/node"
           }
         ],
-        "routes": [{ "src": "/.*", "dest": "${startModulePath}" }]
+        "routes": [{ "src": "/.*", "dest": "${layout.build.startModule}" }]
       }
     `
-    const nowJsonPath = path.join(layout.projectRoot, 'now.json')
-    fs.write(nowJsonPath, nowJsonContent)
-    log.warn(
-      `No \`now.json\` file were found. We scaffolded one for you in ${nowJsonPath}`
-    )
+    const vercelJsonPath = Path.join(layout.projectRoot, 'vercel.json')
+    fs.write(vercelJsonPath, vercelJsonContent)
+    log.warn(`No \`vercel.json\` file were found. We scaffolded one for you in ${vercelJsonPath}`)
   } else {
-    const nowJson: NowJson = fs.read(maybeNowJsonPath, 'json')
+    const vercelJson: VercelJson = fs.read(maybeVercelJson.path, 'json')
 
-    // Make sure the now.json file has the right `builds` values
+    // Make sure the vercel.json file has the right `builds` values
     if (
-      !nowJson.builds ||
-      !nowJson.builds.find(
-        build =>
-          build.src === startModulePath && build.use === '@now/node-server'
+      !vercelJson.builds ||
+      !vercelJson.builds.find(
+        (build) =>
+          Path.join(maybeVercelJson.dir, build.src) === layout.build.startModule && build.use === '@now/node'
       )
     ) {
-      log.error(`We could not find a proper builder in your \`now.json\` file`)
-      log.error(`Found: "builds": ${JSON.stringify(nowJson.builds)}`)
-      log.error(
-        `Expected: "builds": [{ src: "${startModulePath}", use: '@now/node-server' }, ...]`
-      )
+      log.error(`We could not find a proper builder in your \`vercel.json\` file`)
+      log.error(`Found: "builds": ${JSON.stringify(vercelJson.builds)}`)
+      log.error(`Expected: "builds": [{ src: "${layout.build.startModule}", use: '@now/node' }, ...]`)
       console.log('\n')
       isValid = false
     }
 
-    // Make sure the now.json file has a `routes` property
-    if (!nowJson.routes) {
-      log.error(
-        `We could not find a \`routes\` property in your \`now.json\` file.`
-      )
-      log.error(
-        `Expected: "routes": [{ "src": "/.*", "dest": "${startModulePath}" }]`
-      )
+    // Make sure the vercel.json file has a `routes` property
+    if (!vercelJson.routes) {
+      log.error(`We could not find a \`routes\` property in your \`vercel.json\` file.`)
+      log.error(`Expected: "routes": [{ "src": "/.*", "dest": "${layout.build.startModule}" }]`)
       console.log('\n')
       isValid = false
     }
 
-    // Make sure the now.json file has the right `routes` values
-    if (!nowJson.routes?.find(route => route.dest === startModulePath)) {
-      log.error(
-        `We could not find a route property that redirects to your api in your \`now.json\` file.`
+    // Make sure the vercel.json file has the right `routes` values
+    if (
+      !vercelJson.routes?.find(
+        (route) => Path.join(maybeVercelJson.dir, route.dest) === layout.build.startModule
       )
-      log.error(`Found: "routes": ${JSON.stringify(nowJson.routes)}`)
-      log.error(
-        `Expected: "routes": [{ src: '/.*', dest: "${startModulePath}" }, ...]`
-      )
+    ) {
+      log.error(`We could not find a route property that redirects to your api in your \`vercel.json\` file.`)
+      log.error(`Found: "routes": ${JSON.stringify(vercelJson.routes)}`)
+      log.error(`Expected: "routes": [{ src: '/.*', dest: "${layout.build.startModule}" }, ...]`)
       console.log('\n')
       isValid = false
     }
@@ -164,20 +143,17 @@ function validateNow(layout: Layout): ValidatorResult {
 
 function validateHeroku(layout: Layout): ValidatorResult {
   const nodeMajorVersion = Number(process.versions.node.split('.')[0])
-  const packageJsonPath = findConfigFile('package.json', { required: false })
   let isValid = true
 
   // Make sure there's a package.json file
-  if (!packageJsonPath) {
+  if (!layout.packageJson) {
     log.error('We could not find a `package.json` file.')
     console.log()
     isValid = false
   } else {
-    const packageJsonContent = fs.read(packageJsonPath, 'json') as PackageJson
-
     // Make sure there's an engine: { node: <version> } property set
     // TODO: scaffold the `engines` property automatically
-    if (!packageJsonContent.engines?.node) {
+    if (!layout.packageJson.content.engines?.node) {
       log.error('An `engines` property is needed in your `package.json` file.')
       log.error(
         `Please add the following to your \`package.json\` file: "engines": { "node": "${nodeMajorVersion}.x" }`
@@ -186,24 +162,22 @@ function validateHeroku(layout: Layout): ValidatorResult {
       isValid = false
     }
 
+    const pcfg = layout.packageJson.content
+
     // Warn if version used by heroku is different than local one
-    if (packageJsonContent.engines?.node) {
-      const packageJsonNodeVersion = Number(
-        packageJsonContent.engines.node.split('.')[0]
-      )
+    if (pcfg.engines?.node) {
+      const packageJsonNodeVersion = Number(pcfg.engines.node.split('.')[0])
       if (packageJsonNodeVersion !== nodeMajorVersion) {
         log.warn(
           `Your local node version is different than the one that will be used by heroku (defined in your \`package.json\` file in the "engines" property).`
         )
-        log.warn(
-          `Local version: ${nodeMajorVersion}. Heroku version: ${packageJsonNodeVersion}`
-        )
+        log.warn(`Local version: ${nodeMajorVersion}. Heroku version: ${packageJsonNodeVersion}`)
         console.log()
       }
     }
 
     // Make sure there's a build script
-    if (!packageJsonContent.scripts?.build) {
+    if (!pcfg.scripts?.build) {
       log.error('A `build` script is needed in your `package.json` file.')
       log.error(
         `Please add the following to your \`package.json\` file: "scripts": { "build": "nexus build -d heroku" }`
@@ -213,10 +187,7 @@ function validateHeroku(layout: Layout): ValidatorResult {
     }
 
     // Make sure the build script is using nexus build
-    if (
-      packageJsonContent.scripts?.build &&
-      !packageJsonContent.scripts.build.includes('nexus build')
-    ) {
+    if (pcfg.scripts?.build && !pcfg.scripts.build.includes('nexus build')) {
       log.error(
         'Please make sure your `build` script in your `package.json` file runs the command `nexus build -d heroku`'
       )
@@ -224,26 +195,24 @@ function validateHeroku(layout: Layout): ValidatorResult {
       isValid = false
     }
 
+    const startModuleRelative = prettyImportPath(layout.projectRelative(layout.build.startModule))
+
     // Make sure there's a start script
-    if (!packageJsonContent.scripts?.start) {
+    if (!pcfg.scripts?.start) {
       log.error(
-        `Please add the following to your \`package.json\` file: "scripts": { "start": "node ${layout.buildOutputRelative}" }`
+        `Please add the following to your \`package.json\` file: "scripts": { "start": "node ${startModuleRelative}" }`
       )
       console.log()
       isValid = false
     }
 
     // Make sure the start script starts the built server
-    if (
-      !packageJsonContent.scripts?.start?.includes(
-        `node ${layout.buildOutputRelative}`
-      )
-    ) {
-      log.error(
-        `Please make sure your \`start\` script points to your built server`
-      )
-      log.error(`Found: "${packageJsonContent.scripts?.start}"`)
-      log.error(`Expected: "node ${layout.buildOutputRelative}"`)
+    const startPattern = new RegExp(`^.*node +${startModuleRelative.replace('.', '\\.')}(?: +.*)?$`)
+    if (!pcfg.scripts?.start?.match(startPattern)) {
+      log.error(`Please make sure your ${chalk.bold(`\`start\``)} script points to your built server`)
+      log.error(`Found: ${chalk.red(pcfg.scripts?.start ?? '<empty>')}`)
+      log.error(`Expected a pattern conforming to ${chalk.yellow(startPattern)}`)
+      log.error(`For example: ${chalk.green(`node ${startModuleRelative}`)}`)
       console.log()
       isValid = false
     }
@@ -253,7 +222,7 @@ function validateHeroku(layout: Layout): ValidatorResult {
 }
 
 const TARGET_TO_POST_BUILD_MESSAGE: Record<SupportedTargets, string> = {
-  now: `Please run \`now\` to deploy your nexus server. Your endpoint will be available at http://<id>.now.sh/graphql`,
+  vercel: `Please run \`vercel\` or \`vc\` to deploy your nexus server. Your endpoint will be available at http://<id>.now.sh/graphql`,
   heroku: `\
 Please run the following commands to deploy to heroku:
 

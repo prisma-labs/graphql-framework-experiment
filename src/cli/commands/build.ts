@@ -1,5 +1,5 @@
 import { stripIndent } from 'common-tags'
-import { buildNexusApp } from '../../lib/build/build'
+import { buildNexusApp } from '../../lib/build'
 import { formattedSupportedDeployTargets } from '../../lib/build/deploy-target'
 import { arg, Command, isError } from '../../lib/cli'
 import { rootLogger } from '../../lib/nexus-logger'
@@ -12,6 +12,9 @@ const BUILD_ARGS = {
   '--deployment': String,
   '-d': '--deployment',
   '--stage': String,
+  '--entrypoint': String,
+  '-e': '--entrypoint',
+  '--no-bundle': Boolean,
   '--help': Boolean,
   '-h': '--help',
 }
@@ -33,6 +36,8 @@ export class Build implements Command {
       target: args['--deployment'],
       output: args['--output'],
       stage: args['--stage'],
+      entrypoint: args['--entrypoint'],
+      asBundle: args['--no-bundle'] !== true,
     })
   }
 
@@ -44,7 +49,9 @@ export class Build implements Command {
 
       Flags:
         -o,     --output    Relative path to output directory
+        -e, --entrypoint    Custom entrypoint to your app (default: app.ts)
         -d, --deployment    Enable custom build for some deployment platforms (${formattedSupportedDeployTargets})
+             --no-bundle    Do not output build as a bundle
         -h,       --help    Show this help message
     `
   }

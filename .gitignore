@@ -53,7 +53,20 @@ yarn-error.log*
 
 .DS_Store
 .vscode
-dist
-tsconfig.tsbuildinfo
+dist*
+*.tsbuildinfo
 
 .now
+
+# module facades
+/testing.d.ts
+/testing.js
+/plugin.d.ts
+/plugin.js
+/components
+typescript-language-service
+
+# website
+website/.cache
+
+.vercel

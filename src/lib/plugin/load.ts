@@ -1,134 +1,123 @@
 import { stripIndent } from 'common-tags'
-import prompts from 'prompts'
-import * as Layout from '../../lib/layout'
-import { shouldGenerateArtifacts } from '../../runtime/schema/config'
+import { Either, left, right } from 'fp-ts/lib/Either'
+import * as Lo from 'lodash'
+import * as Layout from '../layout'
 import { rootLogger } from '../nexus-logger'
-import { fatal, run, runSync } from '../process'
-import { importAllPlugins, Plugin } from './import'
-import {
-  Lens,
-  RuntimeLens,
-  RuntimePlugin,
-  TesttimeContributions,
-  WorktimeHooks,
-  WorktimeLens,
-} from './index'
-
-type Dimension = 'worktime' | 'runtime' | 'testtime'
+import * as Scalars from '../scalars'
+import { partition } from '../utils'
+import { importPluginDimension } from './import'
+import { createBaseLens, createRuntimeLens, createWorktimeLens } from './lens'
+import { getPluginManifests, showManifestErrorsAndExit } from './manifest'
+import { Plugin, TesttimeContributions } from './types'
 
 const log = rootLogger.child('plugin')
 
-function createBaseLens(pluginName: string): Lens {
-  return {
-    log: log.child(pluginName),
-    run: run,
-    runSync: runSync,
-    prompt: prompts,
-  }
+/**
+ * Fully import and load the runtime plugins, if any, amongst the given plugins.
+ */
+export function importAndLoadRuntimePlugins(plugins: Plugin[], scalars: Scalars.Scalars) {
+  const validPlugins = filterValidPlugins(plugins)
+
+  const gotManifests = getPluginManifests(validPlugins)
+  if (gotManifests.errors) showManifestErrorsAndExit(gotManifests.errors)
+
+  return gotManifests.data
+    .filter((m) => m.runtime)
+    .map((m) => {
+      return {
+        run: importPluginDimension('runtime', m),
+        manifest: m,
+      }
+    })
+    .map((plugin) => {
+      log.trace('loading runtime plugin', { name: plugin.manifest.name })
+      return plugin.run(createRuntimeLens(plugin.manifest.name, scalars))
+    })
 }
 
 /**
- * Load all workflow plugins that are installed into the project.
+ * Fully import and load the worktime plugins, if any, amongst the given plugins.
  */
-export async function loadInstalledWorktimePlugins(
-  layout: Layout.Layout
-): Promise<{ name: string; hooks: WorktimeHooks }[]> {
-  const plugins = await importAllPlugins()
-  const worktimePlugins = plugins.filter(plugin => plugin.worktime)
-  const contributions = worktimePlugins.map(plugin => {
-    return loadWorktimePlugin(layout, plugin)
-  })
+export function importAndLoadWorktimePlugins(plugins: Plugin[], layout: Layout.Layout) {
+  const validPlugins = filterValidPlugins(plugins)
 
-  return contributions
-}
+  const gotManifests = getPluginManifests(validPlugins)
+  if (gotManifests.errors) showManifestErrorsAndExit(gotManifests.errors)
 
-//prettier-ignore
-export async function loadInstalledTesttimePlugins(): Promise<TesttimeContributions[]> {
-  const plugins = await importAllPlugins()
-  return plugins.filter(plugin => plugin.testtime).map(loadTesttimePlugin)
-}
+  return gotManifests.data
+    .filter((m) => m.worktime)
+    .map((m) => {
+      return {
+        run: importPluginDimension('worktime', m),
+        manifest: m,
+      }
+    })
+    .map((plugin) => {
+      log.trace('loading worktime plugin', { name: plugin.manifest.name })
+      const lens = createWorktimeLens(layout, plugin.manifest.name)
 
-function createWorktimeLens(
-  layout: Layout.Layout,
-  pluginName: string
-): WorktimeLens {
-  return {
-    ...createBaseLens(pluginName),
-    layout: layout,
-    packageManager: layout.packageManager,
-    hooks: {
-      create: {},
-      dev: {
-        addToWatcherSettings: {},
-      },
-      build: {},
-      generate: {},
-    },
-  }
+      plugin.run(lens)
+
+      return {
+        name: plugin.manifest.name,
+        // plugin will have hooked onto hooks via mutation now, and framework
+        // will call those hooks
+        hooks: lens.hooks,
+      }
+    })
 }
 
 /**
- * Try to load a worktime plugin
+ * Fully import and load the testtime plugins, if any, amongst the given plugins.
  */
-export function loadWorktimePlugin(layout: Layout.Layout, plugin: Plugin) {
-  const lens = createWorktimeLens(layout, plugin.name)
+export function importAndLoadTesttimePlugins(plugins: Plugin[]): Array<Either<Error, TesttimeContributions>> {
+  const validPlugins = filterValidPlugins(plugins)
 
-  loadPlugin('worktime', plugin, lens)
+  const gotManifests = getPluginManifests(validPlugins)
+  if (gotManifests.errors) showManifestErrorsAndExit(gotManifests.errors)
 
-  return {
-    name: plugin.name,
-    // plugin will have hooked onto hooks now, and framework will call those hooks
-    hooks: lens.hooks,
-  }
+  return gotManifests.data
+    .filter((m) => m.testtime)
+    .map((m) => {
+      return {
+        run: importPluginDimension('testtime', m),
+        manifest: m,
+      }
+    })
+    .map((plugin) => {
+      log.trace('loading testtime plugin', { name: plugin.manifest.name })
+      const contribution = plugin.run(createBaseLens(plugin.manifest.name))
+
+      if (!Lo.isPlainObject(contribution)) {
+        return left(
+          new Error(stripIndent`Ignoring the testtime contribution from the Nexus plugin \`${plugin.manifest.name}\` because its contribution is not an object.
+        This is likely to cause an error in your tests. Please reach out to the author of the plugin to fix the issue.`)
+        )
+      }
+
+      return right(contribution)
+    })
 }
 
 /**
- * Try to load a testtime plugin
+ * Return only valid plugins. Invalid plugins will be logged as a warning.
  */
-export function loadTesttimePlugin(plugin: Plugin) {
-  return loadPlugin('testtime', plugin, createBaseLens(plugin.name))
-}
+export function filterValidPlugins(plugins: Plugin[]) {
+  const [validPlugins, invalidPlugins] = partition(plugins, isValidPlugin)
 
-function createRuntimeLens(pluginName: string): RuntimeLens {
-  return {
-    ...createBaseLens(pluginName),
-    shouldGenerateArtifacts: shouldGenerateArtifacts(),
+  if (invalidPlugins.length > 0) {
+    log.warn(`Some invalid plugins were passed to Nexus. They are being ignored.`, {
+      invalidPlugins,
+    })
   }
+
+  return validPlugins
 }
 
 /**
- * Try to load a runtime plugin
+ * Predicate function, is the given plugin a valid one.
  */
-export function loadRuntimePlugin(pluginName: string, plugin: RuntimePlugin) {
-  return loadPlugin(
-    'runtime',
-    { name: pluginName, runtime: plugin },
-    createRuntimeLens(pluginName)
-  )
-}
-
-/**
- * Try to load the given dimension of the given plugin.
- */
-export function loadPlugin<D extends Dimension, P extends Plugin>(
-  dimension: D,
-  plugin: P,
-  lens: Lens
-): ReturnType<NonNullable<P[D]>> {
-  log.trace('load', { dimension: dimension, plugin: plugin.name })
-  try {
-    const dim = plugin[dimension]
-    // caller  must:
-    // check given plugin has given dimenesion
-    // pass correct lens type for given plugin
-    return dim!(lens as any) as any
-  } catch (error) {
-    fatal(
-      stripIndent`
-          Error while trying to load the ${dimension} dimension of plugin "${plugin.name}":
-          
-          ${error}
-        `
-    )
-  }
+export function isValidPlugin(plugin: any): plugin is Plugin {
+  const hasPackageJsonPath = 'packageJsonPath' in plugin
+  return hasPackageJsonPath
 }

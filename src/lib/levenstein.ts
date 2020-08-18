@@ -4,10 +4,7 @@
  * Given an invalid input string and a list of valid options, returns a filtered
  * list of valid options sorted based on their similarity with the input.
  */
-export function suggestionList(
-  input: string = '',
-  options: string[] = []
-): string[] {
+export function suggestionList(input: string = '', options: string[] = []): string[] {
   var optionsByDistance = Object.create(null)
   var oLength = options.length
   var inputThreshold = input.length / 2
@@ -21,7 +18,7 @@ export function suggestionList(
     }
   }
 
-  return Object.keys(optionsByDistance).sort(function(a, b) {
+  return Object.keys(optionsByDistance).sort(function (a, b) {
     return optionsByDistance[a] - optionsByDistance[b]
   })
 }
@@ -67,11 +64,7 @@ function lexicalDistance(aStr: string, bStr: string): number {
   for (i = 1; i <= aLength; i++) {
     for (j = 1; j <= bLength; j++) {
       var cost = a[i - 1] === b[j - 1] ? 0 : 1
-      d[i][j] = Math.min(
-        d[i - 1][j] + 1,
-        d[i][j - 1] + 1,
-        d[i - 1][j - 1] + cost
-      )
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost)
 
       if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
         d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + cost)

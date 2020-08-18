@@ -10,10 +10,7 @@ import { rootLogger } from '../../../lib/nexus-logger'
 import * as proc from '../../../lib/process'
 import { createGitRepository } from '../../../lib/utils'
 
-const log = rootLogger
-  .child('cli')
-  .child('create')
-  .child('plugin')
+const log = rootLogger.child('cli').child('create').child('plugin')
 
 export default class Plugin implements Command {
   async parse() {
@@ -80,7 +77,7 @@ export default class Plugin implements Command {
         name: pluginPackageName,
         version: '0.0.0',
         license: 'MIT',
-        main: 'dist/runtime.js',
+        main: 'dist/index.js',
         module: `dist/${pluginPackageName}.esm.js`,
         description: 'A Nexus framework plugin',
         files: ['dist'],
@@ -103,10 +100,7 @@ export default class Plugin implements Command {
         jest: {
           preset: 'ts-jest',
           testEnvironment: 'node',
-          watchPlugins: [
-            'jest-watch-typeahead/filename',
-            'jest-watch-typeahead/testname',
-          ],
+          watchPlugins: ['jest-watch-typeahead/filename', 'jest-watch-typeahead/testname'],
         },
       }),
       fs.writeAsync('tsconfig.json', {
@@ -146,7 +140,7 @@ export default class Plugin implements Command {
         stripIndent`
           import { WorktimePlugin } from 'nexus/plugin'
 
-          export const plugin: WorktimePlugin = project => {
+          export const plugin: WorktimePlugin = () => project => {
             project.hooks.dev.onStart = async () => {
               project.log.info('dev.onStart hook from ${pluginName}')
             }
@@ -170,7 +164,7 @@ export default class Plugin implements Command {
         stripIndent`
           import { RuntimePlugin } from 'nexus/plugin'
 
-          export const plugin:RuntimePlugin = project => {
+          export const plugin: RuntimePlugin = () => project => {
             return {
               context: {
                 create: _req => {
@@ -190,18 +184,30 @@ export default class Plugin implements Command {
       ),
     ])
 
+    // TODO: use `pluginName` instead of hardcoded "plugin"
+    fs.writeAsync(
+      'src/index.ts',
+      stripIndent`
+      import { PluginEntrypoint } from 'nexus/plugin'
+
+      export const plugin: PluginEntrypoint = () => ({
+        packageJsonPath: require.resolve('../package.json'),
+        runtime: {
+          module: require.resolve('./runtime'),
+          export: 'plugin'
+        },
+        worktime: {
+          module: require.resolve('./worktime'),
+          export: 'plugin'
+        },
+      })
+    `
+    )
+
     log.info(`Installing dev dependencies`)
     await proc.run(
       'yarn add --dev ' +
-        [
-          '@types/jest',
-          'nexus@next',
-          'jest',
-          'jest-watch-typeahead',
-          'ts-jest',
-          'typescript',
-          'doctoc',
-        ].join(' ')
+        ['@types/jest', 'nexus', 'jest', 'jest-watch-typeahead', 'ts-jest', 'typescript', 'doctoc'].join(' ')
     )
 
     log.info(`Initializing git repository...`)

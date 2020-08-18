@@ -3,7 +3,7 @@ import * as fs from 'fs-jetpack'
 import { Command } from '../../lib/cli'
 import * as Layout from '../../lib/layout'
 import { rootLogger } from '../../lib/nexus-logger'
-import { CWDProjectNameOrGenerate, generateProjectName } from '../../lib/utils'
+import { casesHandled, CWDProjectNameOrGenerate, generateProjectName } from '../../lib/utils'
 import { run as runCreateApp } from './create/app'
 import { Dev } from './dev'
 
@@ -12,31 +12,31 @@ const log = rootLogger.child('cli').child('entrypoint')
 export class __Default implements Command {
   async parse() {
     log.trace('start')
-    const projectType = await Layout.scanProjectType()
+    const projectType = await Layout.scanProjectType({ cwd: process.cwd() })
     switch (projectType.type) {
       case 'new':
         log.trace(
           'detected CWD is empty and not within an existing nexus project, delegating to create sub-command',
-          { cwd: process.cwd() }
+          {
+            cwd: process.cwd(),
+          }
         )
         await runCreateApp({
           projectName: CWDProjectNameOrGenerate(),
         })
         break
       case 'NEXUS_project':
-        log.trace(
-          'detected CWD is within a nexus project, delegating to dev mode',
-          { cwd: process.cwd() }
-        )
+        log.trace('detected CWD is within a nexus project, delegating to dev mode', {
+          cwd: process.cwd(),
+        })
         await new Dev().parse([])
         break
       case 'node_project':
-        log.trace(
-          'detected CWD is within a node but not nexus project, aborting',
-          { cwd: process.cwd() }
-        )
+        log.trace('detected CWD is within a node but not nexus project, aborting', {
+          cwd: process.cwd(),
+        })
         console.log(
-          "Looks like you are inside a node but not nexus project. Please either add nexus to this project's dependencies and re-run this command or navigate to a new empty folder that does not have a package.json file present in an anecestor directory."
+          "Looks like you are inside a node but not nexus project. Please either add nexus to this project's dependencies and re-run this command or navigate to a new empty folder that does not have a package.json file present in an ancestor directory."
         )
         break
       case 'unknown':
@@ -44,10 +44,10 @@ export class __Default implements Command {
         // We can get the user on the happy path by asking them for a project
         // name and then changing into that directory.
         const projectName = generateProjectName()
-        log.info(
-          `creating project directory where all subsequent work will occur`,
-          { cwd: process.cwd(), projectName: projectName }
-        )
+        log.info(`creating project directory where all subsequent work will occur`, {
+          cwd: process.cwd(),
+          projectName: projectName,
+        })
         await fs.dirAsync(projectName)
         process.chdir(fs.path(projectName))
         await runCreateApp({
@@ -72,6 +72,16 @@ export class __Default implements Command {
         console.log() // space after codeblock
 
         break
+      case 'malformed_package_json':
+        // todo test this case
+        const e = projectType.error
+        log.fatal(
+          `Failed to establish a project type. A package.json was found at ${e.context.path}. But, there was an error whlie trying to read it.`,
+          { reason: e.context.reason }
+        )
+        break
+      default:
+        casesHandled(projectType)
     }
   }
 }

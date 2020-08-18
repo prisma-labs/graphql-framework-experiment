@@ -1,4 +1,5 @@
 export {
+  PluginEntrypoint,
   RuntimeLens,
   RuntimePlugin,
   TesttimeLens,

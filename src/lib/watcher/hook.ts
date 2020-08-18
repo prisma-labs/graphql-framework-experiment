@@ -1,20 +1,14 @@
 const vm = require('vm')
 
-export default function(
-  cfg: { vm: boolean },
-  appRunner: NodeModule,
-  callback: (file: string) => void
-) {
+export default function (appRunner: NodeModule, callback: (file: string) => void) {
   // Hook into Node's `require(...)`
   updateHooks()
 
   // Patch the vm module to watch files executed via one of these methods:
-  if (cfg.vm) {
-    patch(vm, 'createScript', 1)
-    patch(vm, 'runInThisContext', 1)
-    patch(vm, 'runInNewContext', 2)
-    patch(vm, 'runInContext', 2)
-  }
+  patch(vm, 'createScript', 1)
+  patch(vm, 'runInThisContext', 1)
+  patch(vm, 'runInNewContext', 2)
+  patch(vm, 'runInContext', 2)
 
   /**
    * Patch the specified method to watch the file at the given argument
@@ -23,7 +17,7 @@ export default function(
   function patch(obj: any, method: string, optionsArgIndex: number) {
     const orig = obj[method]
     if (!orig) return
-    obj[method] = function() {
+    obj[method] = function () {
       const opts = arguments[optionsArgIndex]
       let file = null
       if (opts) {
@@ -38,7 +32,7 @@ export default function(
    * (Re-)install hooks for all registered file extensions.
    */
   function updateHooks() {
-    Object.keys(require.extensions).forEach(function(ext) {
+    Object.keys(require.extensions).forEach(function (ext) {
       const fn = require.extensions[ext]
 
       if (typeof fn === 'function' && fn.name !== 'nodeDevHook') {

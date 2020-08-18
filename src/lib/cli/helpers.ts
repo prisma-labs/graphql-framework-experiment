@@ -12,10 +12,7 @@ export function format(input: string = ''): string {
 /**
  * Wrap arg to return an error instead of throwing
  */
-export function arg<T extends Arg.Spec>(
-  argv: string[],
-  spec: T
-): Arg.Result<T> | Error {
+export function arg<T extends Arg.Spec>(argv: string[], spec: T): Arg.Result<T> | Error {
   try {
     return Arg(spec, { argv, stopAtPositional: true })
   } catch (err) {
@@ -34,22 +31,16 @@ export function generateHelpForCommandIndex(
   commandName: string,
   subCommands: { name: string; description: string }[]
 ): string {
-  const maxSubCommandNameLength = Math.max(
-    ...subCommands.map(s => s.name.length)
-  )
+  const maxSubCommandNameLength = Math.max(...subCommands.map((s) => s.name.length))
 
   return `
 ${chalk.bold('Usage:')}
     
-${chalk.gray('$')} nexus ${commandName} [${subCommands
-    .map(c => c.name)
-    .join('|')}]
+${chalk.gray('$')} nexus ${commandName} [${subCommands.map((c) => c.name).join('|')}]
 
 ${chalk.bold('Commands:')}
 
-${subCommands
-  .map(c => `  ${c.name.padEnd(maxSubCommandNameLength)}  ${c.description}`)
-  .join('\n')}
+${subCommands.map((c) => `  ${c.name.padEnd(maxSubCommandNameLength)}  ${c.description}`).join('\n')}
   `
 }
 
@@ -58,10 +49,7 @@ export function generateHelpForCommand(
   description: string,
   options: { name: string; alias?: string; description: string }[]
 ): string {
-  const optionsWithHelp = [
-    ...options,
-    { name: 'help', alias: 'h', description: 'Prompt this helper' },
-  ]
+  const optionsWithHelp = [...options, { name: 'help', alias: 'h', description: 'Prompt this helper' }]
 
   return `
 ${description}
@@ -72,8 +60,6 @@ ${chalk.gray('$')} nexus ${commandName} [options]
 
 ${chalk.bold('Options:')}
 
-${optionsWithHelp
-  .map(c => `  --${c.name}${c.alias ? `, -${c.alias}` : ''}   ${c.description}`)
-  .join('\n')}
+${optionsWithHelp.map((c) => `  --${c.name}${c.alias ? `, -${c.alias}` : ''}   ${c.description}`).join('\n')}
   `
 }

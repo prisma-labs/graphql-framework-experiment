@@ -1,208 +1,212 @@
+import * as NexusLogger from '@nexus/logger'
 import * as NexusSchema from '@nexus/schema'
-import * as Layout from '../../lib/layout'
+import chalk from 'chalk'
+import * as GraphQL from 'graphql'
+import * as HTTP from 'http'
+import { logPrettyError } from '../../lib/errors'
+import { createNexusSchemaStateful, NexusSchemaStatefulBuilders } from '../../lib/nexus-schema-stateful'
 import { RuntimeContributions } from '../../lib/plugin'
-import { ConnectionConfig, createNexusSchemaConfig } from './config'
-import { createNexusSingleton } from './nexus'
-import { writeTypegen } from './utils'
+import * as Process from '../../lib/process'
+import * as Scalars from '../../lib/scalars'
+import { Index, MaybePromise } from '../../lib/utils'
+import { AppState } from '../app'
+import * as DevMode from '../dev-mode'
+import { assertAppNotAssembled } from '../utils'
+import { log } from './logger'
+import { createSchemaSettingsManager, SchemaSettingsManager } from './settings'
+import { mapSettingsAndPluginsToNexusSchemaConfig } from './settings-mapper'
 
-export type SettingsInput = {
-  /**
-   * todo
-   */
-  connections?: {
-    /**
-     * todo
-     */
-    default?: ConnectionConfig | false
-    // Extra undefined below is forced by it being above, forced via `?:`.
-    // This is a TS limitation, cannot express void vs missing semantics,
-    // being tracked here: https://github.com/microsoft/TypeScript/issues/13195
-    [typeName: string]: ConnectionConfig | undefined | false
+export type LazyState = {
+  contextContributors: ContextAdder[]
+  plugins: NexusSchema.core.NexusPlugin[]
+  scalars: Scalars.Scalars
+}
+
+export function createLazyState(): LazyState {
+  return {
+    contextContributors: [],
+    plugins: [],
+    scalars: {},
   }
-  /**
-   * Should a [GraphQL SDL file](https://www.prisma.io/blog/graphql-sdl-schema-definition-language-6755bcb9ce51) be generated when the app is built and to where?
-   *
-   * A relative path is interpreted as being relative to the project directory.
-   * Intermediary folders are created automatically if they do not exist
-   * already.
-   *
-   * @default false
-   */
-  generateGraphQLSDLFile?: false | string
-  /**
-   * A glob pattern which will be used to find the files from which to extract the backing types used in the `rootTyping` option of `schema.(objectType|interfaceType|unionType|enumType)`
-   *
-   * @default "./**\/*.ts"
-   *
-   * @example "./**\/*.backing.ts"
-   */
-  rootTypingsGlobPattern?: string
 }
 
-export type SettingsData = SettingsInput
+// Export this so that context typegen can import it, for example if users do
+// this:
+//
+//    schema.addToContext(req => ({ req }))
+//
+// todo seems very brittle
+// todo request being exposed on context should be done by the framework
+export interface Request extends HTTP.IncomingMessage {
+  log: NexusLogger.Logger
+}
+export interface Response extends HTTP.ServerResponse {}
 
-export type Schema = {
-  // addToContext: <T extends {}>(
-  //   contextContributor: ContextContributor<T>
-  // ) => App
-  queryType: typeof NexusSchema.queryType
-  mutationType: typeof NexusSchema.mutationType
-  objectType: ReturnType<typeof createNexusSingleton>['objectType']
-  enumType: ReturnType<typeof createNexusSingleton>['enumType']
-  scalarType: ReturnType<typeof createNexusSingleton>['scalarType']
-  unionType: ReturnType<typeof createNexusSingleton>['unionType']
-  interfaceType: ReturnType<typeof createNexusSingleton>['interfaceType']
-  inputObjectType: typeof NexusSchema.inputObjectType
-  arg: typeof NexusSchema.arg
-  intArg: typeof NexusSchema.intArg
-  stringArg: typeof NexusSchema.stringArg
-  booleanArg: typeof NexusSchema.booleanArg
-  floatArg: typeof NexusSchema.floatArg
-  idArg: typeof NexusSchema.idArg
-  extendType: typeof NexusSchema.extendType
-  extendInputType: typeof NexusSchema.extendInputType
+export type ContextAdderLens = {
+  /**
+   * Incoming HTTP request
+   */
+  req: Request
+  /**
+   * Server response
+   */
+  res: Response
+}
+export type ContextAdder = (params: ContextAdderLens) => MaybePromise<Record<string, unknown>>
+
+type MiddlewareFn = (
+  source: any,
+  args: any,
+  context: NexusSchema.core.GetGen<'context'>,
+  info: GraphQL.GraphQLResolveInfo,
+  next: GraphQL.GraphQLFieldResolver<any, any>
+) => any
+
+/**
+ * Schema component API
+ */
+export interface Schema extends NexusSchemaStatefulBuilders {
+  /**
+   * todo link to website docs
+   */
+  use(schemaPlugin: NexusSchema.core.NexusPlugin): void
+  /**
+   * todo link to website docs
+   */
+  middleware(fn: (config: NexusSchema.core.CreateFieldResolverInfo) => MiddlewareFn | undefined): void
+  /**
+   * todo link to website docs
+   */
+  addToContext(contextAdder: ContextAdder): void
 }
 
-type SchemaInternal = {
+/**
+ * Schema component internal API
+ */
+export interface SchemaInternal {
   private: {
-    isSchemaEmpty(): boolean
-    /**
-     * Create the Nexus GraphQL Schema. If NEXUS_SHOULD_AWAIT_TYPEGEN=true then the typegen
-     * disk write is awaited upon.
-     */
-    makeSchema: (
+    settings: SchemaSettingsManager
+    checks(): void
+    assemble(
       plugins: RuntimeContributions[]
-    ) => Promise<NexusSchema.core.NexusGraphQLSchema>
-    settings: {
-      data: SettingsData
-      change: (newSettings: SettingsInput) => void
-    }
+    ): { schema: NexusSchema.core.NexusGraphQLSchema; missingTypes: Index<NexusSchema.core.MissingType> }
+    beforeAssembly(): void
+    reset(): void
   }
   public: Schema
 }
 
-export function create(): SchemaInternal {
-  const {
-    queryType,
-    mutationType,
-    objectType,
-    inputObjectType,
-    enumType,
-    scalarType,
-    unionType,
-    interfaceType,
-    arg,
-    intArg,
-    stringArg,
-    booleanArg,
-    floatArg,
-    idArg,
-    extendType,
-    extendInputType,
-    makeSchema,
-    __types,
-  } = createNexusSingleton()
+export function create(state: AppState): SchemaInternal {
+  state.components.schema = createLazyState()
+  const statefulNexusSchema = createNexusSchemaStateful()
+  const settings = createSchemaSettingsManager()
 
-  type State = {
-    settings: SettingsData
+  const api: Schema = {
+    ...statefulNexusSchema.builders,
+    use(plugin) {
+      assertAppNotAssembled(state, 'app.schema.use', 'The Nexus Schema plugin you used will be ignored.')
+      state.components.schema.plugins.push(plugin)
+    },
+    addToContext(contextAdder) {
+      state.components.schema.contextContributors.push(contextAdder)
+    },
+    middleware(fn) {
+      api.use(
+        NexusSchema.plugin({
+          // TODO: Do we need to expose the name property?
+          name: 'local-middleware',
+          onCreateFieldResolver(config) {
+            return fn(config)
+          },
+        })
+      )
+    },
   }
 
-  const state: State = {
-    settings: {},
-  }
-
-  const api: SchemaInternal = {
+  return {
+    public: api,
     private: {
-      isSchemaEmpty: () => {
-        return __types.length === 0
+      settings: settings,
+      reset() {
+        statefulNexusSchema.state.types = []
+        statefulNexusSchema.state.scalars = {}
+        state.components.schema.contextContributors = []
+        state.components.schema.plugins = []
+        state.components.schema.scalars = {}
       },
-      makeSchema: async plugins => {
-        const nexusSchemaConfig = createNexusSchemaConfig(
-          plugins,
-          state.settings
-        )
-        const { schema, missingTypes, typegenConfig } = makeSchema(
-          nexusSchemaConfig
-        )
-        if (nexusSchemaConfig.shouldGenerateArtifacts === true) {
-          const devModeLayout = await Layout.loadDataFromParentProcess()
-
-          if (!devModeLayout) {
-            throw new Error(
-              'Layout should be defined when should gen artifacts is true. This should not happen.'
-            )
+      beforeAssembly() {
+        state.components.schema.scalars = statefulNexusSchema.state.scalars
+      },
+      assemble(plugins) {
+        const nexusSchemaConfig = mapSettingsAndPluginsToNexusSchemaConfig(plugins, settings.data)
+        nexusSchemaConfig.types.push(...statefulNexusSchema.state.types)
+        nexusSchemaConfig.plugins!.push(...state.components.schema.plugins)
+        try {
+          const { schema, missingTypes } = NexusSchema.core.makeSchemaInternal(nexusSchemaConfig)
+          if (process.env.NEXUS_STAGE === 'dev') {
+            // Validate GraphQL Schema
+            // TODO: This should be done in @nexus/schema
+            GraphQL.validate(schema, GraphQL.parse(GraphQL.getIntrospectionQuery()))
           }
-
-          const typegenPromise = writeTypegen(
-            schema,
-            typegenConfig,
-            state.settings.rootTypingsGlobPattern,
-            devModeLayout
-          )
-
-          // Await promise only if needed. Otherwise let it run in the background
-          if (process.env.NEXUS_SHOULD_AWAIT_TYPEGEN === 'true') {
-            await typegenPromise
-          }
-
-          if (nexusSchemaConfig.shouldExitAfterGenerateArtifacts) {
-            process.exit(0)
-          }
+          return { schema, missingTypes }
+        } catch (err) {
+          logPrettyError(log, err, 'fatal')
         }
-
-        /**
-         * Assert that there are no missing types after running typegen only
-         * so that we don't block writing the typegen when eg: renaming types
-         */
-        NexusSchema.core.assertNoMissingTypes(schema, missingTypes)
-
-        return schema
       },
-      settings: {
-        data: state.settings,
-        change(newSettings) {
-          if (newSettings.generateGraphQLSDLFile) {
-            state.settings.generateGraphQLSDLFile =
-              newSettings.generateGraphQLSDLFile
-          }
+      checks() {
+        assertNoMissingTypesDev(state.assembled!.schema, state.assembled!.missingTypes)
 
-          if (newSettings.rootTypingsGlobPattern) {
-            state.settings.rootTypingsGlobPattern =
-              newSettings.rootTypingsGlobPattern
-          }
-
-          if (newSettings.connections) {
-            state.settings.connections = state.settings.connections ?? {}
-            const { types, ...connectionPluginConfig } = newSettings.connections
-            if (types) {
-              state.settings.connections.types =
-                state.settings.connections.types ?? {}
-              Object.assign(state.settings.connections.types, types)
-            }
-            Object.assign(state.settings.connections, connectionPluginConfig)
-          }
-        },
+        // TODO: We should separate types added by the framework and the ones added by users
+        if (
+          statefulNexusSchema.state.types.length === 2 &&
+          statefulNexusSchema.state.types.every(
+            (t) => (Scalars.builtinScalars as Scalars.Scalars)[t.name] !== undefined
+          )
+        ) {
+          log.warn(emptyExceptionMessage())
+        }
       },
-    },
-    public: {
-      queryType,
-      mutationType,
-      objectType,
-      inputObjectType,
-      enumType,
-      scalarType,
-      unionType,
-      interfaceType,
-      arg,
-      intArg,
-      stringArg,
-      booleanArg,
-      floatArg,
-      idArg,
-      extendType,
-      extendInputType,
     },
   }
+}
 
-  return api
+function emptyExceptionMessage() {
+  return `Your GraphQL schema is empty. This is normal if you have not defined any GraphQL types yet. If you did however, check that your files are contained in the same directory specified in the \`rootDir\` property of your tsconfig.json file.`
+}
+
+function assertNoMissingTypesDev(
+  schema: NexusSchema.core.NexusGraphQLSchema,
+  missingTypes: Index<NexusSchema.core.MissingType>
+) {
+  const missingTypesNames = Object.keys(missingTypes)
+
+  if (missingTypesNames.length === 0) {
+    return
+  }
+
+  const schemaTypeMap = schema.getTypeMap()
+  const schemaTypeNames = Object.keys(schemaTypeMap).filter(
+    (typeName) => !NexusSchema.core.isUnknownType(schemaTypeMap[typeName])
+  )
+
+  if (DevMode.isDevMode()) {
+    missingTypesNames.map((typeName) => {
+      const suggestions = NexusSchema.core.suggestionList(typeName, schemaTypeNames)
+
+      let suggestionsString = ''
+
+      if (suggestions.length > 0) {
+        suggestionsString = ` Did you mean ${suggestions
+          .map((s) => `"${chalk.greenBright(s)}"`)
+          .join(', ')} ?`
+      }
+
+      log.error(`Missing type "${chalk.redBright(typeName)}" in your GraphQL Schema.${suggestionsString}`)
+    })
+  } else {
+    Process.fatal(
+      `Missing types ${missingTypesNames.map((t) => `"${t}"`).join(', ')} in your GraphQL Schema.`,
+      { missingTypesNames }
+    )
+  }
 }

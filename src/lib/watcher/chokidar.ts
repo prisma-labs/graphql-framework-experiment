@@ -9,7 +9,7 @@ import { rootLogger } from '../nexus-logger'
 
 const log = rootLogger.child('dev').child('watcher')
 
-type ChangeType = 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir'
+export type ChangeType = 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir'
 
 export interface ChangeEvent {
   type: ChangeType
@@ -33,33 +33,24 @@ export type FileWatcherEventCallback = (
     restart: (file: string) => void
     pause: () => void
     resume: () => void
-  } //TODO: add stop and start methods
+  }
 ) => void
 
 type FileWatcherOptions = chokidar.WatchOptions
 const SILENTABLE_EVENTS = ['add', 'addDir'] as const
 
-function isSilentableEvent(
-  event: any
-): event is typeof SILENTABLE_EVENTS[number] {
+function isSilentableEvent(event: any): event is typeof SILENTABLE_EVENTS[number] {
   return SILENTABLE_EVENTS.includes(event)
 }
 
-export function watch(
-  paths: string | ReadonlyArray<string>,
-  options?: FileWatcherOptions
-): FileWatcher {
+export function watch(paths: string | ReadonlyArray<string>, options?: FileWatcherOptions): FileWatcher {
   log.trace('starting', { paths, ...options })
   const watcher = chokidar.watch(paths, options) as FileWatcher
   const programmaticallyWatchedFiles: string[] = []
   let watcherPaused = false
-  let lastPendingExecution: null | (() => void) = null
 
   const wasFileAddedSilently = (event: string, file: string): boolean => {
-    if (
-      programmaticallyWatchedFiles.includes(file) &&
-      isSilentableEvent(event)
-    ) {
+    if (programmaticallyWatchedFiles.includes(file) && isSilentableEvent(event)) {
       log.trace('ignoring file addition because was added silently', {
         file,
       })
@@ -70,46 +61,38 @@ export function watch(
     return false
   }
 
-  /** Execute watcher listener when watcher is not paused, and save last pending execution to be run when watcher.resume() is called */
-  const simpleDebounce = (
-    fn: (...args: any[]) => void
-  ): ((...args: any[]) => void) => {
-    const decoratedFn = (...args: any[]) => {
-      if (watcherPaused) {
-        lastPendingExecution = () => {
-          fn(...args)
-        }
-        return
-      }
-
-      fn(...args)
-    }
-
-    return decoratedFn
-  }
-
   const originalOnListener = watcher.on.bind(watcher)
 
   // Use `function` to bind originalOnListener to the right context
-  watcher.on = function(event: string, listener: (...args: any[]) => void) {
-    const debouncedListener = simpleDebounce(listener)
-
+  watcher.on = function (event: string, listener: (...args: any[]) => void) {
     if (event === 'all') {
       return originalOnListener(event, (eventName, path, stats) => {
-        if (wasFileAddedSilently(eventName, path) === false) {
-          debouncedListener(eventName, path, stats)
+        if (watcherPaused) {
+          return
         }
+
+        if (wasFileAddedSilently(eventName, path) === true) {
+          return
+        }
+
+        listener(eventName, path, stats)
       })
     }
 
     return originalOnListener(event, (path, stats) => {
-      if (wasFileAddedSilently(event, path) === false) {
-        debouncedListener(path, stats)
+      if (watcherPaused) {
+        return
       }
+
+      if (wasFileAddedSilently(event, path) === true) {
+        return
+      }
+
+      listener(path, stats)
     })
   }
 
-  watcher.addSilently = path => {
+  watcher.addSilently = (path) => {
     programmaticallyWatchedFiles.push(path)
     watcher.add(path)
   }
@@ -120,11 +103,6 @@ export function watch(
 
   watcher.resume = () => {
     watcherPaused = false
-
-    if (lastPendingExecution) {
-      lastPendingExecution()
-      lastPendingExecution = null
-    }
   }
 
   return watcher

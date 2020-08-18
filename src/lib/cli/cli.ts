@@ -36,10 +36,7 @@ function createCommandRef(value: string, parent: CommandNamespace): CommandRef {
   }
 }
 
-function createConcreteCommand(
-  value: Command,
-  parent: CommandNamespace
-): ConcreteCommand {
+function createConcreteCommand(value: Command, parent: CommandNamespace): ConcreteCommand {
   return { type: 'concrete_command', value, parent }
 }
 
@@ -54,10 +51,7 @@ function buildCommandsTree(cmds: CommandsLayout): CommandNode {
   return buildCommandsSubTree(cmds, null)
 }
 
-function buildCommandsSubTree(
-  cmds: CommandsLayout,
-  parent: null | CommandNamespace
-): CommandNode {
+function buildCommandsSubTree(cmds: CommandsLayout, parent: null | CommandNamespace): CommandNode {
   const branch = createCommandNamespace({}, parent)
   for (const [name, cmd] of Object.entries(cmds)) {
     branch.value[name] = buildCommandsEntry(cmd, branch)
@@ -65,10 +59,7 @@ function buildCommandsSubTree(
   return branch
 }
 
-function buildCommandsEntry(
-  cmd: CommandsLayoutEntry,
-  parent: CommandNamespace
-): CommandNode {
+function buildCommandsEntry(cmd: CommandsLayoutEntry, parent: CommandNamespace): CommandNode {
   if (typeof cmd === 'string') {
     // TODO need concept of createUnresolvedCommandRef because de-referring
     // needs to come after the tree of concrete command values has been built.
@@ -88,10 +79,7 @@ function buildCommandsEntry(
  * Helper function for looking up a command by name on a command namespace that
  * correctly types the possibility of lookup failing.
  */
-function lookupCommand(
-  name: string,
-  namespace: CommandNamespace
-): undefined | CommandNode {
+function lookupCommand(name: string, namespace: CommandNamespace): undefined | CommandNode {
   return namespace.value[name]
 }
 
@@ -183,9 +171,7 @@ export class CLI implements Command {
         } else if (nsDefault.type === 'concrete_command') {
           run = nsDefault.value.parse.bind(nsDefault.value)
         } else if (nsDefault.type === 'command_reference') {
-          run = nsDefault.value.commandPointer.value.parse.bind(
-            nsDefault.value.commandPointer.value
-          )
+          run = nsDefault.value.commandPointer.value.parse.bind(nsDefault.value.commandPointer.value)
         } else {
           throw new Error(
             `Attempt to run namespace default failed because was not a command or reference to a command. Was: ${nsDefault}`
@@ -207,7 +193,7 @@ export class CLI implements Command {
   // TODO generate this from cli tree
   // static help template
   private static help = format(`
-    Delightful GraphQL Application Framework - https://nexusjs.org
+    Code-First Type-Safe GraphQL Framework - https://nexusjs.org
 
     ${chalk.bold('Usage')}
 

@@ -1,19 +1,22 @@
-import * as FS from 'fs-jetpack'
+import * as fs from 'fs-jetpack'
 import * as Path from 'path'
 
 // In-memory file tree
-export type MemoryFS = {
-  [path: string]: string | MemoryFS
+export type FSSpec = {
+  [path: string]: string | FSSpec
 }
 
-export function writeToFS(cwd: string, vfs: MemoryFS) {
-  Object.entries(vfs).forEach(([fileOrDirName, fileContentOrDir]) => {
-    const subPath = Path.join(cwd, fileOrDirName)
+export function writeFSSpec(cwd: string, spec: FSSpec) {
+  Object.entries(spec).forEach(([fileOrDirName, fileContentOrDir]) => {
+    const fileOrDirPath = Path.join(cwd, fileOrDirName)
 
     if (typeof fileContentOrDir === 'string') {
-      FS.write(subPath, fileContentOrDir)
+      fs.write(fileOrDirPath, fileContentOrDir)
     } else {
-      writeToFS(subPath, { ...fileContentOrDir })
+      if (Object.keys(fileContentOrDir).length === 0) {
+        fs.dir(fileOrDirPath)
+      }
+      writeFSSpec(fileOrDirPath, fileContentOrDir)
     }
   })
 }

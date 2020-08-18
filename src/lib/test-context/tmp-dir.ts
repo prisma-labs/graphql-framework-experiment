@@ -1,20 +1,22 @@
+import * as fs from 'fs-jetpack'
+import * as os from 'os'
 import { getTmpDir } from '../fs'
-import { create } from './compose-create'
+import { createContributor } from './compose-create'
 
-export interface TmpDirContribution {
-  tmpDir: () => string
+export type TmpDirDeps = {}
+
+export type TmpDirContribution = {
+  tmpDir: string
 }
 
-export const tmpDir = create(
-  (opts?: { prefix: string }): TmpDirContribution => {
-    let tmpDir: string | null = null
+export const tmpDir = (opts?: { prefix: string }) =>
+  createContributor<TmpDirDeps, TmpDirContribution>(() => {
+    // Huge hack to force the tmpdir to be in its "long" form in the GH CI for windows
+    const baseTmpDir = process.env.CI !== undefined && os.platform() === 'win32' ?
+      'C:\\Users\\runneradmin\\AppData\\Local\\Temp' : undefined
+    const tmpDir = getTmpDir(opts?.prefix, baseTmpDir)
 
-    beforeEach(() => {
-      tmpDir = getTmpDir(opts?.prefix)
-    })
+    fs.dir(tmpDir)
 
-    return {
-      tmpDir: () => tmpDir!,
-    }
-  }
-)
+    return { tmpDir }
+  })

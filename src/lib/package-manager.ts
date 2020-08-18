@@ -6,7 +6,8 @@
  * module provides utilities for working in code with the package managers in an
  * agnostic way.
  */
-import * as fsHelpers from './fs'
+import * as fs from 'fs-jetpack'
+import * as Path from 'path'
 import * as proc from './process'
 import { OmitFirstArg } from './utils'
 
@@ -16,19 +17,28 @@ const NPM_LOCK_FILE_NAME = 'package-lock.json'
 export type PackageManagerType = 'yarn' | 'npm'
 
 /**
- * Detect if the project is yarn or npm based. Detection is based on the kind of
- * lock file present. If nothing is found, npm is assumed.
+ * Detect if the project is yarn or npm based. Detection is based on useragent,
+ * if present, then the lockfile present. If nothing is found, npm is assumed.
  */
-export async function detectProjectPackageManager(opts?: {
-  cwd?: string
+export async function detectProjectPackageManager(opts: {
+  projectRoot: string
 }): Promise<PackageManagerType> {
+  const userAgent: string | undefined = process.env.npm_config_user_agent
+  if (userAgent) {
+    // example: 'yarn/1.22.4 npm/? node/v13.11.0 darwin x64'
+    const manager = userAgent.match(/(yarn|npm)(?=\/\d+\.?)+/)
+    if (manager && (manager[0] === 'yarn' || manager[0] === 'npm')) {
+      return manager[0]
+    }
+  }
+
   const packageManagerFound = await Promise.race([
-    fsHelpers
-      .findFileRecurisvelyUpward(YARN_LOCK_FILE_NAME, opts)
-      .then(maybeFilePath => (maybeFilePath !== null ? 'yarn' : null)),
-    fsHelpers
-      .findFileRecurisvelyUpward(NPM_LOCK_FILE_NAME, opts)
-      .then(maybeFilePath => (maybeFilePath !== null ? 'npm' : null)),
+    fs
+      .existsAsync(Path.join(opts.projectRoot, YARN_LOCK_FILE_NAME))
+      .then((result) => (result === 'file' ? 'yarn' : null)),
+    fs
+      .existsAsync(Path.join(opts.projectRoot, NPM_LOCK_FILE_NAME))
+      .then((result) => (result === 'file' ? 'npm' : null)),
   ])
 
   return packageManagerFound === null ? 'npm' : packageManagerFound
@@ -37,20 +47,14 @@ export async function detectProjectPackageManager(opts?: {
 /**
  * Render the running of the given command as coming from the local bin.
  */
-export function renderRunBin(
-  pmt: PackageManagerType,
-  commandString: string
-): string {
+export function renderRunBin(pmt: PackageManagerType, commandString: string): string {
   return pmt === 'npm' ? `npx ${commandString}` : `yarn -s ${commandString}`
 }
 
 /**
  * Render running of the given script defined in package.json.
  */
-export function renderRunScript(
-  pmt: PackageManagerType,
-  scriptName: string
-): string {
+export function renderRunScript(pmt: PackageManagerType, scriptName: string): string {
   return pmt === 'npm' ? `npm run -s ${scriptName}` : `yarn -s ${scriptName}`
 }
 
@@ -81,13 +85,8 @@ export function runScript(
 /**
  * Run package installation.
  */
-export function installDeps(
-  pmt: PackageManagerType,
-  options?: proc.RunOptions
-): ReturnType<typeof proc.run> {
-  return pmt === 'npm'
-    ? proc.run('npm install', options)
-    : proc.run('yarn install', options)
+export function installDeps(pmt: PackageManagerType, options?: proc.RunOptions): ReturnType<typeof proc.run> {
+  return pmt === 'npm' ? proc.run('npm install', options) : proc.run('yarn install', options)
 }
 
 export type AddDepsOptions = { dev?: boolean } & proc.RunOptions
@@ -141,16 +140,18 @@ export type PackageManager = {
  * statics with the package manager type. Creation is async since it requires
  * running IO to detect the project's package manager.
  */
-export function create<T extends undefined | PackageManagerType>(
-  givenPackageManagerType?: T
-): T extends undefined ? Promise<PackageManager> : PackageManager
+export function createPackageManager<T extends void | PackageManagerType>(
+  packageManagerType: T | void,
+  opts: { projectRoot: string }
+): T extends void ? Promise<PackageManager> : PackageManager
 
-export function create(
-  givenPackageManagerType?: undefined | PackageManagerType
+export function createPackageManager(
+  packageManagerType: void | PackageManagerType,
+  opts: { projectRoot: string }
 ): Promise<PackageManager> | PackageManager {
-  return givenPackageManagerType === undefined
-    ? detectProjectPackageManager().then(createDo)
-    : createDo(givenPackageManagerType)
+  return packageManagerType === undefined
+    ? detectProjectPackageManager(opts).then(createDo)
+    : createDo(packageManagerType)
 }
 
 function createDo(pmt: PackageManagerType): PackageManager {

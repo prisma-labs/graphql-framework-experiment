@@ -1,9 +1,6 @@
 type MessageType = 'module_imported' | 'error' | 'app_server_listening'
 
-type MessageStruct<
-  Type extends MessageType,
-  Data extends Record<string, unknown>
-> = {
+type MessageStruct<Type extends MessageType, Data extends Record<string, unknown>> = {
   type: Type
   data: Data
 }
@@ -39,10 +36,7 @@ type ErrorMessage = MessageStruct<
   }
 >
 
-export type Message =
-  | ModuleRequiredMessage
-  | ErrorMessage
-  | AppServerListeningMessage
+export type Message = ModuleRequiredMessage | ErrorMessage | AppServerListeningMessage
 
 type AppServerListeningMessage = MessageStruct<'app_server_listening', {}>
 
