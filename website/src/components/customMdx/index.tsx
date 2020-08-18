@@ -10,6 +10,7 @@ import ButtonLink from './button'
 import FileWithIcon from './fileWithIcon'
 import Subsections from './subSections'
 import TopBlock from './topBlock'
+import Readme from './readme'
 
 export default {
   h1: () => <h1 style={{ display: 'none' }} />,
@@ -27,6 +28,7 @@ export default {
   table: Table,
   ButtonLink,
   Subsections,
+  Readme,
   TopBlock,
   img: (props: any) => (
     <a href={props.src} target="_blank">
