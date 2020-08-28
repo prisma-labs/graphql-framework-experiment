@@ -196,14 +196,15 @@ _Scalar Mapping_
   String    <>  String
   Int       <>  Int
   Float     <>  Float
-  cuid()    <>  ID
+  Json      <>  Json (custom scalar)
   DateTime  <>  DateTime (custom scalar)
-  uuid()    <>  UUID (custom scalar)
+  cuid()    <>  String
+  uuid()    <>  String
 ```
 
 _Auto-Projection_
 
-When a Prisma scalar is encountered that does not map to the standard GraphQL scalar types, it will be automatically projected (custom scalar added to the GraphQL schema). Examples include `DateTime` and `UUID`.
+When a Prisma scalar is encountered that does not map to the standard GraphQL scalar types, it will be automatically projected (custom scalar added to the GraphQL schema). Examples include `DateTime` and `Json`.
 
 _Option Notes_
 
@@ -2487,6 +2488,10 @@ input IntFilter {
 }
 ```
 
+#### `Json`
+
+TODO
+
 #### `Float`
 
 Uses the same filter structure as `Int`.
@@ -2504,16 +2509,6 @@ Uses the same filter structure as `Int`. We are considering a [tailored `DateTim
 ```graphql
 input DateTimeFilter {
   # ... see IntFilter
-}
-```
-
-#### `UUID`
-
-Uses the same filter structure as `String`.
-
-```graphql
-input UUIDFilter {
-  # ... see StringFilter
 }
 ```
 
