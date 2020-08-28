@@ -1458,11 +1458,11 @@ Allow clients to order the records in a list field. Records can be ordered by th
 
 ```graphql
 # t.crud.<BatchRead>
-M(orderBy: M_OrderByInput)
+M(orderBy: [M_OrderByInput!])
 
 # t.model.<ListRelation>
 type M {
-  MF(orderBy: M_OrderByInput)
+  MF(orderBy: [M_OrderByInput!])
 }
 
 input M_OrderByInput {
@@ -2425,10 +2425,10 @@ input M_WhereInput {
   NOT: [M_WhereInput!]
   OR: [M_WhereInput!]
   MSF: S_Filter
-  MRF: RM_Filter
+  MRF: RM_ListRelationFilter
 }
 
-input RM_Filter {
+input RM_ListRelationFilter {
   every: RM_WhereInput # recurse -> M_WhereInput
   none: RM_WhereInput # recurse -> M_WhereInput
   some: RM_WhereInput # recurse -> M_WhereInput
