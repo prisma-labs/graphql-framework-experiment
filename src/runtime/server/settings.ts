@@ -1,6 +1,6 @@
 import { PlaygroundRenderPageOptions } from 'apollo-server-express'
 import { CorsOptions as OriginalCorsOption } from 'cors'
-import * as Setset from 'Setset'
+import * as Setset from 'setset'
 import { LiteralUnion, Primitive } from 'type-fest'
 import * as Utils from '../../lib/utils'
 import { log as serverLogger } from './logger'
