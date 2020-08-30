@@ -24,7 +24,7 @@ export type Param3<F> = F extends (p1: any, p2: any, p3: infer P3, ...args: any[
  *
  * @remarks
  *
- * TypeScript interfaces will not be considered sub-types. For that, use AnyObject
+ * TypeScript interfaces will not be considered sub-types.
  */
 export type PlainObject = {
   [x: string]: Primitive | object
