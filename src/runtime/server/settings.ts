@@ -1,15 +1,13 @@
 import { PlaygroundRenderPageOptions } from 'apollo-server-express'
 import { CorsOptions as OriginalCorsOption } from 'cors'
+import * as Setset from 'Setset'
 import { LiteralUnion, Primitive } from 'type-fest'
-import * as Settings from '../../lib/settings'
 import * as Utils from '../../lib/utils'
 import { log as serverLogger } from './logger'
 
-type Resolved<T> = Exclude<Required<NonNullable<T>>, Primitive>
-
 type ResolvedOptional<T> = Exclude<NonNullable<T>, Primitive>
 
-export type ServerSettingsManager = Settings.Manager<SettingsInput, SettingsData>
+export type ServerSettingsManager = Setset.Manager<SettingsInput, SettingsData>
 
 export type HTTPMethods = LiteralUnion<'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD', string>
 
@@ -168,20 +166,15 @@ export type SettingsInput = {
   }
 }
 
-export type SettingsData = Omit<
-  Utils.DeepRequired<SettingsInput>,
-  'host' | 'playground' | 'graphql' | 'cors'
-> & {
-  host: string | undefined
-  playground: Resolved<SettingsInput['playground']>
-  graphql: Resolved<SettingsInput['graphql']>
+export type SettingsData = Setset.InferDataFromInput<Omit<SettingsInput, 'host' | 'cors'>> & {
+  host?: string
   cors: ResolvedOptional<SettingsInput['cors']>
 }
 
 type a = SettingsData['host']
 
 export const createServerSettingsManager = () =>
-  Settings.create<SettingsInput, SettingsData>({
+  Setset.create<SettingsInput, SettingsData>({
     fields: {
       playground: {
         shorthand(enabled) {
@@ -275,7 +268,7 @@ export const createServerSettingsManager = () =>
         },
         validate(value) {
           if (value.length === 0) {
-            return { messages: ['Custom GraphQL `path` cannot be empty and must start with a /'] }
+            return { reasons: ['Custom GraphQL `path` cannot be empty and must start with a /'] }
           }
 
           return null

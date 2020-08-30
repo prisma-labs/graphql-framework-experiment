@@ -1,5 +1,5 @@
 import * as NexusSchema from '@nexus/schema'
-import * as Settings from '../../lib/settings'
+import * as Setset from 'setset'
 import { Param1 } from '../../lib/utils'
 
 // todo export type from @nexus/schema
@@ -118,7 +118,7 @@ export type SettingsInput = {
 /**
  * Internal representation of settings data.
  */
-export type SettingsData = Omit<Settings.DataDefault<SettingsInput>, 'connections'> & {
+export type SettingsData = Omit<Setset.InferDataFromInput<SettingsInput>, 'connections'> & {
   connections: {
     default: ConnectionSettingsData
     [connectionTypeName: string]: ConnectionSettingsData
@@ -127,12 +127,9 @@ export type SettingsData = Omit<Settings.DataDefault<SettingsInput>, 'connection
 
 /**
  * Create a schema settings manager.
- *
- * todo make app read .enabled property for connections & authorization
- *
  */
 export const createSchemaSettingsManager = () =>
-  Settings.create<SettingsInput, SettingsData>({
+  Setset.create<SettingsInput, SettingsData>({
     fields: {
       nullable: {
         fields: {
@@ -159,7 +156,6 @@ export const createSchemaSettingsManager = () =>
         },
       },
       authorization: {
-        // todo update code to read authorizaton.enabled settings data
         shorthand(enabled) {
           return { enabled }
         },
@@ -179,13 +175,15 @@ export const createSchemaSettingsManager = () =>
           }
         },
         entry: {
+          map(input, ctx) {
+            return {
+              nexusSchemaImportId: 'nexus/components/schema',
+              nexusFieldName: ctx.key === 'default' ? 'connection' : ctx.key,
+            }
+          },
           shorthand(disabled) {
             return { enabled: disabled }
           },
-          // todo static type system allows these fields to be omitted but that
-          // causes runtime error (failed to find field specifier). Furthermore
-          // without fields listed there will be no way to support safe env var
-          // auto-resolution in the future.
           fields: {
             enabled: {
               initial() {
@@ -193,14 +191,6 @@ export const createSchemaSettingsManager = () =>
               },
             },
           }, // all data is optional, see type
-        },
-        // todo static type should not have shorthands here
-        mapEntryData(input, key) {
-          return {
-            nexusSchemaImportId: 'nexus/components/schema',
-            nexusFieldName: key === 'default' ? 'connection' : key,
-            ...input,
-          }
         },
       },
     },
