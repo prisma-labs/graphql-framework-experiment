@@ -61,6 +61,7 @@
     "prismjs": "^1.20.0",
     "prompts": "^2.3.0",
     "rxjs": "^6.5.4",
+    "setset": "^0.0.3",
     "simple-git": "^2.0.0",
     "slash": "^3.0.0",
     "source-map-support": "^0.5.19",
@@ -121,7 +122,7 @@
     "postpublish": "yarn clean",
     "postinstall": "node scripts/postinstall",
     "prepublishOnly": "yarn build",
-    "test": "cross-env FORCE_COLOR=3 LOG_PRETTY=true DEBUG=true jest --verbose --testTimeout 1200000 --forceExit",
+    "test": "cross-env FORCE_COLOR=3 LOG_PRETTY=true DEBUG=true jest --testTimeout 1200000 --forceExit",
     "test:unit": "yarn test src",
     "dev:test": "yarn test --watch src",
     "dev": "yarn clean && node scripts/build-module-facades && tsc -b tsconfig.cjs.json -w"
