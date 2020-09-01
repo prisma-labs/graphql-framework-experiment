@@ -71,7 +71,7 @@ export function create(appState: AppState) {
       get graphql() {
         return (
           assembledGuard(appState, 'app.server.handlers.graphql', () => {
-            if (Boolean(settings.data.cors)) {
+            if (settings.data.cors.enabled) {
               log.warn('CORS does not work for serverless handlers. Settings will be ignored.')
             }
 
@@ -81,7 +81,7 @@ export function create(appState: AppState) {
               {
                 path: settings.data.path,
                 introspection: settings.data.graphql.introspection,
-                playground: settings.data.playground,
+                playground: settings.data.playground.enabled ? settings.data.playground : false,
                 errorFormatterFn: errorFormatter,
               }
             )
@@ -197,7 +197,7 @@ function createContextCreator(
     // Integrate context from plugins
     for (const plugin of plugins) {
       if (!plugin.context) continue
-      const contextContribution = plugin.context.create(params.req)
+      const contextContribution = await plugin.context.create(params.req)
 
       Object.assign(context, contextContribution)
     }

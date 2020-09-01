@@ -1,741 +1,12 @@
 ---
-title: 'prisma'
+title: Runtime
 ---
 
-## Overview
+## Context 
 
-Prisma is a next-generation developer-centric toolkit focused on making the data layer easy. This plugin gives you:
+A reference to your [`Prisma Client`](https://github.com/prisma/prisma-client-js) instance will be added to the context under the `db` property.
 
-###  Workflow integration
-
-Nexus `build` and `dev` workflows are enhanced to run your Prisma generators.
-
-### Runtime integration  
-
-Nexus schema component [GraphQL type builders](/guides/schema#graphql-type-builders) are augmented with `.model` and `.crud` methods. These make it easy for you to project your Prisma models and expose operations against them in your GraphQL API. Resolvers are dynamically created for you removing the need for traditional ORMs/query builders like TypeORM, Sequelize, or Knex. Out-of-box features include pagination, filtering, and ordering. And when you do need to drop down to custom resolvers a [`Prisma Client`](https://github.com/prisma/prisma-client-js) instance on `context` is ready to go.
-
-### Testtime integration
-
-Nexus testing component is augmented with an instance of the [`Prisma Client`](https://github.com/prisma/prisma-client-js), to help you easily seed your database for your tests.
-
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-## Installation
-
-1. Install the plugin
-
-    ```bash-symbol
-    npm add nexus-plugin-prisma
-    ```
-
-    > Warning: All Prisma deps are bundled, so do _not_ install e.g. `@prisma/cli` or `@prisma/client`. If you are wondering _why_ you can read through [Nexus' philosophy on dependency management](/meta/architecture#dependency-philosophy). You can still find the the prisma CLI by running `npm run prisma` or `yarn prisma`. In an emergency you can still control version of prisma deps with Yarn [`"resolutions"`](https://classic.yarnpkg.com/en/docs/selective-version-resolutions).
-
-2. Enable the plugin
-
-    ```ts
-    import { use } from 'nexus'
-    import { prisma } from 'nexus-plugin-prisma'
-
-    use(prisma())
-    ```
-
-## Getting started
-
-There are two ways you can start with the Prisma plugin. Either from scratch, or using an existing database.
-
-### From scratch
-
-1. Create a `schema.prisma` file
-
-    ```prisma
-    //schema.prisma
-
-    generator prisma_client {
-      provider = "prisma-client-js"
-    }
-
-    model User {
-      id   Int @id @default(autoincrement())
-      name String
-    }
-    ```
-
-2. Add a datasource to your schema. We recommend you use Postgres but MySQL and SQLite are also supported.
-
-    To add your datasource, simply copy/paste one of the block below at the top of your `schema.prisma` file
-
-    > **Note**:  You can also pass the database credentials via a `.env` file. [Read more about it here](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-schema/prisma-schema-file#using-environment-variables)
-
-    Using PostgreSQL:
-
-    ```prisma
-    //schema.prisma
-
-    datasource db {
-      provider = "postgres"
-      url = "postgresql://USER:PASSWORD@localhost:5432/DATABASE"
-    }
-    ```
-
-    Using MySQL:
-
-    ```prisma
-    //schema.prisma
-
-    datasource db {
-      provider = "mysql"
-      url = "mysql://USER:PASSWORD@localhost:3306/DATABASE"
-    }
-    ```
-
-    Using SQLite:
-
-    ```prisma
-    //schema.prisma
-
-    datasource db {
-      provider = "sqlite"
-      url = "file:./dev.db"
-    }
-    ```
-
-3. Create a migration file:
-
-    ```bash-symbol
-    npm run prisma migrate save --experimental
-    ```
-
-4. Migrate your database: 
-
-    ```bash-symbol
-    npm run prisma migrate up --experimental
-    ```
-
-You're ready to start working!
-
-### From an existing database
-
-When starting from an existing database, you should use [Prisma's introspection](https://www.prisma.io/docs/reference/tools-and-interfaces/introspection) feature.
-
-1. Create a `schema.prisma` file.
-
-  Create a `schema.prisma` file and add your database credentials in it so that Prisma can introspect your database schema.
-
-  > **Note**:  You can also pass the database credentials via a `.env` file. [Read more about it here](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-schema/prisma-schema-file#using-environment-variables)
-
-    Using PostgreSQL:
-
-    ```prisma
-    //schema.prisma
-
-    datasource db {
-      provider = "postgres"
-      url = "postgresql://USER:PASSWORD@localhost:5432/DATABASE"
-    }
-    ```
-
-    Using MySQL:
-
-    ```prisma
-    //schema.prisma
-
-    datasource db {
-      provider = "mysql"
-      url = "mysql://USER:PASSWORD@localhost:3306/DATABASE"
-    }
-    ```
-
-    Using SQLite:
-
-    ```prisma
-    //schema.prisma
-
-    datasource db {
-      provider = "sqlite"
-      url = "file:./dev.db"
-    }
-    ```
-
-2. Introspect your database:
-
-  ```bash-symbol
-  npm run prisma introspect
-  ```
-
-3. Generate the Prisma Client. Add the following block at the top of your `schema.prisma` file:
-
-  ```
-  generator prisma_client {
-    provider = "prisma-client-js"
-  }
-  ```
-
-  The plugin will take care of generating the Prisma Client for you after that.
-
-You're ready to start working!
-
-## Example
-
-Given a [Prisma schema](https://github.com/prisma/prisma2/blob/master/docs/prisma-schema-file.md) (left), you will be able to project these Prisma models onto your API and expose operations against them (middle) resulting in the GraphQL Schema (right).
-
-> **Note**:  `t.crud` is an experimental feature. You must explicitly enable it [via the plugin options](#type-definition).
-
-<div class="Row Collapsable">
-
-```prisma
-generator prisma_client {
-  provider = "prisma-client-js"
-}
-
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  birthDate DateTime
-}
-
-model Post {
-  id     String   @id @default(cuid())
-  author User[]
-}
-
-```
-
-```ts
-import { schema } from 'nexus'
-
-schema.queryType({
-  definition(t) {
-    t.crud.user()
-    t.crud.users({
-      ordering: true,
-    })
-    t.crud.post()
-    t.crud.posts({
-      filtering: true,
-    })
-  },
-})
-
-schema.mutationType({
-  definition(t) {
-    t.crud.createOneUser()
-    t.crud.createOnePost()
-    t.crud.deleteOneUser()
-    t.crud.deleteOnePost()
-  },
-})
-
-schema.objectType({
-  name: 'User',
-  definition(t) {
-    t.model.id()
-    t.model.email()
-    t.model.birthDate()
-    t.model.posts()
-  },
-})
-
-schema.objectType({
-  name: 'Post',
-  definition(t) {
-    t.model.id()
-    t.model.author()
-  },
-})
-```
-
-```graphql
-scalar DateTime
-
-input DateTimeFilter {
-  equals: DateTime
-  gt: DateTime
-  gte: DateTime
-  in: [DateTime!]
-  lt: DateTime
-  lte: DateTime
-  not: DateTime
-  notIn: [DateTime!]
-}
-
-type Mutation {
-  createOnePost(data: PostCreateInput!): Post!
-  createOneUser(data: UserCreateInput!): User!
-  deleteOnePost(where: PostWhereUniqueInput!): Post
-  deleteOneUser(where: UserWhereUniqueInput!): User
-}
-
-enum OrderByArg {
-  asc
-  desc
-}
-
-type Post {
-  author(after: String, before: String, first: Int, last: Int): [User!]!
-  id: ID!
-}
-
-input PostCreateInput {
-  author: UserCreateManyWithoutAuthorInput
-  id: ID
-}
-
-input PostCreateManyWithoutPostsInput {
-  connect: [PostWhereUniqueInput!]
-  create: [PostCreateWithoutAuthorInput!]
-}
-
-input PostCreateWithoutAuthorInput {
-  id: ID
-}
-
-input PostFilter {
-  every: PostWhereInput
-  none: PostWhereInput
-  some: PostWhereInput
-}
-
-input PostWhereInput {
-  AND: [PostWhereInput!]
-  author: UserFilter
-  id: StringFilter
-  NOT: [PostWhereInput!]
-  OR: [PostWhereInput!]
-}
-
-input PostWhereUniqueInput {
-  id: ID
-}
-
-type Query {
-  post(where: PostWhereUniqueInput!): Post
-  posts(after: String, before: String, first: Int, last: Int, where: PostWhereInput): [Post!]!
-  user(where: UserWhereUniqueInput!): User
-  users(after: String, before: String, first: Int, last: Int, orderBy: UserOrderByInput): [User!]!
-}
-
-input StringFilter {
-  contains: String
-  endsWith: String
-  equals: String
-  gt: String
-  gte: String
-  in: [String!]
-  lt: String
-  lte: String
-  not: String
-  notIn: [String!]
-  startsWith: String
-}
-
-type User {
-  birthDate: DateTime!
-  email: String!
-  id: ID!
-  posts(after: String, before: String, first: Int, last: Int): [Post!]!
-}
-
-input UserCreateInput {
-  birthDate: DateTime!
-  email: String!
-  id: ID
-  posts: PostCreateManyWithoutPostsInput
-}
-
-input UserCreateManyWithoutAuthorInput {
-  connect: [UserWhereUniqueInput!]
-  create: [UserCreateWithoutPostsInput!]
-}
-
-input UserCreateWithoutPostsInput {
-  birthDate: DateTime!
-  email: String!
-  id: ID
-}
-
-input UserFilter {
-  every: UserWhereInput
-  none: UserWhereInput
-  some: UserWhereInput
-}
-
-input UserOrderByInput {
-  birthDate: OrderByArg
-  email: OrderByArg
-  id: OrderByArg
-}
-
-input UserWhereInput {
-  AND: [UserWhereInput!]
-  birthDate: DateTimeFilter
-  email: StringFilter
-  id: StringFilter
-  NOT: [UserWhereInput!]
-  OR: [UserWhereInput!]
-  posts: PostFilter
-}
-
-input UserWhereUniqueInput {
-  email: String
-  id: ID
-}
-```
-
-</div>
-
-## Plugin settings
-
-You can _optionally_ pass some settings to the plugin.
-
-### Type definition
-
-```ts
-export type PrismaClientOptions = {
-  /**
-   * Options to pass to the Prisma Client instantiated by the plugin.
-   * If you want to instantiate your own Prisma Client, use `instance` instead.
-   */
-  options: ClientOptions
-}
-
-export type PrismaClientInstance = {
-  /**
-   * Instance of your own Prisma Client. You can import it from 'nexus-plugin-prisma/client'.
-   * If you just want to pass some settings to the Prisma Client, use `options` instead.
-   */
-  instance: PrismaClient
-}
-
-export type Settings = {
-  /**
-   * Use this to pass some settings to the Prisma Client instantiated by the plugin or to pass your own Prisma Client
-   */
-  client?: PrismaClientOptions | PrismaClientInstance
-  /**
-   * Enable or disable migrations run by the plugin when editing your schema.prisma file
-   *
-   * @default true
-   */
-  migrations?: boolean
-  /**
-   * Features that require opting into. These are all disabled by default.
-   */
-  features?: {
-    /**
-     * Enable **experimental** CRUD capabilities.
-     * Add a `t.crud` method in your definition block to generate CRUD resolvers in your `Query` and `Mutation` GraphQL Object Type.
-     *
-     * @default false
-     */
-    crud?: boolean
-  }
-}
-```
-
-### Examples
-
-#### Configuring the Prisma Client
-
-```ts
-import { use } from 'nexus'
-import { prisma } from 'nexus-plugin-prisma'
-
-use(
-  prisma({
-    client: { options: { log: ['query'] } },
-  })
-)
-```
-
-#### Using a custom instance of the Prisma Client
-
-```ts
-import { use } from 'nexus'
-import { prisma } from 'nexus-plugin-prisma'
-import { PrismaClient } from 'nexus-plugin-prisma/client'
-
-use(
-  prisma({
-    client: { instance: new PrismaClient() },
-  })
-)
-```
-
-## Recipes
-
-### Projecting Prisma model fields
-
-Exposing one of your Prisma models in your GraphQL API
-
-```ts
-schema.objectType({
-  name: 'Post',
-  definition(t) {
-    t.model.id()
-    t.model.title()
-    t.model.content()
-  },
-})
-```
-
-### Simple computed GraphQL fields
-
-You can add computed fields to a GraphQL object using the standard GraphQL Nexus API.
-
-```ts
-schema.objectType({
-  name: "Post",
-  definition(t) {
-    t.model.id()
-    t.model.title()
-    t.model.content()
-    t.string("uppercaseTitle", {
-      resolve({ title }, args, ctx) {
-        return title.toUpperCase(),
-      }
-    })
-  },
-})
-```
-
-### Complex computed GraphQL fields
-
-If you need more complicated logic for your computed field (e.g. have access to some information from the database), you can use the `prisma` instance that's attached to the context and implement your resolver based on that.
-
-```ts
-schema.objectType({
-  name: 'Post',
-  definition(t) {
-    t.model.id()
-    t.model.content()
-    t.string('anotherComputedField', {
-      async resolve(_parent, _args, ctx) {
-        const databaseInfo = await ctx.prisma.someModel.someOperation(...)
-        const result = doSomething(databaseInfo)
-        return result
-      }
-    })
-  }
-})
-```
-
-### Project a Prisma field to a differently named GraphQL field
-
-```ts
-schema.objectType({
-  name: 'Post',
-  definition(t) {
-    t.model.id()
-    t.model.content({
-      alias: 'body',
-    })
-  },
-})
-```
-
-### Publish full-featured reads on a Prisma model
-
-`t.crud` is an experimental feature. You must explicitly enable it [via the plugin options](#type-definition).
-
-```ts
-schema.queryType({
-  definition(t) {
-    t.crud.post()
-    t.crud.posts({
-      ordering: true,
-      filtering: true,
-    })
-  },
-})
-```
-
-### Publish writes on a Prisma model
-
-`t.crud` is an experimental feature. You must explicitly enable it [via the plugin options](#type-definition).
-
-```ts
-schema.mutationType({
-  definition(t) {
-    t.crud.createPost()
-    t.crud.updatePost()
-    t.crud.updateManyPost()
-    t.crud.upsertPost()
-    t.crud.deletePost()
-    t.crud.deleteManyPost()
-  },
-})
-```
-
-### Publish customized reads on a Prisma model
-
-`t.crud` is an experimental feature. You must explicitly enable it [via the plugin options](#type-definition).
-
-```ts
-schema.queryType({
-  definition(t) {
-    t.crud.posts({
-      filtering: {
-        id: true,
-        title: true,
-      },
-      ordering: { title: true },
-    })
-  },
-})
-```
-
-### Publish autogenerated mutations with computed input values
-
-`t.crud` is an experimental feature. You must explicitly enable it [via the plugin options](#type-definition).
-
-```ts
-schema.mutationType({
-  definition(t) {
-    /* 
-    Assuming our prisma model for User has a createdByBrowser field,
-    this removes it from the input type but ensures the value is
-    inferred from context and passed to Prisma Client.
-    */
-    t.crud.createOneUser({
-      computedInputs: {
-        createdByBrowser: ({ args, ctx, info }) => ctx.session.browser,
-      },
-    })
-  },
-})
-```
-
-### Globally remove a field from input types and infer its value
-
-🚧 Work in progress.
-
-> **Note** Not yet possible in framework.
-
-```ts
-nexusPrismaPlugin({
-  ...other config...
-  /*
-  Remove fields named "user" from all input types. When resolving
-  a request whose data contains any of these types, the value is inferred
-  from context and passed to Prisma Client, even if it's nested. This is great for
-  creating data associated with one user's account.
-  */
-  computedInputs: {
-    user: ({ args, ctx, info }) => ({
-      connect: {
-        id: ctx.userId,
-      },
-    }),
-  },
-})
-```
-
-```ts
-schema.mutationType({
-  definition(t) {
-    t.crud.createOnePost()
-  },
-})
-```
-
-Without `computedInputs`:
-
-```graphql
-mutation createOnePost {
-  createOnePost(
-    data: {
-      title: "Automatically generate clean APIs!"
-      image: { url: "https://example.com/images/prancing-unicorns", user: { connect: { id: 1 } } }
-      user: { connect: { id: 1 } }
-    }
-  )
-}
-```
-
-With `computedInputs`:
-
-```graphql
-mutation createOnePost {
-  createOnePost(
-    data: {
-      title: "Automatically generate clean APIs!"
-      image: { url: "https://example.com/images/prancing-unicorns" }
-    }
-  )
-}
-```
-
-### Publish model writes along side Prisma Client-resolved fields
-
-`t.crud` is an experimental feature. You must explicitly enable it [via the plugin options](#type-definition).
-
-```ts
-schema.mutationType({
-  definition(t) {
-    t.crud.createUser()
-    t.crud.updateUser()
-    t.crud.deleteUser()
-    t.crud.deletePost()
-
-    t.field('createDraft', {
-      type: 'Post',
-      args: {
-        title: stringArg(),
-        content: stringArg({
-          nullable: true,
-        }),
-      },
-      resolve: (parent, { title, content }, ctx) => {
-        return ctx.prisma.posts.createPost({ title, content })
-      },
-    })
-
-    t.field('publish', {
-      type: 'Post',
-      nullable: true,
-      args: {
-        id: idArg(),
-      },
-      resolve(parent, { id }, ctx) {
-        return ctx.prisma.posts.updatePost({
-          where: { id },
-          data: {
-            published: true,
-          },
-        })
-      },
-    })
-  },
-})
-```
-
-## Worktime integration
-
-### `nexus dev`
-
-When running `nexus dev`, `nexus-plugin-prisma` will make sure your [`Prisma Client`](https://github.com/prisma/prisma-client-js) is up-to-date with your Prisma Schema by running your Prisma generators for you.
-
-Updates to your `schema.prisma` file will also be detected and will give you hints about the next steps to properly migrate your database.
-
-### `nexus build`
-
-When running `nexus build`, `nexus-plugin-prisma` will make sure your [`Prisma Client`](https://github.com/prisma/prisma-client-js) is up-to-date with your Prisma Schema, thus making sure your application is safely accessing your database.
-
-## Testtime integration
-
-`nexus-plugin-prisma` augments the testing component of Nexus with an instance of the [`Prisma Client`](https://github.com/prisma/prisma-client-js), to help you easily seed your database for your tests.
-
-To learn more about its usage, [head to the Testing section](../../guides/testing#with-a-database).
-
-## Runtime integration
-
-### Access to the Prisma Client
-
-At runtime, `nexus-plugin-prisma` will add a `db` property containing an instance of the [`Prisma Client`](https://github.com/prisma/prisma-client-js) to your GraphQL resolvers context.
-
-##### Example
+#### Example
 
 ```ts
 import { schema } from 'nexus'
@@ -753,23 +24,31 @@ schema.objectType({
 })
 ```
 
-### `t.model`
+
+
+## `t.model`
 
 Only available within [`schema.objectType`](../../api/nexus/schema#objecttype) definitions.
 
 `t.model` contains configurable _field projectors_ that you use for projecting fields of your [Prisma models](https://github.com/prisma/prisma2/blob/master/docs/data-modeling.md#models) onto your [GraphQL Objects](https://graphql.github.io/graphql-spec/June2018/#sec-Objects). The precise behaviour of field projectors vary by the Prisma type being projected. Refer to the respective sub-sections for details.
 
-#### Model-object mapping
+### Model-object mapping
 
 `t.model` will either have field projectors for the Prisma model whose name matches that of the GraphQL `Object`, or if the GraphQL `Object` is of a name that does not match any of your Prisma models then `t.model` becomes a function allowing you to specify the mapping, after which the field projectors become available.
 
-##### Example
+#### Example
+
+<TabbedContent tabs={["Prisma", "Nexus", "GraphQL"]}>
+<tab>
 
 ```prisma
 model User {
   id String @id @default(cuid())
 }
 ```
+
+</tab>
+<tab>
 
 ```ts
 schema.objectType({
@@ -787,7 +66,12 @@ schema.objectType({
 })
 ```
 
+</tab>
+<tab>
+
 ```graphql
+# Generated
+
 type User {
   id: ID!
 }
@@ -797,7 +81,10 @@ type Person {
 }
 ```
 
-#### Enum
+</tab>
+</TabbedContent>
+
+### Enum
 
 _Auto-Projection_
 
@@ -811,11 +98,11 @@ _Option Notes_
 
 Currently Prisma enums cannot be [aliased](#alias) ([issue](https://github.com/graphql-nexus/nexus-plugin-prisma/issues/474)). They also cannot be [type mapped](#type) since enum types cannot be mapped yet ([issue](https://github.com/graphql-nexus/nexus-plugin-prisma/issues/473)).
 
-##### Options
+#### Options
 
 n/a
 
-##### GraphQL Schema contributions [`?`](#graphql-schema-contributions 'How to read this')
+#### GraphQL Schema Contributions [`?`](#graphql-schema-contributions-legend 'How to read this')
 
 ```graphql
 type M {
@@ -828,9 +115,10 @@ enum E {
 }
 ```
 
-##### Example
+#### Example
 
-<div class="Row Collapsable">
+<TabbedContent tabs={['Prisma', 'Nexus', 'GraphQL']}>
+<tab>
 
 ```prisma
 model User {
@@ -851,6 +139,9 @@ enum Role {
 }
 ```
 
+</tab>
+<tab>
+
 ```ts
 enumType({
   name: 'Role',
@@ -866,7 +157,12 @@ schema.objectType({
 })
 ```
 
+</tab>
+<tab>
+
 ```graphql
+# Generated
+
 enum Mood {
   HAPPY
   SAD
@@ -882,11 +178,12 @@ type User {
   role: Role
   mood: Mood
 }
-```
+```  
 
-</div>
+</tab>
+</TabbedContent>
 
-#### Scalar
+### Scalar
 
 _Scalar Mapping_
 
@@ -912,7 +209,7 @@ _Option Notes_
 
 It is not possible to use [`type`](#type) because there is currently no way for a Prisma scalar to map to a differently named GraphQL scalar.
 
-##### GraphQL Schema contributions [`?`](#graphql-schema-contributions 'How to read this')
+#### GraphQL Schema Contributions [`?`](#graphql-schema-contributions-legend 'How to read this')
 
 ```graphql
 type M {
@@ -923,23 +220,27 @@ type M {
 scalar S
 ```
 
-##### Options
+#### Options
 
 [`alias`](#alias) [`resolve`](#resolve)
 
-##### Example
+#### Example
 
-```graphql
-type Post {
-  id: Int!
-  email: String!
-  scheduledPublish: DateTime
-  rating: Float!
-  active: Boolean!
+<TabbedContent tabs={["Prisma", "Nexus", "GraphQL"]}>
+<tab>
+
+```prisma
+model User {
+  id               String     @id @default(cuid())
+  email            String
+  scheduledPublish DateTime?
+  rating           Float
+  active           Boolean
 }
-
-scalar DateTime
 ```
+
+</tab>
+<tab>
 
 ```ts
 schema.objectType({
@@ -954,26 +255,35 @@ schema.objectType({
 })
 ```
 
-```prisma
+</tab>
+<tab>
 
-model User {
-  id               String     @id @default(cuid())
-  email            String
-  scheduledPublish DateTime?
-  rating           Float
-  active           Boolean
+```graphql
+# Generated
+
+type Post {
+  id: Int!
+  email: String!
+  scheduledPublish: DateTime
+  rating: Float!
+  active: Boolean!
 }
+
+scalar DateTime
 ```
 
-#### Relation
+</tab>
+</TabbedContent>
+
+### Relation
 
 Projecting relational fields only affects the current GraphQL object being defined. That is, the model that the field relates to is not auto-projected. This is a design choice intended to keep the `nexus-plugin-prisma` system predictable for you. If you forget to project a relation you will receive feedback at build/boot time letting you know.
 
-##### Options
+#### Options
 
 [`type`](#type) [`alias`](#alias) [`resolve`](#resolve)
 
-##### GraphQL Schema Contributions [`?`](#graphql-schema-contributions 'How to read this')
+#### GraphQL Schema Contributions [`?`](#graphql-schema-contributions-legend 'How to read this')
 
 ```graphql
 type M {
@@ -981,7 +291,10 @@ type M {
 }
 ```
 
-##### Example
+#### Example
+
+<TabbedContent tabs={["Prisma", "Nexus", "GraphQL"]}>
+<tab>
 
 ```prisma
 model User {
@@ -994,6 +307,10 @@ model Post {
 }
 ```
 
+</tab>
+
+<tab>
+
 ```ts
 schema.objectType({
   name: 'User',
@@ -1003,17 +320,25 @@ schema.objectType({
 })
 ```
 
+</tab>
+<tab>
+
 ```graphql
+# Generated
+
 type User {
   latestPost: Post
 }
 ```
 
-#### List Enum
+</tab>
+</TabbedContent>
+
+### List Enum
 
 Like [enums](#enum). It is not possible to order ([issue](https://github.com/graphql-nexus/nexus-plugin-prisma/issues/466)) paginate ([issue](https://github.com/graphql-nexus/nexus-plugin-prisma/issues/468)) or filter ([issue](https://github.com/graphql-nexus/nexus-plugin-prisma/issues/467)) enum lists.
 
-##### GraphQL Schema Contributions [`?`](#graphql-schema-contributions 'How to read this')
+#### GraphQL Schema Contributions [`?`](#graphql-schema-contributions-legend 'How to read this')
 
 ```graphql
 type M {
@@ -1026,11 +351,11 @@ enum E {
 }
 ```
 
-#### List Scalar
+### List Scalar
 
 Like [scalars](#scalar). It is not possible to order ([issue](https://github.com/graphql-nexus/nexus-plugin-prisma/issues/470)) paginate ([issue](https://github.com/graphql-nexus/nexus-plugin-prisma/issues/471)) or filter ([issue](https://github.com/graphql-nexus/nexus-plugin-prisma/issues/469)) scalar lists.
 
-##### GraphQL Schema Contributions [`?`](#graphql-schema-contributions 'How to read this')
+#### GraphQL Schema Contributions [`?`](#graphql-schema-contributions-legend 'How to read this')
 
 ```graphql
 type M {
@@ -1038,15 +363,15 @@ type M {
 }
 ```
 
-#### List Relation
+### List Relation
 
 Like [relations](#relation) but also supports batch related options.
 
-##### Options
+#### Options
 
 [`type`](#type) [`alias`](#alias) [`resolve`](#resolve) [`filtering`](#filtering) [`pagination`](#pagination) [`ordering`](#ordering)
 
-##### GraphQL Schema Contributions [`?`](#graphql-schema-contributions 'How to read this')
+#### GraphQL Schema Contributions [`?`](#graphql-schema-contributions-legend 'How to read this')
 
 ```graphql
 type M {
@@ -1054,9 +379,9 @@ type M {
 }
 ```
 
-### `t.crud`
+## `t.crud`
 
-`t.crud` is an experimental feature. You must explicitly enable it [via the plugin options](#type-definition).
+`t.crud` is an experimental feature. You must explicitly enable it [via the plugin options](./overview#type-definition).
 
 Only available within GraphQL `Query` and `Mutation` definitions.
 
@@ -1064,7 +389,7 @@ Only available within GraphQL `Query` and `Mutation` definitions.
 
 There are 8 kinds of operations (reflecting a subset of [Prisma Client](https://github.com/prisma/prisma-client-js)'s capabilities). An _operation publisher_ is the combination of some operation kind and a particular Prisma model. Thus the number of operation publishers on `t.crud` is `Prisma model count × operation kind count`. So for example if you defined 20 Prisma models then you would see 160 operation publishers on `t.crud`.
 
-##### Example
+#### Example
 
 ```prisma
 model User {
@@ -1093,7 +418,7 @@ schema.mutationType({
 })
 ```
 
-#### Create
+### Create
 
 ```
 t.crud.createOne<M>
@@ -1109,11 +434,11 @@ Inlined creates are very similar to top-level ones but have the important differ
 
 [`create`](https://github.com/prisma/prisma2/blob/master/docs/prisma-client-js/api.md#create)
 
-##### Options
+#### Options
 
 [`type`](#type) [`alias`](#alias) [`resolve`](#resolve)
 
-##### GraphQL Schema contributions [`?`](#graphql-schema-contributions 'How to read this')
+#### GraphQL Schema Contributions [`?`](#graphql-schema-contributions-legend 'How to read this')
 
 ```graphql
 mutation {
@@ -1137,7 +462,10 @@ input RM_WhereUniqueInput {
 input RM_CreateWithout_M_Input = RM_CreateInput - RMRF: M
 ```
 
-##### Example
+#### Example
+
+<TabbedContent tabs={["Prisma","Nexus","GraphQL","Client"]}>
+<tab>
 
 ```prisma
 model User {
@@ -1153,6 +481,9 @@ model Post {
   author User
 }
 ```
+
+</tab>
+<tab>
 
 ```ts
 schema.mutationType({
@@ -1181,7 +512,12 @@ schema.objectType({
 })
 ```
 
+</tab>
+<tab>
+
 ```graphql
+# Generated
+
 type Mutation {
   createOneUser(data: UserCreateInput!): User!
 }
@@ -1220,6 +556,9 @@ input UserCreateInput {
 }
 ```
 
+</tab>
+<tab>
+
 ```graphql
 mutation simple {
   createOneUser(data: { email: "newton@prisma.io" }) {
@@ -1245,7 +584,10 @@ mutation createRelation {
 }
 ```
 
-#### Read
+</tab>
+</TabbedContent>
+
+### Read
 
 ```
 t.crud.<M>
@@ -1259,11 +601,11 @@ The ability for list fields to be [filtered](#filtering), [ordered](#ordering), 
 
 [`findOne`](https://github.com/prisma/prisma2/blob/master/docs/prisma-client-js/api.md#findone)
 
-##### Options
+#### Options
 
 [`type`](#type) [`alias`](#alias) [`resolve`](#resolve)
 
-##### GraphQL Schema contributions [`?`](#graphql-schema-contributions 'How to read this')
+#### GraphQL Schema Contributions [`?`](#graphql-schema-contributions-legend 'How to read this')
 
 ```graphql
 mutation {
@@ -1275,9 +617,10 @@ input M_WhereUniqueInput {
 }
 ```
 
-##### Example
+#### Example
 
-<div class="Row Collapsable">
+<TabbedContent tabs={["Prisma", "Nexus", "GraphQL", "Client"]}>
+<tab>
 
 ```prisma
 model User {
@@ -1285,6 +628,9 @@ model User {
   email String @unique
 }
 ```
+
+</tab>
+<tab>
 
 ```ts
 schema.queryType({
@@ -1294,7 +640,12 @@ schema.queryType({
 })
 ```
 
+</tab>
+<tab>
+
 ```graphql
+# Generated
+
 type Query {
   user(where: UserWhereUniqueInput!): User
 }
@@ -1310,7 +661,12 @@ input UserWhereUniqueInput {
 }
 ```
 
+</tab>
+<tab>
+
 ```graphql
+# Generated
+
 query simple {
   user(where: { email: "newton@prisma.io" }) {
     id
@@ -1318,9 +674,10 @@ query simple {
 }
 ```
 
-</div>
+</tab>
+</TabbedContent>
 
-#### Update
+### Update
 
 ```
 t.crud.updateOne<M>
@@ -1332,11 +689,11 @@ Allow clients to update one particular record at a time of the respective Prisma
 
 [`update`](https://github.com/prisma/prisma2/blob/master/docs/prisma-client-js/api.md#update)
 
-##### Options
+#### Options
 
 [`type`](#type) [`alias`](#alias) [`resolve`](#resolve)
 
-##### GraphQL Schema contributions [`?`](#graphql-schema-contributions 'How to read this')
+#### GraphQL Schema Contributions [`?`](#graphql-schema-contributions-legend 'How to read this')
 
 ```graphql
 mutation {
@@ -1390,9 +747,10 @@ input RM_UpsertWithWhereUniqueWithout_M_Input {
 
 For `S_ScalarWhereInput` see [batch filtering](#batch-filtering) contributions.
 
-##### Example
+#### Example
 
-<div class="Row Collapsable">
+<TabbedContent tabs={["Prisma", "Nexus","GraphQL","Client"]}>
+<tab>
 
 ```prisma
 model User {
@@ -1408,6 +766,9 @@ model Post {
   author User
 }
 ```
+
+</tab>
+<tab>
 
 ```ts
 schema.mutationType({
@@ -1435,7 +796,12 @@ schema.objectType({
 })
 ```
 
+</tab>
+<tab>
+
 ```graphql
+# Generated
+
 input IntFilter {
   equals: Int
   gt: Int
@@ -1552,7 +918,12 @@ input UserWhereUniqueInput {
 }
 ```
 
+</tab>
+<tab>
+
 ```graphql
+# Generated
+
 mutation simple {
   updateOneUser(where: { id: 1643 }, data: { email: "locke@prisma.io" }) {
     id
@@ -1561,9 +932,10 @@ mutation simple {
 }
 ```
 
-</div>
+</tab>
+</TabbedContent>
 
-#### Upsert
+### Upsert
 
 ```
 t.crud.upsertOne<M>
@@ -1575,11 +947,11 @@ Allow clients to update or create (aka. insert) one particular record at a time 
 
 [`upsert`](https://github.com/prisma/prisma2/blob/master/docs/prisma-client-js/api.md#upsert)
 
-##### Options
+#### Options
 
 [`type`](#type) [`alias`](#alias) [`resolve`](#resolve)
 
-##### GraphQL Schema contributions [`?`](#graphql-schema-contributions 'How to read this')
+#### GraphQL Schema Contributions [`?`](#graphql-schema-contributions-legend 'How to read this')
 
 ```graphql
 mutation {
@@ -1594,11 +966,11 @@ mutation {
 For `M_UpdateInput` and `M_WhereUniqueInput` see [update](#update) contributions.  
 For `M_CreateInput` see [create](#create) contributions.
 
-##### Example
+#### Example
 
 Refer to [update](#update) and [create](#create).
 
-#### Delete
+### Delete
 
 ```
 t.crud.deleteOne<M>
@@ -1610,11 +982,11 @@ Allow clients to delete one particular record at a time of the respective Prisma
 
 [`delete`](https://github.com/prisma/prisma2/blob/master/docs/prisma-client-js/api.md#delete)
 
-##### Options
+#### Options
 
 [`type`](#type) [`alias`](#alias) [`resolve`](#resolve)
 
-##### GraphQL Schema contributions [`?`](#graphql-schema-contributions 'How to read this')
+#### GraphQL Schema Contributions [`?`](#graphql-schema-contributions-legend 'How to read this')
 
 ```graphql
 mutation {
@@ -1626,9 +998,10 @@ input M_WhereUniqueInput {
 }
 ```
 
-##### Example
+#### Example
 
-<div class="Row Collapsable">
+<TabbedContent tabs={["Prisma", "Nexus", "GraphQL", "Client"]}>
+<tab>
 
 ```prisma
 model User {
@@ -1644,6 +1017,9 @@ model Post {
   author User
 }
 ```
+
+</tab>
+<tab>
 
 ```ts
 schema.mutationType({
@@ -1671,7 +1047,12 @@ schema.objectType({
 })
 ```
 
+</tab>
+<tab>
+
 ```graphql
+# Generated
+
 type Mutation {
   deleteOneUser(where: UserWhereUniqueInput!): User
 }
@@ -1694,6 +1075,9 @@ input UserWhereUniqueInput {
 }
 ```
 
+</tab>
+<tab>
+
 ```graphql
 mutation simple {
   deleteOneUser(where: { id: 1643 }) {
@@ -1707,9 +1091,10 @@ mutation simple {
 }
 ```
 
-</div>
+</tab>
+</TabbedContent>
 
-#### Batch Read
+### Batch Read
 
 ```
 t.crud.<M Pluralized>
@@ -1721,11 +1106,11 @@ Allow clients to fetch multiple records at once of the respective Prisma model.
 
 [`findMany`](https://github.com/prisma/prisma2/blob/master/docs/prisma-client-js/api.md#findMany)
 
-##### Options
+#### Options
 
 [`type`](#type) [`alias`](#alias) [`resolve`](#resolve) [`filtering`](#filtering) [`pagination`](#pagination) [`ordering`](#ordering) [`computedInputs`](#computedInputs-local)([local](#computedInputs-local) and [global](#computedInputs-global))
 
-##### GraphQL Schema Contributions [`?`](#graphql-schema-contributions 'How to read this')
+#### GraphQL Schema Contributions [`?`](#graphql-schema-contributions-legend 'How to read this')
 
 ```graphql
 type Query {
@@ -1733,9 +1118,10 @@ type Query {
 }
 ```
 
-##### Example
+#### Example
 
-<div class="Row Collapsable">
+<TabbedContent tabs={["Prisma", "Nexus", "GraphQL"]}>
+<tab>
 
 ```prisma
 model User {
@@ -1752,6 +1138,9 @@ model Post {
 }
 ```
 
+</tab>
+<tab>
+
 ```ts
 schema.queryType({
   definition(t) {
@@ -1760,7 +1149,12 @@ schema.queryType({
 })
 ```
 
+</tab>
+<tab>
+
 ```graphql
+# Generated
+
 type Query {
   users: [User!]!
 }
@@ -1778,9 +1172,10 @@ type User {
 }
 ```
 
-</div>
+</tab>
+</TabbedContent>
 
-#### Batch Update
+### Batch Update
 
 ```
 t.crud.updateMany<M>
@@ -1792,11 +1187,11 @@ Allow clients to update multiple records of the respective Prisma model at once.
 
 [`updateMany`](https://github.com/prisma/prisma2/blob/master/docs/prisma-client-js/api.md#updateMany)
 
-##### Options
+#### Options
 
 [`type`](#type) [`alias`](#alias) [`resolve`](#resolve)
 
-##### GraphQL Schema Contributions [`?`](#graphql-schema-contributions 'How to read this')
+#### GraphQL Schema Contributions [`?`](#graphql-schema-contributions-legend 'How to read this')
 
 ```graphql
 mutation {
@@ -1816,7 +1211,7 @@ type BatchPayload {
 
 For `M_WhereInput` see [batch filtering contributions](#batch-filtering).
 
-##### Example
+#### Example
 
 ```graphql
 mutation updateManyUser(where: {...}, data: { status: ACTIVE }) {
@@ -1826,7 +1221,7 @@ mutation updateManyUser(where: {...}, data: { status: ACTIVE }) {
 
 See [filtering option](#filtering) example. Differences are: operation semantics (update things); return type; `data` arg.
 
-#### Batch Delete
+### Batch Delete
 
 ```
 t.crud.deleteMany<M>
@@ -1838,11 +1233,11 @@ Allow clients to delete multiple records of the respective Prisma model at once.
 
 [`deleteMany`](https://github.com/prisma/prisma2/blob/master/docs/prisma-client-js/api.md#deleteMany)
 
-##### Options
+#### Options
 
 [`type`](#type) [`alias`](#alias) [`resolve`](#resolve)
 
-##### GraphQL Schema Contributions [`?`](#graphql-schema-contributions 'How to read this')
+#### GraphQL Schema Contributions [`?`](#graphql-schema-contributions-legend 'How to read this')
 
 ```graphql
 mutation {
@@ -1856,7 +1251,7 @@ type BatchPayload {
 
 For `M_WhereInput` see [filtering contribution](#batch-filtering).
 
-##### Example
+#### Example
 
 ```graphql
 mutation {
@@ -1868,7 +1263,7 @@ mutation {
 
 See [filtering option](#filtering) example. Differences are: operation semantics (delete things); return type.
 
-### Options
+## Options
 
 #### `alias`
 
@@ -1885,19 +1280,23 @@ undefined | String
 - `undefined` (default) By default Prisma model fields project onto GraphQL object fields of the same name.
 - `string` Change which GraphQL object field the Prisma model field projects onto.
 
-##### GraphQL Schema Contributions [`?`](#graphql-schema-contributions 'How to read this')
+#### GraphQL Schema Contributions [`?`](#graphql-schema-contributions-legend 'How to read this')
 
 n/a
 
-##### Example
+#### Example
 
-<div class="Row Collapsable">
+<TabbedContent tabs={["Prisma", "Nexus", "GraphQL"]}>
+<tab>
 
 ```prisma
 model Post  {
   body String
 }
 ```
+
+</tab>
+<tab>
 
 ```ts
 schema.objectType({
@@ -1910,15 +1309,21 @@ schema.objectType({
 })
 ```
 
+</tab>
+<tab>
+
 ```graphql
+# Generated
+
 type Post {
   content: String!
 }
 ```
 
-</div>
+</tab>
+</TabbedContent>
 
-#### `type`
+### `type`
 
 ```
 undefined | String
@@ -1934,11 +1339,14 @@ undefined | String
 
 - `string` Point Prisma field to the given GraphQL object. This option can become necessary when you've have done [model-object mapping](#model-object-mapping) and other Prisma models in your schema have relations to the name-mapped Prisma model. We are interested in developing further the model-object mapping API to automate this better ([issue](https://github.com/graphql-nexus/nexus-plugin-prisma/issues/461)).
 
-##### GraphQL Schema Contributions [`?`](#graphql-schema-contributions 'How to read this')
+#### GraphQL Schema Contributions [`?`](#graphql-schema-contributions-legend 'How to read this')
 
 n/a
 
-##### Example
+#### Example
+
+<TabbedContent tabs={["Prisma", "Nexus", "GraphQL"]}>
+<tab>
 
 ```prisma
 model User {
@@ -1950,6 +1358,10 @@ model Post {
   id String @id @default(cuid())
 }
 ```
+
+</tab>
+<tab>
+
 
 ```ts
 schema.objectType({
@@ -1970,7 +1382,12 @@ schema.objectType({
 })
 ```
 
+</tab>
+<tab>
+
 ```graphql
+# Generated
+
 type Article {
   title: String!
 }
@@ -1980,7 +1397,10 @@ type User {
 }
 ```
 
-#### `resolve`
+</tab>
+</TabbedContent>
+
+### `resolve`
 
 ```ts
 undefined | (root: Root, args: Args, ctx: Context, info: GraphQLResolverInfo, originalResolve: <T>(root: Root, args: Args, ctx: Context, info: GraphQLResolverInfo): T) => T
@@ -1995,7 +1415,7 @@ undefined | (root: Root, args: Args, ctx: Context, info: GraphQLResolverInfo, or
 Enable the usage of a custom resolver on any resolver generated by the plugin via `t.crud` or `t.model`.
 You can either entirely replace the generated resolver, or wrap it via the use of the `originalResolve` parameter.
 
-##### Example
+#### Example
 
 Adding custom business logic before and after a generated resolver
 
@@ -2014,7 +1434,7 @@ queryType({
 })
 ```
 
-#### `ordering`
+### `ordering`
 
 ```
 undefined | true | false | ModelWhitelist
@@ -2033,7 +1453,7 @@ Allow clients to order the records in a list field. Records can be ordered by th
 - `true` Enable ordering by all scalar fields
 - `ModelWhitelist` (`Record<string, true>`) Enable ordering by just Model scalar fields appearing in the given whitelist.
 
-##### GraphQL Schema Contributions [`?`](#graphql-schema-contributions 'How to read this')
+#### GraphQL Schema Contributions [`?`](#graphql-schema-contributions-legend 'How to read this')
 
 ```graphql
 # t.crud.<BatchRead>
@@ -2055,9 +1475,10 @@ enum OrderByArg {
 }
 ```
 
-##### Example
+#### Example
 
-<div class="Row Collapsable">
+<TabbedContent tabs={["Prisma", "Nexus", "GraphQL", "Client"]}>
+<tab>
 
 ```prisma
 model User {
@@ -2072,6 +1493,8 @@ model Post {
   body  String
 }
 ```
+</tab>
+<tab>
 
 ```ts
 schema.objectType({
@@ -2104,7 +1527,12 @@ schema.queryType({
 })
 ```
 
+</tab>
+<tab>
+
 ```graphql
+# Generated
+
 type Query {
   user(where: UserWhereUniqueInput!): User
   users(orderBy: UserOrderByInput): [User!]!
@@ -2141,6 +1569,9 @@ enum OrderByArg {
 }
 ```
 
+</tab>
+<tab>
+
 ```graphql
 query entrypointOrdering {
   users(orderBy: { name: asc }) {
@@ -2159,9 +1590,10 @@ query relationOrdering {
 }
 ```
 
-</div>
+</tab>
+</TabbedContent>
 
-#### `pagination`
+### `pagination`
 
 ```
 undefined | true | false
@@ -2177,7 +1609,7 @@ undefined | true | false
 - `true` Enable pagination
 - `false` Disable pagination
 
-##### GraphQL Schema contributions
+#### GraphQL Schema Contributions
 
 ```graphql
 # t.crud.<BatchRead>
@@ -2209,9 +1641,10 @@ input M_WhereUniqueInput {
 }
 ```
 
-##### Example
+#### Example
 
-<div class="Row Collapsable">
+<TabbedContent tabs={["Prisma", "Nexus", "GraphQL", "Client"]}>
+<tab>
 
 ```prisma
 model User {
@@ -2226,9 +1659,8 @@ model Post {
 }
 ```
 
-```graphql
-...
-```
+</tab>
+<tab>
 
 ```ts
 schema.objectType({
@@ -2249,7 +1681,21 @@ schema.queryType({
 })
 ```
 
+</tab>
+<tab>
+
 ```graphql
+# Generated
+
+# ...
+```
+
+</tab>
+<tab>
+
+```graphql
+# Generated
+
 query batchReadAfter {
   users(after: { id: 1234 }, first: 50) {
     id
@@ -2278,9 +1724,10 @@ query batchReadRelation {
 }
 ```
 
-</div>
+</tab>
+</TabbedContent>
 
-#### `filtering`
+### `filtering`
 
 ```
 undefined | true | false | ModelWhitelist
@@ -2297,13 +1744,14 @@ undefined | true | false | ModelWhitelist
 - `false` Disable filtering
 - `ModelWhitelist` (`Record<string, true>`) Enable ordering by just Model scalar fields appearing in the given whitelist.
 
-##### GraphQL Schema contributions [`?`](#graphql-schema-contributions 'How to read this')
+#### GraphQL Schema Contributions [`?`](#graphql-schema-contributions-legend 'How to read this')
 
 See [batch filtering contributions](#batch-filtering)
 
-##### Example
+#### Example
 
-<div class="Row Collapsable">
+<TabbedContent tabs={["Prisma", "Nexus", "GraphQL", "Client"]}>
+<tab>
 
 ```prisma
 model User {
@@ -2332,6 +1780,9 @@ enum UserStatus {
   ACTIVE
 }
 ```
+
+</tab>
+<tab>
 
 ```ts
 schema.objectType({
@@ -2368,7 +1819,12 @@ schema.queryType({
 })
 ```
 
+</tab>
+<tab>
+
 ```graphql
+# Generated
+
 type Comment {
   author: User!
   post: Post!
@@ -2478,6 +1934,9 @@ input UserWhereUniqueInput {
 }
 ```
 
+</tab>
+<tab>
+
 ```graphql
 query batchReadFilter {
   users(where: {
@@ -2517,15 +1976,16 @@ query batchReadRelationFilter {
 }
 ```
 
-</div>
+</tab>
+</TabbedContent>
 
-#### `computedInputs` (local)
+### `computedInputs` (local)
 
 ```
 Record<string, ({ args, ctx, info }: MutationResolverParams) => unknown>
 ```
 
-Note: This is an abbreviated version of the ComputedInputs type. The most important thing to understand each of the object's values will be a function that takes an object with "args", "ctx", and "info" keys that represent the runtime values of the corresponding parameters that are passed to your resolver. For the full type, see [ComputedInputs Type Details](#computedinputs-type-details).
+Note: This is an abbreviated version of the ComputedInputs type. The most important thing to understand is that each of the object's values will be a function that takes an object with "args", "ctx", and "info" keys that represent the runtime values of the corresponding parameters that are passed to your resolver. For the full type, see [ComputedInputs Type Details](#computedinputs-type-details).
 
 **Applies to**
 
@@ -2539,13 +1999,14 @@ Allow clients to omit fields from one mutation's corresponding input type and in
 
   Keys in the ComputedInputs object will be omitted from the mutation's corresponding input type. When resolving the mutation at runtime, each omitted key will be passed to Prisma Client based on the return value of that key's corresponding function in the ComputedInputs object when passed that resolver's parameters at runtime.
 
-##### GraphQL Schema contributions
+#### GraphQL Schema Contributions
 
 The mutation's input type fields with a name that is in the ComputedInputs object are omitted from the GraphQL schema. This modifies one existing input type but does not add new types or remove existing types.
 
-##### Example
+#### Example
 
-<div class="Row Collapsable">
+<TabbedContent tabs={["Prisma", "Nexus", "GraphQL","Client"]}>
+<tab>
 
 ```prisma
 model User {
@@ -2554,6 +2015,9 @@ model User {
   createdWithBrowser String
 }
 ```
+
+</tab>
+<tab>
 
 ```ts
 schema.queryType({
@@ -2580,7 +2044,12 @@ schema.objectType({
 })
 ```
 
+</tab>
+<tab>
+
 ```graphql
+# Generated
+
 type Mutation {
   createOneUser(data: UserCreateInput!): User!
 }
@@ -2604,6 +2073,9 @@ input UserWhereUniqueInput {
 }
 ```
 
+</tab>
+<tab>
+
 ```graphql
 mutation createOneUser {
   createOneUser({data: {name: "Benedict"}}) {
@@ -2614,9 +2086,10 @@ mutation createOneUser {
 }
 ```
 
-</div>
+</tab>
+</TabbedContent>
 
-#### `computedInputs` (global)
+### `computedInputs` (global)
 
 ```
 Record<string, ({ args, ctx, info}: MutationResolverParams) => any>
@@ -2636,11 +2109,14 @@ Allow clients to omit fields with a given name across all of their GraphQL schem
 
   Keys in the ComputedInputs object will be omitted from all input types. When resolving any mutation at runtime, that mutation's input type will be recursively searched for the omitted keys. Any time one of those keys would have appeared anywhere in the mutation's input type, a value will be passed to Prisma Client based on the return value of that key's corresponding function in the ComputedInputs object when passed the resolver's parameters at runtime.
 
-##### GraphQL Schema contributions
+#### GraphQL Schema Contributions
 
 All input type fields with a name that is in the ComputedInputs object are omitted from the GraphQL schema. This modifies existing input types but does not add new types or remove existing types.
 
-##### Example
+#### Example
+
+<TabbedContent tabs={["Prisma", "Nexus", "GraphQL", "Client"]}>
+<tab>
 
 ```prisma
 model User {
@@ -2656,6 +2132,9 @@ model Nested {
   createdWithBrowser String
 }
 ```
+
+</tab>
+<tab>
 
 ```ts
 schema.queryType({
@@ -2701,7 +2180,12 @@ nexusPrismaPlugin({
 })
 ```
 
+</tab>
+<tab>
+
 ```graphql
+# Generated
+
 type Mutation {
   createOneUser(data: UserCreateInput!): User!
   createOneNested(data: NestedCreateInput!): Nested!
@@ -2761,6 +2245,9 @@ input UserWhereUniqueInput {
 }
 ```
 
+</tab>
+<tab>
+
 ```graphql
 mutation createOneUser {
   createOneUser({data: {name: "Benedict", nested: {name: "Moony"}}) {
@@ -2784,6 +2271,9 @@ mutation createOneNested {
 }
 ```
 
+</tab>
+</TabbedContent>
+
 If `{user: {connect: {where: {id: 1}}}}` looks familiar, global computedInputs can also be used to determine the user making a request and automatically populate mutations affecting a single user accordingly. For example, assuming Prisma Client' context includes a "userId" key, adding a user key to global computedInputs can simplify the "createOneNested" mutation from the previous example:
 
 ```ts
@@ -2805,6 +2295,7 @@ mutation createOneNested {
   }
 }
 ```
+
 
 #### `ComputedInputs` type details
 
@@ -2846,17 +2337,63 @@ export type MutationMethodName = keyof core.GetGen<'argTypes'>['Mutation']
 export type Context = core.GetGen<'context'>
 ```
 
-### GraphQL Schema contributions
+## General System Behaviours
 
-#### How to read
+### Null-Free Lists
 
+Projection for Prisma list types always project as a fully non-nullable GraphQL type. This is because Prisma list fields (and list member type) can themselves never be null, and because Prisma does not support `@default` on list types.
+
+For consistency we also apply the same pattern for `t.crud.<BatchRead>`.
+
+#### Example
+
+<TabbedContent tabs={["Prisma", "Nexus", "GraphQL"]}>
+<tab>
+
+```prisma
+model User {
+  posts Post[]
+}
 ```
-M = model   F = field   L = list   S = scalar   R = relation   E = enum   V = value
+
+</tab>
+<tab>
+
+```ts
+schema.queryType({
+  definition(t) {
+    t.crud.users()
+  },
+})
+schema.objectType({
+  name: 'User',
+  definition(t) {
+    t.crud.posts()
+  },
+})
 ```
 
-#### Batch filtering
+</tab>
+<tab>
 
-**Sources**
+```graphql
+# Generated
+
+type Query {
+  users: [User!]!
+}
+
+type User {
+  posts: [Post!]!
+}
+```
+
+</tab>
+</TabbedContent>
+
+## Batch Filtering
+
+#### Where Does it Appear?
 
 ```graphql
 query {
@@ -2879,7 +2416,7 @@ type M {
 # Nested InputObjects from t.crud.upsert<M>
 ```
 
-**Where**
+#### What Structure Does it Have?
 
 ```graphql
 input M_WhereInput {
@@ -2906,31 +2443,20 @@ input RM_ScalarWhereInput {
 }
 ```
 
-**Scalar filters**
+## Scalar Filters
 
-`ID` scalars use `StringFilter` ([issue](https://github.com/graphql-nexus/nexus-plugin-prisma/issues/485)). We are considering a tailored `DateTime` filter ([issue](https://github.com/graphql-nexus/nexus-plugin-prisma/issues/484)).
+#### `Boolean`
 
 ```graphql
 input BooleanFilter {
   equals: Boolean
   not: Boolean
 }
+```
 
-input IntFilter {
-  equals: S
-  gt: S
-  gte: S
-  in: [S!]
-  lt: S
-  lte: S
-  not: S
-  notIn: [S!]
-}
+#### `String`
 
-input FloatFilter {} # like IntFilter
-
-input DateTimeFilter {} # like IntFilter
-
+```graphql
 input StringFilter {
   contains: String
   endsWith: String
@@ -2944,44 +2470,61 @@ input StringFilter {
   notIn: [String!]
   startsWith: String
 }
-
-input UUIDFilter {} # like StringFilter
 ```
 
-## System behaviours
-
-### Null-free lists
-
-Projection for Prisma list types always project as a fully non-nullable GraphQL type. This is because Prisma list fields (and list member type) can themselves never be null, and because Prisma does not support `@default` on list types.
-
-For consistency we also apply the same pattern for `t.crud.<BatchRead>`.
-
-```Prisma
-model User {
-  posts Post[]
-}
-```
-
-```ts
-schema.queryType({
-  definition(t) {
-    t.crud.users()
-  },
-})
-schema.objectType({
-  name: 'User',
-  definition(t) {
-    t.crud.posts()
-  },
-})
-```
+#### `Int`
 
 ```graphql
-type Query {
-  users: [User!]!
+input IntFilter {
+  equals: S
+  gt: S
+  gte: S
+  in: [S!]
+  lt: S
+  lte: S
+  not: S
+  notIn: [S!]
 }
+```
 
-type User {
-  posts: [Post!]!
+#### `Float`
+
+Uses the same filter structure as `Int`.
+
+```graphql
+input FloatFilter {
+  # ... see IntFilter
 }
+```
+
+#### `DateTime`
+
+Uses the same filter structure as `Int`. We are considering a [tailored `DateTime` filter](https://github.com/graphql-nexus/nexus-plugin-prisma/issues/484).
+
+```graphql
+input DateTimeFilter {
+  # ... see IntFilter
+}
+```
+
+#### `UUID`
+
+Uses the same filter structure as `String`.
+
+```graphql
+input UUIDFilter {
+  # ... see StringFilter
+}
+```
+
+#### `ID`
+
+Uses the same filter type as `String`. We are considering a [dedicated `ID` filter type for consistentcy](https://github.com/graphql-nexus/nexus-plugin-prisma/issues/485).
+
+## GraphQL Schema Contributions Legend
+
+#### How to read
+
+```
+M = model   F = field   L = list   S = scalar   R = relation   E = enum   V = value
 ```

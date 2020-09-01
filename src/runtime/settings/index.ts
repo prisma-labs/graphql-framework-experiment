@@ -72,10 +72,11 @@ export function create(
         serverSettings.change(newSettings.server)
       }
     },
+    // prettier-ignore
     current: {
-      logger: log.settings,
-      schema: schemaSettings.data,
-      server: serverSettings.data,
+      get logger() { return log.settings },
+      get schema() { return schemaSettings.data },
+      get server() { return serverSettings.data },
     },
     original: cloneDeep({
       logger: log.settings,

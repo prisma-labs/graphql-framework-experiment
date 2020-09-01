@@ -21,6 +21,10 @@ export type Param3<F> = F extends (p1: any, p2: any, p3: infer P3, ...args: any[
 
 /**
  * Represents a POJO. Prevents from allowing arrays and functions
+ *
+ * @remarks
+ *
+ * TypeScript interfaces will not be considered sub-types.
  */
 export type PlainObject = {
   [x: string]: Primitive | object
@@ -92,12 +96,13 @@ export declare type DeepRequired<T> = T extends (...args: any[]) => any
   ? DeepRequiredObject<T>
   : T
 
-export interface DeepRequiredArray<T> extends Array<DeepRequired<NonUndefined<T>>> {}
+export type ExcludeUndefined<A> = A extends undefined ? never : A
+
+export interface DeepRequiredArray<T> extends Array<DeepRequired<ExcludeUndefined<T>>> {}
 
 export declare type DeepRequiredObject<T> = {
-  [P in keyof T]-?: DeepRequired<NonUndefined<T[P]>>
+  [K in keyof T]-?: DeepRequired<ExcludeUndefined<T[K]>>
 }
-export declare type NonUndefined<A> = A extends undefined ? never : A
 
 /**
  * Guarantee the length of a given string, padding before or after with the
