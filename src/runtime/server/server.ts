@@ -15,7 +15,7 @@ import { createRequestHandlerGraphQL } from './handler-graphql'
 import { log } from './logger'
 import { createServerSettingsManager } from './settings'
 
-const resolverLogger = log.child('graphql')
+const resolverLogger = log.child('apollo')
 
 export type NexusRequestHandler = (req: HTTP.IncomingMessage, res: HTTP.ServerResponse) => void
 
@@ -108,6 +108,7 @@ export function create(appState: AppState) {
 
         state.apolloServer = new ApolloServerExpress({
           schema,
+          engine: settings.data.apollo.engine.enabled ? settings.data.apollo.engine : false,
           context: createContext,
           introspection: settings.data.graphql.introspection,
           formatError: errorFormatter,

@@ -3,6 +3,7 @@ import { CorsOptions as OriginalCorsOption } from 'cors'
 import * as Setset from 'setset'
 import { LiteralUnion, Primitive } from 'type-fest'
 import * as Utils from '../../lib/utils'
+import { ApolloConfigEngine } from './apollo-server/types'
 import { log as serverLogger } from './logger'
 
 type ResolvedOptional<T> = Exclude<NonNullable<T>, Primitive>
@@ -38,11 +39,15 @@ export type PlaygroundLonghandInput = {
 
 export type SettingsInput = {
   /**
-   * todo
+   * Port the server should be listening on.
+   *
+   * todo default
    */
   port?: number
   /**
    * Host the server should be listening on.
+   *
+   * todo default
    */
   host?: string | undefined
   /**
@@ -154,6 +159,34 @@ export type SettingsInput = {
    */
   path?: string
   /**
+   * Settings that are particualr to [Apollo](https://www.apollographql.com/).
+   *
+   * @remarks
+   *
+   * Under the hood Nexus' server implementation is powered by Apollo Server. You will not find all Apollo Server options here however. Only the ones that are particular to Apollo. Nexus does not consider generic server setting areas like CORS and GraphQL Playground as being Apollo settings.
+   */
+  apollo?: {
+    /**
+     * The so-called "Apollo Reporting Options". For details about them refer [its official documentation](https://www.apollographql.com/docs/apollo-server/api/apollo-server/#enginereportingoptions). Many of the settings here are for Apollo Studio. You may also want to refer to its [official documentation](https://www.apollographql.com/docs/studio/schema/schema-reporting).
+     *
+     * - Pass false to disable
+     * - Pass true to enable with defaults
+     * - Pass an object of settings to customize the various options. This does not imply enabled. For that you must set "enabled: true".
+     *
+     * Some of these settings respond to special envars.
+     *
+     * - APOLLO_KEY -> apiKey
+     * - APOLLO_GRAPH_VARIANT -> graphVariant
+     *
+     * @default false
+     */
+    engine?:
+      | boolean
+      | (ApolloConfigEngine & {
+          enabled?: boolean
+        })
+  }
+  /**
    * Create a message suitable for printing to the terminal about the server
    * having been booted.
    */
@@ -166,16 +199,35 @@ export type SettingsInput = {
   }
 }
 
-export type SettingsData = Setset.InferDataFromInput<Omit<SettingsInput, 'host' | 'cors'>> & {
+export type SettingsData = Setset.InferDataFromInput<Omit<SettingsInput, 'host' | 'cors' | 'apollo'>> & {
   host?: string
   cors: ResolvedOptional<SettingsInput['cors']>
+  apollo: {
+    engine: ApolloConfigEngine & {
+      enabled: boolean
+    }
+  }
 }
-
-type a = SettingsData['host']
 
 export const createServerSettingsManager = () =>
   Setset.create<SettingsInput, SettingsData>({
     fields: {
+      apollo: {
+        fields: {
+          engine: {
+            shorthand(enabled) {
+              return { enabled }
+            },
+            fields: {
+              enabled: {
+                initial() {
+                  return false
+                },
+              },
+            },
+          },
+        },
+      },
       playground: {
         shorthand(enabled) {
           return { enabled }
