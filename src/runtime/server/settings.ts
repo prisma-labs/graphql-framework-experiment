@@ -158,7 +158,28 @@ export type SettingsInput = {
    * @default /graphql
    */
   path?: string
+  /**
+   * Settings that are particualr to [Apollo](https://www.apollographql.com/).
+   *
+   * @remarks
+   *
+   * Under the hood Nexus' server implementation is powered by Apollo Server. You will not find all Apollo Server options here however. Only the ones that are particular to Apollo. Nexus does not consider generic server setting areas like CORS and GraphQL Playground as being Apollo settings.
+   */
   apollo?: {
+    /**
+     * The so-called "Apollo Reporting Options". For details about them refer [its official documentation](https://www.apollographql.com/docs/apollo-server/api/apollo-server/#enginereportingoptions). Many of the settings here are for Apollo Studio. You may also want to refer to its [official documentation](https://www.apollographql.com/docs/studio/schema/schema-reporting).
+     *
+     * - Pass false to disable
+     * - Pass true to enable with defaults
+     * - Pass an object of settings to customize the various options. This does not imply enabled. For that you must set "enabled: true".
+     *
+     * Some of these settings respond to special envars.
+     *
+     * - APOLLO_KEY -> apiKey
+     * - APOLLO_GRAPH_VARIANT -> graphVariant
+     *
+     * @default false
+     */
     engine?:
       | boolean
       | (ApolloConfigEngine & {
