@@ -706,6 +706,8 @@ input M_WhereUniqueInput {
 }
 
 input M_UpdateInput {
+  MFloatF: S_FieldUpdateOperationsInput
+  MIntF: S_FieldUpdateOperationsInput
   MSF: S
   MRF: RM_UpdateManyWithout_M_Input
 }
@@ -1200,6 +1202,8 @@ mutation {
 }
 
 input M_UpdateManyMutationInput {
+  MFloatF: S_FieldUpdateOperationsInput
+  MIntF: S_FieldUpdateOperationsInput
   MSF: S
   MEF: E
   # not possible to batch update relations
@@ -2528,11 +2532,59 @@ Refer to String like filter. We are considering a [dedicated `ID` filter type fo
 
 TODO
 
+## S_FieldUpdateOperationsInput
+
+This allows you to update the values of certain fields atomically.
+
+**Applies to**
+
+[`t.crud.updateOne<M>`](#update), [`t.crud.updateMany<M>`](#batch-update)
+
+#### GraphQL Schema Contributions [`?`](#graphql-schema-contributions-legend 'How to read this')
+
+# S = Float | Int
+# Only one operation can be done per field at a time.
+input S_FieldUpdateOperationsInput {
+  # Sets the value to S
+  set: S
+  # These fields only appear if "atomicNumberOperations" prisma client preview feature is enabled
+  # Adds S to the current value
+  increment: S
+  # Subtracts S from the current value
+  decrement: S
+  # Multiplies the current value by S
+  multiply: S
+  # Divides the current value by S
+  divide: S
+}
 
 ## GraphQL Schema Contributions Legend
 
 #### How to read
 
+Throughout this document you will see abbreviations used in GraphQL SDL syntax to signify how Nexus Prisma plugin contributes to the shape of your GraphQL schema. Each single capital letter is an abbreviation for one of the following things. When multiple capital letters are adjacent it means they combine the below. 
+
 ```
 M = model   F = field   L = list   S = scalar   R = relation   E = enum   V = value
 ```
+
+For example take this:
+
+```gql
+input M_UpdateManyMutationInput { # 1
+  MFloatF: S_FieldUpdateOperationsInput # 2, 3
+  MIntF: S_FieldUpdateOperationsInput # 4, 5
+  MSF: S # 6, 7
+  MEF: E # 8, 9
+}
+```
+
+1. `M_UpdateManyMutationInput` means a GraphQL object whose name is your model name with the suffixed with `UpdateManyMutationInput`.
+2. `MFloatF` means a model field of float type
+3. `S_FieldUpdateOperationsInput` means a GraphQL object type reference. The name will be the name of the scalar type of the field suffixed with `FieldUpdateOperationsInput`. Since the field here is Float that means the object type name will be `FloatFieldUpdateOperationsInput`.
+4. Like point 2 but for `Int`
+5. Like point 3 but for `Int`
+6. `MSF` means a field name matching the field name of a model scalar field. Note it comes after `Float` and `Int` types have been explicitly listed, which means this excludes model fields of those types.
+7. `S` means the type of this field will match the kind of model scalar that it is (see the Scalar mapping table to see what it will really be if in doubt)
+8. Like (6) but for Enums
+9. Like (9) but for Enums
