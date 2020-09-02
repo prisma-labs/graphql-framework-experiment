@@ -159,7 +159,11 @@ export type SettingsInput = {
    */
   path?: string
   apollo?: {
-    engine?: boolean | ApolloConfigEngine
+    engine?:
+      | boolean
+      | (ApolloConfigEngine & {
+          enabled?: boolean
+        })
   }
   /**
    * Create a message suitable for printing to the terminal about the server
@@ -184,8 +188,6 @@ export type SettingsData = Setset.InferDataFromInput<Omit<SettingsInput, 'host' 
   }
 }
 
-type a = SettingsData['host']
-
 export const createServerSettingsManager = () =>
   Setset.create<SettingsInput, SettingsData>({
     fields: {
@@ -194,6 +196,13 @@ export const createServerSettingsManager = () =>
           engine: {
             shorthand(enabled) {
               return { enabled }
+            },
+            fields: {
+              enabled: {
+                initial() {
+                  return false
+                },
+              },
             },
           },
         },
