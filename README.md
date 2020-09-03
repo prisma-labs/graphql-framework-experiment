@@ -27,7 +27,7 @@ Nexus is a [Node.js](https://nodejs.org) [TypeScript](https://www.typescriptlang
 2. A CLI for supporting your daily workflows while working.
 3. A plugin system spaning API _and_ CLI for rich end-to-end plugins that you can use (or write) to fill in your niche needs.
 
-Nexus is young, but growing fast. Every two weeks [a new release is cut](https://nxs.li/changelog) and we have a [roadmap](https://github.com/orgs/graphql-nexus/projects/1).
+Nexus is young, but growing fast. Every two weeks [a new release is cut](https://nxs.li/changelog).
 
 ## Quickstart
 

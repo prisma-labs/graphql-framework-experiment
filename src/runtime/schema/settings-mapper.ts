@@ -32,7 +32,7 @@ export function mapSettingsAndPluginsToNexusSchemaConfig(
 
   baseConfig.plugins!.push(...mapConnectionsSettingsToNexusSchemaConfig(settings))
 
-  if (settings.authorization !== false) {
+  if (settings.authorization.enabled) {
     baseConfig.plugins!.push(NexusSchema.fieldAuthorizePlugin(settings.authorization))
   }
 
@@ -51,24 +51,7 @@ export function mapSettingsAndPluginsToNexusSchemaConfig(
  * Specialized mapping for the complexity of relay connections plugins.
  */
 function mapConnectionsSettingsToNexusSchemaConfig(settings: SettingsData): NexusSchema.core.NexusPlugin[] {
-  const instances: NexusSchema.core.NexusPlugin[] = []
-
-  const { default: defaultTypeConfig, ...customTypesConfig } = settings.connections
-
-  for (const [name, config] of Object.entries(customTypesConfig)) {
-    if (config) {
-      instances.push(
-        NexusSchema.connectionPlugin({
-          nexusFieldName: name,
-          ...config,
-        })
-      )
-    }
-  }
-
-  if (defaultTypeConfig) {
-    instances.push(NexusSchema.connectionPlugin(defaultTypeConfig))
-  }
-
-  return instances
+  return Object.values(settings.connections).map((config) => {
+    return NexusSchema.connectionPlugin(config)
+  })
 }

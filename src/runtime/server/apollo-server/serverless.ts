@@ -8,7 +8,7 @@ import {
   processFileUploads,
   runHttpQuery,
 } from 'apollo-server-core'
-import { isLeft } from 'fp-ts/lib/Either'
+import { isLeft, right } from 'fp-ts/lib/Either'
 import { IncomingMessage, ServerResponse } from 'http'
 import createError from 'http-errors'
 import { parseBody, parseQuery } from '../parse-body'
@@ -193,7 +193,12 @@ export function graphqlHandler(options: NexusGraphQLOptionsFunction): NexusReque
         return sendError(res, createError(400, 'Only GET and POST requests allowed'))
       }
 
-      const query = req.method === 'POST' ? await parseBody(req) : parseQuery(req)
+      const query =
+        req.method === 'POST'
+          ? (req as any).filePayload
+            ? right((req as any).filePayload)
+            : await parseBody(req)
+          : parseQuery(req)
 
       if (isLeft(query)) {
         return sendError(res, query.left)

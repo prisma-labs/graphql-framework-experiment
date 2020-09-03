@@ -302,7 +302,15 @@ Find working examples [here](https://github.com/graphql-nexus/examples#nextjs).
 
    app.assemble()
 
+   // this is required for file uploads to work
+   export const config = {
+      api: {
+         bodyParser: false
+      }
+   }
+
    export default app.server.handlers.graphql
+   
    ```
 
 1. While developing, you should run Nexus reflection a separate terminal apart from your normal `next dev`. This is in order to benefit from the type safety that Nexus can give you. One of its primary benefits. For example:

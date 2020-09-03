@@ -1,5 +1,5 @@
 import * as NexusSchema from '@nexus/schema'
-import * as Lo from 'lodash'
+import * as Setset from 'setset'
 import { Param1 } from '../../lib/utils'
 
 // todo export type from @nexus/schema
@@ -7,21 +7,21 @@ type ConnectionPluginConfig = NonNullable<Param1<typeof NexusSchema.connectionPl
 
 type ConnectionPluginConfigPropsManagedByNexus = 'nexusFieldName' | 'nexusSchemaImportId'
 
-const connectionPluginConfigManagedByNexus: Pick<
-  ConnectionPluginConfig,
-  ConnectionPluginConfigPropsManagedByNexus
-> = {
-  nexusSchemaImportId: 'nexus/components/schema',
-  /**
-   * The name of the relay connection field builder. This is not configurable by users.
-   */
-  nexusFieldName: 'connection',
-}
+type ConnectionPluginConfigManagedByNexus = Required<
+  Pick<ConnectionPluginConfig, ConnectionPluginConfigPropsManagedByNexus>
+>
 
 /**
  * Relay connection field builder settings for users.
  */
-export type ConnectionSettings = Omit<ConnectionPluginConfig, ConnectionPluginConfigPropsManagedByNexus>
+export type ConnectionSettings = Omit<ConnectionPluginConfig, ConnectionPluginConfigPropsManagedByNexus> & {
+  enabled?: boolean
+}
+
+export type ConnectionSettingsData = ConnectionSettings &
+  ConnectionPluginConfigManagedByNexus & {
+    enabled: boolean
+  }
 
 /**
  * The schema settings users can control.
@@ -51,16 +51,16 @@ export type SettingsInput = {
     /**
      * todo
      */
-    default?: ConnectionSettings | false
+    default?: false | ConnectionSettings
     // Extra undefined below is forced by it being above, forced via `?:`.
     // This is a TS limitation, cannot express void vs missing semantics,
     // being tracked here: https://github.com/microsoft/TypeScript/issues/13195
-    [connectionTypeName: string]: ConnectionSettings | undefined | false
+    [connectionTypeName: string]: false | undefined | ConnectionSettings
   }
   /**
    * Disable or configure the authorization plugin
    */
-  authorization?: false | NexusSchema.core.FieldAuthorizePluginConfig
+  authorization?: false | (NexusSchema.core.FieldAuthorizePluginConfig & { enabled?: boolean })
   /**
    * Should a [GraphQL SDL file](https://www.prisma.io/blog/graphql-sdl-schema-definition-language-6755bcb9ce51) be generated when the app is built and to where?
    *
@@ -118,99 +118,86 @@ export type SettingsInput = {
 /**
  * Internal representation of settings data.
  */
-export type SettingsData = {
-  nullable: NonNullable<Required<SettingsInput['nullable']>>
+export type SettingsData = Omit<Setset.InferDataFromInput<SettingsInput>, 'connections'> & {
   connections: {
-    default: false | ConnectionPluginConfig
-    [connectionTypeName: string]: false | ConnectionPluginConfig
+    default: ConnectionSettingsData
+    [connectionTypeName: string]: ConnectionSettingsData
   }
-  generateGraphQLSDLFile: NonNullable<SettingsInput['generateGraphQLSDLFile']>
-  rootTypingsGlobPattern: NonNullable<SettingsInput['rootTypingsGlobPattern']>
-  authorization: NonNullable<SettingsInput['authorization']>
-}
-
-/**
- * Mutate the settings data with new settings input.
- */
-export function changeSettings(state: SettingsData, newSettings: SettingsInput): void {
-  if (newSettings.nullable !== undefined) {
-    Lo.merge(state.nullable, newSettings.nullable)
-  }
-
-  if (newSettings.generateGraphQLSDLFile !== undefined) {
-    state.generateGraphQLSDLFile = newSettings.generateGraphQLSDLFile
-  }
-
-  if (newSettings.rootTypingsGlobPattern !== undefined) {
-    state.rootTypingsGlobPattern = newSettings.rootTypingsGlobPattern
-  }
-
-  if (newSettings.authorization !== undefined) {
-    state.authorization = newSettings.authorization
-  }
-
-  if (newSettings.connections !== undefined) {
-    Object.keys(newSettings.connections)
-      // must already have the defaults
-      .filter((key) => state.connections[key] === undefined)
-      .forEach((key) => {
-        state.connections[key] = Lo.merge(state.connections[key], connectionPluginConfigManagedByNexus)
-      })
-    Lo.merge(state.connections, newSettings.connections)
-  }
-}
-
-function defaultAuthorizationErrorFormatter(config: NexusSchema.core.FieldAuthorizePluginErrorConfig) {
-  return config.error
-}
-
-/**
- * Get the default settings.
- */
-function defaultSettings(): SettingsData {
-  const data: SettingsData = {
-    nullable: {
-      inputs: true,
-      outputs: true,
-    },
-    generateGraphQLSDLFile: 'api.graphql',
-    rootTypingsGlobPattern: './**/*.ts',
-    connections: {
-      // there is another level of defaults that will be applied by Nexus Schema Relay Connections plugin
-      default: {
-        ...connectionPluginConfigManagedByNexus,
-      },
-    },
-    authorization: {
-      formatError: defaultAuthorizationErrorFormatter,
-    },
-  }
-
-  return data
 }
 
 /**
  * Create a schema settings manager.
  */
-export function createSchemaSettingsManager() {
-  const data = defaultSettings()
+export const createSchemaSettingsManager = () =>
+  Setset.create<SettingsInput, SettingsData>({
+    fields: {
+      nullable: {
+        fields: {
+          inputs: {
+            initial() {
+              return true
+            },
+          },
+          outputs: {
+            initial() {
+              return true
+            },
+          },
+        },
+      },
+      generateGraphQLSDLFile: {
+        initial() {
+          return 'api.graphql'
+        },
+      },
+      rootTypingsGlobPattern: {
+        initial() {
+          return './**/*.ts'
+        },
+      },
+      authorization: {
+        shorthand(enabled) {
+          return { enabled }
+        },
+        fields: {
+          enabled: {
+            initial: () => true,
+          },
+          formatError: {
+            initial: () => defaultAuthorizationErrorFormatter,
+          },
+        },
+      },
+      connections: {
+        initial() {
+          return {
+            default: {},
+          }
+        },
+        entry: {
+          map(input, ctx) {
+            return {
+              nexusSchemaImportId: 'nexus/components/schema',
+              nexusFieldName: ctx.key === 'default' ? 'connection' : ctx.key,
+            }
+          },
+          shorthand(disabled) {
+            return { enabled: disabled }
+          },
+          fields: {
+            enabled: {
+              initial() {
+                return true
+              },
+            },
+          }, // all data is optional, see type
+        },
+      },
+    },
+  })
 
-  function change(newSettings: SettingsInput) {
-    return changeSettings(data, newSettings)
-  }
-
-  function reset() {
-    for (const k of Object.keys(data)) {
-      delete (data as any)[k]
-    }
-    Object.assign(data, defaultSettings())
-  }
-
-  return {
-    change,
-    reset,
-    data,
-  }
+function defaultAuthorizationErrorFormatter(config: NexusSchema.core.FieldAuthorizePluginErrorConfig) {
+  return config.error
 }
 
 export type SchemaSettingsManager = ReturnType<typeof createSchemaSettingsManager>
