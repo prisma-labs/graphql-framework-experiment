@@ -51,19 +51,45 @@ Now to expose it in our GraphQL context there is two things we need to do:
 
 Let's first pass our in-memory database to our GraphQL server
 
-```diff
+<TabbedContent tabs={['Diff', 'Code']}>
+
+<tab>
+
+```ts
 // api/server.ts
-  import { ApolloServer } from 'apollo-server'
-  import { schema } from './schema'
-+ import { db } from './db'
+import { ApolloServer } from 'apollo-server'
+import { schema } from './schema'
++import { db } from './db'
 
 export const server = new ApolloServer({
-   schema,
+  schema,
 +  context: () => ({
 +    db
 +  })
 })
 ```
+
+</tab>
+
+<tab>
+
+```ts
+// api/server.ts
+import { ApolloServer } from 'apollo-server'
+import { schema } from './schema'
+import { db } from './db'
+
+export const server = new ApolloServer({
+  schema,
+  context: () => ({
+    db
+  })
+})
+```
+
+</tab>
+
+</TabbedContent>
 
 > **Note** For those familiar with GraphQL, you might be grimacing that we’re attaching static things to the context, instead of using export/import.
 > This is a matter of convenience. Feel free to take a purer approach in your apps if you prefer.
@@ -81,7 +107,11 @@ export interface Context {
 
 Finally, add the following configuration to the `makeSchema` function of `@nexus/schema` in `api/app.ts`
 
-```diff
+<TabbedContent tabs={['Diff', 'Code']}>
+
+<tab>
+
+```ts
 // api/schema.ts
 import { join } from 'path'
 
@@ -91,40 +121,99 @@ export const schema = makeSchema({
     typegen: join(__dirname, '..', 'nexus-typegen.ts'),
     schema: join(__dirname, '..', 'schema.graphql')
   },
-+ typegenAutoConfig: {
-+   sources: [
-+     {
-+       source: require.resolve("./context"), // 1
-+       alias: "ctx",                         // 2
-+     },
-+   ],
-+   contextType: "ctx.Context",               // 3
-+ },
++  typegenAutoConfig: {
++    sources: [
++      {
++        source: require.resolve("./context"), // 1
++        alias: "ContextModule",                         // 2
++      },
++    ],
++    contextType: "ContextModule.Context",               // 3
++  },
 })
 ```
 
+</tab>
+
+<tab>
+
+```ts
+// api/schema.ts
+import { join } from 'path'
+
+export const schema = makeSchema({
+  types: [],
+  outputs: {
+    typegen: join(__dirname, '..', 'nexus-typegen.ts'),
+    schema: join(__dirname, '..', 'schema.graphql')
+  },
+  typegenAutoConfig: {
+    sources: [
+      {
+        source: require.resolve("./context"), // 1
+        alias: "ContextModule",                         // 2
+      },
+    ],
+    contextType: "ContextModule.Context",               // 3
+  },
+})
+```
+
+</tab>
+
+</TabbedContent>
+
 1. Behind the scenes Nexus will parse the `context.ts` file to extract the available types.
-1. These types become available under the umbrella of our `ctx` alias.
-1. We can then use that alias to refer to any type defined in this file. Here, our context type is named `Context`, so we refer to it as `ctx.Context`.
+1. These types become available under the umbrella of our `ContextModule` alias.
+1. We can then use that alias to refer to any type defined in this file. Here, our context type is named `Context`, so we refer to it as `ContextModule.Context`.
 
 ## Use the context
 
 Now let's use this data to re-implement the `Query.drafts` resolver from the previous chapter.
 
+<TabbedContent tabs={['Diff', 'Code']}>
+
+<tab>
+
 ```ts
+// api/graphql/Post.ts
+
 export const PostQuery = queryType({
   definition(t) {
     t.list.field('drafts', {
       type: 'Post',
--     resolve() {
--       return [{ id: 1, title: 'Nexus', body: '...', published: false }]
-+     resolve(_root, _args, ctx) {                             // 1
-+       return ctx.db.posts.filter(p => p.published === false)  // 2
+-      resolve() {
+-        return [{ id: 1, title: 'Nexus', body: '...', published: false }]
++      resolve(_root, _args, ctx) {                              // 1
++        return ctx.db.posts.filter(p => p.published === false)  // 2
       },
     })
   },
 })
 ```
+
+</tab>
+
+<tab>
+
+```ts
+// api/graphql/Post.ts
+
+export const PostQuery = queryType({
+  definition(t) {
+    t.list.field('drafts', {
+      type: 'Post',
+      resolve(_root, _args, ctx) {                             // 1
+       return ctx.db.posts.filter(p => p.published === false)  // 2
+      },
+    })
+  },
+})
+```
+
+</tab>
+
+</TabbedContent>
 
 1. Context is the _third_ parameter, usually identified as `ctx`
 2. Return the filtered data by un-published posts, _aka_ drafts . Nexus makes sure the types line up.
@@ -139,6 +228,10 @@ This mutation will need a name. Rather than simply call it `createPost` we'll us
 - We can colocate mutation fields with the objects they relate to or centralize all mutation fields.
 
 As before we will take the collocation approach.
+
+<ParallelBlocks>
+
+<block>
 
 <!-- prettier-ignore -->
 ```ts
@@ -160,15 +253,28 @@ export const PostMutation = extendType({
 })
 ```
 
+</block>
+
+<block>
+
 ```graphql
 Mutation {
   createDraft: Post!
 }
 ```
 
+</block>
+
+</ParallelBlocks>
+
 We need to get the client's input data to complete our resolver. This brings us to a new concept, GraphQL arguments. Every field in GraphQL may accept them. Effectively you can think of each field in GraphQL like a function, accepting some input, doing something, and returning an output. Most of the time "doing something" is a matter of some read-like operation but with `Mutation` fields the "doing something" usually entails a process with side-effects (e.g. writing to the database).
 
 Let's revise our implementation with GraphQL arguments.
+
+<TabbedContent tabs={['Diff', 'Code']}>
+
+<tab>
+
 
 ```ts
 import { extendType, stringArg } from '@nexus/schema'
@@ -179,26 +285,63 @@ export const PostMutation = extendType({
     t.field('createDraft', {
       type: 'Post',
       nullable: false,
-+     args: {                                        // 1
-+       title: stringArg({ required: true }),        // 2
-+       body: stringArg({ required: true }),         // 2
-+     },
++      args: {                                        // 1
++        title: stringArg({ required: true }),        // 2
++        body: stringArg({ required: true }),         // 2
++      },
       resolve(_root, args, ctx) {
-+       const draft = {
-+         id: ctx.db.posts.length + 1,
-+         title: args.title,                         // 3
-+         body: args.body,                           // 3
-+         published: false,
-+       }
-+       ctx.db.posts.push(draft)
-+       return draft
--       ctx.db.posts.push(/*...*/)
--       return // ...
++        const draft = {
++          id: ctx.db.posts.length + 1,
++          title: args.title,                         // 3
++          body: args.body,                           // 3
++          published: false,
++        }
++        ctx.db.posts.push(draft)
++        return draft
+-        ctx.db.posts.push(/*...*/)
+-        return // ...
       },
     })
   },
 })
 ```
+
+</tab>
+
+<tab>
+
+
+```ts
+import { extendType, stringArg } from '@nexus/schema'
+
+export const PostMutation = extendType({
+  type: 'Mutation',
+  definition(t) {
+    t.field('createDraft', {
+      type: 'Post',
+      nullable: false,
+      args: {                                        // 1
+        title: stringArg({ required: true }),        // 2
+        body: stringArg({ required: true }),         // 2
+      },
+      resolve(_root, args, ctx) {
+        const draft = {
+          id: ctx.db.posts.length + 1,
+          title: args.title,                         // 3
+          body: args.body,                           // 3
+          published: false,
+        }
+        ctx.db.posts.push(draft)
+        return draft
+      },
+    })
+  },
+})
+```
+
+</tab>
+
+</TabbedContent>
 
 ```ts
 Mutation {
@@ -213,7 +356,45 @@ Mutation {
 
 ## Model the domain: Part 2
 
-Before we wrap this chapter let's flush out our schema a bit more. We'll add a `publish` mutation to transform a draft into an actual published post, then we'll let API clients read the the published posts.
+Before we wrap this chapter let's flush out our schema a bit more. We'll add a `publish` mutation to transform a draft into an actual published post.
+
+<TabbedContent tabs={['Diff', 'Content', 'SDL']}>
+
+<tab>
+
+```ts
+// api/graphql/Post.ts
+
+import { extendType, intArg, stringArg } from '@nexus/schema'
+
+export const PostMutation = extendType({
+  type: 'Mutation',
+  definition(t) {
+    // ...
++    t.field('publish', {
++      type: 'Post',
++      args: {
++        draftId: intArg({ required: true }),
++      },
++      resolve(_root, args, ctx) {
++        let draftToPublish = ctx.db.posts.find(p => p.id === args.draftId)
++
++        if (!draftToPublish) {
++          throw new Error('Could not find draft with id ' + args.draftId)
++        }
++
++        draftToPublish.published = true
++
++        return draftToPublish
++      },
++    })
+  },
+})
+```
+
+</tab>
+
+<tab>
 
 ```ts
 // api/graphql/Post.ts
@@ -245,12 +426,26 @@ export const PostMutation = extendType({
 })
 ```
 
+</tab>
+
+<tab>
+
 ```ts
 type Mutation {
   createDraft(body: String!, title: String!): Post
 +  publish(draftId: Int!): Post
 }
 ```
+
+</tab>
+
+</TabbedContent>
+
+Then, we'll let API clients read these published posts.
+
+<TabbedContent tabs={['Diff', 'Content', 'SDL']}>
+
+<tab>
 
 ```ts
 // api/graphql/Post.ts
@@ -261,15 +456,46 @@ export const PostQuery = extendType({
   type: 'Query',
   definition(t) {
     // ...
+
++    t.list.field('posts', {
++      type: 'Post',
++      resolve(_root, _args, ctx) {
++        return ctx.db.posts.filter(p => p.published === true)
++      },
++    })
+
+  },
+})
+```
+
+</tab>
+
+<tab>
+
+```ts
+// api/graphql/Post.ts
+
+import { extendType } from '@nexus/schema'
+
+export const PostQuery = extendType({
+  type: 'Query',
+  definition(t) {
+    // ...
+
     t.list.field('posts', {
       type: 'Post',
       resolve(_root, _args, ctx) {
         return ctx.db.posts.filter(p => p.published === true)
       },
     })
+
   },
 })
 ```
+
+</tab>
+
+<tab>
 
 ```ts
 type Query {
@@ -278,9 +504,17 @@ type Query {
 }
 ```
 
+</tab>
+
+</TabbedContent>
+
 ## Try it out
 
 Great, now head on over to the GraphQL Playground and run this query (left). If everything went well, you should see a response like this (right):
+
+<ParallelBlocks>
+  
+<block>
 
 ```graphql
 mutation {
@@ -292,6 +526,10 @@ mutation {
   }
 }
 ```
+
+</block>
+
+<block>
 
 ```json
 {
@@ -306,7 +544,16 @@ mutation {
 }
 ```
 
+</block>
+
+</ParallelBlocks>
+
 Now, that published draft should be visible via the `posts` Query. Run this query (left) and expect the following response (right):
+
+
+<ParallelBlocks>
+
+<block>
 
 ```graphql
 query {
@@ -318,6 +565,10 @@ query {
   }
 }
 ```
+
+</block>
+
+<block>
 
 ```json
 {
@@ -333,6 +584,10 @@ query {
   }
 }
 ```
+
+</block>
+
+</ParallelBlocks>
 
 ## Wrapping up
 

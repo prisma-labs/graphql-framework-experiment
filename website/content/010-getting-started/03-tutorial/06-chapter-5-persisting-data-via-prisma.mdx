@@ -121,6 +121,9 @@ npx prisma migrate up --experimental
 
 Now let's finally ditch our in-memory data! Let's replace it with the Prisma Client
 
+<TabbedContent tabs={['Diff', 'Code']}>
+<tab>
+
 ```ts
 // api/db.ts
 +import { PrismaClient } from '@prisma/client'
@@ -143,7 +146,26 @@ export const db = new PrismaClient()
 -}
 ```
 
+</tab>
+
+<tab>
+
+```ts
+// api/db.ts
+import { PrismaClient } from '@prisma/client'
+
+export const db = new PrismaClient()
+```
+
+</tab>
+</TabbedContent>
+
+
 Then, update your `Context` type so that it uses the PrismaClient
+
+<TabbedContent tabs={['Diff', 'Code']}>
+
+<tab>
 
 ```ts
 // api/context.ts
@@ -156,6 +178,23 @@ export interface Context {
 }
 ```
 
+</tab>
+
+<tab>
+
+```ts
+// api/context.ts
+import { PrismaClient } from '@prisma/client'
+
+export interface Context {
+  db: PrismaClient
+}
+```
+
+</tab>
+
+</TabbedContent>
+
 Finally, generate the PrismaClient using the Prisma CLI
 
 ```bash-symbol
@@ -164,7 +203,15 @@ npx prisma generate
 
 Let's now replace all our previous in-memory db interactions with calls to the Prisma Client
 
+<TabbedContent tabs={['Diff', 'Code']}>
+
+<tab>
+
 ```ts
+// api/graphql/Post.ts
+
+// ...
+
 schema.extendType({
   type: 'Query',
   definition(t) {
@@ -184,9 +231,7 @@ schema.extendType({
     })
   },
 });
-```
 
-```ts
 schema.extendType({
   type: 'Mutation',
   definition(t) {
@@ -238,9 +283,15 @@ schema.extendType({
 })
 ```
 
-If you need a copy & pastable version, here it is
+</tab>
+
+<tab>
 
 ```ts
+// api/graphql/Post.ts
+
+// ...
+
 schema.extendType({
   type: 'Query',
   definition(t) {
@@ -295,6 +346,9 @@ schema.extendType({
   },
 })
 ```
+</tab>
+
+</TabbedContent>
 
 ## Try it out
 

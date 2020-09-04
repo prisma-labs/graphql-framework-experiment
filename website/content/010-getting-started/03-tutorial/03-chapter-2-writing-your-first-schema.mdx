@@ -71,7 +71,11 @@ export * from './Post'
 
 Finally, we'll import this file and pass it down to `makeSchema`
 
-```
+<TabbedContent tabs={['Diff', 'Code']}>
+
+<tab>
+
+```ts
 // api/schema.ts
  import { join } from 'path'
 + import * as typeDefs from './graphql'
@@ -85,6 +89,28 @@ Finally, we'll import this file and pass it down to `makeSchema`
    }
  })
 ```
+
+</tab>
+
+<tab>
+
+```ts
+// api/schema.ts
+import { join } from 'path'
+import * as typeDefs from './graphql'
+
+const schema = makeSchema({
+  types: typeDefs,
+  outputs: {
+     typegen: join(__dirname, '..', 'nexus-typegen.ts'),
+     schema: join(__dirname, '..', 'schema.graphql')
+  }
+})
+```
+
+</tab>
+
+</TabbedContent>
 
 > Note: It is considered best practice to pass your types directly from a "star import" like we've done above. Under the hood, Nexus will unwrap the types. This prevents from constantly having to manually export & import every single type of your API.
 
@@ -118,11 +144,13 @@ Your `Post` object is in place now but there's still no way for clients to read 
 
 We'll start by letting API clients read the drafts of your blog.
 
-<div class="TightRow">
+<ParallelBlocks>
 
-<!-- prettier-ignore -->
+<block>
+
 ```ts
 // api/graphql/Post.ts      // 1
+
 import { objectType, extendType } from '@nexus/schema'
 
 export const PostQuery = extendType({
@@ -137,13 +165,19 @@ export const PostQuery = extendType({
 })
 ```
 
+</block>
+
+<block>
+
 ```graphql
 type Query {
   drafts: [Post!]!
 }
 ```
 
-</div>
+</block>
+
+</ParallelBlocks>
 
 1. The Query object is a central place in your schema where many other types will appear. Like before with the modular GraphQL types decision we again can decide to be modular here. We could either create a new `api/graphql/Query.ts` module (not modular), or we could _collocate_ the exposure of Post object with its definition in `api/graphql/Post.ts` (modular). Staying consistent with before, we'll take the modular way.
 1. To achieve collocation in Nexus we'll use `schema.extendType`. Its API is _very_ similar to `schema.objectType` with the difference that the defined fields are merged into the _targeted_ type.
@@ -177,6 +211,33 @@ You'll see some feedback from your IDE that you're missing a `resolve` property.
 
 > You might be wondering why Nexus hasn't complained about missing resolvers in some other cases so far. The answer is a more advanced topic that we'll cover later.
 
+<TabbedContent tabs={['Diff', 'Code']}>
+
+<tab>
+
+```ts
+// api/graphql/Post.ts
+import { extendType } from '@nexus/schema'
+// ...
+
+export const PostQuery = extendType({
+  type: 'Query',
+  definition(t) {
+    t.field('drafts', {
+      type: 'Post',
+      list: true,
++      resolve() {
++        return [{ id: 1, title: 'Nexus', body: '...', published: false }]
++      },
+    })
+  },
+})
+```
+
+</tab>
+
+<tab>
+
 ```ts
 // api/graphql/Post.ts
 import { extendType } from '@nexus/schema'
@@ -196,10 +257,17 @@ export const PostQuery = extendType({
 })
 ```
 
+</tab>
+
+</TabbedContent>
+
 ## Try it out
 
 You can now open up your GraphQL playground and try the following query (left); In response, you should see something like so (right):
 
+<ParallelBlocks>
+
+<block>
 
 ```graphql
 {
@@ -211,6 +279,10 @@ You can now open up your GraphQL playground and try the following query (left); 
   }
 }
 ```
+
+</block>
+
+<block>
 
 ```json
 {
@@ -227,6 +299,9 @@ You can now open up your GraphQL playground and try the following query (left); 
 }
 ```
 
+</block>
+
+</ParallelBlocks>
 
 
 ## Wrapping up

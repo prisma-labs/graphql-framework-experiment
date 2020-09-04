@@ -36,8 +36,36 @@ npm add --save-dev jest @types/jest ts-jest graphql-request
 
 Then, configure jest and npm scripts in your `package.json`
 
+<TabbedContent tabs={['Diff', 'Code']}>
+
+<tab>
+
 ```json
 "scripts": {
+  "dev": "ts-node-dev --transpile-only --no-notify api/app.ts",
+  "build": "tsc",
++  "generate": "ts-node-dev api/schema.ts",
++  "test": "npm run generate && jest"
+},
++"jest": {
++  "preset": "ts-jest",
++  "globals": {
++    "ts-jest": {
++      "diagnostics": { "warnOnly": true }
++    }
++  },
++  "testEnvironment": "node"
++}
+```
+
+</tab>
+
+<tab>
+
+```json
+"scripts": {
+  "dev": "ts-node-dev --transpile-only --no-notify api/app.ts",
+  "build": "tsc",
   "generate": "ts-node-dev api/schema.ts",
   "test": "npm run generate && jest"
 },
@@ -51,6 +79,10 @@ Then, configure jest and npm scripts in your `package.json`
   "testEnvironment": "node"
 }
 ```
+
+</tab>
+
+</TabbedContent>
 
 Finally, create a `tests` folder at the root of your project and a `Post.test.ts` file inside it
 
@@ -130,6 +162,10 @@ function graphqlTestContext() {
 
 Alright, now you will test your `publish` mutation. Because we want to start from a clean database, we'll just remove the pre-seeded data in the in-memory database that we've been using up until now.
 
+<TabbedContent tabs={['Diff', 'Code']}>
+
+<tab>
+
 ```ts
 // api/db.ts
 export const db = {
@@ -137,6 +173,21 @@ export const db = {
 + posts: []
 }
 ```
+
+</tab>
+
+<tab>
+
+```ts
+// api/db.ts
+export const db = {
+  posts: []
+}
+```
+
+</tab>
+
+</TabbedContent>
 
 Now use your new helper and scaffold your first test:
 
