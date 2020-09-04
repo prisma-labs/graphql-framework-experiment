@@ -4,7 +4,7 @@ title: 4. Testing your API
 
 ## Overview
 
-So far you've been validating your work by manual interacting with the Playground. That might be reasonable at first (depending on your relationship to TDD) but it will not scale. At some point you are going to want automated testing. So in this chapter you're going to add some automated tests to your e-commerce project. You'll learn about:
+So far you've been validating your work by manual interacting with the Playground. That might be reasonable at first (depending on your relationship to TDD) but it will not scale. At some point you are going to want automated testing. So in this chapter you're going to add some automated tests to your blog project. You'll learn about:
 
 - Nexus' approach to testing
 - Setting up a test environment
@@ -63,7 +63,7 @@ Nexus comes with a special testing module that you can import from `nexus/testin
 
 Its primary export is the `createTestContext` function which is designed for running system tests. When run, it will boot your app in the same process as the test suite and expose an interface for your tests to interact with it. Jest runs each test suite in its own process, so if you have have say eight test suites running in parallel that means you'll have eight app processes running too.
 
-Before jumping into your first test we will show you a pattern that more tightly integrates `createTestContext` into jest. Nexus will probably ship something like as follows or better in the future, but for now you can just add this as test helper in your Nexus projects.
+Before jumping into your first test we will show you a pattern that more tightly integrates `createTestContext` into Jest. Nexus will probably ship something like as follows or better in the future, but for now you can just add this as a test helper in your Nexus projects.
 
 Create a `tests/__helpers.ts` module with the following contents.
 
@@ -93,7 +93,7 @@ export function createTestContext() {
 }
 ```
 
-1. The module name prefix `__` matches that of jest's for snapshot folders `__snapshots__`
+1. The module name prefix `__` matches that of Jest's for snapshot folders `__snapshots__`
 2. Create an object that will be returned immediately but mutated before tests run
 3. Before tests run create the test context. This does most of the work like getting your app instance.
 4. Before tests run start the app
