@@ -1,3 +1,4 @@
+import { SubscriptionServerOptions } from 'apollo-server-core'
 import { PlaygroundRenderPageOptions } from 'apollo-server-express'
 import { CorsOptions as OriginalCorsOption } from 'cors'
 import * as Setset from 'setset'
@@ -37,12 +38,13 @@ export type PlaygroundLonghandInput = {
   settings?: Omit<Partial<Exclude<PlaygroundRenderPageOptions['settings'], undefined>>, 'general.betaUpdates'>
 }
 
+type SubscriptionsLonghandInput = Omit<SubscriptionServerOptions, 'path'> & {
+  path?: string
+  enabled?: boolean
+}
+
 export type SettingsInput = {
-  subscriptions?:
-    | boolean
-    | {
-        enabled?: boolean
-      }
+  subscriptions?: boolean | SubscriptionsLonghandInput
   /**
    * Port the server should be listening on.
    *
@@ -204,9 +206,14 @@ export type SettingsInput = {
   }
 }
 
-export type SettingsData = Setset.InferDataFromInput<Omit<SettingsInput, 'host' | 'cors' | 'apollo'>> & {
+export type SettingsData = Setset.InferDataFromInput<
+  Omit<SettingsInput, 'host' | 'cors' | 'apollo' | 'subscriptions'>
+> & {
   host?: string
   cors: ResolvedOptional<SettingsInput['cors']>
+  subscriptions: Omit<SubscriptionsLonghandInput, 'enabled'> & {
+    enabled: boolean
+  }
   apollo: {
     engine: ApolloConfigEngine & {
       enabled: boolean
@@ -222,6 +229,14 @@ export const createServerSettingsManager = () =>
           return { enabled }
         },
         fields: {
+          path: {
+            initial() {
+              return '/graphql'
+            },
+          },
+          keepAlive: {},
+          onConnect: {},
+          onDisconnect: {},
           enabled: {
             initial() {
               // This is not accurate. The default is actually dynamic depending

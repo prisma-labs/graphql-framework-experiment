@@ -1,8 +1,7 @@
 import chalk from 'chalk'
 import createExpress, { Express } from 'express'
-import { GraphQLError, GraphQLSchema } from 'graphql'
+import { GraphQLSchema } from 'graphql'
 import * as HTTP from 'http'
-import { HttpError } from 'http-errors'
 import { isEmpty } from 'lodash'
 import * as Net from 'net'
 import * as Plugin from '../../lib/plugin'
@@ -146,9 +145,7 @@ export function create(appState: AppState) {
           schema,
           engine: settings.data.apollo.engine.enabled ? settings.data.apollo.engine : false,
           // todo expose options
-          // subscriptions: {
-          //   // keepAlive:
-          // },
+          subscriptions: settings.data.subscriptions,
           context: createContext,
           introspection: settings.data.graphql.introspection,
           formatError: errorFormatter,
@@ -205,27 +202,6 @@ export function create(appState: AppState) {
   }
 
   return internalServer
-}
-
-/**
- * Log http errors during development.
- */
-const wrapHandlerWithErrorHandling = (handler: NexusRequestHandler): NexusRequestHandler => {
-  return async (req, res) => {
-    await handler(req, res)
-    if (res.statusCode !== 200 && (res as any).error) {
-      const error: HttpError = (res as any).error
-      const graphqlErrors: GraphQLError[] = error.graphqlErrors
-
-      if (graphqlErrors.length > 0) {
-        graphqlErrors.forEach(errorFormatter)
-      } else {
-        log.error(error.message, {
-          error,
-        })
-      }
-    }
-  }
 }
 
 /**
