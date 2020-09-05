@@ -38,6 +38,11 @@ export type PlaygroundLonghandInput = {
 }
 
 export type SettingsInput = {
+  subscriptions?:
+    | boolean
+    | {
+        enabled?: boolean
+      }
   /**
    * Port the server should be listening on.
    *
@@ -212,6 +217,20 @@ export type SettingsData = Setset.InferDataFromInput<Omit<SettingsInput, 'host' 
 export const createServerSettingsManager = () =>
   Setset.create<SettingsInput, SettingsData>({
     fields: {
+      subscriptions: {
+        shorthand(enabled) {
+          return { enabled }
+        },
+        fields: {
+          enabled: {
+            initial() {
+              // This is not accurate. The default is actually dynamic depending
+              // on if the user has defined any subscription type or not.
+              return true
+            },
+          },
+        },
+      },
       apollo: {
         fields: {
           engine: {

@@ -1,7 +1,9 @@
+import chalk from 'chalk'
 import createExpress, { Express } from 'express'
 import { GraphQLError, GraphQLSchema } from 'graphql'
 import * as HTTP from 'http'
 import { HttpError } from 'http-errors'
+import { isEmpty } from 'lodash'
 import * as Net from 'net'
 import * as Plugin from '../../lib/plugin'
 import { httpClose, httpListen, noop } from '../../lib/utils'
@@ -106,9 +108,47 @@ export function create(appState: AppState) {
           loadedRuntimePlugins
         )
 
+        /**
+         * Resolve if subscriptions are enabled or not
+         */
+
+        let enableSubscriptionsServer: boolean = false
+
+        if (settings.metadata.fields.subscriptions.fields.enabled.from === 'change') {
+          enableSubscriptionsServer = settings.data.subscriptions.enabled
+          /**
+           * Validate the integration of server subscription settings and the schema subscription type definitions.
+           */
+          if (hasSubscriptionFields(schema)) {
+            if (!settings.data.subscriptions.enabled) {
+              log.error(
+                `You have disabled server subscriptions but your schema has a ${chalk.yellowBright(
+                  'Subscription'
+                )} type with fields present. When your API clients send subscription operations at runtime they will fail.`
+              )
+            }
+          } else if (settings.data.subscriptions.enabled) {
+            log.warn(
+              `You have enabled server subscriptions but your schema has no ${chalk.yellowBright(
+                'Subscription'
+              )} type with fields.`
+            )
+          }
+        } else if (hasSubscriptionFields(schema)) {
+          enableSubscriptionsServer = true
+        }
+
+        /**
+         * Setup Apollo Server
+         */
+
         state.apolloServer = new ApolloServerExpress({
           schema,
           engine: settings.data.apollo.engine.enabled ? settings.data.apollo.engine : false,
+          // todo expose options
+          // subscriptions: {
+          //   // keepAlive:
+          // },
           context: createContext,
           introspection: settings.data.graphql.introspection,
           formatError: errorFormatter,
@@ -126,6 +166,10 @@ export function create(appState: AppState) {
           path: settings.data.path,
           cors: settings.data.cors,
         })
+
+        if (enableSubscriptionsServer) {
+          state.apolloServer.installSubscriptionHandlers(state.httpServer)
+        }
 
         return { createContext }
       },
@@ -216,4 +260,8 @@ function createContextCreator(
   }
 
   return createContext
+}
+
+function hasSubscriptionFields(schema: GraphQLSchema): boolean {
+  return !isEmpty(schema.getSubscriptionType()?.getFields())
 }
