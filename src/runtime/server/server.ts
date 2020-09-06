@@ -48,6 +48,7 @@ interface State {
   httpServer: HTTP.Server
   createContext: null | (() => ContextAdder)
   apolloServer: null | ApolloServerExpress
+  enableSubscriptionsServer: boolean
 }
 
 export const defaultState = {
@@ -55,6 +56,7 @@ export const defaultState = {
   httpServer: HTTP.createServer(),
   createContext: null,
   apolloServer: null,
+  enableSubscriptionsServer: false,
 }
 
 export function create(appState: AppState) {
@@ -111,10 +113,8 @@ export function create(appState: AppState) {
          * Resolve if subscriptions are enabled or not
          */
 
-        let enableSubscriptionsServer: boolean = false
-
         if (settings.metadata.fields.subscriptions.fields.enabled.from === 'change') {
-          enableSubscriptionsServer = settings.data.subscriptions.enabled
+          state.enableSubscriptionsServer = settings.data.subscriptions.enabled
           /**
            * Validate the integration of server subscription settings and the schema subscription type definitions.
            */
@@ -134,7 +134,7 @@ export function create(appState: AppState) {
             )
           }
         } else if (hasSubscriptionFields(schema)) {
-          enableSubscriptionsServer = true
+          state.enableSubscriptionsServer = true
         }
 
         /**
@@ -164,7 +164,7 @@ export function create(appState: AppState) {
           cors: settings.data.cors,
         })
 
-        if (enableSubscriptionsServer) {
+        if (state.enableSubscriptionsServer) {
           state.apolloServer.installSubscriptionHandlers(state.httpServer)
         }
 
@@ -184,7 +184,10 @@ export function create(appState: AppState) {
           port: address.port,
           host: address.address,
           ip: address.address,
-          path: settings.data.path,
+          paths: {
+            graphql: settings.data.path,
+            graphqlSubscrtipions: state.enableSubscriptionsServer ? settings.data.subscriptions.path : null,
+          },
         })
         DevMode.sendServerReadySignalToDevModeMaster()
       },
