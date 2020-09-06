@@ -1,7 +1,8 @@
+import chalk from 'chalk'
 import createExpress, { Express } from 'express'
-import { GraphQLError, GraphQLSchema } from 'graphql'
+import { GraphQLSchema } from 'graphql'
 import * as HTTP from 'http'
-import { HttpError } from 'http-errors'
+import { isEmpty } from 'lodash'
 import * as Net from 'net'
 import * as Plugin from '../../lib/plugin'
 import { httpClose, httpListen, noop } from '../../lib/utils'
@@ -47,6 +48,7 @@ interface State {
   httpServer: HTTP.Server
   createContext: null | (() => ContextAdder)
   apolloServer: null | ApolloServerExpress
+  enableSubscriptionsServer: boolean
 }
 
 export const defaultState = {
@@ -54,6 +56,7 @@ export const defaultState = {
   httpServer: HTTP.createServer(),
   createContext: null,
   apolloServer: null,
+  enableSubscriptionsServer: false,
 }
 
 export function create(appState: AppState) {
@@ -106,9 +109,43 @@ export function create(appState: AppState) {
           loadedRuntimePlugins
         )
 
+        /**
+         * Resolve if subscriptions are enabled or not
+         */
+
+        if (settings.metadata.fields.subscriptions.fields.enabled.from === 'change') {
+          state.enableSubscriptionsServer = settings.data.subscriptions.enabled
+          /**
+           * Validate the integration of server subscription settings and the schema subscription type definitions.
+           */
+          if (hasSubscriptionFields(schema)) {
+            if (!settings.data.subscriptions.enabled) {
+              log.error(
+                `You have disabled server subscriptions but your schema has a ${chalk.yellowBright(
+                  'Subscription'
+                )} type with fields present. When your API clients send subscription operations at runtime they will fail.`
+              )
+            }
+          } else if (settings.data.subscriptions.enabled) {
+            log.warn(
+              `You have enabled server subscriptions but your schema has no ${chalk.yellowBright(
+                'Subscription'
+              )} type with fields.`
+            )
+          }
+        } else if (hasSubscriptionFields(schema)) {
+          state.enableSubscriptionsServer = true
+        }
+
+        /**
+         * Setup Apollo Server
+         */
+
         state.apolloServer = new ApolloServerExpress({
           schema,
           engine: settings.data.apollo.engine.enabled ? settings.data.apollo.engine : false,
+          // todo expose options
+          subscriptions: settings.data.subscriptions,
           context: createContext,
           introspection: settings.data.graphql.introspection,
           formatError: errorFormatter,
@@ -127,6 +164,10 @@ export function create(appState: AppState) {
           cors: settings.data.cors,
         })
 
+        if (state.enableSubscriptionsServer) {
+          state.apolloServer.installSubscriptionHandlers(state.httpServer)
+        }
+
         return { createContext }
       },
       async start() {
@@ -143,7 +184,10 @@ export function create(appState: AppState) {
           port: address.port,
           host: address.address,
           ip: address.address,
-          path: settings.data.path,
+          paths: {
+            graphql: settings.data.path,
+            graphqlSubscrtipions: state.enableSubscriptionsServer ? settings.data.subscriptions.path : null,
+          },
         })
         DevMode.sendServerReadySignalToDevModeMaster()
       },
@@ -161,27 +205,6 @@ export function create(appState: AppState) {
   }
 
   return internalServer
-}
-
-/**
- * Log http errors during development.
- */
-const wrapHandlerWithErrorHandling = (handler: NexusRequestHandler): NexusRequestHandler => {
-  return async (req, res) => {
-    await handler(req, res)
-    if (res.statusCode !== 200 && (res as any).error) {
-      const error: HttpError = (res as any).error
-      const graphqlErrors: GraphQLError[] = error.graphqlErrors
-
-      if (graphqlErrors.length > 0) {
-        graphqlErrors.forEach(errorFormatter)
-      } else {
-        log.error(error.message, {
-          error,
-        })
-      }
-    }
-  }
 }
 
 /**
@@ -216,4 +239,8 @@ function createContextCreator(
   }
 
   return createContext
+}
+
+function hasSubscriptionFields(schema: GraphQLSchema): boolean {
+  return !isEmpty(schema.getSubscriptionType()?.getFields())
 }

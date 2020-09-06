@@ -1,3 +1,4 @@
+import { SubscriptionServerOptions } from 'apollo-server-core'
 import { PlaygroundRenderPageOptions } from 'apollo-server-express'
 import { CorsOptions as OriginalCorsOption } from 'cors'
 import * as Setset from 'setset'
@@ -37,7 +38,38 @@ export type PlaygroundLonghandInput = {
   settings?: Omit<Partial<Exclude<PlaygroundRenderPageOptions['settings'], undefined>>, 'general.betaUpdates'>
 }
 
+type SubscriptionsLonghandInput = Omit<SubscriptionServerOptions, 'path'> & {
+  /**
+   * The path for clients to send subscriptions to.
+   *
+   * @default "/graphql"
+   */
+  path?: string
+  /**
+   * Disable or enable the subscriptions server.
+   *
+   * @dynamicDefault
+   *
+   * - true if there is a Subscription type in your schema
+   * - false otherwise
+   */
+  enabled?: boolean
+}
+
 export type SettingsInput = {
+  /**
+   * Configure the subscriptions server.
+   *
+   * - Pass true to force enable with setting defaults
+   * - Pass false to force disable
+   * - Pass settings to customize config. Note does not imply enabled. Set "enabled: true" for that or rely on default.
+   *
+   * @dynamicDefault
+   *
+   * - true if there is a Subscription type in your schema
+   * - false otherwise
+   */
+  subscriptions?: boolean | SubscriptionsLonghandInput
   /**
    * Port the server should be listening on.
    *
@@ -190,7 +222,7 @@ export type SettingsInput = {
    * Create a message suitable for printing to the terminal about the server
    * having been booted.
    */
-  startMessage?: (address: { port: number; host: string; ip: string; path: string }) => void
+  startMessage?: (startInfo: ServerStartInfo) => void
   /**
    * todo
    */
@@ -199,9 +231,25 @@ export type SettingsInput = {
   }
 }
 
-export type SettingsData = Setset.InferDataFromInput<Omit<SettingsInput, 'host' | 'cors' | 'apollo'>> & {
+type ServerStartInfo = {
+  port: number
+  host: string
+  ip: string
+  paths: {
+    graphql: string
+    graphqlSubscrtipions: null | string
+  }
+}
+
+export type SettingsData = Setset.InferDataFromInput<
+  Omit<SettingsInput, 'host' | 'cors' | 'apollo' | 'subscriptions'>
+> & {
   host?: string
   cors: ResolvedOptional<SettingsInput['cors']>
+  subscriptions: Omit<SubscriptionsLonghandInput, 'enabled' | 'path'> & {
+    enabled: boolean
+    path: string
+  }
   apollo: {
     engine: ApolloConfigEngine & {
       enabled: boolean
@@ -212,6 +260,28 @@ export type SettingsData = Setset.InferDataFromInput<Omit<SettingsInput, 'host' 
 export const createServerSettingsManager = () =>
   Setset.create<SettingsInput, SettingsData>({
     fields: {
+      subscriptions: {
+        shorthand(enabled) {
+          return { enabled }
+        },
+        fields: {
+          path: {
+            initial() {
+              return '/graphql'
+            },
+          },
+          keepAlive: {},
+          onConnect: {},
+          onDisconnect: {},
+          enabled: {
+            initial() {
+              // This is not accurate. The default is actually dynamic depending
+              // on if the user has defined any subscription type or not.
+              return true
+            },
+          },
+        },
+      },
       apollo: {
         fields: {
           engine: {
@@ -350,9 +420,14 @@ export const createServerSettingsManager = () =>
       },
       startMessage: {
         initial() {
-          return ({ port, host, path }): void => {
+          return ({ port, host, paths }): void => {
+            const url = `http://${Utils.prettifyHost(host)}:${port}${paths.graphql}`
+            const subscrtipionsURL = paths.graphqlSubscrtipions
+              ? `http://${Utils.prettifyHost(host)}:${port}${paths.graphqlSubscrtipions}`
+              : null
             serverLogger.info('listening', {
-              url: `http://${Utils.prettifyHost(host)}:${port}${path}`,
+              url,
+              subscrtipionsURL,
             })
           }
         },

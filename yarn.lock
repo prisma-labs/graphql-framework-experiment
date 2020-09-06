@@ -5682,10 +5682,10 @@ setprototypeof@1.1.1:
   resolved "https://registry.yarnpkg.com/setprototypeof/-/setprototypeof-1.1.1.tgz#7e95acb24aa92f5885e0abef5ba131330d4ae683"
   integrity sha512-JvdAWfbXeIGaZ9cILp38HntZSFSo3mWg6xGcJJsd+d4aRMOqauag1C63dJfDw7OaMYwEbHMOxEZ1lqVRYP2OAw==
 
-setset@^0.0.3:
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/setset/-/setset-0.0.3.tgz#b071ddfeaf257ecb6148aa8a1187eb1ef5360826"
-  integrity sha512-rty4d5o1LVjA5Ct4fUAH0MeHfKNZTLxM409j68KLg8zd25Fb9tBAHjB5xeP9mK/qUtwCSH/ScYdpB0vGMo7dhg==
+setset@^0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/setset/-/setset-0.0.4.tgz#93ebc4e091d6435151deea5b200ea238e71b6466"
+  integrity sha512-4y8ju0HCfyZybvaLvFzuwF8GWhetQWNQOyx/sclP/bHa0m2zahpXsnszmJSGAS6l/xVfnCD3VJO/eToAGfmAOQ==
   dependencies:
     "@jsdevtools/ono" "^7.1.3"
     "@nexus/logger" "^0.2.0"
