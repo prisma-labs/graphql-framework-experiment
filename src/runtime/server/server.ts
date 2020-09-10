@@ -186,7 +186,7 @@ export function create(appState: AppState) {
           ip: address.address,
           paths: {
             graphql: settings.data.path,
-            graphqlSubscrtipions: state.enableSubscriptionsServer ? settings.data.subscriptions.path : null,
+            graphqlSubscriptions: state.enableSubscriptionsServer ? settings.data.subscriptions.path : null,
           },
         })
         DevMode.sendServerReadySignalToDevModeMaster()
