@@ -237,7 +237,7 @@ type ServerStartInfo = {
   ip: string
   paths: {
     graphql: string
-    graphqlSubscrtipions: null | string
+    graphqlSubscriptions: null | string
   }
 }
 
@@ -422,12 +422,12 @@ export const createServerSettingsManager = () =>
         initial() {
           return ({ port, host, paths }): void => {
             const url = `http://${Utils.prettifyHost(host)}:${port}${paths.graphql}`
-            const subscrtipionsURL = paths.graphqlSubscrtipions
-              ? `http://${Utils.prettifyHost(host)}:${port}${paths.graphqlSubscrtipions}`
+            const subscriptionsURL = paths.graphqlSubscriptions
+              ? `http://${Utils.prettifyHost(host)}:${port}${paths.graphqlSubscriptions}`
               : null
             serverLogger.info('listening', {
               url,
-              subscrtipionsURL,
+              subscriptionsURL,
             })
           }
         },
