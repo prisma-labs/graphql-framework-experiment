@@ -1,3 +1,20 @@
+<h1 align="center">
+<br/>
+👋
+<br/>
+<br/>
+Nexus Framework has been shut down.
+<br/>
+For details please see the <a href="https://nxs.li/unframework/about">annoucement here</a>. 
+<br/>
+<br/>
+<br/>
+<br/>
+
+🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧
+
+</h1>
+
 <p align="center">
   <br/>
   <a href="https://nexusjs.org"><img src="https://dsc.cloud/661643/nexus-logo-circle.png" height="150px"></a>
