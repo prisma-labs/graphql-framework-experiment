@@ -3,9 +3,7 @@
 👋
 <br/>
 <br/>
-Nexus Framework has been shut down.
-<br/>
-For details please see the <a href="https://nxs.li/unframework/about">annoucement here</a>. 
+Development of Nexus Framework has ended. Please read our <a href="https://nxs.li/unframework/about"><i>annoucement issue</i></a> for details and follow our <a href="https://nxs.li/unframework/migrate"><i>migration guide</i></a> to start using Nexus Schema.
 <br/>
 <br/>
 <br/>
