@@ -73,9 +73,9 @@
   "devDependencies": {
     "@mdx-js/loader": "^0.20.3",
     "@mdx-js/tag": "^0.20.3",
-    "@prisma/cli": "^2.0.0-beta.2",
-    "@types/jest": "26.0.8",
-    "@types/react-helmet": "^5.0.8",
+    "@prisma/cli": "2.8.0",
+    "@types/jest": "26.0.14",
+    "@types/react-helmet": "5.0.16",
     "@types/styled-components": "^4.1.12",
     "gatsby-remark-sectionize": "^1.0.0",
     "jest": "^24.5.0",
@@ -84,7 +84,7 @@
     "prettier": "^1.16.4",
     "ts-jest": "^24.0.0",
     "tslint": "^5.13.1",
-    "typescript": "^3.3.3333"
+    "typescript": "3.9.7"
   },
   "jest": {
     "setupTestFrameworkScriptFile": "./jest.setup.js",
