@@ -3,7 +3,7 @@
 👋
 <br/>
 <br/>
-Development of Nexus Framework has ended. Please read our <a href="https://nxs.li/unframework/about"><i>annoucement issue</i></a> for details and follow our <a href="https://nxs.li/unframework/migrate"><i>migration guide</i></a> to start using Nexus Schema. The old website can be found [here](https://graphql-framework-experiment-docs.netlify.app).
+Development of Nexus Framework has ended. Please read our <a href="https://nxs.li/unframework/about"><i>annoucement issue</i></a> for details and follow our <a href="https://nxs.li/unframework/migrate"><i>migration guide</i></a> to start using Nexus Schema. The old website can be found <a href="https://graphql-framework-experiment-docs.netlify.app">here</a>.
 <br/>
 <br/>
 <br/>
