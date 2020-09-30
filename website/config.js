@@ -1,13 +1,13 @@
 const config = {
   gatsby: {
     pathPrefix: '',
-    siteUrl: 'https://graphql-nexus-framework-docs.netlify.app',
+    siteUrl: 'https://graphql-framework-experiment-docs.netlify.app/',
     titlePrefix: '',
     titleSuffix: '',
   },
   redirects: [],
   header: {
-    logoLink: 'https://graphql-nexus-framework-docs.netlify.app', // replace with nexus site
+    logoLink: 'https://graphql-framework-experiment-docs.netlify.app/',
     title: 'Nexus',
     // check all links
     // links: [
