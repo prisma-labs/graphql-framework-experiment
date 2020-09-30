@@ -7,9 +7,6 @@
   "bugs": "https://github.com/graphql-nexus/nexus/issues",
   "license": "MIT",
   "main": "index.js",
-  "bin": {
-    "nexus": "dist/cli/main.js"
-  },
   "dependencies": {},
   "devDependencies": {},
   "scripts": {
