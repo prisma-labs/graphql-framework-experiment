@@ -1,13 +1,13 @@
 const config = {
   gatsby: {
     pathPrefix: '',
-    siteUrl: 'https://www.nexusjs.org',
+    siteUrl: 'https://graphql-framework-experiment-docs.netlify.app/',
     titlePrefix: '',
     titleSuffix: '',
   },
   redirects: [],
   header: {
-    logoLink: 'https://www.nexusjs.org', // replace with nexus site
+    logoLink: 'https://graphql-framework-experiment-docs.netlify.app/',
     title: 'Nexus',
     // check all links
     // links: [
@@ -23,7 +23,7 @@ const config = {
     // ],
     links: [
       { name: 'Nexus Framework', link: '/' },
-      { name: 'Nexus Schema', link: '/components-standalone/schema' },
+      { name: 'Nexus Schema', link: 'https://nexusjs.org' },
     ],
     search: {
       indexName: process.env.GATSBY_ALGOLIA_INDEX_NAME,
@@ -33,8 +33,8 @@ const config = {
     },
   },
   siteMetadata: {
-    title: 'Nexus - title',
-    description: 'Nexus - desc',
+    title: 'Nexus Framework - title',
+    description: 'Nexus Framework - desc',
     keywords: 'Docs, nexus, 1.0',
     docsLocation: 'https://github.com/graphql-nexus/nexus/tree/master/website/content',
     twitter: {
@@ -43,10 +43,10 @@ const config = {
       image: '/social/missing.png',
     },
     og: {
-      site_name: 'Nexus',
+      site_name: 'Nexus Framework',
       type: 'website',
       image: {
-        alt: 'Nexus',
+        alt: 'Nexus Framework',
         height: '630',
         type: 'image/png',
         url: '/social/missing.png', //replace social image
@@ -55,14 +55,14 @@ const config = {
     },
   },
   feedback: {
-    function_name: 'https://nexusjs.org/.netlify/functions/index',
+    function_name: 'https://graphql-nexus-framework-docs.netlify.app/.netlify/functions/index',
   },
   sidebar: {
     tablet_menu_split: [], // Slugs for top level folders which should appear in right pane on tablet
   },
   footer: {
     logoLink: '/',
-    title: 'Nexus',
+    title: 'Nexus Framework',
     products: [
       {
         name: 'Prisma Client',

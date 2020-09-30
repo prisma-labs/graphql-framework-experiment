@@ -186,5 +186,16 @@ module.exports = {
       },
     },
     'gatsby-plugin-remove-trailing-slashes',
+    {
+      resolve: 'gatsby-plugin-robots-txt',
+      options: {
+        policy: [
+          {
+            userAgent: '*',
+            disallow: '/',
+          },
+        ],
+      },
+    },
   ],
 }
