@@ -1,1 +1,2 @@
-export { createTestContext, TestContext } from './testing'
+export * from './types'
+export { createTestContext } from './testing'
