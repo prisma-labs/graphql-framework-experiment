@@ -54,7 +54,7 @@
     "graphql-request": "^3.0.0",
     "graphql-scalars": "^1.1.5",
     "http-errors": "^1.7.3",
-    "lodash": "^4.17.20",
+    "lodash": "^4.17.21",
     "node-fetch": "^2.6.0",
     "parse-json": "^5.0.0",
     "pirates": "^4.0.1",
