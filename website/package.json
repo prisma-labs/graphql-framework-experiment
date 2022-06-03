@@ -16,7 +16,7 @@
     "gatsby-plugin-algolia": "^0.5.0",
     "gatsby-plugin-catch-links": "^2.3.0",
     "gatsby-plugin-manifest": "^2.0.24",
-    "gatsby-plugin-mdx": "^1.0.73",
+    "gatsby-plugin-mdx": "^2.14.1",
     "gatsby-plugin-offline": "^2.0.25",
     "gatsby-plugin-react-helmet": "^3.2.4",
     "gatsby-plugin-remove-trailing-slashes": "^2.2.1",
